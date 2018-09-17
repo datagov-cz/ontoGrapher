@@ -1,0 +1,21 @@
+@import "DiagramWidget";
+@import "LinkLayerWidget";
+@import "NodeLayerWidget";
+@import "NodeWidget";
+@import "PortWidget";
+
+//defaults
+@import "defaults/DefaultNodeWidget";
+@import "defaults/DefaultPortWidget";
+@import "defaults/DefaultLabelWidget";
+@import "defaults/DefaultLinkWidget";
+
+//panels
+@import "panel/StereotypePanel";
+@import "panel/MenuPanel";
+
+//nodes
+@import "diagramCanvas/NodeWidgetCustom";
+
+//links
+@import "diagramCanvas/LinkWidgetCustom";

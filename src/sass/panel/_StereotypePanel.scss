@@ -1,0 +1,20 @@
+.stereotypePanel{
+  resize: horizontal;
+  float:left;
+  max-width:200px;
+  height:100vh;
+  overflow: auto;
+  white-space: nowrap;
+  min-width: 100px;
+}
+
+.stereotypePanelItem {
+  padding: 5px;
+  border-style: solid;
+  border-width: 2px;
+  border-color: grey;
+  border-radius: 5px;
+  font-family: "Verdana", sans-serif;
+  font-size: 12px;
+  margin: 5px;
+}

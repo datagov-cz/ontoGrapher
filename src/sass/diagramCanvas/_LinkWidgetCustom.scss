@@ -1,0 +1,9 @@
+path[class^="link-"]{
+  stroke: black;
+
+}
+path[class^="link-"][class$="--path-selected"]{
+  stroke: rgb(128,128,128) !important;
+  stroke-dasharray: 10,2;
+  animation: dash 1s linear infinite;
+}

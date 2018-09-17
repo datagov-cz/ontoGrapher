@@ -1,0 +1,18 @@
+body{
+  margin: 0px;
+}
+
+.srd-diagram{
+  height: 100vh;
+  position: relative;
+  flex-grow: 1;
+  display: flex;
+  overflow: hidden;
+  background: beige;
+
+  &__selector{
+    position: absolute;
+    background-color: rgba(0,192,255,0.2);
+    border: solid 2px rgb(0,192,255);
+  }
+}
