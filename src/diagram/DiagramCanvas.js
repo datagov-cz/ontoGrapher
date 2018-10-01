@@ -54,18 +54,21 @@ import {NodeSubkindModel} from "../components/nodes/subkind/NodeSubkindModel";
 import {CharacterizationLinkFactory} from "../components/links/CharacterizationLink";
 import {ComponentLinkFactory} from "../components/links/ComponentLink";
 import {DerivationLinkFactory} from "../components/links/DerivationLink";
-import {FormalLinkFactory} from "../components/links/FormalLink";
+import {FormalLinkFactory, FormalLinkModel} from "../components/links/FormalLink";
 import {MaterialLinkFactory} from "../components/links/MaterialLink";
 import {MediationLinkFactory} from "../components/links/MediationLink";
 import {MemberLinkFactory} from "../components/links/MemberLink";
 import {SubCollectionLinkFactory} from "../components/links/SubCollectionLink";
 import {SubQuantityLinkFactory} from "../components/links/SubQuantityLink";
 import {MenuPanel} from "../panel/MenuPanel";
+import {CustomDiagramModel} from "./CustomDiagramModel.js";
 
 
 export class DiagramCanvas extends React.Component {
     constructor(props){
         super(props);
+        this.state = {selectedlink: 'common'};
+        this.handleChange = this.handleChange.bind(this);
     }
 
     registerFactories(){
@@ -122,76 +125,42 @@ export class DiagramCanvas extends React.Component {
 
         this.registerFactories();
 
-        this.engine.setDiagramModel(new DiagramModel());
-
+        this.engine.setDiagramModel(new CustomDiagramModel());
         const kind = new NodeKindModel();
         kind.addAttribute(new AttributeObject("me","string"));
         kind.addAttribute(new AttributeObject("you","string"));
         kind.addAttribute(new AttributeObject("we","string"));
 
-        /*
-        const test = new DefaultNodeModel();
-        test.addPort(new CommonPortModel(true,'whatever',''));
-        this.engine.getDiagramModel().addNode(test);
-        */
-
         this.engine.getDiagramModel().addNode(kind);
+
+    }
+
+    handleChange(event){
+        this.setState({selectedlink: event.target.value});
+        this.engine.getDiagramModel().selectedLink = event.target.value;
     }
 
     render() {
         return (
             <div>
+                <select value={this.state.selectedlink} onChange={this.handleChange}>
+                    <option value="common">Common</option>
+                    <option value="characterization">Characterization</option>
+                    <option value="component">Component</option>
+                    <option value="derivation">Derivation</option>
+                    <option value="formal">Formal</option>
+                    <option value="material">Material</option>
+                    <option value="mediation">Mediation</option>
+                    <option value="member">Member</option>
+                    <option value="subcollection">SubCollection</option>
+                    <option value="subquantity">SubQuantity</option>
+                </select>
                 <button onClick={event => {
                     console.log(JSON.stringify(this.engine.diagramModel.serializeDiagram()));
                 }}>Serialize</button>
                 <button onClick={event => {
                     let str = prompt("Enter JSON");
-                    this.engine.registerNodeFactory(new DefaultNodeFactory());
-
-                    this.engine.registerNodeFactory(new NodeCategoryFactory());
-                    this.engine.registerNodeFactory(new NodeCollectiveFactory());
-                    this.engine.registerNodeFactory(new NodeKindFactory());
-                    this.engine.registerNodeFactory(new NodeMixinFactory());
-                    this.engine.registerNodeFactory(new NodeModeFactory());
-                    this.engine.registerNodeFactory(new NodePhaseFactory());
-                    this.engine.registerNodeFactory(new NodeQualityFactory());
-                    this.engine.registerNodeFactory(new NodeQuantityFactory());
-                    this.engine.registerNodeFactory(new NodeRelatorFactory());
-                    this.engine.registerNodeFactory(new NodeRoleFactory());
-                    this.engine.registerNodeFactory(new NodeRoleMixinFactory());
-                    this.engine.registerNodeFactory(new NodeSubkindFactory());
-
-
-                    this.engine.registerLinkFactory(new DefaultLinkFactory());
-
-                    this.engine.registerLinkFactory(new CommonLinkFactory());
-                    this.engine.registerLinkFactory(new CharacterizationLinkFactory());
-                    this.engine.registerLinkFactory(new ComponentLinkFactory());
-                    this.engine.registerLinkFactory(new DerivationLinkFactory());
-                    this.engine.registerLinkFactory(new FormalLinkFactory());
-                    this.engine.registerLinkFactory(new MaterialLinkFactory());
-                    this.engine.registerLinkFactory(new MediationLinkFactory());
-                    this.engine.registerLinkFactory(new MemberLinkFactory());
-                    this.engine.registerLinkFactory(new SubCollectionLinkFactory());
-                    this.engine.registerLinkFactory(new SubQuantityLinkFactory());
-
-                    this.engine.registerLabelFactory(new DefaultLabelFactory());
-
-                    this.engine.registerPortFactory(new DefaultPortFactory());
-                    this.engine.registerPortFactory(new CommonPortFactory());
-
-                    this.engine.registerPortFactory(new NodeCategoryPortFactory());
-                    this.engine.registerPortFactory(new NodeCollectivePortFactory());
-                    this.engine.registerPortFactory(new NodeKindPortFactory());
-                    this.engine.registerPortFactory(new NodeMixinPortFactory());
-                    this.engine.registerPortFactory(new NodeModePortFactory());
-                    this.engine.registerPortFactory(new NodePhasePortFactory());
-                    this.engine.registerPortFactory(new NodeQualityPortFactory());
-                    this.engine.registerPortFactory(new NodeQuantityPortFactory());
-                    this.engine.registerPortFactory(new NodeRelatorPortFactory());
-                    this.engine.registerPortFactory(new NodeRolePortFactory());
-                    this.engine.registerPortFactory(new NodeRoleMixinPortFactory());
-                    this.engine.registerPortFactory(new NodeSubkindPortFactory());
+                    this.registerFactories();
                     let model = new DiagramModel();
                     model.deSerializeDiagram(JSON.parse(str), this.engine);
                     this.engine.setDiagramModel(model);
@@ -238,7 +207,7 @@ export class DiagramCanvas extends React.Component {
                 onDragOver={event => {
                     event.preventDefault();
                 }}>
-                <DiagramWidget diagramEngine={this.engine}/>
+                <DiagramWidget diagramEngine={this.engine} allowLooseLinks={false} smartRouting={false}/>
             </div>
             </div>
 
