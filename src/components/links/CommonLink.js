@@ -16,12 +16,14 @@ export class CommonLinkModel extends DefaultLinkModel {
     color: string;
     curvyness: number;
     linktype: string;
+    established: boolean;
 
     constructor(){
         super("link-common");
         this.width = 3;
         this.curvyness = 0;
         this.linktype = "common";
+        this.established = false;
     }
 
     serialize() {

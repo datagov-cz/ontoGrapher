@@ -132,6 +132,15 @@ export class DiagramCanvas extends React.Component {
         kind.addAttribute(new AttributeObject("we","string"));
 
         this.engine.getDiagramModel().addNode(kind);
+        this.engine.getDiagramModel().addListener({
+            linksUpdated: e => {
+                if (!e.link.established){
+                    e.link.linktype = this.state.selectedlink;
+                    e.link.established = true;
+                }
+
+            }
+            });
 
     }
 
@@ -161,7 +170,7 @@ export class DiagramCanvas extends React.Component {
                 <button onClick={event => {
                     let str = prompt("Enter JSON");
                     this.registerFactories();
-                    let model = new DiagramModel();
+                    let model = new CustomDiagramModel();
                     model.deSerializeDiagram(JSON.parse(str), this.engine);
                     this.engine.setDiagramModel(model);
                     alert("Loaded!");
