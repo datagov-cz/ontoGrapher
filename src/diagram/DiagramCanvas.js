@@ -142,11 +142,11 @@ export class DiagramCanvas extends React.Component {
             linksUpdated: e => {
                 if (!e.link.established){
                     e.link.linktype = this.state.selectedlink;
-                    let fcl = new DefaultLabelModel();
-                    let scl = new DefaultLabelModel();
-                    fcl.setLabel(this.state.firstcard);
-                    scl.setLabel(this.state.secondcard);
-                    e.link.addLabel(fcl);
+                    if(this.state.firstcard != "None"){
+                        let fcl = new DefaultLabelModel();
+                        fcl.setLabel(this.state.firstcard);
+                        e.link.addLabel(fcl);
+                    }
                     if (e.link.linktype == "mediation"){
                         e.link.addLabel("«mediation»");
                     } else if (e.link.linktype == "characterization"){
@@ -156,7 +156,11 @@ export class DiagramCanvas extends React.Component {
                     } else if (e.link.linktype == "formal"){
                         e.link.addLabel("«formal»");
                     }
-                    e.link.addLabel(scl);
+                    if (this.state.secondcard != "None"){
+                        let scl = new DefaultLabelModel();
+                        scl.setLabel(this.state.secondcard);
+                        e.link.addLabel(scl);
+                    }
                     e.link.established = true;
                 }
             }
@@ -195,12 +199,14 @@ export class DiagramCanvas extends React.Component {
                     <option value="0..1">0..1</option>
                     <option value="1..*">1..*</option>
                     <option value="0..*">0..*</option>
+                    <option value="None">None</option>
                 </select>
                 <select value={this.state.secondcard} onChange={this.handleChange2}>
                     <option value="1">1</option>
                     <option value="0..1">0..1</option>
                     <option value="1..*">1..*</option>
                     <option value="0..*">0..*</option>
+                    <option value="None">None</option>
                 </select>
                 <button onClick={event => {
                     console.log(JSON.stringify(this.engine.diagramModel.serializeDiagram()));
