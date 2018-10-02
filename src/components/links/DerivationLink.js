@@ -104,17 +104,17 @@ export class DerivationLinkFactory extends DefaultLinkFactory{
     }
 
     getNewInstance(initialConfig?: any): DerivationLinkModel{
-        return new DerivationLinkModel();
+        return new CommonLinkModel();
     }
 
-    generateReactWidget(diagramEngine: DiagramEngine, link: DerivationLinkModel): JSX.Element {
+    generateReactWidget(diagramEngine: DiagramEngine, link: CommonLinkModel): JSX.Element {
         return React.createElement(DerivationLinkWidget, {
             link: link,
             diagramEngine: diagramEngine
         });
     }
 
-    generateLinkSegment(model: DerivationLinkModel, widget: DerivationLinkWidget, selected: boolean, path:string){
+    generateLinkSegment(model: CommonLinkModel, widget: DerivationLinkWidget, selected: boolean, path:string){
         var markerId= Toolkit.UID();
         var markerEndUrl = "url(#"+markerId+")";
         return (
@@ -127,7 +127,6 @@ export class DerivationLinkFactory extends DefaultLinkFactory{
                       stroke="black"
                       strokeDasharray="10,10"
                       d={path}
-                      markerEnd={markerEndUrl}
                 />
 
         );

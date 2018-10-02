@@ -14,7 +14,7 @@ export class CharacterizationLinkModel extends DefaultLinkModel {
         super("link-characterization");
         this.width = 3;
         this.curvyness = 0;
-        this.addLabel("«characterization»");
+        this.setLabel("«characterization»");
     }
 
     setLabel(str: string){
@@ -91,14 +91,6 @@ export class CharacterizationLinkWidget extends DefaultLinkWidget {
                         this.bem("__point") +
                         (this.props.link.points[pointIndex].isSelected() ? this.bem("--point-selected") : "")
                     }
-                />
-
-                <polygon
-                    x={x-20}
-                    y={y+12}
-                    transform={`rotate(${angle}, ${x}, ${y})`}
-                    points={`${x - 10},${y - 8} ${x+3},${y} ${x - 10},${y + 8}`}
-
                 />
 
             </g>

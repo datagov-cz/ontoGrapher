@@ -10,7 +10,7 @@ import {
     DefaultPortModel,
     LinkModel,
     DefaultLabelFactory,
-    DefaultPortFactory
+    DefaultPortFactory, DefaultLabelModel
 } from 'storm-react-diagrams';
 import {NodeKindModel} from "../components/nodes/kind/NodeKindModel";
 import {NodeKindFactory} from "../components/nodes/kind/NodeKindFactory";
@@ -67,8 +67,14 @@ import {CustomDiagramModel} from "./CustomDiagramModel.js";
 export class DiagramCanvas extends React.Component {
     constructor(props){
         super(props);
-        this.state = {selectedlink: 'common'};
+        this.state = {
+            selectedlink: 'common',
+            firstcard: '1',
+            secondcard: '1'
+        };
         this.handleChange = this.handleChange.bind(this);
+        this.handleChange1 = this.handleChange1.bind(this);
+        this.handleChange2 = this.handleChange2.bind(this);
     }
 
     registerFactories(){
@@ -136,9 +142,23 @@ export class DiagramCanvas extends React.Component {
             linksUpdated: e => {
                 if (!e.link.established){
                     e.link.linktype = this.state.selectedlink;
+                    let fcl = new DefaultLabelModel();
+                    let scl = new DefaultLabelModel();
+                    fcl.setLabel(this.state.firstcard);
+                    scl.setLabel(this.state.secondcard);
+                    e.link.addLabel(fcl);
+                    if (e.link.linktype == "mediation"){
+                        e.link.addLabel("«mediation»");
+                    } else if (e.link.linktype == "characterization"){
+                        e.link.addLabel("«characterization»");
+                    } else if (e.link.linktype == "material"){
+                        e.link.addLabel("«material»");
+                    } else if (e.link.linktype == "formal"){
+                        e.link.addLabel("«formal»");
+                    }
+                    e.link.addLabel(scl);
                     e.link.established = true;
                 }
-
             }
             });
 
@@ -149,6 +169,12 @@ export class DiagramCanvas extends React.Component {
         this.engine.getDiagramModel().selectedLink = event.target.value;
     }
 
+    handleChange1(event){
+        this.setState({firstcard: event.target.value});
+    }
+    handleChange2(event){
+        this.setState({secondcard: event.target.value});
+    }
     render() {
         return (
             <div>
@@ -163,6 +189,18 @@ export class DiagramCanvas extends React.Component {
                     <option value="member">Member</option>
                     <option value="subcollection">SubCollection</option>
                     <option value="subquantity">SubQuantity</option>
+                </select>
+                <select value={this.state.firstcard} onChange={this.handleChange1}>
+                    <option value="1">1</option>
+                    <option value="0..1">0..1</option>
+                    <option value="1..*">1..*</option>
+                    <option value="0..*">0..*</option>
+                </select>
+                <select value={this.state.secondcard} onChange={this.handleChange2}>
+                    <option value="1">1</option>
+                    <option value="0..1">0..1</option>
+                    <option value="1..*">1..*</option>
+                    <option value="0..*">0..*</option>
                 </select>
                 <button onClick={event => {
                     console.log(JSON.stringify(this.engine.diagramModel.serializeDiagram()));

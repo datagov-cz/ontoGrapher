@@ -14,9 +14,7 @@ export class MediationLinkModel extends DefaultLinkModel {
         super("link-mediation");
         this.width = 3;
         this.curvyness = 0;
-        if (this.labels.length == 0){
-            this.setLabel("«mediation»")
-        }
+        this.addLabel("«mediation»");
     }
 
     setLabel(str: string){

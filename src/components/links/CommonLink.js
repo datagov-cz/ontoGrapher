@@ -8,6 +8,14 @@ import {
     DefaultPortModel, DiagramEngine, PointModel, Toolkit
 } from 'storm-react-diagrams';
 import {SubQuantityLinkWidget} from "./SubQuantityLink";
+import {SubCollectionLinkWidget} from "./SubCollectionLink";
+import {MemberLinkWidget} from "./MemberLink";
+import {MediationLinkWidget} from "./MediationLink";
+import {MaterialLinkWidget} from "./MaterialLink";
+import {FormalLinkWidget} from "./FormalLink";
+import {DerivationLinkWidget} from "./DerivationLink";
+import {ComponentLinkWidget} from "./ComponentLink";
+import {CharacterizationLinkWidget} from "./CharacterizationLink";
 
 
 
@@ -19,7 +27,8 @@ export class CommonLinkModel extends DefaultLinkModel {
     established: boolean;
 
     constructor(){
-        super("link-common");
+        super();
+        this.type = "link-common";
         this.width = 3;
         this.curvyness = 0;
         this.linktype = "common";
@@ -335,23 +344,80 @@ export class CommonLinkFactory extends AbstractLinkFactory<CommonLinkModel>{
                 link: link,
                 diagramEngine: diagramEngine
             });
+        } else if (link.linktype == "characterization"){
+            return React.createElement(CharacterizationLinkWidget, {
+                link: link,
+                diagramEngine: diagramEngine
+            });
+        }else if (link.linktype == "component"){
+            return React.createElement(ComponentLinkWidget, {
+                link: link,
+                diagramEngine: diagramEngine
+            });
+        }else if (link.linktype == "derivation"){
+            return React.createElement(DerivationLinkWidget, {
+                link: link,
+                diagramEngine: diagramEngine
+            });
+        }else if (link.linktype == "formal"){
+            return React.createElement(FormalLinkWidget, {
+                link: link,
+                diagramEngine: diagramEngine
+            });
+        }else if (link.linktype == "material"){
+            return React.createElement(MaterialLinkWidget, {
+                link: link,
+                diagramEngine: diagramEngine
+            });
+        }else if (link.linktype == "mediation"){
+            return React.createElement(MediationLinkWidget, {
+                link: link,
+                diagramEngine: diagramEngine
+            });
+        }else if (link.linktype == "member"){
+            return React.createElement(MemberLinkWidget, {
+                link: link,
+                diagramEngine: diagramEngine
+            });
+        }else if (link.linktype == "subcollection"){
+            return React.createElement(SubCollectionLinkWidget, {
+                link: link,
+                diagramEngine: diagramEngine
+            });
         }
 
     }
 
     generateLinkSegment(model: CommonLinkModel, widget: CommonLinkWidget, selected: boolean, path:string){
-        return (
+        if (model.linktype == "derivation"){
+            return (
 
-            <path className={selected ? "link-common--path-selected" : "link-common"}
-                  ref={ref => {
-                      this.path = ref;
-                  }}
-                  strokeWidth={model.width}
-                  stroke="black"
-                  d={path}
-            />
+                <path className={selected ? "link-derivation--path-selected" : "link-derivation"}
+                      ref={ref => {
+                          this.path = ref;
+                      }}
+                      strokeWidth={model.width}
+                      stroke="black"
+                      strokeDasharray="10,10"
+                      d={path}
+                />
 
-        );
+            );
+        } else {
+            return (
+
+                <path className={selected ? "link-common--path-selected" : "link-common"}
+                      ref={ref => {
+                          this.path = ref;
+                      }}
+                      strokeWidth={model.width}
+                      stroke="black"
+                      d={path}
+                />
+
+            );
+        }
+
     }
 }
 
