@@ -17,6 +17,7 @@ class App extends React.Component {
 
 				<StereotypePanel>
                     <StereotypePanelItem model={{type: "category"}} name="Category" color="white"/>
+                    <StereotypePanelItem model={{type: "common"}} name="Common" color="white"/>
 					<StereotypePanelItem model={{type: "collective"}} name="Collective" color="white"/>
                     <StereotypePanelItem model={{type: "kind"}} name="Kind" color="white"/>
                     <StereotypePanelItem model={{type: "mixin"}} name="Mixin" color="white"/>

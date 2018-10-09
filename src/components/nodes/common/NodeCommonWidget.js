@@ -37,7 +37,7 @@ export class NodeCommonWidget extends React.Component<NodeCommonWidgetProps, Nod
                     <g>
                         <rect fill="#ffffff" stroke="#000000" strokeWidth="3" width={this.props.size}
                               height={height}></rect>
-                        <text width={this.props.size} textAnchor="middle" dominantBaseline="hanging" x="50%" y="5px" fill="#000000">«common»</text>
+                        <text width={this.props.size} textAnchor="middle" dominantBaseline="hanging" x="50%" y="5px" fill="#000000">{"«"+this.props.node.stereotype+"»"}</text>
                         <line x1="0" x2={this.props.size} y1="20px" y2="20px" strokeWidth="1" stroke="#000000"/>
                         <text width={this.props.size} textAnchor="middle" dominantBaseline="hanging" x="50%" y="25px" fill="#000000">{this.props.node.name}</text>
                         <text width={this.props.size} textAnchor="start" dominantBaseline="hanging" x="5px" y="30px" fill="#000000">

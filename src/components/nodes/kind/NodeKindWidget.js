@@ -31,7 +31,7 @@ export class NodeKindWidget extends React.Component<NodeKindWidgetProps, NodeKin
         <tspan key={attrkey++} x="5px" dy="15px">{attr.first + ": " + attr.second}</tspan>
         )
         return (
-            <div className={"kind-node"} width={this.props.size} height={height} onDoubleClick={event => {let str = prompt("Enter name:"); this.changeName(str);this.forceUpdate();}}>
+            <div className={this.props.node.type} width={this.props.size} height={height} onDoubleClick={event => {let str = prompt("Enter name:"); this.changeName(str);this.forceUpdate();}}>
                 <svg
                 width={this.props.size}
                 height={height}>
@@ -39,7 +39,7 @@ export class NodeKindWidget extends React.Component<NodeKindWidgetProps, NodeKin
                     <g>
                         <rect fill="#ffffff" stroke={select} strokeWidth="3" width={this.props.size}
                               height={height}></rect>
-                        <text width={this.props.size} textAnchor="middle" dominantBaseline="hanging" x="50%" y="5px" fill="#000000">«kind»</text>
+                        <text width={this.props.size} textAnchor="middle" dominantBaseline="hanging" x="50%" y="5px" fill="#000000">{this.props.node.type}</text>
                         <line x1="0" x2={this.props.size} y1="20px" y2="20px" strokeWidth="1" stroke="#000000"/>
                         <text width={this.props.size} textAnchor="middle" dominantBaseline="hanging" x="50%" y="25px" fill="#000000">{this.props.node.name}</text>
                         <text width={this.props.size} textAnchor="start" dominantBaseline="hanging" x="5px" y="30px" fill="#000000">

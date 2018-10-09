@@ -62,6 +62,9 @@ import {SubCollectionLinkFactory} from "../components/links/SubCollectionLink";
 import {SubQuantityLinkFactory} from "../components/links/SubQuantityLink";
 import {MenuPanel} from "../panel/MenuPanel";
 import {CustomDiagramModel} from "./CustomDiagramModel.js";
+import {NodeCommonModel} from "../components/nodes/common/NodeCommonModel";
+import {NodeCommonFactory} from "../components/nodes/common/NodeCommonFactory";
+import {NodeCommonPortFactory} from "../components/nodes/common/NodeCommonPortFactory";
 
 
 export class DiagramCanvas extends React.Component {
@@ -81,6 +84,7 @@ export class DiagramCanvas extends React.Component {
         this.engine.registerNodeFactory(new DefaultNodeFactory());
 
         this.engine.registerNodeFactory(new NodeCategoryFactory());
+        this.engine.registerNodeFactory(new NodeCommonFactory());
         this.engine.registerNodeFactory(new NodeCollectiveFactory());
         this.engine.registerNodeFactory(new NodeKindFactory());
         this.engine.registerNodeFactory(new NodeMixinFactory());
@@ -113,6 +117,7 @@ export class DiagramCanvas extends React.Component {
         this.engine.registerPortFactory(new CommonPortFactory());
 
         this.engine.registerPortFactory(new NodeCategoryPortFactory());
+        this.engine.registerPortFactory(new NodeCommonPortFactory());
         this.engine.registerPortFactory(new NodeCollectivePortFactory());
         this.engine.registerPortFactory(new NodeKindPortFactory());
         this.engine.registerPortFactory(new NodeMixinPortFactory());
@@ -227,6 +232,8 @@ export class DiagramCanvas extends React.Component {
                     var node = null;
                     if (data.type === 'category') {
                         node = new NodeCategoryModel('Category ', 'peru');
+                    } else if (data.type === 'common') {
+                        node = new NodeCommonModel('Common ', 'peru');
                     } else if (data.type === 'collective') {
                         node = new NodeCollectiveModel('Collective ', 'peru');
                     } else if (data.type === 'kind') {

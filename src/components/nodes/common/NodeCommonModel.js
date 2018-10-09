@@ -3,16 +3,21 @@ import {NodeCommonPortModel} from "./NodeCommonPortModel";
 import {AttributeObject} from "../common/AttributeObject";
 
 export class NodeCommonModel extends NodeModel {
+    stereotype: string;
+    attributes: [];
+
     constructor(name: string = "New Common", color: string = "white") {
         super("common");
         this.name = name;
         this.color = color;
         this.attributes = [];
+        this.stereotype = "common";
         this.addPort(new NodeCommonPortModel("left"));
         this.addPort(new NodeCommonPortModel("right"));
         this.addPort(new NodeCommonPortModel("top"));
         this.addPort(new NodeCommonPortModel("bottom"));
     }
+
     changeName(str: string){
         this.name = str;
     }
@@ -39,6 +44,7 @@ export class NodeCommonModel extends NodeModel {
         super.deSerialize(object, engine);
         this.name = object.name;
         this.color = object.color;
+        this.stereotype = object.stereotype;
         let atts = [];
         _.forEach(object.attributes, (attribute: any) => {
             atts.push(attribute);
@@ -50,6 +56,7 @@ export class NodeCommonModel extends NodeModel {
         return _.merge(super.serialize(), {
             name: this.name,
             color: this.color,
+            stereotype: this. stereotype,
             attributes: _.map(this.attributes, attribute => {
                 return {
                     first: attribute.first,
