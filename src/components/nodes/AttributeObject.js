@@ -20,7 +20,7 @@ export class AttributeObject {
     removeSecond(remove: string){
         this.second.splice(this.second.indexOf(remove),1);
     }
-    getSecond(index: number){
+    getSecondByIndex(index: number){
         return this.second[index];
     }
 }

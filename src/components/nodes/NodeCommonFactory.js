@@ -2,7 +2,7 @@ import * as SRD from "storm-react-diagrams";
 import * as React from "react";
 import {NodeCommonModel} from "./NodeCommonModel";
 import {NodeCommonWidget} from "./NodeCommonWidget";
-import {CustomDiagramModel} from "../../../diagram/CustomDiagramModel";
+import {CustomDiagramModel} from "../../diagram/CustomDiagramModel";
 
 export class NodeCommonFactory extends SRD.AbstractNodeFactory {
     model: CustomDiagramModel;

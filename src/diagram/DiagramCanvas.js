@@ -1,20 +1,12 @@
 import React from 'react';
-//import Lodash from 'lodash';
 import {
     DiagramWidget,
     DiagramEngine,
-    DefaultNodeFactory,
-    DefaultLinkFactory,
-    DiagramModel,
-    DefaultNodeModel,
-    DefaultPortModel,
-    LinkModel,
     DefaultLabelFactory,
-    DefaultPortFactory, DefaultLabelModel
+    DefaultLabelModel
 } from 'storm-react-diagrams';
-import {CommonPortFactory} from "../components/nodes/common/CommonPortFactory";
-import {CommonLinkFactory, CommonLinkModel, CommonPortModel} from "../components/links/CommonLink";
-import Lodash from "lodash";
+import {CommonPortFactory} from "../components/nodes/CommonPortFactory";
+import {CommonLinkFactory} from "../components/links/CommonLink";
 import {CharacterizationLinkFactory} from "../components/links/CharacterizationLink";
 import {ComponentLinkFactory} from "../components/links/ComponentLink";
 import {DerivationLinkFactory} from "../components/links/DerivationLink";
@@ -24,18 +16,17 @@ import {MediationLinkFactory} from "../components/links/MediationLink";
 import {MemberLinkFactory} from "../components/links/MemberLink";
 import {SubCollectionLinkFactory} from "../components/links/SubCollectionLink";
 import {SubQuantityLinkFactory} from "../components/links/SubQuantityLink";
-import {MenuPanel} from "../panel/MenuPanel";
 import {CustomDiagramModel} from "./CustomDiagramModel.js";
-import {NodeCommonModel} from "../components/nodes/common/NodeCommonModel";
-import {NodeCommonFactory} from "../components/nodes/common/NodeCommonFactory";
-import {NodeCommonPortFactory} from "../components/nodes/common/NodeCommonPortFactory";
+import {NodeCommonModel} from "../components/nodes/NodeCommonModel";
+import {NodeCommonFactory} from "../components/nodes/NodeCommonFactory";
+import {NodeCommonPortFactory} from "../components/nodes/NodeCommonPortFactory";
 
 
 export class DiagramCanvas extends React.Component {
     constructor(props){
         super(props);
         this.state = {
-            selectedlink: 'common',
+            selectedlink: 'mediation',
             firstcard: '1',
             secondcard: '1',
             language: "cs"
@@ -47,28 +38,10 @@ export class DiagramCanvas extends React.Component {
     }
 
     registerFactories(){
-        this.engine.registerNodeFactory(new DefaultNodeFactory());
-
         this.engine.registerNodeFactory(new NodeCommonFactory(this.engine.getDiagramModel()));
-
-        this.engine.registerLinkFactory(new DefaultLinkFactory());
-
         this.engine.registerLinkFactory(new CommonLinkFactory());
-        this.engine.registerLinkFactory(new CharacterizationLinkFactory());
-        this.engine.registerLinkFactory(new ComponentLinkFactory());
-        this.engine.registerLinkFactory(new DerivationLinkFactory());
-        this.engine.registerLinkFactory(new FormalLinkFactory());
-        this.engine.registerLinkFactory(new MaterialLinkFactory());
-        this.engine.registerLinkFactory(new MediationLinkFactory());
-        this.engine.registerLinkFactory(new MemberLinkFactory());
-        this.engine.registerLinkFactory(new SubCollectionLinkFactory());
-        this.engine.registerLinkFactory(new SubQuantityLinkFactory());
-
         this.engine.registerLabelFactory(new DefaultLabelFactory());
-
-        this.engine.registerPortFactory(new DefaultPortFactory());
         this.engine.registerPortFactory(new CommonPortFactory());
-
         this.engine.registerPortFactory(new NodeCommonPortFactory());
 
     }
@@ -126,7 +99,6 @@ export class DiagramCanvas extends React.Component {
         return (
             <div>
                 <select value={this.state.selectedlink} onChange={this.handleChange}>
-                    <option value="common">Common</option>
                     <option value="characterization">Characterization</option>
                     <option value="component">Component</option>
                     <option value="derivation">Derivation</option>
