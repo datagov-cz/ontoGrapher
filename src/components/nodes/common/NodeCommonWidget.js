@@ -1,9 +1,11 @@
 import * as React from "react";
 import {NodeCommonModel} from "./NodeCommonModel";
 import { PortWidget } from "storm-react-diagrams";
+import {CustomDiagramModel} from "../../../diagram/CustomDiagramModel";
 
 export interface NodeCommonWidgetProps {
     node: NodeCommonModel;
+    diagramModel: CustomDiagramModel;
     size?: number;
 }
 
@@ -19,29 +21,51 @@ export class NodeCommonWidget extends React.Component<NodeCommonWidgetProps, Nod
         this.props.node.changeName(str);
     }
 
+    getName(str: string){
+         for (let name of this.props.node.names){
+            if (name.first == str){
+                return name.second;
+            }
+        }
+         return "undefined";
+    }
+
+    getAttributes(str: string){
+        for (let attr of this.props.node.attributes){
+            if (attr.first == str){
+                return attr.second;
+            }
+        }
+        return [];
+    }
+
     render(){
+        let name = this.getName(this.props.diagramModel.language);
         let attrkey = 0;
         let height = 48;
-        height += this.props.node.attributes.length * 15;
-        const attrs = this.props.node.attributes.map((attr) =>
-        <tspan key={attrkey++} x="5px" dy="15px">{attr.getFirst() + ": " + attr.getSecond()}</tspan>
-        )
+        let attrs = this.getAttributes(this.props.diagramModel.language);
+        height += attrs.length * 15;
+        let select = "black";
+        if (this.props.node.selected){
+            select = "blue";
+        }
+        const attrsmap = attrs.map((attr) =>
+            <tspan key={attrkey++} x="5px" dy="15px">{attr.first + ": " + attr.second}</tspan>
+        );
         return (
-            <div className={"common-node"} width={this.props.size} height={height} style={{
-
-            }}>
+            <div className={this.props.node.type} width={this.props.size} height={height} onDoubleClick={event => {let str = prompt("Enter name:"); this.changeName(str);this.forceUpdate();}}>
                 <svg
-                width={this.props.size}
-                height={height}>
+                    width={this.props.size}
+                    height={height}>
 
                     <g>
-                        <rect fill="#ffffff" stroke="#000000" strokeWidth="3" width={this.props.size}
+                        <rect fill="#ffffff" stroke={select} strokeWidth="3" width={this.props.size}
                               height={height}></rect>
                         <text width={this.props.size} textAnchor="middle" dominantBaseline="hanging" x="50%" y="5px" fill="#000000">{"«"+this.props.node.stereotype+"»"}</text>
                         <line x1="0" x2={this.props.size} y1="20px" y2="20px" strokeWidth="1" stroke="#000000"/>
-                        <text width={this.props.size} textAnchor="middle" dominantBaseline="hanging" x="50%" y="25px" fill="#000000">{this.props.node.name}</text>
+                        <text width={this.props.size} textAnchor="middle" dominantBaseline="hanging" x="50%" y="25px" fill="#000000">{name}</text>
                         <text width={this.props.size} textAnchor="start" dominantBaseline="hanging" x="5px" y="30px" fill="#000000">
-                            {attrs}
+                            {attrsmap}
                         </text>
                     </g>
                 </svg>

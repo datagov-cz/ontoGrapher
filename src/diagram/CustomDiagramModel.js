@@ -11,6 +11,7 @@ import {
 export class CustomDiagramModel extends DiagramModel {
 
     selectedLink: string;
+    language: string;
 
     //models
     links: { [s: string]: LinkModel };
@@ -36,6 +37,7 @@ export class CustomDiagramModel extends DiagramModel {
         this.gridSize = 0;
 
         this.selectedLink = "common";
+        this.language = "cs";
     }
 
 }

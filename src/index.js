@@ -4,6 +4,7 @@ import {DiagramCanvas} from "./diagram/DiagramCanvas";
 import {StereotypePanel} from "./panel/StereotypePanel";
 import {MenuPanel} from "./panel/MenuPanel";
 import {StereotypePanelItem} from "./panel/StereotypePanelItem";
+import {StereotypePool} from "./diagram/StereotypePool";
 
 require("./sass/main.scss");
 
@@ -12,23 +13,14 @@ class App extends React.Component {
 		super(props);
 	}
 	render() {
+	    const stereotypeList = StereotypePool.map((stereotype) =>
+			<StereotypePanelItem key={stereotype.toUpperCase()} model={{type: stereotype.toLowerCase()}} name={stereotype} color="white"/>
+		);
 		return (
             <div className="content">
 
 				<StereotypePanel>
-                    <StereotypePanelItem model={{type: "category"}} name="Category" color="white"/>
-                    <StereotypePanelItem model={{type: "common"}} name="Common" color="white"/>
-					<StereotypePanelItem model={{type: "collective"}} name="Collective" color="white"/>
-                    <StereotypePanelItem model={{type: "kind"}} name="Kind" color="white"/>
-                    <StereotypePanelItem model={{type: "mixin"}} name="Mixin" color="white"/>
-                    <StereotypePanelItem model={{type: "mode"}} name="Mode" color="white"/>
-                    <StereotypePanelItem model={{type: "phase"}} name="Phase" color="white"/>
-                    <StereotypePanelItem model={{type: "quality"}} name="Quality" color="white"/>
-                    <StereotypePanelItem model={{type: "quantity"}} name="Quantity" color="white"/>
-                    <StereotypePanelItem model={{type: "relator"}} name="Relator" color="white"/>
-                    <StereotypePanelItem model={{type: "role"}} name="Role" color="white"/>
-                    <StereotypePanelItem model={{type: "roleMixin"}} name="RoleMixin" color="white"/>
-                    <StereotypePanelItem model={{type: "subkind"}} name="SubKind" color="white"/>
+					{stereotypeList}
 				</StereotypePanel>
 				<DiagramCanvas/>
             </div>

@@ -1,17 +1,25 @@
 import { NodeModel, DiagramEngine } from "storm-react-diagrams";
 import {NodeCommonPortModel} from "./NodeCommonPortModel";
 import {AttributeObject} from "../common/AttributeObject";
-
+import {NameObject} from "./NameObject";
 export class NodeCommonModel extends NodeModel {
     stereotype: string;
     attributes: [];
+    names: [];
 
-    constructor(name: string = "New Common", color: string = "white") {
+    constructor(stereotype: string) {
         super("common");
-        this.name = name;
-        this.color = color;
+        this.names = [];
+
+        this.names.push(new NameObject("cs","Běžný"));
+        this.names.push(new NameObject("en","Common"));
+
         this.attributes = [];
-        this.stereotype = "common";
+
+        this.addAttribute(new AttributeObject("cs"));
+        this.attributes[0].second.push(new NameObject("atribut","string"));
+
+        this.stereotype = stereotype;
         this.addPort(new NodeCommonPortModel("left"));
         this.addPort(new NodeCommonPortModel("right"));
         this.addPort(new NodeCommonPortModel("top"));

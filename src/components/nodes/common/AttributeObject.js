@@ -1,12 +1,10 @@
-import {DiagramEngine} from "storm-react-diagrams";
-
 export class AttributeObject {
     first: string;
-    second: string;
+    second: [];
 
-    constructor(first: string, second: string){
+    constructor(first: string){
         this.first = first;
-        this.second = second;
+        this.second = [];
     }
 
     getFirst(){
@@ -15,5 +13,14 @@ export class AttributeObject {
 
     getSecond(){
         return this.second;
+    }
+    addSecond(add: string){
+        this.second.push(add);
+    }
+    removeSecond(remove: string){
+        this.second.splice(this.second.indexOf(remove),1);
+    }
+    getSecond(index: number){
+        return this.second[index];
     }
 }
