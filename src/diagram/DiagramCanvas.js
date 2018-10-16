@@ -20,17 +20,27 @@ import {CustomDiagramModel} from "./CustomDiagramModel.js";
 import {NodeCommonModel} from "../components/nodes/NodeCommonModel";
 import {NodeCommonFactory} from "../components/nodes/NodeCommonFactory";
 import {NodeCommonPortFactory} from "../components/nodes/NodeCommonPortFactory";
+import {LinkPool} from "./LinkPool";
+import {LanguagePool} from "./LanguagePool";
 
 
 export class DiagramCanvas extends React.Component {
     constructor(props){
         super(props);
         this.state = {
-            selectedlink: 'mediation',
+            selectedlink: 'Mediation',
             firstcard: '1',
             secondcard: '1',
-            language: "cs"
+            language: LanguagePool[0]
         };
+        this.linkPool = [];
+        for (let link in LinkPool){
+            this.linkPool.push(<option key={link} value={link}>{link}</option>);
+        }
+        this.languagePool = [];
+        for (let language in LanguagePool){
+            this.languagePool.push(<option value={language}>{LanguagePool[language]}</option>)
+        }
         this.handleChange = this.handleChange.bind(this);
         this.handleChange1 = this.handleChange1.bind(this);
         this.handleChange2 = this.handleChange2.bind(this);
@@ -59,13 +69,13 @@ export class DiagramCanvas extends React.Component {
                         fcl.setLabel(this.state.firstcard);
                         e.link.addLabel(fcl);
                     }
-                    if (e.link.linktype == "mediation"){
+                    if (e.link.linktype == "Mediation"){
                         e.link.addLabel("«mediation»");
-                    } else if (e.link.linktype == "characterization"){
+                    } else if (e.link.linktype == "Characterization"){
                         e.link.addLabel("«characterization»");
-                    } else if (e.link.linktype == "material"){
+                    } else if (e.link.linktype == "Material"){
                         e.link.addLabel("«material»");
-                    } else if (e.link.linktype == "formal"){
+                    } else if (e.link.linktype == "Formal"){
                         e.link.addLabel("«formal»");
                     }
                     if (this.state.secondcard != "None"){
@@ -99,15 +109,7 @@ export class DiagramCanvas extends React.Component {
         return (
             <div>
                 <select value={this.state.selectedlink} onChange={this.handleChange}>
-                    <option value="characterization">Characterization</option>
-                    <option value="component">Component</option>
-                    <option value="derivation">Derivation</option>
-                    <option value="formal">Formal</option>
-                    <option value="material">Material</option>
-                    <option value="mediation">Mediation</option>
-                    <option value="member">Member</option>
-                    <option value="subcollection">SubCollection</option>
-                    <option value="subquantity">SubQuantity</option>
+                    {this.linkPool}
                 </select>
                 <select value={this.state.firstcard} onChange={this.handleChange1}>
                     <option value="1">1</option>
@@ -124,8 +126,7 @@ export class DiagramCanvas extends React.Component {
                     <option value="None">None</option>
                 </select>
                 <select value={this.state.language} onChange={this.handleChange3}>
-                    <option value="cs">Čeština</option>
-                    <option value="en">Angličtina</option>
+                    {this.languagePool}
                 </select>
                 <button onClick={event => {
                     console.log(JSON.stringify(this.engine.diagramModel.serializeDiagram()));

@@ -14,6 +14,8 @@ import {FormalLinkWidget} from "./FormalLink";
 import {DerivationLinkWidget} from "./DerivationLink";
 import {ComponentLinkWidget} from "./ComponentLink";
 import {CharacterizationLinkWidget} from "./CharacterizationLink";
+import {CommonLinkWidget} from "./CommonLinkWidget";
+import {LinkPool} from "../../diagram/LinkPool";
 
 
 
@@ -98,62 +100,14 @@ export class CommonLinkFactory extends AbstractLinkFactory<CommonLinkModel>{
     }
 
     generateReactWidget(diagramEngine: DiagramEngine, link: CommonLinkModel): JSX.Element {
-        if (link.linktype == "common"){
-            return React.createElement(CommonLinkWidget, {
-                link: link,
-                diagramEngine: diagramEngine
-            });
-        } else if (link.linktype == "subquantity"){
-            return React.createElement(SubQuantityLinkWidget, {
-                link: link,
-                diagramEngine: diagramEngine
-            });
-        } else if (link.linktype == "characterization"){
-            return React.createElement(CharacterizationLinkWidget, {
-                link: link,
-                diagramEngine: diagramEngine
-            });
-        }else if (link.linktype == "component"){
-            return React.createElement(ComponentLinkWidget, {
-                link: link,
-                diagramEngine: diagramEngine
-            });
-        }else if (link.linktype == "derivation"){
-            return React.createElement(DerivationLinkWidget, {
-                link: link,
-                diagramEngine: diagramEngine
-            });
-        }else if (link.linktype == "formal"){
-            return React.createElement(FormalLinkWidget, {
-                link: link,
-                diagramEngine: diagramEngine
-            });
-        }else if (link.linktype == "material"){
-            return React.createElement(MaterialLinkWidget, {
-                link: link,
-                diagramEngine: diagramEngine
-            });
-        }else if (link.linktype == "mediation"){
-            return React.createElement(MediationLinkWidget, {
-                link: link,
-                diagramEngine: diagramEngine
-            });
-        }else if (link.linktype == "member"){
-            return React.createElement(MemberLinkWidget, {
-                link: link,
-                diagramEngine: diagramEngine
-            });
-        }else if (link.linktype == "subcollection"){
-            return React.createElement(SubCollectionLinkWidget, {
-                link: link,
-                diagramEngine: diagramEngine
-            });
-        }
-
+        return React.createElement(LinkPool[link.linktype],{
+            link: link,
+            diagramEngine: diagramEngine
+        });
     }
 
     generateLinkSegment(model: CommonLinkModel, widget: CommonLinkWidget, selected: boolean, path:string){
-        if (model.linktype == "derivation"){
+        if (model.linktype === "Derivation"){
             return (
 
                 <path className={selected ? "link-derivation--path-selected" : "link-derivation"}
