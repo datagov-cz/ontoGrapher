@@ -3,6 +3,9 @@ import {NodeCommonModel} from "./NodeCommonModel";
 import { PortWidget } from "storm-react-diagrams";
 import {CustomDiagramModel} from "../../diagram/CustomDiagramModel";
 import Modal from 'react-modal';
+import {Tab, Tabs, TabList, TabPanel} from 'react-tabs';
+import {LanguagePool} from "../../diagram/LanguagePool";
+import {ModalDialogue, ModalTabList} from "../../diagram/ModalLayout";
 
 export interface NodeCommonWidgetProps {
     node: NodeCommonModel;
@@ -15,11 +18,7 @@ export interface NodeCommonWidgetState {}
 export class NodeCommonWidget extends React.Component<NodeCommonWidgetProps, NodeCommonWidgetState>{
     constructor(props: NodeCommonWidgetProps){
         super(props);
-        this.state = {
-            modalIsOpen: false
-        };
-        this.openModal = this.openModal.bind(this);
-        this.closeModal = this.closeModal.bind(this);
+        this.createModal = this.createModal.bind(this);
     }
 
     changeName(str: string){
@@ -44,15 +43,11 @@ export class NodeCommonWidget extends React.Component<NodeCommonWidgetProps, Nod
         return [];
     }
 
-    openModal(){
-        this.setState({modalIsOpen: true});
-    }
-
-    closeModal(){
-        this.setState({modalIsOpen: false});
-    }
-    processModal(event){
-        event.preventDefault();
+    createModal(){
+        console.log("happen");
+        React.createElement(ModalDialogue, {
+            node: this.props.node
+        });
     }
 
     render(){
@@ -69,21 +64,13 @@ export class NodeCommonWidget extends React.Component<NodeCommonWidgetProps, Nod
             <tspan key={attrkey++} x="5px" dy="15px">{attr.first + ": " + attr.second}</tspan>
         );
         return (
-            <div className={this.props.node.type} width={this.props.size} height={height} onDoubleClick={this.openModal}>
-                <Modal isOpen={this.state.modalIsOpen} onRequestClose={this.closeModal} contentLabel="Stereotype details">
-                    <h2>Stereotype details</h2>
-                    <form onSubmit={this.processModal}>
-                        <input type="submit" value="Apply"/>
-                    </form>
-                    <button onClick={this.closeModal}>Close</button>
-                </Modal>
+            <div className={this.props.node.type} width={this.props.size} height={height} onDoubleClick={this.createModal}>
                 <svg
                     width={this.props.size}
                     height={height}>
 
                     <g>
-                        <rect fill="#ffffff" stroke={select} strokeWidth="3" width={this.props.size}
-    height={height}/>
+                        <rect fill="#ffffff" stroke={select} strokeWidth="3" width={this.props.size} height={height}/>
                         <text width={this.props.size} textAnchor="middle" dominantBaseline="hanging" x="50%" y="5px" fill="#000000">{"«"+this.props.node.stereotype+"»"}</text>
                         <line x1="0" x2={this.props.size} y1="20px" y2="20px" strokeWidth="1" stroke="#000000"/>
                         <text width={this.props.size} textAnchor="middle" dominantBaseline="hanging" x="50%" y="25px" fill="#000000">{name}</text>

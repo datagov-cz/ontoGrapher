@@ -22,6 +22,7 @@ import {NodeCommonFactory} from "../components/nodes/NodeCommonFactory";
 import {NodeCommonPortFactory} from "../components/nodes/NodeCommonPortFactory";
 import {LinkPool} from "./LinkPool";
 import {LanguagePool} from "./LanguagePool";
+import {ModalDialogue} from "./ModalLayout";
 
 
 export class DiagramCanvas extends React.Component {
@@ -148,7 +149,7 @@ export class DiagramCanvas extends React.Component {
                 <div
                     onDrop={event => {
                         var data = JSON.parse(event.dataTransfer.getData('storm-diagram-node'));
-                        var node = new NodeCommonModel(data.type);
+                        var node = new NodeCommonModel(data.type,this.engine.getDiagramModel());
                         var points = this.engine.getRelativeMousePoint(event);
                         node.x = points.x;
                         node.y = points.y;
@@ -158,6 +159,7 @@ export class DiagramCanvas extends React.Component {
                     onDragOver={event => {
                         event.preventDefault();
                     }}>
+                    <ModalDialogue/>
                     <DiagramWidget diagramEngine={this.engine} allowLooseLinks={false} smartRouting={false}/>
                 </div>
             </div>

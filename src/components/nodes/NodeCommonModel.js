@@ -2,13 +2,16 @@ import { NodeModel, DiagramEngine } from "storm-react-diagrams";
 import {NodeCommonPortModel} from "./NodeCommonPortModel";
 import {AttributeObject} from "./AttributeObject";
 import {NameObject} from "./NameObject";
+import {CustomDiagramModel} from "../../diagram/CustomDiagramModel";
 export class NodeCommonModel extends NodeModel {
     stereotype: string;
     attributes: [];
     names: [];
+    model: CustomDiagramModel
 
-    constructor(stereotype: string) {
+    constructor(stereotype: string, model: CustomDiagramModel) {
         super("common");
+        this.model = model;
         this.names = [];
 
         this.names.push(new NameObject("cs","Běžný"));
@@ -28,6 +31,15 @@ export class NodeCommonModel extends NodeModel {
 
     changeName(str: string){
         this.name = str;
+    }
+
+    getName(str: string){
+        for (let name of this.names){
+            if (name.first === str){
+                return name.second;
+            }
+        }
+        return "undefined";
     }
 
     getAttributes(){
