@@ -2,6 +2,7 @@ import * as React from "react";
 import {NodeCommonModel} from "./NodeCommonModel";
 import { PortWidget } from "storm-react-diagrams";
 import {CustomDiagramModel} from "../../diagram/CustomDiagramModel";
+import Modal from 'react-modal';
 
 export interface NodeCommonWidgetProps {
     node: NodeCommonModel;
@@ -14,7 +15,11 @@ export interface NodeCommonWidgetState {}
 export class NodeCommonWidget extends React.Component<NodeCommonWidgetProps, NodeCommonWidgetState>{
     constructor(props: NodeCommonWidgetProps){
         super(props);
-        this.state = {};
+        this.state = {
+            modalIsOpen: false
+        };
+        this.openModal = this.openModal.bind(this);
+        this.closeModal = this.closeModal.bind(this);
     }
 
     changeName(str: string){
@@ -23,7 +28,7 @@ export class NodeCommonWidget extends React.Component<NodeCommonWidgetProps, Nod
 
     getName(str: string){
          for (let name of this.props.node.names){
-            if (name.first == str){
+            if (name.first === str){
                 return name.second;
             }
         }
@@ -32,17 +37,28 @@ export class NodeCommonWidget extends React.Component<NodeCommonWidgetProps, Nod
 
     getAttributes(str: string){
         for (let attr of this.props.node.attributes){
-            if (attr.first == str){
+            if (attr.first === str){
                 return attr.second;
             }
         }
         return [];
     }
 
+    openModal(){
+        this.setState({modalIsOpen: true});
+    }
+
+    closeModal(){
+        this.setState({modalIsOpen: false});
+    }
+    processModal(event){
+        event.preventDefault();
+    }
+
     render(){
-        let name = this.getName(this.props.diagramModel.language);
         let attrkey = 0;
         let height = 48;
+        let name = this.getName(this.props.diagramModel.language);
         let attrs = this.getAttributes(this.props.diagramModel.language);
         height += attrs.length * 15;
         let select = "black";
@@ -53,14 +69,21 @@ export class NodeCommonWidget extends React.Component<NodeCommonWidgetProps, Nod
             <tspan key={attrkey++} x="5px" dy="15px">{attr.first + ": " + attr.second}</tspan>
         );
         return (
-            <div className={this.props.node.type} width={this.props.size} height={height} onDoubleClick={event => {let str = prompt("Enter name:"); this.changeName(str);this.forceUpdate();}}>
+            <div className={this.props.node.type} width={this.props.size} height={height} onDoubleClick={this.openModal}>
+                <Modal isOpen={this.state.modalIsOpen} onRequestClose={this.closeModal} contentLabel="Stereotype details">
+                    <h2>Stereotype details</h2>
+                    <form onSubmit={this.processModal}>
+                        <input type="submit" value="Apply"/>
+                    </form>
+                    <button onClick={this.closeModal}>Close</button>
+                </Modal>
                 <svg
                     width={this.props.size}
                     height={height}>
 
                     <g>
                         <rect fill="#ffffff" stroke={select} strokeWidth="3" width={this.props.size}
-                              height={height}></rect>
+    height={height}/>
                         <text width={this.props.size} textAnchor="middle" dominantBaseline="hanging" x="50%" y="5px" fill="#000000">{"«"+this.props.node.stereotype+"»"}</text>
                         <line x1="0" x2={this.props.size} y1="20px" y2="20px" strokeWidth="1" stroke="#000000"/>
                         <text width={this.props.size} textAnchor="middle" dominantBaseline="hanging" x="50%" y="25px" fill="#000000">{name}</text>

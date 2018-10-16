@@ -6,8 +6,6 @@ import {
     DiagramModel, LinkModel, NodeModel,
     Toolkit
 } from "storm-react-diagrams";
-import {LanguagePool} from "./LanguagePool";
-
 
 export class CustomDiagramModel extends DiagramModel {
 
@@ -36,8 +34,8 @@ export class CustomDiagramModel extends DiagramModel {
         this.rendered = false;
         this.gridSize = 0;
 
-        this.selectedLink = "common";
-        this.language = LanguagePool[0];
+        this.selectedLink = "mediation";
+        this.language = "cs";
     }
 
 }

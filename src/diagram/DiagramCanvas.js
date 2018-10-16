@@ -25,21 +25,21 @@ import {LanguagePool} from "./LanguagePool";
 
 
 export class DiagramCanvas extends React.Component {
-    constructor(props){
+    constructor(props) {
         super(props);
         this.state = {
             selectedlink: 'Mediation',
             firstcard: '1',
             secondcard: '1',
-            language: LanguagePool[0]
+            language: "cs"
         };
         this.linkPool = [];
-        for (let link in LinkPool){
+        for (let link in LinkPool) {
             this.linkPool.push(<option key={link} value={link}>{link}</option>);
         }
         this.languagePool = [];
-        for (let language in LanguagePool){
-            this.languagePool.push(<option value={language}>{LanguagePool[language]}</option>)
+        for (let language in LanguagePool) {
+            this.languagePool.push(<option key={language} value={language}>{LanguagePool[language]}</option>)
         }
         this.handleChange = this.handleChange.bind(this);
         this.handleChange1 = this.handleChange1.bind(this);
@@ -47,7 +47,7 @@ export class DiagramCanvas extends React.Component {
         this.handleChange3 = this.handleChange3.bind(this);
     }
 
-    registerFactories(){
+    registerFactories() {
         this.engine.registerNodeFactory(new NodeCommonFactory(this.engine.getDiagramModel()));
         this.engine.registerLinkFactory(new CommonLinkFactory());
         this.engine.registerLabelFactory(new DefaultLabelFactory());
@@ -62,23 +62,23 @@ export class DiagramCanvas extends React.Component {
         this.registerFactories();
         this.engine.getDiagramModel().addListener({
             linksUpdated: e => {
-                if (!e.link.established){
+                if (!e.link.established) {
                     e.link.linktype = this.state.selectedlink;
-                    if(this.state.firstcard != "None"){
+                    if (this.state.firstcard != "None") {
                         let fcl = new DefaultLabelModel();
                         fcl.setLabel(this.state.firstcard);
                         e.link.addLabel(fcl);
                     }
-                    if (e.link.linktype == "Mediation"){
+                    if (e.link.linktype == "Mediation") {
                         e.link.addLabel("«mediation»");
-                    } else if (e.link.linktype == "Characterization"){
+                    } else if (e.link.linktype == "Characterization") {
                         e.link.addLabel("«characterization»");
-                    } else if (e.link.linktype == "Material"){
+                    } else if (e.link.linktype == "Material") {
                         e.link.addLabel("«material»");
-                    } else if (e.link.linktype == "Formal"){
+                    } else if (e.link.linktype == "Formal") {
                         e.link.addLabel("«formal»");
                     }
-                    if (this.state.secondcard != "None"){
+                    if (this.state.secondcard != "None") {
                         let scl = new DefaultLabelModel();
                         scl.setLabel(this.state.secondcard);
                         e.link.addLabel(scl);
@@ -86,25 +86,28 @@ export class DiagramCanvas extends React.Component {
                     e.link.established = true;
                 }
             }
-            });
+        });
 
     }
 
-    handleChange(event){
+    handleChange(event) {
         this.setState({selectedlink: event.target.value});
         this.engine.getDiagramModel().selectedLink = event.target.value;
     }
 
-    handleChange1(event){
+    handleChange1(event) {
         this.setState({firstcard: event.target.value});
     }
-    handleChange2(event){
+
+    handleChange2(event) {
         this.setState({secondcard: event.target.value});
     }
-    handleChange3(event){
+
+    handleChange3(event) {
         this.setState({language: event.target.value});
         this.engine.getDiagramModel().language = event.target.value;
     }
+
     render() {
         return (
             <div>
@@ -130,7 +133,8 @@ export class DiagramCanvas extends React.Component {
                 </select>
                 <button onClick={event => {
                     console.log(JSON.stringify(this.engine.diagramModel.serializeDiagram()));
-                }}>Serialize</button>
+                }}>Serialize
+                </button>
                 <button onClick={event => {
                     let str = prompt("Enter JSON");
                     this.registerFactories();
@@ -139,22 +143,23 @@ export class DiagramCanvas extends React.Component {
                     this.engine.setDiagramModel(model);
                     alert("Loaded!");
                     this.forceUpdate();
-                }}>Deserialize</button>
-            <div
-                onDrop={event => {
-                    var data = JSON.parse(event.dataTransfer.getData('storm-diagram-node'));
-                    var node = new NodeCommonModel(data.type);
-                    var points = this.engine.getRelativeMousePoint(event);
-                    node.x = points.x;
-                    node.y = points.y;
-                    this.engine.getDiagramModel().addNode(node);
-                    this.forceUpdate();
-                }}
-                onDragOver={event => {
-                    event.preventDefault();
-                }}>
-                <DiagramWidget diagramEngine={this.engine} allowLooseLinks={false} smartRouting={false}/>
-            </div>
+                }}>Deserialize
+                </button>
+                <div
+                    onDrop={event => {
+                        var data = JSON.parse(event.dataTransfer.getData('storm-diagram-node'));
+                        var node = new NodeCommonModel(data.type);
+                        var points = this.engine.getRelativeMousePoint(event);
+                        node.x = points.x;
+                        node.y = points.y;
+                        this.engine.getDiagramModel().addNode(node);
+                        this.forceUpdate();
+                    }}
+                    onDragOver={event => {
+                        event.preventDefault();
+                    }}>
+                    <DiagramWidget diagramEngine={this.engine} allowLooseLinks={false} smartRouting={false}/>
+                </div>
             </div>
 
         );
