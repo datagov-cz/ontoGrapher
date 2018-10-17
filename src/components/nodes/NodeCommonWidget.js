@@ -18,6 +18,7 @@ export interface NodeCommonWidgetState {}
 export class NodeCommonWidget extends React.Component<NodeCommonWidgetProps, NodeCommonWidgetState>{
     constructor(props: NodeCommonWidgetProps){
         super(props);
+        console.log(this.modal);
         this.createModal = this.createModal.bind(this);
     }
 
@@ -26,28 +27,22 @@ export class NodeCommonWidget extends React.Component<NodeCommonWidgetProps, Nod
     }
 
     getName(str: string){
+        return this.props.node.names[str];
+        /*
          for (let name of this.props.node.names){
             if (name.first === str){
                 return name.second;
             }
         }
-         return "undefined";
+         return "undefined";*/
     }
 
     getAttributes(str: string){
-        for (let attr of this.props.node.attributes){
-            if (attr.first === str){
-                return attr.second;
-            }
-        }
-        return [];
+        return this.props.node.attributes[str];
     }
 
     createModal(){
-        console.log("happen");
-        React.createElement(ModalDialogue, {
-            node: this.props.node
-        });
+        this.child.openModal();
     }
 
     render(){
@@ -65,6 +60,7 @@ export class NodeCommonWidget extends React.Component<NodeCommonWidgetProps, Nod
         );
         return (
             <div className={this.props.node.type} width={this.props.size} height={height} onDoubleClick={this.createModal}>
+                <ModalDialogue ref={instance => {this.child = instance;}} openFunc={this.createModal} node={this.props.node}/>
                 <svg
                     width={this.props.size}
                     height={height}>

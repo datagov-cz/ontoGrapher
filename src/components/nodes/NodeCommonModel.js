@@ -5,22 +5,25 @@ import {NameObject} from "./NameObject";
 import {CustomDiagramModel} from "../../diagram/CustomDiagramModel";
 export class NodeCommonModel extends NodeModel {
     stereotype: string;
-    attributes: [];
-    names: [];
+    attributes: {};
+    names: {};
     model: CustomDiagramModel
 
     constructor(stereotype: string, model: CustomDiagramModel) {
         super("common");
         this.model = model;
-        this.names = [];
-
+        this.names = {
+            cs: "Běžný",
+            en: "Common"
+        };
+        /*
         this.names.push(new NameObject("cs","Běžný"));
         this.names.push(new NameObject("en","Common"));
-
-        this.attributes = [];
-
-        this.addAttribute(new AttributeObject("cs"));
-        this.attributes[0].second.push(new NameObject("atribut","string"));
+         */
+        this.attributes = {
+          cs: [],
+          en: []
+        };
 
         this.stereotype = stereotype;
         this.addPort(new NodeCommonPortModel("left"));
@@ -33,25 +36,29 @@ export class NodeCommonModel extends NodeModel {
         this.name = str;
     }
 
-    getName(str: string){
-        for (let name of this.names){
-            if (name.first === str){
-                return name.second;
-            }
-        }
-        return "undefined";
+    setName(str: string, language: string){
+        this.names[language] = str;
+        console.log(this.names);
     }
 
+    getName(str: string){
+        return this.names[str];
+    }
+    getAttributesByLanguage(str: string){
+        return this.attributes[str];
+    }
     getAttributes(){
         return this.attributes;
 }
     getAttribute(id: number){
         return this.attributes[id];
     }
-    addAttribute(attribute: AttributeObject){
-        this.attributes.push(attribute);
+    addAttribute(language: string, attr: AttributeObject){
+        this.attributes[language].push(attr);
     }
-
+    removeAttributeByIndex(index: number, language: string){
+        this.attributes[language].splice(index,1);
+    }
     removeAttribute(attribute: AttributeObject){
         const index = this.attributes.find(attribute);
         this.attributes.splice(index,1);

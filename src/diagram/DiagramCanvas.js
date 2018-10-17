@@ -159,7 +159,6 @@ export class DiagramCanvas extends React.Component {
                     onDragOver={event => {
                         event.preventDefault();
                     }}>
-                    <ModalDialogue/>
                     <DiagramWidget diagramEngine={this.engine} allowLooseLinks={false} smartRouting={false}/>
                 </div>
             </div>

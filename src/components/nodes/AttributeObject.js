@@ -1,10 +1,10 @@
 export class AttributeObject {
     first: string;
-    second: [];
+    second: string;
 
-    constructor(first: string){
+    constructor(first: string, second: string){
         this.first = first;
-        this.second = [];
+        this.second = second;
     }
 
     getFirst(){
@@ -13,14 +13,5 @@ export class AttributeObject {
 
     getSecond(){
         return this.second;
-    }
-    addSecond(add: string){
-        this.second.push(add);
-    }
-    removeSecond(remove: string){
-        this.second.splice(this.second.indexOf(remove),1);
-    }
-    getSecondByIndex(index: number){
-        return this.second[index];
     }
 }
