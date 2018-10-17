@@ -1,5 +1,5 @@
 import React from 'react';
-import {CommonLinkWidget} from "./CommonLinkWidget";
+import {CommonLinkWidget} from "../commonlink/CommonLinkWidget";
 
 
 

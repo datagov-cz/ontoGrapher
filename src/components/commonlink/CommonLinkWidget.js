@@ -2,6 +2,12 @@ import {DefaultLinkWidget, Toolkit} from "storm-react-diagrams";
 import React from "react";
 
 export class CommonLinkWidget extends DefaultLinkWidget {
+    label: boolean;
+
+    constructor(props){
+        super(props);
+        this.label = false;
+    }
 
     getAngle(px1, py1, px2, py2) {
         const x = px2-px1;

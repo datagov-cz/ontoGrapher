@@ -74,13 +74,14 @@ export class ModalDialogue extends React.Component {
         this.setState({newAttrName: event.target.value});
     }
 
-    handleChange3(event){
-        this.setState({language: event.target.value});
+    handleChange3(event) {
+        let language = event.target.value;
         this.setState({
-            attrs: this.props.node.getAttributesByLanguage(this.state.language),
-            name: this.props.node.getName(this.state.language)
+            language: language,
+            attrs: this.props.node.getAttributesByLanguage(language),
+            name: this.props.node.getName(language)
         });
-        this.forceUpdate();
+
     }
 
     handleChange4(event){

@@ -3,26 +3,15 @@ import {
     DiagramWidget,
     DiagramEngine,
     DefaultLabelFactory,
-    DefaultLabelModel
 } from 'storm-react-diagrams';
 import {CommonPortFactory} from "../components/nodes/CommonPortFactory";
-import {CommonLinkFactory} from "../components/links/CommonLink";
-import {CharacterizationLinkFactory} from "../components/links/CharacterizationLink";
-import {ComponentLinkFactory} from "../components/links/ComponentLink";
-import {DerivationLinkFactory} from "../components/links/DerivationLink";
-import {FormalLinkFactory, FormalLinkModel} from "../components/links/FormalLink";
-import {MaterialLinkFactory} from "../components/links/MaterialLink";
-import {MediationLinkFactory} from "../components/links/MediationLink";
-import {MemberLinkFactory} from "../components/links/MemberLink";
-import {SubCollectionLinkFactory} from "../components/links/SubCollectionLink";
-import {SubQuantityLinkFactory} from "../components/links/SubQuantityLink";
 import {CustomDiagramModel} from "./CustomDiagramModel.js";
 import {NodeCommonModel} from "../components/nodes/NodeCommonModel";
 import {NodeCommonFactory} from "../components/nodes/NodeCommonFactory";
 import {NodeCommonPortFactory} from "../components/nodes/NodeCommonPortFactory";
 import {LinkPool} from "./LinkPool";
 import {LanguagePool} from "./LanguagePool";
-import {ModalDialogue} from "./ModalLayout";
+import {CommonLinkFactory} from "../components/commonlink/CommonLinkFactory";
 
 
 export class DiagramCanvas extends React.Component {
@@ -61,34 +50,6 @@ export class DiagramCanvas extends React.Component {
         this.engine = new DiagramEngine();
         this.engine.setDiagramModel(new CustomDiagramModel());
         this.registerFactories();
-        this.engine.getDiagramModel().addListener({
-            linksUpdated: e => {
-                if (!e.link.established) {
-                    e.link.linktype = this.state.selectedlink;
-                    if (this.state.firstcard != "None") {
-                        let fcl = new DefaultLabelModel();
-                        fcl.setLabel(this.state.firstcard);
-                        e.link.addLabel(fcl);
-                    }
-                    if (e.link.linktype == "Mediation") {
-                        e.link.addLabel("«mediation»");
-                    } else if (e.link.linktype == "Characterization") {
-                        e.link.addLabel("«characterization»");
-                    } else if (e.link.linktype == "Material") {
-                        e.link.addLabel("«material»");
-                    } else if (e.link.linktype == "Formal") {
-                        e.link.addLabel("«formal»");
-                    }
-                    if (this.state.secondcard != "None") {
-                        let scl = new DefaultLabelModel();
-                        scl.setLabel(this.state.secondcard);
-                        e.link.addLabel(scl);
-                    }
-                    e.link.established = true;
-                }
-            }
-        });
-
     }
 
     handleChange(event) {
@@ -98,10 +59,12 @@ export class DiagramCanvas extends React.Component {
 
     handleChange1(event) {
         this.setState({firstcard: event.target.value});
+        this.engine.getDiagramModel().firstcard = event.target.value;
     }
 
     handleChange2(event) {
         this.setState({secondcard: event.target.value});
+        this.engine.getDiagramModel().secondcard = event.target.value;
     }
 
     handleChange3(event) {
@@ -134,17 +97,17 @@ export class DiagramCanvas extends React.Component {
                 </select>
                 <button onClick={event => {
                     console.log(JSON.stringify(this.engine.diagramModel.serializeDiagram()));
-                }}>Serialize
+                }}>Uložit
                 </button>
                 <button onClick={event => {
-                    let str = prompt("Enter JSON");
+                    let str = prompt("Vložte JSON");
                     this.registerFactories();
                     let model = new CustomDiagramModel();
                     model.deSerializeDiagram(JSON.parse(str), this.engine);
                     this.engine.setDiagramModel(model);
-                    alert("Loaded!");
+                    alert("Načteno!");
                     this.forceUpdate();
-                }}>Deserialize
+                }}>Načíst
                 </button>
                 <div
                     onDrop={event => {

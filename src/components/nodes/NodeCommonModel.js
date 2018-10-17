@@ -1,13 +1,12 @@
 import { NodeModel, DiagramEngine } from "storm-react-diagrams";
 import {NodeCommonPortModel} from "./NodeCommonPortModel";
 import {AttributeObject} from "./AttributeObject";
-import {NameObject} from "./NameObject";
 import {CustomDiagramModel} from "../../diagram/CustomDiagramModel";
 export class NodeCommonModel extends NodeModel {
     stereotype: string;
     attributes: {};
     names: {};
-    model: CustomDiagramModel
+    model: CustomDiagramModel;
 
     constructor(stereotype: string, model: CustomDiagramModel) {
         super("common");
@@ -16,20 +15,16 @@ export class NodeCommonModel extends NodeModel {
             cs: "Běžný",
             en: "Common"
         };
-        /*
-        this.names.push(new NameObject("cs","Běžný"));
-        this.names.push(new NameObject("en","Common"));
-         */
         this.attributes = {
           cs: [],
           en: []
         };
 
         this.stereotype = stereotype;
-        this.addPort(new NodeCommonPortModel("left"));
-        this.addPort(new NodeCommonPortModel("right"));
-        this.addPort(new NodeCommonPortModel("top"));
-        this.addPort(new NodeCommonPortModel("bottom"));
+        this.addPort(new NodeCommonPortModel("left", this.model));
+        this.addPort(new NodeCommonPortModel("right", this.model));
+        this.addPort(new NodeCommonPortModel("top", this.model));
+        this.addPort(new NodeCommonPortModel("bottom", this.model));
     }
 
     changeName(str: string){
@@ -72,24 +67,17 @@ export class NodeCommonModel extends NodeModel {
         this.name = object.name;
         this.color = object.color;
         this.stereotype = object.stereotype;
-        let atts = [];
-        _.forEach(object.attributes, (attribute: any) => {
-            atts.push(attribute);
-        });
-        this.attributes = atts;
+        this.attributes = object.attributes;
+        this.names = object.names;
     }
 
     serialize() {
         return _.merge(super.serialize(), {
             name: this.name,
             color: this.color,
-            stereotype: this. stereotype,
-            attributes: _.map(this.attributes, attribute => {
-                return {
-                    first: attribute.first,
-                    second: attribute.second
-                };
-            })
+            stereotype: this.stereotype,
+            attributes: this.attributes,
+            names: this.names
         });
     }
 }

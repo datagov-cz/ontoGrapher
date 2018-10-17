@@ -18,7 +18,6 @@ export interface NodeCommonWidgetState {}
 export class NodeCommonWidget extends React.Component<NodeCommonWidgetProps, NodeCommonWidgetState>{
     constructor(props: NodeCommonWidgetProps){
         super(props);
-        console.log(this.modal);
         this.createModal = this.createModal.bind(this);
     }
 
