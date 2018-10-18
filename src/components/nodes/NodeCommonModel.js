@@ -19,7 +19,6 @@ export class NodeCommonModel extends NodeModel {
         this.attributes = {};
         for (let language in LanguagePool){
             this.attributes[language] = [];
-            console.log(language);
             if (this.names[language] === undefined){
                 this.names[language] = "undefined";
             }
@@ -38,7 +37,6 @@ export class NodeCommonModel extends NodeModel {
 
     setName(str: string, language: string){
         this.names[language] = str;
-        console.log(this.names);
     }
 
     getName(str: string){
@@ -74,6 +72,9 @@ export class NodeCommonModel extends NodeModel {
         this.stereotype = object.stereotype;
         this.attributes = object.attributes;
         this.names = object.names;
+        for (let port in this.ports){
+            this.ports[port].model = this.model;
+        }
     }
 
     serialize() {
@@ -82,7 +83,7 @@ export class NodeCommonModel extends NodeModel {
             color: this.color,
             stereotype: this.stereotype,
             attributes: this.attributes,
-            names: this.names
+            names: this.names,
         });
     }
 }
