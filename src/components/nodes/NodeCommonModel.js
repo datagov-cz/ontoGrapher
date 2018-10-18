@@ -2,6 +2,7 @@ import { NodeModel, DiagramEngine } from "storm-react-diagrams";
 import {NodeCommonPortModel} from "./NodeCommonPortModel";
 import {AttributeObject} from "./AttributeObject";
 import {CustomDiagramModel} from "../../diagram/CustomDiagramModel";
+import {LanguagePool} from "../../diagram/LanguagePool";
 export class NodeCommonModel extends NodeModel {
     stereotype: string;
     attributes: {};
@@ -15,10 +16,14 @@ export class NodeCommonModel extends NodeModel {
             cs: "Běžný",
             en: "Common"
         };
-        this.attributes = {
-          cs: [],
-          en: []
-        };
+        this.attributes = {};
+        for (let language in LanguagePool){
+            this.attributes[language] = [];
+            console.log(language);
+            if (this.names[language] === undefined){
+                this.names[language] = "undefined";
+            }
+        }
 
         this.stereotype = stereotype;
         this.addPort(new NodeCommonPortModel("left", this.model));

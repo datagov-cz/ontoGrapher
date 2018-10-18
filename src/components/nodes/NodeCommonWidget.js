@@ -2,9 +2,6 @@ import * as React from "react";
 import {NodeCommonModel} from "./NodeCommonModel";
 import { PortWidget } from "storm-react-diagrams";
 import {CustomDiagramModel} from "../../diagram/CustomDiagramModel";
-import Modal from 'react-modal';
-import {Tab, Tabs, TabList, TabPanel} from 'react-tabs';
-import {LanguagePool} from "../../diagram/LanguagePool";
 import {ModalDialogue, ModalTabList} from "../../diagram/ModalLayout";
 
 export interface NodeCommonWidgetProps {
@@ -21,19 +18,8 @@ export class NodeCommonWidget extends React.Component<NodeCommonWidgetProps, Nod
         this.createModal = this.createModal.bind(this);
     }
 
-    changeName(str: string){
-        this.props.node.changeName(str);
-    }
-
     getName(str: string){
         return this.props.node.names[str];
-        /*
-         for (let name of this.props.node.names){
-            if (name.first === str){
-                return name.second;
-            }
-        }
-         return "undefined";*/
     }
 
     getAttributes(str: string){

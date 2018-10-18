@@ -1,32 +1,8 @@
 import React from "react";
 import {LanguagePool} from "./LanguagePool";
-import {Tab, Tabs, TabList, TabPanel} from 'react-tabs';
 import {NodeCommonModel} from "../components/nodes/NodeCommonModel";
 import Modal from 'react-modal';
 import {AttributeObject} from "../components/nodes/AttributeObject";
-/*
-export class ModalTabList extends React.Component {
-    tablist: [];
-
-    constructor(props){
-        super(props);
-        this.tablist = [];
-        console.log(LanguagePool.cs);
-        for (let language in LanguagePool){
-            this.tablist.push(<Tab className={language}>{LanguagePool[language]}</Tab>);
-        }
-    }
-    render(){
-        console.log(this.tablist.length);
-        return (
-            <TabList>
-                {this.tablist}
-            </TabList>
-        );
-
-    }
-}
-*/
 export class ModalDialogue extends React.Component {
     node: NodeCommonModel;
 
