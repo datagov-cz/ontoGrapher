@@ -5,6 +5,7 @@ import Modal from 'react-modal';
 import {AttributeObject} from "../components/nodes/AttributeObject";
 export class ModalDialogue extends React.Component {
     node: NodeCommonModel;
+    name: string;
 
     constructor(props){
         super(props);
@@ -16,6 +17,7 @@ export class ModalDialogue extends React.Component {
             newAttrType: "",
             newAttrName: ""
         };
+        this.name = this.state.name;
         this.openModal = this.openModal.bind(this);
         this.closeModal = this.closeModal.bind(this);
         this.processModal = this.processModal.bind(this);
@@ -40,6 +42,7 @@ export class ModalDialogue extends React.Component {
     processModal(event){
         event.preventDefault();
         this.props.node.setName(this.state.name, this.state.language);
+        this.name = this.state.name;
         this.forceUpdate();
     }
     handleChange1(event){
@@ -52,6 +55,7 @@ export class ModalDialogue extends React.Component {
 
     handleChange3(event) {
         let language = event.target.value;
+        this.name = this.props.node.getName(language);
         this.setState({
             language: language,
             attrs: this.props.node.getAttributesByLanguage(language),
@@ -70,7 +74,6 @@ export class ModalDialogue extends React.Component {
             newAttrName: "",
             newAttrType: ""
         });
-        console.log(this.props.node.attributes);
     }
 
     deleteAttribute(attr, event){
@@ -84,7 +87,7 @@ export class ModalDialogue extends React.Component {
         );
         return(
             <Modal isOpen={this.state.modalIsOpen} onRequestClose={this.closeModal}>
-                <h2>{this.state.name}</h2>
+                <h2>{this.name}</h2>
                 <select value={this.state.language} onChange={this.handleChange3}>
                     {this.languagePool}
                 </select>

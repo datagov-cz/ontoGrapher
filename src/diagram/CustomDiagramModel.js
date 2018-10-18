@@ -1,6 +1,6 @@
 import {
     DiagramEngine,
-    DiagramModel, LinkModel, NodeModel
+    DiagramModel, LinkModel, NodeModel, PortModel
 } from "storm-react-diagrams";
 
 export class CustomDiagramModel extends DiagramModel {
@@ -64,8 +64,8 @@ export class CustomDiagramModel extends DiagramModel {
         this.offsetY = object.offsetY;
         this.zoom = object.zoom;
         this.gridSize = object.gridSize;
-        this.selectedLink = object.selectedLink;
         this.language = object.language;
+        this.selectedLink = object.selectedLink;
         this.firstcard = object.firstcard;
         this.secondcard = object.secondcard;
 
@@ -73,6 +73,7 @@ export class CustomDiagramModel extends DiagramModel {
         _.forEach(object.nodes, (node: any) => {
             let nodeOb = diagramEngine.getNodeFactory(node.type).getNewInstance(node);
             nodeOb.setParent(this);
+            nodeOb.model = this;
             nodeOb.deSerialize(node, diagramEngine);
             this.addNode(nodeOb);
         });

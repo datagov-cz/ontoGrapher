@@ -16,20 +16,26 @@ export class CommonLinkModel extends DefaultLinkModel {
 
     constructor(model: CustomDiagramModel){
         super();
-        this.model = model;
         this.type = "link-common";
         this.width = 3;
         this.curvyness = 0;
-        this.linktype = this.model.selectedLink;
-        this.addLabel(this.model.firstcard);
-        this.addLabel(this.model.secondcard);
+        this.model = model;
+        if (this.model instanceof CustomDiagramModel){
+            this.linktype = this.model.selectedLink;
+            this.addLabel(this.model.firstcard);
+            this.addLabel(this.model.secondcard);
+        }
+
     }
 
     addDescriptorLabel(){
-        let labeltext = "«"+this.linktype.toLowerCase()+"»";
-        let label = new DefaultLabelModel();
-        label.setLabel(labeltext);
-        this.labels.splice(1,0,label);
+        if (this.labels.length < 3){
+            let labeltext = "«"+this.linktype.toLowerCase()+"»";
+            let label = new DefaultLabelModel();
+            label.setLabel(labeltext);
+            this.labels.splice(1,0,label);
+        }
+
     }
 
     serialize() {
@@ -38,7 +44,6 @@ export class CommonLinkModel extends DefaultLinkModel {
             color: this.color,
             curvyness: this.curvyness,
             linktype: this.linktype,
-            labels: this.labels
         });
     }
 
@@ -48,7 +53,7 @@ export class CommonLinkModel extends DefaultLinkModel {
         this.width = ob.width;
         this.curvyness = ob.curvyness;
         this.linktype = ob.linktype;
-        this.labels = ob.labels;
+
     }
 
     setLabel(str: string){
