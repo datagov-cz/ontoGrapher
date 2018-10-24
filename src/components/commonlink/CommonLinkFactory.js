@@ -1,6 +1,6 @@
 import {AbstractLinkFactory, DiagramEngine} from "storm-react-diagrams";
 import React from "react";
-import {LinkPool} from "../../diagram/LinkPool";
+import {LinkPool} from "../../config/LinkPool";
 import {CommonLinkWidget} from "./CommonLinkWidget";
 import {CommonLinkModel} from "./CommonLinkModel";
 

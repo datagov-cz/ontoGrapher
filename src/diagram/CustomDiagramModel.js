@@ -7,8 +7,8 @@ export class CustomDiagramModel extends DiagramModel {
 
     selectedLink: string;
     language: string;
-    firstcard: string;
-    secondcard: string;
+    firstCardinality: string;
+    secondCardinality: string;
 
     //models
     links: { [s: string]: LinkModel };
@@ -21,7 +21,7 @@ export class CustomDiagramModel extends DiagramModel {
     rendered: boolean;
     gridSize: number;
 
-    constructor() {
+    constructor(link: str) {
         super();
 
         this.links = {};
@@ -33,10 +33,10 @@ export class CustomDiagramModel extends DiagramModel {
         this.rendered = false;
         this.gridSize = 0;
 
-        this.selectedLink = "Mediation";
+        this.selectedLink = link;
         this.language = "cs";
-        this.firstcard = "1";
-        this.secondcard = "1";
+        this.firstCardinality = "1";
+        this.secondCardinality = "1";
     }
     serializeDiagram(){
         return _.merge(this.serialize(), {

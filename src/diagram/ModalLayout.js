@@ -1,5 +1,5 @@
 import React from "react";
-import {LanguagePool} from "./LanguagePool";
+import {LanguagePool} from "../config/LanguagePool";
 import {NodeCommonModel} from "../components/nodes/NodeCommonModel";
 import Modal from 'react-modal';
 import {AttributeObject} from "../components/nodes/AttributeObject";

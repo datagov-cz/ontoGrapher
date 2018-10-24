@@ -1,18 +1,19 @@
 import React from 'react';
 import {StereotypePanelItem} from "./StereotypePanelItem";
+import {StereotypePool} from "../config/StereotypePool";
 
-export interface StereotypePanelProps {}
-export interface StereotypePanelState {}
 
 export class StereotypePanel extends React.Component{
     constructor(props: StereotypePanelItem) {
         super(props);
-        this.state = {};
+        this.stereotypeList = StereotypePool.map((stereotype) =>
+            <StereotypePanelItem key={stereotype.toUpperCase()} model={{type: stereotype.toLowerCase()}} name={stereotype} color="white"/>
+        );
     }
     render(){
         return(
             <div className="stereotypePanel">
-                {this.props.children}
+                {this.stereotypeList}
             </div>
         );
     }

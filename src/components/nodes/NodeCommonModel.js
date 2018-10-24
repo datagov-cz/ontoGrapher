@@ -2,7 +2,7 @@ import { NodeModel, DiagramEngine } from "storm-react-diagrams";
 import {NodeCommonPortModel} from "./NodeCommonPortModel";
 import {AttributeObject} from "./AttributeObject";
 import {CustomDiagramModel} from "../../diagram/CustomDiagramModel";
-import {LanguagePool} from "../../diagram/LanguagePool";
+import {LanguagePool} from "../../config/LanguagePool";
 export class NodeCommonModel extends NodeModel {
     stereotype: string;
     attributes: {};
