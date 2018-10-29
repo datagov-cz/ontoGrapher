@@ -9,6 +9,7 @@ import {Defaults} from "./config/Defaults";
 
 require("./sass/main.scss");
 
+;
 class App extends React.Component {
 	constructor(props){
 		super(props);
@@ -23,35 +24,57 @@ class App extends React.Component {
         this.handleChangeFirstCardinality = this.handleChangeFirstCardinality.bind(this);
         this.handleChangeSecondCardinality = this.handleChangeSecondCardinality.bind(this);
         this.handleChangeLanguage = this.handleChangeLanguage.bind(this);
+
+        this.serialize = this.serialize.bind(this);
+        this.deserialize = this.deserialize.bind(this);
     }
 
-    handleChangeSelectedLink(str: string) {
-        this.setState({selectedLink: str});
+    handleChangeSelectedLink(event) {
+        this.setState({selectedLink: event.target.value});
+        this.diagramCanvas.engine.getDiagramModel().selectedLink = event.target.value;
     }
 
-    handleChangeFirstCardinality(str: string) {
-        this.setState({firstCardinality: str});
+    handleChangeFirstCardinality(event) {
+        this.setState({firstCardinality: event.target.value});
+        this.diagramCanvas.engine.getDiagramModel().firstCardinality = event.target.value;
     }
 
-    handleChangeSecondCardinality(str: string) {
-        this.setState({secondCardinality: str});
+    handleChangeSecondCardinality(event) {
+        this.setState({secondCardinality: event.target.value});
+        this.diagramCanvas.engine.getDiagramModel().secondCardinality = event.target.value;
     }
 
-    handleChangeLanguage(str: string) {
-        this.setState({language: str});
+    handleChangeLanguage(event) {
+        this.setState({language: event.target.value});
+        this.diagramCanvas.engine.getDiagramModel().language = event.target.value;
+    }
+
+    serialize(){
+        this.diagramCanvas.serialize();
+    }
+
+    deserialize(){
+        this.diagramCanvas.deserialize();
     }
 
 	render() {
 		return (
             <div className="content">
 				<MenuPanel
-                    selectedLink={this.handleChangeSelectedLink}
-                    firstCardinality={this.handleChangeFirstCardinality}
-                    secondCardinality={this.handleChangeSecondCardinality}
-                    language={this.handleChangeLanguage}
+                    handleChangeSelectedLink={this.handleChangeSelectedLink}
+                    handleChangeFirstCardinality={this.handleChangeFirstCardinality}
+                    handleChangeSecondCardinality={this.handleChangeSecondCardinality}
+                    handleChangeLanguage={this.handleChangeLanguage}
+                    selectedLink={this.state.selectedLink}
+                    firstCardinality={this.state.firstCardinality}
+                    secondCardinality={this.state.secondCardinality}
+                    language={this.state.language}
+                    handleSerialize={this.serialize}
+                    handleDeserialize={this.deserialize}
                 />
 				<StereotypePanel/>
 				<DiagramCanvas
+                    ref={instance => {this.diagramCanvas = instance;}}
                     selectedLink={this.state.selectedLink}
                     firstCardinality={this.state.firstCardinality}
                     secondCardinality={this.state.secondCardinality}

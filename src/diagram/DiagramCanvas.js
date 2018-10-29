@@ -13,6 +13,7 @@ import {LinkPool} from "../config/LinkPool";
 import {LanguagePool} from "../config/LanguagePool";
 import {CommonLinkFactory} from "../components/commonlink/CommonLinkFactory";
 import {Defaults} from "../config/Defaults";
+import {Locale} from "../config/Locale";
 
 
 export class DiagramCanvas extends React.Component {
@@ -29,8 +30,22 @@ export class DiagramCanvas extends React.Component {
 
     componentWillMount() {
         this.engine = new DiagramEngine();
-        this.engine.setDiagramModel(new CustomDiagramModel(this.props.selectedLink));
+        this.engine.setDiagramModel(new CustomDiagramModel(this.props));
         this.registerFactories();
+    }
+
+    serialize(){
+        console.log(JSON.stringify(this.engine.getDiagramModel().serializeDiagram()));
+    }
+
+    deserialize(){
+        let str = prompt(Locale.menuPanelInsertJSON);
+        this.registerFactories();
+        let model = new CustomDiagramModel();
+        model.deSerializeDiagram(JSON.parse(str), this.engine);
+        this.engine.setDiagramModel(model);
+        alert(Locale.menuPanelLoaded);
+        this.forceUpdate();
     }
 
     render() {

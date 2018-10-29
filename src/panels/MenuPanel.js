@@ -9,12 +9,6 @@ import {Locale} from "../config/Locale";
 export class MenuPanel extends React.Component{
     constructor(props) {
         super(props);
-        this.state = {
-            selectedLink: Defaults.selectedLink,
-            firstCardinality: Defaults.cardinality,
-            secondCardinality: Defaults.cardinality,
-            language: Defaults.language
-        };
 
         this.linkPool = [];
         for (let link in LinkPool) {
@@ -31,61 +25,27 @@ export class MenuPanel extends React.Component{
             this.cardinalityPool.push(<option key={cardinality} value={cardinality}>{cardinality}</option>);
         }
 
-        this.handleChangeSelectedLink = this.handleChangeSelectedLink.bind(this);
-        this.handleChangeFirstCardinality = this.handleChangeFirstCardinality.bind(this);
-        this.handleChangeSecondCardinality = this.handleChangeSecondCardinality.bind(this);
-        this.handleChangeLanguage = this.handleChangeLanguage.bind(this);
-    }
-
-    handleChangeSelectedLink(event) {
-        this.props.selectedLink(event.target.value);
-        this.setState({selectedLink: event.target.value});
-    }
-
-    handleChangeFirstCardinality(event) {
-        this.props.firstCardinality(event.target.value);
-        this.setState({firstCardinality: event.target.value});
-    }
-
-    handleChangeSecondCardinality(event) {
-        this.props.secondCardinality(event.target.value);
-        this.setState({secondCardinality: event.target.value});
-    }
-
-    handleChangeLanguage(event) {
-        this.props.language(event.target.value);
-        this.setState({language: event.target.value});
     }
 
     render(){
         return(
             <div className="menuPanel">
                 <span className="logo">ontoUML diagram app</span>
-                <select value={this.state.selectedLink} onChange={this.handleChangeSelectedLink}>
+                <select value={this.props.selectedLink} onChange={this.props.handleChangeSelectedLink}>
                     {this.linkPool}
                 </select>
-                <select value={this.state.firstCardinality} onChange={this.handleChangeFirstCardinality}>
+                <select value={this.props.firstCardinality} onChange={this.props.handleChangeFirstCardinality}>
                     {this.cardinalityPool}
                 </select>
-                <select value={this.state.secondCardinality} onChange={this.handleChangeSecondCardinality}>
+                <select value={this.props.secondCardinality} onChange={this.props.handleChangeSecondCardinality}>
                     {this.cardinalityPool}
                 </select>
-                <select value={this.state.language} onChange={this.handleChangeLanguage}>
+                <select value={this.props.language} onChange={this.props.handleChangeLanguage}>
                     {this.languagePool}
                 </select>
-                <button onClick={event => {
-                    console.log(JSON.stringify(this.engine.diagramModel.serializeDiagram()));
-                }}>{Locale.menuPanelSave}
+                <button onClick={this.props.handleSerialize}>{Locale.menuPanelSave}
                 </button>
-                <button onClick={event => {
-                    let str = prompt(Locale.menuPanelInsertJSON);
-                    this.registerFactories();
-                    let model = new CustomDiagramModel();
-                    model.deSerializeDiagram(JSON.parse(str), this.engine);
-                    this.engine.setDiagramModel(model);
-                    alert(Locale.menuPanelLoaded);
-                    this.forceUpdate();
-                }}>{Locale.menuPanelLoad}
+                <button onClick={this.props.handleDeserialize}>{Locale.menuPanelLoad}
                 </button>
             </div>
         );

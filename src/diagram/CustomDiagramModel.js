@@ -21,7 +21,7 @@ export class CustomDiagramModel extends DiagramModel {
     rendered: boolean;
     gridSize: number;
 
-    constructor(link: str) {
+    constructor(props) {
         super();
 
         this.links = {};
@@ -33,10 +33,10 @@ export class CustomDiagramModel extends DiagramModel {
         this.rendered = false;
         this.gridSize = 0;
 
-        this.selectedLink = link;
-        this.language = "cs";
-        this.firstCardinality = "1";
-        this.secondCardinality = "1";
+        this.selectedLink = props.selectedLink;
+        this.language = props.language;
+        this.firstCardinality = props.firstCardinality;
+        this.secondCardinality = props.secondCardinality;
     }
     serializeDiagram(){
         return _.merge(this.serialize(), {
@@ -46,8 +46,8 @@ export class CustomDiagramModel extends DiagramModel {
             gridSize: this.gridSize,
             selectedLink: this.selectedLink,
             language: this.language,
-            firstcard: this.firstcard,
-            secondcard: this.secondcard,
+            firstCardinality: this.firstCardinality,
+            secondCardinality: this.secondCardinality,
             links: _.map(this.links, link => {
                 return link.serialize();
             }),
@@ -66,8 +66,8 @@ export class CustomDiagramModel extends DiagramModel {
         this.gridSize = object.gridSize;
         this.language = object.language;
         this.selectedLink = object.selectedLink;
-        this.firstcard = object.firstcard;
-        this.secondcard = object.secondcard;
+        this.firstCardinality = object.firstCardinality;
+        this.secondCardinality = object.secondCardinality;
 
         // deserialize nodes
         _.forEach(object.nodes, (node: any) => {

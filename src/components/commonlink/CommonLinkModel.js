@@ -22,10 +22,9 @@ export class CommonLinkModel extends DefaultLinkModel {
         this.model = model;
         if (this.model instanceof CustomDiagramModel){
             this.linktype = this.model.selectedLink;
-            this.addLabel(this.model.firstcard);
-            this.addLabel(this.model.secondcard);
+            this.addLabel(this.model.firstCardinality);
+            this.addLabel(this.model.secondCardinality);
         }
-
     }
 
     addDescriptorLabel(){
