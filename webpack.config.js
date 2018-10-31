@@ -21,5 +21,8 @@ module.exports = {
       }
     ]
   },
-  plugins: [htmlWebpackPlugin]
+  plugins: [htmlWebpackPlugin],
+    node: {
+        fs: "empty"
+    }
 };

@@ -14,6 +14,7 @@ import {LanguagePool} from "../config/LanguagePool";
 import {CommonLinkFactory} from "../components/commonlink/CommonLinkFactory";
 import {Defaults} from "../config/Defaults";
 import {Locale} from "../config/Locale";
+import {getStereotypes} from "../rdf/StereotypeGetter";
 
 
 export class DiagramCanvas extends React.Component {
@@ -32,6 +33,7 @@ export class DiagramCanvas extends React.Component {
         this.engine = new DiagramEngine();
         this.engine.setDiagramModel(new CustomDiagramModel(this.props));
         this.registerFactories();
+        console.log(getStereotypes());
     }
 
     serialize(){

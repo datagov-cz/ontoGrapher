@@ -9,7 +9,6 @@ import {Defaults} from "./config/Defaults";
 
 require("./sass/main.scss");
 
-;
 class App extends React.Component {
 	constructor(props){
 		super(props);

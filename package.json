@@ -27,6 +27,8 @@
   },
   "dependencies": {
     "lodash": "^4.17.10",
+    "rdf-ext": "^1.1.2",
+    "rdf-fetch": "^1.0.0",
     "react": "^16.4.2",
     "react-dom": "^16.4.2",
     "react-modal": "^3.6.1",
