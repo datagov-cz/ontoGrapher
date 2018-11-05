@@ -26,6 +26,7 @@ class App extends React.Component {
 
         this.serialize = this.serialize.bind(this);
         this.deserialize = this.deserialize.bind(this);
+        this.export = this.export.bind(this);
     }
 
     handleChangeSelectedLink(event) {
@@ -56,6 +57,10 @@ class App extends React.Component {
         this.diagramCanvas.deserialize();
     }
 
+    export(){
+	    this.diagramCanvas.export();
+    }
+
 	render() {
 		return (
             <div className="content">
@@ -70,6 +75,7 @@ class App extends React.Component {
                     language={this.state.language}
                     handleSerialize={this.serialize}
                     handleDeserialize={this.deserialize}
+                    handleExport={this.export}
                 />
 				<StereotypePanel/>
 				<DiagramCanvas

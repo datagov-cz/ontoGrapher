@@ -47,6 +47,8 @@ export class MenuPanel extends React.Component{
                 </button>
                 <button onClick={this.props.handleDeserialize}>{Locale.menuPanelLoad}
                 </button>
+                <button onClick={this.props.handleExport}>{Locale.menuPanelExport}
+                </button>
             </div>
         );
     }

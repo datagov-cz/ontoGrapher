@@ -9,13 +9,14 @@ export class NodeCommonModel extends NodeModel {
     names: {};
     model: CustomDiagramModel;
 
-    constructor(stereotype: string, model: CustomDiagramModel) {
+    constructor(stereotype: string,rdf: string, model: CustomDiagramModel) {
         super("common");
         this.model = model;
         this.names = {
             cs: "Běžný",
             en: "Common"
         };
+        this.rdf = rdf;
         this.attributes = {};
         for (let language in LanguagePool){
             this.attributes[language] = [];
@@ -72,6 +73,7 @@ export class NodeCommonModel extends NodeModel {
         this.stereotype = object.stereotype;
         this.attributes = object.attributes;
         this.names = object.names;
+        this.rdf = object.rdf;
         for (let port in this.ports){
             this.ports[port].model = this.model;
         }
@@ -84,6 +86,7 @@ export class NodeCommonModel extends NodeModel {
             stereotype: this.stereotype,
             attributes: this.attributes,
             names: this.names,
+            rdf: this.rdf
         });
     }
 }
