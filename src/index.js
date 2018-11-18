@@ -52,6 +52,7 @@ class App extends React.Component {
     handleChangeLanguage(event) {
         this.setState({language: event.target.value});
         this.diagramCanvas.engine.getDiagramModel().language = event.target.value;
+        this.diagramCanvas.forceUpdate();
     }
 
     handleChangePanelObject(thing){
@@ -77,7 +78,7 @@ class App extends React.Component {
 	render() {
 		return (
             <div className="content">
-				<MenuPanel
+                <MenuPanel
                     handleChangeSelectedLink={this.handleChangeSelectedLink}
                     handleChangeFirstCardinality={this.handleChangeFirstCardinality}
                     handleChangeSecondCardinality={this.handleChangeSecondCardinality}
@@ -90,20 +91,19 @@ class App extends React.Component {
                     handleDeserialize={this.deserialize}
                     handleExport={this.export}
                 />
-				<StereotypePanel/>
-                <DetailPanel
-                    panelObject={this.state.panelObject}
-                    language={this.state.language}
-                />
-				<DiagramCanvas
-                    ref={instance => {this.diagramCanvas = instance;}}
-                    selectedLink={this.state.selectedLink}
-                    firstCardinality={this.state.firstCardinality}
-                    secondCardinality={this.state.secondCardinality}
-                    language={this.state.language}
-                    handleChangePanelObject={this.handleChangePanelObject}
-                />
-
+                    <StereotypePanel/>
+                    <DetailPanel
+                        panelObject={this.state.panelObject}
+                        language={this.state.language}
+                    />
+                    <DiagramCanvas
+                        ref={instance => {this.diagramCanvas = instance;}}
+                        selectedLink={this.state.selectedLink}
+                        firstCardinality={this.state.firstCardinality}
+                        secondCardinality={this.state.secondCardinality}
+                        language={this.state.language}
+                        handleChangePanelObject={this.handleChangePanelObject}
+                    />
             </div>
 		);
 	}

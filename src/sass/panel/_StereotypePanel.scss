@@ -1,8 +1,7 @@
 .stereotypePanel{
-  resize: horizontal;
   float:left;
   max-width:200px;
-  height:100vh;
+  height: calc(100vh - 25px);
   overflow: auto;
   white-space: nowrap;
   min-width: 100px;

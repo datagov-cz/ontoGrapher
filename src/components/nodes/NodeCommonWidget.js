@@ -37,8 +37,8 @@ export class NodeCommonWidget extends React.Component<NodeCommonWidgetProps, Nod
     render(){
         let attrkey = 0;
         let height = 48;
-        let name = this.getName(this.props.diagramModel.language);
-        let attrs = this.getAttributes(this.props.diagramModel.language);
+        let name = this.getName(this.props.node.model.language);
+        let attrs = this.getAttributes(this.props.node.model.language);
         height += attrs.length * 15;
         let select = "black";
         if (this.props.node.selected){

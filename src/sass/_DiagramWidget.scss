@@ -3,7 +3,7 @@ body{
 }
 
 .srd-diagram{
-  height: 100vh;
+  height: calc(100vh - 25px);
   position: relative;
   flex-grow: 1;
   display: flex;

@@ -57,6 +57,10 @@ export class DiagramCanvas extends React.Component {
 
     }
 
+    nullPanel(){
+        this.props.handleChangePanelObject(null);
+    }
+
     serialize(){
         console.log(JSON.stringify(this.engine.getDiagramModel().serializeDiagram()));
     }

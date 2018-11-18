@@ -13,5 +13,6 @@ export var Locale = {
     detailPanelNewAttr: "New",
     detailPanelDeleteAttr: "Delete",
     detailPanelType: "Type",
-    detailPanelCardinality: "Cardinality"
+    detailPanelCardinality: "Cardinality",
+    detailPanelLabel: "Label"
 };

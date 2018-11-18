@@ -46,6 +46,10 @@ export class CustomDiagramModel extends DiagramModel {
         this.canvas.updatePanel();
     }
 
+    nullPanel(){
+        this.canvas.nullPanel();
+    }
+
     serializeDiagram(){
         return _.merge(this.serialize(), {
             offsetX: this.offsetX,
@@ -90,6 +94,7 @@ export class CustomDiagramModel extends DiagramModel {
         _.forEach(object.links, (link: any) => {
             let linkOb = diagramEngine.getLinkFactory(link.type).getNewInstance();
             linkOb.setParent(this);
+            linkOb.model = this;
             linkOb.deSerialize(link, diagramEngine);
             this.addLink(linkOb);
         });

@@ -7,12 +7,14 @@ import {MediationLinkWidget} from "../components/links/MediationLink";
 import {MemberLinkWidget} from "../components/links/MemberLink";
 import {SubCollectionLinkWidget} from "../components/links/SubCollectionLink";
 import {SubQuantityLinkWidget} from "../components/links/SubQuantityLink";
+import {GeneralizationLinkWidget} from "../components/links/GeneralizationLink";
 
 export var LinkPool = {
     "Characterization": CharacterizationLinkWidget,
     "Component": ComponentLinkWidget,
     "Derivation": DerivationLinkWidget,
     "Formal": FormalLinkWidget,
+    "Generalization": GeneralizationLinkWidget,
     "Material": MaterialLinkWidget,
     "Mediation": MediationLinkWidget,
     "Member": MemberLinkWidget,

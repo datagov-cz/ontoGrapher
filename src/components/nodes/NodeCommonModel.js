@@ -33,7 +33,8 @@ export class NodeCommonModel extends NodeModel {
         this.addPort(new NodeCommonPortModel("top", this.model));
         this.addPort(new NodeCommonPortModel("bottom", this.model));
         this.addListener({
-            selectionChanged: event => {this.model.updatePanel();}
+            selectionChanged: event => {this.model.updatePanel();},
+            entityRemoved: event => {this.model.nullPanel();}
         });
     }
 
@@ -57,9 +58,10 @@ export class NodeCommonModel extends NodeModel {
     getAttribute(id: number){
         return this.attributes[id];
     }
+    /*
     addAttribute(language: string, attr: AttributeObject){
         this.attributes[language].push(attr);
-    }
+    */
     addAttribute(attr: AttributeObject){
         for(let language in LanguagePool){
             this.attributes[language].push(attr);

@@ -13,6 +13,7 @@ export class CommonLinkModel extends DefaultLinkModel {
     curvyness: number;
     linktype: string;
     model: CustomDiagramModel;
+    descriptor: boolean;
 
     constructor(model: CustomDiagramModel){
         super();
@@ -20,13 +21,20 @@ export class CommonLinkModel extends DefaultLinkModel {
         this.width = 3;
         this.curvyness = 0;
         this.model = model;
+        this.name = "";
+        this.descriptor = false;
         if (this.model instanceof CustomDiagramModel){
             this.linktype = this.model.selectedLink;
-            this.addLabel(this.model.firstCardinality);
-            this.addLabel(this.model.secondCardinality);
+            if (this.model.firstCardinality !== "None"){
+                this.addLabel(this.model.firstCardinality);
+            }
+            if (this.model.secondCardinality !== "None"){
+                this.addLabel(this.model.secondCardinality);
+            }
         }
         this.addListener({
-            selectionChanged: event => {this.model.updatePanel();}
+            selectionChanged: event => {this.model.updatePanel();},
+            entityRemoved: event => {this.model.nullPanel();}
         });
     }
 
@@ -36,6 +44,7 @@ export class CommonLinkModel extends DefaultLinkModel {
             let label = new DefaultLabelModel();
             label.setLabel(labeltext);
             this.labels.splice(1,0,label);
+            this.descriptor = true;
         }
 
     }
@@ -46,6 +55,7 @@ export class CommonLinkModel extends DefaultLinkModel {
             color: this.color,
             curvyness: this.curvyness,
             linktype: this.linktype,
+            name: this.name
         });
     }
 
@@ -55,7 +65,7 @@ export class CommonLinkModel extends DefaultLinkModel {
         this.width = ob.width;
         this.curvyness = ob.curvyness;
         this.linktype = ob.linktype;
-
+        this.name = ob.name;
     }
 
     setLabel(str: string){
@@ -70,6 +80,16 @@ export class CommonLinkModel extends DefaultLinkModel {
 
     setFirstCardinality(str: string){
         this.labels[0].setLabel(str);
+    }
+
+    setName(str:string){
+        this.name = str;
+        if (this.descriptor){
+            this.labels[1].setLabel("«"+this.linktype.toLowerCase()+"»"+"\n"+str);
+        } else {
+            this.labels[1].setLabel(str);
+        }
+
     }
 
     setSecondCardinality(str: string){

@@ -19,7 +19,8 @@ export class DetailPanel extends React.Component{
             newAttrName: "",
             newAttrType: AttributeTypePool[0],
             attribute: 0,
-            linktype: ""
+            linktype: "",
+            newLabel: ""
         };
         this.attributeList = [];
         let key = 0;
@@ -48,6 +49,8 @@ export class DetailPanel extends React.Component{
         this.handleChangeFirstCardinality = this.handleChangeFirstCardinality.bind(this);
         this.handleChangeSecondCardinality = this.handleChangeSecondCardinality.bind(this);
         this.focus = this.focus.bind(this);
+        this.handleChangeLabel = this.handleChangeLabel.bind(this);
+        this.saveLabel = this.saveLabel.bind(this);
     }
 
 
@@ -66,7 +69,8 @@ export class DetailPanel extends React.Component{
                 type: CommonLinkModel,
                 firstcard: copy.firstCardinality,
                 secondcard: copy.secondCardinality,
-                linktype: copy.linktype
+                linktype: copy.linktype,
+                newLabel: copy.name
             });
         } else {
             this.setState({
@@ -84,6 +88,7 @@ export class DetailPanel extends React.Component{
     processDialogue(){
         this.props.panelObject.setName(this.state.names[this.state.language], this.state.language);
         this.forceUpdate();
+        this.props.panelObject.model.canvas.forceUpdate();
     }
 
     componentDidUpdate(prevProps){
@@ -159,7 +164,13 @@ export class DetailPanel extends React.Component{
         this.props.panelObject.setAttribute(this.state.language,new AttributeObject(this.state.newAttrName,this.state.newAttrType),this.state.attribute);
         this.forceUpdate();
         this.props.panelObject.model.canvas.forceUpdate();
-        console.log(this.props.panelObject.attributes);
+
+    }
+
+    handleChangeLabel(event){
+        this.setState({newLabel: event.target.value});
+        this.forceUpdate();
+        this.props.panelObject.model.canvas.forceUpdate();
     }
 
     focus(){
@@ -170,6 +181,11 @@ export class DetailPanel extends React.Component{
                 newAttrType: this.state.attrs[this.state.language][0].second
             });
         }
+    }
+
+    saveLabel(){
+
+        this.props.panelObject.setName(this.state.newLabel);
     }
 
     render() {
@@ -185,7 +201,7 @@ export class DetailPanel extends React.Component{
             );
 
             return (
-                <div className="detailPanel">
+                <div className="detailPanel" >
                     <h2>{Locale.detailPanelTitle}</h2>
 
                     <select value={this.state.language} onChange={this.handleChangeLanguage}>
@@ -219,16 +235,19 @@ export class DetailPanel extends React.Component{
                     <h2>{Locale.detailPanelTitle}</h2>
                     <fieldset>
                         <h4>{Locale.detailPanelType+": "+this.state.linktype}</h4>
-                        {Locale.detailPanelCardinality+" 1:"}<select
+                        {Locale.detailPanelCardinality+" 1: "}<select
                             value={this.state.firstcard}
                             onChange={this.handleChangeFirstCardinality}>
                             {this.cardinalityPool}
                         </select><br />
-                        {Locale.detailPanelCardinality+" 2:"}<select
+                        {Locale.detailPanelCardinality+" 2: "}<select
                             value={this.state.secondcard}
                             onChange={this.handleChangeSecondCardinality}>
                             {this.cardinalityPool}
-                        </select>
+                        </select><br />
+                        {Locale.detailPanelLabel+": "}
+                        <input type="text" value={this.state.newLabel} onChange={this.handleChangeLabel} placeholder={Locale.detailPanelNamePlaceholder}/>
+                        <button onClick={this.saveLabel}>{Locale.menuPanelSave}</button>
                     </fieldset>
                 </div>
             );
