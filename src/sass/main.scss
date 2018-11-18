@@ -13,9 +13,11 @@
 //panels
 @import "panel/StereotypePanel";
 @import "panel/MenuPanel";
+@import "panel/DetailPanel";
 
 //nodes
 @import "diagramCanvas/NodeWidgetCustom";
 
 //links
 @import "diagramCanvas/LinkWidgetCustom";
+

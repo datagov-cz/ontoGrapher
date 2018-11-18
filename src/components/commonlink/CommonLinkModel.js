@@ -25,6 +25,9 @@ export class CommonLinkModel extends DefaultLinkModel {
             this.addLabel(this.model.firstCardinality);
             this.addLabel(this.model.secondCardinality);
         }
+        this.addListener({
+            selectionChanged: event => {this.model.updatePanel();}
+        });
     }
 
     addDescriptorLabel(){
@@ -63,6 +66,14 @@ export class CommonLinkModel extends DefaultLinkModel {
         } else {
             this.addLabel(str);
         }
+    }
+
+    setFirstCardinality(str: string){
+        this.labels[0].setLabel(str);
+    }
+
+    setSecondCardinality(str: string){
+        this.labels[2].setLabel(str);
     }
 }
 

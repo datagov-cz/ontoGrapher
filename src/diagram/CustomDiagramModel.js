@@ -2,6 +2,7 @@ import {
     DiagramEngine,
     DiagramModel, LinkModel, NodeModel, PortModel
 } from "storm-react-diagrams";
+import {DiagramCanvas} from "./DiagramCanvas";
 
 export class CustomDiagramModel extends DiagramModel {
 
@@ -9,6 +10,7 @@ export class CustomDiagramModel extends DiagramModel {
     language: string;
     firstCardinality: string;
     secondCardinality: string;
+    canvas: DiagramCanvas;
 
     //models
     links: { [s: string]: LinkModel };
@@ -21,7 +23,7 @@ export class CustomDiagramModel extends DiagramModel {
     rendered: boolean;
     gridSize: number;
 
-    constructor(props) {
+    constructor(props, canvas) {
         super();
 
         this.links = {};
@@ -33,11 +35,17 @@ export class CustomDiagramModel extends DiagramModel {
         this.rendered = false;
         this.gridSize = 0;
 
+        this.canvas = canvas;
         this.selectedLink = props.selectedLink;
         this.language = props.language;
         this.firstCardinality = props.firstCardinality;
         this.secondCardinality = props.secondCardinality;
     }
+
+    updatePanel(){
+        this.canvas.updatePanel();
+    }
+
     serializeDiagram(){
         return _.merge(this.serialize(), {
             offsetX: this.offsetX,

@@ -2,7 +2,7 @@ import React from 'react';
 import {
     DiagramWidget,
     DiagramEngine,
-    DefaultLabelFactory,
+    DefaultLabelFactory, PointModel,
 } from 'storm-react-diagrams';
 import {CommonPortFactory} from "../components/nodes/CommonPortFactory";
 import {CustomDiagramModel} from "./CustomDiagramModel.js";
@@ -16,6 +16,17 @@ import {Defaults} from "../config/Defaults";
 import {Locale} from "../config/Locale";
 import {getStereotypes} from "../rdf/StereotypeGetter";
 
+Array.prototype.removeIf = function(callback) {
+    var i = 0;
+    while (i < this.length) {
+        if (callback(this[i], i)) {
+            this.splice(i, 1);
+        }
+        else {
+            ++i;
+        }
+    }
+};
 
 export class DiagramCanvas extends React.Component {
     constructor(props) {
@@ -31,8 +42,19 @@ export class DiagramCanvas extends React.Component {
 
     componentWillMount() {
         this.engine = new DiagramEngine();
-        this.engine.setDiagramModel(new CustomDiagramModel(this.props));
+        this.engine.setDiagramModel(new CustomDiagramModel(this.props,this));
         this.registerFactories();
+    }
+
+    updatePanel(){
+        let selected = this.engine.getDiagramModel().getSelectedItems();
+        selected.removeIf(function(item, index){return !item.selected});
+        if (selected.length === 1){
+           this.props.handleChangePanelObject(selected[0]);
+        } else {
+            this.props.handleChangePanelObject(null);
+        }
+
     }
 
     serialize(){
@@ -82,7 +104,12 @@ export class DiagramCanvas extends React.Component {
                     onDragOver={event => {
                         event.preventDefault();
                     }}>
-                    <DiagramWidget diagramEngine={this.engine} allowLooseLinks={false} smartRouting={false}/>
+                    <DiagramWidget
+                        diagramEngine={this.engine}
+                        allowLooseLinks={false}
+                        smartRouting={false}
+                        deleteKeys={[46]}
+                    />
                 </div>
         );
     }

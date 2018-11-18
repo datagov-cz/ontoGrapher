@@ -6,6 +6,8 @@ import {MenuPanel} from "./panels/MenuPanel";
 import {StereotypePanelItem} from "./panels/StereotypePanelItem";
 import {StereotypePool} from "./config/StereotypePool";
 import {Defaults} from "./config/Defaults";
+import {DetailPanel} from "./panels/DetailPanel";
+import {PointModel} from "storm-react-diagrams";
 
 require("./sass/main.scss");
 
@@ -16,13 +18,16 @@ class App extends React.Component {
             selectedLink: Defaults.selectedLink,
             firstCardinality: Defaults.cardinality,
             secondCardinality: Defaults.cardinality,
-            language: Defaults.language
+            language: Defaults.language,
+            panelObject: null
         };
 
         this.handleChangeSelectedLink = this.handleChangeSelectedLink.bind(this);
         this.handleChangeFirstCardinality = this.handleChangeFirstCardinality.bind(this);
         this.handleChangeSecondCardinality = this.handleChangeSecondCardinality.bind(this);
         this.handleChangeLanguage = this.handleChangeLanguage.bind(this);
+        this.handleChangePanelObject = this.handleChangePanelObject.bind(this);
+
 
         this.serialize = this.serialize.bind(this);
         this.deserialize = this.deserialize.bind(this);
@@ -47,6 +52,14 @@ class App extends React.Component {
     handleChangeLanguage(event) {
         this.setState({language: event.target.value});
         this.diagramCanvas.engine.getDiagramModel().language = event.target.value;
+    }
+
+    handleChangePanelObject(thing){
+        if (thing instanceof PointModel){
+            this.setState({panelObject: thing.getLink()});
+        } else {
+            this.setState({panelObject: thing});
+        }
     }
 
     serialize(){
@@ -78,13 +91,19 @@ class App extends React.Component {
                     handleExport={this.export}
                 />
 				<StereotypePanel/>
+                <DetailPanel
+                    panelObject={this.state.panelObject}
+                    language={this.state.language}
+                />
 				<DiagramCanvas
                     ref={instance => {this.diagramCanvas = instance;}}
                     selectedLink={this.state.selectedLink}
                     firstCardinality={this.state.firstCardinality}
                     secondCardinality={this.state.secondCardinality}
                     language={this.state.language}
+                    handleChangePanelObject={this.handleChangePanelObject}
                 />
+
             </div>
 		);
 	}

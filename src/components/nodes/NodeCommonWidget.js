@@ -30,6 +30,10 @@ export class NodeCommonWidget extends React.Component<NodeCommonWidgetProps, Nod
         this.child.openModal();
     }
 
+    /*
+        onDoubleClick={this.createModal}
+         <ModalDialogue ref={instance => {this.child = instance;}} openFunc={this.createModal} node={this.props.node}/>
+     */
     render(){
         let attrkey = 0;
         let height = 48;
@@ -44,8 +48,8 @@ export class NodeCommonWidget extends React.Component<NodeCommonWidgetProps, Nod
             <tspan key={attrkey++} x="5px" dy="15px">{attr.first + ": " + attr.second}</tspan>
         );
         return (
-            <div className={this.props.node.type} width={this.props.size} height={height} onDoubleClick={this.createModal}>
-                <ModalDialogue ref={instance => {this.child = instance;}} openFunc={this.createModal} node={this.props.node}/>
+            <div className={this.props.node.type} width={this.props.size} height={height} >
+
                 <svg
                     width={this.props.size}
                     height={height}>
