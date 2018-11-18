@@ -82,7 +82,7 @@ export class DiagramCanvas extends React.Component {
     deserialize(){
         let str = prompt(Locale.menuPanelInsertJSON);
         this.registerFactories();
-        let model = new CustomDiagramModel();
+        let model = new CustomDiagramModel(this.props,this);
         model.deSerializeDiagram(JSON.parse(str), this.engine);
         this.engine.setDiagramModel(model);
         alert(Locale.menuPanelLoaded);
