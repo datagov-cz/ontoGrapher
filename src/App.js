@@ -1,0 +1,107 @@
+import React from "react";
+import {Defaults} from "./config/Defaults";
+import {PointModel} from "storm-react-diagrams";
+import {MenuPanel} from "./panels/MenuPanel";
+import {StereotypePanel} from "./panels/StereotypePanel";
+import {DetailPanel} from "./panels/DetailPanel";
+import {DiagramCanvas} from "./diagram/DiagramCanvas";
+
+require("./sass/main.scss");
+
+export class App extends React.Component {
+    constructor(props){
+        super(props);
+        this.state = {
+            selectedLink: Defaults.selectedLink,
+            firstCardinality: Defaults.cardinality,
+            secondCardinality: Defaults.cardinality,
+            language: Defaults.language,
+            panelObject: null
+        };
+
+        this.handleChangeSelectedLink = this.handleChangeSelectedLink.bind(this);
+        this.handleChangeFirstCardinality = this.handleChangeFirstCardinality.bind(this);
+        this.handleChangeSecondCardinality = this.handleChangeSecondCardinality.bind(this);
+        this.handleChangeLanguage = this.handleChangeLanguage.bind(this);
+        this.handleChangePanelObject = this.handleChangePanelObject.bind(this);
+
+
+        this.serialize = this.serialize.bind(this);
+        this.deserialize = this.deserialize.bind(this);
+        this.export = this.export.bind(this);
+    }
+
+    handleChangeSelectedLink(event) {
+        this.setState({selectedLink: event.target.value});
+        this.diagramCanvas.engine.getDiagramModel().selectedLink = event.target.value;
+    }
+
+    handleChangeFirstCardinality(event) {
+        this.setState({firstCardinality: event.target.value});
+        this.diagramCanvas.engine.getDiagramModel().firstCardinality = event.target.value;
+    }
+
+    handleChangeSecondCardinality(event) {
+        this.setState({secondCardinality: event.target.value});
+        this.diagramCanvas.engine.getDiagramModel().secondCardinality = event.target.value;
+    }
+
+    handleChangeLanguage(event) {
+        this.setState({language: event.target.value});
+        this.diagramCanvas.engine.getDiagramModel().language = event.target.value;
+        this.diagramCanvas.forceUpdate();
+    }
+
+    handleChangePanelObject(thing){
+        if (thing instanceof PointModel){
+            this.setState({panelObject: thing.getLink()});
+        } else {
+            this.setState({panelObject: thing});
+        }
+    }
+
+    serialize(){
+        this.diagramCanvas.serialize();
+    }
+
+    deserialize(){
+        this.diagramCanvas.deserialize();
+    }
+
+    export(){
+        this.diagramCanvas.export();
+    }
+
+    render() {
+        return (
+            <div className="content">
+                <MenuPanel
+                    handleChangeSelectedLink={this.handleChangeSelectedLink}
+                    handleChangeFirstCardinality={this.handleChangeFirstCardinality}
+                    handleChangeSecondCardinality={this.handleChangeSecondCardinality}
+                    handleChangeLanguage={this.handleChangeLanguage}
+                    selectedLink={this.state.selectedLink}
+                    firstCardinality={this.state.firstCardinality}
+                    secondCardinality={this.state.secondCardinality}
+                    language={this.state.language}
+                    handleSerialize={this.serialize}
+                    handleDeserialize={this.deserialize}
+                    handleExport={this.export}
+                />
+                <StereotypePanel/>
+                <DetailPanel
+                    panelObject={this.state.panelObject}
+                    language={this.state.language}
+                />
+                <DiagramCanvas
+                    ref={instance => {this.diagramCanvas = instance;}}
+                    selectedLink={this.state.selectedLink}
+                    firstCardinality={this.state.firstCardinality}
+                    secondCardinality={this.state.secondCardinality}
+                    language={this.state.language}
+                    handleChangePanelObject={this.handleChangePanelObject}
+                />
+            </div>
+        );
+    }
+}

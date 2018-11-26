@@ -229,28 +229,6 @@ export class DetailPanel extends React.Component{
                     </fieldset>
                 </div>
             );
-        } else if (this.state.type === CommonLinkModel){
-            return (
-                <div className="detailPanel">
-                    <h2>{Locale.detailPanelTitle}</h2>
-                    <fieldset>
-                        <h4>{Locale.detailPanelType+": "+this.state.linktype}</h4>
-                        {Locale.detailPanelCardinality+" 1: "}<select
-                            value={this.state.firstcard}
-                            onChange={this.handleChangeFirstCardinality}>
-                            {this.cardinalityPool}
-                        </select><br />
-                        {Locale.detailPanelCardinality+" 2: "}<select
-                            value={this.state.secondcard}
-                            onChange={this.handleChangeSecondCardinality}>
-                            {this.cardinalityPool}
-                        </select><br />
-                        {Locale.detailPanelLabel+": "}
-                        <input type="text" value={this.state.newLabel} onChange={this.handleChangeLabel} placeholder={Locale.detailPanelNamePlaceholder}/>
-                        <button onClick={this.saveLabel}>{Locale.menuPanelSave}</button>
-                    </fieldset>
-                </div>
-            );
         } else {
             return (
                 <div className="detailPanelEmpty">
