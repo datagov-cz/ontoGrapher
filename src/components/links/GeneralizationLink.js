@@ -1,4 +1,4 @@
-import {CommonLinkWidget} from "../commonlink/CommonLinkWidget";
+import {CommonLinkWidget} from "../common-link/CommonLinkWidget";
 import React from "react";
 
 export class GeneralizationLinkWidget extends CommonLinkWidget{

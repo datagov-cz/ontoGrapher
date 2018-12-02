@@ -16,7 +16,6 @@ export class StereotypePanelItem extends React.Component {
     render() {
         return (
             <div
-                style={{ background: this.props.color }}
                 draggable={true}
                 onDragStart={event => {
                     event.dataTransfer.setData('storm-diagram-node', JSON.stringify(this.props.model));

@@ -1,17 +1,22 @@
 import React from 'react';
 import {StereotypePanelItem} from "./StereotypePanelItem";
-import {StereotypePool} from "../config/StereotypePool";
-import {getStereotypes} from "../rdf/StereotypeGetter";
 import {Defaults} from "../config/Defaults";
+import Tabs from "react-bootstrap/es/Tabs";
+import Tab from "react-bootstrap/es/Tab";
+import {Locale} from "../config/Locale";
+import {CardinalityPool} from "../config/CardinalityPool";
+import {PanelLinkItem} from "./PanelLinkItem";
+import {LinkPool} from "../config/LinkPool";
 
 
 export class StereotypePanel extends React.Component{
     constructor(props: StereotypePanelItem) {
         super(props);
         this.stereotypeList = [];
-        this.state = {
-            stereotypes: []
-        };
+        this.handleChangeSelectedLink = this.handleChangeSelectedLink.bind(this);
+
+
+
         /*
         this.stereotypeLists = StereotypePool.map((stereotype) =>
             <StereotypePanelItem key={stereotype.toUpperCase()} model={{type: stereotype.toLowerCase()}} name={stereotype} color="white"/>
@@ -20,6 +25,7 @@ export class StereotypePanel extends React.Component{
     }
 
     componentWillMount(){
+
         const rdf = require('rdf-ext');
         const rdfFetch = require('rdf-fetch');
         this.stereotypes = {};
@@ -59,8 +65,24 @@ export class StereotypePanel extends React.Component{
 
     }
 
+    handleChangeSelectedLink(linktype){
+        this.props.handleChangeSelectedLink(linktype);
+    }
+
     render(){
+
+
         /*
+        this.linkPool = [];
+        for (let link in LinkPool) {
+            this.linkPool.push(
+                <PanelLinkItem
+                    key={link}
+                    selectedLink={this.props.selectedLink}
+                    handleChangeSelectedLink={this.handleChangeSelectedLink}
+                    linktype={link}/>);
+        }
+
         this.stereotype = this.state.stereotypes.map((stereotype)=>
             <StereotypePanelItem key={stereotype.toUpperCase()} model={{type: stereotype.toLowerCase()}} name={stereotype} color="white"/>
         );
@@ -70,11 +92,30 @@ export class StereotypePanel extends React.Component{
             this.stereotype.push(<StereotypePanelItem key={this.stereotypes[stereo].toUpperCase()} model={{
                 type: this.stereotypes[stereo].toLowerCase(),
                 rdf: stereo
-            }} name={this.stereotypes[stereo]} color="white"/>);
+            }} name={this.stereotypes[stereo]}/>);
         }
         return(
+
             <div className="stereotypePanel">
-                {this.stereotype}
+                <Tabs id="stereotypePanel" animation={false}>
+                    <Tab eventKey={1} title={Locale.leftPanelStereotypes}>
+                        <div className="stereotypes">
+                            {this.stereotype}
+                        </div>
+                    </Tab>
+                    <Tab eventKey={2} title={Locale.leftPanelLinks}>
+                        {Object.keys(LinkPool).map((link)=>(
+                            <PanelLinkItem
+                                key={link}
+                                selectedLink={this.props.selectedLink}
+                                handleChangeSelectedLink={this.handleChangeSelectedLink}
+                                linktype={link}
+                            />
+                        ))}
+                    </Tab>
+                </Tabs>
+
+
             </div>
         );
     }

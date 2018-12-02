@@ -1,5 +1,5 @@
 import React from 'react';
-import {CommonLinkWidget} from "../commonlink/CommonLinkWidget";
+import {CommonLinkWidget} from "../common-link/CommonLinkWidget";
 
 
 export class MediationLinkWidget extends CommonLinkWidget {

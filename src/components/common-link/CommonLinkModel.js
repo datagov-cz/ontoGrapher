@@ -4,6 +4,8 @@ import {
     DefaultLinkModel, DiagramEngine
 } from 'storm-react-diagrams';
 import {CustomDiagramModel} from "../../diagram/CustomDiagramModel";
+import {Locale} from "../../config/Locale";
+import {LanguagePool} from "../../config/LanguagePool";
 
 
 
@@ -14,6 +16,7 @@ export class CommonLinkModel extends DefaultLinkModel {
     linktype: string;
     model: CustomDiagramModel;
     descriptor: boolean;
+    dashed: boolean;
 
     constructor(model: CustomDiagramModel){
         super();
@@ -21,16 +24,20 @@ export class CommonLinkModel extends DefaultLinkModel {
         this.width = 3;
         this.curvyness = 0;
         this.model = model;
-        this.name = "";
         this.descriptor = false;
+        this.dashed = false;
+        this.names = {};
+        for (let language in LanguagePool){
+            if (this.names[language] === undefined){
+                this.names[language] = "";
+            }
+        }
         if (this.model instanceof CustomDiagramModel){
             this.linktype = this.model.selectedLink;
-            if (this.model.firstCardinality !== "None"){
-                this.addLabel(this.model.firstCardinality);
-            }
-            if (this.model.secondCardinality !== "None"){
-                this.addLabel(this.model.secondCardinality);
-            }
+            this.addLabel(this.model.firstCardinality === Locale.none ? "" : this.model.firstCardinality);
+            this.addLabel("");
+            this.addLabel(this.model.secondCardinality  === Locale.none ? "" : this.model.secondCardinality);
+            this.addLabel("");
         }
         this.addListener({
             selectionChanged: event => {this.model.updatePanel();},
@@ -39,14 +46,15 @@ export class CommonLinkModel extends DefaultLinkModel {
     }
 
     addDescriptorLabel(){
-        if (this.labels.length < 3){
             let labeltext = "«"+this.linktype.toLowerCase()+"»";
-            let label = new DefaultLabelModel();
-            label.setLabel(labeltext);
-            this.labels.splice(1,0,label);
+            this.labels[1].setLabel(labeltext);
             this.descriptor = true;
-        }
 
+
+    }
+
+    setDashedLine(){
+        this.dashed = true;
     }
 
     serialize() {
@@ -78,19 +86,18 @@ export class CommonLinkModel extends DefaultLinkModel {
         }
     }
 
+    setNameLanguage(language:string){
+        this.labels[3].setLabel(this.names[language]);
+    }
+
     setFirstCardinality(str: string){
         this.labels[0].setLabel(str);
     }
 
-    setName(str:string){
-        this.name = str;
-        if (this.descriptor){
-            this.labels[1].setLabel("«"+this.linktype.toLowerCase()+"»"+"\n"+str);
-        } else {
-            this.labels[1].setLabel(str);
-        }
-
+    setName(str: string, language: string){
+        this.names[language] = str;
     }
+
 
     setSecondCardinality(str: string){
         this.labels[2].setLabel(str);

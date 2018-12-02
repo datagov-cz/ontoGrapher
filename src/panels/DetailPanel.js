@@ -1,14 +1,19 @@
 import React from 'react';
-import {NodeCommonModel} from "../components/nodes/NodeCommonModel";
+import {NodeCommonModel} from "../components/common-node/NodeCommonModel";
 import {Locale} from "../config/Locale";
 import {Tabs, TabList, Tab, TabPanel} from 'react-tabs';
 import {LanguagePool} from "../config/LanguagePool";
 import "react-tabs/style/react-tabs.css";
-import {CommonLinkModel} from "../components/commonlink/CommonLinkModel";
+import {CommonLinkModel} from "../components/common-link/CommonLinkModel";
 import {PointModel} from "storm-react-diagrams";
 import {AttributeTypePool} from "../config/AttributeTypePool";
-import {AttributeObject} from "../components/nodes/AttributeObject";
+import {AttributeObject} from "../components/misc/AttributeObject";
 import {CardinalityPool} from "../config/CardinalityPool";
+import FormGroup from "react-bootstrap/es/FormGroup";
+import FormControl from "react-bootstrap/es/FormControl";
+import Button from "react-bootstrap/es/Button";
+import Form from "react-bootstrap/es/Form";
+import InputGroup from "react-bootstrap/es/InputGroup";
 
 export class DetailPanel extends React.Component{
     constructor(props){
@@ -57,7 +62,6 @@ export class DetailPanel extends React.Component{
 
     prepareObject(object){
         let copy = object;
-
         if (copy instanceof NodeCommonModel){
             this.setState({
                 type: NodeCommonModel,
@@ -70,7 +74,7 @@ export class DetailPanel extends React.Component{
                 firstcard: copy.firstCardinality,
                 secondcard: copy.secondCardinality,
                 linktype: copy.linktype,
-                newLabel: copy.name
+                names: copy.names
             });
         } else {
             this.setState({
@@ -87,6 +91,9 @@ export class DetailPanel extends React.Component{
 
     processDialogue(){
         this.props.panelObject.setName(this.state.names[this.state.language], this.state.language);
+        if (this.state.type === CommonLinkModel){
+            this.props.panelObject.setNameLanguage(this.props.panelObject.model.language);
+        }
         this.forceUpdate();
         this.props.panelObject.model.canvas.forceUpdate();
     }
@@ -184,7 +191,6 @@ export class DetailPanel extends React.Component{
     }
 
     saveLabel(){
-
         this.props.panelObject.setName(this.state.newLabel);
     }
 
@@ -199,34 +205,92 @@ export class DetailPanel extends React.Component{
             const attributeList = this.state.attrs[this.state.language].map((attr) =>
             <option key={attrkey} value={attrkey++}>{attr.first+ ": " + attr.second}</option>
             );
+            let attrlen = this.state.attrs[this.state.language].length;
+            let selector = (<h6>{Locale.noAttributes}</h6>);
+            if (attrlen > 0){
+                selector = (
+                    <FormControl
+                        componentClass="select"
+                        bsSize="small"
+                        value={this.state.attribute}
+                        onChange={this.handleChangeAttribute}
+                        onFocus={this.focus}
+                        size={attrlen}
+                        style={{height: 12+(attrlen)*15}}
+                    >
+                        {attributeList}
+                    </FormControl>
+                );
+            }
 
             return (
-                <div className="detailPanel" >
+                <div className="detailPanel">
                     <h2>{Locale.detailPanelTitle}</h2>
 
                     <select value={this.state.language} onChange={this.handleChangeLanguage}>
                         {this.languages}
                     </select>
-                    <fieldset>
+                    <Form inline>
+                    <FormGroup>
                         <h4>{Locale.detailPanelName}</h4>
-                        <input type="text" value={this.state.names[this.state.language]} onChange={this.handleChangeName} placeholder={Locale.detailPanelNamePlaceholder}/>
-                        <button onClick={this.processDialogue}>{Locale.menuPanelSave}</button>
+                        <FormControl
+                            bsSize="small"
+                            type="text"
+                            value={this.state.names[this.state.language]}
+                            placeholder={Locale.detailPanelNamePlaceholder}
+                            onChange={this.handleChangeName}
+                        />
+                        <Button bsSize="small" onClick={this.processDialogue}>{Locale.menuPanelSave}</Button>
+                    </FormGroup>
+                    </Form>
+
                         <h4>{Locale.detailPanelAttributes}</h4>
-                        <fieldset>
-                            <select
-                                onFocus={this.focus}
-                                value={this.state.attribute}
-                                size={this.state.attrs[this.state.language].length}
-                                onChange={this.handleChangeAttribute}>
-                                {attributeList}
-                            </select><br />
-                            <input type="text" value={this.state.newAttrName} onChange={this.handleChangeAttributeName} placeholder={Locale.detailPanelNamePlaceholder}/>
-                            <select value={this.state.newAttrType} onChange={this.handleChangeAttributeType}>{this.attributeTypes}</select>
-                            <button onClick={this.saveAttribute}>{Locale.menuPanelSave}</button><br />
-                            <button onClick={this.addAttribute}>{Locale.detailPanelNewAttr}</button>
-                            <button onClick={this.deleteAttribute}>{Locale.detailPanelDeleteAttr}</button>
-                        </fieldset>
-                    </fieldset>
+
+                        {selector}
+                    <Form inline>
+                        <FormControl
+                            bsSize="small"
+                            type="text"
+                            value={this.state.newAttrName}
+                            placeholder={Locale.detailPanelNamePlaceholder}
+                            onChange={this.handleChangeAttributeName}
+                        />
+                        <FormControl
+                            componentClass="select"
+                            bsSize="small"
+                            value={this.state.newAttrType}
+                            onChange={this.handleChangeAttributeType}
+                        >
+                            {this.attributeTypes}
+                        </FormControl>
+                            <Button  bsSize="small" onClick={this.saveAttribute}>{Locale.menuPanelSave}</Button>
+                        </Form>
+                            <Button bsSize="small" onClick={this.addAttribute}>{Locale.detailPanelNewAttr}</Button>
+                            <Button bsSize="small" onClick={this.deleteAttribute}>{Locale.detailPanelDeleteAttr}</Button>
+
+                </div>
+            );
+        } else if (this.state.type === CommonLinkModel){
+            return (
+                <div className="detailPanel">
+                    <h2>{Locale.detailPanelTitle}</h2>
+
+                    <select value={this.state.language} onChange={this.handleChangeLanguage}>
+                        {this.languages}
+                    </select>
+                    <Form inline>
+                        <FormGroup>
+                            <h4>{Locale.detailPanelName}</h4>
+                            <FormControl
+                                bsSize="small"
+                                type="text"
+                                value={this.state.names[this.state.language]}
+                                placeholder={Locale.detailPanelNamePlaceholder}
+                                onChange={this.handleChangeName}
+                            />
+                            <Button bsSize="small" onClick={this.processDialogue}>{Locale.menuPanelSave}</Button>
+                        </FormGroup>
+                    </Form>
                 </div>
             );
         } else {

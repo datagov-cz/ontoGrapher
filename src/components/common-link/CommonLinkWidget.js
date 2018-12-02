@@ -1,5 +1,7 @@
 import {DefaultLinkWidget, Toolkit} from "storm-react-diagrams";
 import React from "react";
+import {PointModel} from "storm-react-diagrams";
+import {DefaultLinkFactory} from "storm-react-diagrams";
 
 export class CommonLinkWidget extends DefaultLinkWidget {
     label: boolean;
@@ -7,6 +9,7 @@ export class CommonLinkWidget extends DefaultLinkWidget {
     constructor(props){
         super(props);
         this.label = false;
+        this.handleClick = this.handleClick.bind(this);
     }
 
     getAngle(px1, py1, px2, py2) {
@@ -78,6 +81,7 @@ export class CommonLinkWidget extends DefaultLinkWidget {
         return (
             <g key={"point-" + this.props.link.points[pointIndex].id}>
                 <circle
+                    shapeRendering="optimizeSpeed"
                     onMouseLeave={() => {
                         this.setState({ selected: false });
                     }}
@@ -99,6 +103,146 @@ export class CommonLinkWidget extends DefaultLinkWidget {
             </g>
         );
     }
+
+    handleClick(event){
+        if (event.button === 0){
+            this.addPointToLink(event, 1);
+        } else if (event.button === 2){
+            this.props.link.model.canvas.showContextMenu(event, this.props.link);
+        }
+    }
+
+    generateLink(path: string, extraProps: any, id: string | number): JSX.Element {
+        var props = this.props;
+
+        var Bottom = React.cloneElement(
+            props.diagramEngine.getFactoryForLink(this.props.link).generateLinkSegment(
+                this.props.link,
+                this,
+                this.state.selected || this.props.link.isSelected(),
+                path
+            ),
+            {
+                ref: ref => ref && this.refPaths.push(ref)
+            }
+        );
+
+        var Top = React.cloneElement(Bottom, {
+            strokeLinecap: "round",
+            onMouseLeave: () => {
+                this.setState({ selected: false });
+            },
+            onMouseEnter: () => {
+                this.setState({ selected: true });
+            },
+            ref: null,
+            "data-linkid": this.props.link.getID(),
+            strokeOpacity: this.state.selected ? 0.1 : 0,
+            strokeWidth: 20,
+            onContextMenu: () => {
+                if (!this.props.diagramEngine.isModelLocked(this.props.link)) {
+                    event.preventDefault();
+                    //this.props.link.remove();
+                }
+            },
+            onMouseDown: this.handleClick
+        });
+
+        return (
+            <g key={"link-" + id}>
+                {Bottom}
+                {Top}
+            </g>
+        );
+    }
+
+    componentDidUpdate() {
+        if (this.props.link.labels.length > 0) {
+            window.requestAnimationFrame(this.calculateAllLabelPositionCustom.bind(this));
+        }
+    }
+
+    componentDidMount() {
+        if (this.props.link.labels.length > 0) {
+            window.requestAnimationFrame(this.calculateAllLabelPositionCustom.bind(this));
+        }
+    }
+
+    calculateAllLabelPositionCustom() {
+        _.forEach(this.props.link.labels, (label, index) => {
+            this.calculateLabelPositionCustom(label, index + 1);
+        });
+    }
+
+    calculateLabelPositionCustom(label, index: number) {
+        if (!this.refLabels[label.id]) {
+            // no label? nothing to do here
+            return;
+        }
+
+        const results = this.findPathAndRelativePositionToRenderLabelCustom(index);
+        if (results === undefined){
+            return;
+        }
+        const labelDimensions = {
+            width: this.refLabels[label.id].offsetWidth,
+            height: this.refLabels[label.id].offsetHeight
+        };
+
+        const pathCentre = results.path.getPointAtLength(results.position);
+
+        const labelCoordinates = {
+            x: pathCentre.x - labelDimensions.width / 2 + label.offsetX,
+            y: index === 2 ? pathCentre.y - labelDimensions.height / 2 + label.offsetY : pathCentre.y - labelDimensions.height / 2 - label.offsetY
+        };
+        this.refLabels[label.id].setAttribute(
+            "style",
+            `transform: translate(${labelCoordinates.x}px, ${labelCoordinates.y}px);`
+        );
+    };
+
+    findPathAndRelativePositionToRenderLabelCustom(index: number): { path: any; position: number } {
+        // an array to hold all path lengths, making sure we hit the DOM only once to fetch this information
+        const lengths = this.refPaths.map(path => path.getTotalLength());
+
+        // calculate the point where we want to display the label
+        /*
+        let labelPosition =
+            lengths.reduce((previousValue, currentValue) => previousValue + currentValue, 0) *
+            (index / (this.props.link.labels.length + 1));
+        */
+        let totalLength = lengths.reduce((previousValue, currentValue) => previousValue + currentValue, 0);
+        let labelPosition = 0;
+        let offset = 20;
+        switch (index){
+            case 1:
+                labelPosition = offset;
+                break;
+            case 2:
+                labelPosition = totalLength/2;
+                break;
+            case 3:
+                labelPosition = totalLength - offset;
+                break;
+            case 4:
+                labelPosition = totalLength/2;
+                break;
+        }
+        // find the path where the label will be rendered and calculate the relative position
+        let pathIndex = 0;
+        while (pathIndex < this.refPaths.length) {
+            if (labelPosition - lengths[pathIndex] < 0) {
+                return {
+                    path: this.refPaths[pathIndex],
+                    position: labelPosition
+                };
+            }
+
+            // keep searching
+            labelPosition -= lengths[pathIndex];
+            pathIndex++;
+        }
+    };
 
     render() {
         const { diagramEngine } = this.props;
@@ -136,9 +280,7 @@ export class CommonLinkWidget extends DefaultLinkWidget {
                     this.generateLink(
                         Toolkit.generateDynamicPath(simplifiedPath),
                         {
-                            onMouseDown: event => {
-                                this.addPointToLink(event, 1);
-                            }
+                            onMouseDown: this.handleClick
                         },
                         "0"
                     )
@@ -174,9 +316,7 @@ export class CommonLinkWidget extends DefaultLinkWidget {
                     this.generateLink(
                         Toolkit.generateCurvePath(pointLeft, pointRight, this.props.link.curvyness),
                         {
-                            onMouseDown: event => {
-                                this.addPointToLink(event, 1);
-                            }
+                            onMouseDown: this.handleClick
                         },
                         "0"
                     )
@@ -196,9 +336,7 @@ export class CommonLinkWidget extends DefaultLinkWidget {
                             {
                                 "data-linkid": this.props.link.id,
                                 "data-point": j,
-                                onMouseDown: (event: MouseEvent) => {
-                                    this.addPointToLink(event, j + 1);
-                                }
+                                onMouseDown: this.handleClick
                             },
                             j
                         )
@@ -210,10 +348,11 @@ export class CommonLinkWidget extends DefaultLinkWidget {
                     paths.push(this.generatePoint(i));
                 }
                 paths.push(this.generateEnd(points.length - 1));
-
+                /*
                 if (this.props.link.targetPort === null) {
                     paths.push(this.generateEnd(points.length - 1));
                 }
+                */
             }
         }
 
@@ -222,7 +361,9 @@ export class CommonLinkWidget extends DefaultLinkWidget {
             <g {...this.getProps()}>
                 {paths}
                 {_.map(this.props.link.labels, labelModel => {
-                    return this.generateLabel(labelModel);
+                    if (labelModel.label !== ""){
+                        return this.generateLabel(labelModel);
+                    }
                 })}
             </g>
         );

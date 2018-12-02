@@ -3,6 +3,7 @@ import {
     DiagramModel, LinkModel, NodeModel, PortModel
 } from "storm-react-diagrams";
 import {DiagramCanvas} from "./DiagramCanvas";
+import {Locale} from "../config/Locale";
 
 export class CustomDiagramModel extends DiagramModel {
 
@@ -11,6 +12,7 @@ export class CustomDiagramModel extends DiagramModel {
     firstCardinality: string;
     secondCardinality: string;
     canvas: DiagramCanvas;
+    name: string;
 
     //models
     links: { [s: string]: LinkModel };
@@ -28,6 +30,7 @@ export class CustomDiagramModel extends DiagramModel {
 
         this.links = {};
         this.nodes = {};
+        this.name = Locale.untitledDiagram;
 
         this.offsetX = 0;
         this.offsetY = 0;
@@ -60,6 +63,7 @@ export class CustomDiagramModel extends DiagramModel {
             language: this.language,
             firstCardinality: this.firstCardinality,
             secondCardinality: this.secondCardinality,
+            name: this.name,
             links: _.map(this.links, link => {
                 return link.serialize();
             }),
@@ -80,7 +84,7 @@ export class CustomDiagramModel extends DiagramModel {
         this.selectedLink = object.selectedLink;
         this.firstCardinality = object.firstCardinality;
         this.secondCardinality = object.secondCardinality;
-
+        this.name = object.name;
         // deserialize nodes
         _.forEach(object.nodes, (node: any) => {
             let nodeOb = diagramEngine.getNodeFactory(node.type).getNewInstance(node);

@@ -3,12 +3,12 @@ body{
 }
 
 .srd-diagram{
-  height: calc(100vh - 25px);
+  height: calc(100vh - 33px);
   position: relative;
   flex-grow: 1;
   display: flex;
   overflow: hidden;
-  background: beige;
+  background: #eeeeee;
 
   &__selector{
     position: absolute;

@@ -23,19 +23,19 @@ export class CommonLinkFactory extends AbstractLinkFactory<CommonLinkModel>{
     }
 
     generateLinkSegment(model: CommonLinkModel, widget: CommonLinkWidget, selected: boolean, path:string){
-        if (model.linktype === "Derivation"){
+        if (model.dashed){
             return (
+                    <path className={selected ? "link-derivation--path-selected" : "link-derivation"}
+                          ref={ref => {
+                              this.path = ref;
+                          }}
+                          shapeRendering="optimizeSpeed"
+                          strokeWidth={model.width}
+                          stroke="black"
+                          strokeDasharray="10,10"
+                          d={path}
 
-                <path className={selected ? "link-derivation--path-selected" : "link-derivation"}
-                      ref={ref => {
-                          this.path = ref;
-                      }}
-                      strokeWidth={model.width}
-                      stroke="black"
-                      strokeDasharray="10,10"
-                      d={path}
-                />
-
+                    />
             );
         } else {
             return (
@@ -44,6 +44,7 @@ export class CommonLinkFactory extends AbstractLinkFactory<CommonLinkModel>{
                       ref={ref => {
                           this.path = ref;
                       }}
+                      shapeRendering="optimizeSpeed"
                       strokeWidth={model.width}
                       stroke="black"
                       d={path}

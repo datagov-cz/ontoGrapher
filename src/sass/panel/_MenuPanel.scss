@@ -1,9 +1,61 @@
 .menuPanel{
-  height: 25px;
+  display: block;
+  width: 100%;
+  border: solid #000;
+  padding-bottom: 2px;
+  border-width: 0px 0px 1px 0px;
+
+  .dropdown-menu{
+    border-radius: 0px !important;
+    a {
+      cursor: default !important;
+    }
+  }
+
+  div:not([class]) {
+    display: inline;
+    margin: 5px;
+    font-weight: bold;
+    font-style: oblique;
+    font-size: 12pt;
+  }
+    label{
+      cursor: text;
+      margin-right: 50px;
+    }
+  label:hover{
+    margin-right: 50px;
+    cursor: text;
+    background-color: #e1e1e1;
+  }
+  select{
+    width:auto;
+    display: inline;
+    border-radius: 0px;
+
+  }
+  button {
+    border-radius: 0px !important;
+    cursor: auto !important;
+  }
+
+  button:hover{
+    border-radius: 0px !important;
+    cursor: auto !important;
+  }
+  .right{
+    float:right;
+  }
 }
+
 .logo{
   margin: 5px;
   font-weight: bold;
   font-style: oblique;
   user-select: none;
+}
+.dropdown-button{
+  border: none;
+  padding: 8px 16px;
+  cursor: default;
 }

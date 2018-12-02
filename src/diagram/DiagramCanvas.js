@@ -4,17 +4,18 @@ import {
     DiagramEngine,
     DefaultLabelFactory, PointModel,
 } from 'storm-react-diagrams';
-import {CommonPortFactory} from "../components/nodes/CommonPortFactory";
 import {CustomDiagramModel} from "./CustomDiagramModel.js";
-import {NodeCommonModel} from "../components/nodes/NodeCommonModel";
-import {NodeCommonFactory} from "../components/nodes/NodeCommonFactory";
-import {NodeCommonPortFactory} from "../components/nodes/NodeCommonPortFactory";
+import {NodeCommonModel} from "../components/common-node/NodeCommonModel";
+import {NodeCommonFactory} from "../components/common-node/NodeCommonFactory";
+import {NodeCommonPortFactory} from "../components/common-node/NodeCommonPortFactory";
 import {LinkPool} from "../config/LinkPool";
 import {LanguagePool} from "../config/LanguagePool";
-import {CommonLinkFactory} from "../components/commonlink/CommonLinkFactory";
+import {CommonLinkFactory} from "../components/common-link/CommonLinkFactory";
 import {Defaults} from "../config/Defaults";
 import {Locale} from "../config/Locale";
-import {getStereotypes} from "../rdf/StereotypeGetter";
+import {CommonLinkModel} from "../components/common-link/CommonLinkModel";
+import {ContextMenuLink} from "../misc/ContextMenuLink";
+import {CommonLabelFactory} from "../components/misc/CommonLabelFactory";
 
 Array.prototype.removeIf = function(callback) {
     var i = 0;
@@ -36,7 +37,8 @@ export class DiagramCanvas extends React.Component {
     registerFactories() {
         this.engine.registerNodeFactory(new NodeCommonFactory(this.engine.getDiagramModel()));
         this.engine.registerLinkFactory(new CommonLinkFactory());
-        this.engine.registerLabelFactory(new DefaultLabelFactory());
+        //this.engine.registerLabelFactory(new DefaultLabelFactory());
+        this.engine.registerLabelFactory(new CommonLabelFactory());
         this.engine.registerPortFactory(new NodeCommonPortFactory());
     }
 
@@ -65,6 +67,22 @@ export class DiagramCanvas extends React.Component {
         console.log(JSON.stringify(this.engine.getDiagramModel().serializeDiagram()));
     }
 
+    showContextMenu(event: MouseEvent, link: CommonLinkModel){
+        event.preventDefault();
+        /*
+        console.log({
+            coords: "x: "+coords.x+" y: "+coords.y,
+            offset: "x: "+event.offsetX+" y: "+event.offsetY,
+            screen: "x: "+event.screenX+" y: "+event.screenY,
+            page: "x: "+event.pageX+" y: "+event.pageY,
+            client: "x: "+event.clientX+" y: "+event.clientY
+
+        });
+        */
+        this.props.showContextMenu(event.clientX,event.clientY,link);
+
+    }
+
     export(){
         const rdf = require('rdf-ext');
         const SerializerNtriples = require('@rdfjs/serializer-ntriples');
@@ -82,7 +100,8 @@ export class DiagramCanvas extends React.Component {
             console.log(ntriples.toString());
         });
     }
-
+    // TODO: change language, name, etc. settings when deserializing
+    // TODO: check for missing stereotypes and links when deserializing
     deserialize(){
         let str = prompt(Locale.menuPanelInsertJSON);
         this.registerFactories();
@@ -92,7 +111,7 @@ export class DiagramCanvas extends React.Component {
         alert(Locale.menuPanelLoaded);
         this.forceUpdate();
     }
-
+    // TODO: select newly placed stereotype
     render() {
         return (
                 <div
@@ -110,7 +129,7 @@ export class DiagramCanvas extends React.Component {
                     }}>
                     <DiagramWidget
                         diagramEngine={this.engine}
-                        allowLooseLinks={false}
+                        allowLooseLinks={true}
                         smartRouting={false}
                         deleteKeys={[46]}
                     />

@@ -7,6 +7,12 @@ path[class^="link-"][class$="--path-selected"]{
   stroke-dasharray: 10,2;
   animation: dash 1s linear infinite;
   z-index: 8;
+  &:hover{
+    stroke: rgb(128, 0, 1) !important;
+    stroke-dasharray: 10,2;
+    animation: dash 1s linear infinite;
+    z-index: 8;
+  }
 }
 circle{
   z-index: 9;

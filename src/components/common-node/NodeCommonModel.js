@@ -1,6 +1,6 @@
 import { NodeModel, DiagramEngine } from "storm-react-diagrams";
 import {NodeCommonPortModel} from "./NodeCommonPortModel";
-import {AttributeObject} from "./AttributeObject";
+import {AttributeObject} from "../misc/AttributeObject";
 import {CustomDiagramModel} from "../../diagram/CustomDiagramModel";
 import {LanguagePool} from "../../config/LanguagePool";
 import {AttributeTypePool} from "../../config/AttributeTypePool";
@@ -13,17 +13,13 @@ export class NodeCommonModel extends NodeModel {
     constructor(stereotype: string, rdf: string, model: CustomDiagramModel) {
         super("common");
         this.model = model;
-        this.names = {
-            cs: "Nepojmenovaný",
-            en: "Untitled",
-            es: "Intitulado"
-        };
         this.rdf = rdf;
+        this.names = {};
         this.attributes = {};
         for (let language in LanguagePool){
             this.attributes[language] = [];
             if (this.names[language] === undefined){
-                this.names[language] = "undefined";
+                this.names[language] = "untitled";
             }
         }
 
