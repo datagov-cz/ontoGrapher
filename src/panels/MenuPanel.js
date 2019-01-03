@@ -33,68 +33,73 @@ export class MenuPanel extends React.Component {
     // TODO: Make settings modal dialogues and confirmations
     // TODO: Help portal
     render() {
-        return (
-            <div className="menuPanel">
-                {/*
-                <select value={this.props.selectedLink} onChange={this.props.handleChangeSelectedLink}>
-                    {this.linkPool}
-                </select>
-                <select value={this.props.firstCardinality} onChange={this.props.handleChangeFirstCardinality}>
-                    {this.cardinalityPool}
-                </select>
-                <select value={this.props.secondCardinality} onChange={this.props.handleChangeSecondCardinality}>
-                    {this.cardinalityPool}
-                </select>
-                <button onClick={this.props.handleSerialize}>{Locale.menuPanelSave}
-                </button>
-                <button onClick={this.props.handleDeserialize}>{Locale.menuPanelLoad}
-                </button>
-                <button onClick={this.props.handleExport}>{Locale.menuPanelExport}
-                </button>
-                <span className="logo">ontoUML diagram app</span>
-                    <select value={this.props.language} onChange={this.props.handleChangeLanguage}>
-                    {this.languagePool}
-                </select>
-                */}
+        if (this.props.readOnly){
+            return (
+                <div className="menuPanel">
 
-                <EditableLabel
-                    labelClassName='nameLabel'
-                    inputClassName='nameInput'
-                    inputPlaceHolder={Locale.detailPanelName}
-                    text={this.props.name}
-                    onFocusOut={this.props.handleChangeName}
-                />
-                <ButtonGroup>
-
-                    <DropdownButton title={Locale.menuPanelFile} bsSize="small" id={Locale.menuPanelFile}>
-                        <MenuItem onClick={this.props.handleNew} eventKey="1">{Locale.menuPanelNew}</MenuItem>
-                        <MenuItem onClick={this.props.handleDeserialize} eventKey="1">{Locale.menuPanelLoad}</MenuItem>
-                        <MenuItem onClick={this.props.handleSerialize} eventKey="2">{Locale.menuPanelSave}</MenuItem>
-                        <MenuItem onClick={this.props.handleExport} eventKey="3">{Locale.menuPanelExport}</MenuItem>
-                    </DropdownButton>
-                    <DropdownButton title={Locale.menuPanelView} bsSize="small" id={Locale.menuPanelSettings}>
-                        <MenuItem eventKey="1">{Locale.menuPanelCenter}</MenuItem>
-                        <MenuItem eventKey="2">{Locale.menuPanelZoom}</MenuItem>
-                    </DropdownButton>
-                    <DropdownButton title={Locale.menuPanelSettings} bsSize="small" id={Locale.menuPanelSettings}>
-                        <MenuItem eventKey="1">{Locale.menuPanelGeneral}</MenuItem>
-                        <MenuItem eventKey="2">{Locale.menuPanelSources}</MenuItem>
-                        <MenuItem eventKey="3">{Locale.menuPanelLanguages}</MenuItem>
-                    </DropdownButton>
-                    <Button bsSize="small">
-                        {Locale.menuPanelHelp}
-                    </Button>
-                </ButtonGroup>
-                <span className="right">
+                    <span className="left">
+                        {this.props.name}
+                    </span>
+                    <ButtonGroup>
+                        <DropdownButton title={Locale.menuPanelView} bsSize="small" id={Locale.menuPanelSettings}>
+                            <MenuItem eventKey="1">{Locale.menuPanelCenter}</MenuItem>
+                            <MenuItem eventKey="2">{Locale.menuPanelZoom}</MenuItem>
+                        </DropdownButton>
+                    </ButtonGroup>
+                    <span className="right">
                 {Locale.selectedLanguage+": "}
-                <FormControl componentClass="select" bsSize="small" value={this.props.language}
-                             onChange={this.props.handleChangeLanguage}>
+                        <FormControl componentClass="select" bsSize="small" value={this.props.language}
+                                     onChange={this.props.handleChangeLanguage}>
                     {this.languagePool}
                 </FormControl>
 </span>
 
-            </div>
-        );
+                </div>
+            );
+        } else {
+            return (
+                <div className="menuPanel">
+
+                    <EditableLabel
+                        labelClassName='nameLabel'
+                        inputClassName='nameInput'
+                        inputPlaceHolder={Locale.detailPanelName}
+                        text={this.props.name}
+                        onFocusOut={this.props.handleChangeName}
+                    />
+                    <ButtonGroup>
+
+                        <DropdownButton title={Locale.menuPanelFile} bsSize="small" id={Locale.menuPanelFile}>
+                            <MenuItem onClick={this.props.handleNew} eventKey="1">{Locale.menuPanelNew}</MenuItem>
+                            <MenuItem onClick={this.props.handleDeserialize} eventKey="1">{Locale.menuPanelLoad}</MenuItem>
+                            <MenuItem onClick={this.props.handleSerialize} eventKey="2">{Locale.menuPanelSave}</MenuItem>
+                            <MenuItem onClick={this.props.handleExport} eventKey="3">{Locale.menuPanelExport}</MenuItem>
+                        </DropdownButton>
+                        <DropdownButton title={Locale.menuPanelView} bsSize="small" id={Locale.menuPanelSettings}>
+                            <MenuItem eventKey="1">{Locale.menuPanelCenter}</MenuItem>
+                            <MenuItem eventKey="2">{Locale.menuPanelZoom}</MenuItem>
+                        </DropdownButton>
+                        <DropdownButton title={Locale.menuPanelSettings} bsSize="small" id={Locale.menuPanelSettings}>
+                            <MenuItem eventKey="1">{Locale.menuPanelGeneral}</MenuItem>
+                            <MenuItem eventKey="2">{Locale.menuPanelSources}</MenuItem>
+                            <MenuItem eventKey="3">{Locale.menuPanelLanguages}</MenuItem>
+                        </DropdownButton>
+                        <Button bsSize="small">
+                            {Locale.menuPanelHelp}
+                        </Button>
+                    </ButtonGroup>
+                    <span className="right">
+                {Locale.selectedLanguage+": "}
+                        <FormControl componentClass="select" bsSize="small" value={this.props.language}
+                                     onChange={this.props.handleChangeLanguage}>
+                    {this.languagePool}
+                </FormControl>
+</span>
+
+                </div>
+            );
+        }
+
     }
 
 }

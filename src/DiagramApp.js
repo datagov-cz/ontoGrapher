@@ -43,6 +43,15 @@ export class DiagramApp extends React.Component {
         this.export = this.export.bind(this);
     }
 
+    componentDidMount(){
+        if (typeof this.props.loadDiagram === "string"){
+            this.deserialize(this.props.loadDiagram);
+        }
+        if (this.props.readOnly){
+            this.diagramCanvas.engine.getDiagramModel().setLocked(true);
+        }
+    }
+
 
     showContextMenu(x: number,y:number, link: CommonLinkModel){
         this.setState({
@@ -108,8 +117,8 @@ export class DiagramApp extends React.Component {
         this.diagramCanvas.serialize();
     }
 
-    deserialize(){
-        this.diagramCanvas.deserialize();
+    deserialize(str: string){
+        this.diagramCanvas.deserialize(str);
     }
 
     export(){
@@ -121,55 +130,97 @@ export class DiagramApp extends React.Component {
     }
 
     render() {
-        return (
-            <div className="content"
-                 onContextMenu={event =>  {event.preventDefault();}}
-                 onClick={this.hideContextMenu}
-            >
-                <MenuPanel
-                    handleChangeSelectedLink={this.handleChangeSelectedLink}
-                    handleChangeFirstCardinality={this.handleChangeFirstCardinality}
-                    handleChangeSecondCardinality={this.handleChangeSecondCardinality}
-                    handleChangeLanguage={this.handleChangeLanguage}
-                    handleChangeName={this.handleChangeName}
-                    handleNew={this.handleNew}
-                    selectedLink={this.state.selectedLink}
-                    firstCardinality={this.state.firstCardinality}
-                    secondCardinality={this.state.secondCardinality}
-                    language={this.state.language}
-                    name={this.state.name}
-                    handleSerialize={this.serialize}
-                    handleDeserialize={this.deserialize}
-                    handleExport={this.export}
-                />
-                <StereotypePanel
-                    handleChangeSelectedLink={this.handleChangeSelectedLink}
-                    selectedLink={this.state.selectedLink}
-                />
-                <DetailPanel
-                    panelObject={this.state.panelObject}
-                    language={this.state.language}
-                />
-                <DiagramCanvas
-                    ref={instance => {this.diagramCanvas = instance;}}
-                    selectedLink={this.state.selectedLink}
-                    firstCardinality={this.state.firstCardinality}
-                    secondCardinality={this.state.secondCardinality}
-                    language={this.state.language}
-                    handleChangePanelObject={this.handleChangePanelObject}
-                    contextMenuActive={this.state.contextMenuActive}
-                    contextMenuX={this.state.contextMenuX}
-                    contextMenuY={this.state.contextMenuY}
-                    contextMenuLink={this.state.contextMenuLink}
-                    showContextMenu={this.showContextMenu}
-                />
-                <ContextMenuLink
-                    contextMenuActive={this.state.contextMenuActive}
-                    contextMenuX={this.state.contextMenuX}
-                    contextMenuY={this.state.contextMenuY}
-                    contextMenuLink={this.state.contextMenuLink}
-                />
-            </div>
-        );
+        if (this.props.readOnly){
+            return (
+                <div className="content"
+                     onContextMenu={event =>  {event.preventDefault();}}
+                     onClick={this.hideContextMenu}
+                >
+                    <MenuPanel
+                        handleChangeSelectedLink={this.handleChangeSelectedLink}
+                        handleChangeFirstCardinality={this.handleChangeFirstCardinality}
+                        handleChangeSecondCardinality={this.handleChangeSecondCardinality}
+                        handleChangeLanguage={this.handleChangeLanguage}
+                        handleChangeName={this.handleChangeName}
+                        handleNew={this.handleNew}
+                        selectedLink={this.state.selectedLink}
+                        firstCardinality={this.state.firstCardinality}
+                        secondCardinality={this.state.secondCardinality}
+                        language={this.state.language}
+                        name={this.state.name}
+                        handleSerialize={this.serialize}
+                        handleDeserialize={this.deserialize}
+                        handleExport={this.export}
+                        readOnly={this.props.readOnly}
+                    />
+                    <DiagramCanvas
+                        ref={instance => {this.diagramCanvas = instance;}}
+                        selectedLink={this.state.selectedLink}
+                        firstCardinality={this.state.firstCardinality}
+                        secondCardinality={this.state.secondCardinality}
+                        language={this.state.language}
+                        handleChangePanelObject={this.handleChangePanelObject}
+                        contextMenuActive={this.state.contextMenuActive}
+                        contextMenuX={this.state.contextMenuX}
+                        contextMenuY={this.state.contextMenuY}
+                        contextMenuLink={this.state.contextMenuLink}
+                        showContextMenu={this.showContextMenu}
+                    />
+                </div>
+            );
+        } else {
+            return (
+                <div className="content"
+                     onContextMenu={event =>  {event.preventDefault();}}
+                     onClick={this.hideContextMenu}
+                >
+                    <MenuPanel
+                        handleChangeSelectedLink={this.handleChangeSelectedLink}
+                        handleChangeFirstCardinality={this.handleChangeFirstCardinality}
+                        handleChangeSecondCardinality={this.handleChangeSecondCardinality}
+                        handleChangeLanguage={this.handleChangeLanguage}
+                        handleChangeName={this.handleChangeName}
+                        handleNew={this.handleNew}
+                        selectedLink={this.state.selectedLink}
+                        firstCardinality={this.state.firstCardinality}
+                        secondCardinality={this.state.secondCardinality}
+                        language={this.state.language}
+                        name={this.state.name}
+                        handleSerialize={this.serialize}
+                        handleDeserialize={this.deserialize}
+                        handleExport={this.export}
+                        readOnly={this.props.readOnly}
+                    />
+                    <StereotypePanel
+                        handleChangeSelectedLink={this.handleChangeSelectedLink}
+                        selectedLink={this.state.selectedLink}
+                    />
+                    <DetailPanel
+                        panelObject={this.state.panelObject}
+                        language={this.state.language}
+                    />
+                    <DiagramCanvas
+                        ref={instance => {this.diagramCanvas = instance;}}
+                        selectedLink={this.state.selectedLink}
+                        firstCardinality={this.state.firstCardinality}
+                        secondCardinality={this.state.secondCardinality}
+                        language={this.state.language}
+                        handleChangePanelObject={this.handleChangePanelObject}
+                        contextMenuActive={this.state.contextMenuActive}
+                        contextMenuX={this.state.contextMenuX}
+                        contextMenuY={this.state.contextMenuY}
+                        contextMenuLink={this.state.contextMenuLink}
+                        showContextMenu={this.showContextMenu}
+                    />
+                    <ContextMenuLink
+                        contextMenuActive={this.state.contextMenuActive}
+                        contextMenuX={this.state.contextMenuX}
+                        contextMenuY={this.state.contextMenuY}
+                        contextMenuLink={this.state.contextMenuLink}
+                    />
+                </div>
+            );
+        }
+
     }
 }

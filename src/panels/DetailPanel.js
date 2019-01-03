@@ -201,6 +201,7 @@ export class DetailPanel extends React.Component{
                 this.setState({formName: this.props.panelObject.names[this.state.language]});
             }
             */
+            let tabkey = 1;
             let attrkey = 0;
             const attributeList = this.state.attrs[this.state.language].map((attr) =>
             <option key={attrkey} value={attrkey++}>{attr.first+ ": " + attr.second}</option>
@@ -226,7 +227,6 @@ export class DetailPanel extends React.Component{
             return (
                 <div className="detailPanel">
                     <h2>{Locale.detailPanelTitle}</h2>
-
                     <select value={this.state.language} onChange={this.handleChangeLanguage}>
                         {this.languages}
                     </select>
@@ -300,85 +300,4 @@ export class DetailPanel extends React.Component{
             );
         }
     }
-
-
-
-
-
-
-    /*
-
-     if (this.state.type === NodeCommonModel){
-            return (<div className="detailPanel">
-                <h2>{Locale.detailPanelTitle}</h2>
-
-                <select value={this.state.language} onChange={this.handleChangeLanguage}>
-                    {this.languages}
-                </select>
-                <fieldset>
-                    <input type="text" value={this.state.}
-                </fieldset>
-            </div>);
-        } else if (this.state.type === CommonLinkModel){
-            return (<div className="detailPanel">
-                <h2>{Locale.detailPanelTitle}</h2>
-
-                <select value={this.state.language} onChange={this.handleChangeLanguage}>
-                    {this.languages}
-                </select>
-                <fieldset>
-                    <input type="text" value={this.state.language}
-                </fieldset>
-            </div>);
-        } else {
-            return(
-                <div className="detailPanel">
-                    <h2>{Locale.detailPanelTitle}</h2>
-
-                    <select value={this.state.language} onChange={this.handleChangeLanguage}>
-                        {this.languages}
-                    </select>
-                    <fieldset>
-                        <input type="text" value={this.state.language}
-                    </fieldset>
-                </div>
-            );
-        }
-    }
-
-    render()
-    {
-        let object = {};
-        if (this.props.panelObject instanceof NodeCommonModel){
-            object.name = this.props.panelObject.names[this.state.language];
-            object.attrs = this.props.panelObject.attributes[this.state.language];
-        }
-
-        let key = 0;
-        let attrsmap = [];
-
-        key = 0;
-        let tablist = [];
-        for (let language in LanguagePool){
-            tablist.push(<Tab>{LanguagePool[language]}</Tab>)
-        }
-        let tabpanellist = [];
-        for (let language in LanguagePool){
-            tabpanellist.push(<TabPanel>{LanguagePool[language]}</TabPanel>)
-        }
-
-        return(<div className="detailPanel">
-            <h2>{Locale.detailPanelTitle}</h2>
-            {object.name}
-            <h4>{Locale.detailPanelName}</h4>
-            <Tabs>
-                <TabList>
-                    {tablist}
-                </TabList>
-                {tabpanellist}
-            </Tabs>
-        </div>);
-
-    }
-    */
 }

@@ -100,10 +100,11 @@ export class DiagramCanvas extends React.Component {
             console.log(ntriples.toString());
         });
     }
+
     // TODO: change language, name, etc. settings when deserializing
     // TODO: check for missing stereotypes and links when deserializing
-    deserialize(){
-        let str = prompt(Locale.menuPanelInsertJSON);
+    deserialize(str: string){
+        //let str = prompt(Locale.menuPanelInsertJSON);
         this.registerFactories();
         let model = new CustomDiagramModel(this.props,this);
         model.deSerializeDiagram(JSON.parse(str), this.engine);

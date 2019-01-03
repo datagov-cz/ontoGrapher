@@ -95,7 +95,6 @@ export class StereotypePanel extends React.Component{
             }} name={this.stereotypes[stereo]}/>);
         }
         return(
-
             <div className="stereotypePanel">
                 <Tabs id="stereotypePanel" animation={false}>
                     <Tab eventKey={1} title={Locale.leftPanelStereotypes}>
