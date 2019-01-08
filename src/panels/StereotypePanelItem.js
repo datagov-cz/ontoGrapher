@@ -18,7 +18,7 @@ export class StereotypePanelItem extends React.Component {
             <div
                 draggable={true}
                 onDragStart={event => {
-                    event.dataTransfer.setData('storm-diagram-node', JSON.stringify(this.props.model));
+                    event.dataTransfer.setData("newNode", JSON.stringify(this.props.model));
                 }}
                 className="stereotypePanelItem"
             >

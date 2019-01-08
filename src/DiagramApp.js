@@ -26,7 +26,8 @@ export class DiagramApp extends React.Component {
             contextMenuActive: false,
             contextMenuX: 0,
             contextMenuY: 0,
-            contextMenuLink: null
+            contextMenuLink: null,
+            saveData: ""
         };
 
         this.handleChangeSelectedLink = this.handleChangeSelectedLink.bind(this);
@@ -41,6 +42,9 @@ export class DiagramApp extends React.Component {
         this.serialize = this.serialize.bind(this);
         this.deserialize = this.deserialize.bind(this);
         this.export = this.export.bind(this);
+        this.handleSerialize = this.handleSerialize.bind(this);
+        this.handleZoom = this.handleZoom.bind(this);
+        this.centerView = this.centerView.bind(this);
     }
 
     componentDidMount(){
@@ -129,6 +133,19 @@ export class DiagramApp extends React.Component {
         this.setState({contextMenuActive: false});
     }
 
+    handleSerialize(str){
+        this.setState({saveData: str});
+    }
+
+    handleZoom(){
+        this.diagramCanvas.engine.getDiagramModel().setOffsetX(0);
+        this.diagramCanvas.engine.getDiagramModel().setOffsetY(0);
+    }
+
+    centerView(){
+        this.diagramCanvas.engine.getDiagramModel().zoom = 100;
+    }
+
     render() {
         if (this.props.readOnly){
             return (
@@ -148,6 +165,7 @@ export class DiagramApp extends React.Component {
                         secondCardinality={this.state.secondCardinality}
                         language={this.state.language}
                         name={this.state.name}
+                        saveData={this.state.saveData}
                         handleSerialize={this.serialize}
                         handleDeserialize={this.deserialize}
                         handleExport={this.export}
@@ -155,6 +173,7 @@ export class DiagramApp extends React.Component {
                     />
                     <DiagramCanvas
                         ref={instance => {this.diagramCanvas = instance;}}
+                        handleSerialize={this.handleSerialize}
                         selectedLink={this.state.selectedLink}
                         firstCardinality={this.state.firstCardinality}
                         secondCardinality={this.state.secondCardinality}
@@ -190,6 +209,9 @@ export class DiagramApp extends React.Component {
                         handleDeserialize={this.deserialize}
                         handleExport={this.export}
                         readOnly={this.props.readOnly}
+                        saveData={this.state.saveData}
+                        centerView={this.centerView}
+                        restoreZoom={this.handleZoom}
                     />
                     <StereotypePanel
                         handleChangeSelectedLink={this.handleChangeSelectedLink}
@@ -211,6 +233,7 @@ export class DiagramApp extends React.Component {
                         contextMenuY={this.state.contextMenuY}
                         contextMenuLink={this.state.contextMenuLink}
                         showContextMenu={this.showContextMenu}
+                        handleSerialize={this.handleSerialize}
                     />
                     <ContextMenuLink
                         contextMenuActive={this.state.contextMenuActive}

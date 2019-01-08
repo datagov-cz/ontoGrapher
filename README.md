@@ -1,2 +1,4 @@
-# oUML-diagram-app
+# ontoUML komponenta
+
+## Instalace
 

@@ -29,10 +29,6 @@ export class DetailPanel extends React.Component{
         };
         this.attributeList = [];
         let key = 0;
-        this.languages = [];
-        for (let language in LanguagePool){
-            this.languages.push(<option key={language} value={language}>{LanguagePool[language]}</option>);
-        }
         this.attributeTypes = [];
         for (let attrType of AttributeTypePool){
             this.attributeTypes.push(<option key={attrType} value={attrType}>{attrType}</option>);
@@ -90,12 +86,14 @@ export class DetailPanel extends React.Component{
     }
 
     processDialogue(){
-        this.props.panelObject.setName(this.state.names[this.state.language], this.state.language);
-        if (this.state.type === CommonLinkModel){
-            this.props.panelObject.setNameLanguage(this.props.panelObject.model.language);
+        if (this.state.names[this.state.language] !== ""){
+            this.props.panelObject.setName(this.state.names[this.state.language], this.state.language);
+            if (this.state.type === CommonLinkModel){
+                this.props.panelObject.setNameLanguage(this.props.panelObject.model.language);
+            }
+            this.forceUpdate();
+            this.props.panelObject.model.canvas.forceUpdate();
         }
-        this.forceUpdate();
-        this.props.panelObject.model.canvas.forceUpdate();
     }
 
     componentDidUpdate(prevProps){
@@ -132,14 +130,16 @@ export class DetailPanel extends React.Component{
     }
 
     addAttribute(){
-        this.props.panelObject.addAttribute(new AttributeObject(this.state.newAttrName,this.state.newAttrType));
-        this.setState({
-            attribute: 0,
-            newAttrName: this.state.attrs[this.state.language][0].first,
-            newAttrType: this.state.attrs[this.state.language][0].second
-        });
-        this.forceUpdate();
-        this.props.panelObject.model.canvas.forceUpdate();
+        if (this.state.newAttrName !== ""){
+            this.props.panelObject.addAttribute(new AttributeObject(this.state.newAttrName,this.state.newAttrType));
+            this.setState({
+                attribute: 0,
+                newAttrName: this.state.attrs[this.state.language][0].first,
+                newAttrType: this.state.attrs[this.state.language][0].second
+            });
+            this.forceUpdate();
+            this.props.panelObject.model.canvas.forceUpdate();
+        }
     }
 
     deleteAttribute(){
@@ -168,9 +168,11 @@ export class DetailPanel extends React.Component{
     }
 
     saveAttribute(){
-        this.props.panelObject.setAttribute(this.state.language,new AttributeObject(this.state.newAttrName,this.state.newAttrType),this.state.attribute);
-        this.forceUpdate();
-        this.props.panelObject.model.canvas.forceUpdate();
+        if (this.state.newAttrName !== ""){
+            this.props.panelObject.setAttribute(this.state.language,new AttributeObject(this.state.newAttrName,this.state.newAttrType),this.state.attribute);
+            this.forceUpdate();
+            this.props.panelObject.model.canvas.forceUpdate();
+        }
 
     }
 
@@ -193,14 +195,11 @@ export class DetailPanel extends React.Component{
     saveLabel(){
         this.props.panelObject.setName(this.state.newLabel);
     }
-
     render() {
         if (this.state.type === NodeCommonModel){
-            /*
-            if (this.state.formName !== this.props.panelObject.names[this.state.language]){
-                this.setState({formName: this.props.panelObject.names[this.state.language]});
-            }
-            */
+            let languages = Object.keys(LanguagePool).map((language, i) => {return (
+                <option key={language} value={language}>{LanguagePool[language]}</option>
+            )});
             let tabkey = 1;
             let attrkey = 0;
             const attributeList = this.state.attrs[this.state.language].map((attr) =>
@@ -228,7 +227,7 @@ export class DetailPanel extends React.Component{
                 <div className="detailPanel">
                     <h2>{Locale.detailPanelTitle}</h2>
                     <select value={this.state.language} onChange={this.handleChangeLanguage}>
-                        {this.languages}
+                        {languages}
                     </select>
                     <Form inline>
                     <FormGroup>
@@ -254,6 +253,7 @@ export class DetailPanel extends React.Component{
                             value={this.state.newAttrName}
                             placeholder={Locale.detailPanelNamePlaceholder}
                             onChange={this.handleChangeAttributeName}
+                            required = "true"
                         />
                         <FormControl
                             componentClass="select"
@@ -276,7 +276,7 @@ export class DetailPanel extends React.Component{
                     <h2>{Locale.detailPanelTitle}</h2>
 
                     <select value={this.state.language} onChange={this.handleChangeLanguage}>
-                        {this.languages}
+                        {languages}
                     </select>
                     <Form inline>
                         <FormGroup>
@@ -287,6 +287,7 @@ export class DetailPanel extends React.Component{
                                 value={this.state.names[this.state.language]}
                                 placeholder={Locale.detailPanelNamePlaceholder}
                                 onChange={this.handleChangeName}
+                                required = "true"
                             />
                             <Button bsSize="small" onClick={this.processDialogue}>{Locale.menuPanelSave}</Button>
                         </FormGroup>

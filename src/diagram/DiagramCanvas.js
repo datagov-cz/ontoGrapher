@@ -1,20 +1,15 @@
 import React from 'react';
 import {
     DiagramWidget,
-    DiagramEngine,
-    DefaultLabelFactory, PointModel,
+    DiagramEngine
 } from 'storm-react-diagrams';
 import {CustomDiagramModel} from "./CustomDiagramModel.js";
 import {NodeCommonModel} from "../components/common-node/NodeCommonModel";
 import {NodeCommonFactory} from "../components/common-node/NodeCommonFactory";
 import {NodeCommonPortFactory} from "../components/common-node/NodeCommonPortFactory";
-import {LinkPool} from "../config/LinkPool";
-import {LanguagePool} from "../config/LanguagePool";
 import {CommonLinkFactory} from "../components/common-link/CommonLinkFactory";
-import {Defaults} from "../config/Defaults";
 import {Locale} from "../config/Locale";
 import {CommonLinkModel} from "../components/common-link/CommonLinkModel";
-import {ContextMenuLink} from "../misc/ContextMenuLink";
 import {CommonLabelFactory} from "../components/misc/CommonLabelFactory";
 
 Array.prototype.removeIf = function(callback) {
@@ -64,21 +59,12 @@ export class DiagramCanvas extends React.Component {
     }
 
     serialize(){
-        console.log(JSON.stringify(this.engine.getDiagramModel().serializeDiagram()));
+        let saveData = JSON.stringify(this.engine.getDiagramModel().serializeDiagram());
+        this.props.handleSerialize(saveData);
     }
 
     showContextMenu(event: MouseEvent, link: CommonLinkModel){
         event.preventDefault();
-        /*
-        console.log({
-            coords: "x: "+coords.x+" y: "+coords.y,
-            offset: "x: "+event.offsetX+" y: "+event.offsetY,
-            screen: "x: "+event.screenX+" y: "+event.screenY,
-            page: "x: "+event.pageX+" y: "+event.pageY,
-            client: "x: "+event.clientX+" y: "+event.clientY
-
-        });
-        */
         this.props.showContextMenu(event.clientX,event.clientY,link);
 
     }
@@ -100,24 +86,18 @@ export class DiagramCanvas extends React.Component {
             console.log(ntriples.toString());
         });
     }
-
-    // TODO: change language, name, etc. settings when deserializing
-    // TODO: check for missing stereotypes and links when deserializing
     deserialize(str: string){
-        //let str = prompt(Locale.menuPanelInsertJSON);
         this.registerFactories();
         let model = new CustomDiagramModel(this.props,this);
         model.deSerializeDiagram(JSON.parse(str), this.engine);
         this.engine.setDiagramModel(model);
-        alert(Locale.menuPanelLoaded);
         this.forceUpdate();
     }
-    // TODO: select newly placed stereotype
     render() {
         return (
                 <div
                     onDrop={event => {
-                        var data = JSON.parse(event.dataTransfer.getData('storm-diagram-node'));
+                        var data = JSON.parse(event.dataTransfer.getData("newNode"));
                         var node = new NodeCommonModel(data.type,data.rdf,this.engine.getDiagramModel());
                         var points = this.engine.getRelativeMousePoint(event);
                         node.x = points.x;
