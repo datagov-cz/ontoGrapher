@@ -7,22 +7,10 @@ import {CustomDiagramModel} from "./CustomDiagramModel.js";
 import {NodeCommonModel} from "../components/common-node/NodeCommonModel";
 import {NodeCommonFactory} from "../components/common-node/NodeCommonFactory";
 import {NodeCommonPortFactory} from "../components/common-node/NodeCommonPortFactory";
-import {CommonLinkFactory} from "../components/common-link/CommonLinkFactory";
-import {Locale} from "../config/Locale";
-import {CommonLinkModel} from "../components/common-link/CommonLinkModel";
+import {LinkCommonFactory} from "../components/common-link/LinkCommonFactory";
+import {LinkCommonModel} from "../components/common-link/LinkCommonModel";
 import {CommonLabelFactory} from "../components/misc/CommonLabelFactory";
 
-Array.prototype.removeIf = function(callback) {
-    var i = 0;
-    while (i < this.length) {
-        if (callback(this[i], i)) {
-            this.splice(i, 1);
-        }
-        else {
-            ++i;
-        }
-    }
-};
 
 export class DiagramCanvas extends React.Component {
     constructor(props) {
@@ -31,8 +19,7 @@ export class DiagramCanvas extends React.Component {
 
     registerFactories() {
         this.engine.registerNodeFactory(new NodeCommonFactory(this.engine.getDiagramModel()));
-        this.engine.registerLinkFactory(new CommonLinkFactory());
-        //this.engine.registerLabelFactory(new DefaultLabelFactory());
+        this.engine.registerLinkFactory(new LinkCommonFactory());
         this.engine.registerLabelFactory(new CommonLabelFactory());
         this.engine.registerPortFactory(new NodeCommonPortFactory());
     }
@@ -45,7 +32,11 @@ export class DiagramCanvas extends React.Component {
 
     updatePanel(){
         let selected = this.engine.getDiagramModel().getSelectedItems();
-        selected.removeIf(function(item, index){return !item.selected});
+        for (let i = 0; i < selected.length; i++){
+            if (!selected[i].selected){
+                selected.splice(i, 1);
+            }
+        }
         if (selected.length === 1){
            this.props.handleChangePanelObject(selected[0]);
         } else {
@@ -63,7 +54,7 @@ export class DiagramCanvas extends React.Component {
         this.props.handleSerialize(saveData);
     }
 
-    showContextMenu(event: MouseEvent, link: CommonLinkModel){
+    showContextMenu(event: MouseEvent, link: LinkCommonModel){
         event.preventDefault();
         this.props.showContextMenu(event.clientX,event.clientY,link);
 

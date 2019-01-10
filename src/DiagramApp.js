@@ -8,7 +8,8 @@ import {DiagramCanvas} from "./diagram/DiagramCanvas";
 import {CustomDiagramModel} from "./diagram/CustomDiagramModel";
 import {Locale} from "./config/Locale";
 import {ContextMenuLink} from "./misc/ContextMenuLink";
-import {CommonLinkModel} from "./components/common-link/CommonLinkModel";
+import {LinkCommonModel} from "./components/common-link/LinkCommonModel";
+import {LanguagePool} from "./config/LanguagePool";
 
 require("./sass/main.scss");
 
@@ -57,7 +58,7 @@ export class DiagramApp extends React.Component {
     }
 
 
-    showContextMenu(x: number,y:number, link: CommonLinkModel){
+    showContextMenu(x: number,y:number, link: LinkCommonModel){
         this.setState({
             contextMenuActive: true,
             contextMenuX: x,
@@ -123,6 +124,7 @@ export class DiagramApp extends React.Component {
 
     deserialize(str: string){
         this.diagramCanvas.deserialize(str);
+        this.setState({language: Defaults.language, selectedLink: Defaults.selectedLink});
     }
 
     export(){

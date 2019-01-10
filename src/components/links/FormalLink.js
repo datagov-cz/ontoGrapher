@@ -1,11 +1,11 @@
 import React from 'react';
-import {CommonLinkWidget} from "../common-link/CommonLinkWidget";
+import {LinkCommonWidget} from "../common-link/LinkCommonWidget";
 
 
 
 
 
-export class FormalLinkWidget extends CommonLinkWidget {
+export class FormalLinkWidget extends LinkCommonWidget {
     constructor(props){
         super(props);
         this.props.link.addDescriptorLabel();

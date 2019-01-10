@@ -1,7 +1,7 @@
 import * as _ from "lodash";
 import { LinkModel, DiagramEngine, PortModel } from "storm-react-diagrams";
 import {CustomDiagramModel} from "../../diagram/CustomDiagramModel";
-import {CommonLinkModel} from "../common-link/CommonLinkModel";
+import {LinkCommonModel} from "../common-link/LinkCommonModel";
 
 export class NodeCommonPortModel extends PortModel {
     model: CustomDiagramModel;
@@ -24,6 +24,6 @@ export class NodeCommonPortModel extends PortModel {
     }
 
     createLinkModel(): LinkModel {
-        return new CommonLinkModel(this.model);
+        return new LinkCommonModel(this.model);
     }
 }

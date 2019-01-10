@@ -3,7 +3,7 @@ import React from "react";
 import {PointModel} from "storm-react-diagrams";
 import {DefaultLinkFactory} from "storm-react-diagrams";
 
-export class CommonLinkWidget extends DefaultLinkWidget {
+export class LinkCommonWidget extends DefaultLinkWidget {
     label: boolean;
 
     constructor(props){

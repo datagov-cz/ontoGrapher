@@ -1,8 +1,8 @@
 import React from 'react';
-import {CommonLinkWidget} from "../common-link/CommonLinkWidget";
+import {LinkCommonWidget} from "../common-link/LinkCommonWidget";
 
 
 
 
-export class MemberLinkWidget extends CommonLinkWidget {
+export class MemberLinkWidget extends LinkCommonWidget {
 }

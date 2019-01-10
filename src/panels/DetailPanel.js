@@ -4,7 +4,7 @@ import {Locale} from "../config/Locale";
 import {Tabs, TabList, Tab, TabPanel} from 'react-tabs';
 import {LanguagePool} from "../config/LanguagePool";
 import "react-tabs/style/react-tabs.css";
-import {CommonLinkModel} from "../components/common-link/CommonLinkModel";
+import {LinkCommonModel} from "../components/common-link/LinkCommonModel";
 import {PointModel} from "storm-react-diagrams";
 import {AttributeTypePool} from "../config/AttributeTypePool";
 import {AttributeObject} from "../components/misc/AttributeObject";
@@ -64,9 +64,9 @@ export class DetailPanel extends React.Component{
                 names: copy.names,
                 attrs: copy.attributes
             });
-        } else if (copy instanceof CommonLinkModel){
+        } else if (copy instanceof LinkCommonModel){
             this.setState({
-                type: CommonLinkModel,
+                type: LinkCommonModel,
                 firstcard: copy.firstCardinality,
                 secondcard: copy.secondCardinality,
                 linktype: copy.linktype,
@@ -86,9 +86,9 @@ export class DetailPanel extends React.Component{
     }
 
     processDialogue(){
-        if (this.state.names[this.state.language] !== ""){
-            this.props.panelObject.setName(this.state.names[this.state.language], this.state.language);
-            if (this.state.type === CommonLinkModel){
+        if (this.state.names[this.props.language] !== ""){
+            this.props.panelObject.setName(this.state.names[this.props.language], this.props.language);
+            if (this.state.type === LinkCommonModel){
                 this.props.panelObject.setNameLanguage(this.props.panelObject.model.language);
             }
             this.forceUpdate();
@@ -116,15 +116,15 @@ export class DetailPanel extends React.Component{
 
     handleChangeName(event){
         let copy = this.state.names;
-        copy[this.state.language] = event.target.value;
+        copy[this.props.language] = event.target.value;
         this.setState({names: copy});
     }
 
     handleChangeAttribute(event){
         this.setState({attribute: event.target.value});
         this.setState({
-            newAttrName: this.state.attrs[this.state.language][event.target.value].first,
-            newAttrType: this.state.attrs[this.state.language][event.target.value].second
+            newAttrName: this.state.attrs[this.props.language][event.target.value].first,
+            newAttrType: this.state.attrs[this.props.language][event.target.value].second
         });
         this.forceUpdate();
     }
@@ -134,8 +134,8 @@ export class DetailPanel extends React.Component{
             this.props.panelObject.addAttribute(new AttributeObject(this.state.newAttrName,this.state.newAttrType));
             this.setState({
                 attribute: 0,
-                newAttrName: this.state.attrs[this.state.language][0].first,
-                newAttrType: this.state.attrs[this.state.language][0].second
+                newAttrName: this.state.attrs[this.props.language][0].first,
+                newAttrType: this.state.attrs[this.props.language][0].second
             });
             this.forceUpdate();
             this.props.panelObject.model.canvas.forceUpdate();
@@ -169,7 +169,7 @@ export class DetailPanel extends React.Component{
 
     saveAttribute(){
         if (this.state.newAttrName !== ""){
-            this.props.panelObject.setAttribute(this.state.language,new AttributeObject(this.state.newAttrName,this.state.newAttrType),this.state.attribute);
+            this.props.panelObject.setAttribute(this.props.language,new AttributeObject(this.state.newAttrName,this.state.newAttrType),this.state.attribute);
             this.forceUpdate();
             this.props.panelObject.model.canvas.forceUpdate();
         }
@@ -183,11 +183,11 @@ export class DetailPanel extends React.Component{
     }
 
     focus(){
-        if (this.props.panelObject.attributes[this.state.language].length === 1) {
+        if (this.props.panelObject.attributes[this.props.language].length === 1) {
             this.setState({
                 attribute: 0,
-                newAttrName: this.state.attrs[this.state.language][0].first,
-                newAttrType: this.state.attrs[this.state.language][0].second
+                newAttrName: this.state.attrs[this.props.language][0].first,
+                newAttrType: this.state.attrs[this.props.language][0].second
             });
         }
     }
@@ -197,15 +197,13 @@ export class DetailPanel extends React.Component{
     }
     render() {
         if (this.state.type === NodeCommonModel){
-            let languages = Object.keys(LanguagePool).map((language, i) => {return (
-                <option key={language} value={language}>{LanguagePool[language]}</option>
-            )});
+
             let tabkey = 1;
             let attrkey = 0;
-            const attributeList = this.state.attrs[this.state.language].map((attr) =>
+            const attributeList = this.state.attrs[this.props.language].map((attr) =>
             <option key={attrkey} value={attrkey++}>{attr.first+ ": " + attr.second}</option>
             );
-            let attrlen = this.state.attrs[this.state.language].length;
+            let attrlen = this.state.attrs[this.props.language].length;
             let selector = (<h6>{Locale.noAttributes}</h6>);
             if (attrlen > 0){
                 selector = (
@@ -222,20 +220,20 @@ export class DetailPanel extends React.Component{
                     </FormControl>
                 );
             }
-
             return (
                 <div className="detailPanel">
                     <h2>{Locale.detailPanelTitle}</h2>
-                    <select value={this.state.language} onChange={this.handleChangeLanguage}>
+                    {/*<select value={this.props.language} onChange={this.handleChangeLanguage}>
                         {languages}
-                    </select>
+                    </select>*/}
+                    
                     <Form inline>
                     <FormGroup>
                         <h4>{Locale.detailPanelName}</h4>
                         <FormControl
                             bsSize="small"
                             type="text"
-                            value={this.state.names[this.state.language]}
+                            value={this.state.names[this.props.language]}
                             placeholder={Locale.detailPanelNamePlaceholder}
                             onChange={this.handleChangeName}
                         />
@@ -253,7 +251,6 @@ export class DetailPanel extends React.Component{
                             value={this.state.newAttrName}
                             placeholder={Locale.detailPanelNamePlaceholder}
                             onChange={this.handleChangeAttributeName}
-                            required = "true"
                         />
                         <FormControl
                             componentClass="select"
@@ -270,24 +267,19 @@ export class DetailPanel extends React.Component{
 
                 </div>
             );
-        } else if (this.state.type === CommonLinkModel){
+        } else if (this.state.type === LinkCommonModel){
             return (
                 <div className="detailPanel">
                     <h2>{Locale.detailPanelTitle}</h2>
-
-                    <select value={this.state.language} onChange={this.handleChangeLanguage}>
-                        {languages}
-                    </select>
                     <Form inline>
                         <FormGroup>
                             <h4>{Locale.detailPanelName}</h4>
                             <FormControl
                                 bsSize="small"
                                 type="text"
-                                value={this.state.names[this.state.language]}
-                                placeholder={Locale.detailPanelNamePlaceholder}
+                                value={this.state.names[this.props.language]}
+                                placeholder={Locale.detailPanelName}
                                 onChange={this.handleChangeName}
-                                required = "true"
                             />
                             <Button bsSize="small" onClick={this.processDialogue}>{Locale.menuPanelSave}</Button>
                         </FormGroup>

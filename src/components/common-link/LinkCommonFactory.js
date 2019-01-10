@@ -1,28 +1,28 @@
 import {AbstractLinkFactory, DiagramEngine} from "storm-react-diagrams";
 import React from "react";
 import {LinkPool} from "../../config/LinkPool";
-import {CommonLinkWidget} from "./CommonLinkWidget";
-import {CommonLinkModel} from "./CommonLinkModel";
+import {LinkCommonWidget} from "./LinkCommonWidget";
+import {LinkCommonModel} from "./LinkCommonModel";
 
-export class CommonLinkFactory extends AbstractLinkFactory<CommonLinkModel>{
+export class LinkCommonFactory extends AbstractLinkFactory<LinkCommonModel>{
 
     constructor(){
         super();
         this.type = "link-common";
     }
 
-    getNewInstance(initialConfig?: any): CommonLinkModel{
-        return new CommonLinkModel();
+    getNewInstance(initialConfig?: any): LinkCommonModel{
+        return new LinkCommonModel();
     }
 
-    generateReactWidget(diagramEngine: DiagramEngine, link: CommonLinkModel): JSX.Element {
+    generateReactWidget(diagramEngine: DiagramEngine, link: LinkCommonModel): JSX.Element {
         return React.createElement(LinkPool[link.linktype],{
             link: link,
             diagramEngine: diagramEngine,
         });
     }
 
-    generateLinkSegment(model: CommonLinkModel, widget: CommonLinkWidget, selected: boolean, path:string){
+    generateLinkSegment(model: LinkCommonModel, widget: LinkCommonWidget, selected: boolean, path:string){
         if (model.dashed){
             return (
                     <path className={selected ? "link-derivation--path-selected" : "link-derivation"}

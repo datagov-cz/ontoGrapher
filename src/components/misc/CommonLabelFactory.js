@@ -1,7 +1,6 @@
 import {DefaultLabelFactory} from "storm-react-diagrams";
 import {DiagramEngine} from "storm-react-diagrams";
 import {DefaultLabelModel} from "storm-react-diagrams";
-import {DefaultLabelWidget} from "storm-react-diagrams";
 import React from "react";
 import {CommonLabelWidget} from "./CommonLabelWidget";
 

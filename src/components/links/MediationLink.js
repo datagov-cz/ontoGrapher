@@ -1,8 +1,8 @@
 import React from 'react';
-import {CommonLinkWidget} from "../common-link/CommonLinkWidget";
+import {LinkCommonWidget} from "../common-link/LinkCommonWidget";
 
 
-export class MediationLinkWidget extends CommonLinkWidget {
+export class MediationLinkWidget extends LinkCommonWidget {
     constructor(props){
         super(props);
         this.props.link.addDescriptorLabel();

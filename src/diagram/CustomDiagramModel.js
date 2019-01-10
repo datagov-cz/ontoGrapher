@@ -4,6 +4,7 @@ import {
 } from "storm-react-diagrams";
 import {DiagramCanvas} from "./DiagramCanvas";
 import {Locale} from "../config/Locale";
+import {LanguagePool} from "../config/LanguagePool";
 
 export class CustomDiagramModel extends DiagramModel {
 
@@ -69,6 +70,9 @@ export class CustomDiagramModel extends DiagramModel {
             }),
             nodes: _.map(this.nodes, node => {
                 return node.serialize();
+            }),
+            languages: _.map(Object.entries(LanguagePool), language =>{
+                return language;
             })
         });
     }
@@ -94,7 +98,7 @@ export class CustomDiagramModel extends DiagramModel {
             this.addNode(nodeOb);
         });
 
-        // deserialze links
+        // deserialize links
         _.forEach(object.links, (link: any) => {
             let linkOb = diagramEngine.getLinkFactory(link.type).getNewInstance();
             linkOb.setParent(this);
@@ -102,6 +106,18 @@ export class CustomDiagramModel extends DiagramModel {
             linkOb.deSerialize(link, diagramEngine);
             this.addLink(linkOb);
         });
+        debugger;
+        for (let language in LanguagePool){
+            delete LanguagePool[language];
+            console.log(LanguagePool);
+        }
+        console.log(object);
+        for (let entry in object.languages){
+            console.log(object.languages[entry]);
+            LanguagePool[object.languages[entry][0]] = object.languages[entry][1];
+            console.log(LanguagePool);
+        }
+
     }
 
 }

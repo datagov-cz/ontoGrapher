@@ -9,7 +9,7 @@ import {LanguagePool} from "../../config/LanguagePool";
 
 
 
-export class CommonLinkModel extends DefaultLinkModel {
+export class LinkCommonModel extends DefaultLinkModel {
     width: number;
     color: string;
     curvyness: number;
@@ -106,7 +106,7 @@ export class CommonLinkModel extends DefaultLinkModel {
 
 
 /*
-CommonLinkWidget.defaultProps = {
+LinkCommonWidget.defaultProps = {
     color: "black",
     width: 3,
     link: null,
@@ -119,7 +119,7 @@ export interface CommonLinkProps extends BaseWidgetProps {
     color?: string;
     width?: number;
     smooth?: boolean;
-    link: CommonLinkModel;
+    link: LinkCommonModel;
     diagramEngine: DiagramEngine;
     pointAdded?: (point: PointModel, event: MouseEvent) => any;
 }

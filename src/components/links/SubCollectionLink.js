@@ -1,10 +1,10 @@
 import React from 'react';
-import {CommonLinkWidget} from "../common-link/CommonLinkWidget";
+import {LinkCommonWidget} from "../common-link/LinkCommonWidget";
 
 
 
 
-export class SubCollectionLinkWidget extends CommonLinkWidget {
+export class SubCollectionLinkWidget extends LinkCommonWidget {
     generateEnd(pointIndex: number): JSX.Element {
         let x = this.props.link.points[pointIndex].x;
         let y = this.props.link.points[pointIndex].y;

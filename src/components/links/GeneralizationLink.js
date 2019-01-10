@@ -1,7 +1,7 @@
-import {CommonLinkWidget} from "../common-link/CommonLinkWidget";
+import {LinkCommonWidget} from "../common-link/LinkCommonWidget";
 import React from "react";
 
-export class GeneralizationLinkWidget extends CommonLinkWidget{
+export class GeneralizationLinkWidget extends LinkCommonWidget{
 
 
     generateEnd(pointIndex: number): JSX.Element {

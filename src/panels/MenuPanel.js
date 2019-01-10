@@ -60,7 +60,7 @@ export class MenuPanel extends React.Component {
     }
 
     deleteLanguage(){
-        if (LanguagePool.length > 1){
+        if (Object.entries(LanguagePool).length > 1){
             delete LanguagePool[this.state.language];
         }
     }
@@ -147,7 +147,7 @@ export class MenuPanel extends React.Component {
     }
 
     focus(){
-        if (LanguagePool.length === 1) {
+        if (Object.entries(LanguagePool).length === 1) {
             this.setState({
                 language: LanguagePool[0]
             });
@@ -334,11 +334,10 @@ export class MenuPanel extends React.Component {
                                 style={{height: 12+(attrlen)*15}}
                             >
                                 {languagePool}
-                            </FormControl>
+                            </FormControl><br />
                             <Form inline>
                                 <Button onClick={this.deleteLanguage} bsStyle="danger">{Locale.del}</Button>
                                 <FormControl
-                                    bsSize="small"
                                     type="text"
                                     value={this.state.languageName}
                                     placeholder={Locale.languageName}
