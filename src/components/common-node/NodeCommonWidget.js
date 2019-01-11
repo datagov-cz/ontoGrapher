@@ -1,11 +1,11 @@
 import * as React from "react";
 import {NodeCommonModel} from "./NodeCommonModel";
 import { PortWidget } from "storm-react-diagrams";
-import {CustomDiagramModel} from "../../diagram/CustomDiagramModel";
+import {OntoDiagramModel} from "../../diagram/OntoDiagramModel";
 
 export interface NodeCommonWidgetProps {
     node: NodeCommonModel;
-    diagramModel: CustomDiagramModel;
+    diagramModel: OntoDiagramModel;
     size?: number;
 }
 

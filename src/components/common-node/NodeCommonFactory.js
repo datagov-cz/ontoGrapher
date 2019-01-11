@@ -2,12 +2,12 @@ import * as SRD from "storm-react-diagrams";
 import * as React from "react";
 import {NodeCommonModel} from "./NodeCommonModel";
 import {NodeCommonWidget} from "./NodeCommonWidget";
-import {CustomDiagramModel} from "../../diagram/CustomDiagramModel";
+import {OntoDiagramModel} from "../../diagram/OntoDiagramModel";
 
 export class NodeCommonFactory extends SRD.AbstractNodeFactory {
-    model: CustomDiagramModel;
+    model: OntoDiagramModel;
 
-    constructor(model: CustomDiagramModel){
+    constructor(model: OntoDiagramModel){
         super("common");
         this.model = model;
     }

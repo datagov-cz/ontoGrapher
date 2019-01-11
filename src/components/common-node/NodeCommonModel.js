@@ -1,16 +1,16 @@
 import { NodeModel, DiagramEngine } from "storm-react-diagrams";
 import {NodeCommonPortModel} from "./NodeCommonPortModel";
 import {AttributeObject} from "../misc/AttributeObject";
-import {CustomDiagramModel} from "../../diagram/CustomDiagramModel";
+import {OntoDiagramModel} from "../../diagram/OntoDiagramModel";
 import {LanguagePool} from "../../config/LanguagePool";
 import {AttributeTypePool} from "../../config/AttributeTypePool";
 export class NodeCommonModel extends NodeModel {
     stereotype: string;
     attributes: {};
     names: {};
-    model: CustomDiagramModel;
+    model: OntoDiagramModel;
 
-    constructor(stereotype: string, rdf: string, model: CustomDiagramModel) {
+    constructor(stereotype: string, rdf: string, model: OntoDiagramModel) {
         super("common");
         this.model = model;
         this.rdf = rdf;
@@ -67,8 +67,10 @@ export class NodeCommonModel extends NodeModel {
         this.attributes[language].splice(index,1);
     }
     removeAttributeByIndex(index: number){
-        for(let language in LanguagePool){
-            this.attributes[language].splice(index,1);
+        if (Object.entries(this.attributes).length > 0 && index >= 0){
+            for(let language in LanguagePool){
+                this.attributes[language].splice(index,1);
+            }
         }
     }
     removeAttribute(attribute: AttributeObject){

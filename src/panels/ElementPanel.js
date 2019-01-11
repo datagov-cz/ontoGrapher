@@ -1,16 +1,16 @@
 import React from 'react';
-import {StereotypePanelItem} from "./StereotypePanelItem";
+import {PanelNodeItem} from "./PanelNodeItem";
 import {Defaults} from "../config/Defaults";
-import Tabs from "react-bootstrap/es/Tabs";
-import Tab from "react-bootstrap/es/Tab";
+import {Tabs} from "react-bootstrap";
+import {Tab} from "react-bootstrap";
 import {Locale} from "../config/Locale";
 import {CardinalityPool} from "../config/CardinalityPool";
 import {PanelLinkItem} from "./PanelLinkItem";
 import {LinkPool} from "../config/LinkPool";
 
 
-export class StereotypePanel extends React.Component{
-    constructor(props: StereotypePanelItem) {
+export class ElementPanel extends React.Component{
+    constructor(props: PanelNodeItem) {
         super(props);
         this.stereotypeList = [];
         this.handleChangeSelectedLink = this.handleChangeSelectedLink.bind(this);
@@ -19,7 +19,7 @@ export class StereotypePanel extends React.Component{
 
         /*
         this.stereotypeLists = StereotypePool.map((stereotype) =>
-            <StereotypePanelItem key={stereotype.toUpperCase()} model={{type: stereotype.toLowerCase()}} name={stereotype} color="white"/>
+            <PanelNodeItem key={stereotype.toUpperCase()} model={{type: stereotype.toLowerCase()}} name={stereotype} color="white"/>
         );
         */
     }
@@ -84,12 +84,12 @@ export class StereotypePanel extends React.Component{
         }
 
         this.stereotype = this.state.stereotypes.map((stereotype)=>
-            <StereotypePanelItem key={stereotype.toUpperCase()} model={{type: stereotype.toLowerCase()}} name={stereotype} color="white"/>
+            <PanelNodeItem key={stereotype.toUpperCase()} model={{type: stereotype.toLowerCase()}} name={stereotype} color="white"/>
         );
         */
         this.stereotype = [];
         for (let stereo in this.stereotypes){
-            this.stereotype.push(<StereotypePanelItem key={this.stereotypes[stereo].toUpperCase()} model={{
+            this.stereotype.push(<PanelNodeItem key={this.stereotypes[stereo].toUpperCase()} model={{
                 type: this.stereotypes[stereo].toLowerCase(),
                 rdf: stereo
             }} name={this.stereotypes[stereo]}/>);
@@ -121,4 +121,4 @@ export class StereotypePanel extends React.Component{
 
 }
 
-StereotypePanel.defaultProps = {};
+ElementPanel.defaultProps = {};

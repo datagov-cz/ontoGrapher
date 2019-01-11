@@ -2,16 +2,14 @@ import React from "react";
 import {Defaults} from "./config/Defaults";
 import {PointModel} from "storm-react-diagrams";
 import {MenuPanel} from "./panels/MenuPanel";
-import {StereotypePanel} from "./panels/StereotypePanel";
+import {ElementPanel} from "./panels/ElementPanel";
 import {DetailPanel} from "./panels/DetailPanel";
 import {DiagramCanvas} from "./diagram/DiagramCanvas";
-import {CustomDiagramModel} from "./diagram/CustomDiagramModel";
+import {OntoDiagramModel} from "./diagram/OntoDiagramModel";
 import {Locale} from "./config/Locale";
 import {ContextMenuLink} from "./misc/ContextMenuLink";
 import {LinkCommonModel} from "./components/common-link/LinkCommonModel";
 import {LanguagePool} from "./config/LanguagePool";
-
-require("./sass/main.scss");
 
 export class DiagramApp extends React.Component {
     constructor(props){
@@ -31,6 +29,12 @@ export class DiagramApp extends React.Component {
             saveData: ""
         };
 
+        if (!this.props.disableSCSS){
+            require("./sass/main.scss");
+        }
+
+
+
         this.handleChangeSelectedLink = this.handleChangeSelectedLink.bind(this);
         this.handleChangeFirstCardinality = this.handleChangeFirstCardinality.bind(this);
         this.handleChangeSecondCardinality = this.handleChangeSecondCardinality.bind(this);
@@ -46,6 +50,7 @@ export class DiagramApp extends React.Component {
         this.handleSerialize = this.handleSerialize.bind(this);
         this.handleZoom = this.handleZoom.bind(this);
         this.centerView = this.centerView.bind(this);
+        this.setName = this.setName.bind(this);
     }
 
     componentDidMount(){
@@ -112,7 +117,7 @@ export class DiagramApp extends React.Component {
 
     handleNew(){
         this.diagramCanvas.registerFactories();
-        this.diagramCanvas.engine.setDiagramModel(new CustomDiagramModel(this.diagramCanvas.props,this.diagramCanvas));
+        this.diagramCanvas.engine.setDiagramModel(new OntoDiagramModel(this.diagramCanvas.props,this.diagramCanvas));
         document.title = Locale.untitledDiagram + " | " + Locale.appName;
         this.setState({name: Locale.untitledDiagram});
         this.diagramCanvas.forceUpdate();
@@ -146,6 +151,10 @@ export class DiagramApp extends React.Component {
 
     centerView(){
         this.diagramCanvas.engine.getDiagramModel().zoom = 100;
+    }
+
+    setName(str: string){
+        this.setState({name: str});
     }
 
     render() {
@@ -186,6 +195,7 @@ export class DiagramApp extends React.Component {
                         contextMenuY={this.state.contextMenuY}
                         contextMenuLink={this.state.contextMenuLink}
                         showContextMenu={this.showContextMenu}
+                        setName={this.setName}
                     />
                 </div>
             );
@@ -215,7 +225,7 @@ export class DiagramApp extends React.Component {
                         centerView={this.centerView}
                         restoreZoom={this.handleZoom}
                     />
-                    <StereotypePanel
+                    <ElementPanel
                         handleChangeSelectedLink={this.handleChangeSelectedLink}
                         selectedLink={this.state.selectedLink}
                     />
@@ -236,6 +246,7 @@ export class DiagramApp extends React.Component {
                         contextMenuLink={this.state.contextMenuLink}
                         showContextMenu={this.showContextMenu}
                         handleSerialize={this.handleSerialize}
+                        setName={this.setName}
                     />
                     <ContextMenuLink
                         contextMenuActive={this.state.contextMenuActive}

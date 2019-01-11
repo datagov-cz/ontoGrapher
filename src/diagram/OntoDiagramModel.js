@@ -6,7 +6,7 @@ import {DiagramCanvas} from "./DiagramCanvas";
 import {Locale} from "../config/Locale";
 import {LanguagePool} from "../config/LanguagePool";
 
-export class CustomDiagramModel extends DiagramModel {
+export class OntoDiagramModel extends DiagramModel {
 
     selectedLink: string;
     language: string;
@@ -106,18 +106,13 @@ export class CustomDiagramModel extends DiagramModel {
             linkOb.deSerialize(link, diagramEngine);
             this.addLink(linkOb);
         });
-        debugger;
         for (let language in LanguagePool){
             delete LanguagePool[language];
-            console.log(LanguagePool);
         }
-        console.log(object);
         for (let entry in object.languages){
-            console.log(object.languages[entry]);
             LanguagePool[object.languages[entry][0]] = object.languages[entry][1];
-            console.log(LanguagePool);
         }
-
+        this.canvas.setName(object.name);
     }
 
 }

@@ -1,12 +1,8 @@
 import React from 'react';
 import {LanguagePool} from "../config/LanguagePool";
 import {Locale} from "../config/Locale";
-import {ButtonGroup, DropdownButton, FormControl, MenuItem} from "react-bootstrap";
-import Button from "react-bootstrap/es/Button";
-import Modal from "react-bootstrap/es/Modal";
-import FormGroup from "react-bootstrap/es/FormGroup";
-import {Defaults} from "../config/Defaults";
-import Form from "react-bootstrap/es/Form";
+import {ButtonGroup, DropdownButton, FormControl, MenuItem, Button, Modal, FormGroup, Form} from "react-bootstrap";
+
 import {LocaleHelp} from "../config/LocaleHelp";
 
 

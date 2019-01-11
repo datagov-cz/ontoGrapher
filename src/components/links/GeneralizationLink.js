@@ -24,6 +24,7 @@ export class GeneralizationLinkWidget extends LinkCommonWidget{
                     y={this.props.link.points[pointIndex].y+12}
                     transform={`rotate(${angle}, ${this.props.link.points[pointIndex].x}, ${this.props.link.points[pointIndex].y})`}
                     points={`${this.props.link.points[pointIndex].x - 10},${this.props.link.points[pointIndex].y - 8} ${this.props.link.points[pointIndex].x+3},${this.props.link.points[pointIndex].y} ${this.props.link.points[pointIndex].x - 10},${this.props.link.points[pointIndex].y + 8}`}
+                    style={{fill: "#eeeeee", stroke: "black", strokeWidth: 2}}
                 />
                 <circle
                     onMouseLeave={() => {

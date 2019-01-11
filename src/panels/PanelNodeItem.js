@@ -8,7 +8,7 @@ export interface StereotypePanelItemProps{
 
 export interface StereotypePanelItemState {}
 
-export class StereotypePanelItem extends React.Component {
+export class PanelNodeItem extends React.Component {
     constructor(props) {
         super(props);
         this.state = {};

@@ -1,12 +1,12 @@
 import * as _ from "lodash";
 import { LinkModel, DiagramEngine, PortModel } from "storm-react-diagrams";
-import {CustomDiagramModel} from "../../diagram/CustomDiagramModel";
+import {OntoDiagramModel} from "../../diagram/OntoDiagramModel";
 import {LinkCommonModel} from "../common-link/LinkCommonModel";
 
 export class NodeCommonPortModel extends PortModel {
-    model: CustomDiagramModel;
+    model: OntoDiagramModel;
 
-    constructor(pos: string = "port", model: CustomDiagramModel) {
+    constructor(pos: string = "port", model: OntoDiagramModel) {
         super(pos, "common");
         this.position = pos;
         this.model = model;

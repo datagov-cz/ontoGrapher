@@ -1,9 +1,10 @@
 import React from 'react';
+import * as _ from "lodash";
 import {
     DiagramWidget,
     DiagramEngine
 } from 'storm-react-diagrams';
-import {CustomDiagramModel} from "./CustomDiagramModel.js";
+import {OntoDiagramModel} from "./OntoDiagramModel.js";
 import {NodeCommonModel} from "../components/common-node/NodeCommonModel";
 import {NodeCommonFactory} from "../components/common-node/NodeCommonFactory";
 import {NodeCommonPortFactory} from "../components/common-node/NodeCommonPortFactory";
@@ -26,7 +27,7 @@ export class DiagramCanvas extends React.Component {
 
     componentWillMount() {
         this.engine = new DiagramEngine();
-        this.engine.setDiagramModel(new CustomDiagramModel(this.props,this));
+        this.engine.setDiagramModel(new OntoDiagramModel(this.props,this));
         this.registerFactories();
     }
 
@@ -39,6 +40,8 @@ export class DiagramCanvas extends React.Component {
         }
         if (selected.length === 1){
            this.props.handleChangePanelObject(selected[0]);
+        } else if (selected[0] instanceof NodeCommonModel) {
+            this.props.handleChangePanelObject(selected[0]);
         } else {
             this.props.handleChangePanelObject(null);
         }
@@ -79,11 +82,16 @@ export class DiagramCanvas extends React.Component {
     }
     deserialize(str: string){
         this.registerFactories();
-        let model = new CustomDiagramModel(this.props,this);
+        let model = new OntoDiagramModel(this.props,this);
         model.deSerializeDiagram(JSON.parse(str), this.engine);
         this.engine.setDiagramModel(model);
         this.forceUpdate();
     }
+
+    setName(str: string){
+        this.props.setName(str);
+    }
+
     render() {
         return (
                 <div

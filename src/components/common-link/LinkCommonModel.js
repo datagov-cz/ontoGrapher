@@ -3,7 +3,7 @@ import {
     DefaultLabelModel,
     DefaultLinkModel, DiagramEngine
 } from 'storm-react-diagrams';
-import {CustomDiagramModel} from "../../diagram/CustomDiagramModel";
+import {OntoDiagramModel} from "../../diagram/OntoDiagramModel";
 import {Locale} from "../../config/Locale";
 import {LanguagePool} from "../../config/LanguagePool";
 
@@ -14,11 +14,11 @@ export class LinkCommonModel extends DefaultLinkModel {
     color: string;
     curvyness: number;
     linktype: string;
-    model: CustomDiagramModel;
+    model: OntoDiagramModel;
     descriptor: boolean;
     dashed: boolean;
 
-    constructor(model: CustomDiagramModel){
+    constructor(model: OntoDiagramModel){
         super();
         this.type = "link-common";
         this.width = 3;
@@ -32,7 +32,7 @@ export class LinkCommonModel extends DefaultLinkModel {
                 this.names[language] = "";
             }
         }
-        if (this.model instanceof CustomDiagramModel){
+        if (this.model instanceof OntoDiagramModel){
             this.linktype = this.model.selectedLink;
             this.addLabel(this.model.firstCardinality === Locale.none ? "" : this.model.firstCardinality);
             this.addLabel("");
