@@ -9,7 +9,7 @@ import {LocaleHelp} from "../config/LocaleHelp";
 export class MenuPanel extends React.Component {
     constructor(props) {
         super(props);
-        this.state={
+        this.state = {
             modalSave: false,
             modalLoad: false,
             modalName: false,
@@ -50,99 +50,99 @@ export class MenuPanel extends React.Component {
         this.deleteLanguage = this.deleteLanguage.bind(this);
     }
 
-    addLanguage(){
+    addLanguage() {
         LanguagePool[this.state.languageName] = this.state.languageName;
         this.setState({languageName: ""});
     }
 
-    deleteLanguage(){
-        if (Object.entries(LanguagePool).length > 1){
+    deleteLanguage() {
+        if (Object.entries(LanguagePool).length > 1) {
             delete LanguagePool[this.state.language];
         }
     }
 
-    handleChangeLanguageName(event){
+    handleChangeLanguageName(event) {
         this.setState({languageName: event.target.value});
     }
 
-    handleChangeLanguage(event){
+    handleChangeLanguage(event) {
         this.setState({language: event.target.value});
     }
 
-    handleChangeLoad(event){
+    handleChangeLoad(event) {
         this.setState({modalLoadValue: event.target.value});
     }
 
-    handleOpenLanguagesModal(){
+    handleOpenLanguagesModal() {
         this.setState({modalSettingsLanguage: true});
     }
 
-    handleCloseLanguagesModal(){
+    handleCloseLanguagesModal() {
         this.setState({modalSettingsLanguage: false});
     }
 
-    handleOpenSaveModal(){
+    handleOpenSaveModal() {
         this.props.handleSerialize();
         this.setState({modalSave: true});
     }
 
-    handleOpenLoadModal(){
+    handleOpenLoadModal() {
         this.setState({modalLoad: true});
     }
 
-    handleOpenNameModal(){
+    handleOpenNameModal() {
         this.setState({modalName: true});
     }
 
-    handleOpenNewModal(){
+    handleOpenNewModal() {
         this.setState({modalNew: true});
     }
 
-    handleCloseSaveModal(){
+    handleCloseSaveModal() {
         this.setState({modalSave: false});
     }
 
-    handleCloseLoadModal(){
+    handleCloseLoadModal() {
         this.setState({modalLoad: false});
     }
 
-    handleCloseNameModal(){
+    handleCloseNameModal() {
         this.setState({modalName: false});
     }
 
-    handleCloseNewModal(){
+    handleCloseNewModal() {
         this.setState({modalNew: false});
     }
 
-    handleOpenHelpModal(){
+    handleOpenHelpModal() {
         this.setState({modalHelp: true});
     }
 
-    handleCloseHelpModal(){
+    handleCloseHelpModal() {
         this.setState({modalHelp: false});
     }
 
-    handleChangeName(event){
+    handleChangeName(event) {
         this.setState({name: event.target.value});
     }
 
-    handleNew(){
+    handleNew() {
         this.handleCloseNewModal();
         this.props.handleNew();
     }
 
-    handleLoad(){
+    handleLoad() {
         this.handleCloseLoadModal();
         this.props.handleDeserialize(this.state.modalLoadValue);
     }
 
-    handleName(){
+    handleName() {
         this.handleCloseNameModal();
         this.props.handleChangeName(this.state.name);
 
     }
 
-    focus(){
+    focus() {
         if (Object.entries(LanguagePool).length === 1) {
             this.setState({
                 language: LanguagePool[0]
@@ -152,11 +152,13 @@ export class MenuPanel extends React.Component {
 
     render() {
 
-        let languagePool = Object.keys(LanguagePool).map((language, i) => {return (
+        let languagePool = Object.keys(LanguagePool).map((language, i) => {
+            return (
                 <option key={language} value={language}>{LanguagePool[language]}</option>
-            )});
+            )
+        });
         let attrlen = languagePool.length;
-        if (this.props.readOnly){
+        if (this.props.readOnly) {
             return (
                 <div className="menuPanel">
 
@@ -170,7 +172,7 @@ export class MenuPanel extends React.Component {
                         </DropdownButton>
                     </ButtonGroup>
                     <span className="right">
-                {Locale.selectedLanguage+": "}
+                {Locale.selectedLanguage + ": "}
                         <FormControl componentClass="select" bsSize="small" value={this.props.language}
                                      onChange={this.props.handleChangeLanguage}>
                     {languagePool}
@@ -188,9 +190,12 @@ export class MenuPanel extends React.Component {
                     <ButtonGroup>
                         <DropdownButton title={Locale.menuPanelFile} bsSize="small" id={Locale.menuPanelFile}>
                             <MenuItem onClick={this.handleOpenNewModal} eventKey="1">{Locale.menuPanelNew}</MenuItem>
-                            <MenuItem onClick={this.handleOpenNameModal} eventKey="2">{Locale.menuPanelDiagram}</MenuItem>
-                            <MenuItem onClick={this.handleOpenLoadModal} eventKey="3">{Locale.menuPanelLoad + "..."}</MenuItem>
-                            <MenuItem onClick={this.handleOpenSaveModal} eventKey="4">{Locale.menuPanelSaveDiagram}</MenuItem>
+                            <MenuItem onClick={this.handleOpenNameModal}
+                                      eventKey="2">{Locale.menuPanelDiagram}</MenuItem>
+                            <MenuItem onClick={this.handleOpenLoadModal}
+                                      eventKey="3">{Locale.menuPanelLoad + "..."}</MenuItem>
+                            <MenuItem onClick={this.handleOpenSaveModal}
+                                      eventKey="4">{Locale.menuPanelSaveDiagram}</MenuItem>
                         </DropdownButton>
                         <DropdownButton title={Locale.menuPanelView} bsSize="small" id={Locale.menuPanelSettings}>
                             <MenuItem onClick={this.props.centerView} eventKey="1">{Locale.menuPanelCenter}</MenuItem>
@@ -198,14 +203,15 @@ export class MenuPanel extends React.Component {
                         </DropdownButton>
                         <DropdownButton title={Locale.menuPanelSettings} bsSize="small" id={Locale.menuPanelSettings}>
                             {/*<MenuItem eventKey="1">{Locale.menuPanelGeneral}</MenuItem><MenuItem eventKey="2">{Locale.menuPanelSources}</MenuItem>*/}
-                            <MenuItem eventKey="1" onClick={this.handleOpenLanguagesModal}>{Locale.menuPanelLanguages}</MenuItem>
+                            <MenuItem eventKey="1"
+                                      onClick={this.handleOpenLanguagesModal}>{Locale.menuPanelLanguages}</MenuItem>
                         </DropdownButton>
                         <Button onClick={this.handleOpenHelpModal} bsSize="small">
                             {Locale.menuPanelHelp}
                         </Button>
                     </ButtonGroup>
                     <span className="right">
-                        {Locale.selectedLanguage+": "}
+                        {Locale.selectedLanguage + ": "}
                         <FormControl componentClass="select" bsSize="small" value={this.props.language}
                                      onChange={this.props.handleChangeLanguage}>
                             {languagePool}
@@ -304,9 +310,11 @@ export class MenuPanel extends React.Component {
                             </Modal.Title>
                         </Modal.Header>
                         <Modal.Body>
-                            {Object.keys(LocaleHelp).map((obj, i) => {return(
-                                <p key={obj}>{LocaleHelp[obj]}</p>
-                                );})}
+                            {Object.keys(LocaleHelp).map((obj, i) => {
+                                return (
+                                    <p key={obj}>{LocaleHelp[obj]}</p>
+                                );
+                            })}
                         </Modal.Body>
                         <Modal.Footer>
                             <Button onClick={this.handleCloseHelpModal} bsStyle="primary">{Locale.close}</Button>
@@ -327,10 +335,10 @@ export class MenuPanel extends React.Component {
                                 onChange={this.handleChangeLanguage}
                                 onFocus={this.focus}
                                 size={attrlen}
-                                style={{height: 12+(attrlen)*15}}
+                                style={{height: 12 + (attrlen) * 15}}
                             >
                                 {languagePool}
-                            </FormControl><br />
+                            </FormControl><br/>
                             <Form inline>
                                 <Button onClick={this.deleteLanguage} bsStyle="danger">{Locale.del}</Button>
                                 <FormControl

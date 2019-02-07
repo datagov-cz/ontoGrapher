@@ -1,27 +1,25 @@
 import {DefaultLinkWidget, Toolkit} from "storm-react-diagrams";
 import React from "react";
-import {PointModel} from "storm-react-diagrams";
-import {DefaultLinkFactory} from "storm-react-diagrams";
 
 export class LinkCommonWidget extends DefaultLinkWidget {
     label: boolean;
 
-    constructor(props){
+    constructor(props) {
         super(props);
         this.label = false;
         this.handleClick = this.handleClick.bind(this);
     }
 
     getAngle(px1, py1, px2, py2) {
-        const x = px2-px1;
-        const y = py2-py1;
-        const hypotenuse = Math.sqrt(Math.pow(x, 2)+Math.pow(y, 2));
-        let cos = x/hypotenuse;
+        const x = px2 - px1;
+        const y = py2 - py1;
+        const hypotenuse = Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2));
+        let cos = x / hypotenuse;
         let radian = Math.acos(cos);
-        let angle = 180/(Math.PI/radian);
-        if (y<0) {
+        let angle = 180 / (Math.PI / radian);
+        if (y < 0) {
             angle = -angle;
-        } else if ((y == 0) && (x<0)) {
+        } else if ((y == 0) && (x < 0)) {
             angle = 180;
         }
         return angle;
@@ -30,10 +28,10 @@ export class LinkCommonWidget extends DefaultLinkWidget {
     generateEnd(pointIndex: number): JSX.Element {
         let x = this.props.link.points[pointIndex].x;
         let y = this.props.link.points[pointIndex].y;
-        const pointOne = this.props.link.points[pointIndex-1];
+        const pointOne = this.props.link.points[pointIndex - 1];
         const pointTwo = this.props.link.points[pointIndex];
         let angle = 0;
-        if (pointOne != null){
+        if (pointOne != null) {
             angle = this.getAngle(pointOne.x, pointOne.y, pointTwo.x, pointTwo.y);
         }
 
@@ -42,10 +40,10 @@ export class LinkCommonWidget extends DefaultLinkWidget {
             <g key={"point-" + this.props.link.points[pointIndex].id}>
                 <circle
                     onMouseLeave={() => {
-                        this.setState({ selected: false });
+                        this.setState({selected: false});
                     }}
                     onMouseEnter={() => {
-                        this.setState({ selected: true });
+                        this.setState({selected: true});
                     }}
                     data-id={this.props.link.points[pointIndex].id}
                     data-linkid={this.props.link.id}
@@ -64,15 +62,6 @@ export class LinkCommonWidget extends DefaultLinkWidget {
             </g>
         );
     }
-    /*
-    <polygon
-                    x={this.props.link.points[pointIndex].x-20}
-                    y={this.props.link.points[pointIndex].y+12}
-                    transform={`rotate(${angle}, ${this.props.link.points[pointIndex].x}, ${this.props.link.points[pointIndex].y})`}
-                    points={`${this.props.link.points[pointIndex].x - 10},${this.props.link.points[pointIndex].y - 8} ${this.props.link.points[pointIndex].x+3},${this.props.link.points[pointIndex].y} ${this.props.link.points[pointIndex].x - 10},${this.props.link.points[pointIndex].y + 8}`}
-                />
-
-     */
 
     generatePoint(pointIndex: number): JSX.Element {
         let x = this.props.link.points[pointIndex].x;
@@ -83,10 +72,10 @@ export class LinkCommonWidget extends DefaultLinkWidget {
                 <circle
                     shapeRendering="optimizeSpeed"
                     onMouseLeave={() => {
-                        this.setState({ selected: false });
+                        this.setState({selected: false});
                     }}
                     onMouseEnter={() => {
-                        this.setState({ selected: true });
+                        this.setState({selected: true});
                     }}
                     data-id={this.props.link.points[pointIndex].id}
                     data-linkid={this.props.link.id}
@@ -104,10 +93,10 @@ export class LinkCommonWidget extends DefaultLinkWidget {
         );
     }
 
-    handleClick(event){
-        if (event.button === 0){
+    handleClick(event) {
+        if (event.button === 0) {
             this.addPointToLink(event, 1);
-        } else if (event.button === 2){
+        } else if (event.button === 2) {
             this.props.link.model.canvas.showContextMenu(event, this.props.link);
         }
     }
@@ -130,10 +119,10 @@ export class LinkCommonWidget extends DefaultLinkWidget {
         var Top = React.cloneElement(Bottom, {
             strokeLinecap: "round",
             onMouseLeave: () => {
-                this.setState({ selected: false });
+                this.setState({selected: false});
             },
             onMouseEnter: () => {
-                this.setState({ selected: true });
+                this.setState({selected: true});
             },
             ref: null,
             "data-linkid": this.props.link.getID(),
@@ -181,7 +170,7 @@ export class LinkCommonWidget extends DefaultLinkWidget {
         }
 
         const results = this.findPathAndRelativePositionToRenderLabelCustom(index);
-        if (results === undefined){
+        if (results === undefined) {
             return;
         }
         const labelDimensions = {
@@ -206,26 +195,21 @@ export class LinkCommonWidget extends DefaultLinkWidget {
         const lengths = this.refPaths.map(path => path.getTotalLength());
 
         // calculate the point where we want to display the label
-        /*
-        let labelPosition =
-            lengths.reduce((previousValue, currentValue) => previousValue + currentValue, 0) *
-            (index / (this.props.link.labels.length + 1));
-        */
         let totalLength = lengths.reduce((previousValue, currentValue) => previousValue + currentValue, 0);
         let labelPosition = 0;
         let offset = 20;
-        switch (index){
+        switch (index) {
             case 1:
                 labelPosition = offset;
                 break;
             case 2:
-                labelPosition = totalLength/2;
+                labelPosition = totalLength / 2;
                 break;
             case 3:
                 labelPosition = totalLength - offset;
                 break;
             case 4:
-                labelPosition = totalLength/2;
+                labelPosition = totalLength / 2;
                 break;
         }
         // find the path where the label will be rendered and calculate the relative position
@@ -245,7 +229,7 @@ export class LinkCommonWidget extends DefaultLinkWidget {
     };
 
     render() {
-        const { diagramEngine } = this.props;
+        const {diagramEngine} = this.props;
         if (!diagramEngine.nodesRendered) {
             return null;
         }
@@ -264,7 +248,7 @@ export class LinkCommonWidget extends DefaultLinkWidget {
             const smartLink = this.pathFinding.calculateLinkStartEndCoords(routingMatrix, directPathCoords);
 
             if (smartLink) {
-                const { start, end, pathToStart, pathToEnd } = smartLink;
+                const {start, end, pathToStart, pathToEnd} = smartLink;
 
                 // second step: calculate a path avoiding hitting other elements
                 const simplifiedPath = this.pathFinding.calculateDynamicPath(
@@ -323,9 +307,6 @@ export class LinkCommonWidget extends DefaultLinkWidget {
                 );
 
                 // draw the link as dangeling
-                //if (this.props.link.targetPort === null) {
-                //    paths.push(this.generatePoint(1));
-                //}
                 paths.push(this.generateEnd(1));
             } else {
                 //draw the multiple anchors and complex line instead
@@ -348,11 +329,6 @@ export class LinkCommonWidget extends DefaultLinkWidget {
                     paths.push(this.generatePoint(i));
                 }
                 paths.push(this.generateEnd(points.length - 1));
-                /*
-                if (this.props.link.targetPort === null) {
-                    paths.push(this.generateEnd(points.length - 1));
-                }
-                */
             }
         }
 
@@ -361,7 +337,7 @@ export class LinkCommonWidget extends DefaultLinkWidget {
             <g {...this.getProps()}>
                 {paths}
                 {_.map(this.props.link.labels, labelModel => {
-                    if (labelModel.label !== ""){
+                    if (labelModel.label !== "") {
                         return this.generateLabel(labelModel);
                     }
                 })}

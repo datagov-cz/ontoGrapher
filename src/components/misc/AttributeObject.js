@@ -2,16 +2,16 @@ export class AttributeObject {
     first: string;
     second: string;
 
-    constructor(first: string, second: string){
+    constructor(first: string, second: string) {
         this.first = first;
         this.second = second;
     }
 
-    getFirst(){
+    getFirst() {
         return this.first;
     }
 
-    getSecond(){
+    getSecond() {
         return this.second;
     }
 }

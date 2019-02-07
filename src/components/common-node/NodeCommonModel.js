@@ -1,9 +1,9 @@
-import { NodeModel, DiagramEngine } from "storm-react-diagrams";
+import {NodeModel, DiagramEngine} from "storm-react-diagrams";
 import {NodeCommonPortModel} from "./NodeCommonPortModel";
 import {AttributeObject} from "../misc/AttributeObject";
 import {OntoDiagramModel} from "../../diagram/OntoDiagramModel";
 import {LanguagePool} from "../../config/LanguagePool";
-import {AttributeTypePool} from "../../config/AttributeTypePool";
+
 export class NodeCommonModel extends NodeModel {
     stereotype: string;
     attributes: {};
@@ -16,71 +16,70 @@ export class NodeCommonModel extends NodeModel {
         this.rdf = rdf;
         this.names = {};
         this.attributes = {};
-        for (let language in LanguagePool){
+        for (let language in LanguagePool) {
             this.attributes[language] = [];
-            if (this.names[language] === undefined){
+            if (this.names[language] === undefined) {
                 this.names[language] = "untitled";
             }
         }
-
+        this.notes = {};
         this.stereotype = stereotype;
         this.addPort(new NodeCommonPortModel("left", this.model));
         this.addPort(new NodeCommonPortModel("right", this.model));
         this.addPort(new NodeCommonPortModel("top", this.model));
         this.addPort(new NodeCommonPortModel("bottom", this.model));
         this.addListener({
-            selectionChanged: event => {this.model.updatePanel();},
-            entityRemoved: event => {this.model.nullPanel();}
+            selectionChanged: event => {
+                this.model.updatePanel();
+            },
+            entityRemoved: event => {
+                this.model.nullPanel();
+            }
         });
     }
 
-    changeName(str: string){
-        this.name = str;
-    }
-
-    setName(str: string, language: string){
+    setName(str: string, language: string) {
         this.names[language] = str;
     }
 
-    getName(str: string){
-        return this.names[str];
+    getNameByLanguage(language: string) {
+        if (this.names[language] === undefined){
+            this.names[language] = "untitled";
+        }
+        return this.names[language];
     }
-    getAttributesByLanguage(str: string){
-        return this.attributes[str];
+
+    getAttributesByLanguage(language: string) {
+        if (this.attributes[language] === undefined){
+            this.attributes[language] = [];
+        }
+        return this.attributes[language];
+
     }
-    getAttributes(){
-        return this.attributes;
-}
-    getAttribute(id: number){
-        return this.attributes[id];
-    }
-    /*
-    addAttribute(language: string, attr: AttributeObject){
-        this.attributes[language].push(attr);
-    */
-    addAttribute(attr: AttributeObject){
-        for(let language in LanguagePool){
+
+    addAttribute(attr: AttributeObject) {
+        for (let language in LanguagePool) {
             this.attributes[language].push(attr);
         }
     }
-    removeAttributeByIndex(index: number, language: string){
-        this.attributes[language].splice(index,1);
+
+    removeAttributeByIndex(index: number, language: string) {
+        this.attributes[language].splice(index, 1);
     }
-    removeAttributeByIndex(index: number){
-        if (Object.entries(this.attributes).length > 0 && index >= 0){
-            for(let language in LanguagePool){
-                this.attributes[language].splice(index,1);
+
+    removeAttributeByIndex(index: number) {
+        if (Object.entries(this.attributes).length > 0 && index >= 0) {
+            for (let language in LanguagePool) {
+                this.attributes[language].splice(index, 1);
             }
         }
     }
-    removeAttribute(attribute: AttributeObject){
-        const index = this.attributes.find(attribute);
-        this.attributes.splice(index,1);
-    }
-    setAttribute(attribute: AttributeObject){
+
+    setAttribute(attribute: AttributeObject) {
         this.attributes[this.attributes.find(attribute)] = attribute;
     }
-    setAttribute(language: string, attr: Attribute, index: number){
+
+    setAttribute(language: string, attr: Attribute, index: number) {
         this.attributes[language][index] = attr;
     }
 
@@ -92,7 +91,7 @@ export class NodeCommonModel extends NodeModel {
         this.attributes = object.attributes;
         this.names = object.names;
         this.rdf = object.rdf;
-        for (let port in this.ports){
+        for (let port in this.ports) {
             this.ports[port].model = this.model;
         }
     }

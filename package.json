@@ -30,6 +30,7 @@
     "@rdfjs/serializer-ntriples": "^1.0.1",
     "lodash": "^4.17.11",
     "npm": "^6.4.1",
+    "prop-types": "^15.6.2",
     "rdf-ext": "^1.1.2",
     "rdf-fetch": "^1.0.0",
     "react": "^16.6.3",

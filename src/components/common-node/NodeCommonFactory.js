@@ -7,7 +7,7 @@ import {OntoDiagramModel} from "../../diagram/OntoDiagramModel";
 export class NodeCommonFactory extends SRD.AbstractNodeFactory {
     model: OntoDiagramModel;
 
-    constructor(model: OntoDiagramModel){
+    constructor(model: OntoDiagramModel) {
         super("common");
         this.model = model;
     }

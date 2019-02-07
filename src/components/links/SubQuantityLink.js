@@ -14,7 +14,7 @@ export class SubQuantityLinkWidget extends LinkCommonWidget {
 
 
         return (
-            <g key={"point-" + this.props.link.points[pointIndex].id}>
+            <g key={"point-" + this.props.link.points[pointIndex].id} shapeRendering="optimizeSpeed">
 
                 <polygon
                     transform={`rotate(${angle}, ${x}, ${y})`}

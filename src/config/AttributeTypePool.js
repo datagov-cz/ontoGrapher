@@ -1,6 +1,6 @@
 export var AttributeTypePool = [
-  "String",
-  "Long",
-  "Integer",
-  "Boolean"
+    "String",
+    "Long",
+    "Integer",
+    "Boolean"
 ];

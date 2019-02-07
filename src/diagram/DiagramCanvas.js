@@ -1,5 +1,4 @@
 import React from 'react';
-import * as _ from "lodash";
 import {
     DiagramWidget,
     DiagramEngine
@@ -27,19 +26,19 @@ export class DiagramCanvas extends React.Component {
 
     componentWillMount() {
         this.engine = new DiagramEngine();
-        this.engine.setDiagramModel(new OntoDiagramModel(this.props,this));
+        this.engine.setDiagramModel(new OntoDiagramModel(this.props, this));
         this.registerFactories();
     }
 
-    updatePanel(){
+    updatePanel() {
         let selected = this.engine.getDiagramModel().getSelectedItems();
-        for (let i = 0; i < selected.length; i++){
-            if (!selected[i].selected){
+        for (let i = 0; i < selected.length; i++) {
+            if (!selected[i].selected) {
                 selected.splice(i, 1);
             }
         }
-        if (selected.length === 1){
-           this.props.handleChangePanelObject(selected[0]);
+        if (selected.length === 1) {
+            this.props.handleChangePanelObject(selected[0]);
         } else if (selected[0] instanceof NodeCommonModel) {
             this.props.handleChangePanelObject(selected[0]);
         } else {
@@ -48,30 +47,30 @@ export class DiagramCanvas extends React.Component {
 
     }
 
-    nullPanel(){
+    nullPanel() {
         this.props.handleChangePanelObject(null);
     }
 
-    serialize(){
+    serialize() {
         let saveData = JSON.stringify(this.engine.getDiagramModel().serializeDiagram());
         this.props.handleSerialize(saveData);
     }
 
-    showContextMenu(event: MouseEvent, link: LinkCommonModel){
+    showContextMenu(event: MouseEvent, link: LinkCommonModel) {
         event.preventDefault();
-        this.props.showContextMenu(event.clientX,event.clientY,link);
+        this.props.showContextMenu(event.clientX, event.clientY, link);
 
     }
 
-    export(){
+    export() {
         const rdf = require('rdf-ext');
         const SerializerNtriples = require('@rdfjs/serializer-ntriples');
 
         let dataset = rdf.dataset();
         let diagram = this.engine.getDiagramModel().serializeDiagram();
-        for (let node of diagram.nodes){
-            dataset.add(rdf.quad(rdf.namedNode(node.rdf),rdf.namedNode("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"),rdf.namedNode("http://www.w3.org/2002/07/owl#Class")));
-            dataset.add(rdf.quad(rdf.namedNode(node.rdf),rdf.namedNode("http://www.w3.org/2000/01/rdf-schema#label"),rdf.literal(node.stereotype)));
+        for (let node of diagram.nodes) {
+            dataset.add(rdf.quad(rdf.namedNode(node.rdf), rdf.namedNode("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"), rdf.namedNode("http://www.w3.org/2002/07/owl#Class")));
+            dataset.add(rdf.quad(rdf.namedNode(node.rdf), rdf.namedNode("http://www.w3.org/2000/01/rdf-schema#label"), rdf.literal(node.stereotype)));
         }
         const serializerNtriples = new SerializerNtriples();
         const input = dataset.toStream();
@@ -80,40 +79,41 @@ export class DiagramCanvas extends React.Component {
             console.log(ntriples.toString());
         });
     }
-    deserialize(str: string){
+
+    deserialize(str: string) {
         this.registerFactories();
-        let model = new OntoDiagramModel(this.props,this);
+        let model = new OntoDiagramModel(this.props, this);
         model.deSerializeDiagram(JSON.parse(str), this.engine);
         this.engine.setDiagramModel(model);
         this.forceUpdate();
     }
 
-    setName(str: string){
+    setName(str: string) {
         this.props.setName(str);
     }
 
     render() {
         return (
-                <div
-                    onDrop={event => {
-                        var data = JSON.parse(event.dataTransfer.getData("newNode"));
-                        var node = new NodeCommonModel(data.type,data.rdf,this.engine.getDiagramModel());
-                        var points = this.engine.getRelativeMousePoint(event);
-                        node.x = points.x;
-                        node.y = points.y;
-                        this.engine.getDiagramModel().addNode(node);
-                        this.forceUpdate();
-                    }}
-                    onDragOver={event => {
-                        event.preventDefault();
-                    }}>
-                    <DiagramWidget
-                        diagramEngine={this.engine}
-                        allowLooseLinks={true}
-                        smartRouting={false}
-                        deleteKeys={[46]}
-                    />
-                </div>
+            <div
+                onDrop={event => {
+                    var data = JSON.parse(event.dataTransfer.getData("newNode"));
+                    var node = new NodeCommonModel(data.type, data.rdf, this.engine.getDiagramModel());
+                    var points = this.engine.getRelativeMousePoint(event);
+                    node.x = points.x;
+                    node.y = points.y;
+                    this.engine.getDiagramModel().addNode(node);
+                    this.forceUpdate();
+                }}
+                onDragOver={event => {
+                    event.preventDefault();
+                }}>
+                <DiagramWidget
+                    diagramEngine={this.engine}
+                    allowLooseLinks={true}
+                    smartRouting={false}
+                    deleteKeys={[46]}
+                />
+            </div>
         );
     }
 }

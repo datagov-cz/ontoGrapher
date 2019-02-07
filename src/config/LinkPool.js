@@ -1,23 +1,20 @@
-import {CharacterizationLinkWidget} from "../components/links/CharacterizationLink";
 import {ComponentLinkWidget} from "../components/links/ComponentLink";
-import {DerivationLinkWidget} from "../components/links/DerivationLink";
-import {FormalLinkWidget} from "../components/links/FormalLink";
-import {MaterialLinkWidget} from "../components/links/MaterialLink";
-import {MediationLinkWidget} from "../components/links/MediationLink";
+import {DashedUnlabeledLinkWidget} from "../components/links/DashedUnlabeledLink";
 import {MemberLinkWidget} from "../components/links/MemberLink";
 import {SubCollectionLinkWidget} from "../components/links/SubCollectionLink";
 import {SubQuantityLinkWidget} from "../components/links/SubQuantityLink";
 import {GeneralizationLinkWidget} from "../components/links/GeneralizationLink";
+import {StandardLabeledLinkWidget} from "../components/links/StandardLabeledLink";
 
 export var LinkPool = {
-    "Characterization": CharacterizationLinkWidget,
+    "Characterization": StandardLabeledLinkWidget,
     "Component": ComponentLinkWidget,
-    "Derivation": DerivationLinkWidget,
-    "Formal": FormalLinkWidget,
+    "Derivation": DashedUnlabeledLinkWidget,
+    "Formal": StandardLabeledLinkWidget,
     "Generalization": GeneralizationLinkWidget,
-    "Material": MaterialLinkWidget,
-    "Mediation": MediationLinkWidget,
+    "Material": StandardLabeledLinkWidget,
+    "Mediation": StandardLabeledLinkWidget,
     "Member": MemberLinkWidget,
-    "Subcollection": SubCollectionLinkWidget,
-    "Subquantity": SubQuantityLinkWidget
+    "SubCollection": SubCollectionLinkWidget,
+    "SubQuantity": SubQuantityLinkWidget
 };

@@ -1,13 +1,5 @@
 import React from 'react';
 
-export interface StereotypePanelItemProps{
-    model: any,
-    color?: string,
-    name: string
-}
-
-export interface StereotypePanelItemState {}
-
 export class PanelNodeItem extends React.Component {
     constructor(props) {
         super(props);

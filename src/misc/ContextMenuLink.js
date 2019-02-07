@@ -3,8 +3,8 @@ import {Locale} from "../config/Locale";
 import {CardinalityPool} from "../config/CardinalityPool";
 import {DefaultLabelModel} from "storm-react-diagrams";
 
-export class ContextMenuLink extends React.Component{
-    constructor(props){
+export class ContextMenuLink extends React.Component {
+    constructor(props) {
         super(props);
         this.state = ({
             subMenuFirstCard: false,
@@ -20,63 +20,66 @@ export class ContextMenuLink extends React.Component{
 
         this.cardinalityPool = [];
         for (let cardinality of CardinalityPool) {
-            this.cardinalityPool.push(<li key={cardinality} onClick={this.handleClick} value={cardinality}>{cardinality}</li>);
+            this.cardinalityPool.push(<li key={cardinality} onClick={this.handleClick}
+                                          value={cardinality}>{cardinality}</li>);
         }
     }
 
-    handleClick(event){
+    handleClick(event) {
         let cardinality = event.nativeEvent.path[0].innerHTML === Locale.none ? "" : event.nativeEvent.path[0].innerHTML;
         let label = new DefaultLabelModel();
         label.setLabel(cardinality);
-        if (this.state.subMenuFirstCard){
+        if (this.state.subMenuFirstCard) {
             this.props.contextMenuLink.labels[0] = label;
-        } else if (this.state.subMenuSecondCard){
+        } else if (this.state.subMenuSecondCard) {
             this.props.contextMenuLink.labels[2] = label;
         }
     }
 
-    firstCardinalitySubmenuShow(event){
+    firstCardinalitySubmenuShow() {
         this.setState({subMenuFirstCard: true, subMenuSecondCard: false})
     }
 
-    firstCardinalitySubmenuHide(event){
+    firstCardinalitySubmenuHide() {
         this.setState({subMenuFirstCard: false});
     }
 
 
-    secondCardinalitySubmenuShow(event){
+    secondCardinalitySubmenuShow() {
         this.setState({subMenuSecondCard: true, subMenuFirstCard: false});
     }
 
-    secondCardinalitySubmenuHide(event){
+    secondCardinalitySubmenuHide() {
         this.setState({subMenuSecondCard: false});
     }
 
-    hideAll(event){
+    hideAll() {
         this.setState({subMenuFirstCard: false, subMenuSecondCard: false});
     }
 
-    render(){
+    render() {
         return (
             <div className="contextMenu"
-                 //onMouseOut={this.hideAll}
                  style={{
                      display: this.props.contextMenuActive ? "block" : "none",
                      top: this.props.contextMenuY,
-                     left: this.props.contextMenuX}}
+                     left: this.props.contextMenuX
+                 }}
             >
                 <div className="contextMenu-main">
                     <ul>
-                        <li onMouseOver={this.firstCardinalitySubmenuShow}>{Locale.contextMenuFirstCardinality+" >"}</li>
-                        <li onMouseOver={this.secondCardinalitySubmenuShow}>{Locale.contextMenuSecondCardinality+" >"}</li>
+                        <li onMouseOver={this.firstCardinalitySubmenuShow}>{Locale.contextMenuFirstCardinality + " >"}</li>
+                        <li onMouseOver={this.secondCardinalitySubmenuShow}>{Locale.contextMenuSecondCardinality + " >"}</li>
                     </ul>
                 </div>
-                <div className="contextMenu-subFirstCard" style={{display: this.state.subMenuFirstCard ? "block" : "none"}}>
+                <div className="contextMenu-subFirstCard"
+                     style={{display: this.state.subMenuFirstCard ? "block" : "none"}}>
                     <ul>
                         {this.cardinalityPool}
                     </ul>
                 </div>
-                <div className="contextMenu-subSecondCard" style={{display: this.state.subMenuSecondCard ? "block" : "none"}}>
+                <div className="contextMenu-subSecondCard"
+                     style={{display: this.state.subMenuSecondCard ? "block" : "none"}}>
                     <ul>
                         {this.cardinalityPool}
                     </ul>

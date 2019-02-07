@@ -1,6 +1,6 @@
 import {
     DiagramEngine,
-    DiagramModel, LinkModel, NodeModel, PortModel
+    DiagramModel, LinkModel, NodeModel
 } from "storm-react-diagrams";
 import {DiagramCanvas} from "./DiagramCanvas";
 import {Locale} from "../config/Locale";
@@ -32,6 +32,7 @@ export class OntoDiagramModel extends DiagramModel {
         this.links = {};
         this.nodes = {};
         this.name = Locale.untitledDiagram;
+        this.notes = "";
 
         this.offsetX = 0;
         this.offsetY = 0;
@@ -46,15 +47,15 @@ export class OntoDiagramModel extends DiagramModel {
         this.secondCardinality = props.secondCardinality;
     }
 
-    updatePanel(){
+    updatePanel() {
         this.canvas.updatePanel();
     }
 
-    nullPanel(){
+    nullPanel() {
         this.canvas.nullPanel();
     }
 
-    serializeDiagram(){
+    serializeDiagram() {
         return _.merge(this.serialize(), {
             offsetX: this.offsetX,
             offsetY: this.offsetY,
@@ -71,7 +72,7 @@ export class OntoDiagramModel extends DiagramModel {
             nodes: _.map(this.nodes, node => {
                 return node.serialize();
             }),
-            languages: _.map(Object.entries(LanguagePool), language =>{
+            languages: _.map(Object.entries(LanguagePool), language => {
                 return language;
             })
         });
@@ -106,10 +107,10 @@ export class OntoDiagramModel extends DiagramModel {
             linkOb.deSerialize(link, diagramEngine);
             this.addLink(linkOb);
         });
-        for (let language in LanguagePool){
+        for (let language in LanguagePool) {
             delete LanguagePool[language];
         }
-        for (let entry in object.languages){
+        for (let entry in object.languages) {
             LanguagePool[object.languages[entry][0]] = object.languages[entry][1];
         }
         this.canvas.setName(object.name);

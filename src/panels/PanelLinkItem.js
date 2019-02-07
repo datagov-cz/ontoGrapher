@@ -1,32 +1,32 @@
 import React from 'react';
 
-export class PanelLinkItem extends React.Component{
-    constructor(props){
+export class PanelLinkItem extends React.Component {
+    constructor(props) {
         super(props);
         this.alertPanel = this.alertPanel.bind(this);
         this.setClassName();
     }
 
-    alertPanel(event){
+    alertPanel(event) {
         this.props.handleChangeSelectedLink(this.props.linktype);
         this.setClassName();
     }
 
     componentDidUpdate(prevProps) {
-        if (prevProps.selectedLink !== this.props.selectedLink){
+        if (prevProps.selectedLink !== this.props.selectedLink) {
             this.setClassName();
             this.forceUpdate();
         }
     }
 
-    setClassName(){
+    setClassName() {
         this.name = this.props.linktype === this.props.selectedLink ? "panelLinkItem--selected" : "panelLinkItem";
     }
 
-    render(){
+    render() {
         return (
             <div className={this.name}
-                onClick={this.alertPanel}
+                 onClick={this.alertPanel}
             >
                 {this.props.linktype}
             </div>

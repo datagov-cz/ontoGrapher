@@ -4,38 +4,38 @@ import {LinkPool} from "../../config/LinkPool";
 import {LinkCommonWidget} from "./LinkCommonWidget";
 import {LinkCommonModel} from "./LinkCommonModel";
 
-export class LinkCommonFactory extends AbstractLinkFactory<LinkCommonModel>{
+export class LinkCommonFactory extends AbstractLinkFactory<LinkCommonModel> {
 
-    constructor(){
+    constructor() {
         super();
         this.type = "link-common";
     }
 
-    getNewInstance(initialConfig?: any): LinkCommonModel{
+    getNewInstance(initialConfig?: any): LinkCommonModel {
         return new LinkCommonModel();
     }
 
     generateReactWidget(diagramEngine: DiagramEngine, link: LinkCommonModel): JSX.Element {
-        return React.createElement(LinkPool[link.linktype],{
+        return React.createElement(LinkPool[link.linktype], {
             link: link,
             diagramEngine: diagramEngine,
         });
     }
 
-    generateLinkSegment(model: LinkCommonModel, widget: LinkCommonWidget, selected: boolean, path:string){
-        if (model.dashed){
+    generateLinkSegment(model: LinkCommonModel, widget: LinkCommonWidget, selected: boolean, path: string) {
+        if (model.dashed) {
             return (
-                    <path className={selected ? "link-derivation--path-selected" : "link-derivation"}
-                          ref={ref => {
-                              this.path = ref;
-                          }}
-                          shapeRendering="optimizeSpeed"
-                          strokeWidth={model.width}
-                          stroke="black"
-                          strokeDasharray="10,10"
-                          d={path}
+                <path className={selected ? "link-derivation--path-selected" : "link-derivation"}
+                      ref={ref => {
+                          this.path = ref;
+                      }}
+                      shapeRendering="optimizeSpeed"
+                      strokeWidth={model.width}
+                      stroke="black"
+                      strokeDasharray="10,10"
+                      d={path}
 
-                    />
+                />
             );
         } else {
             return (

@@ -3,12 +3,12 @@ import {NodeCommonPortModel} from "./NodeCommonPortModel";
 
 export class NodeCommonPortFactory extends DefaultPortFactory {
 
-    constructor(){
+    constructor() {
         super();
-        this.type="common";
+        this.type = "common";
     }
 
-    getNewInstance(initialConfig?: any): NodeCommonPortModel{
+    getNewInstance(initialConfig?: any): NodeCommonPortModel {
         return new NodeCommonPortModel();
     }
 }

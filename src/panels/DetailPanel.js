@@ -1,10 +1,7 @@
 import React from 'react';
 import {NodeCommonModel} from "../components/common-node/NodeCommonModel";
 import {Locale} from "../config/Locale";
-import {Tabs, TabList, Tab, TabPanel} from 'react-tabs';
-import {LanguagePool} from "../config/LanguagePool";
 import {LinkCommonModel} from "../components/common-link/LinkCommonModel";
-import {PointModel} from "storm-react-diagrams";
 import {AttributeTypePool} from "../config/AttributeTypePool";
 import {AttributeObject} from "../components/misc/AttributeObject";
 import {CardinalityPool} from "../config/CardinalityPool";
@@ -25,8 +22,6 @@ export class DetailPanel extends React.Component {
             linktype: "",
             newLabel: ""
         };
-        this.attributeList = [];
-        let key = 0;
         this.attributeTypes = [];
         for (let attrType of AttributeTypePool) {
             this.attributeTypes.push(<option key={attrType} value={attrType}>{attrType}</option>);

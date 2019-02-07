@@ -17,7 +17,7 @@ export class SubCollectionLinkWidget extends LinkCommonWidget {
 
 
         return (
-            <g key={"point-" + this.props.link.points[pointIndex].id}>
+            <g key={"point-" + this.props.link.points[pointIndex].id} shapeRendering="optimizeSpeed">
 
 
                 <polygon

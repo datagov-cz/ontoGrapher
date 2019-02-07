@@ -9,10 +9,11 @@ import {OntoDiagramModel} from "./diagram/OntoDiagramModel";
 import {Locale} from "./config/Locale";
 import {ContextMenuLink} from "./misc/ContextMenuLink";
 import {LinkCommonModel} from "./components/common-link/LinkCommonModel";
-import {LanguagePool} from "./config/LanguagePool";
+import PropTypes from "prop-types";
+
 
 export class DiagramApp extends React.Component {
-    constructor(props){
+    constructor(props) {
         super(props);
         document.title = Locale.untitledDiagram + " | " + Locale.appName;
         this.state = {
@@ -29,10 +30,9 @@ export class DiagramApp extends React.Component {
             saveData: ""
         };
 
-        if (!this.props.disableSCSS){
+        if (!this.props.disableSCSS) {
             require("./sass/main.scss");
         }
-
 
 
         this.handleChangeSelectedLink = this.handleChangeSelectedLink.bind(this);
@@ -53,17 +53,17 @@ export class DiagramApp extends React.Component {
         this.setName = this.setName.bind(this);
     }
 
-    componentDidMount(){
-        if (typeof this.props.loadDiagram === "string"){
+    componentDidMount() {
+        if (typeof this.props.loadDiagram === "string") {
             this.deserialize(this.props.loadDiagram);
         }
-        if (this.props.readOnly){
+        if (this.props.readOnly) {
             this.diagramCanvas.engine.getDiagramModel().setLocked(true);
         }
     }
 
 
-    showContextMenu(x: number,y:number, link: LinkCommonModel){
+    showContextMenu(x: number, y: number, link: LinkCommonModel) {
         this.setState({
             contextMenuActive: true,
             contextMenuX: x,
@@ -91,22 +91,22 @@ export class DiagramApp extends React.Component {
         this.setState({language: event.target.value});
         this.diagramCanvas.engine.getDiagramModel().language = event.target.value;
         let links = this.diagramCanvas.engine.getDiagramModel().getLinks();
-        for (let link in links){
+        for (let link in links) {
             links[link].setNameLanguage(event.target.value);
         }
         this.diagramCanvas.forceUpdate();
     }
 
-    handleChangePanelObject(thing){
-        if (thing instanceof PointModel){
+    handleChangePanelObject(thing) {
+        if (thing instanceof PointModel) {
             this.setState({panelObject: thing.getLink()});
         } else {
             this.setState({panelObject: thing});
         }
     }
 
-    handleChangeName(event){
-        if (event === ""){
+    handleChangeName(event) {
+        if (event === "") {
             event = "untitled";
         }
         this.setState({name: event});
@@ -115,53 +115,55 @@ export class DiagramApp extends React.Component {
 
     }
 
-    handleNew(){
+    handleNew() {
         this.diagramCanvas.registerFactories();
-        this.diagramCanvas.engine.setDiagramModel(new OntoDiagramModel(this.diagramCanvas.props,this.diagramCanvas));
+        this.diagramCanvas.engine.setDiagramModel(new OntoDiagramModel(this.diagramCanvas.props, this.diagramCanvas));
         document.title = Locale.untitledDiagram + " | " + Locale.appName;
         this.setState({name: Locale.untitledDiagram});
         this.diagramCanvas.forceUpdate();
     }
 
-    serialize(){
+    serialize() {
         this.diagramCanvas.serialize();
     }
 
-    deserialize(str: string){
+    deserialize(str: string) {
         this.diagramCanvas.deserialize(str);
         this.setState({language: Defaults.language, selectedLink: Defaults.selectedLink});
     }
 
-    export(){
+    export() {
         this.diagramCanvas.export();
     }
 
-    hideContextMenu(){
+    hideContextMenu() {
         this.setState({contextMenuActive: false});
     }
 
-    handleSerialize(str){
+    handleSerialize(str) {
         this.setState({saveData: str});
     }
 
-    handleZoom(){
+    handleZoom() {
         this.diagramCanvas.engine.getDiagramModel().setOffsetX(0);
         this.diagramCanvas.engine.getDiagramModel().setOffsetY(0);
     }
 
-    centerView(){
+    centerView() {
         this.diagramCanvas.engine.getDiagramModel().zoom = 100;
     }
 
-    setName(str: string){
+    setName(str: string) {
         this.setState({name: str});
     }
 
     render() {
-        if (this.props.readOnly){
+        if (this.props.readOnly) {
             return (
                 <div className="content"
-                     onContextMenu={event =>  {event.preventDefault();}}
+                     onContextMenu={event => {
+                         event.preventDefault();
+                     }}
                      onClick={this.hideContextMenu}
                 >
                     <MenuPanel
@@ -183,7 +185,9 @@ export class DiagramApp extends React.Component {
                         readOnly={this.props.readOnly}
                     />
                     <DiagramCanvas
-                        ref={instance => {this.diagramCanvas = instance;}}
+                        ref={instance => {
+                            this.diagramCanvas = instance;
+                        }}
                         handleSerialize={this.handleSerialize}
                         selectedLink={this.state.selectedLink}
                         firstCardinality={this.state.firstCardinality}
@@ -202,7 +206,9 @@ export class DiagramApp extends React.Component {
         } else {
             return (
                 <div className="content"
-                     onContextMenu={event =>  {event.preventDefault();}}
+                     onContextMenu={event => {
+                         event.preventDefault();
+                     }}
                      onClick={this.hideContextMenu}
                 >
                     <MenuPanel
@@ -234,7 +240,9 @@ export class DiagramApp extends React.Component {
                         language={this.state.language}
                     />
                     <DiagramCanvas
-                        ref={instance => {this.diagramCanvas = instance;}}
+                        ref={instance => {
+                            this.diagramCanvas = instance;
+                        }}
                         selectedLink={this.state.selectedLink}
                         firstCardinality={this.state.firstCardinality}
                         secondCardinality={this.state.secondCardinality}
@@ -259,4 +267,9 @@ export class DiagramApp extends React.Component {
         }
 
     }
+}
+
+DiagramApp.propTypes = {
+    loadDiagram: PropTypes.string,
+    readOnly: PropTypes.bool
 }

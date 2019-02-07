@@ -8,7 +8,6 @@ import {Locale} from "../../config/Locale";
 import {LanguagePool} from "../../config/LanguagePool";
 
 
-
 export class LinkCommonModel extends DefaultLinkModel {
     width: number;
     color: string;
@@ -18,7 +17,7 @@ export class LinkCommonModel extends DefaultLinkModel {
     descriptor: boolean;
     dashed: boolean;
 
-    constructor(model: OntoDiagramModel){
+    constructor(model: OntoDiagramModel) {
         super();
         this.type = "link-common";
         this.width = 3;
@@ -27,33 +26,38 @@ export class LinkCommonModel extends DefaultLinkModel {
         this.descriptor = false;
         this.dashed = false;
         this.names = {};
-        for (let language in LanguagePool){
-            if (this.names[language] === undefined){
+        this.notes = {};
+        for (let language in LanguagePool) {
+            if (this.names[language] === undefined) {
                 this.names[language] = "";
             }
         }
-        if (this.model instanceof OntoDiagramModel){
+        if (this.model instanceof OntoDiagramModel) {
             this.linktype = this.model.selectedLink;
             this.addLabel(this.model.firstCardinality === Locale.none ? "" : this.model.firstCardinality);
             this.addLabel("");
-            this.addLabel(this.model.secondCardinality  === Locale.none ? "" : this.model.secondCardinality);
+            this.addLabel(this.model.secondCardinality === Locale.none ? "" : this.model.secondCardinality);
             this.addLabel("");
         }
         this.addListener({
-            selectionChanged: event => {this.model.updatePanel();},
-            entityRemoved: event => {this.model.nullPanel();}
+            selectionChanged: event => {
+                this.model.updatePanel();
+            },
+            entityRemoved: event => {
+                this.model.nullPanel();
+            }
         });
     }
 
-    addDescriptorLabel(){
-            let labeltext = "«"+this.linktype.toLowerCase()+"»";
-            this.labels[1].setLabel(labeltext);
-            this.descriptor = true;
+    addDescriptorLabel() {
+        let labeltext = "«" + this.linktype.toLowerCase() + "»";
+        this.labels[1].setLabel(labeltext);
+        this.descriptor = true;
 
 
     }
 
-    setDashedLine(){
+    setDashedLine() {
         this.dashed = true;
     }
 
@@ -76,8 +80,8 @@ export class LinkCommonModel extends DefaultLinkModel {
         this.name = ob.name;
     }
 
-    setLabel(str: string){
-        if (this.labels.length >= 1){
+    setLabel(str: string) {
+        if (this.labels.length >= 1) {
             let newLabel = new DefaultLabelModel();
             newLabel.setLabel(str);
             this.labels = [newLabel];
@@ -86,46 +90,20 @@ export class LinkCommonModel extends DefaultLinkModel {
         }
     }
 
-    setNameLanguage(language:string){
+    setNameLanguage(language: string) {
         this.labels[3].setLabel(this.names[language]);
     }
 
-    setFirstCardinality(str: string){
+    setFirstCardinality(str: string) {
         this.labels[0].setLabel(str);
     }
 
-    setName(str: string, language: string){
+    setName(str: string, language: string) {
         this.names[language] = str;
     }
 
 
-    setSecondCardinality(str: string){
+    setSecondCardinality(str: string) {
         this.labels[2].setLabel(str);
     }
 }
-
-
-/*
-LinkCommonWidget.defaultProps = {
-    color: "black",
-    width: 3,
-    link: null,
-    engine: null,
-    smooth: false,
-    diagramEngine: null
-}
-
-export interface CommonLinkProps extends BaseWidgetProps {
-    color?: string;
-    width?: number;
-    smooth?: boolean;
-    link: LinkCommonModel;
-    diagramEngine: DiagramEngine;
-    pointAdded?: (point: PointModel, event: MouseEvent) => any;
-}
-
-export interface CommonLinkState {
-    selected: boolean;
-}
-*/
-

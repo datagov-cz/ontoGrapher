@@ -1,5 +1,5 @@
 import * as _ from "lodash";
-import { LinkModel, DiagramEngine, PortModel } from "storm-react-diagrams";
+import {LinkModel, DiagramEngine, PortModel} from "storm-react-diagrams";
 import {OntoDiagramModel} from "../../diagram/OntoDiagramModel";
 import {LinkCommonModel} from "../common-link/LinkCommonModel";
 
