@@ -19,7 +19,7 @@ export class LinkCommonWidget extends DefaultLinkWidget {
         let angle = 180 / (Math.PI / radian);
         if (y < 0) {
             angle = -angle;
-        } else if ((y == 0) && (x < 0)) {
+        } else if ((y === 0) && (x < 0)) {
             angle = 180;
         }
         return angle;
@@ -32,7 +32,7 @@ export class LinkCommonWidget extends DefaultLinkWidget {
         const pointTwo = this.props.link.points[pointIndex];
         let angle = 0;
         if (pointOne != null) {
-            angle = this.getAngle(pointOne.x, pointOne.y, pointTwo.x, pointTwo.y);
+            angle = LinkCommonWidget.getAngle(pointOne.x, pointOne.y, pointTwo.x, pointTwo.y);
         }
 
 
@@ -291,10 +291,10 @@ export class LinkCommonWidget extends DefaultLinkWidget {
 
                 //some defensive programming to make sure the smoothing is
                 //always in the right direction
-                if (pointLeft[xOrY] > pointRight[xOrY]) {
-                    pointLeft = points[1];
-                    pointRight = points[0];
-                }
+                // if (pointLeft[xOrY] > pointRight[xOrY]) {
+                //     pointLeft = points[1];
+                //     pointRight = points[0];
+                // }
 
                 paths.push(
                     this.generateLink(
@@ -306,7 +306,7 @@ export class LinkCommonWidget extends DefaultLinkWidget {
                     )
                 );
 
-                // draw the link as dangeling
+                // draw the link as dangling
                 paths.push(this.generateEnd(1));
             } else {
                 //draw the multiple anchors and complex line instead

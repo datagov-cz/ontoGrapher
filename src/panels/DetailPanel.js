@@ -9,18 +9,20 @@ import {FormGroup} from "react-bootstrap";
 import {FormControl} from "react-bootstrap";
 import {Button} from "react-bootstrap";
 import {Form} from "react-bootstrap";
+import {NodeCommonWidget} from "../components/common-node/NodeCommonWidget";
 
 export class DetailPanel extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            language: this.props.language,
             formName: "",
             newAttrName: "",
             newAttrType: AttributeTypePool[0],
             attribute: 0,
             linktype: "",
-            newLabel: ""
+            newLabel: "",
+            notes: "",
+            attrs: ""
         };
         this.attributeTypes = [];
         for (let attrType of AttributeTypePool) {
@@ -45,8 +47,19 @@ export class DetailPanel extends React.Component {
         this.focus = this.focus.bind(this);
         this.handleChangeLabel = this.handleChangeLabel.bind(this);
         this.saveLabel = this.saveLabel.bind(this);
+        this.saveNotes = this.saveNotes.bind(this);
+        this.handleChangeNotes = this.handleChangeNotes.bind(this);
     }
 
+    handleChangeNotes(event){
+        let copy = this.state.notes;
+        copy[this.props.language] = event.target.value;
+        this.setState({notes: copy});
+    }
+
+    saveNotes(){
+        this.props.panelObject.notes[this.props.language] = this.state.notes[this.props.language];
+    }
 
     prepareObject(object) {
         let copy = object;
@@ -54,7 +67,8 @@ export class DetailPanel extends React.Component {
             this.setState({
                 type: NodeCommonModel,
                 names: copy.names,
-                attrs: copy.attributes
+                attrs: copy.attributes,
+                notes: copy.notes
             });
         } else if (copy instanceof LinkCommonModel) {
             this.setState({
@@ -62,7 +76,8 @@ export class DetailPanel extends React.Component {
                 firstcard: copy.firstCardinality,
                 secondcard: copy.secondCardinality,
                 linktype: copy.linktype,
-                names: copy.names
+                names: copy.names,
+                notes: copy.notes
             });
         } else {
             this.setState({
@@ -190,8 +205,6 @@ export class DetailPanel extends React.Component {
 
     render() {
         if (this.state.type === NodeCommonModel) {
-
-            let tabkey = 1;
             let attrkey = 0;
             const attributeList = this.state.attrs[this.props.language].map((attr) =>
                 <option key={attrkey} value={attrkey++}>{attr.first + ": " + attr.second}</option>
@@ -216,9 +229,8 @@ export class DetailPanel extends React.Component {
             return (
                 <div className="detailPanel">
                     <h2>{Locale.detailPanelTitle}</h2>
-                    {/*<select value={this.props.language} onChange={this.handleChangeLanguage}>
-                        {languages}
-                    </select>*/}
+                    {this.props.panelObject === null ? "" : (<NodeCommonWidget node={this.props.panelObject} />)}
+
 
                     <Form inline>
                         <FormGroup>
@@ -257,7 +269,18 @@ export class DetailPanel extends React.Component {
                     </Form>
                     <Button bsSize="small" onClick={this.addAttribute}>{Locale.detailPanelNewAttr}</Button>
                     <Button bsSize="small" onClick={this.deleteAttribute}>{Locale.detailPanelDeleteAttr}</Button>
-
+                    <FormGroup>
+                        <h4>{Locale.notes}</h4>
+                        <FormControl
+                            style={{height: 50, resize: "none"}}
+                            bsSize="small"
+                            componentClass="textarea"
+                            placeholder={Locale.notes}
+                            value={this.state.notes[this.props.language]}
+                            onChange={this.handleChangeNotes}
+                        />
+                        <Button bsSize="small" onClick={this.saveNotes}>{Locale.menuPanelSave}</Button>
+                    </FormGroup>
                 </div>
             );
         } else if (this.state.type === LinkCommonModel) {
@@ -277,6 +300,18 @@ export class DetailPanel extends React.Component {
                             <Button bsSize="small" onClick={this.processDialogue}>{Locale.menuPanelSave}</Button>
                         </FormGroup>
                     </Form>
+                    <FormGroup>
+                        <h4>{Locale.notes}</h4>
+                        <FormControl
+                            style={{height: 50, resize: "none"}}
+                            bsSize="small"
+                            componentClass="textarea"
+                            placeholder={Locale.notes}
+                            value={this.state.notes[this.props.language]}
+                            onChange={this.handleChangeNotes}
+                        />
+                        <Button bsSize="small" onClick={this.saveNotes}>{Locale.menuPanelSave}</Button>
+                    </FormGroup>
                 </div>
             );
         } else {

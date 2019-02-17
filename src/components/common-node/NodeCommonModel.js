@@ -16,23 +16,24 @@ export class NodeCommonModel extends NodeModel {
         this.rdf = rdf;
         this.names = {};
         this.attributes = {};
+        this.notes = {};
         for (let language in LanguagePool) {
             this.attributes[language] = [];
+            this.notes[language] = "";
             if (this.names[language] === undefined) {
                 this.names[language] = "untitled";
             }
         }
-        this.notes = {};
         this.stereotype = stereotype;
         this.addPort(new NodeCommonPortModel("left", this.model));
         this.addPort(new NodeCommonPortModel("right", this.model));
         this.addPort(new NodeCommonPortModel("top", this.model));
         this.addPort(new NodeCommonPortModel("bottom", this.model));
         this.addListener({
-            selectionChanged: event => {
+            selectionChanged: () => {
                 this.model.updatePanel();
             },
-            entityRemoved: event => {
+            entityRemoved: () => {
                 this.model.nullPanel();
             }
         });

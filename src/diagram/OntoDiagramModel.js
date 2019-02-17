@@ -54,7 +54,7 @@ export class OntoDiagramModel extends DiagramModel {
     nullPanel() {
         this.canvas.nullPanel();
     }
-
+    // TODO: update serialization data
     serializeDiagram() {
         return _.merge(this.serialize(), {
             offsetX: this.offsetX,

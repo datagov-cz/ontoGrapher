@@ -20,7 +20,8 @@ export class MenuPanel extends React.Component {
             modalSettingsLanguage: false,
             name: this.props.name,
             language: this.props.language,
-            languageName: ""
+            languageName: "",
+            notes: this.props.notes
         };
         this.languagePool = [];
         for (let language in LanguagePool) {
@@ -48,6 +49,11 @@ export class MenuPanel extends React.Component {
         this.handleChangeLanguageName = this.handleChangeLanguageName.bind(this);
         this.addLanguage = this.addLanguage.bind(this);
         this.deleteLanguage = this.deleteLanguage.bind(this);
+        this.handleChangeNotes = this.handleChangeNotes.bind(this);
+    }
+
+    handleChangeNotes(event){
+        this.setState({notes: event.target.value});
     }
 
     addLanguage() {
@@ -139,7 +145,7 @@ export class MenuPanel extends React.Component {
     handleName() {
         this.handleCloseNameModal();
         this.props.handleChangeName(this.state.name);
-
+        this.props.handleChangeNotes(this.state.notes);
     }
 
     focus() {
@@ -202,7 +208,6 @@ export class MenuPanel extends React.Component {
                             <MenuItem onClick={this.props.restoreZoom} eventKey="2">{Locale.menuPanelZoom}</MenuItem>
                         </DropdownButton>
                         <DropdownButton title={Locale.menuPanelSettings} bsSize="small" id={Locale.menuPanelSettings}>
-                            {/*<MenuItem eventKey="1">{Locale.menuPanelGeneral}</MenuItem><MenuItem eventKey="2">{Locale.menuPanelSources}</MenuItem>*/}
                             <MenuItem eventKey="1"
                                       onClick={this.handleOpenLanguagesModal}>{Locale.menuPanelLanguages}</MenuItem>
                         </DropdownButton>
@@ -295,6 +300,15 @@ export class MenuPanel extends React.Component {
                                 value={this.state.name}
                                 placeholder={Locale.detailPanelNamePlaceholder}
                                 onChange={this.handleChangeName}
+                            />
+                            <p>{Locale.notes}</p>
+                            <FormControl
+                                style={{height: 50, resize: "none"}}
+                                bsSize="small"
+                                componentClass="textarea"
+                                placeholder={Locale.notes}
+                                value={this.state.notes}
+                                onChange={this.handleChangeNotes}
                             />
                         </Modal.Body>
                         <Modal.Footer>

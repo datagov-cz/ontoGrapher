@@ -12,7 +12,7 @@ export class MemberLinkWidget extends LinkCommonWidget {
         const pointTwo = this.props.link.points[pointIndex];
         let angle = 0;
         if (pointOne != null){
-            angle = this.getAngle(pointOne.x, pointOne.y, pointTwo.x, pointTwo.y);
+            angle = LinkCommonWidget.getAngle(pointOne.x, pointOne.y, pointTwo.x, pointTwo.y);
         }
 
 

@@ -22,7 +22,8 @@ export class DiagramApp extends React.Component {
             secondCardinality: Defaults.cardinality,
             language: Defaults.language,
             panelObject: null,
-            name: Locale.untitledDiagram,
+            name: "",
+            notes: "",
             contextMenuActive: false,
             contextMenuX: 0,
             contextMenuY: 0,
@@ -51,6 +52,7 @@ export class DiagramApp extends React.Component {
         this.handleZoom = this.handleZoom.bind(this);
         this.centerView = this.centerView.bind(this);
         this.setName = this.setName.bind(this);
+        this.handleChangeNotes = this.handleChangeNotes.bind(this);
     }
 
     componentDidMount() {
@@ -115,6 +117,11 @@ export class DiagramApp extends React.Component {
 
     }
 
+    handleChangeNotes(event){
+        this.setState({notes: event});
+        this.diagramCanvas.engine.getDiagramModel().notes = event;
+    }
+
     handleNew() {
         this.diagramCanvas.registerFactories();
         this.diagramCanvas.engine.setDiagramModel(new OntoDiagramModel(this.diagramCanvas.props, this.diagramCanvas));
@@ -177,7 +184,8 @@ export class DiagramApp extends React.Component {
                         firstCardinality={this.state.firstCardinality}
                         secondCardinality={this.state.secondCardinality}
                         language={this.state.language}
-                        name={this.state.name}
+                        name={this.state.names}
+                        notes={this.state.notes}
                         saveData={this.state.saveData}
                         handleSerialize={this.serialize}
                         handleDeserialize={this.deserialize}
@@ -222,7 +230,8 @@ export class DiagramApp extends React.Component {
                         firstCardinality={this.state.firstCardinality}
                         secondCardinality={this.state.secondCardinality}
                         language={this.state.language}
-                        name={this.state.name}
+                        name={this.state.names}
+                        notes={this.state.notes}
                         handleSerialize={this.serialize}
                         handleDeserialize={this.deserialize}
                         handleExport={this.export}
@@ -272,4 +281,4 @@ export class DiagramApp extends React.Component {
 DiagramApp.propTypes = {
     loadDiagram: PropTypes.string,
     readOnly: PropTypes.bool
-}
+};

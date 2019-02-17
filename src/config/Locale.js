@@ -55,5 +55,6 @@ export var Locale = {
     del: "Delete",
     addLanguage: "Add language",
     languageName: "Language name",
-    code: "Code"
+    code: "Code",
+    notes: "Notes"
 };

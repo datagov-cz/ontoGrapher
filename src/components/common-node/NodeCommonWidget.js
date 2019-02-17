@@ -15,7 +15,6 @@ export interface NodeCommonWidgetState {
 export class NodeCommonWidget extends React.Component<NodeCommonWidgetProps, NodeCommonWidgetState> {
     constructor(props: NodeCommonWidgetProps) {
         super(props);
-        this.createModal = this.createModal.bind(this);
     }
 
     getName(language: string) {
@@ -24,10 +23,6 @@ export class NodeCommonWidget extends React.Component<NodeCommonWidgetProps, Nod
 
     getAttributes(language: string) {
         return this.props.node.getAttributesByLanguage(language);
-    }
-
-    createModal() {
-        this.child.openModal();
     }
 
     render() {
