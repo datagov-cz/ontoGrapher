@@ -32,7 +32,7 @@ export class LinkCommonWidget extends DefaultLinkWidget {
         const pointTwo = this.props.link.points[pointIndex];
         let angle = 0;
         if (pointOne != null) {
-            angle = LinkCommonWidget.getAngle(pointOne.x, pointOne.y, pointTwo.x, pointTwo.y);
+            angle = this.getAngle(pointOne.x, pointOne.y, pointTwo.x, pointTwo.y);
         }
 
 
