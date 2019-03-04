@@ -39,8 +39,8 @@ export class NodeCommonModel extends NodeModel {
         });
     }
 
-    setName(str: string, language: string) {
-        this.names[language] = str;
+    setName(name: string, language: string) {
+        this.names[language] = name;
     }
 
     getNameByLanguage(language: string) {
@@ -58,13 +58,13 @@ export class NodeCommonModel extends NodeModel {
 
     }
 
-    addAttribute(attr: AttributeObject) {
+    addAttribute(attribute: AttributeObject) {
         for (let language in LanguagePool) {
-            this.attributes[language].push(attr);
+            this.attributes[language].push(attribute);
         }
     }
 
-    removeAttributeByIndex(index: number, language: string) {
+    removeAttributeByIndexAndLanguage(index: number, language: string) {
         this.attributes[language].splice(index, 1);
     }
 
@@ -80,7 +80,7 @@ export class NodeCommonModel extends NodeModel {
         this.attributes[this.attributes.find(attribute)] = attribute;
     }
 
-    setAttribute(language: string, attr: Attribute, index: number) {
+    setAttributeWithLanguageAndIndex(language: string, attr: Attribute, index: number) {
         this.attributes[language][index] = attr;
     }
 

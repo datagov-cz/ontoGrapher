@@ -15,13 +15,13 @@ import {CommonLabelFactory} from "../components/misc/CommonLabelFactory";
 import {NodeCommonPortFactory} from "../components/common-node/NodeCommonPortFactory";
 import {LanguagePool} from "../config/LanguagePool";
 describe("Manual modelling", () =>{
-    var engine = new DiagramEngine();
-    var model = new OntoDiagramModel({
+    let engine = new DiagramEngine();
+    let model = new OntoDiagramModel({
         selectedLink: Defaults.selectedLink,
         language: Defaults.language,
         firstCardinality: Defaults.cardinality,
         secondCardinality: Defaults.cardinality
-    },engine);
+    }, engine);
 
     afterEach(() => {
         engine = new DiagramEngine();
@@ -34,9 +34,9 @@ describe("Manual modelling", () =>{
     });
 
     test("Basic stereotype manipulation", () => {
-        var node1 = new NodeCommonModel("test","test",model);
-        var node2 = new NodeCommonModel("test2","test",model);
-        var link1 = new LinkCommonModel(model);
+        const node1 = new NodeCommonModel("test", "test", model);
+        const node2 = new NodeCommonModel("test2", "test", model);
+        const link1 = new LinkCommonModel(model);
         model.addNode(node1);
         model.addNode(node2);
         link1.setSourcePort(node1.getPort("left"));
@@ -52,7 +52,7 @@ describe("Manual modelling", () =>{
     });
 
     test("Stereotype attribute allocation", () => {
-        var node1 = new NodeCommonModel("test", "test", model);
+        const node1 = new NodeCommonModel("test", "test", model);
         let random = 0;
         let additions  = 0;
         for (let i = 0; i<100; i++){
@@ -61,7 +61,7 @@ describe("Manual modelling", () =>{
                 node1.addAttribute(new AttributeObject(random,random));
                 additions++;
             } else {
-                node1.removeAttributeByIndex(node1.attributes["cs"].length-1);
+                node1.removeAttributeByIndexAndLanguage(node1.attributes["cs"].length-1);
                 if (additions >0){
                     additions--;
                 }
@@ -72,16 +72,16 @@ describe("Manual modelling", () =>{
     });
 
     test("Label manipulation", () => {
-        var node1 = new NodeCommonModel("test","test",model);
-        var node2 = new NodeCommonModel("test2","test",model);
-        var link1 = new LinkCommonModel(model);
+        const node1 = new NodeCommonModel("test", "test", model);
+        const node2 = new NodeCommonModel("test2", "test", model);
+        const link1 = new LinkCommonModel(model);
         model.addNode(node1);
         model.addNode(node2);
         link1.setSourcePort(node1.getPort("left"));
         link1.setTargetPort(node2.getPort("left"));
-        var additions = 4;
-        var random = 0;
-        var length = 0;
+        let additions = 4;
+        let random = 0;
+        let length = 0;
         for (let i = 0; i<100; i++){
             random = Math.floor(Math.random() * 11);
             if (random%2 === 0){
@@ -105,25 +105,25 @@ describe("Manual modelling", () =>{
     });
 
     test("Random compound modelling", () => {
-        var nodes = [];
-        var random1 = 0;
-        var random2 = 0;
-        var random3 = 0;
+        const nodes = [];
+        let random1 = 0;
+        let random2 = 0;
+        let random3 = 0;
         for (let i = 0; i<100; i++){
             random1 = Math.floor(Math.random() * 11);
            nodes.push(new NodeCommonModel(random1,random1,model));
         }
-        var links = [];
+        const links = [];
         for (let i = 0; i<100; i++){
             random1 = Math.floor(Math.random() * 11);
             random2 = Math.floor(Math.random() * 100);
             random3 = Math.floor(Math.random() * 100);
-            var link = new LinkCommonModel(model);
+            const link = new LinkCommonModel(model);
             link.setSourcePort(nodes[random2].getPort("left"));
             link.setTargetPort(nodes[random3].getPort("right"));
             links.push(link);
         }
-        var save = JSON.stringify(model.serialize());
+        const save = JSON.stringify(model.serialize());
         model = new OntoDiagramModel({
             selectedLink: Defaults.selectedLink,
             language: Defaults.language,
@@ -137,13 +137,13 @@ describe("Manual modelling", () =>{
 
 describe("Function interoperability", ()=>{
 
-    var engine = new DiagramEngine();
-    var model = new OntoDiagramModel({
+    let engine = new DiagramEngine();
+    let model = new OntoDiagramModel({
         selectedLink: Defaults.selectedLink,
         language: Defaults.language,
         firstCardinality: Defaults.cardinality,
         secondCardinality: Defaults.cardinality
-    },engine);
+    }, engine);
     engine.setDiagramModel(model);
 
     afterEach(() => {
@@ -160,8 +160,8 @@ describe("Function interoperability", ()=>{
     test("Stereotype fetching", done => {
         const rdf = require('rdf-ext');
         const rdfFetch = require('rdf-fetch');
-        var stereotypes = {};
-        var stereotypeList = [];
+        const stereotypes = {};
+        const stereotypeList = [];
         rdfFetch("http://onto.fel.cvut.cz/ontologies/ufo-b/current/ontology.ttl").then((res) => {
             return res.dataset();
         }).then((dataset) => {
@@ -202,11 +202,11 @@ describe("Function interoperability", ()=>{
     });
 
     test("Language and attribute testing", () => {
-        var nodes = [];
-        var random1 = 0;
-        var random2 = 0;
-        var random3 = 0;
-        var random = 0;
+        const nodes = [];
+        let random1 = 0;
+        const random2 = 0;
+        const random3 = 0;
+        let random = 0;
         delete LanguagePool["cs"];
         delete LanguagePool["en"];
         for (let i = 0; i<100; i++){
@@ -218,7 +218,7 @@ describe("Function interoperability", ()=>{
 
         for (let i = 0; i<100; i++){
             random1 = Math.floor(Math.random() * 11);
-            var node = new NodeCommonModel(random1,random1,model);
+            const node = new NodeCommonModel(random1, random1, model);
             for (let i = 0; i<100; i++){
                 random = Math.floor(Math.random() * 11);
                     node.attributes[i].push(new AttributeObject(random,random));
@@ -236,8 +236,8 @@ describe("Function interoperability", ()=>{
     test("Creating stereotypes", done => {
         const rdf = require('rdf-ext');
         const rdfFetch = require('rdf-fetch');
-        var stereotypes = {};
-        var stereotypeList = [];
+        const stereotypes = {};
+        const stereotypeList = [];
         rdfFetch("http://onto.fel.cvut.cz/ontologies/ufo-c/current/ontology.ttl").then((res) => {
             return res.dataset();
         }).then((dataset) => {
@@ -261,7 +261,7 @@ describe("Function interoperability", ()=>{
             }
 
             expect(stereotypeList.length).toBe(6);
-            var nodes = [];
+            const nodes = [];
             for (let i = 0; i<6; i++){
                 var node = new NodeCommonModel(Object.entries(stereotypes)[i][0],Object.entries(stereotypes)[i][1],model);
                 model.addNode(node);
@@ -280,14 +280,14 @@ describe("Function interoperability", ()=>{
     });
 
     test("Adding it all together", () => {
-        var nodes = [];
-        var random = 0;
-        var random1 = 0;
-        var random2 = 0;
-        var random3 = 0;
+        const nodes = [];
+        let random = 0;
+        let random1 = 0;
+        let random2 = 0;
+        let random3 = 0;
         for (let i = 0; i<100; i++){
             random1 = Math.floor(Math.random() * 11);
-            var node = new NodeCommonModel(random1,random1,model);
+            const node = new NodeCommonModel(random1, random1, model);
 
             let additions  = 0;
             for (let i = 0; i<100; i++){
@@ -296,7 +296,7 @@ describe("Function interoperability", ()=>{
                     node.addAttribute(new AttributeObject(random,random));
                     additions++;
                 } else {
-                    node.removeAttributeByIndex(node.attributes[Object.keys(node.attributes)[0]].length-1);
+                    node.removeAttributeByIndexAndLanguage(node.attributes[Object.keys(node.attributes)[0]].length-1);
                     if (additions >0){
                         additions--;
                     }
@@ -307,13 +307,13 @@ describe("Function interoperability", ()=>{
             nodes.push(node);
 
         }
-        var links = [];
-        var length = 0;
+        const links = [];
+        let length = 0;
         for (let i = 0; i<100; i++){
             random1 = Math.floor(Math.random() * 11);
             random2 = Math.floor(Math.random() * 100);
             random3 = Math.floor(Math.random() * 100);
-            var link = new LinkCommonModel(model);
+            const link = new LinkCommonModel(model);
             link.setSourcePort(nodes[random2].getPort("left"));
             link.setTargetPort(nodes[random3].getPort("right"));
             for (let i = 0; i<100; i++){
@@ -336,7 +336,7 @@ describe("Function interoperability", ()=>{
             }
             model.addLink(link);
         }
-        var save = JSON.stringify(model.serialize());
+        const save = JSON.stringify(model.serialize());
         model = new OntoDiagramModel({
             selectedLink: Defaults.selectedLink,
             language: Defaults.language,

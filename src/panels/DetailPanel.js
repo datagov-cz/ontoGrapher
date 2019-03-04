@@ -10,6 +10,7 @@ import {FormControl} from "react-bootstrap";
 import {Button} from "react-bootstrap";
 import {Form} from "react-bootstrap";
 import {NodeCommonWidget} from "../components/common-node/NodeCommonWidget";
+import {LinkCommonWidget} from "../components/common-link/LinkCommonWidget";
 
 export class DetailPanel extends React.Component {
     constructor(props) {
@@ -22,7 +23,8 @@ export class DetailPanel extends React.Component {
             linktype: "",
             newLabel: "",
             notes: "",
-            attrs: ""
+            attrs: "",
+            stereotype: ""
         };
         this.attributeTypes = [];
         for (let attrType of AttributeTypePool) {
@@ -68,7 +70,8 @@ export class DetailPanel extends React.Component {
                 type: NodeCommonModel,
                 names: copy.names,
                 attrs: copy.attributes,
-                notes: copy.notes
+                notes: copy.notes,
+                stereotype: copy.stereotype
             });
         } else if (copy instanceof LinkCommonModel) {
             this.setState({
@@ -144,16 +147,16 @@ export class DetailPanel extends React.Component {
                 newAttrName: this.state.attrs[this.props.language][0].first,
                 newAttrType: this.state.attrs[this.props.language][0].second
             });
-            this.forceUpdate();
-            this.props.panelObject.model.canvas.forceUpdate();
+            this.props.panelObject.model.updateLinkPositions(this.props.panelObject);
+            //this.props.panelObject.model.canvas.forceUpdate();
+
         }
     }
 
     deleteAttribute() {
-        this.props.panelObject.removeAttributeByIndex(this.state.attribute);
+        this.props.panelObject.removeAttributeByIndexAndLanguage(this.state.attribute);
         this.setState({attribute: 0});
-        this.forceUpdate();
-        this.props.panelObject.model.canvas.forceUpdate();
+        this.props.panelObject.model.updateLinkPositions(this.props.panelObject);
     }
 
     handleChangeAttributeName(event) {
@@ -176,7 +179,7 @@ export class DetailPanel extends React.Component {
 
     saveAttribute() {
         if (this.state.newAttrName !== "") {
-            this.props.panelObject.setAttribute(this.props.language, new AttributeObject(this.state.newAttrName, this.state.newAttrType), this.state.attribute);
+            this.props.panelObject.setAttributeWithLanguageAndIndex(this.props.language, new AttributeObject(this.state.newAttrName, this.state.newAttrType), this.state.attribute);
             this.forceUpdate();
             this.props.panelObject.model.canvas.forceUpdate();
         }
@@ -205,12 +208,14 @@ export class DetailPanel extends React.Component {
 
     render() {
         if (this.state.type === NodeCommonModel) {
-            let attrkey = 0;
+            let attributeKey = 0;
             const attributeList = this.state.attrs[this.props.language].map((attr) =>
-                <option key={attrkey} value={attrkey++}>{attr.first + ": " + attr.second}</option>
+                <option key={attributeKey} value={attributeKey++}>{attr.first + ": " + attr.second}</option>
             );
+            attributeKey = 0;
             let attrlen = this.state.attrs[this.props.language].length;
             let selector = (<h6>{Locale.noAttributes}</h6>);
+            let height = 48 + (attrlen * 15);
             if (attrlen > 0) {
                 selector = (
                     <FormControl
@@ -226,11 +231,33 @@ export class DetailPanel extends React.Component {
                     </FormControl>
                 );
             }
+            let widget = (
+                <svg
+                    width={150}
+                    height={height}
+                    shapeRendering="optimizeSpeed"
+                >
+
+                    <g>
+                        <rect fill="#ffffff" stroke={"black"} strokeWidth="4" width={150} height={height}/>
+                        <text width={150} textAnchor="middle" dominantBaseline="hanging" x="50%" y="5px"
+                              fill="#000000">{"«" + this.state.stereotype + "»"}</text>
+                        <line x1="0" x2={150} y1="20px" y2="20px" strokeWidth="1" stroke="#000000"/>
+                        <text width={150} textAnchor="middle" dominantBaseline="hanging" x="50%" y="25px"
+                              fill="#000000">{this.state.names[this.props.language]}</text>
+                        <text width={150} textAnchor="start" dominantBaseline="hanging" x="5px" y="30px"
+                              fill="#000000">
+                            {this.state.attrs[this.props.language].map(
+                                (attr) => (<tspan key={attributeKey++} x="5px" dy="15px">{attr.first + ": " + attr.second}</tspan>)
+                            )}
+                        </text>
+                    </g>
+                </svg>
+            );
             return (
                 <div className="detailPanel">
                     <h2>{Locale.detailPanelTitle}</h2>
-                    {this.props.panelObject === null ? "" : (<NodeCommonWidget node={this.props.panelObject} />)}
-
+                    {widget}
 
                     <Form inline>
                         <FormGroup>
@@ -284,6 +311,75 @@ export class DetailPanel extends React.Component {
                 </div>
             );
         } else if (this.state.type === LinkCommonModel) {
+            let node1Widget = (
+                <svg
+                    width={150}
+                    height={height}
+                    shapeRendering="optimizeSpeed"
+                >
+
+                    <g>
+                        <rect fill="#ffffff" stroke={"black"} strokeWidth="4" width={150} height={height}/>
+                        <text width={150} textAnchor="middle" dominantBaseline="hanging" x="50%" y="5px"
+                              fill="#000000">{"«" + this.state.stereotype + "»"}</text>
+                        <line x1="0" x2={150} y1="20px" y2="20px" strokeWidth="1" stroke="#000000"/>
+                        <text width={150} textAnchor="middle" dominantBaseline="hanging" x="50%" y="25px"
+                              fill="#000000">{this.state.names[this.props.language]}</text>
+                        <text width={150} textAnchor="start" dominantBaseline="hanging" x="5px" y="30px"
+                              fill="#000000">
+                            {this.state.attrs[this.props.language].map(
+                                (attr) => (<tspan key={attributeKey++} x="5px" dy="15px">{attr.first + ": " + attr.second}</tspan>)
+                            )}
+                        </text>
+                    </g>
+                </svg>
+            );
+            let node2Widget = (
+                <svg
+                    width={150}
+                    height={height}
+                    shapeRendering="optimizeSpeed"
+                >
+
+                    <g>
+                        <rect fill="#ffffff" stroke={"black"} strokeWidth="4" width={150} height={height}/>
+                        <text width={150} textAnchor="middle" dominantBaseline="hanging" x="50%" y="5px"
+                              fill="#000000">{"«" + this.state.stereotype + "»"}</text>
+                        <line x1="0" x2={150} y1="20px" y2="20px" strokeWidth="1" stroke="#000000"/>
+                        <text width={150} textAnchor="middle" dominantBaseline="hanging" x="50%" y="25px"
+                              fill="#000000">{this.state.names[this.props.language]}</text>
+                        <text width={150} textAnchor="start" dominantBaseline="hanging" x="5px" y="30px"
+                              fill="#000000">
+                            {this.state.attrs[this.props.language].map(
+                                (attr) => (<tspan key={attributeKey++} x="5px" dy="15px">{attr.first + ": " + attr.second}</tspan>)
+                            )}
+                        </text>
+                    </g>
+                </svg>
+            );
+            let linkWidget = (
+                <svg
+                    width={150}
+                    height={height}
+                    shapeRendering="optimizeSpeed"
+                >
+
+                    <g>
+                        <rect fill="#ffffff" stroke={"black"} strokeWidth="4" width={150} height={height}/>
+                        <text width={150} textAnchor="middle" dominantBaseline="hanging" x="50%" y="5px"
+                              fill="#000000">{"«" + this.state.stereotype + "»"}</text>
+                        <line x1="0" x2={150} y1="20px" y2="20px" strokeWidth="1" stroke="#000000"/>
+                        <text width={150} textAnchor="middle" dominantBaseline="hanging" x="50%" y="25px"
+                              fill="#000000">{this.state.names[this.props.language]}</text>
+                        <text width={150} textAnchor="start" dominantBaseline="hanging" x="5px" y="30px"
+                              fill="#000000">
+                            {this.state.attrs[this.props.language].map(
+                                (attr) => (<tspan key={attributeKey++} x="5px" dy="15px">{attr.first + ": " + attr.second}</tspan>)
+                            )}
+                        </text>
+                    </g>
+                </svg>
+            );
             return (
                 <div className="detailPanel">
                     <h2>{Locale.detailPanelTitle}</h2>

@@ -17,26 +17,21 @@ export class NodeCommonWidget extends React.Component<NodeCommonWidgetProps, Nod
         super(props);
     }
 
-    getName(language: string) {
-        return this.props.node.getNameByLanguage(language);
-    }
-
     getAttributes(language: string) {
         return this.props.node.getAttributesByLanguage(language);
     }
 
     render() {
-        let attrkey = 0;
+        let attributeKey = 0;
         let height = 48;
-        let name = this.getName(this.props.node.model.language);
         let attrs = this.getAttributes(this.props.node.model.language);
         height += attrs.length * 15;
         let select = "black";
         if (this.props.node.selected) {
             select = "blue";
         }
-        const attrsmap = attrs.map((attr) =>
-            <tspan key={attrkey++} x="5px" dy="15px">{attr.first + ": " + attr.second}</tspan>
+        const attributeMap = attrs.map((attr) =>
+            <tspan key={attributeKey++} x="5px" dy="15px">{attr.first + ": " + attr.second}</tspan>
         );
         return (
             <div className={this.props.node.type} width={this.props.size} height={height}>
@@ -53,10 +48,10 @@ export class NodeCommonWidget extends React.Component<NodeCommonWidgetProps, Nod
                               fill="#000000">{"«" + this.props.node.stereotype + "»"}</text>
                         <line x1="0" x2={this.props.size} y1="20px" y2="20px" strokeWidth="1" stroke="#000000"/>
                         <text width={this.props.size} textAnchor="middle" dominantBaseline="hanging" x="50%" y="25px"
-                              fill="#000000">{name}</text>
+                              fill="#000000">{this.props.node.getNameByLanguage(this.props.node.model.language)}</text>
                         <text width={this.props.size} textAnchor="start" dominantBaseline="hanging" x="5px" y="30px"
                               fill="#000000">
-                            {attrsmap}
+                            {attributeMap}
                         </text>
                     </g>
                 </svg>

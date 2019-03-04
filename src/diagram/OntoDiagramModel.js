@@ -5,6 +5,8 @@ import {
 import {DiagramCanvas} from "./DiagramCanvas";
 import {Locale} from "../config/Locale";
 import {LanguagePool} from "../config/LanguagePool";
+import {NodeCommonModel} from "../components/common-node/NodeCommonModel";
+import * as _ from "lodash";
 
 export class OntoDiagramModel extends DiagramModel {
 
@@ -45,6 +47,21 @@ export class OntoDiagramModel extends DiagramModel {
         this.language = props.language;
         this.firstCardinality = props.firstCardinality;
         this.secondCardinality = props.secondCardinality;
+    }
+
+    updateLinkPositions(node: NodeCommonModel) {
+        for (let port in node.getPorts()){
+            for (let link in node.getPorts()[port].getLinks()){
+                if (node.getPorts()[port].getLinks()[link].getSourcePort() === node.getPorts()[port]){
+                    node.getPorts()[port].getLinks()[link].points[0].x = node.getPorts()[port].x + 8;
+                    node.getPorts()[port].getLinks()[link].points[0].y = node.getPorts()[port].y + 8;
+                }
+                if (node.getPorts()[port].getLinks()[link].getTargetPort() === node.getPorts()[port]){
+                    node.getPorts()[port].getLinks()[link].points[node.getPorts()[port].getLinks()[link].points.length-1].x = node.getPorts()[port].x + 8;
+                    node.getPorts()[port].getLinks()[link].points[node.getPorts()[port].getLinks()[link].points.length-1].y = node.getPorts()[port].y + 8;
+                }
+            }
+        }
     }
 
     updatePanel() {

@@ -298,7 +298,7 @@ export class MenuPanel extends React.Component {
                                 bsSize="small"
                                 type="text"
                                 value={this.state.name}
-                                placeholder={Locale.detailPanelNamePlaceholder}
+                                placeholder={Locale.menuModalNameHeading}
                                 onChange={this.handleChangeName}
                             />
                             <p>{Locale.notes}</p>

@@ -1,5 +1,6 @@
 import {DefaultLinkWidget, Toolkit} from "storm-react-diagrams";
 import React from "react";
+import * as _ from "lodash";
 
 export class LinkCommonWidget extends DefaultLinkWidget {
     label: boolean;
@@ -102,9 +103,9 @@ export class LinkCommonWidget extends DefaultLinkWidget {
     }
 
     generateLink(path: string, extraProps: any, id: string | number): JSX.Element {
-        var props = this.props;
+        const props = this.props;
 
-        var Bottom = React.cloneElement(
+        const Bottom = React.cloneElement(
             props.diagramEngine.getFactoryForLink(this.props.link).generateLinkSegment(
                 this.props.link,
                 this,
@@ -116,7 +117,7 @@ export class LinkCommonWidget extends DefaultLinkWidget {
             }
         );
 
-        var Top = React.cloneElement(Bottom, {
+        const Top = React.cloneElement(Bottom, {
             strokeLinecap: "round",
             onMouseLeave: () => {
                 this.setState({selected: false});
@@ -235,8 +236,8 @@ export class LinkCommonWidget extends DefaultLinkWidget {
         }
 
         //ensure id is present for all points on the path
-        var points = this.props.link.points;
-        var paths = [];
+        const points = this.props.link.points;
+        const paths = [];
 
         if (this.isSmartRoutingApplicable()) {
             // first step: calculate a direct path between the points being linked
@@ -276,18 +277,18 @@ export class LinkCommonWidget extends DefaultLinkWidget {
         // See @link{#isSmartRoutingApplicable()}.
         if (paths.length === 0) {
             if (points.length === 2) {
-                var isHorizontal = Math.abs(points[0].x - points[1].x) > Math.abs(points[0].y - points[1].y);
-                var xOrY = isHorizontal ? "x" : "y";
+                const isHorizontal = Math.abs(points[0].x - points[1].x) > Math.abs(points[0].y - points[1].y);
+                const xOrY = isHorizontal ? "x" : "y";
 
                 //draw the smoothing
                 //if the points are too close, just draw a straight line
-                var margin = 50;
+                let margin = 50;
                 if (Math.abs(points[0][xOrY] - points[1][xOrY]) < 50) {
                     margin = 5;
                 }
 
-                var pointLeft = points[0];
-                var pointRight = points[1];
+                const pointLeft = points[0];
+                const pointRight = points[1];
 
                 //some defensive programming to make sure the smoothing is
                 //always in the right direction
@@ -325,7 +326,7 @@ export class LinkCommonWidget extends DefaultLinkWidget {
                 }
 
                 //render the circles
-                for (var i = 1; i < points.length - 1; i++) {
+                for (let i = 1; i < points.length - 1; i++) {
                     paths.push(this.generatePoint(i));
                 }
                 paths.push(this.generateEnd(points.length - 1));

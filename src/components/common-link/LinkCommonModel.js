@@ -6,6 +6,7 @@ import {
 import {OntoDiagramModel} from "../../diagram/OntoDiagramModel";
 import {Locale} from "../../config/Locale";
 import {LanguagePool} from "../../config/LanguagePool";
+import * as _ from "lodash";
 
 
 export class LinkCommonModel extends DefaultLinkModel {

@@ -3,10 +3,10 @@
   width: 100%;
   border: solid #000;
   padding-bottom: 2px;
-  border-width: 0px 0px 1px 0px;
+  border-width: 0 0 1px 0;
 
   .dropdown-menu{
-    border-radius: 0px !important;
+    border-radius: 0 !important;
     a {
       cursor: default !important;
     }
@@ -31,23 +31,23 @@
   select{
     width:auto;
     display: inline;
-    border-radius: 0px;
+    border-radius: 0;
 
   }
   button {
-    border-radius: 0px !important;
+    border-radius: 0 !important;
     cursor: auto !important;
   }
 
   button:hover{
-    border-radius: 0px !important;
+    border-radius: 0 !important;
     cursor: auto !important;
   }
   .right{
     float:right;
   }
   .left{
-    margin: 0px 10px;
+    margin: 0 10px;
     font-size: 12pt;
   }
 }

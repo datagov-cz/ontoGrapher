@@ -10,6 +10,8 @@ export class NodeCommonPortModel extends PortModel {
         super(pos, "common");
         this.position = pos;
         this.model = model;
+        this.width = 16;
+        this.height = 16;
     }
 
     serialize() {

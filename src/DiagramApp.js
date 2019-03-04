@@ -22,7 +22,7 @@ export class DiagramApp extends React.Component {
             secondCardinality: Defaults.cardinality,
             language: Defaults.language,
             panelObject: null,
-            name: "",
+            name: Locale.untitled,
             notes: "",
             contextMenuActive: false,
             contextMenuX: 0,
@@ -74,9 +74,9 @@ export class DiagramApp extends React.Component {
         });
     }
 
-    handleChangeSelectedLink(linktype) {
-        this.setState({selectedLink: linktype});
-        this.diagramCanvas.engine.getDiagramModel().selectedLink = linktype;
+    handleChangeSelectedLink(linkType) {
+        this.setState({selectedLink: linkType});
+        this.diagramCanvas.engine.getDiagramModel().selectedLink = linkType;
     }
 
     handleChangeFirstCardinality(event) {
@@ -220,6 +220,7 @@ export class DiagramApp extends React.Component {
                      onClick={this.hideContextMenu}
                 >
                     <MenuPanel
+                        handleChangeNotes={this.handleChangeNotes}
                         handleChangeSelectedLink={this.handleChangeSelectedLink}
                         handleChangeFirstCardinality={this.handleChangeFirstCardinality}
                         handleChangeSecondCardinality={this.handleChangeSecondCardinality}
@@ -230,7 +231,7 @@ export class DiagramApp extends React.Component {
                         firstCardinality={this.state.firstCardinality}
                         secondCardinality={this.state.secondCardinality}
                         language={this.state.language}
-                        name={this.state.names}
+                        name={this.state.name}
                         notes={this.state.notes}
                         handleSerialize={this.serialize}
                         handleDeserialize={this.deserialize}

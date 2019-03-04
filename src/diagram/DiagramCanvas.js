@@ -96,9 +96,9 @@ export class DiagramCanvas extends React.Component {
         return (
             <div
                 onDrop={event => {
-                    var data = JSON.parse(event.dataTransfer.getData("newNode"));
-                    var node = new NodeCommonModel(data.type, data.rdf, this.engine.getDiagramModel());
-                    var points = this.engine.getRelativeMousePoint(event);
+                    const data = JSON.parse(event.dataTransfer.getData("newNode"));
+                    const node = new NodeCommonModel(data.type, data.rdf, this.engine.getDiagramModel());
+                    const points = this.engine.getRelativeMousePoint(event);
                     node.x = points.x;
                     node.y = points.y;
                     this.engine.getDiagramModel().addNode(node);
