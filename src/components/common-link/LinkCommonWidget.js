@@ -5,6 +5,13 @@ import * as _ from "lodash";
 export class LinkCommonWidget extends DefaultLinkWidget {
     label: boolean;
 
+    /*
+        label0 : Start cardinality
+        label1 : Stereotype
+        label2 : End cardinality
+        label3 : Custom label
+     */
+
     constructor(props) {
         super(props);
         this.label = false;
