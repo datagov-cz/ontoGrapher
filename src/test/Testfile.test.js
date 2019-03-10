@@ -4,16 +4,14 @@ import {Defaults} from "../config/Defaults";
 import {NodeCommonModel} from "../components/common-node/NodeCommonModel";
 import {LinkCommonModel} from "../components/common-link/LinkCommonModel";
 import {AttributeObject} from "../components/misc/AttributeObject";
-import renderer from 'react-test-renderer';
 import React from "react";
-import {MenuPanel} from "../panels/MenuPanel";
-import {DiagramCanvas} from "../diagram/DiagramCanvas";
-import {DiagramApp} from "../DiagramApp";
 import {NodeCommonFactory} from "../components/common-node/NodeCommonFactory";
 import {LinkCommonFactory} from "../components/common-link/LinkCommonFactory";
 import {CommonLabelFactory} from "../components/misc/CommonLabelFactory";
 import {NodeCommonPortFactory} from "../components/common-node/NodeCommonPortFactory";
 import {LanguagePool} from "../config/LanguagePool";
+
+// TODO: tests that don't totally suck
 describe("Manual modelling", () =>{
     let engine = new DiagramEngine();
     let model = new OntoDiagramModel({

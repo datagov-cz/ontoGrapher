@@ -8,7 +8,7 @@ export class PanelLinkItem extends React.Component {
     }
 
     alertPanel(event) {
-        this.props.handleChangeSelectedLink(this.props.linktype);
+        this.props.handleChangeSelectedLink(this.props.linkType);
         this.setClassName();
     }
 
@@ -20,7 +20,7 @@ export class PanelLinkItem extends React.Component {
     }
 
     setClassName() {
-        this.name = this.props.linktype === this.props.selectedLink ? "panelLinkItem--selected" : "panelLinkItem";
+        this.name = this.props.linkType === this.props.selectedLink ? "panelLinkItem--selected" : "panelLinkItem";
     }
 
     render() {
@@ -28,7 +28,7 @@ export class PanelLinkItem extends React.Component {
             <div className={this.name}
                  onClick={this.alertPanel}
             >
-                {this.props.linktype}
+                {this.props.linkType}
             </div>
         );
     }

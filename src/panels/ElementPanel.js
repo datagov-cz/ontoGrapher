@@ -53,8 +53,8 @@ export class ElementPanel extends React.Component {
 
     }
 
-    handleChangeSelectedLink(linktype) {
-        this.props.handleChangeSelectedLink(linktype);
+    handleChangeSelectedLink(linkType) {
+        this.props.handleChangeSelectedLink(linkType);
     }
 
     render() {

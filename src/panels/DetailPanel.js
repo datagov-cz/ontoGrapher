@@ -20,13 +20,13 @@ export class DetailPanel extends React.Component {
             newAttrName: "",
             newAttrType: AttributeTypePool[0],
             attribute: 0,
-            linktype: "",
+            linkType: "",
             newLabel: "",
             notes: "",
             attrs: "",
             stereotype: "",
-            nodeStart: null,
-            nodeEnd: null
+            nodeStart: "",
+            nodeEnd: ""
         };
         this.attributeTypes = [];
         for (let attrType of AttributeTypePool) {
@@ -78,22 +78,20 @@ export class DetailPanel extends React.Component {
         } else if (copy instanceof LinkCommonModel) {
             this.setState({
                 type: LinkCommonModel,
-                firstcard: copy.firstCardinality,
-                secondcard: copy.secondCardinality,
-                linktype: copy.linktype,
+                firstCardinality: copy.firstCardinality,
+                secondCardinality: copy.secondCardinality,
+                linkType: copy.linktype,
                 names: copy.names,
                 notes: copy.notes,
-                nodeStart: copy.getSourcePort().getParent(),
-                nodeEnd: copy.getTargetPort().getParent()
+                nodeStart: copy.getSourcePort() === null ? "" : copy.getSourcePort().getParent(),
+                nodeEnd: copy.getTargetPort() === null ? "" : copy.getTargetPort().getParent(),
+                labels: copy.labels
             });
         } else {
             this.setState({
                 type: null,
-                names: "",
-                attrs: "",
-                firstcard: "",
-                secondcard: "",
-                linktype: ""
+                nodeStart: "",
+                nodeEnd: ""
             });
         }
 
@@ -151,16 +149,16 @@ export class DetailPanel extends React.Component {
                 newAttrName: this.state.attrs[this.props.language][0].first,
                 newAttrType: this.state.attrs[this.props.language][0].second
             });
-            this.props.panelObject.model.updateLinkPositions(this.props.panelObject);
-            //this.props.panelObject.model.canvas.forceUpdate();
+            this.props.updateLinkPosition(this.props.panelObject);
+
 
         }
     }
 
     deleteAttribute() {
-        this.props.panelObject.removeAttributeByIndexAndLanguage(this.state.attribute);
+        this.props.panelObject.removeAttributeByIndex(this.state.attribute);
         this.setState({attribute: 0});
-        this.props.panelObject.model.updateLinkPositions(this.props.panelObject);
+        this.props.updateLinkPosition(this.props.panelObject);
     }
 
     handleChangeAttributeName(event) {
@@ -168,14 +166,14 @@ export class DetailPanel extends React.Component {
     }
 
     handleChangeFirstCardinality(event) {
-        this.setState({firstcard: event.target.value});
+        this.setState({firstCardinality: event.target.value});
         this.props.panelObject.setFirstCardinality(event.target.value);
         this.forceUpdate();
         this.props.panelObject.model.canvas.forceUpdate();
     }
 
     handleChangeSecondCardinality(event) {
-        this.setState({secondcard: event.target.value});
+        this.setState({secondCardinality: event.target.value});
         this.props.panelObject.setSecondCardinality(event.target.value);
         this.forceUpdate();
         this.props.panelObject.model.canvas.forceUpdate();
@@ -217,10 +215,10 @@ export class DetailPanel extends React.Component {
                 <option key={attributeKey} value={attributeKey++}>{attr.first + ": " + attr.second}</option>
             );
             attributeKey = 0;
-            let attrlen = this.state.attrs[this.props.language].length;
+            let attributeLength = this.state.attrs[this.props.language].length;
             let selector = (<h6>{Locale.noAttributes}</h6>);
-            let height = 48 + (attrlen * 15);
-            if (attrlen > 0) {
+            let height = 48 + (attributeLength * 15);
+            if (attributeLength > 0) {
                 selector = (
                     <FormControl
                         componentClass="select"
@@ -228,8 +226,8 @@ export class DetailPanel extends React.Component {
                         value={this.state.attribute}
                         onChange={this.handleChangeAttribute}
                         onFocus={this.focus}
-                        size={attrlen}
-                        style={{height: 12 + (attrlen) * 15}}
+                        size={attributeLength}
+                        style={{height: 12 + (attributeLength) * 15}}
                     >
                         {attributeList}
                     </FormControl>
@@ -316,57 +314,66 @@ export class DetailPanel extends React.Component {
             );
         } else if (this.state.type === LinkCommonModel) {
             let attributeKey = 0;
-            let attrlen = this.state.nodeStart.attributes[this.props.language].length;
-            let height = 48 + (attrlen * 15);
-            let node1Widget = (
-                <svg
-                    width={150}
-                    height={height}
-                    shapeRendering="optimizeSpeed"
-                >
+            let attributeLength = 0;
+            let height = 0;
 
-                    <g>
-                        <rect fill="#ffffff" stroke={"black"} strokeWidth="4" width={150} height={height}/>
-                        <text width={150} textAnchor="middle" dominantBaseline="hanging" x="50%" y="5px"
-                              fill="#000000">{"«" + this.state.nodeStart.stereotype + "»"}</text>
-                        <line x1="0" x2={150} y1="20px" y2="20px" strokeWidth="1" stroke="#000000"/>
-                        <text width={150} textAnchor="middle" dominantBaseline="hanging" x="50%" y="25px"
-                              fill="#000000">{this.state.nodeStart.names[this.props.language]}</text>
-                        <text width={150} textAnchor="start" dominantBaseline="hanging" x="5px" y="30px"
-                              fill="#000000">
-                            {this.state.nodeStart.attributes[this.props.language].map(
-                                (attr) => (<tspan key={attributeKey++} x="5px" dy="15px">{attr.first + ": " + attr.second}</tspan>)
-                            )}
-                        </text>
-                    </g>
-                </svg>
-            );
-            attributeKey = 0;
-            attrlen = this.state.nodeEnd.attributes[this.props.language].length;
-            height = 48 + (attrlen * 15);
-            let node2Widget = (
-                <svg
-                    width={150}
-                    height={height}
-                    shapeRendering="optimizeSpeed"
-                >
+            let node1Widget = "";
+            if (this.state.nodeStart !== ""){
+                attributeLength = this.state.nodeStart.attributes[this.props.language].length;
+                height = 48 + (attributeLength * 15);
+                node1Widget = (
+                    <svg
+                        width={150}
+                        height={height}
+                        shapeRendering="optimizeSpeed"
+                    >
 
-                    <g>
-                        <rect fill="#ffffff" stroke={"black"} strokeWidth="4" width={150} height={height}/>
-                        <text width={150} textAnchor="middle" dominantBaseline="hanging" x="50%" y="5px"
-                              fill="#000000">{"«" + this.state.nodeEnd.stereotype + "»"}</text>
-                        <line x1="0" x2={150} y1="20px" y2="20px" strokeWidth="1" stroke="#000000"/>
-                        <text width={150} textAnchor="middle" dominantBaseline="hanging" x="50%" y="25px"
-                              fill="#000000">{this.state.nodeEnd.names[this.props.language]}</text>
-                        <text width={150} textAnchor="start" dominantBaseline="hanging" x="5px" y="30px"
-                              fill="#000000">
-                            {this.state.nodeEnd.attributes[this.props.language].map(
-                                (attr) => (<tspan key={attributeKey++} x="5px" dy="15px">{attr.first + ": " + attr.second}</tspan>)
-                            )}
-                        </text>
-                    </g>
-                </svg>
-            );
+                        <g>
+                            <rect fill="#ffffff" stroke={"black"} strokeWidth="4" width={150} height={height}/>
+                            <text width={150} textAnchor="middle" dominantBaseline="hanging" x="50%" y="5px"
+                                  fill="#000000">{"«" + this.state.nodeStart.stereotype + "»"}</text>
+                            <line x1="0" x2={150} y1="20px" y2="20px" strokeWidth="1" stroke="#000000"/>
+                            <text width={150} textAnchor="middle" dominantBaseline="hanging" x="50%" y="25px"
+                                  fill="#000000">{this.state.nodeStart.names[this.props.language]}</text>
+                            <text width={150} textAnchor="start" dominantBaseline="hanging" x="5px" y="30px"
+                                  fill="#000000">
+                                {this.state.nodeStart.attributes[this.props.language].map(
+                                    (attr) => (<tspan key={attributeKey++} x="5px" dy="15px">{attr.first + ": " + attr.second}</tspan>)
+                                )}
+                            </text>
+                        </g>
+                    </svg>
+                );
+            }
+            let node2Widget = "";
+            if (this.state.nodeEnd !== ""){
+                attributeKey = 0;
+                attributeLength = this.state.nodeEnd.attributes[this.props.language].length;
+                height = 48 + (attributeLength * 15);
+                node2Widget = (
+                    <svg
+                        width={150}
+                        height={height}
+                        shapeRendering="optimizeSpeed"
+                    >
+
+                        <g>
+                            <rect fill="#ffffff" stroke={"black"} strokeWidth="4" width={150} height={height}/>
+                            <text width={150} textAnchor="middle" dominantBaseline="hanging" x="50%" y="5px"
+                                  fill="#000000">{"«" + this.state.nodeEnd.stereotype + "»"}</text>
+                            <line x1="0" x2={150} y1="20px" y2="20px" strokeWidth="1" stroke="#000000"/>
+                            <text width={150} textAnchor="middle" dominantBaseline="hanging" x="50%" y="25px"
+                                  fill="#000000">{this.state.nodeEnd.names[this.props.language]}</text>
+                            <text width={150} textAnchor="start" dominantBaseline="hanging" x="5px" y="30px"
+                                  fill="#000000">
+                                {this.state.nodeEnd.attributes[this.props.language].map(
+                                    (attr) => (<tspan key={attributeKey++} x="5px" dy="15px">{attr.first + ": " + attr.second}</tspan>)
+                                )}
+                            </text>
+                        </g>
+                    </svg>
+                );
+            }
             let linkWidget = (
                 <svg
                     width={200}
@@ -376,10 +383,10 @@ export class DetailPanel extends React.Component {
 
                     <g>
                         <line x1={0} x2={200} y1={25} y2={25} stroke="black" strokeWidth={3} />
-                        <text x={20} y={20}  textAnchor="start"  dominantBaseline="baseline">{this.props.panelObject.labels[0].label}</text>
-                        <text x={100} y={20}  textAnchor="middle" dominantBaseline="baseline">{this.props.panelObject.labels[1].label}</text>
-                        <text x={180} y={20} textAnchor="start"  dominantBaseline="baseline">{this.props.panelObject.labels[2].label}</text>
-                        <text x={100} y={30}  textAnchor="middle" dominantBaseline="hanging">{this.props.panelObject.labels[3].label}</text>
+                        <text x={5} y={20}  textAnchor="start"  dominantBaseline="baseline">{this.state.labels[0].label}</text>
+                        <text x={100} y={20}  textAnchor="middle" dominantBaseline="baseline">{this.state.labels[1].label}</text>
+                        <text x={195} y={20} textAnchor="end"  dominantBaseline="baseline">{this.state.labels[2].label}</text>
+                        <text x={100} y={30}  textAnchor="middle" dominantBaseline="hanging">{this.state.labels[3].label}</text>
                     </g>
                 </svg>
             );

@@ -163,7 +163,7 @@ export class MenuPanel extends React.Component {
                 <option key={language} value={language}>{LanguagePool[language]}</option>
             )
         });
-        let attrlen = languagePool.length;
+        let attributeLength = languagePool.length;
         if (this.props.readOnly) {
             return (
                 <div className="menuPanel">
@@ -348,8 +348,8 @@ export class MenuPanel extends React.Component {
                                 value={this.state.language}
                                 onChange={this.handleChangeLanguage}
                                 onFocus={this.focus}
-                                size={attrlen}
-                                style={{height: 12 + (attrlen) * 15}}
+                                size={attributeLength}
+                                style={{height: 12 + (attributeLength) * 15}}
                             >
                                 {languagePool}
                             </FormControl><br/>

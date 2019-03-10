@@ -49,21 +49,6 @@ export class OntoDiagramModel extends DiagramModel {
         this.secondCardinality = props.secondCardinality;
     }
 
-    updateLinkPositions(node: NodeCommonModel) {
-        for (let port in node.getPorts()){
-            for (let link in node.getPorts()[port].getLinks()){
-                if (node.getPorts()[port].getLinks()[link].getSourcePort() === node.getPorts()[port]){
-                    node.getPorts()[port].getLinks()[link].points[0].x = node.getPorts()[port].x + 8;
-                    node.getPorts()[port].getLinks()[link].points[0].y = node.getPorts()[port].y + 8;
-                }
-                if (node.getPorts()[port].getLinks()[link].getTargetPort() === node.getPorts()[port]){
-                    node.getPorts()[port].getLinks()[link].points[node.getPorts()[port].getLinks()[link].points.length-1].x = node.getPorts()[port].x + 8;
-                    node.getPorts()[port].getLinks()[link].points[node.getPorts()[port].getLinks()[link].points.length-1].y = node.getPorts()[port].y + 8;
-                }
-            }
-        }
-    }
-
     updatePanel() {
         this.canvas.updatePanel();
     }
@@ -71,6 +56,7 @@ export class OntoDiagramModel extends DiagramModel {
     nullPanel() {
         this.canvas.nullPanel();
     }
+
     // TODO: update serialization data
     serializeDiagram() {
         return _.merge(this.serialize(), {

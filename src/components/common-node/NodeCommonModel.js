@@ -3,6 +3,7 @@ import {NodeCommonPortModel} from "./NodeCommonPortModel";
 import {AttributeObject} from "../misc/AttributeObject";
 import {OntoDiagramModel} from "../../diagram/OntoDiagramModel";
 import {LanguagePool} from "../../config/LanguagePool";
+import * as _ from "lodash";
 
 export class NodeCommonModel extends NodeModel {
     stereotype: string;
@@ -100,7 +101,7 @@ export class NodeCommonModel extends NodeModel {
     serialize() {
         return _.merge(super.serialize(), {
             name: this.name,
-            color: this.color,
+                color: this.color,
             stereotype: this.stereotype,
             attributes: this.attributes,
             names: this.names,

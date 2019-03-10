@@ -1,6 +1,6 @@
 export var StereotypePool = [
     "Kind",
-    "Subkind",
+    "SubKind",
     "Role",
     "Phase",
     "Collective",

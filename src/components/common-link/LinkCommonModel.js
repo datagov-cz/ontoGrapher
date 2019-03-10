@@ -67,7 +67,7 @@ export class LinkCommonModel extends DefaultLinkModel {
             width: this.width,
             color: this.color,
             curvyness: this.curvyness,
-            linktype: this.linktype,
+            linkType: this.linktype,
             name: this.name
         });
     }
@@ -77,7 +77,7 @@ export class LinkCommonModel extends DefaultLinkModel {
         this.color = ob.color;
         this.width = ob.width;
         this.curvyness = ob.curvyness;
-        this.linktype = ob.linktype;
+        this.linktype = ob.linkType;
         this.name = ob.name;
     }
 

@@ -1,15 +1,16 @@
 import React from "react";
-import {Defaults} from "./config/Defaults";
+import {Defaults} from "../config/Defaults";
 import {PointModel} from "storm-react-diagrams";
-import {MenuPanel} from "./panels/MenuPanel";
-import {ElementPanel} from "./panels/ElementPanel";
-import {DetailPanel} from "./panels/DetailPanel";
-import {DiagramCanvas} from "./diagram/DiagramCanvas";
-import {OntoDiagramModel} from "./diagram/OntoDiagramModel";
-import {Locale} from "./config/Locale";
-import {ContextMenuLink} from "./misc/ContextMenuLink";
-import {LinkCommonModel} from "./components/common-link/LinkCommonModel";
+import {MenuPanel} from "../panels/MenuPanel";
+import {ElementPanel} from "../panels/ElementPanel";
+import {DetailPanel} from "../panels/DetailPanel";
+import {DiagramCanvas} from "./DiagramCanvas";
+import {OntoDiagramModel} from "./OntoDiagramModel";
+import {Locale} from "../config/Locale";
+import {ContextMenuLink} from "../misc/ContextMenuLink";
+import {LinkCommonModel} from "../components/common-link/LinkCommonModel";
 import PropTypes from "prop-types";
+import {NodeCommonModel} from "../components/common-node/NodeCommonModel";
 
 
 export class DiagramApp extends React.Component {
@@ -32,7 +33,7 @@ export class DiagramApp extends React.Component {
         };
 
         if (!this.props.disableSCSS) {
-            require("./sass/main.scss");
+            require("../sass/main.scss");
         }
 
 
@@ -53,6 +54,45 @@ export class DiagramApp extends React.Component {
         this.centerView = this.centerView.bind(this);
         this.setName = this.setName.bind(this);
         this.handleChangeNotes = this.handleChangeNotes.bind(this);
+        this.updateLinkPosition = this.updateLinkPosition.bind(this);
+    }
+
+    updateLinkPosition(node: NodeCommonModel) {
+        this.diagramCanvas.engine.repaintCanvas();
+        for (let portKey in node.getPorts()) {
+            let port = node.getPorts()[portKey];
+            let coords = this.diagramCanvas.engine.getPortCenter(port);
+
+            for (let linkKey in port.getLinks()) {
+                let link = port.getLinks()[linkKey];
+
+                if (link.getSourcePort() === port) {
+                    if (port.getName() === "left" || port.getName() === "right"){
+                        coords.y +=8;
+                    }
+
+                    if (port.getName() === "bottom"){
+                        coords.y +=16;
+                    }
+                    link.points[0].updateLocation(coords);
+                }
+
+                if (link.getTargetPort() === port) {
+
+                    if (port.getName() === "left" || port.getName() === "right"){
+                        coords.y +=8;
+                    }
+
+                    if (port.getName() === "bottom"){
+                        coords.y +=16;
+                    }
+
+                    link.points[link.points.length - 1].updateLocation(coords);
+                }
+            }
+        }
+
+
     }
 
     componentDidMount() {
@@ -117,7 +157,7 @@ export class DiagramApp extends React.Component {
 
     }
 
-    handleChangeNotes(event){
+    handleChangeNotes(event) {
         this.setState({notes: event});
         this.diagramCanvas.engine.getDiagramModel().notes = event;
     }
@@ -152,12 +192,12 @@ export class DiagramApp extends React.Component {
     }
 
     handleZoom() {
-        this.diagramCanvas.engine.getDiagramModel().setOffsetX(0);
-        this.diagramCanvas.engine.getDiagramModel().setOffsetY(0);
+        this.diagramCanvas.engine.getDiagramModel().zoom = 100;
     }
 
     centerView() {
-        this.diagramCanvas.engine.getDiagramModel().zoom = 100;
+        this.diagramCanvas.engine.getDiagramModel().setOffsetX(0);
+        this.diagramCanvas.engine.getDiagramModel().setOffsetY(0);
     }
 
     setName(str: string) {
@@ -248,6 +288,7 @@ export class DiagramApp extends React.Component {
                     <DetailPanel
                         panelObject={this.state.panelObject}
                         language={this.state.language}
+                        updateLinkPosition={this.updateLinkPosition}
                     />
                     <DiagramCanvas
                         ref={instance => {
