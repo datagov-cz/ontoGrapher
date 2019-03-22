@@ -5,15 +5,16 @@ import {
 } from 'storm-react-diagrams';
 import {OntoDiagramModel} from "../../diagram/OntoDiagramModel";
 import {Locale} from "../../config/Locale";
-import {LanguagePool} from "../../config/LanguagePool";
 import * as _ from "lodash";
+import {LanguagePool} from "../../config/Variables";
+import {LinkPool} from "../../config/LinkVariables";
 
 
 export class LinkCommonModel extends DefaultLinkModel {
     width: number;
     color: string;
     curvyness: number;
-    linktype: string;
+    linkType: string;
     model: OntoDiagramModel;
     descriptor: boolean;
     dashed: boolean;
@@ -34,11 +35,15 @@ export class LinkCommonModel extends DefaultLinkModel {
             }
         }
         if (this.model instanceof OntoDiagramModel) {
-            this.linktype = this.model.selectedLink;
+            this.linkType = this.model.selectedLink;
             this.addLabel(this.model.firstCardinality === Locale.none ? "" : this.model.firstCardinality);
             this.addLabel("");
             this.addLabel(this.model.secondCardinality === Locale.none ? "" : this.model.secondCardinality);
             this.addLabel("");
+            if (LinkPool[this.linkType][1]){
+                this.addDescriptorLabel();
+            }
+            this.dashed = LinkPool[this.linkType][2];
         }
         this.addListener({
             selectionChanged: event => {
@@ -51,7 +56,7 @@ export class LinkCommonModel extends DefaultLinkModel {
     }
 
     addDescriptorLabel() {
-        let labeltext = "«" + this.linktype.toLowerCase() + "»";
+        let labeltext = "«" + this.linkType.toLowerCase() + "»";
         this.labels[1].setLabel(labeltext);
         this.descriptor = true;
 
@@ -67,7 +72,7 @@ export class LinkCommonModel extends DefaultLinkModel {
             width: this.width,
             color: this.color,
             curvyness: this.curvyness,
-            linkType: this.linktype,
+            linkType: this.linkType,
             name: this.name
         });
     }
@@ -77,7 +82,7 @@ export class LinkCommonModel extends DefaultLinkModel {
         this.color = ob.color;
         this.width = ob.width;
         this.curvyness = ob.curvyness;
-        this.linktype = ob.linkType;
+        this.linkType = ob.linkType;
         this.name = ob.name;
     }
 

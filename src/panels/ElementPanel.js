@@ -3,54 +3,25 @@ import {PanelNodeItem} from "./PanelNodeItem";
 import {Defaults} from "../config/Defaults";
 import {Tabs} from "react-bootstrap";
 import {Tab} from "react-bootstrap";
-import {Locale} from "../config/Locale";
 import {PanelLinkItem} from "./PanelLinkItem";
-import {LinkPool} from "../config/LinkPool";
+import {StereotypePool} from "../config/Variables";
+import * as RDF from "../misc/RDF";
+import {LinkPool} from "../config/LinkVariables";
 
 
 export class ElementPanel extends React.Component {
     constructor(props: PanelNodeItem) {
         super(props);
-        this.stereotypeList = [];
         this.handleChangeSelectedLink = this.handleChangeSelectedLink.bind(this);
+        this.state = {
+            loaded: false
+        };
     }
 
-    componentWillMount() {
-
-        const rdf = require('rdf-ext');
-        const rdfFetch = require('rdf-fetch');
-        this.stereotypes = {};
-        this.stereotypeList = [];
-        rdfFetch(Defaults.stereotypeUrl).then((res) => {
-            return res.dataset();
-        }).then((dataset) => {
-            const classes = dataset.match(null, null, rdf.namedNode("http://www.w3.org/2002/07/owl#Class"));
-            let result = {};
-            for (let quad of classes.toArray()) {
-                if (quad.subject instanceof rdf.defaults.NamedNode) {
-                    result[quad.subject.value] = dataset.match(rdf.namedNode(quad.subject.value));
-                }
-            }
-            return result;
-        }).then((res) => {
-            for (let quad in res) {
-                for (let node of res[quad].toArray()) {
-                    if (node.object instanceof rdf.defaults.Literal && node.predicate.value === "http://www.w3.org/2000/01/rdf-schema#label") {
-                        if (node.object.language === "en") {
-                            this.stereotypes[node.subject.value] = node.object.value;
-                            this.stereotypeList.push(node.object.value);
-                        }
-                    }
-                }
-            }
-            this.setState({
-                stereotypes: this.stereotypeList
-            });
-
-        }).catch((err) => {
-            console.error(err.stack || err.message);
-        });
-
+    componentDidMount() {
+        RDF.fetchStereotypes(Defaults.stereotypeUrl, true, function(){
+            this.forceUpdate();
+        }.bind(this));
     }
 
     handleChangeSelectedLink(linkType) {
@@ -58,28 +29,43 @@ export class ElementPanel extends React.Component {
     }
 
     render() {
-        this.stereotype = [];
-        for (let stereo in this.stereotypes) {
-            this.stereotype.push(<PanelNodeItem key={this.stereotypes[stereo].toUpperCase()} model={{
-                type: this.stereotypes[stereo].toLowerCase(),
-                rdf: stereo
-            }} name={this.stereotypes[stereo]}/>);
-        }
+        let stereotypeItems = [];
+        for (let stereotype in StereotypePool) {
+                stereotypeItems.push(<PanelNodeItem key={StereotypePool[stereotype].toUpperCase()} model={{
+                    type: StereotypePool[stereotype].toLowerCase(),
+                    rdf: stereotype
+                }} name={StereotypePool[stereotype]}/>);
+            }
+
         return (
             <div className="stereotypePanel">
                 <Tabs id="stereotypePanel" animation={false}>
-                    <Tab eventKey={1} title={Locale.leftPanelStereotypes}>
+                    <Tab eventKey={1} title={
+                        <svg height={10} width={15}>
+                            <rect width={15} height={10} fill="white" stroke="black" strokeWidth={4}/>
+                        </svg>
+                    }>
                         <div className="stereotypes">
-                            {this.stereotype}
+                            {stereotypeItems}
                         </div>
                     </Tab>
-                    <Tab eventKey={2} title={Locale.leftPanelLinks}>
+                    <Tab eventKey={2} title={
+                        <svg height={10} width={15}>
+                            <line x1={0} y1={5} x2={10} y2={5} stroke="black" strokeWidth={2}/>
+                            <polygon
+                                points="10,0 10,10 15,5"
+                                fill="black"
+                                stroke="black"
+                                strokeWidth="1"
+                            />
+                        </svg>
+                    }>
                         {Object.keys(LinkPool).map((link) => (
                             <PanelLinkItem
                                 key={link}
                                 selectedLink={this.props.selectedLink}
                                 handleChangeSelectedLink={this.handleChangeSelectedLink}
-                                linktype={link}
+                                linkType={link}
                             />
                         ))}
                     </Tab>

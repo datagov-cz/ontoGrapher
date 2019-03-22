@@ -2,15 +2,13 @@ import React from 'react';
 import {NodeCommonModel} from "../components/common-node/NodeCommonModel";
 import {Locale} from "../config/Locale";
 import {LinkCommonModel} from "../components/common-link/LinkCommonModel";
-import {AttributeTypePool} from "../config/AttributeTypePool";
 import {AttributeObject} from "../components/misc/AttributeObject";
-import {CardinalityPool} from "../config/CardinalityPool";
 import {FormGroup} from "react-bootstrap";
 import {FormControl} from "react-bootstrap";
 import {Button} from "react-bootstrap";
 import {Form} from "react-bootstrap";
-import {NodeCommonWidget} from "../components/common-node/NodeCommonWidget";
-import {LinkCommonWidget} from "../components/common-link/LinkCommonWidget";
+import {AttributeTypePool, CardinalityPool} from "../config/Variables";
+import {LinkEndPool, LinkPool} from "../config/LinkVariables";
 
 export class DetailPanel extends React.Component {
     constructor(props) {
@@ -80,7 +78,7 @@ export class DetailPanel extends React.Component {
                 type: LinkCommonModel,
                 firstCardinality: copy.firstCardinality,
                 secondCardinality: copy.secondCardinality,
-                linkType: copy.linktype,
+                linkType: copy.linkType,
                 names: copy.names,
                 notes: copy.notes,
                 nodeStart: copy.getSourcePort() === null ? "" : copy.getSourcePort().getParent(),
@@ -371,9 +369,14 @@ export class DetailPanel extends React.Component {
                                 )}
                             </text>
                         </g>
+
                     </svg>
                 );
             }
+
+            let offset = 25;
+            let horizontalOffset = 200;
+            let linkEnd = LinkEndPool[LinkPool[this.state.linkType][0]];
             let linkWidget = (
                 <svg
                     width={200}
@@ -382,11 +385,22 @@ export class DetailPanel extends React.Component {
                 >
 
                     <g>
-                        <line x1={0} x2={200} y1={25} y2={25} stroke="black" strokeWidth={3} />
-                        <text x={5} y={20}  textAnchor="start"  dominantBaseline="baseline">{this.state.labels[0].label}</text>
+                        <line x1={0} x2={200} y1={25} y2={25} stroke="black" strokeWidth={3} strokeDasharray={LinkPool[this.state.linkType][2] ? "10,10" : "none"} />
+                        <text x={5} y={15}  textAnchor="start"  dominantBaseline="baseline">{this.state.labels[0].label}</text>
                         <text x={100} y={20}  textAnchor="middle" dominantBaseline="baseline">{this.state.labels[1].label}</text>
-                        <text x={195} y={20} textAnchor="end"  dominantBaseline="baseline">{this.state.labels[2].label}</text>
+                        <text x={195} y={15} textAnchor="end"  dominantBaseline="baseline">{this.state.labels[2].label}</text>
                         <text x={100} y={30}  textAnchor="middle" dominantBaseline="hanging">{this.state.labels[3].label}</text>
+                    </g>
+                    <g>
+                        <polygon
+                            points={`${linkEnd.x1 + horizontalOffset - linkEnd.x2},${linkEnd.y1 + offset} ${linkEnd.x2 + horizontalOffset - linkEnd.x2},${linkEnd.y2 + offset} ${linkEnd.x3 + horizontalOffset - linkEnd.x2},${linkEnd.y3 + offset} ${linkEnd.x4 + horizontalOffset - linkEnd.x2},${linkEnd.y4 + offset}`}
+                            style={linkEnd.fill ?
+                                {fill: "black", stroke: "black", strokeWidth: 2} :
+                                {fill: "#eeeeee", stroke: "black", strokeWidth: 2}}
+
+                        />
+                        <text x={horizontalOffset - linkEnd.x2} y={offset} alignmentBaseline="middle" textAnchor="middle"
+                              fill="white" pointerEvents="none">{linkEnd.text}</text>
                     </g>
                 </svg>
             );

@@ -1,9 +1,7 @@
 import {AbstractLinkFactory, DiagramEngine} from "storm-react-diagrams";
 import React from "react";
-import {LinkPool} from "../../config/LinkPool";
 import {LinkCommonWidget} from "./LinkCommonWidget";
 import {LinkCommonModel} from "./LinkCommonModel";
-
 export class LinkCommonFactory extends AbstractLinkFactory<LinkCommonModel> {
 
     constructor() {
@@ -16,7 +14,7 @@ export class LinkCommonFactory extends AbstractLinkFactory<LinkCommonModel> {
     }
 
     generateReactWidget(diagramEngine: DiagramEngine, link: LinkCommonModel): JSX.Element {
-        return React.createElement(LinkPool[link.linktype], {
+        return React.createElement(LinkCommonWidget, {
             link: link,
             diagramEngine: diagramEngine,
         });

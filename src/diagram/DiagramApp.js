@@ -16,7 +16,7 @@ import {NodeCommonModel} from "../components/common-node/NodeCommonModel";
 export class DiagramApp extends React.Component {
     constructor(props) {
         super(props);
-        document.title = Locale.untitledDiagram + " | " + Locale.appName;
+        document.title = Locale.untitled + " | " + Locale.appName;
         this.state = {
             selectedLink: Defaults.selectedLink,
             firstCardinality: Defaults.cardinality,
@@ -29,11 +29,14 @@ export class DiagramApp extends React.Component {
             contextMenuX: 0,
             contextMenuY: 0,
             contextMenuLink: null,
-            saveData: ""
+            saveData: "",
+            success: true
         };
 
         if (!this.props.disableSCSS) {
             require("../sass/main.scss");
+            require("babel-core/register");
+            require("babel-polyfill");
         }
 
 
@@ -174,9 +177,14 @@ export class DiagramApp extends React.Component {
         this.diagramCanvas.serialize();
     }
 
-    deserialize(str: string) {
-        this.diagramCanvas.deserialize(str);
-        this.setState({language: Defaults.language, selectedLink: Defaults.selectedLink});
+    deserialize(diagram: string) {
+        let response = this.diagramCanvas.deserialize(diagram);
+        if (response){
+            this.setState({language: Defaults.language, selectedLink: Defaults.selectedLink, success: true});
+        } else {
+            this.setState({success: false});
+        }
+
     }
 
     export() {
@@ -280,6 +288,7 @@ export class DiagramApp extends React.Component {
                         saveData={this.state.saveData}
                         centerView={this.centerView}
                         restoreZoom={this.handleZoom}
+                        success={this.state.success}
                     />
                     <ElementPanel
                         handleChangeSelectedLink={this.handleChangeSelectedLink}

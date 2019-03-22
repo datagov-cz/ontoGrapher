@@ -1,9 +1,12 @@
 import React from 'react';
-import {LanguagePool} from "../config/LanguagePool";
 import {Locale} from "../config/Locale";
 import {ButtonGroup, DropdownButton, FormControl, MenuItem, Button, Modal, FormGroup, Form} from "react-bootstrap";
 
 import {LocaleHelp} from "../config/LocaleHelp";
+import {LanguagePool, StereotypePool} from "../config/Variables";
+import * as RDF from "../misc/RDF";
+import {LinkEndPool, LinkPool} from "../config/LinkVariables";
+import Table from "react-bootstrap/es/Table";
 
 
 export class MenuPanel extends React.Component {
@@ -18,11 +21,21 @@ export class MenuPanel extends React.Component {
             modalSaveValue: "",
             modalLoadValue: "",
             modalSettingsLanguage: false,
+            modalSettingsNodes: false,
+            modalSettingsLinks: false,
             name: this.props.name,
             language: this.props.language,
             languageName: "",
-            notes: this.props.notes
+            notes: this.props.notes,
+            stereotypeSource: "",
+            stereotypeName: "",
+            stereotypeRDF: "",
+            linkName: "",
+            status: "",
+            node: StereotypePool[0],
+            linkType: LinkPool[0]
         };
+
         this.languagePool = [];
         for (let language in LanguagePool) {
             this.languagePool.push(<option key={language} value={language}>{LanguagePool[language]}</option>)
@@ -39,6 +52,10 @@ export class MenuPanel extends React.Component {
         this.handleCloseHelpModal = this.handleCloseHelpModal.bind(this);
         this.handleOpenLanguagesModal = this.handleOpenLanguagesModal.bind(this);
         this.handleCloseLanguagesModal = this.handleCloseLanguagesModal.bind(this);
+        this.handleOpenLinksModal = this.handleOpenLinksModal.bind(this);
+        this.handleCloseLinksModal = this.handleCloseLinksModal.bind(this);
+        this.handleOpenNodesModal = this.handleOpenNodesModal.bind(this);
+        this.handleCloseNodesModal = this.handleCloseNodesModal.bind(this);
         this.handleChangeLoad = this.handleChangeLoad.bind(this);
         this.handleChangeLanguage = this.handleChangeLanguage.bind(this);
         this.handleNew = this.handleNew.bind(this);
@@ -50,9 +67,77 @@ export class MenuPanel extends React.Component {
         this.addLanguage = this.addLanguage.bind(this);
         this.deleteLanguage = this.deleteLanguage.bind(this);
         this.handleChangeNotes = this.handleChangeNotes.bind(this);
+        this.handleChangeStereotypeSource = this.handleChangeStereotypeSource.bind(this);
+        this.handleLoadStereotypes = this.handleLoadStereotypes.bind(this);
+        this.handleReplaceStereotypes = this.handleReplaceStereotypes.bind(this);
+        this.handleChangeNode = this.handleChangeNode.bind(this);
+        this.addNode = this.addNode.bind(this);
+        this.deleteNode = this.deleteNode.bind(this);
+        this.addLink = this.addLink.bind(this);
+        this.deleteLink = this.deleteLink.bind(this);
+        this.handleChangeStereotypeName = this.handleChangeStereotypeName.bind(this);
+        this.handleChangeStereotypeRDF = this.handleChangeStereotypeRDF.bind(this);
+        this.handleChangeLinkName = this.handleChangeLinkName.bind(this);
+        this.handleChangeLinkType = this.handleChangeLinkType.bind(this);
+
     }
 
-    handleChangeNotes(event){
+    handleChangeLinkType(event) {
+        console.log(event);
+    }
+
+    addLink() {
+        LinkPool[this.state.linkName] = this.state.linkType;
+    }
+
+    deleteLink() {
+
+    }
+
+    handleChangeLinkName(event) {
+        this.setState({linkName: event.target.value});
+    }
+
+    addNode() {
+        StereotypePool[this.state.stereotypeRDF] = this.state.stereotypeName;
+        this.setState({stereotypeRDF: "", stereotypeName: ""});
+    }
+
+    handleChangeStereotypeRDF(event) {
+        this.setState({stereotypeRDF: event.target.value});
+    }
+
+    handleChangeStereotypeName(event) {
+        this.setState({stereotypeName: event.target.value});
+    }
+
+    deleteNode() {
+        if (Object.entries(StereotypePool).length > 1) {
+            delete StereotypePool[this.state.node];
+        }
+    }
+
+    handleChangeNode(event) {
+        this.setState({node: event.target.value});
+    }
+
+    handleReplaceStereotypes() {
+        RDF.fetchStereotypes(this.state.stereotypeSource, true, () => {
+            this.setState({status: ""});
+        });
+    }
+
+    handleLoadStereotypes() {
+        RDF.fetchStereotypes(this.state.stereotypeSource, false, () => {
+            this.setState({status: ""});
+        });
+    }
+
+    handleChangeStereotypeSource(event) {
+        this.setState({stereotypeSource: event.target.value});
+    }
+
+    handleChangeNotes(event) {
         this.setState({notes: event.target.value});
     }
 
@@ -86,6 +171,23 @@ export class MenuPanel extends React.Component {
     handleCloseLanguagesModal() {
         this.setState({modalSettingsLanguage: false});
     }
+
+    handleOpenLinksModal() {
+        this.setState({modalSettingsLinks: true});
+    }
+
+    handleCloseLinksModal() {
+        this.setState({modalSettingsLinks: false});
+    }
+
+    handleCloseNodesModal() {
+        this.setState({modalSettingsNodes: false});
+    }
+
+    handleOpenNodesModal() {
+        this.setState({modalSettingsNodes: true});
+    }
+
 
     handleOpenSaveModal() {
         this.props.handleSerialize();
@@ -138,8 +240,12 @@ export class MenuPanel extends React.Component {
     }
 
     handleLoad() {
-        this.handleCloseLoadModal();
         this.props.handleDeserialize(this.state.modalLoadValue);
+        setTimeout(() => {
+            if (this.props.success) {
+                this.handleCloseLoadModal();
+            }
+        }, 100);
     }
 
     handleName() {
@@ -154,16 +260,53 @@ export class MenuPanel extends React.Component {
                 language: LanguagePool[0]
             });
         }
+        if (Object.entries(StereotypePool).length === 1) {
+            this.setState({
+                node: StereotypePool[0]
+            });
+        }
+        if (Object.entries(LinkPool).length === 1) {
+            this.setState({
+                link: LinkPool[0]
+            });
+        }
     }
 
     render() {
-
-        let languagePool = Object.keys(LanguagePool).map((language, i) => {
+        let offset = 15;
+        let horizontalOffset = 100;
+        let linkListItems = Object.keys(LinkPool).map((link, i) =>{
+            let linkEnd = LinkEndPool[LinkPool[link][0]];
+            return(<tr key={i}>
+                <td>{i+1}</td>
+                <td>{link}</td>
+                <td>
+                    <svg width={150} height={30}>
+                        <line x1={0} y1={offset} x2={horizontalOffset} y2={offset} stroke="black" strokeWidth={3} strokeDasharray={LinkPool[link][2] ? "10,10" : "none"}/>
+                        <polygon
+                            points={`${linkEnd.x1 + horizontalOffset},${linkEnd.y1 + offset} ${linkEnd.x2 + horizontalOffset},${linkEnd.y2 + offset} ${linkEnd.x3 + horizontalOffset},${linkEnd.y3 + offset} ${linkEnd.x4 + horizontalOffset},${linkEnd.y4 + offset}`}
+                            style={linkEnd.fill ?
+                                {fill: "black", stroke: "black", strokeWidth: 2} :
+                                {fill: "#eeeeee", stroke: "black", strokeWidth: 2}}
+                        />
+                        <text x={horizontalOffset} y={offset} alignmentBaseline="middle" textAnchor="middle"
+                              fill="white" pointerEvents="none">{linkEnd.text}</text>
+                    </svg>
+                </td>
+            </tr>);
+        });
+        let languagePool = Object.keys(LanguagePool).map((language) => {
             return (
                 <option key={language} value={language}>{LanguagePool[language]}</option>
             )
         });
-        let attributeLength = languagePool.length;
+        let stereotypePool = Object.keys(StereotypePool).map((stereotype) => {
+            return (
+                <option key={stereotype} value={stereotype}>{StereotypePool[stereotype]}</option>
+            )
+        });
+        let languagePoolLength = languagePool.length;
+        let stereotypePoolLength = stereotypePool.length;
         if (this.props.readOnly) {
             return (
                 <div className="menuPanel">
@@ -210,6 +353,10 @@ export class MenuPanel extends React.Component {
                         <DropdownButton title={Locale.menuPanelSettings} bsSize="small" id={Locale.menuPanelSettings}>
                             <MenuItem eventKey="1"
                                       onClick={this.handleOpenLanguagesModal}>{Locale.menuPanelLanguages}</MenuItem>
+                            <MenuItem eventKey="2"
+                                      onClick={this.handleOpenNodesModal}>{Locale.menuPanelStereotypes}</MenuItem>
+                            <MenuItem eventKey="3"
+                                      onClick={this.handleOpenLinksModal}>{Locale.menuPanelLinks}</MenuItem>
                         </DropdownButton>
                         <Button onClick={this.handleOpenHelpModal} bsSize="small">
                             {Locale.menuPanelHelp}
@@ -279,6 +426,7 @@ export class MenuPanel extends React.Component {
                                     onChange={this.handleChangeLoad}
                                 />
                             </FormGroup>
+                            <p>{this.props.success ? "" : Locale.loadUnsuccessful}</p>
                         </Modal.Body>
                         <Modal.Footer>
                             <Button onClick={this.handleCloseLoadModal}>{Locale.close}</Button>
@@ -324,7 +472,7 @@ export class MenuPanel extends React.Component {
                             </Modal.Title>
                         </Modal.Header>
                         <Modal.Body>
-                            {Object.keys(LocaleHelp).map((obj, i) => {
+                            {Object.keys(LocaleHelp).map((obj) => {
                                 return (
                                     <p key={obj}>{LocaleHelp[obj]}</p>
                                 );
@@ -348,13 +496,14 @@ export class MenuPanel extends React.Component {
                                 value={this.state.language}
                                 onChange={this.handleChangeLanguage}
                                 onFocus={this.focus}
-                                size={attributeLength}
-                                style={{height: 12 + (attributeLength) * 15}}
+                                size={languagePoolLength}
+                                style={{height: 300}}
                             >
                                 {languagePool}
                             </FormControl><br/>
                             <Form inline>
-                                <Button onClick={this.deleteLanguage} bsStyle="danger">{Locale.del}</Button>
+                                <Button onClick={this.deleteLanguage}
+                                        bsStyle="danger">{Locale.del + " " + LanguagePool[this.state.language]}</Button>
                                 <FormControl
                                     type="text"
                                     value={this.state.languageName}
@@ -366,6 +515,88 @@ export class MenuPanel extends React.Component {
                         </Modal.Body>
                         <Modal.Footer>
                             <Button onClick={this.handleCloseLanguagesModal} bsStyle="primary">{Locale.close}</Button>
+                        </Modal.Footer>
+                    </Modal>
+
+                    <Modal show={this.state.modalSettingsNodes} onHide={this.handleCloseNodesModal}>
+                        <Modal.Header>
+                            <Modal.Title>
+                                {Locale.nodesSettings}
+                            </Modal.Title>
+                        </Modal.Header>
+                        <Modal.Body>
+                            <FormControl
+                                type="text"
+                                value={this.state.stereotypeSource}
+                                placeholder={Locale.stereotypeSourcePlaceholder}
+                                onChange={this.handleChangeStereotypeSource}
+                            />
+                            <Button onClick={this.handleLoadStereotypes}
+                                    bsStyle="primary">{Locale.loadStereotypes}</Button>
+                            <Button onClick={this.handleReplaceStereotypes}
+                                    bsStyle="primary">{Locale.replaceStereotypes}</Button>
+                            <FormGroup>
+                                <FormControl
+                                    componentClass="select"
+                                    bsSize="small"
+                                    value={this.state.node}
+                                    onChange={this.handleChangeNode}
+                                    onFocus={this.focus}
+                                    size={stereotypePoolLength}
+                                    style={{height: 300}}
+                                >
+                                    {stereotypePool}
+                                </FormControl>
+                                <Button onClick={this.deleteNode}
+                                        bsStyle="danger">{Locale.del + " " + StereotypePool[this.state.node]}</Button>
+                            </FormGroup>
+                            <Form inline>
+
+                                <FormControl
+                                    type="text"
+                                    value={this.state.stereotypeName}
+                                    placeholder={Locale.stereotypeNamePlaceholder}
+                                    onChange={this.handleChangeStereotypeName}
+                                />
+                                <FormControl
+                                    type="text"
+                                    value={this.state.stereotypeRDF}
+                                    placeholder={Locale.stereotypeRDFPlaceholder}
+                                    onChange={this.handleChangeStereotypeRDF}
+                                />
+                                <Button onClick={this.addNode} bsStyle="primary">{Locale.addNode}</Button>
+                            </Form>
+                        </Modal.Body>
+                        <Modal.Footer>
+                            <Button onClick={this.handleCloseNodesModal} bsStyle="primary">{Locale.close}</Button>
+                        </Modal.Footer>
+                    </Modal>
+
+                    <Modal show={this.state.modalSettingsLinks} onHide={this.handleCloseLinksModal}>
+                        <Modal.Header>
+                            <Modal.Title>
+                                {Locale.linksSettings}
+                            </Modal.Title>
+                        </Modal.Header>
+                        <Modal.Body>
+                            <br/>
+                            <div height="300px">
+                                <Table striped bordered hover condensed>
+                                    <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>{Locale.name}</th>
+                                            <th>{Locale.line}</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {linkListItems}
+                                    </tbody>
+                                </Table>
+                            </div>
+                        </Modal.Body>
+                        <Modal.Footer>
+                            <Button onClick={this.handleCloseLinksModal} bsStyle="primary">{Locale.close}</Button>
                         </Modal.Footer>
                     </Modal>
                 </div>

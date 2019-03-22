@@ -6,6 +6,11 @@ const htmlWebpackPlugin = new HtmlWebPackPlugin({
 });
 
 module.exports = {
+  entry: ['babel-polyfill', './src/index.js'],
+
+  output: {
+    filename: 'bundle.js'
+  },
   module: {
     rules: [
       {

@@ -80,12 +80,27 @@ export class DiagramCanvas extends React.Component {
         });
     }
 
-    deserialize(str: string) {
-        this.registerFactories();
-        let model = new OntoDiagramModel(this.props, this);
-        model.deSerializeDiagram(JSON.parse(str), this.engine);
-        this.engine.setDiagramModel(model);
+    deserialize(diagramSerialization: string) {
+        let diagram = (function(raw) {
+            try {
+                return JSON.parse(raw);
+            } catch (err) {
+                return false;
+            }
+        })(diagramSerialization);
+        if (!diagram){
+            return false;
+        }
+        try {
+            this.registerFactories();
+            let model = new OntoDiagramModel(this.props, this);
+            model.deSerializeDiagram(diagram, this.engine);
+            this.engine.setDiagramModel(model);
+        } catch (err) {
+            return false;
+        }
         this.forceUpdate();
+        return true;
     }
 
     setName(str: string) {
@@ -96,13 +111,17 @@ export class DiagramCanvas extends React.Component {
         return (
             <div
                 onDrop={event => {
-                    const data = JSON.parse(event.dataTransfer.getData("newNode"));
-                    const node = new NodeCommonModel(data.type, data.rdf, this.engine.getDiagramModel());
-                    const points = this.engine.getRelativeMousePoint(event);
-                    node.x = points.x;
-                    node.y = points.y;
-                    this.engine.getDiagramModel().addNode(node);
-                    this.forceUpdate();
+                    try {
+                        const data = JSON.parse(event.dataTransfer.getData("newNode"));
+                        const node = new NodeCommonModel(data.type, data.rdf, this.engine.getDiagramModel());
+                        const points = this.engine.getRelativeMousePoint(event);
+                        node.x = points.x;
+                        node.y = points.y;
+                        this.engine.getDiagramModel().addNode(node);
+                        this.forceUpdate();
+                    } catch(err) {
+                        // TODO: Log service
+                    };
                 }}
                 onDragOver={event => {
                     event.preventDefault();

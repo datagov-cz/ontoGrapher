@@ -1,7 +1,7 @@
 import React from 'react';
 import {Locale} from "../config/Locale";
-import {CardinalityPool} from "../config/CardinalityPool";
 import {DefaultLabelModel} from "storm-react-diagrams";
+import {CardinalityPool} from "../config/Variables";
 
 export class ContextMenuLink extends React.Component {
     constructor(props) {

@@ -4,9 +4,8 @@ import {
 } from "storm-react-diagrams";
 import {DiagramCanvas} from "./DiagramCanvas";
 import {Locale} from "../config/Locale";
-import {LanguagePool} from "../config/LanguagePool";
-import {NodeCommonModel} from "../components/common-node/NodeCommonModel";
 import * as _ from "lodash";
+import {LanguagePool} from "../config/Variables";
 
 export class OntoDiagramModel extends DiagramModel {
 

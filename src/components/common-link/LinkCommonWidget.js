@@ -1,9 +1,11 @@
 import {DefaultLinkWidget, Toolkit} from "storm-react-diagrams";
 import React from "react";
 import * as _ from "lodash";
+import {LinkEndPool, LinkPool} from "../../config/LinkVariables";
 
 export class LinkCommonWidget extends DefaultLinkWidget {
     label: boolean;
+    end: {};
 
     /*
         label0 : Start cardinality
@@ -15,6 +17,7 @@ export class LinkCommonWidget extends DefaultLinkWidget {
     constructor(props) {
         super(props);
         this.label = false;
+        this.end = LinkEndPool[LinkPool[this.props.link.linkType][0]];
         this.handleClick = this.handleClick.bind(this);
     }
 
@@ -45,7 +48,16 @@ export class LinkCommonWidget extends DefaultLinkWidget {
 
 
         return (
-            <g key={"point-" + this.props.link.points[pointIndex].id}>
+
+            <g key={"point-" + this.props.link.points[pointIndex].id}
+               shapeRendering="optimizeSpeed">
+                <polygon
+                    transform={`rotate(${angle}, ${x}, ${y})`}
+                    points={`${x + this.end.x1},${y + this.end.y1} ${x + this.end.x2},${y + this.end.y2} ${x + this.end.x3},${y + this.end.y3} ${x + this.end.x4},${y + this.end.y4}`}
+                    style={this.end.fill ? {fill: "black", stroke: "black", strokeWidth: 2} : {fill: "#eeeeee", stroke: "black", strokeWidth: 2}}
+                />
+                <text x={x} y={y} alignmentBaseline="middle" textAnchor="middle" transform={`rotate(${angle}, ${x}, ${y})`}
+                      fill="white" pointerEvents="none">{this.end.text}</text>
                 <circle
                     onMouseLeave={() => {
                         this.setState({selected: false});
@@ -58,7 +70,7 @@ export class LinkCommonWidget extends DefaultLinkWidget {
                     cx={x}
                     cy={y}
                     r={5}
-                    opacity={.5}
+                    opacity={0}
                     className={
                         "point " +
                         this.bem("__point") +
