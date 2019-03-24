@@ -16,7 +16,7 @@ import {NodeCommonModel} from "../components/common-node/NodeCommonModel";
 export class DiagramApp extends React.Component {
     constructor(props) {
         super(props);
-        document.title = Locale.untitled + " | " + Locale.appName;
+        document.title = Locale.untitledDiagram + " | " + Locale.appName;
         this.state = {
             selectedLink: Defaults.selectedLink,
             firstCardinality: Defaults.cardinality,
@@ -61,7 +61,6 @@ export class DiagramApp extends React.Component {
     }
 
     updateLinkPosition(node: NodeCommonModel) {
-        this.diagramCanvas.engine.repaintCanvas();
         for (let portKey in node.getPorts()) {
             let port = node.getPorts()[portKey];
             let coords = this.diagramCanvas.engine.getPortCenter(port);
@@ -77,7 +76,7 @@ export class DiagramApp extends React.Component {
                     if (port.getName() === "bottom"){
                         coords.y +=16;
                     }
-                    link.points[0].updateLocation(coords);
+                    link.getFirstPoint().updateLocation(coords);
                 }
 
                 if (link.getTargetPort() === port) {
@@ -90,7 +89,7 @@ export class DiagramApp extends React.Component {
                         coords.y +=16;
                     }
 
-                    link.points[link.points.length - 1].updateLocation(coords);
+                    link.getLastPoint().updateLocation(coords);
                 }
             }
         }
@@ -321,6 +320,7 @@ export class DiagramApp extends React.Component {
                         contextMenuX={this.state.contextMenuX}
                         contextMenuY={this.state.contextMenuY}
                         contextMenuLink={this.state.contextMenuLink}
+                        updateLinkPosition={this.updateLinkPosition}
                     />
                 </div>
             );

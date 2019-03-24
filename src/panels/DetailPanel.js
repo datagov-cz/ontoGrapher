@@ -26,14 +26,6 @@ export class DetailPanel extends React.Component {
             nodeStart: "",
             nodeEnd: ""
         };
-        this.attributeTypes = [];
-        for (let attrType of AttributeTypePool) {
-            this.attributeTypes.push(<option key={attrType} value={attrType}>{attrType}</option>);
-        }
-        this.cardinalityPool = [];
-        for (let cardinality of CardinalityPool) {
-            this.cardinalityPool.push(<option key={cardinality} value={cardinality}>{cardinality}</option>);
-        }
 
         this.handleChangeLanguage = this.handleChangeLanguage.bind(this);
         this.handleChangeName = this.handleChangeName.bind(this);
@@ -207,6 +199,15 @@ export class DetailPanel extends React.Component {
     }
 
     render() {
+        this.attributeTypes = [];
+        for (let attrType of AttributeTypePool) {
+            this.attributeTypes.push(<option key={attrType} value={attrType}>{attrType}</option>);
+        }
+        this.cardinalityPool = [];
+        for (let cardinality of CardinalityPool) {
+            this.cardinalityPool.push(<option key={cardinality} value={cardinality}>{cardinality}</option>);
+        }
+
         if (this.state.type === NodeCommonModel) {
             let attributeKey = 0;
             const attributeList = this.state.attrs[this.props.language].map((attr) =>

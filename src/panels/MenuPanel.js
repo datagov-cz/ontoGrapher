@@ -3,7 +3,7 @@ import {Locale} from "../config/Locale";
 import {ButtonGroup, DropdownButton, FormControl, MenuItem, Button, Modal, FormGroup, Form} from "react-bootstrap";
 
 import {LocaleHelp} from "../config/LocaleHelp";
-import {LanguagePool, StereotypePool} from "../config/Variables";
+import {AttributeTypePool, CardinalityPool, LanguagePool, StereotypePool} from "../config/Variables";
 import * as RDF from "../misc/RDF";
 import {LinkEndPool, LinkPool} from "../config/LinkVariables";
 import Table from "react-bootstrap/es/Table";
@@ -23,6 +23,8 @@ export class MenuPanel extends React.Component {
             modalSettingsLanguage: false,
             modalSettingsNodes: false,
             modalSettingsLinks: false,
+            modalSettingsCardinalities: false,
+            modalSettingsAttributeTypes: false,
             name: this.props.name,
             language: this.props.language,
             languageName: "",
@@ -32,8 +34,12 @@ export class MenuPanel extends React.Component {
             stereotypeRDF: "",
             linkName: "",
             status: "",
+            cardinalityName: "",
+            attributeTypeName: "",
             node: StereotypePool[0],
-            linkType: LinkPool[0]
+            linkType: LinkPool[0],
+            cardinality: CardinalityPool[0],
+            attributeType: AttributeTypePool[0]
         };
 
         this.languagePool = [];
@@ -56,6 +62,10 @@ export class MenuPanel extends React.Component {
         this.handleCloseLinksModal = this.handleCloseLinksModal.bind(this);
         this.handleOpenNodesModal = this.handleOpenNodesModal.bind(this);
         this.handleCloseNodesModal = this.handleCloseNodesModal.bind(this);
+        this.handleOpenCardinalitiesModal = this.handleOpenCardinalitiesModal.bind(this);
+        this.handleCloseCardinalitiesModal = this.handleCloseCardinalitiesModal.bind(this);
+        this.handleOpenAttributeTypesModal = this.handleOpenAttributeTypesModal.bind(this);
+        this.handleCloseAttributeTypesModal = this.handleCloseAttributeTypesModal.bind(this);
         this.handleChangeLoad = this.handleChangeLoad.bind(this);
         this.handleChangeLanguage = this.handleChangeLanguage.bind(this);
         this.handleNew = this.handleNew.bind(this);
@@ -73,29 +83,50 @@ export class MenuPanel extends React.Component {
         this.handleChangeNode = this.handleChangeNode.bind(this);
         this.addNode = this.addNode.bind(this);
         this.deleteNode = this.deleteNode.bind(this);
-        this.addLink = this.addLink.bind(this);
-        this.deleteLink = this.deleteLink.bind(this);
+        this.addCardinality = this.addCardinality.bind(this);
+        this.deleteCardinality = this.deleteCardinality.bind(this);
         this.handleChangeStereotypeName = this.handleChangeStereotypeName.bind(this);
         this.handleChangeStereotypeRDF = this.handleChangeStereotypeRDF.bind(this);
-        this.handleChangeLinkName = this.handleChangeLinkName.bind(this);
-        this.handleChangeLinkType = this.handleChangeLinkType.bind(this);
-
+        this.handleChangeCardinality = this.handleChangeCardinality.bind(this);
+        this.handleChangeCardinalityName = this.handleChangeCardinalityName.bind(this);
+        this.handleChangeAttributeTypeName = this.handleChangeAttributeTypeName.bind(this);
+        this.handleChangeAttributeType = this.handleChangeAttributeType.bind(this);
+        this.addAttributeType = this.addAttributeType.bind(this);
+        this.deleteAttributeType = this.deleteAttributeType.bind(this);
     }
 
-    handleChangeLinkType(event) {
-        console.log(event);
+    handleChangeAttributeType(event){
+        this.setState({attributeType: event.target.value});
     }
 
-    addLink() {
-        LinkPool[this.state.linkName] = this.state.linkType;
+    addAttributeType(){
+        AttributeTypePool.push(this.state.attributeTypeName);
+        this.setState({attributeTypeName: ""});
     }
 
-    deleteLink() {
-
+    deleteAttributeType(){
+        AttributeTypePool.splice(AttributeTypePool.indexOf(this.state.attributeType),1);
     }
 
-    handleChangeLinkName(event) {
-        this.setState({linkName: event.target.value});
+    handleChangeAttributeTypeName(event){
+        this.setState({attributeTypeName: event.target.value});
+    }
+
+    handleChangeCardinalityName(event){
+        this.setState({cardinalityName: event.target.value});
+    }
+
+    addCardinality(){
+        CardinalityPool.push(this.state.cardinalityName);
+        this.setState({cardinalityName: ""});
+    }
+
+    deleteCardinality(){
+        CardinalityPool.splice(CardinalityPool.indexOf(this.state.cardinality),1);
+    }
+
+    handleChangeCardinality(event){
+        this.setState({cardinality: event.target.value});
     }
 
     addNode() {
@@ -162,6 +193,22 @@ export class MenuPanel extends React.Component {
 
     handleChangeLoad(event) {
         this.setState({modalLoadValue: event.target.value});
+    }
+
+    handleOpenAttributeTypesModal() {
+        this.setState({modalSettingsAttributeTypes: true});
+    }
+
+    handleCloseAttributeTypesModal() {
+        this.setState({modalSettingsAttributeTypes: false});
+    }
+
+    handleOpenCardinalitiesModal() {
+        this.setState({modalSettingsCardinalities: true});
+    }
+
+    handleCloseCardinalitiesModal() {
+        this.setState({modalSettingsCardinalities: false});
     }
 
     handleOpenLanguagesModal() {
@@ -270,6 +317,16 @@ export class MenuPanel extends React.Component {
                 link: LinkPool[0]
             });
         }
+        if (CardinalityPool.length === 1) {
+            this.setState({
+                cardinality: CardinalityPool[0]
+            });
+        }
+        if (AttributeTypePool.length === 1) {
+            this.setState({
+                attributeType: AttributeTypePool[0]
+            });
+        }
     }
 
     render() {
@@ -295,14 +352,28 @@ export class MenuPanel extends React.Component {
                 </td>
             </tr>);
         });
+
         let languagePool = Object.keys(LanguagePool).map((language) => {
             return (
                 <option key={language} value={language}>{LanguagePool[language]}</option>
             )
         });
+
         let stereotypePool = Object.keys(StereotypePool).map((stereotype) => {
             return (
                 <option key={stereotype} value={stereotype}>{StereotypePool[stereotype]}</option>
+            )
+        });
+
+        let cardinalityPool = Object.keys(CardinalityPool).map((cardinality) => {
+            return (
+                <option key={cardinality} value={CardinalityPool[cardinality]}>{CardinalityPool[cardinality]}</option>
+            )
+        });
+
+        let attributeTypePool = Object.keys(AttributeTypePool).map((attributeType) => {
+            return (
+                <option key={attributeType} value={AttributeTypePool[attributeType]}>{AttributeTypePool[attributeType]}</option>
             )
         });
         let languagePoolLength = languagePool.length;
@@ -357,6 +428,10 @@ export class MenuPanel extends React.Component {
                                       onClick={this.handleOpenNodesModal}>{Locale.menuPanelStereotypes}</MenuItem>
                             <MenuItem eventKey="3"
                                       onClick={this.handleOpenLinksModal}>{Locale.menuPanelLinks}</MenuItem>
+                            <MenuItem eventKey="4"
+                                      onClick={this.handleOpenCardinalitiesModal}>{Locale.menuPanelCardinalities}</MenuItem>
+                            <MenuItem eventKey="4"
+                                      onClick={this.handleOpenAttributeTypesModal}>{Locale.menuPanelAttributeTypes}</MenuItem>
                         </DropdownButton>
                         <Button onClick={this.handleOpenHelpModal} bsSize="small">
                             {Locale.menuPanelHelp}
@@ -597,6 +672,76 @@ export class MenuPanel extends React.Component {
                         </Modal.Body>
                         <Modal.Footer>
                             <Button onClick={this.handleCloseLinksModal} bsStyle="primary">{Locale.close}</Button>
+                        </Modal.Footer>
+                    </Modal>
+
+                    <Modal show={this.state.modalSettingsCardinalities} onHide={this.handleCloseCardinalitiesModal}>
+                    <Modal.Header>
+                        <Modal.Title>
+                            {Locale.cardinalitySettings}
+                        </Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body>
+                        <FormControl
+                            componentClass="select"
+                            bsSize="small"
+                            value={this.state.cardinality}
+                            onChange={this.handleChangeCardinality}
+                            onFocus={this.focus}
+                            size={cardinalityPool.length}
+                            style={{height: 300}}
+                        >
+                            {cardinalityPool}
+                        </FormControl><br/>
+                        <Form inline>
+                            <Button onClick={this.deleteCardinality}
+                                    bsStyle="danger">{Locale.del + " " + CardinalityPool[CardinalityPool.indexOf(this.state.cardinality)]}</Button>
+                            <FormControl
+                                type="text"
+                                value={this.state.cardinalityName}
+                                placeholder={Locale.cardinalityName}
+                                onChange={this.handleChangeCardinalityName}
+                            />
+                            <Button onClick={this.addCardinality} bsStyle="primary">{Locale.addCardinality}</Button>
+                        </Form>
+                    </Modal.Body>
+                    <Modal.Footer>
+                        <Button onClick={this.handleCloseCardinalitiesModal} bsStyle="primary">{Locale.close}</Button>
+                    </Modal.Footer>
+                </Modal>
+
+                    <Modal show={this.state.modalSettingsAttributeTypes} onHide={this.handleCloseAttributeTypesModal}>
+                        <Modal.Header>
+                            <Modal.Title>
+                                {Locale.attributeTypesSettings}
+                            </Modal.Title>
+                        </Modal.Header>
+                        <Modal.Body>
+                            <FormControl
+                                componentClass="select"
+                                bsSize="small"
+                                value={this.state.attributeType}
+                                onChange={this.handleChangeAttributeType}
+                                onFocus={this.focus}
+                                size={attributeTypePool.length}
+                                style={{height: 300}}
+                            >
+                                {attributeTypePool}
+                            </FormControl><br/>
+                            <Form inline>
+                                <Button onClick={this.deleteAttributeType}
+                                        bsStyle="danger">{Locale.del + " " + AttributeTypePool[AttributeTypePool.indexOf(this.state.attributeType)]}</Button>
+                                <FormControl
+                                    type="text"
+                                    value={this.state.attributeTypeName}
+                                    placeholder={Locale.attributeTypePlaceholder}
+                                    onChange={this.handleChangeAttributeTypeName}
+                                />
+                                <Button onClick={this.addAttributeType} bsStyle="primary">{Locale.addAttributeType}</Button>
+                            </Form>
+                        </Modal.Body>
+                        <Modal.Footer>
+                            <Button onClick={this.handleCloseAttributeTypesModal} bsStyle="primary">{Locale.close}</Button>
                         </Modal.Footer>
                     </Modal>
                 </div>

@@ -70,5 +70,15 @@ export var Locale = {
     addNode: "Add stereotype",
     menuPanelLinks: "Relationships...",
     name: "Name",
-    line: "Line"
+    line: "Line",
+    flipRelationship: "Flip tail and head",
+    menuPanelCardinalities: "Cardinalities...",
+    cardinalitySettings: "Cardinality settings",
+    addCardinality: "Add cardinality",
+    addAttributeType: "Add attribute type",
+    attributeTypesSettings: "Attribute type settings",
+    menuPanelAttributeTypes: "Attribute types...",
+    attributeTypePlaceholder: "Attribute type name",
+    deleteMiddlePoints: "Delete middle points",
+    deleteRelationship: "Delete relationship"
 };

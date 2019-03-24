@@ -105,7 +105,8 @@ export class NodeCommonModel extends NodeModel {
             stereotype: this.stereotype,
             attributes: this.attributes,
             names: this.names,
-            rdf: this.rdf
+            rdf: this.rdf,
+            notes: this.notes
         });
     }
 }

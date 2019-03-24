@@ -16,13 +16,15 @@ export class NodeCommonPortModel extends PortModel {
 
     serialize() {
         return _.merge(super.serialize(), {
-            position: this.position
+            position: this.position,
+            model: this.model
         });
     }
 
     deSerialize(data: any, engine: DiagramEngine) {
         super.deSerialize(data, engine);
         this.position = data.position;
+        this.model = data.model;
     }
 
     createLinkModel(): LinkModel {
