@@ -256,7 +256,7 @@ export class DetailPanel extends React.Component {
                 </svg>
             );
             return (
-                <div className="detailPanel">
+                <div className="detailPanel" id="detailPanel">
                     <h2>{Locale.detailPanelTitle}</h2>
                     {widget}
 
@@ -406,7 +406,7 @@ export class DetailPanel extends React.Component {
                 </svg>
             );
             return (
-                <div className="detailPanel">
+                <div className="detailPanel" id="detailPanel">
                     <h2>{Locale.detailPanelTitle}</h2>
                     {node1Widget}
                     {linkWidget}

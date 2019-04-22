@@ -10,6 +10,7 @@ import {NodeCommonPortFactory} from "../components/common-node/NodeCommonPortFac
 import {LinkCommonFactory} from "../components/common-link/LinkCommonFactory";
 import {LinkCommonModel} from "../components/common-link/LinkCommonModel";
 import {CommonLabelFactory} from "../components/misc/CommonLabelFactory";
+import {OntoDiagramWidget} from "./OntoDiagramWidget";
 
 
 export class DiagramCanvas extends React.Component {
@@ -126,7 +127,7 @@ export class DiagramCanvas extends React.Component {
                 onDragOver={event => {
                     event.preventDefault();
                 }}>
-                <DiagramWidget
+                <OntoDiagramWidget
                     diagramEngine={this.engine}
                     allowLooseLinks={true}
                     smartRouting={false}

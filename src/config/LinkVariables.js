@@ -21,15 +21,15 @@ export var LinkPool = {
 export var LinkEndPool = {
     "Empty": {
         x1: 0,
-        y1: 0,
-        x2: 0,
+        y1: -1,
+        x2: 1,
         y2: 0,
         x3: 0,
-        y3: 0,
-        x4: 0,
+        y3: 1,
+        x4: -1,
         y4: 0,
         text: "",
-        fill: false
+        fill: true
     },
     "FilledEmptyDiamond": {
         x1: 0,

@@ -8,7 +8,7 @@ import {Locale} from "../../config/Locale";
 import * as _ from "lodash";
 import {LanguagePool} from "../../config/Variables";
 import {LinkPool} from "../../config/LinkVariables";
-
+import {Constraint} from "../constraints/Constraint";
 
 export class LinkCommonModel extends DefaultLinkModel {
     width: number;
@@ -29,6 +29,8 @@ export class LinkCommonModel extends DefaultLinkModel {
         this.dashed = false;
         this.names = {};
         this.notes = {};
+        this.constraints = [];
+        this.color = "black";
         for (let language in LanguagePool) {
             if (this.names[language] === undefined) {
                 this.names[language] = "";
@@ -53,14 +55,21 @@ export class LinkCommonModel extends DefaultLinkModel {
                 this.model.nullPanel();
             }
         });
+        this.addConstraint(new Constraint("self.width = 2",this.linkType));
     }
 
     addDescriptorLabel() {
-        let labeltext = "«" + this.linkType.toLowerCase() + "»";
-        this.labels[1].setLabel(labeltext);
+        let labelText = "«" + this.linkType.toLowerCase() + "»";
+        this.labels[1].setLabel(labelText);
         this.descriptor = true;
+    }
 
+    addConstraint(constraint: Constraint){
+        this.constraints.push(constraint);
+    }
 
+    removeConstraint(constraint: Constraint){
+        this.constraints.splice(this.constraints.indexOf(constraint),1);
     }
 
     setDashedLine() {

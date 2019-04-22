@@ -25,7 +25,7 @@ export var Locale = {
     menuPanelGeneral: "General",
     menuPanelFileName: "File Name",
     leftPanelStereotypes: "Stereos",
-    leftPanelLinks: "Rels",
+    relationship: "Relationship",
     untitledDiagram: "Untitled Diagram",
     selectedLanguage: "Selected language",
     menuPanelHelp: "Help",
@@ -80,5 +80,9 @@ export var Locale = {
     menuPanelAttributeTypes: "Attribute types...",
     attributeTypePlaceholder: "Attribute type name",
     deleteMiddlePoints: "Delete middle points",
-    deleteRelationship: "Delete relationship"
+    deleteRelationship: "Delete relationship",
+    menuPanelTools: "Tools",
+    menuPanelEvaluate: "Evaluate",
+    evaluation: "Constraint",
+    rerun: "Reevaluate"
 };

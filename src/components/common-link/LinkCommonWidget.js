@@ -2,6 +2,7 @@ import {DefaultLinkWidget, Toolkit} from "storm-react-diagrams";
 import React from "react";
 import * as _ from "lodash";
 import {LinkEndPool, LinkPool} from "../../config/LinkVariables";
+import {LabelModel} from "storm-react-diagrams";
 
 export class LinkCommonWidget extends DefaultLinkWidget {
     label: boolean;
@@ -54,7 +55,7 @@ export class LinkCommonWidget extends DefaultLinkWidget {
                 <polygon
                     transform={`rotate(${angle}, ${x}, ${y})`}
                     points={`${x + this.end.x1},${y + this.end.y1} ${x + this.end.x2},${y + this.end.y2} ${x + this.end.x3},${y + this.end.y3} ${x + this.end.x4},${y + this.end.y4}`}
-                    style={this.end.fill ? {fill: "black", stroke: "black", strokeWidth: 2} : {fill: "#eeeeee", stroke: "black", strokeWidth: 2}}
+                    style={this.end.fill ? {fill: "black", stroke: this.props.link.color, strokeWidth: 2} : {fill: "#eeeeee", stroke: this.props.link.color, strokeWidth: 2}}
                 />
                 <text x={x} y={y} alignmentBaseline="middle" textAnchor="middle" transform={`rotate(${angle}, ${x}, ${y})`}
                       fill="white" pointerEvents="none">{this.end.text}</text>
@@ -247,6 +248,24 @@ export class LinkCommonWidget extends DefaultLinkWidget {
             pathIndex++;
         }
     };
+
+    generateLabel(label: LabelModel) {
+        const canvas = this.props.diagramEngine.canvas;
+        return (
+            <foreignObject
+                key={label.id}
+                className={this.bem("__label")}
+                width={canvas.offsetWidth}
+                height={canvas.offsetHeight}
+            >
+                <div ref={ref => (this.refLabels[label.id] = ref)}>
+                    {this.props.diagramEngine
+                        .getFactoryForLabel(label)
+                        .generateReactWidget(this.props.diagramEngine, label)}
+                </div>
+            </foreignObject>
+        );
+    }
 
     render() {
         const {diagramEngine} = this.props;

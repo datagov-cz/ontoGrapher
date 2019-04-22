@@ -29,7 +29,7 @@ export class LinkCommonFactory extends AbstractLinkFactory<LinkCommonModel> {
                       }}
                       shapeRendering="optimizeSpeed"
                       strokeWidth={model.width}
-                      stroke="black"
+                      stroke={model.color}
                       strokeDasharray="10,10"
                       d={path}
 
@@ -44,7 +44,7 @@ export class LinkCommonFactory extends AbstractLinkFactory<LinkCommonModel> {
                       }}
                       shapeRendering="optimizeSpeed"
                       strokeWidth={model.width}
-                      stroke="black"
+                      stroke={model.color}
                       d={path}
                 />
 

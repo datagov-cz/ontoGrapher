@@ -11,6 +11,8 @@ import {ContextMenuLink} from "../misc/ContextMenuLink";
 import {LinkCommonModel} from "../components/common-link/LinkCommonModel";
 import PropTypes from "prop-types";
 import {NodeCommonModel} from "../components/common-node/NodeCommonModel";
+import {BottomPanel} from "../panels/BottomPanel";
+import * as OclEngine from "../misc/ocl.min";
 
 
 export class DiagramApp extends React.Component {
@@ -30,7 +32,9 @@ export class DiagramApp extends React.Component {
             contextMenuY: 0,
             contextMenuLink: null,
             saveData: "",
-            success: true
+            success: true,
+            bottomPanelActive: false,
+            bottomPanelData: null
         };
 
         if (!this.props.disableSCSS) {
@@ -58,6 +62,44 @@ export class DiagramApp extends React.Component {
         this.setName = this.setName.bind(this);
         this.handleChangeNotes = this.handleChangeNotes.bind(this);
         this.updateLinkPosition = this.updateLinkPosition.bind(this);
+        this.evaluate = this.evaluate.bind(this);
+        this.handleCloseBottomPanel = this.handleCloseBottomPanel.bind(this);
+        this.handleLocate = this.handleLocate.bind(this);
+    }
+
+    handleLocate(element){
+        let current = this.diagramCanvas.engine.getDiagramModel().getLinks()[element];
+        if (current instanceof LinkCommonModel){
+            current = current.getFirstPoint();
+        }
+        this.diagramCanvas.engine.getDiagramModel().setOffsetX(current.x);
+        this.diagramCanvas.engine.getDiagramModel().setOffsetY(current.y);
+    }
+
+    handleCloseBottomPanel(){
+        this.setState({bottomPanelActive: false});
+    }
+
+    evaluate(){
+        let result = {};
+        const oclEngine = OclEngine.create();
+        let links = this.diagramCanvas.engine.getDiagramModel().getLinks();
+        for (let link in links){
+            for (let constraint in links[link].constraints){
+                oclEngine.addOclExpression(links[link].constraints[constraint].constructStatement());
+                let individualResult = oclEngine.evaluate(links[link]);
+                if (!individualResult.getResult()){
+                    result[link] = links[link].constraints[constraint].statement;
+                    links[link].setColor("red");
+                }
+                oclEngine.clearAllOclExpressions();
+            }
+        }
+
+        this.setState({
+           bottomPanelActive: true,
+           bottomPanelData: result
+        });
     }
 
     updateLinkPosition(node: NodeCommonModel) {
@@ -288,6 +330,7 @@ export class DiagramApp extends React.Component {
                         centerView={this.centerView}
                         restoreZoom={this.handleZoom}
                         success={this.state.success}
+                        handleEvaluate={this.evaluate}
                     />
                     <ElementPanel
                         handleChangeSelectedLink={this.handleChangeSelectedLink}
@@ -315,6 +358,13 @@ export class DiagramApp extends React.Component {
                         handleSerialize={this.handleSerialize}
                         setName={this.setName}
                     />
+                    <BottomPanel
+                        bottomPanelActive={this.state.bottomPanelActive}
+                        bottomPanelData={this.state.bottomPanelData}
+                        handleCloseBottomPanel={this.handleCloseBottomPanel}
+                        handleEvaluate={this.evaluate}
+                        handleLocate={this.handleLocate}
+                    />
                     <ContextMenuLink
                         contextMenuActive={this.state.contextMenuActive}
                         contextMenuX={this.state.contextMenuX}
@@ -322,6 +372,7 @@ export class DiagramApp extends React.Component {
                         contextMenuLink={this.state.contextMenuLink}
                         updateLinkPosition={this.updateLinkPosition}
                     />
+
                 </div>
             );
         }

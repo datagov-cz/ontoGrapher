@@ -38,8 +38,8 @@ export class ElementPanel extends React.Component {
             }
 
         return (
-            <div className="stereotypePanel">
-                <Tabs id="stereotypePanel" animation={false}>
+            <div className="stereotypePanel" id="stereotypePanel">
+                <Tabs id="stereotypePanelTabs" animation={false}>
                     <Tab eventKey={1} title={
                         <svg height={10} width={15}>
                             <rect width={15} height={10} fill="white" stroke="black" strokeWidth={4}/>

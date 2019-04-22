@@ -93,6 +93,11 @@ export class MenuPanel extends React.Component {
         this.handleChangeAttributeType = this.handleChangeAttributeType.bind(this);
         this.addAttributeType = this.addAttributeType.bind(this);
         this.deleteAttributeType = this.deleteAttributeType.bind(this);
+        this.handleEvaluate = this.handleEvaluate.bind(this);
+    }
+
+    handleEvaluate(event){
+        this.props.handleEvaluate();
     }
 
     handleChangeAttributeType(event){
@@ -420,6 +425,10 @@ export class MenuPanel extends React.Component {
                         <DropdownButton title={Locale.menuPanelView} bsSize="small" id={Locale.menuPanelSettings}>
                             <MenuItem onClick={this.props.centerView} eventKey="1">{Locale.menuPanelCenter}</MenuItem>
                             <MenuItem onClick={this.props.restoreZoom} eventKey="2">{Locale.menuPanelZoom}</MenuItem>
+                        </DropdownButton>
+                        <DropdownButton title={Locale.menuPanelTools} bsSize="small" id={Locale.menuPanelTools}>
+                            <MenuItem eventKey="1"
+                                      onClick={this.handleEvaluate}>{Locale.menuPanelEvaluate}</MenuItem>
                         </DropdownButton>
                         <DropdownButton title={Locale.menuPanelSettings} bsSize="small" id={Locale.menuPanelSettings}>
                             <MenuItem eventKey="1"
