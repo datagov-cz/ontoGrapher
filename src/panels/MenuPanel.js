@@ -1,12 +1,23 @@
 import React from 'react';
-import {Locale} from "../config/Locale";
-import {ButtonGroup, DropdownButton, FormControl, MenuItem, Button, Modal, FormGroup, Form} from "react-bootstrap";
+import {
+    Button,
+    ButtonGroup,
+    DropdownButton,
+    Form,
+    FormControl,
+    FormGroup,
+    MenuItem,
+    Modal,
+    Tab,
+    Tabs
+} from "react-bootstrap";
 
 import {LocaleHelp} from "../config/LocaleHelp";
 import {AttributeTypePool, CardinalityPool, LanguagePool, StereotypePool} from "../config/Variables";
-import * as RDF from "../misc/RDF";
+import * as SemanticWebInterface from "../misc/SemanticWebInterface";
 import {LinkEndPool, LinkPool} from "../config/LinkVariables";
 import Table from "react-bootstrap/es/Table";
+import {Locale} from "../config/Locale";
 
 
 export class MenuPanel extends React.Component {
@@ -25,6 +36,9 @@ export class MenuPanel extends React.Component {
             modalSettingsLinks: false,
             modalSettingsCardinalities: false,
             modalSettingsAttributeTypes: false,
+            modalImportExportSettings: false,
+            modalExportDiagram: false,
+            modalValidate: false,
             name: this.props.name,
             language: this.props.language,
             languageName: "",
@@ -36,10 +50,16 @@ export class MenuPanel extends React.Component {
             status: "",
             cardinalityName: "",
             attributeTypeName: "",
+            validationInput: "",
             node: StereotypePool[0],
             linkType: LinkPool[0],
             cardinality: CardinalityPool[0],
-            attributeType: AttributeTypePool[0]
+            attributeType: AttributeTypePool[0],
+            exportSettingsData: "",
+            exportURI: "",
+            exportName: "",
+            exportPrefix: "",
+            importSettingsInput: ""
         };
 
         this.languagePool = [];
@@ -94,9 +114,86 @@ export class MenuPanel extends React.Component {
         this.addAttributeType = this.addAttributeType.bind(this);
         this.deleteAttributeType = this.deleteAttributeType.bind(this);
         this.handleEvaluate = this.handleEvaluate.bind(this);
+        this.handleOpenValidateModal = this.handleOpenValidateModal.bind(this);
+        this.handleCloseValidateModal = this.handleCloseValidateModal.bind(this);
+        this.handleChangeValidationInput = this.handleChangeValidationInput.bind(this);
+        this.handleValidateSettings = this.handleValidateSettings.bind(this);
+        this.handleValidateModel = this.handleValidateModel.bind(this);
+        this.handleOpenExportDiagramModal = this.handleOpenExportDiagramModal.bind(this);
+        this.handleOpenImportExportSettingsModal = this.handleOpenImportExportSettingsModal.bind(this);
+        this.handleCloseExportDiagramModal = this.handleCloseExportDiagramModal.bind(this);
+        this.handleCloseImportExportSettingsModal = this.handleCloseImportExportSettingsModal.bind(this);
+        this.handleChangeExportName = this.handleChangeExportName.bind(this);
+        this.handleChangeExportPrefix = this.handleChangeExportPrefix.bind(this);
+        this.handleChangeExportURI = this.handleChangeExportURI.bind(this);
+        this.handleExportSettings = this.handleExportSettings.bind(this);
+        this.handleChangeImportSettingsInput = this.handleChangeImportSettingsInput.bind(this);
+        this.handleImportSettings = this.handleImportSettings.bind(this);
     }
 
-    handleEvaluate(event){
+    handleImportSettings() {
+        SemanticWebInterface.importSettings(this.state.importSettingsInput);
+    }
+
+    handleChangeImportSettingsInput(event) {
+        this.setState({importSettingsInput: event.target.value});
+    }
+
+    handleChangeExportName(event) {
+        this.setState({exportName: event.target.value});
+    }
+
+    handleChangeExportPrefix(event) {
+        this.setState({exportPrefix: event.target.value});
+    }
+
+    handleChangeExportURI(event) {
+        this.setState({exportURI: event.target.value});
+    }
+
+    handleExportSettings() {
+        let exportData = SemanticWebInterface.exportSettings(this.state.exportName, this.state.exportPrefix, this.state.exportURI);
+        this.setState({exportSettingsData: exportData});
+    }
+
+    handleOpenExportDiagramModal() {
+        this.props.handleExport();
+        this.setState({modalExportDiagram: true});
+    }
+
+    handleCloseExportDiagramModal() {
+        this.setState({modalExportDiagram: false});
+    }
+
+    handleOpenImportExportSettingsModal() {
+        this.setState({modalImportExportSettings: true});
+    }
+
+    handleCloseImportExportSettingsModal() {
+        this.setState({modalImportExportSettings: false});
+    }
+
+    handleValidateSettings() {
+        this.props.validateSettings(this.state.validationInput);
+    }
+
+    handleValidateModel() {
+        this.props.validateModel(this.state.validationInput);
+    }
+
+    handleChangeValidationInput(event) {
+        this.setState(event.target.value);
+    }
+
+    handleOpenValidateModal() {
+        this.setState({modalValidate: true});
+    }
+
+    handleCloseValidateModal() {
+        this.setState({modalValidate: false});
+    }
+
+    handleEvaluate() {
         this.props.handleEvaluate();
     }
 
@@ -158,13 +255,13 @@ export class MenuPanel extends React.Component {
     }
 
     handleReplaceStereotypes() {
-        RDF.fetchStereotypes(this.state.stereotypeSource, true, () => {
+        SemanticWebInterface.fetchStereotypes(this.state.stereotypeSource, true, () => {
             this.setState({status: ""});
         });
     }
 
     handleLoadStereotypes() {
-        RDF.fetchStereotypes(this.state.stereotypeSource, false, () => {
+        SemanticWebInterface.fetchStereotypes(this.state.stereotypeSource, false, () => {
             this.setState({status: ""});
         });
     }
@@ -421,6 +518,8 @@ export class MenuPanel extends React.Component {
                                       eventKey="3">{Locale.menuPanelLoad + "..."}</MenuItem>
                             <MenuItem onClick={this.handleOpenSaveModal}
                                       eventKey="4">{Locale.menuPanelSaveDiagram}</MenuItem>
+                            <MenuItem onClick={this.handleOpenExportDiagramModal}
+                                      eventKey="5">{Locale.menuPanelExportDiagram}</MenuItem>
                         </DropdownButton>
                         <DropdownButton title={Locale.menuPanelView} bsSize="small" id={Locale.menuPanelSettings}>
                             <MenuItem onClick={this.props.centerView} eventKey="1">{Locale.menuPanelCenter}</MenuItem>
@@ -429,6 +528,8 @@ export class MenuPanel extends React.Component {
                         <DropdownButton title={Locale.menuPanelTools} bsSize="small" id={Locale.menuPanelTools}>
                             <MenuItem eventKey="1"
                                       onClick={this.handleEvaluate}>{Locale.menuPanelEvaluate}</MenuItem>
+                            <MenuItem eventKey="2"
+                                      onClick={this.handleOpenValidateModal}>{Locale.menuPanelValidate}</MenuItem>
                         </DropdownButton>
                         <DropdownButton title={Locale.menuPanelSettings} bsSize="small" id={Locale.menuPanelSettings}>
                             <MenuItem eventKey="1"
@@ -441,6 +542,8 @@ export class MenuPanel extends React.Component {
                                       onClick={this.handleOpenCardinalitiesModal}>{Locale.menuPanelCardinalities}</MenuItem>
                             <MenuItem eventKey="4"
                                       onClick={this.handleOpenAttributeTypesModal}>{Locale.menuPanelAttributeTypes}</MenuItem>
+                            <MenuItem onClick={this.handleOpenImportExportSettingsModal}
+                                      eventKey="5">{Locale.importExportSettings}</MenuItem>
                         </DropdownButton>
                         <Button onClick={this.handleOpenHelpModal} bsSize="small">
                             {Locale.menuPanelHelp}
@@ -489,6 +592,30 @@ export class MenuPanel extends React.Component {
                         </Modal.Body>
                         <Modal.Footer>
                             <Button bsStyle="primary" onClick={this.handleCloseSaveModal}>{Locale.confirm}</Button>
+                        </Modal.Footer>
+                    </Modal>
+
+                    <Modal show={this.state.modalExportDiagram} onHide={this.handleCloseExportDiagramModal}>
+                        <Modal.Header>
+                            <Modal.Title>
+                                {Locale.menuModalExportHeading}
+                            </Modal.Title>
+                        </Modal.Header>
+                        <Modal.Body>
+                            <p>{Locale.menuModalExportText}</p>
+                            <FormGroup controlId="formControlsTextarea">
+                                <FormControl
+                                    style={{height: 150, cursor: "auto", resize: "none"}}
+                                    bsSize="small"
+                                    componentClass="textarea"
+                                    value={this.props.exportData}
+                                    disabled={true}
+                                />
+                            </FormGroup>
+                        </Modal.Body>
+                        <Modal.Footer>
+                            <Button bsStyle="primary"
+                                    onClick={this.handleCloseExportDiagramModal}>{Locale.confirm}</Button>
                         </Modal.Footer>
                     </Modal>
 
@@ -599,6 +726,73 @@ export class MenuPanel extends React.Component {
                         </Modal.Body>
                         <Modal.Footer>
                             <Button onClick={this.handleCloseLanguagesModal} bsStyle="primary">{Locale.close}</Button>
+                        </Modal.Footer>
+                    </Modal>
+
+                    <Modal show={this.state.modalValidate} onHide={this.handleCloseValidateModal}>
+                        <Modal.Header>
+                            <Modal.Title>
+                                {Locale.validationTools}
+                            </Modal.Title>
+                        </Modal.Header>
+                        <Modal.Body>
+                            <Tabs id="validateTabs" animation={false}>
+                                <Tab eventKey={1} title={Locale.validateSettings}>
+                                    <p>{Locale.validateSettingsDescription}</p>
+                                    <FormGroup controlId="formControlsTextarea">
+                                        <FormControl
+                                            style={{height: 150, resize: "none"}}
+                                            bsSize="small"
+                                            componentClass="textarea"
+                                            placeholder={Locale.menuValidateInputPlaceholder}
+                                            value={this.state.validationInput}
+                                            onChange={this.handleChangeValidationInput}
+                                        />
+                                    </FormGroup>
+                                    <Button onClick={this.handleValidateSettings}
+                                            bsStyle="primary">{Locale.validate}</Button>
+                                    <br/>
+                                    <FormGroup controlId="formControlsTextarea">
+                                        <FormControl
+                                            style={{height: 150, resize: "none"}}
+                                            bsSize="small"
+                                            componentClass="textarea"
+                                            placeholder={Locale.menuValidateInputPlaceholder}
+                                            value={this.props.validationResults.length > 0 ? this.props.validationResults : Locale.noErrors}
+                                            disabled={true}
+                                        />
+                                    </FormGroup>
+                                </Tab>
+                                <Tab eventKey={2} title={Locale.validateModel}>
+                                    <p>{Locale.validateModelDescription}</p>
+                                    <FormGroup controlId="formControlsTextarea">
+                                        <FormControl
+                                            style={{height: 150, resize: "none"}}
+                                            bsSize="small"
+                                            componentClass="textarea"
+                                            placeholder={Locale.menuValidateInputPlaceholder}
+                                            value={this.state.validationInput}
+                                            onChange={this.handleChangeValidationInput}
+                                        />
+                                    </FormGroup>
+                                    <Button onClick={this.handleValidateModel}
+                                            bsStyle="primary">{Locale.validate}</Button>
+                                    <br/>
+                                    <FormGroup controlId="formControlsTextarea">
+                                        <FormControl
+                                            style={{height: 150, resize: "none"}}
+                                            bsSize="small"
+                                            componentClass="textarea"
+                                            placeholder={Locale.menuValidateInputPlaceholder}
+                                            value={this.props.validationResults.length > 0 ? this.props.validationResults : Locale.noErrors}
+                                            disabled={true}
+                                        />
+                                    </FormGroup>
+                                </Tab>
+                            </Tabs>
+                        </Modal.Body>
+                        <Modal.Footer>
+                            <Button onClick={this.handleCloseValidateModal} bsStyle="primary">{Locale.close}</Button>
                         </Modal.Footer>
                     </Modal>
 
@@ -753,6 +947,78 @@ export class MenuPanel extends React.Component {
                             <Button onClick={this.handleCloseAttributeTypesModal} bsStyle="primary">{Locale.close}</Button>
                         </Modal.Footer>
                     </Modal>
+
+                    <Modal show={this.state.modalImportExportSettings}
+                           onHide={this.handleCloseImportExportSettingsModal}>
+                        <Modal.Header>
+                            <Modal.Title>
+                                {Locale.importExportTools}
+                            </Modal.Title>
+                        </Modal.Header>
+                        <Modal.Body>
+                            <Tabs id="importExportTabs" animation={false}>
+                                <Tab eventKey={1} title={Locale.importSettings}>
+                                    <p>{Locale.importSettingsDescription}</p>
+                                    <p style={{color: "red"}}>{Locale.importSettingsWarning}</p>
+                                    <FormGroup controlId="formControlsTextarea">
+                                        <FormControl
+                                            style={{height: 150, resize: "none"}}
+                                            bsSize="small"
+                                            componentClass="textarea"
+                                            placeholder={Locale.menuValidateInputPlaceholder}
+                                            value={this.state.importSettingsInput}
+                                            onChange={this.handleChangeImportSettingsInput}
+                                        />
+                                    </FormGroup>
+                                    <Button onClick={this.handleImportSettings}
+                                            bsStyle="primary">{Locale.import}</Button>
+                                </Tab>
+                                <Tab eventKey={2} title={Locale.exportSettings}>
+                                    <p>{Locale.exportSettingsDescription}</p>
+                                    <FormGroup controlId="formControlsTextarea">
+                                        <FormControl
+                                            bsSize="small"
+                                            type="text"
+                                            value={this.state.exportName}
+                                            placeholder={Locale.detailPanelName}
+                                            onChange={this.handleChangeExportName}
+                                        />
+                                        <br/>
+                                        <FormControl
+                                            bsSize="small"
+                                            type="text"
+                                            value={this.state.exportPrefix}
+                                            placeholder={Locale.menuModalPrefix}
+                                            onChange={this.handleChangeExportPrefix}
+                                        />
+                                        <br/>
+                                        <FormControl
+                                            bsSize="small"
+                                            type="text"
+                                            value={this.state.exportURI}
+                                            placeholder={Locale.menuModalURI}
+                                            onChange={this.handleChangeExportURI}
+                                        />
+                                        <br/>
+                                        <Button bsStyle="primary"
+                                                onClick={this.handleExportSettings}>{Locale.export}</Button>
+                                        <FormControl
+                                            style={{height: 150, resize: "none"}}
+                                            bsSize="small"
+                                            componentClass="textarea"
+                                            value={this.state.exportSettingsData}
+                                            disabled={true}
+                                        />
+                                    </FormGroup>
+                                </Tab>
+                            </Tabs>
+                        </Modal.Body>
+                        <Modal.Footer>
+                            <Button onClick={this.handleCloseImportExportSettingsModal}
+                                    bsStyle="primary">{Locale.close}</Button>
+                        </Modal.Footer>
+                    </Modal>
+
                 </div>
             );
         }

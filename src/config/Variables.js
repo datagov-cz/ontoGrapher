@@ -1,3 +1,5 @@
+import {Locale} from "./Locale";
+
 export var StereotypePool = {
     "http://onto.fel.cvut.cz/ontologies/ufo/anti-rigid-mixin": "Anti Rigid Mixin",
     "http://onto.fel.cvut.cz/ontologies/ufo/anti-rigid-sortal": "Anti Rigid Sortal",
@@ -19,7 +21,7 @@ export var AttributeTypePool = [
 ];
 
 export var CardinalityPool = [
-    "None",
+    Locale.none,
     "*",
     "0",
     "0..*",
@@ -28,3 +30,5 @@ export var CardinalityPool = [
     "1..",
     "1..*"
 ];
+
+export var GeneralizationPool = {};

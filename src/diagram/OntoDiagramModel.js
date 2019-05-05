@@ -1,7 +1,4 @@
-import {
-    DiagramEngine,
-    DiagramModel, LinkModel, NodeModel
-} from "storm-react-diagrams";
+import {DiagramEngine, DiagramModel, LinkModel, NodeModel} from "storm-react-diagrams";
 import {DiagramCanvas} from "./DiagramCanvas";
 import {Locale} from "../config/Locale";
 import * as _ from "lodash";
@@ -15,6 +12,7 @@ export class OntoDiagramModel extends DiagramModel {
     secondCardinality: string;
     canvas: DiagramCanvas;
     name: string;
+    generalizations: [];
 
     //models
     links: { [s: string]: LinkModel };
@@ -34,6 +32,7 @@ export class OntoDiagramModel extends DiagramModel {
         this.nodes = {};
         this.name = Locale.untitledDiagram;
         this.notes = "";
+        this.generalizations = [];
 
         this.offsetX = 0;
         this.offsetY = 0;
@@ -56,7 +55,6 @@ export class OntoDiagramModel extends DiagramModel {
         this.canvas.nullPanel();
     }
 
-    // TODO: update serialization data
     serializeDiagram() {
         return _.merge(this.serialize(), {
             offsetX: this.offsetX,
@@ -69,6 +67,7 @@ export class OntoDiagramModel extends DiagramModel {
             secondCardinality: this.secondCardinality,
             name: this.name,
             notes: this.notes,
+            generalizations: this.generalizations,
             links: _.map(this.links, link => {
                 return link.serialize();
             }),
@@ -94,12 +93,16 @@ export class OntoDiagramModel extends DiagramModel {
         this.secondCardinality = object.secondCardinality;
         this.name = object.name;
         this.notes = object.notes;
+        this.generalizations = object.generalizations;
         // deserialize nodes
         _.forEach(object.nodes, (node: any) => {
             let nodeOb = diagramEngine.getNodeFactory(node.type).getNewInstance(node);
             nodeOb.setParent(this);
             nodeOb.model = this;
             nodeOb.deSerialize(node, diagramEngine);
+            for (let key in nodeOb.getPorts()) {
+                nodeOb.getPorts()[key].model = this;
+            }
             this.addNode(nodeOb);
         });
 

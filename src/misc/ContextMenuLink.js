@@ -41,8 +41,10 @@ export class ContextMenuLink extends React.Component {
         label.setLabel(cardinality);
         if (this.state.subMenuFirstCard) {
             this.props.contextMenuLink.labels[0] = label;
+            this.props.contextMenuLink.sourceCardinality = label;
         } else if (this.state.subMenuSecondCard) {
             this.props.contextMenuLink.labels[2] = label;
+            this.props.contextMenuLink.targetCardinality = label;
         }
     }
 

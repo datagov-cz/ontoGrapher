@@ -1,16 +1,17 @@
+//Generalization is needed for exporting.
 
-// LinkEnd, Labeled, Dashed
+// LinkEnd, Labeled, Dashed, OCL Constraints
 export var LinkPool = {
-    "Characterization": ["Empty",true,false],
-    "Component": ["FilledEmptyDiamond",false,false],
-    "Derivation": ["Empty",false,true],
-    "Formal": ["Empty",true,false],
-    "Generalization": ["UnfilledArrow",true,false],
-    "Material": ["Empty",true,false],
-    "Mediation": ["Empty",true,false],
-    "Member": ["FilledMDiamond",true,false],
-    "SubCollection": ["FilledCDiamond",true,false],
-    "SubQuantity": ["FilledQDiamond",true,false]
+    "Characterization": ["Empty", true, false, []],
+    "Component": ["FilledEmptyDiamond", false, false, []],
+    "Derivation": ["Empty", false, true, []],
+    "Formal": ["Empty", true, false, []],
+    "Generalization": ["UnfilledArrow", false, false, []],
+    "Material": ["Empty", true, false, []],
+    "Mediation": ["Empty", true, false, []],
+    "Member": ["FilledMDiamond", true, false, []],
+    "SubCollection": ["FilledCDiamond", true, false, []],
+    "SubQuantity": ["FilledQDiamond", true, false, []]
 };
 
 // xy1: top,

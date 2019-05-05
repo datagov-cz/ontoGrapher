@@ -1,5 +1,5 @@
 import * as _ from "lodash";
-import {LinkModel, DiagramEngine, PortModel} from "storm-react-diagrams";
+import {DiagramEngine, LinkModel, PortModel} from "storm-react-diagrams";
 import {OntoDiagramModel} from "../../diagram/OntoDiagramModel";
 import {LinkCommonModel} from "../common-link/LinkCommonModel";
 
@@ -16,15 +16,13 @@ export class NodeCommonPortModel extends PortModel {
 
     serialize() {
         return _.merge(super.serialize(), {
-            position: this.position,
-            model: this.model
+            position: this.position
         });
     }
 
     deSerialize(data: any, engine: DiagramEngine) {
         super.deSerialize(data, engine);
-        this.position = data.position;
-        this.model = data.model;
+        this.position = data.position
     }
 
     createLinkModel(): LinkModel {

@@ -3,12 +3,10 @@ import {NodeCommonModel} from "../components/common-node/NodeCommonModel";
 import {Locale} from "../config/Locale";
 import {LinkCommonModel} from "../components/common-link/LinkCommonModel";
 import {AttributeObject} from "../components/misc/AttributeObject";
-import {FormGroup} from "react-bootstrap";
-import {FormControl} from "react-bootstrap";
-import {Button} from "react-bootstrap";
-import {Form} from "react-bootstrap";
-import {AttributeTypePool, CardinalityPool} from "../config/Variables";
+import {Button, Form, FormControl, FormGroup} from "react-bootstrap";
+import {AttributeTypePool, CardinalityPool, GeneralizationPool} from "../config/Variables";
 import {LinkEndPool, LinkPool} from "../config/LinkVariables";
+import Table from "react-bootstrap/es/Table";
 
 export class DetailPanel extends React.Component {
     constructor(props) {
@@ -24,7 +22,10 @@ export class DetailPanel extends React.Component {
             attrs: "",
             stereotype: "",
             nodeStart: "",
-            nodeEnd: ""
+            nodeEnd: "",
+            generalizationName: "",
+            generalization: "",
+            isGeneralizationMenuAvailable: false
         };
 
         this.handleChangeLanguage = this.handleChangeLanguage.bind(this);
@@ -43,6 +44,44 @@ export class DetailPanel extends React.Component {
         this.saveLabel = this.saveLabel.bind(this);
         this.saveNotes = this.saveNotes.bind(this);
         this.handleChangeNotes = this.handleChangeNotes.bind(this);
+        this.handleChangeGeneralization = this.handleChangeGeneralization.bind(this);
+        this.addGeneralization = this.addGeneralization.bind(this);
+        this.deleteGeneralization = this.deleteGeneralization.bind(this);
+        this.handleChangeGeneralizationName = this.handleChangeGeneralizationName.bind(this);
+    }
+
+    deleteGeneralization(event) {
+        if (this.state.generalization !== "") {
+            delete GeneralizationPool[this.state.generalization];
+        }
+    }
+
+    addGeneralization(event) {
+        if (this.state.generalizationName !== "") {
+            GeneralizationPool[this.state.generalizationName] = [];
+            this.setState({generalizationName: ""})
+        }
+    }
+
+    handleChangeGeneralizationName(event) {
+        this.setState({generalizationName: event.target.value});
+    }
+
+    handleChangeGeneralization(event) {
+        for (let key in GeneralizationPool) {
+            if (GeneralizationPool[key].includes(this.props.panelObject)) {
+                GeneralizationPool[key].splice(GeneralizationPool[key].indexOf(this.props.panelObject), 1);
+                break;
+            }
+        }
+        if (event.target.value !== "") {
+            if (!(event.target.value in GeneralizationPool)) {
+                GeneralizationPool[event.target.value] = [];
+            }
+            GeneralizationPool[event.target.value].push(this.props.panelObject);
+
+        }
+        this.setState({generalization: event.target.value});
     }
 
     handleChangeNotes(event){
@@ -58,12 +97,34 @@ export class DetailPanel extends React.Component {
     prepareObject(object) {
         let copy = object;
         if (copy instanceof NodeCommonModel) {
+            let isGeneralizationMenuAvailable = false;
+            for (let port in copy.getPorts()) {
+                for (let link in copy.getPorts()[port].getLinks()) {
+                    let iterLink = copy.getPorts()[port].getLinks()[link];
+                    if (iterLink.linkType === "Generalization" && iterLink.getSourcePort() === copy.getPorts()[port]) {
+                        isGeneralizationMenuAvailable = true;
+                        break;
+                    }
+                }
+            }
+            let generalizationKey = "";
+            if (isGeneralizationMenuAvailable) {
+                for (let key in GeneralizationPool) {
+                    if (GeneralizationPool[key].includes(copy)) {
+                        generalizationKey = key;
+                        break;
+                    }
+                }
+            }
+
             this.setState({
                 type: NodeCommonModel,
                 names: copy.names,
                 attrs: copy.attributes,
                 notes: copy.notes,
-                stereotype: copy.stereotype
+                stereotype: copy.stereotype,
+                generalization: generalizationKey,
+                isGeneralizationMenuAvailable: isGeneralizationMenuAvailable
             });
         } else if (copy instanceof LinkCommonModel) {
             this.setState({
@@ -210,6 +271,7 @@ export class DetailPanel extends React.Component {
 
         if (this.state.type === NodeCommonModel) {
             let attributeKey = 0;
+
             const attributeList = this.state.attrs[this.props.language].map((attr) =>
                 <option key={attributeKey} value={attributeKey++}>{attr.first + ": " + attr.second}</option>
             );
@@ -232,6 +294,69 @@ export class DetailPanel extends React.Component {
                     </FormControl>
                 );
             }
+
+            let generalizationHeader = (<h4>{Locale.generalizations}</h4>);
+            let generalizationForm = (<Form inline>
+                <Button onClick={this.deleteGeneralization}
+                        bsStyle="danger">{Locale.del}</Button>
+                <FormControl
+                    bsSize="small"
+                    type="text"
+                    value={this.state.generalizationName}
+                    placeholder={Locale.generalizationNamePlaceholder}
+                    onChange={this.handleChangeGeneralizationName}
+                />
+                <Button onClick={this.addGeneralization} bsStyle="primary">{Locale.add}</Button>
+            </Form>);
+            let generalizationKey = 1;
+
+            let generalizationList = [];
+
+            let generalizationSelector = (<h6>{Locale.noGeneralizations}</h6>);
+            if (Object.keys(GeneralizationPool).length > 0) {
+                generalizationList.push(<option key={0} value={""}>-----</option>);
+
+                generalizationList.push(Object.keys(GeneralizationPool).map((generalization) =>
+                    (<option key={generalizationKey++} value={generalization}>{generalization}</option>)
+                ));
+                generalizationSelector = (
+                    <FormControl
+                        componentClass="select"
+                        bsSize="small"
+                        value={this.state.generalization}
+                        onChange={this.handleChangeGeneralization}
+                        onFocus={this.focus}
+                        size={1}
+                    >
+                        {generalizationList}
+                    </FormControl>
+                );
+            }
+            let generalizationLinks = "";
+            if (this.state.generalization !== "") {
+                generalizationLinks = (
+                    <div style={{height: "100"}}>
+                        <Table striped bordered hover condensed>
+                            <thead>
+                            <tr>
+                                <th>{Locale.name}</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+
+                            {GeneralizationPool[this.state.generalization].map((field, i) =>
+                                <tr key={i}>
+                                    <td>
+                                        {field.names[this.props.language]}
+                                    </td>
+                                </tr>
+                            )}
+                            </tbody>
+                        </Table>
+                    </div>
+                );
+            }
+
             let widget = (
                 <svg
                     width={150}
@@ -297,6 +422,22 @@ export class DetailPanel extends React.Component {
                     </Form>
                     <Button bsSize="small" onClick={this.addAttribute}>{Locale.detailPanelNewAttr}</Button>
                     <Button bsSize="small" onClick={this.deleteAttribute}>{Locale.detailPanelDeleteAttr}</Button>
+
+                    {
+                        this.state.isGeneralizationMenuAvailable ? generalizationHeader : ""
+                    }
+                    {
+                        this.state.isGeneralizationMenuAvailable ? generalizationSelector : ""
+                    }
+
+                    <br/>
+                    {
+                        this.state.isGeneralizationMenuAvailable ? generalizationForm : ""
+                    }
+                    {
+                        this.state.isGeneralizationMenuAvailable ? generalizationLinks : ""
+                    }
+
                     <FormGroup>
                         <h4>{Locale.notes}</h4>
                         <FormControl
@@ -315,7 +456,6 @@ export class DetailPanel extends React.Component {
             let attributeKey = 0;
             let attributeLength = 0;
             let height = 0;
-
             let node1Widget = "";
             if (this.state.nodeStart !== ""){
                 attributeLength = this.state.nodeStart.attributes[this.props.language].length;
@@ -405,6 +545,8 @@ export class DetailPanel extends React.Component {
                     </g>
                 </svg>
             );
+
+
             return (
                 <div className="detailPanel" id="detailPanel">
                     <h2>{Locale.detailPanelTitle}</h2>
@@ -424,6 +566,7 @@ export class DetailPanel extends React.Component {
                             <Button bsSize="small" onClick={this.processDialogue}>{Locale.menuPanelSave}</Button>
                         </FormGroup>
                     </Form>
+
                     <FormGroup>
                         <h4>{Locale.notes}</h4>
                         <FormControl

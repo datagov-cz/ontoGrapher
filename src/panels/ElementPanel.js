@@ -1,11 +1,10 @@
 import React from 'react';
 import {PanelNodeItem} from "./PanelNodeItem";
 import {Defaults} from "../config/Defaults";
-import {Tabs} from "react-bootstrap";
-import {Tab} from "react-bootstrap";
+import {Tab, Tabs} from "react-bootstrap";
 import {PanelLinkItem} from "./PanelLinkItem";
 import {StereotypePool} from "../config/Variables";
-import * as RDF from "../misc/RDF";
+import * as RDF from "../misc/SemanticWebInterface";
 import {LinkPool} from "../config/LinkVariables";
 
 

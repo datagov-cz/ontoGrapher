@@ -1,8 +1,5 @@
 import React from 'react';
-import {
-    DiagramWidget,
-    DiagramEngine
-} from 'storm-react-diagrams';
+import {DiagramEngine} from 'storm-react-diagrams';
 import {OntoDiagramModel} from "./OntoDiagramModel.js";
 import {NodeCommonModel} from "../components/common-node/NodeCommonModel";
 import {NodeCommonFactory} from "../components/common-node/NodeCommonFactory";
@@ -11,6 +8,7 @@ import {LinkCommonFactory} from "../components/common-link/LinkCommonFactory";
 import {LinkCommonModel} from "../components/common-link/LinkCommonModel";
 import {CommonLabelFactory} from "../components/misc/CommonLabelFactory";
 import {OntoDiagramWidget} from "./OntoDiagramWidget";
+import * as SemanticWebInterface from "../misc/SemanticWebInterface";
 
 
 export class DiagramCanvas extends React.Component {
@@ -29,6 +27,11 @@ export class DiagramCanvas extends React.Component {
         this.engine = new DiagramEngine();
         this.engine.setDiagramModel(new OntoDiagramModel(this.props, this));
         this.registerFactories();
+        setTimeout(function () {
+            let source = SemanticWebInterface.exportSettings("Asd", "asd", "asd");
+            SemanticWebInterface.importSettings(source);
+        }, 1000);
+
     }
 
     updatePanel() {
@@ -122,7 +125,7 @@ export class DiagramCanvas extends React.Component {
                         this.forceUpdate();
                     } catch(err) {
                         // TODO: Log service
-                    };
+                    }
                 }}
                 onDragOver={event => {
                     event.preventDefault();

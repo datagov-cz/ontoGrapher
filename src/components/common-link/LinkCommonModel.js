@@ -1,8 +1,5 @@
 import React from 'react';
-import {
-    DefaultLabelModel,
-    DefaultLinkModel, DiagramEngine
-} from 'storm-react-diagrams';
+import {DefaultLabelModel, DefaultLinkModel, DiagramEngine} from 'storm-react-diagrams';
 import {OntoDiagramModel} from "../../diagram/OntoDiagramModel";
 import {Locale} from "../../config/Locale";
 import * as _ from "lodash";
@@ -18,6 +15,10 @@ export class LinkCommonModel extends DefaultLinkModel {
     model: OntoDiagramModel;
     descriptor: boolean;
     dashed: boolean;
+    sourceCardinality: string;
+    targetCardinality: string;
+    linkEnd: string;
+    labeled: boolean;
 
     constructor(model: OntoDiagramModel) {
         super();
@@ -31,6 +32,10 @@ export class LinkCommonModel extends DefaultLinkModel {
         this.notes = {};
         this.constraints = [];
         this.color = "black";
+        this.sourceCardinality = model.firstCardinality;
+        this.targetCardinality = model.secondCardinality;
+        this.linkEnd = LinkPool[this.linkType][0];
+        this.labeled = LinkPool[this.linkType][1];
         for (let language in LanguagePool) {
             if (this.names[language] === undefined) {
                 this.names[language] = "";
@@ -46,6 +51,7 @@ export class LinkCommonModel extends DefaultLinkModel {
                 this.addDescriptorLabel();
             }
             this.dashed = LinkPool[this.linkType][2];
+            this.constraints = LinkPool[this.linkType][3];
         }
         this.addListener({
             selectionChanged: event => {
@@ -55,7 +61,6 @@ export class LinkCommonModel extends DefaultLinkModel {
                 this.model.nullPanel();
             }
         });
-        this.addConstraint(new Constraint("self.width = 2",this.linkType));
     }
 
     addDescriptorLabel() {
@@ -82,7 +87,9 @@ export class LinkCommonModel extends DefaultLinkModel {
             color: this.color,
             curvyness: this.curvyness,
             linkType: this.linkType,
-            name: this.name
+            name: this.name,
+            sourceCardinality: this.sourceCardinality,
+            targetCardinality: this.targetCardinality
         });
     }
 
@@ -93,6 +100,8 @@ export class LinkCommonModel extends DefaultLinkModel {
         this.curvyness = ob.curvyness;
         this.linkType = ob.linkType;
         this.name = ob.name;
+        this.sourceCardinality = ob.sourceCardinality;
+        this.targetCardinality = ob.targetCardinality;
     }
 
     setLabel(str: string) {

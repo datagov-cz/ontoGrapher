@@ -13,6 +13,7 @@ import PropTypes from "prop-types";
 import {NodeCommonModel} from "../components/common-node/NodeCommonModel";
 import {BottomPanel} from "../panels/BottomPanel";
 import * as OclEngine from "../misc/ocl.min";
+import * as SemanticWebInterface from "../misc/SemanticWebInterface";
 
 
 export class DiagramApp extends React.Component {
@@ -34,13 +35,16 @@ export class DiagramApp extends React.Component {
             saveData: "",
             success: true,
             bottomPanelActive: false,
-            bottomPanelData: null
+            bottomPanelData: null,
+            validationResults: [],
+            exportData: ""
         };
 
         if (!this.props.disableSCSS) {
             require("../sass/main.scss");
             require("babel-core/register");
             require("babel-polyfill");
+            require("../misc/sax.js");
         }
 
 
@@ -65,6 +69,22 @@ export class DiagramApp extends React.Component {
         this.evaluate = this.evaluate.bind(this);
         this.handleCloseBottomPanel = this.handleCloseBottomPanel.bind(this);
         this.handleLocate = this.handleLocate.bind(this);
+        this.validateModel = this.validateModel.bind(this);
+        this.validateSettings = this.validateSettings.bind(this);
+    }
+
+    validateModel(source: string) {
+        let errors = SemanticWebInterface.validateSettingsWithModel(this.diagramCanvas.engine.getDiagramModel(), source);
+        this.setState({
+            validationResults: errors
+        });
+    }
+
+    validateSettings(source: string) {
+        let errors = SemanticWebInterface.validateSettingsWithCurrentSettings(source);
+        this.setState({
+            validationResults: errors
+        });
     }
 
     handleLocate(element){
@@ -77,6 +97,10 @@ export class DiagramApp extends React.Component {
     }
 
     handleCloseBottomPanel(){
+        let links = this.diagramCanvas.engine.getDiagramModel().getLinks();
+        for (let link in links) {
+            links[link].setColor("black");
+        }
         this.setState({bottomPanelActive: false});
     }
 
@@ -229,7 +253,11 @@ export class DiagramApp extends React.Component {
     }
 
     export() {
-        this.diagramCanvas.export();
+        let owl = SemanticWebInterface.exportDiagram(this.diagramCanvas.engine.getDiagramModel());
+        debugger;
+        let serializer = new XMLSerializer();
+        let owlSerialized = serializer.serializeToString(owl);
+        this.setState({exportData: owlSerialized});
     }
 
     hideContextMenu() {
@@ -331,6 +359,11 @@ export class DiagramApp extends React.Component {
                         restoreZoom={this.handleZoom}
                         success={this.state.success}
                         handleEvaluate={this.evaluate}
+                        validateSettings={this.validateSettings}
+                        validateModel={this.validateModel}
+                        validationResults={this.state.validationResults}
+                        exportData={this.state.exportData}
+                        handleExport={this.export}
                     />
                     <ElementPanel
                         handleChangeSelectedLink={this.handleChangeSelectedLink}

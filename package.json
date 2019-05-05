@@ -31,6 +31,8 @@
   },
   "dependencies": {
     "@rdfjs/serializer-ntriples": "^1.0.1",
+    "ecore": "^0.12.0",
+    "jsonld": "^1.6.0",
     "lodash": "^4.17.11",
     "npm": "^6.9.0",
     "prop-types": "^15.7.2",
@@ -40,6 +42,7 @@
     "react-bootstrap": "^0.32.4",
     "react-dom": "^16.8.6",
     "react-test-renderer": "^16.8.6",
+    "sax": "^1.2.4",
     "storm-react-diagrams": "^5.2.1",
     "transform": "^1.1.2"
   }
