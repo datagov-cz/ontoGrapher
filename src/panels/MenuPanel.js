@@ -39,6 +39,7 @@ export class MenuPanel extends React.Component {
             modalImportExportSettings: false,
             modalExportDiagram: false,
             modalValidate: false,
+            modalConstraints: false,
             name: this.props.name,
             language: this.props.language,
             languageName: "",
@@ -59,7 +60,10 @@ export class MenuPanel extends React.Component {
             exportURI: "",
             exportName: "",
             exportPrefix: "",
-            importSettingsInput: ""
+            importSettingsInput: "",
+            constraintLink: Object.keys(LinkPool)[0],
+            constraint: undefined,
+            newConstraint: ""
         };
 
         this.languagePool = [];
@@ -129,6 +133,41 @@ export class MenuPanel extends React.Component {
         this.handleExportSettings = this.handleExportSettings.bind(this);
         this.handleChangeImportSettingsInput = this.handleChangeImportSettingsInput.bind(this);
         this.handleImportSettings = this.handleImportSettings.bind(this);
+        this.handleCloseConstraintsModal = this.handleCloseConstraintsModal.bind(this);
+        this.handleOpenConstraintsModal = this.handleOpenConstraintsModal.bind(this);
+        this.handleChangeConstraintLink = this.handleChangeConstraintLink.bind(this);
+        this.handleChangeConstraint = this.handleChangeConstraint.bind(this);
+        this.deleteConstraint = this.deleteConstraint.bind(this);
+        this.handleChangeNewConstraint = this.handleChangeNewConstraint.bind(this);
+        this.addConstraint = this.addConstraint.bind(this);
+    }
+    addConstraint(){
+        LinkPool[this.state.constraintLink][3].push(this.state.newConstraint);
+        this.setState({newConstraint: ""});
+    }
+
+    deleteConstraint(){
+        LinkPool[this.state.constraintLink][3].splice(this.state.constraint,1);
+    }
+
+    handleChangeNewConstraint(event){
+        this.setState({newConstraint: event.target.value});
+    }
+
+    handleChangeConstraint(event){
+        this.setState({constraint: event.target.value});
+    }
+
+    handleChangeConstraintLink(event){
+        this.setState({constraintLink: event.target.value});
+    }
+
+    handleCloseConstraintsModal(){
+        this.setState({modalConstraints: false});
+    }
+
+    handleOpenConstraintsModal(){
+        this.setState({modalConstraints: true});
     }
 
     handleImportSettings() {
@@ -429,6 +468,11 @@ export class MenuPanel extends React.Component {
                 attributeType: AttributeTypePool[0]
             });
         }
+        if (LinkPool[this.state.constraintLink][3].length === 1){
+            this.setState({
+                constraint: LinkPool[this.state.constraintLink][3][0]
+            });
+        }
     }
 
     render() {
@@ -480,6 +524,20 @@ export class MenuPanel extends React.Component {
         });
         let languagePoolLength = languagePool.length;
         let stereotypePoolLength = stereotypePool.length;
+        let constraintLinkList = Object.keys(LinkPool).map((link, i) => {
+                return(
+                    <option key={i} value={link}>{link}</option>
+                )
+            });
+        let constraintList = "";
+        if (this.state.constraintLink !== undefined){
+            constraintList = LinkPool[this.state.constraintLink][3].map((constraint, i) => {
+                return(
+                    <option key={i} value={i}>{constraint}</option>
+                )});
+        }
+
+        let constraintListLength = constraintList.length;
         if (this.props.readOnly) {
             return (
                 <div className="menuPanel">
@@ -544,6 +602,8 @@ export class MenuPanel extends React.Component {
                                       onClick={this.handleOpenAttributeTypesModal}>{Locale.menuPanelAttributeTypes}</MenuItem>
                             <MenuItem onClick={this.handleOpenImportExportSettingsModal}
                                       eventKey="5">{Locale.importExportSettings}</MenuItem>
+                            <MenuItem onClick={this.handleOpenConstraintsModal}
+                                      eventKey="5">{Locale.constraintSettings}</MenuItem>
                         </DropdownButton>
                         <Button onClick={this.handleOpenHelpModal} bsSize="small">
                             {Locale.menuPanelHelp}
@@ -847,6 +907,53 @@ export class MenuPanel extends React.Component {
                         </Modal.Body>
                         <Modal.Footer>
                             <Button onClick={this.handleCloseNodesModal} bsStyle="primary">{Locale.close}</Button>
+                        </Modal.Footer>
+                    </Modal>
+
+                    <Modal show={this.state.modalConstraints} onHide={this.handleCloseConstraintsModal}>
+                        <Modal.Header>
+                            <Modal.Title>
+                                {Locale.constraintsSettingsHeader}
+                            </Modal.Title>
+                        </Modal.Header>
+                        <Modal.Body>
+                            <p>{Locale.constraintHelp}</p>
+                            <FormControl
+                                componentClass="select"
+                                bsSize="small"
+                                value={this.state.constraintLink}
+                                onChange={this.handleChangeConstraintLink}
+                            >
+                                {constraintLinkList}
+                            </FormControl>
+                            <FormGroup>
+                                <FormControl
+                                    componentClass="select"
+                                    bsSize="small"
+                                    value={this.state.constraint}
+                                    onChange={this.handleChangeConstraint}
+                                    onFocus={this.focus}
+                                    size={constraintListLength}
+                                    style={{height: 300}}
+                                >
+                                    {constraintList}
+                                </FormControl>
+                                <Button onClick={this.deleteConstraint}
+                                        bsStyle="danger">{Locale.del + " " + this.state.constraint}</Button>
+                            </FormGroup>
+                            <Form inline>
+
+                                <FormControl
+                                    type="text"
+                                    value={this.state.newConstraint}
+                                    placeholder={Locale.constraintPlaceholder}
+                                    onChange={this.handleChangeNewConstraint}
+                                />
+                                <Button onClick={this.addConstraint} bsStyle="primary">{Locale.add}</Button>
+                            </Form>
+                        </Modal.Body>
+                        <Modal.Footer>
+                            <Button onClick={this.handleCloseConstraintsModal} bsStyle="primary">{Locale.close}</Button>
                         </Modal.Footer>
                     </Modal>
 

@@ -164,12 +164,16 @@ export class DiagramApp extends React.Component {
     }
 
     componentDidMount() {
+        if (typeof this.props.loadSettings === "string") {
+            SemanticWebInterface.importSettings(this.props.loadSettings);
+        }
         if (typeof this.props.loadDiagram === "string") {
             this.deserialize(this.props.loadDiagram);
         }
         if (this.props.readOnly) {
             this.diagramCanvas.engine.getDiagramModel().setLocked(true);
         }
+
     }
 
 
@@ -414,5 +418,6 @@ export class DiagramApp extends React.Component {
 
 DiagramApp.propTypes = {
     loadDiagram: PropTypes.string,
-    readOnly: PropTypes.bool
+    readOnly: PropTypes.bool,
+    loadSettings: propTypes.string
 };

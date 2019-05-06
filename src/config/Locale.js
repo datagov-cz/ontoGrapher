@@ -126,5 +126,9 @@ export var Locale = {
     export: "Export settings",
     menuModalPrefix: "Prefix",
     menuModalURI: "URI",
-    generalization: "Generalization"
+    generalization: "Generalization",
+    constraintSettings: "Constraints...",
+    constraintsSettingsHeader: "Constraints",
+    constraintPlaceholder: "Constraint",
+    constraintHelp: "For more information on how to construct constraints, consult the Help section."
 };
