@@ -125,5 +125,6 @@ export var Locale = {
     import: "Import settings",
     export: "Export settings",
     menuModalPrefix: "Prefix",
-    menuModalURI: "URI"
+    menuModalURI: "URI",
+    generalization: "Generalization"
 };

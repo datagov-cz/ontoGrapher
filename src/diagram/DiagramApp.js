@@ -254,7 +254,6 @@ export class DiagramApp extends React.Component {
 
     export() {
         let owl = SemanticWebInterface.exportDiagram(this.diagramCanvas.engine.getDiagramModel());
-        debugger;
         let serializer = new XMLSerializer();
         let owlSerialized = serializer.serializeToString(owl);
         this.setState({exportData: owlSerialized});

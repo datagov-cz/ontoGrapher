@@ -101,7 +101,7 @@ export class DetailPanel extends React.Component {
             for (let port in copy.getPorts()) {
                 for (let link in copy.getPorts()[port].getLinks()) {
                     let iterLink = copy.getPorts()[port].getLinks()[link];
-                    if (iterLink.linkType === "Generalization" && iterLink.getSourcePort() === copy.getPorts()[port]) {
+                    if (iterLink.linkType === Locale.generalization && iterLink.getSourcePort() === copy.getPorts()[port]) {
                         isGeneralizationMenuAvailable = true;
                         break;
                     }

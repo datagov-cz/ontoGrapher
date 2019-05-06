@@ -27,11 +27,6 @@ export class DiagramCanvas extends React.Component {
         this.engine = new DiagramEngine();
         this.engine.setDiagramModel(new OntoDiagramModel(this.props, this));
         this.registerFactories();
-        setTimeout(function () {
-            let source = SemanticWebInterface.exportSettings("Asd", "asd", "asd");
-            SemanticWebInterface.importSettings(source);
-        }, 1000);
-
     }
 
     updatePanel() {

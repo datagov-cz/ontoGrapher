@@ -34,8 +34,6 @@ export class LinkCommonModel extends DefaultLinkModel {
         this.color = "black";
         this.sourceCardinality = model.firstCardinality;
         this.targetCardinality = model.secondCardinality;
-        this.linkEnd = LinkPool[this.linkType][0];
-        this.labeled = LinkPool[this.linkType][1];
         for (let language in LanguagePool) {
             if (this.names[language] === undefined) {
                 this.names[language] = "";
@@ -50,6 +48,8 @@ export class LinkCommonModel extends DefaultLinkModel {
             if (LinkPool[this.linkType][1]){
                 this.addDescriptorLabel();
             }
+            this.linkEnd = LinkPool[this.linkType][0];
+            this.labeled = LinkPool[this.linkType][1];
             this.dashed = LinkPool[this.linkType][2];
             this.constraints = LinkPool[this.linkType][3];
         }

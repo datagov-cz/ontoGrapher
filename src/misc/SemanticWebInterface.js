@@ -458,21 +458,6 @@ export function importSettings(source: string) {
 }
 
 export function exportDiagram(model: OntoDiagramModel) {
-    // const rdf = require('rdf-ext');
-    // const SerializerNtriples = require('@rdfjs/serializer-ntriples');
-    //
-    // let dataset = rdf.dataset();
-    // let diagram = this.engine.getDiagramModel().serializeDiagram();
-    // for (let node of diagram.nodes) {
-    //     dataset.add(rdf.quad(rdf.namedNode(node.rdf), rdf.namedNode("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"), rdf.namedNode("http://www.w3.org/2002/07/owl#Class")));
-    //     dataset.add(rdf.quad(rdf.namedNode(node.rdf), rdf.namedNode("http://www.w3.org/2000/01/rdf-schema#label"), rdf.literal(node.stereotype)));
-    // }
-    // const serializerNtriples = new SerializerNtriples();
-    // const input = dataset.toStream();
-    // const output = serializerNtriples.import(input);
-    // output.on('data', ntriples => {
-    //     callback(ntriples.toString());
-    // });
 
     let modelNodes = model.getNodes();
     let modelLinks = model.getLinks();
@@ -557,7 +542,7 @@ export function exportDiagram(model: OntoDiagramModel) {
             let interNode = GeneralizationPool[generalization][0];
             for (let port in interNode.ports) {
                 for (let link in interNode.ports[port].links) {
-                    if (link.linkType === "Generalization") {
+                    if (link.linkType === Locale.generalization) {
                         if (link.getSourcePort() in Object.values(interNode.ports)) {
                             superClass.setAttribute("IRI", "#" + interNode.ports[port].links[link].getTargetPort().getParent().id);
                             break;
@@ -570,49 +555,129 @@ export function exportDiagram(model: OntoDiagramModel) {
         }
     }
 
+        // else if (modelLinks[link].sourceCardinality !== Locale.none) {
+        // let objectExactCardinality = doc.createElement("ObjectExactCardinality");
+        // objectExactCardinality.setAttribute("cardinality", modelLinks[link].sourceCardinality);
+        // let objectProperty = doc.createElement("ObjectProperty");
+        // objectProperty.setAttribute("IRI", "#" + modelLinks[link].getTargetPort().getParent().id);
+        // objectExactCardinality.appendChild(objectProperty);
+        // objectExactCardinality.appendChild(classTarget);
+        // subClassOf.appendChild(classSource);
+        // subClassOf.appendChild(objectExactCardinality);
+        //
+        // let subClassOf2 = doc.createElement("SubClassOf");
+        // let classSource2 = doc.createElement("Class");
+        // let classTarget2 = doc.createElement("Class");
+        // classSource2.setAttribute("IRI", "#" + modelLinks[link].getSourcePort().getParent().id);
+        // classTarget2.setAttribute("IRI", "#" + modelLinks[link].getTargetPort().getParent().id);
+        //
+        // let objectExactCardinality2 = doc.createElement("ObjectExactCardinality");
+        // objectExactCardinality2.setAttribute("cardinality", modelLinks[link].sourceCardinality);
+        // let objectProperty2 = doc.createElement("ObjectProperty");
+        // objectProperty2.setAttribute("IRI", "#" + modelLinks[link].getSourcePort().getParent().id);
+        // objectExactCardinality2.appendChild(objectProperty2);
+        // objectExactCardinality2.appendChild(classSource2);
+        // subClassOf2.appendChild(classTarget2);
+        // subClassOf2.appendChild(objectExactCardinality2);
+        // ontology.appendChild(subClassOf2);
+        //}
+
     //subclasses
     for (let link in modelLinks) {
-        let subClassOf = doc.createElement("SubClassOf");
+        let subClassOf1 = doc.createElement("SubClassOf");
+        let subClassOf2 = doc.createElement("SubClassOf");
+        let append2 = false;
+        let sourceID = "#" + modelLinks[link].getSourcePort().getParent().id;
+        let targetID = "#" + modelLinks[link].getTargetPort().getParent().id;
+        let sourceCardinality = modelLinks[link].sourceCardinality;
+        let targetCardinality = modelLinks[link].targetCardinality;
         let classSource = doc.createElement("Class");
         let classTarget = doc.createElement("Class");
-        classSource.setAttribute("IRI", "#" + modelLinks[link].getSourcePort().getParent().id);
-        classTarget.setAttribute("IRI", "#" + modelLinks[link].getTargetPort().getParent().id);
-        if (modelLinks[link].sourceCardinality === modelLinks[link].targetCardinality) {
-            if (modelLinks[link].sourceCardinality === Locale.none && modelLinks[link].linkType === "Generalization") {
-                subClassOf.appendChild(classSource);
-                subClassOf.appendChild(classTarget);
-            } else if (modelLinks[link].sourceCardinality !== Locale.none) {
-                let objectExactCardinality = doc.createElement("ObjectExactCardinality");
-                objectExactCardinality.setAttribute("cardinality", modelLinks[link].sourceCardinality);
-                let objectProperty = doc.createElement("ObjectProperty");
-                objectProperty.setAttribute("IRI", "#" + modelLinks[link].getTargetPort().getParent().id);
-                objectExactCardinality.appendChild(objectProperty);
-                objectExactCardinality.appendChild(classTarget);
-                subClassOf.appendChild(classSource);
-                subClassOf.appendChild(objectExactCardinality);
-
-                let subClassOf2 = doc.createElement("SubClassOf");
-                let classSource2 = doc.createElement("Class");
-                let classTarget2 = doc.createElement("Class");
-                classSource2.setAttribute("IRI", "#" + modelLinks[link].getSourcePort().getParent().id);
-                classTarget2.setAttribute("IRI", "#" + modelLinks[link].getTargetPort().getParent().id);
-
-                let objectExactCardinality2 = doc.createElement("ObjectExactCardinality");
-                objectExactCardinality2.setAttribute("cardinality", modelLinks[link].sourceCardinality);
-                let objectProperty2 = doc.createElement("ObjectProperty");
-                objectProperty2.setAttribute("IRI", "#" + modelLinks[link].getSourcePort().getParent().id);
-                objectExactCardinality2.appendChild(objectProperty2);
-                objectExactCardinality2.appendChild(classSource2);
-                subClassOf2.appendChild(classTarget2);
-                subClassOf2.appendChild(objectExactCardinality2);
-                ontology.appendChild(subClassOf2);
-            }
+        let objectPropertySource = doc.createElement("ObjectProperty");
+        let objectPropertyTarget = doc.createElement("ObjectProperty");
+        classSource.setAttribute("IRI", sourceID);
+        classTarget.setAttribute("IRI", targetID);
+        objectPropertySource.setAttribute("IRI", sourceID);
+        objectPropertyTarget.setAttribute("IRI", targetID);
+        if (sourceCardinality === targetCardinality && sourceCardinality === Locale.none && modelLinks[link].linkType === Locale.generalization) {
+            //generalizations
+            subClassOf1.appendChild(classSource);
+            subClassOf1.appendChild(classTarget);
         } else {
+            append2 = true;
+            let sourceFirstNumber = parseInt(sourceCardinality.charAt(0));
+            let sourceSecondNumber = parseInt(sourceCardinality.charAt(sourceCardinality.length-1));
+            let targetFirstNumber = parseInt(targetCardinality.charAt(0));
+            let targetSecondNumber = parseInt(targetCardinality.charAt(targetCardinality.length-1));
+
+            if (isNaN(sourceFirstNumber) || isNaN(targetFirstNumber)){
+                continue;
+            }
+
+            //source cardinality
+            if (sourceFirstNumber === sourceSecondNumber){
+                //sole number - exact cardinality
+                let objectExactCardinality = doc.createElement("ObjectExactCardinality");
+                objectExactCardinality.setAttribute("cardinality",sourceFirstNumber);
+                objectExactCardinality.appendChild(objectPropertyTarget);
+                objectExactCardinality.appendChild(classTarget);
+                subClassOf1.appendChild(classSource);
+                subClassOf1.appendChild(objectExactCardinality);
+            } else if (!isNaN(sourceSecondNumber)){
+                //ends with number - max cardinality
+                let objectMaxCardinality = doc.createElement("ObjectMaxCardinality");
+                objectMaxCardinality.setAttribute("cardinality",sourceSecondNumber);
+                objectMaxCardinality.appendChild(objectPropertyTarget);
+                objectMaxCardinality.appendChild(classTarget);
+                subClassOf1.appendChild(classSource);
+                subClassOf1.appendChild(objectMaxCardinality);
+            } else if (isNaN(sourceSecondNumber)){
+                //ends with star - some values from
+                let objectSomeValuesFrom = doc.createElement("ObjectSomeValuesFrom");
+                objectSomeValuesFrom.appendChild(objectPropertyTarget);
+                objectSomeValuesFrom.appendChild(classTarget);
+                subClassOf1.appendChild(classSource);
+                subClassOf1.appendChild(objectSomeValuesFrom);
+            } else {
+                continue;
+            }
+
+            //target cardinality
+            if (targetFirstNumber === targetSecondNumber){
+                //sole number - exact cardinality
+                let objectExactCardinality = doc.createElement("ObjectExactCardinality");
+                objectExactCardinality.setAttribute("cardinality",targetFirstNumber);
+                objectExactCardinality.appendChild(objectPropertyTarget);
+                objectExactCardinality.appendChild(classSource);
+                subClassOf2.appendChild(classTarget);
+                subClassOf2.appendChild(objectExactCardinality);
+            } else if (!isNaN(targetSecondNumber)){
+                //ends with number - max cardinality
+                let objectMaxCardinality = doc.createElement("ObjectMaxCardinality");
+                objectMaxCardinality.setAttribute("cardinality",targetSecondNumber);
+                objectMaxCardinality.appendChild(objectPropertyTarget);
+                objectMaxCardinality.appendChild(classSource);
+                subClassOf2.appendChild(classTarget);
+                subClassOf2.appendChild(objectMaxCardinality);
+            } else if (isNaN(targetSecondNumber)){
+                //ends with star - some values from
+                let objectSomeValuesFrom = doc.createElement("ObjectSomeValuesFrom");
+                objectSomeValuesFrom.appendChild(objectPropertyTarget);
+                objectSomeValuesFrom.appendChild(classSource);
+                subClassOf2.appendChild(classTarget);
+                subClassOf2.appendChild(objectSomeValuesFrom);
+            } else {
+                continue;
+            }
 
         }
 
+        ontology.appendChild(subClassOf1);
+        if (append2){
+            ontology.appendChild(subClassOf2);
+        }
 
-        ontology.appendChild(subClassOf);
+
     }
 
     //attribute type declarations
@@ -624,69 +689,76 @@ export function exportDiagram(model: OntoDiagramModel) {
         ontology.appendChild(attrTypeDeclaration);
     }
 
+    //inverse object properties
+    for (let link in modelLinks){
+        if (modelLinks[link].sourceCardinality !== Locale.none && modelLinks[link].targetCardinality !== Locale.none && modelLinks[link].linkType !== Locale.generalization){
+            let inverseObjectProperties = doc.createElement("InverseObjectProperties");
+            let objectProperty1 = doc.createElement("ObjectProperty");
+            objectProperty1.setAttribute("IRI", "#"+modelLinks[link].getSourcePort().getParent().id);
+            let objectProperty2 = doc.createElement("ObjectProperty");
+            objectProperty2.setAttribute("IRI", "#"+modelLinks[link].getTargetPort().getParent().id);
+            inverseObjectProperties.appendChild(objectProperty1);
+            inverseObjectProperties.appendChild(objectProperty2);
+            ontology.appendChild(inverseObjectProperties);
+        }
+    }
+
+    //disjoint classes
+    for (let generalization in GeneralizationPool) {
+        if (GeneralizationPool[generalization].length > 0) {
+            let disjointClasses  = doc.createElement("DisjointClasses");
+            for (let node of GeneralizationPool[generalization]){
+                let disjointClass = doc.createElement("Class");
+                disjointClass.setAttribute("IRI","#"+node.id);
+                disjointClasses.appendChild(disjointClass);
+            }
+            ontology.appendChild(disjointClasses);
+        }
+    }
+
+    //object property domain and range
+    let rangeList = [];
+
+    for (let link in modelLinks){
+        if (modelLinks[link].linkType !== Locale.generalization && modelLinks[link].sourceCardinality !== Locale.none && modelLinks[link].targetCardinality !== Locale.none){
+            let objectPropertyDomain1 = doc.createElement("ObjectPropertyDomain");
+            let objectProperty1 = doc.createElement("ObjectProperty");
+            let class1 = doc.createElement("Class");
+            objectProperty1.setAttribute("IRI","#"+modelLinks[link].getSourcePort().getParent().id);
+            class1.setAttribute("IRI", "#"+modelLinks[link].getTargetPort().getParent().id);
+            objectPropertyDomain1.appendChild(objectProperty1);
+            objectPropertyDomain1.appendChild(class1);
+
+            let objectPropertyDomain2 = doc.createElement("ObjectPropertyDomain");
+            let objectProperty2 = doc.createElement("ObjectProperty");
+            let class2 = doc.createElement("Class");
+            objectProperty2.setAttribute("IRI","#"+modelLinks[link].getTargetPort().getParent().id);
+            class2.setAttribute("IRI", "#"+modelLinks[link].getSourcePort().getParent().id);
+            objectPropertyDomain2.appendChild(objectProperty2);
+            objectPropertyDomain2.appendChild(class1);
+
+            ontology.appendChild(objectPropertyDomain1);
+            ontology.appendChild(objectPropertyDomain2);
+
+            if (rangeList.includes(modelLinks[link].getSourcePort().getParent().id)){
+                rangeList.push(modelLinks[link].getSourcePort().getParent().id);
+            }
+            if (rangeList.includes(modelLinks[link].getTargetPort().getParent().id)){
+                rangeList.push(modelLinks[link].getTargetPort().getParent().id);
+            }
+        }
+    }
+
+    for (let id of rangeList){
+        let objectPropertyRange = doc.createElement("ObjectPropertyRange");
+        let objectProperty = doc.createElement("ObjectProperty");
+        let className = doc.createElement("Class");
+        objectProperty.setAttribute("IRI","#"+id);
+        className.setAttribute("IRI","#"+id);
+        ontology.appendChild(objectPropertyRange);
+    }
+
     doc.appendChild(ontology);
     return doc;
 
-    // for (let node in modelNodes) {
-    //     let modelNode = modelNodes[node];
-    //
-    //     let classNodeLinks = {};
-    //     let classNodePorts = [];
-    //     for (let port in modelNode.getPorts()) {
-    //         classNodePorts.push(modelNode.getPorts()[port]);
-    //         Helper.mergeObjects(classNodeLinks,modelNode.getPorts()[port].getLinks());
-    //     }
-    //
-    //
-    //
-    // }
-
-
-    // let modelNodes = model.getNodes();
-    // let modelLinks = model.getLinks();
-    //
-    // let jsonLDexport = {};
-    //
-    // jsonLDexport["@context"] = {
-    //     "rdf" : "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
-    //     "owl" : "http://www.w3.org/2002/07/owl#",
-    //     "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
-    //     "xsd": "http://www.w3.org/2001/XMLSchema#",
-    //     "skos" : "http://www.w3.org/2004/02/skos/core#"
-    // };
-    //
-    // jsonLDexport["@id"] = id;
-    // jsonLDexport["@type"] = "owl:Ontology";
-    // jsonLDexport["rdf:label"] = model.name;
-    //
-    // jsonLDexport["@graph"] = [];
-    // for (let node in modelNodes){
-    //     let modelNode = modelNodes[node];
-    //     let classNode = {};
-    //     classNode["@id"] = modelNode.names[0];
-    //     classNode["@type"] = "owl:Class";
-    //
-    //     let classNodeLinks = [];
-    //     let classNodePorts = [];
-    //     for (let port in modelNode.getPorts()){
-    //         classNodePorts.push(modelNode.getPorts()[port]);
-    //         classNodeLinks.concat(modelNode.getPorts()[port].getLinks());
-    //     }
-    //
-    //     //subclasses
-    //     classNode["owl:SubClassOf"] = [];
-    //     classNode["owl:DisjointClass"] = [];
-    //     for (let link in classNodeLinks){
-    //         if (link.linkType === "Generalization"){
-    //             if (classNodePorts.includes(link.getSourcePort())){
-    //                 let sourceNode = link.getTargetPort().getNode();
-    //                 classNode["owl:SubClassOf"].push(sourceNode.names[0]);
-    //
-    //             }
-    //         }
-    //     }
-    //
-    //
-    // }
-    //return jsonLDexport;
 }

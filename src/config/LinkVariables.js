@@ -1,18 +1,21 @@
 //Generalization is needed for exporting.
 
 // LinkEnd, Labeled, Dashed, OCL Constraints
+import {Locale} from "./Locale";
+
 export var LinkPool = {
     "Characterization": ["Empty", true, false, []],
     "Component": ["FilledEmptyDiamond", false, false, []],
     "Derivation": ["Empty", false, true, []],
     "Formal": ["Empty", true, false, []],
-    "Generalization": ["UnfilledArrow", false, false, []],
     "Material": ["Empty", true, false, []],
     "Mediation": ["Empty", true, false, []],
     "Member": ["FilledMDiamond", true, false, []],
     "SubCollection": ["FilledCDiamond", true, false, []],
     "SubQuantity": ["FilledQDiamond", true, false, []]
 };
+
+LinkPool[Locale.generalization] = ["UnfilledArrow", false, false, []];
 
 // xy1: top,
 // xy2: right,

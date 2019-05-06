@@ -21,7 +21,6 @@ export var AttributeTypePool = [
 ];
 
 export var CardinalityPool = [
-    Locale.none,
     "*",
     "0",
     "0..*",
@@ -30,5 +29,7 @@ export var CardinalityPool = [
     "1..",
     "1..*"
 ];
+
+CardinalityPool.unshift(Locale.none);
 
 export var GeneralizationPool = {};
