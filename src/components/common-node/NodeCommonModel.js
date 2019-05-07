@@ -109,4 +109,13 @@ export class NodeCommonModel extends NodeModel {
             notes: this.notes
         });
     }
+
+    getLinks(){
+        let links = [];
+        for (let port in this.getPorts()){
+            for (let link in this.getPorts()[port].getLinks()){
+                links.push(this.getPorts()[port].getLinks()[link]);
+            }
+        }
+    }
 }
