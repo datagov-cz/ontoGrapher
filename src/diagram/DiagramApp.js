@@ -85,7 +85,9 @@ export class DiagramApp extends React.Component {
             this.diagramCanvas.engine.getDiagramModel().setLocked(true);
         }
         if (typeof this.props.loadOntology === "string"){
-            SemanticWebInterface.fetchStereotypes(this.props.loadOntology,true,function(){});
+            SemanticWebInterface.fetchStereotypes(this.props.loadOntology,true, function(){
+                this.forceUpdate();
+            }.bind(this));
         }
 
     }

@@ -291,8 +291,10 @@ export class MenuPanel extends React.Component {
     }
 
     addNode() {
-        StereotypePool[this.state.stereotypeRDF] = this.state.stereotypeName;
-        this.setState({stereotypeRDF: "", stereotypeName: ""});
+        if (this.state.stereotypeName !== "" && this.state.stereotypeRDF !== ""){
+            StereotypePool[this.state.stereotypeRDF] = this.state.stereotypeName;
+            this.setState({stereotypeRDF: "", stereotypeName: ""});
+        }
     }
 
     handleChangeStereotypeRDF(event) {
@@ -314,15 +316,19 @@ export class MenuPanel extends React.Component {
     }
 
     handleReplaceStereotypes() {
-        SemanticWebInterface.fetchStereotypes(this.state.stereotypeSource, true, () => {
-            this.setState({status: ""});
-        });
+        if (this.state.stereotypeSource !== ""){
+            SemanticWebInterface.fetchStereotypes(this.state.stereotypeSource, true, () => {
+                this.setState({status: ""});
+            });
+        }
     }
 
     handleLoadStereotypes() {
-        SemanticWebInterface.fetchStereotypes(this.state.stereotypeSource, false, () => {
-            this.setState({status: ""});
-        });
+        if (this.state.stereotypeSource !== ""){
+            SemanticWebInterface.fetchStereotypes(this.state.stereotypeSource, false, () => {
+                this.setState({status: ""});
+            });
+        }
     }
 
     handleChangeStereotypeSource(event) {

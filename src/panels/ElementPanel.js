@@ -1,10 +1,8 @@
 import React from 'react';
 import {PanelNodeItem} from "./PanelNodeItem";
-import {Defaults} from "../config/Defaults";
 import {Tab, Tabs} from "react-bootstrap";
 import {PanelLinkItem} from "./PanelLinkItem";
 import {StereotypePool} from "../config/Variables";
-import * as RDF from "../misc/SemanticWebInterface";
 import {LinkPool} from "../config/LinkVariables";
 
 
@@ -18,9 +16,9 @@ export class ElementPanel extends React.Component {
     }
 
     componentDidMount() {
-        RDF.fetchStereotypes(Defaults.stereotypeUrl, true, function(){
-            this.forceUpdate();
-        }.bind(this));
+        // RDF.fetchStereotypes(Defaults.stereotypeUrl, true, function(){
+        //     this.forceUpdate();
+        // }.bind(this));
     }
 
     handleChangeSelectedLink(linkType) {
