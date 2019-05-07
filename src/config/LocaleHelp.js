@@ -1,3 +1,5 @@
+// These are the strings used in the help menu. Change the values to translate that section.
+
 export var LocaleHelp = {
     paragraph11: "To place a stereotype on the canvas, drag a stereotype name from the left panel onto the canvas. Clicking on the newly created stereotype opens the right panel with the details of this stereotype, where you can add, modify or remove attributes.",
     paragraph12: "In order to connect stereotypes with relationships, use the Links tab on the left menu, then click on the type of relationship you want to use. Clicking and dragging from an edge of a stereotype (a bright green square will appear if you hover over the edge) will create a link that you can use to connect to other stereotypes.",

@@ -1,3 +1,5 @@
+// These are the strings used throughout the component. Change the values to translate the component.
+
 export var Locale = {
     menuPanelLoaded: "Loaded!",
     menuPanelInsertJSON: "Insert JSON",
