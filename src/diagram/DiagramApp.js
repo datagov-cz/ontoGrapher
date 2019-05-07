@@ -73,6 +73,22 @@ export class DiagramApp extends React.Component {
         this.validateSettings = this.validateSettings.bind(this);
     }
 
+    componentDidMount() {
+        if (typeof this.props.loadSettings === "string") {
+            SemanticWebInterface.importSettings(this.props.loadSettings);
+        }
+        if (typeof this.props.loadDiagram === "string") {
+            this.deserialize(this.props.loadDiagram);
+        }
+        if (this.props.readOnly) {
+            this.diagramCanvas.engine.getDiagramModel().setLocked(true);
+        }
+        if (typeof this.props.loadOntology === "string"){
+            SemanticWebInterface.fetchStereotypes(this.props.loadOntology,true,function(){});
+        }
+
+    }
+
     validateModel(source: string) {
         let errors = SemanticWebInterface.validateSettingsWithModel(this.diagramCanvas.engine.getDiagramModel(), source);
         this.setState({
@@ -162,20 +178,6 @@ export class DiagramApp extends React.Component {
 
 
     }
-
-    componentDidMount() {
-        if (typeof this.props.loadSettings === "string") {
-            SemanticWebInterface.importSettings(this.props.loadSettings);
-        }
-        if (typeof this.props.loadDiagram === "string") {
-            this.deserialize(this.props.loadDiagram);
-        }
-        if (this.props.readOnly) {
-            this.diagramCanvas.engine.getDiagramModel().setLocked(true);
-        }
-
-    }
-
 
     showContextMenu(x: number, y: number, link: LinkCommonModel) {
         this.setState({
@@ -419,5 +421,6 @@ export class DiagramApp extends React.Component {
 DiagramApp.propTypes = {
     loadDiagram: PropTypes.string,
     readOnly: PropTypes.bool,
-    loadSettings: propTypes.string
+    loadSettings: PropTypes.string,
+    loadOntology: PropTypes.string
 };
