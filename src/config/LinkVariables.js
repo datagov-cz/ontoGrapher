@@ -2,10 +2,9 @@
 
 // LinkEnd, Labeled, Dashed, OCL Constraints
 import {Locale} from "./Locale";
-import {Constraint} from "../components/misc/Constraint";
 
 export var LinkPool = {
-    "Characterization": ["Empty", true, false, [new Constraint("self.width = 2","Characterization")]],
+    "Characterization": ["Empty", true, false, []],
     "Component": ["FilledEmptyDiamond", false, false, []],
     "Derivation": ["Empty", false, true, []],
     "Formal": ["Empty", true, false, []],
