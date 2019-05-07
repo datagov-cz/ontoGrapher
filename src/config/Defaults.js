@@ -7,5 +7,5 @@ export var Defaults = {
     language: Object.keys(LanguagePool)[0],
     stereotypeUrl: "http://onto.fel.cvut.cz/ontologies/ufo-a/current/ontology.ttl",
     stereotypeLanguage: "en",
-    offset: {x: 10000, y:10000}
+    offset: {x: 0, y: 0}
 };

@@ -45,4 +45,9 @@
     fill: rgb(50,50,50) !important;
     pointer-events:all;
   }
+
+  foreignObject{
+    overflow: visible;
+  }
+
 }
