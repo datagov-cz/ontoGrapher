@@ -10,6 +10,7 @@ import React from "react";
 import {Defaults} from "../config/Defaults";
 import {Locale} from "../config/Locale";
 import {LinkPool} from "../config/LinkVariables";
+import {Constraint} from "../components/misc/Constraint";
 
 export function fetchStereotypes(source: string, replace: boolean, callback) {
     const rdf = require('rdf-ext');
@@ -132,12 +133,12 @@ export function exportSettings(name: string, prefix: string, URI: string) {
                 value: LinkPool[link][2]
             }
         });
-        for (let constraint in LinkPool[link][3]) {
+        for (let constraint of LinkPool[link][3]) {
             annotations.push({
                 source: "http://www.eclipse.org/ocl/examples/OCL",
                 details: {
                     key: "constraint",
-                    value: constraint
+                    value: constraint.statement
                 }
             });
         }
@@ -434,7 +435,7 @@ export function importSettings(source: string) {
                         if (i < 3) {
                             specs.push(item.annotations[i].value[0]);
                         } else {
-                            constraints.push(item.annotations[i].value[0]);
+                            constraints.push(new Constraint(item.annotations[i].value[0],item.name));
                         }
                     }
                     specs.push(constraints);

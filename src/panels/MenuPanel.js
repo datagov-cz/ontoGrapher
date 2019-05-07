@@ -18,6 +18,7 @@ import * as SemanticWebInterface from "../misc/SemanticWebInterface";
 import {LinkEndPool, LinkPool} from "../config/LinkVariables";
 import Table from "react-bootstrap/es/Table";
 import {Locale} from "../config/Locale";
+import {Constraint} from "../components/misc/Constraint";
 
 
 export class MenuPanel extends React.Component {
@@ -142,7 +143,7 @@ export class MenuPanel extends React.Component {
         this.addConstraint = this.addConstraint.bind(this);
     }
     addConstraint(){
-        LinkPool[this.state.constraintLink][3].push(this.state.newConstraint);
+        LinkPool[this.state.constraintLink][3].push(new Constraint(this.state.newConstraint,this.state.constraintLink));
         this.setState({newConstraint: ""});
     }
 
@@ -191,8 +192,10 @@ export class MenuPanel extends React.Component {
     }
 
     handleExportSettings() {
-        let exportData = SemanticWebInterface.exportSettings(this.state.exportName, this.state.exportPrefix, this.state.exportURI);
-        this.setState({exportSettingsData: exportData});
+        if (this.state.exportName !== "" && this.state.exportPrefix !== "" && this.state.exportURI !== ""){
+            let exportData = SemanticWebInterface.exportSettings(this.state.exportName, this.state.exportPrefix, this.state.exportURI);
+            this.setState({exportSettingsData: exportData});
+        }
     }
 
     handleOpenExportDiagramModal() {
@@ -529,12 +532,11 @@ export class MenuPanel extends React.Component {
                     <option key={i} value={link}>{link}</option>
                 )
             });
-        let constraintList = "";
+        let constraintList = <option value={""}></option>;
         if (this.state.constraintLink !== undefined){
-            constraintList = LinkPool[this.state.constraintLink][3].map((constraint, i) => {
-                return(
-                    <option key={i} value={i}>{constraint}</option>
-                )});
+            constraintList = LinkPool[this.state.constraintLink][3].map((constraint, i) =>
+                    <option key={i} value={i}>{constraint.statement}</option>
+                );
         }
 
         let constraintListLength = constraintList.length;
@@ -933,13 +935,13 @@ export class MenuPanel extends React.Component {
                                     value={this.state.constraint}
                                     onChange={this.handleChangeConstraint}
                                     onFocus={this.focus}
-                                    size={constraintListLength}
+                                    size={constraintListLength < 2 ? 2 : constraintListLength}
                                     style={{height: 300}}
                                 >
                                     {constraintList}
                                 </FormControl>
                                 <Button onClick={this.deleteConstraint}
-                                        bsStyle="danger">{Locale.del + " " + this.state.constraint}</Button>
+                                        bsStyle="danger">{Locale.del}</Button>
                             </FormGroup>
                             <Form inline>
 

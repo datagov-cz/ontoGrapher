@@ -104,8 +104,14 @@ export class DiagramApp extends React.Component {
     }
 
     handleLocate(element){
-        let current = this.diagramCanvas.engine.getDiagramModel().getLinks()[element];
+        let links = this.diagramCanvas.engine.getDiagramModel().getLinks();
+        let current = links[element];
+        for (let link in links){
+            let color = links[link].color === "black" ? "black" : "red";
+            links[link].setColor(color);
+        }
         if (current instanceof LinkCommonModel){
+            current.setColor("yellow");
             current = current.getFirstPoint();
         }
         this.diagramCanvas.engine.getDiagramModel().setOffsetX(current.x);
@@ -125,11 +131,13 @@ export class DiagramApp extends React.Component {
         const oclEngine = OclEngine.create();
         let links = this.diagramCanvas.engine.getDiagramModel().getLinks();
         for (let link in links){
-            for (let constraint in links[link].constraints){
-                oclEngine.addOclExpression(links[link].constraints[constraint].constructStatement());
+            console.log(links[link]);
+            for (let constraint of links[link].constraints){
+                console.log(constraint);
+                oclEngine.addOclExpression(constraint.constructStatement());
                 let individualResult = oclEngine.evaluate(links[link]);
                 if (!individualResult.getResult()){
-                    result[link] = links[link].constraints[constraint].statement;
+                    result[link] = constraint.statement;
                     links[link].setColor("red");
                 }
                 oclEngine.clearAllOclExpressions();
@@ -278,8 +286,8 @@ export class DiagramApp extends React.Component {
     }
 
     centerView() {
-        this.diagramCanvas.engine.getDiagramModel().setOffsetX(0);
-        this.diagramCanvas.engine.getDiagramModel().setOffsetY(0);
+        this.diagramCanvas.engine.getDiagramModel().setOffsetX(Defaults.offset.x);
+        this.diagramCanvas.engine.getDiagramModel().setOffsetY(Defaults.offset.y);
     }
 
     setName(str: string) {

@@ -8,7 +8,7 @@ import {LinkCommonFactory} from "../components/common-link/LinkCommonFactory";
 import {LinkCommonModel} from "../components/common-link/LinkCommonModel";
 import {CommonLabelFactory} from "../components/misc/CommonLabelFactory";
 import {OntoDiagramWidget} from "./OntoDiagramWidget";
-import * as SemanticWebInterface from "../misc/SemanticWebInterface";
+import {Defaults} from "../config/Defaults";
 
 
 export class DiagramCanvas extends React.Component {
@@ -27,6 +27,7 @@ export class DiagramCanvas extends React.Component {
         this.engine = new DiagramEngine();
         this.engine.setDiagramModel(new OntoDiagramModel(this.props, this));
         this.registerFactories();
+        this.engine.getDiagramModel().setOffset(Defaults.offset.x,Defaults.offset.y);
     }
 
     updatePanel() {
@@ -96,6 +97,7 @@ export class DiagramCanvas extends React.Component {
             model.deSerializeDiagram(diagram, this.engine);
             this.engine.setDiagramModel(model);
         } catch (err) {
+            console.log(err);
             return false;
         }
         this.forceUpdate();

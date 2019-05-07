@@ -6,6 +6,9 @@
   bottom: 0;
   border: 0px solid #000;
   border-top-width: 1px;
+  max-height: 250px;
+  overflow: scroll;
+  overflow-x: hidden;
   a{
     cursor: pointer;
   }

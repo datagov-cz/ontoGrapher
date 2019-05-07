@@ -5,7 +5,7 @@ import {Locale} from "../../config/Locale";
 import * as _ from "lodash";
 import {LanguagePool} from "../../config/Variables";
 import {LinkPool} from "../../config/LinkVariables";
-import {Constraint} from "../constraints/Constraint";
+import {Constraint} from "../misc/Constraint";
 
 export class LinkCommonModel extends DefaultLinkModel {
     width: number;
@@ -32,8 +32,8 @@ export class LinkCommonModel extends DefaultLinkModel {
         this.notes = {};
         this.constraints = [];
         this.color = "black";
-        this.sourceCardinality = model.firstCardinality;
-        this.targetCardinality = model.secondCardinality;
+        this.sourceCardinality = Locale.none;
+        this.targetCardinality = Locale.none;
         for (let language in LanguagePool) {
             if (this.names[language] === undefined) {
                 this.names[language] = "";
@@ -88,8 +88,15 @@ export class LinkCommonModel extends DefaultLinkModel {
             curvyness: this.curvyness,
             linkType: this.linkType,
             name: this.name,
+            names: this.names,
             sourceCardinality: this.sourceCardinality,
-            targetCardinality: this.targetCardinality
+            targetCardinality: this.targetCardinality,
+            dashed: this.dashed,
+            notes: this.notes,
+            constraints: this.constraints,
+            descriptor: this.descriptor,
+            linkEnd: this.linkEnd,
+            labeled: this.labeled
         });
     }
 
@@ -99,9 +106,19 @@ export class LinkCommonModel extends DefaultLinkModel {
         this.width = ob.width;
         this.curvyness = ob.curvyness;
         this.linkType = ob.linkType;
-        this.name = ob.name;
+        this.name = ob.name,
+        this.names = ob.names;
         this.sourceCardinality = ob.sourceCardinality;
         this.targetCardinality = ob.targetCardinality;
+        this.dashed = ob.dashed;
+        this.notes = ob.notes;
+        this.constraints = [];
+        for (let constraint of ob.constraints){
+            this.constraints.push(new Constraint(constraint.statement,constraint.linkType));
+        }
+        this.descriptor = ob.descriptor;
+        this.linkEnd = ob.linkEnd;
+        this.labeled = ob.labeled;
     }
 
     setLabel(str: string) {
