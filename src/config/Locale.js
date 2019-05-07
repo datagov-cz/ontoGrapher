@@ -104,14 +104,17 @@ export var Locale = {
     errorRelationshipNotFoundOrIncorrect: "Missing or incorrectly configured relationship",
     errorStereotypeNotFoundOrIncorrect: "Missing or incorrectly configured stereotype",
     errorLanguageNotFound: "Missing language",
+    errorImport: "Error: corrupted import",
+    inCurrentSettings: "in current settings",
     menuPanelValidate: "Validation",
     validationTools: "Validation tools",
-    validateSettings: "Validate current settings",
-    validateModel: "Validate current model",
+    validateSettings: "Validate settings",
+    validateModel: "Validate model",
     menuValidateInputPlaceholder: "Input XMI metamodel data",
     validateSettingsDescription: "Validate an XMI input with current application settings",
     validateModelDescription: "Validate an XMI input with current model",
     validate: "Validate...",
+    validateButton: "Validate",
     noErrors: "No discrepancies detected",
     importExportSettings: "Import/export settings...",
     menuPanelExportDiagram: "Export to OWL...",
@@ -130,5 +133,7 @@ export var Locale = {
     constraintSettings: "Constraints...",
     constraintsSettingsHeader: "Constraints",
     constraintPlaceholder: "Constraint",
-    constraintHelp: "For more information on how to construct constraints, consult the Help section."
+    constraintHelp: "For more information on how to construct constraints, consult the Help section.",
+    validateCurrent: "Validate current settings and model",
+    validateCurrentDescription: "Validate the current model with the current settings"
 };

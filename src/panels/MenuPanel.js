@@ -64,7 +64,8 @@ export class MenuPanel extends React.Component {
             importSettingsInput: "",
             constraintLink: Object.keys(LinkPool)[0],
             constraint: undefined,
-            newConstraint: ""
+            newConstraint: "",
+            failure: false
         };
 
         this.languagePool = [];
@@ -141,7 +142,13 @@ export class MenuPanel extends React.Component {
         this.deleteConstraint = this.deleteConstraint.bind(this);
         this.handleChangeNewConstraint = this.handleChangeNewConstraint.bind(this);
         this.addConstraint = this.addConstraint.bind(this);
+        this.handleValidateCurrent = this.handleValidateCurrent.bind(this);
     }
+
+    handleValidateCurrent(){
+        this.props.validateCurrent();
+    }
+
     addConstraint(){
         LinkPool[this.state.constraintLink][3].push(new Constraint(this.state.newConstraint,this.state.constraintLink));
         this.setState({newConstraint: ""});
@@ -172,7 +179,13 @@ export class MenuPanel extends React.Component {
     }
 
     handleImportSettings() {
-        SemanticWebInterface.importSettings(this.state.importSettingsInput);
+        if (this.state.importSettingsInput !== ""){
+            if (!SemanticWebInterface.importSettings(this.state.importSettingsInput)){
+                this.setState({failure: true});
+            } else {
+                this.setState({failure: false});
+            }
+        }
     }
 
     handleChangeImportSettingsInput(event) {
@@ -216,11 +229,15 @@ export class MenuPanel extends React.Component {
     }
 
     handleValidateSettings() {
-        this.props.validateSettings(this.state.validationInput);
+        if (this.state.validationInput !== ""){
+            this.props.validateSettings(this.state.validationInput);
+        }
     }
 
     handleValidateModel() {
-        this.props.validateModel(this.state.validationInput);
+        if (this.state.validationInput !== ""){
+            this.props.validateModel(this.state.validationInput);
+        }
     }
 
     handleChangeValidationInput(event) {
@@ -812,7 +829,7 @@ export class MenuPanel extends React.Component {
                                         />
                                     </FormGroup>
                                     <Button onClick={this.handleValidateSettings}
-                                            bsStyle="primary">{Locale.validate}</Button>
+                                            bsStyle="primary">{Locale.validateButton}</Button>
                                     <br/>
                                     <FormGroup controlId="formControlsTextarea">
                                         <FormControl
@@ -838,7 +855,23 @@ export class MenuPanel extends React.Component {
                                         />
                                     </FormGroup>
                                     <Button onClick={this.handleValidateModel}
-                                            bsStyle="primary">{Locale.validate}</Button>
+                                            bsStyle="primary">{Locale.validateButton}</Button>
+                                    <br/>
+                                    <FormGroup controlId="formControlsTextarea">
+                                        <FormControl
+                                            style={{height: 150, resize: "none"}}
+                                            bsSize="small"
+                                            componentClass="textarea"
+                                            placeholder={Locale.menuValidateInputPlaceholder}
+                                            value={this.props.validationResults.length > 0 ? this.props.validationResults : Locale.noErrors}
+                                            disabled={true}
+                                        />
+                                    </FormGroup>
+                                </Tab>
+                                <Tab eventKey={3} title={Locale.validateCurrent}>
+                                    <p>{Locale.validateCurrentDescription}</p>
+                                    <Button onClick={this.handleValidateCurrent}
+                                            bsStyle="primary">{Locale.validateButton}</Button>
                                     <br/>
                                     <FormGroup controlId="formControlsTextarea">
                                         <FormControl
@@ -1079,6 +1112,7 @@ export class MenuPanel extends React.Component {
                                             onChange={this.handleChangeImportSettingsInput}
                                         />
                                     </FormGroup>
+                                    <p>{this.state.failure ? Locale.errorImport : ""}</p>
                                     <Button onClick={this.handleImportSettings}
                                             bsStyle="primary">{Locale.import}</Button>
                                 </Tab>

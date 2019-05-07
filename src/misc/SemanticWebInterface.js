@@ -193,7 +193,14 @@ export function fetchSettings(source: string) {
     const eCore = require('ecore/dist/ecore.xmi');
     let eCoreRS = eCore.ResourceSet.create();
     let eCoreR = eCoreRS.create({uri: 'URI'});
-    eCoreR.parse(source, eCore.XMI);
+
+    try {
+        eCoreR.parse(source, eCore.XMI);
+    } catch(err){
+        console.log(err);
+        return false;
+    }
+
     let eCorePackage = eCoreR.get('contents').first();
 
     let array = eCorePackage.get('eClassifiers').map(function (item) {
@@ -272,7 +279,13 @@ export function validateSettingsWithModel(model: OntoDiagramModel, source: strin
     }
 
     let compareArray = fetchSettings(source);
+
     let errors = [];
+
+    if (!compareArray){
+        errors.push(Locale.errorImport);
+        return errors;
+    }
 
     let linkPoolCompare = [];
     let stereotypePoolCompare = [];
@@ -356,7 +369,13 @@ export function validateSettingsWithModel(model: OntoDiagramModel, source: strin
 
 export function validateSettingsWithCurrentSettings(source: string) {
     let compareArray = fetchSettings(source);
+
     let errors = [];
+
+    if (!compareArray){
+        errors.push(Locale.errorImport);
+        return errors;
+    }
     for (let item in compareArray) {
         if ("type" in item) {
             switch (item.type) {
@@ -404,8 +423,95 @@ export function validateSettingsWithCurrentSettings(source: string) {
     return errors;
 }
 
+export function validateCurrent(model: OntoDiagramModel){
+    let linkPool = [];
+    let stereotypePool = [];
+    let attributeTypePool = [];
+    let languagePool = [];
+    let cardinalityPool = [];
+
+    let nodes = model.getNodes();
+    let links = model.getLinks();
+
+    for (let node in nodes) {
+        let nodeData = {
+            rdf: nodes[node].rdf,
+            name: nodes[node].stereotype
+        };
+        if (!stereotypePool.includes(nodeData)) {
+            stereotypePool.push(nodeData);
+        }
+        for (let attributeLanguage in nodes[node].attributes) {
+            if (!languagePool.includes(attributeLanguage)) {
+                languagePool.push(attributeLanguage);
+            }
+            for (let attribute of nodes[node].attributes[attributeLanguage]) {
+                if (!attributeTypePool.includes(attribute.second)) {
+                    attributeTypePool.push(attribute.second);
+                }
+            }
+        }
+    }
+
+    for (let link in links) {
+        if (!cardinalityPool.includes(links[link].sourceCardinality)) {
+            cardinalityPool.push(links[link].sourceCardinality);
+        }
+        if (!cardinalityPool.includes(links[link].targetCardinality)) {
+            cardinalityPool.push(links[link].targetCardinality);
+        }
+        let linkData = {
+            name: links[link].linkType,
+            linkEnd: links[link].linkEnd,
+            labeled: links[link].labeled,
+            dashed: links[link].dashed,
+            OCL: links[link].constraints,
+        };
+        if (!linkPool.includes(linkData)) {
+            linkPool.push(linkData);
+        }
+    }
+
+    let errors = [];
+
+    for (let link of linkPool){
+        if (LinkPool[link.name] !== [link.linkEnd,link.labeled, link.dashed, link.OCL]){
+            errors.push(Locale.errorRelationshipNotFoundOrIncorrect + " " + link.name + " " + Locale.inCurrentSettings);
+        }
+    }
+
+    for (let stereotype of stereotypePool){
+        if (StereotypePool[stereotype.rdf] !== stereotype.name){
+            errors.push(Locale.errorStereotypeNotFoundOrIncorrect + " " + stereotype.name + " " + Locale.inCurrentSettings);
+        }
+    }
+
+    for (let attributeType of attributeTypePool){
+        if (!AttributeTypePool.includes(attributeType)){
+            errors.push(Locale.errorAttributeTypeNotFound + " " + attributeType + " " + Locale.inCurrentSettings);
+        }
+    }
+
+    for (let language of languagePool){
+        if (!Object.keys(LanguagePool).includes(language)){
+            errors.push(Locale.errorLanguageNotFound + " " + language + " " + Locale.inCurrentSettings);
+        }
+    }
+
+    for (let cardinality of cardinalityPool){
+        if (!CardinalityPool.includes(cardinality)){
+            errors.push(Locale.errorCardinalityNotFound + " " + cardinality + " " + Locale.inCurrentSettings);
+        }
+    }
+    return errors;
+}
+
 export function importSettings(source: string) {
     let array = fetchSettings(source);
+
+    if (!array){
+        return false;
+    }
 
     for (let language in LanguagePool) {
         delete LanguagePool[language];
@@ -455,7 +561,7 @@ export function importSettings(source: string) {
         }
     }
 
-
+    return true;
 }
 
 export function exportDiagram(model: OntoDiagramModel) {

@@ -71,6 +71,7 @@ export class DiagramApp extends React.Component {
         this.handleLocate = this.handleLocate.bind(this);
         this.validateModel = this.validateModel.bind(this);
         this.validateSettings = this.validateSettings.bind(this);
+        this.validateCurrent = this.validateCurrent.bind(this);
     }
 
     componentDidMount() {
@@ -87,6 +88,13 @@ export class DiagramApp extends React.Component {
             SemanticWebInterface.fetchStereotypes(this.props.loadOntology,true,function(){});
         }
 
+    }
+
+    validateCurrent(){
+        let errors = SemanticWebInterface.validateCurrent(this.diagramCanvas.engine.getDiagramModel());
+        this.setState({
+            validationResults: errors
+        });
     }
 
     validateModel(source: string) {
@@ -375,6 +383,7 @@ export class DiagramApp extends React.Component {
                         validateSettings={this.validateSettings}
                         validateModel={this.validateModel}
                         validationResults={this.state.validationResults}
+                        validateCurrent={this.validateCurrent}
                         exportData={this.state.exportData}
                         handleExport={this.export}
                     />
