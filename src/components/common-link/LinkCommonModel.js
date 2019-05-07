@@ -147,4 +147,12 @@ export class LinkCommonModel extends DefaultLinkModel {
     setSecondCardinality(str: string) {
         this.labels[2].setLabel(str);
     }
+
+    getSourceNode(){
+        return this.getSourcePort().getParent();
+    }
+
+    getTargetNode(){
+        return this.getTargetPort().getParent();
+    }
 }
