@@ -8,7 +8,7 @@ import {LinkCommonFactory} from "../components/common-link/LinkCommonFactory";
 import {LinkCommonModel} from "../components/common-link/LinkCommonModel";
 import {CommonLabelFactory} from "../components/misc/CommonLabelFactory";
 import {OntoDiagramWidget} from "./OntoDiagramWidget";
-import {Defaults} from "../config/Defaults";
+import {Defaults} from "../components/misc/Defaults";
 
 
 export class DiagramCanvas extends React.Component {

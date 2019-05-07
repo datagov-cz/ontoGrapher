@@ -1,7 +1,18 @@
-//Generalization is needed for exporting.
+import {Locale} from "./Locale";
 
 // LinkEnd, Labeled, Dashed, OCL Constraints
-import {Locale} from "./Locale";
+
+// Represents the pool of available relationship types.
+
+// Key: relationship name
+// Value[0]: Tip from LinkEndPool
+// Value[1]: Whether the relationship should have its name as a label.
+//           For example, a "Characterization" relationship could have a "«characterization»" label.
+// Value[2]: Whether the relationship line should be dashed.
+// Value[3]: Array of OCL Constraints.
+//           Constraints are objects created with 'new Constraint(statement, linkType)',
+//           where 'statement' is the OCL statement and 'linkType' is the name of the link
+//           that the statement belongs to.
 
 export var LinkPool = {
     "Characterization": ["Empty", true, false, []],
@@ -15,12 +26,21 @@ export var LinkPool = {
     "SubQuantity": ["FilledQDiamond", true, false, []]
 };
 
+// Do not delete!
 LinkPool[Locale.generalization] = ["UnfilledArrow", false, false, []];
 
-// xy1: top,
-// xy2: right,
-// xy3: bottom,
-// xy4: left
+
+
+// Defines the tips of various relationships.
+// For example, the UnfilledArrow type represents an arrow that has no text inside it and is not filled.
+// A tip can have four points.
+
+// xy1: top point
+// xy2: right point
+// xy3: bottom point
+// xy4: left point
+// text: text in the center of the tip
+// fill: whether the
 
 export var LinkEndPool = {
     "Empty": {

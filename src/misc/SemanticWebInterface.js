@@ -7,10 +7,11 @@ import {
 } from "../config/Variables";
 import {OntoDiagramModel} from "../diagram/OntoDiagramModel";
 import React from "react";
-import {Defaults} from "../config/Defaults";
+import {Defaults} from "../components/misc/Defaults";
 import {Locale} from "../config/Locale";
 import {LinkPool} from "../config/LinkVariables";
 import {Constraint} from "../components/misc/Constraint";
+import {Config} from "../config/Config";
 
 export function fetchStereotypes(source: string, replace: boolean, callback) {
     const rdf = require('rdf-ext');
@@ -31,7 +32,7 @@ export function fetchStereotypes(source: string, replace: boolean, callback) {
         for (let quad in res) {
             for (let node of res[quad].toArray()) {
                 if (node.object instanceof rdf.defaults.Literal && node.predicate.value === "http://www.w3.org/2000/01/rdf-schema#label") {
-                    if (node.object.language === Defaults.stereotypeLanguage) {
+                    if (node.object.language === Config.stereotypeLanguage) {
                         stereotypes[node.subject.value] = node.object.value;
                     }
                 }

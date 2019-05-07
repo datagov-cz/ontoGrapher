@@ -1,5 +1,5 @@
 import React from "react";
-import {Defaults} from "../config/Defaults";
+import {Defaults} from "../components/misc/Defaults";
 import {PointModel} from "storm-react-diagrams";
 import {MenuPanel} from "../panels/MenuPanel";
 import {ElementPanel} from "../panels/ElementPanel";
