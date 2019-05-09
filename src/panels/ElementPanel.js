@@ -29,7 +29,7 @@ export class ElementPanel extends React.Component {
         let stereotypeItems = [];
         for (let stereotype in StereotypePool) {
                 stereotypeItems.push(<PanelNodeItem key={StereotypePool[stereotype].toUpperCase()} model={{
-                    type: StereotypePool[stereotype].toLowerCase(),
+                    type: StereotypePool[stereotype],
                     rdf: stereotype
                 }} name={StereotypePool[stereotype]}/>);
             }

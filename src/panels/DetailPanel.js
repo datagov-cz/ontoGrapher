@@ -52,7 +52,9 @@ export class DetailPanel extends React.Component {
 
     deleteGeneralization(event) {
         if (this.state.generalization !== "") {
-            delete GeneralizationPool[this.state.generalization];
+            let def = this.state.generalization;
+            this.setState({generalization: ""});
+            delete GeneralizationPool[def];
         }
     }
 

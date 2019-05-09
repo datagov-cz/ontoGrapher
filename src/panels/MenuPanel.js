@@ -52,7 +52,8 @@ export class MenuPanel extends React.Component {
             status: "",
             cardinalityName: "",
             attributeTypeName: "",
-            validationInput: "",
+            validationInput1: "",
+            validationInput2: "",
             node: StereotypePool[0],
             linkType: LinkPool[0],
             cardinality: CardinalityPool[0],
@@ -122,7 +123,8 @@ export class MenuPanel extends React.Component {
         this.handleEvaluate = this.handleEvaluate.bind(this);
         this.handleOpenValidateModal = this.handleOpenValidateModal.bind(this);
         this.handleCloseValidateModal = this.handleCloseValidateModal.bind(this);
-        this.handleChangeValidationInput = this.handleChangeValidationInput.bind(this);
+        this.handleChangeValidationInput1 = this.handleChangeValidationInput1.bind(this);
+        this.handleChangeValidationInput2 = this.handleChangeValidationInput2.bind(this);
         this.handleValidateSettings = this.handleValidateSettings.bind(this);
         this.handleValidateModel = this.handleValidateModel.bind(this);
         this.handleOpenExportDiagramModal = this.handleOpenExportDiagramModal.bind(this);
@@ -229,19 +231,23 @@ export class MenuPanel extends React.Component {
     }
 
     handleValidateSettings() {
-        if (this.state.validationInput !== ""){
-            this.props.validateSettings(this.state.validationInput);
+        if (this.state.validationInput1 !== ""){
+            this.props.validateSettings(this.state.validationInput1);
         }
     }
 
     handleValidateModel() {
-        if (this.state.validationInput !== ""){
-            this.props.validateModel(this.state.validationInput);
+        if (this.state.validationInput2 !== ""){
+            this.props.validateModel(this.state.validationInput2);
         }
     }
 
-    handleChangeValidationInput(event) {
-        this.setState(event.target.value);
+    handleChangeValidationInput1(event) {
+        this.setState({validationInput1: event.target.value});
+    }
+
+    handleChangeValidationInput2(event) {
+        this.setState({validationInput2: event.target.value});
     }
 
     handleOpenValidateModal() {
@@ -563,6 +569,11 @@ export class MenuPanel extends React.Component {
         }
 
         let constraintListLength = constraintList.length;
+
+        let validationResults = "";
+        if (this.props.validationResults.length > 0){
+            validationResults = this.props.validationResults.map((result) => result + "\n");
+        }
         if (this.props.readOnly) {
             return (
                 <div className="menuPanel">
@@ -830,8 +841,8 @@ export class MenuPanel extends React.Component {
                                             bsSize="small"
                                             componentClass="textarea"
                                             placeholder={Locale.menuValidateInputPlaceholder}
-                                            value={this.state.validationInput}
-                                            onChange={this.handleChangeValidationInput}
+                                            value={this.state.validationInput1}
+                                            onChange={this.handleChangeValidationInput1}
                                         />
                                     </FormGroup>
                                     <Button onClick={this.handleValidateSettings}
@@ -843,7 +854,7 @@ export class MenuPanel extends React.Component {
                                             bsSize="small"
                                             componentClass="textarea"
                                             placeholder={Locale.menuValidateInputPlaceholder}
-                                            value={this.props.validationResults.length > 0 ? this.props.validationResults : Locale.noErrors}
+                                            value={this.props.validationResults.length > 0 ? validationResults : Locale.noErrors}
                                             disabled={true}
                                         />
                                     </FormGroup>
@@ -856,8 +867,8 @@ export class MenuPanel extends React.Component {
                                             bsSize="small"
                                             componentClass="textarea"
                                             placeholder={Locale.menuValidateInputPlaceholder}
-                                            value={this.state.validationInput}
-                                            onChange={this.handleChangeValidationInput}
+                                            value={this.state.validationInput2}
+                                            onChange={this.handleChangeValidationInput2}
                                         />
                                     </FormGroup>
                                     <Button onClick={this.handleValidateModel}
@@ -869,7 +880,7 @@ export class MenuPanel extends React.Component {
                                             bsSize="small"
                                             componentClass="textarea"
                                             placeholder={Locale.menuValidateInputPlaceholder}
-                                            value={this.props.validationResults.length > 0 ? this.props.validationResults : Locale.noErrors}
+                                            value={this.props.validationResults.length > 0 ? validationResults : Locale.noErrors}
                                             disabled={true}
                                         />
                                     </FormGroup>
@@ -885,7 +896,7 @@ export class MenuPanel extends React.Component {
                                             bsSize="small"
                                             componentClass="textarea"
                                             placeholder={Locale.menuValidateInputPlaceholder}
-                                            value={this.props.validationResults.length > 0 ? this.props.validationResults : Locale.noErrors}
+                                            value={this.props.validationResults.length > 0 ? validationResults : Locale.noErrors}
                                             disabled={true}
                                         />
                                     </FormGroup>

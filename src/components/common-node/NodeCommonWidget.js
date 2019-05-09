@@ -45,7 +45,7 @@ export class NodeCommonWidget extends React.Component<NodeCommonWidgetProps, Nod
                     <g>
                         <rect fill="#ffffff" stroke={select} strokeWidth="4" width={this.props.size} height={height}/>
                         <text width={this.props.size} textAnchor="middle" dominantBaseline="hanging" x="50%" y="5px"
-                              fill="#000000">{"«" + this.props.node.stereotype + "»"}</text>
+                              fill="#000000">{"«" + this.props.node.stereotype.toLowerCase() + "»"}</text>
                         <line x1="0" x2={this.props.size} y1="20px" y2="20px" strokeWidth="1" stroke="#000000"/>
                         <text width={this.props.size} textAnchor="middle" dominantBaseline="hanging" x="50%" y="25px"
                               fill="#000000">{this.props.node.getNameByLanguage(this.props.node.model.language)}</text>
