@@ -655,13 +655,13 @@ export function exportDiagram(model: OntoDiagramModel) {
 
     //attribute name declarations
     for (let node in modelNodes) {
-        for (let i = 0; i < Object.keys(modelNodes[node].attributes).length; i++) {
+        for (let i = 0; i < Object.keys(modelNodes[node].attributes[model.language]).length; i++) {
             let attrNameDeclaration = doc.createElement("Declaration");
             let attrNameClass = doc.createElement("Class");
             attrNameClass.setAttribute("IRI", "#" + modelNodes[node].id + "-attr" + i);
             for (let language in LanguagePool) {
                 let skosPrefLabel = doc.createElement("skos:prefLabel");
-                skosPrefLabel.innerHTML = modelNodes[node].attributes[language][i] + "@" + language;
+                skosPrefLabel.innerHTML = modelNodes[node].attributes[language][i].first + "@" + language;
                 attrNameClass.appendChild(skosPrefLabel);
             }
             attrNameDeclaration.appendChild(attrNameClass);
