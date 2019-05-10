@@ -184,6 +184,7 @@ export class LinkCommonWidget extends DefaultLinkWidget {
         });
     }
 
+    //index = label[index-1]
     calculateLabelPositionCustom(label, index: number) {
         if (!this.refLabels[label.id]) {
             // no label? nothing to do here
@@ -201,9 +202,18 @@ export class LinkCommonWidget extends DefaultLinkWidget {
 
         const pathCentre = results.path.getPointAtLength(results.position);
 
+        let y = 0;
+        if (index === 2){
+            y = pathCentre.y - labelDimensions.height / 2 + label.offsetY;
+        } else if (index === 4){
+            y = pathCentre.y - labelDimensions.height / 2 - label.offsetY;
+        } else {
+            y = pathCentre.y - labelDimensions.height / 2;
+        }
+
         const labelCoordinates = {
             x: pathCentre.x - labelDimensions.width / 2 + label.offsetX,
-            y: index === 2 ? pathCentre.y - labelDimensions.height / 2 + label.offsetY : pathCentre.y - labelDimensions.height / 2 - label.offsetY
+            y: y
         };
         this.refLabels[label.id].setAttribute(
             "style",
@@ -218,7 +228,7 @@ export class LinkCommonWidget extends DefaultLinkWidget {
         // calculate the point where we want to display the label
         let totalLength = lengths.reduce((previousValue, currentValue) => previousValue + currentValue, 0);
         let labelPosition = 0;
-        let offset = 20;
+        let offset = 30;
         switch (index) {
             case 1:
                 labelPosition = offset;
