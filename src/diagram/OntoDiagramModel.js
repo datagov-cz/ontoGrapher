@@ -2,7 +2,7 @@ import {DiagramEngine, DiagramModel, LinkModel, NodeModel} from "storm-react-dia
 import {DiagramCanvas} from "./DiagramCanvas";
 import {Locale} from "../config/Locale";
 import * as _ from "lodash";
-import {LanguagePool} from "../config/Variables";
+import {GeneralizationPool, LanguagePool} from "../config/Variables";
 
 export class OntoDiagramModel extends DiagramModel {
 
@@ -32,7 +32,6 @@ export class OntoDiagramModel extends DiagramModel {
         this.nodes = {};
         this.name = Locale.untitledDiagram;
         this.notes = "";
-        this.generalizations = [];
 
         this.offsetX = 0;
         this.offsetY = 0;
@@ -67,7 +66,6 @@ export class OntoDiagramModel extends DiagramModel {
             secondCardinality: this.secondCardinality,
             name: this.name,
             notes: this.notes,
-            generalizations: this.generalizations,
             links: _.map(this.links, link => {
                 return link.serialize();
             }),
@@ -76,6 +74,13 @@ export class OntoDiagramModel extends DiagramModel {
             }),
             languages: _.map(Object.entries(LanguagePool), language => {
                 return language;
+            }),
+            generalizations: _.map(Object.entries(GeneralizationPool), generalization => {
+                let array = [];
+                for (let item of generalization[1]){
+                    array.push(item.id);
+                }
+                return [generalization[0],array];
             })
         });
     }
@@ -93,7 +98,6 @@ export class OntoDiagramModel extends DiagramModel {
         this.secondCardinality = object.secondCardinality;
         this.name = object.name;
         this.notes = object.notes;
-        this.generalizations = object.generalizations;
         // deserialize nodes
         _.forEach(object.nodes, (node: any) => {
             let nodeOb = diagramEngine.getNodeFactory(node.type).getNewInstance(node);
@@ -119,6 +123,16 @@ export class OntoDiagramModel extends DiagramModel {
         }
         for (let entry in object.languages) {
             LanguagePool[object.languages[entry][0]] = object.languages[entry][1];
+        }
+        for (let generalization in GeneralizationPool){
+            delete GeneralizationPool[generalization];
+        }
+        for (let entry in object.generalizations){
+            let array = [];
+            for (let item of object.generalizations[entry][1]){
+                array.push(this.getNodes()[item]);
+            }
+            GeneralizationPool[object.generalizations[entry][0]] = array;
         }
         this.canvas.setName(object.name);
     }

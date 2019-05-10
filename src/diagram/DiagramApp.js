@@ -14,6 +14,8 @@ import {NodeCommonModel} from "../components/common-node/NodeCommonModel";
 import {BottomPanel} from "../panels/BottomPanel";
 import * as OclEngine from "../misc/ocl.min";
 import * as SemanticWebInterface from "../misc/SemanticWebInterface";
+import {Constraint} from "../components/misc/Constraint";
+import {LinkPool} from "../config/LinkVariables";
 
 
 export class DiagramApp extends React.Component {
@@ -72,6 +74,8 @@ export class DiagramApp extends React.Component {
         this.validateModel = this.validateModel.bind(this);
         this.validateSettings = this.validateSettings.bind(this);
         this.validateCurrent = this.validateCurrent.bind(this);
+        this.addConstraint = this.addConstraint.bind(this);
+        this.deleteConstraint = this.deleteConstraint.bind(this);
     }
 
     componentDidMount() {
@@ -90,6 +94,26 @@ export class DiagramApp extends React.Component {
             }.bind(this));
         }
 
+    }
+
+    addConstraint(constraint: Constraint){
+        LinkPool[constraint.linkType][3].push(constraint);
+        let links = this.diagramCanvas.engine.getDiagramModel().getLinks();
+        for (let link in links){
+            if (links[link].linkType === constraint.linkType){
+                links[link].addConstraint(constraint);
+            }
+        }
+    }
+
+    deleteConstraint(constraintIndex: number, linkType: string){
+        LinkPool[linkType][3].splice(constraintIndex,1);
+        let links = this.diagramCanvas.engine.getDiagramModel().getLinks();
+        for (let link in links){
+            if (links[link].linkType === linkType){
+                links[link].removeConstraintByIndex(constraintIndex);
+            }
+        }
     }
 
     validateCurrent(){
@@ -388,6 +412,8 @@ export class DiagramApp extends React.Component {
                         validateCurrent={this.validateCurrent}
                         exportData={this.state.exportData}
                         handleExport={this.export}
+                        addConstraint={this.addConstraint}
+                        deleteConstraint={this.deleteConstraint}
                     />
                     <ElementPanel
                         handleChangeSelectedLink={this.handleChangeSelectedLink}

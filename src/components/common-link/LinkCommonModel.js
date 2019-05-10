@@ -77,6 +77,10 @@ export class LinkCommonModel extends DefaultLinkModel {
         this.constraints.splice(this.constraints.indexOf(constraint),1);
     }
 
+    removeConstraintByIndex(index: number){
+        this.constraints.splice(index,1);
+    }
+
     setDashedLine() {
         this.dashed = true;
     }

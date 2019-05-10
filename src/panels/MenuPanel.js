@@ -152,12 +152,12 @@ export class MenuPanel extends React.Component {
     }
 
     addConstraint(){
-        LinkPool[this.state.constraintLink][3].push(new Constraint(this.state.newConstraint,this.state.constraintLink));
+        this.props.addConstraint(new Constraint(this.state.newConstraint,this.state.constraintLink))
         this.setState({newConstraint: ""});
     }
 
     deleteConstraint(){
-        LinkPool[this.state.constraintLink][3].splice(this.state.constraint,1);
+        this.props.deleteConstraint(this.state.constraint, this.state.constraintLink);
     }
 
     handleChangeNewConstraint(event){
