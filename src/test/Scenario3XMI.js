@@ -188,12 +188,6 @@ export var Scenario3Settings = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
     "        <eAnnotations source=\"dashed\">\n" +
     "            <details key=\"dashed\" value=\"false\"/>\n" +
     "        </eAnnotations>\n" +
-    "        <eAnnotations source=\"http://www.eclipse.org/ocl/examples/OCL\">\n" +
-    "            <details key=\"constraint\" value=\"self.sourceCardinality = &quot;1&quot;\"/>\n" +
-    "        </eAnnotations>\n" +
-    "        <eAnnotations source=\"http://www.eclipse.org/ocl/examples/OCL\">\n" +
-    "            <details key=\"constraint\" value=\"self.targetCardinality = &quot;1&quot;\"/>\n" +
-    "        </eAnnotations>\n" +
     "    </eClassifiers>\n" +
     "    <eClassifiers xsi:type=\"ecore:EClass\" name=\"Component\" abstract=\"false\" interface=\"false\" eSuperTypes=\"//Relationship\">\n" +
     "        <eAnnotations source=\"linkEnd\">\n" +
