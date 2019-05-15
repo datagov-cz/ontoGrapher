@@ -98,6 +98,10 @@ export class NodeCommonModel extends NodeModel {
         }
     }
 
+    getStereotype(){
+        return this.stereotype;
+    }
+
     serialize() {
         return _.merge(super.serialize(), {
             name: this.name,
@@ -110,6 +114,18 @@ export class NodeCommonModel extends NodeModel {
         });
     }
 
+    getRDF(){
+        return this.rdf;
+    }
+
+    getName(language: string){
+        return this.names[language];
+    }
+
+    getAttributes(language: string){
+        return this.attributes[language];
+    }
+
     getLinks(){
         let links = [];
         for (let port in this.getPorts()){
@@ -117,5 +133,6 @@ export class NodeCommonModel extends NodeModel {
                 links.push(this.getPorts()[port].getLinks()[link]);
             }
         }
+        return links;
     }
 }

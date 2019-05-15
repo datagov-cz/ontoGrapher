@@ -69,7 +69,7 @@ export class LinkCommonModel extends DefaultLinkModel {
         this.descriptor = true;
     }
 
-    addConstraint(constraint: Constraint){
+    createConstraint(constraint: Constraint){
         this.constraints.push(constraint);
     }
 
@@ -150,6 +150,22 @@ export class LinkCommonModel extends DefaultLinkModel {
 
     setSecondCardinality(str: string) {
         this.labels[2].setLabel(str);
+    }
+
+    getSourceCardinality(){
+        return this.sourceCardinality;
+    }
+
+    getTargetCardinality(){
+        return this.targetCardinality;
+    }
+
+    getLinktype(){
+        return this.linkType;
+    }
+
+    getName(language: string){
+        return this.names[language];
     }
 
     getSourceNode(){

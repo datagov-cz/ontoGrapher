@@ -454,7 +454,6 @@ export function validateSettingsWithCurrentSettings(source: string) {
                         errors.push(Locale.errorLanguageNotFound + " " + item.type + " " + Locale.errorInExternalMetamodel);
                     break;
                 default:
-                    console.log(item);
                     errors.push(Locale.errorUnknownType + " " + item.type + " " + Locale.errorInExternalMetamodel);
             }
         }
@@ -598,6 +597,8 @@ export function importSettings(source: string) {
                             constraints.push(new Constraint(item.annotations[i].value[0],item.name));
                         }
                     }
+                    specs[1] = Helper.convertStringToBoolean(specs[1]);
+                    specs[2] = Helper.convertStringToBoolean(specs[2]);
                     specs.push(constraints);
                     LinkPool[item.name] = specs;
                     break;
@@ -639,7 +640,7 @@ export function exportDiagram(model: OntoDiagramModel) {
         nodeNameClass.setAttribute("IRI", "#" + modelNodes[node].id);
         for (let language in LanguagePool) {
             if (modelNodes[node].names[language] !== undefined) {
-                let skosPrefLabel = doc.createElement("skos:prefLabel");
+                let skosPrefLabel = doc.createElement("rdfs:label");
                 skosPrefLabel.innerHTML = modelNodes[node].names[language] + "@" + language;
                 nodeNameClass.appendChild(skosPrefLabel);
             }
@@ -660,7 +661,7 @@ export function exportDiagram(model: OntoDiagramModel) {
             let attrNameClass = doc.createElement("Class");
             attrNameClass.setAttribute("IRI", "#" + modelNodes[node].id + "-attr" + i);
             for (let language in LanguagePool) {
-                let skosPrefLabel = doc.createElement("skos:prefLabel");
+                let skosPrefLabel = doc.createElement("rdfs:label");
                 skosPrefLabel.innerHTML = modelNodes[node].attributes[language][i].first + "@" + language;
                 attrNameClass.appendChild(skosPrefLabel);
             }
@@ -745,6 +746,9 @@ export function exportDiagram(model: OntoDiagramModel) {
 
     //subclasses
     for (let link in modelLinks) {
+        if (modelLinks[link].getTargetPort() === null || modelLinks[link].getTargetPort() === undefined){
+            continue;
+        }
         let subClassOf1 = doc.createElement("SubClassOf");
         let subClassOf2 = doc.createElement("SubClassOf");
         let append2 = false;

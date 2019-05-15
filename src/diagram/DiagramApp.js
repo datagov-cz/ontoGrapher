@@ -16,6 +16,7 @@ import * as OclEngine from "../misc/ocl.min";
 import * as SemanticWebInterface from "../misc/SemanticWebInterface";
 import {Constraint} from "../components/misc/Constraint";
 import {LinkPool} from "../config/LinkVariables";
+import * as Helper from "../misc/Helper";
 
 
 export class DiagramApp extends React.Component {
@@ -74,8 +75,9 @@ export class DiagramApp extends React.Component {
         this.validateModel = this.validateModel.bind(this);
         this.validateSettings = this.validateSettings.bind(this);
         this.validateCurrent = this.validateCurrent.bind(this);
-        this.addConstraint = this.addConstraint.bind(this);
-        this.deleteConstraint = this.deleteConstraint.bind(this);
+        this.addConstraintGlobal = this.addConstraintGlobal.bind(this);
+        this.deleteConstraintGlobal = this.deleteConstraintGlobal.bind(this);
+        this.updateLinkPositionDelete = this.updateLinkPositionDelete.bind(this);
     }
 
     componentDidMount() {
@@ -93,21 +95,19 @@ export class DiagramApp extends React.Component {
                 this.forceUpdate();
             }.bind(this));
         }
-
     }
 
-    addConstraint(constraint: Constraint){
-        LinkPool[constraint.linkType][3].push(constraint);
+    addConstraintGlobal(constraint: Constraint){
         let links = this.diagramCanvas.engine.getDiagramModel().getLinks();
         for (let link in links){
+            console.log(link);
             if (links[link].linkType === constraint.linkType){
-                links[link].addConstraint(constraint);
+                links[link].constraints.push(constraint);
             }
         }
     }
 
-    deleteConstraint(constraintIndex: number, linkType: string){
-        LinkPool[linkType][3].splice(constraintIndex,1);
+    deleteConstraintGlobal(constraintIndex: number, linkType: string){
         let links = this.diagramCanvas.engine.getDiagramModel().getLinks();
         for (let link in links){
             if (links[link].linkType === linkType){
@@ -164,14 +164,18 @@ export class DiagramApp extends React.Component {
         let result = {};
         const oclEngine = OclEngine.create();
         let links = this.diagramCanvas.engine.getDiagramModel().getLinks();
+        for (let link in links) {
+            links[link].setColor("black");
+        }
         for (let link in links){
-            console.log(links[link]);
             for (let constraint of links[link].constraints){
-                console.log(constraint);
                 oclEngine.addOclExpression(constraint.constructStatement());
                 let individualResult = oclEngine.evaluate(links[link]);
                 if (!individualResult.getResult()){
-                    result[link] = constraint.statement;
+                    if (!(link in result)){
+                        result[link] = [];
+                    }
+                    result[link].push(constraint.statement);
                     links[link].setColor("red");
                 }
                 oclEngine.clearAllOclExpressions();
@@ -211,6 +215,43 @@ export class DiagramApp extends React.Component {
 
                     if (port.getName() === "bottom"){
                         coords.y +=16;
+                    }
+
+                    link.getLastPoint().updateLocation(coords);
+                }
+            }
+        }
+
+
+    }
+
+    updateLinkPositionDelete(node: NodeCommonModel) {
+        for (let portKey in node.getPorts()) {
+            let port = node.getPorts()[portKey];
+            let coords = this.diagramCanvas.engine.getPortCenter(port);
+
+            for (let linkKey in port.getLinks()) {
+                let link = port.getLinks()[linkKey];
+
+                if (link.getSourcePort() === port) {
+                    if (port.getName() === "left" || port.getName() === "right"){
+                        coords.y +=8-16;
+                    }
+
+                    if (port.getName() === "bottom"){
+                        coords.y +=16-16;
+                    }
+                    link.getFirstPoint().updateLocation(coords);
+                }
+
+                if (link.getTargetPort() === port) {
+
+                    if (port.getName() === "left" || port.getName() === "right"){
+                        coords.y +=8-16;
+                    }
+
+                    if (port.getName() === "bottom"){
+                        coords.y +=16-16;
                     }
 
                     link.getLastPoint().updateLocation(coords);
@@ -412,8 +453,8 @@ export class DiagramApp extends React.Component {
                         validateCurrent={this.validateCurrent}
                         exportData={this.state.exportData}
                         handleExport={this.export}
-                        addConstraint={this.addConstraint}
-                        deleteConstraint={this.deleteConstraint}
+                        addConstraintGlobal={this.addConstraintGlobal}
+                        deleteConstraintGlobal={this.deleteConstraintGlobal}
                     />
                     <ElementPanel
                         handleChangeSelectedLink={this.handleChangeSelectedLink}
@@ -423,6 +464,7 @@ export class DiagramApp extends React.Component {
                         panelObject={this.state.panelObject}
                         language={this.state.language}
                         updateLinkPosition={this.updateLinkPosition}
+                        updateLinkPositionDelete={this.updateLinkPositionDelete}
                     />
                     <DiagramCanvas
                         ref={instance => {

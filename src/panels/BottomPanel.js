@@ -16,13 +16,17 @@ export class BottomPanel extends React.Component{
         left = left === null ? 0 : left.offsetWidth;
         let right = document.getElementById("detailPanel");
         right = right === null ? 0 : right.offsetWidth;
+        let keyCount = 0;
         if (this.props.bottomPanelActive){
-            let constraintEvaluations = Object.entries(this.props.bottomPanelData).map((evaluation, i) =>{
-                return(<tr key={i}>
-                    <td><a onClick={this.props.handleLocate.bind(this,evaluation[0])}>{i+1}</a></td>
-                    <td>{evaluation[0]}</td>
-                    <td>{evaluation[1]}</td>
-                </tr>);
+            let constraintEvaluations = Object.keys(this.props.bottomPanelData).map((link, i) =>{
+                let result = this.props.bottomPanelData[link].map((evaluation, j)=>
+                    <tr key={keyCount}>
+                        <td><a onClick={this.props.handleLocate.bind(this,link)}>{(keyCount++)+1}</a></td>
+                        <td>{link}</td>
+                        <td>{evaluation}</td>
+                    </tr>
+                );
+                return result;
             });
             return (
                 <div className="bottomPanel" style={{left: left + "px", width: "calc(100% - "+(right+left)+"px"}}>

@@ -11,6 +11,15 @@ export class AttributeObject {
         return this.first;
     }
 
+    getName(){
+        return this.first;
+    }
+
+    getType(){
+        console.log(this.second);
+        return this.second;
+    }
+
     getSecond() {
         return this.second;
     }

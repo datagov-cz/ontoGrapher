@@ -152,12 +152,17 @@ export class MenuPanel extends React.Component {
     }
 
     addConstraint(){
-        this.props.addConstraint(new Constraint(this.state.newConstraint,this.state.constraintLink))
-        this.setState({newConstraint: ""});
+        if (this.state.newConstraint !== ""){
+            let constraint = new Constraint(this.state.newConstraint,this.state.constraintLink)
+            LinkPool[this.state.constraintLink][3].push(constraint);
+            this.props.addConstraintGlobal(constraint);
+            this.setState({newConstraint: ""});
+        }
     }
 
     deleteConstraint(){
-        this.props.deleteConstraint(this.state.constraint, this.state.constraintLink);
+        LinkPool[this.state.constraintLink][3].splice(this.state.constraint,1);
+        this.props.deleteConstraintGlobal(this.state.constraint, this.state.constraintLink);
     }
 
     handleChangeNewConstraint(event){
@@ -779,11 +784,13 @@ export class MenuPanel extends React.Component {
                             </Modal.Title>
                         </Modal.Header>
                         <Modal.Body>
-                            {Object.keys(LocaleHelp).map((obj) => {
-                                return (
-                                    <p key={obj}>{LocaleHelp[obj]}</p>
-                                );
-                            })}
+                            <Tabs id="helpTabs" animation={false}>
+                                {Object.keys(LocaleHelp).map((obj, i) => {
+                                    return(<Tab key={i} eventKey={i+1} title={obj}>
+                                            {LocaleHelp[obj]}
+                                    </Tab>);
+                                })}
+                            </Tabs>
                         </Modal.Body>
                         <Modal.Footer>
                             <Button onClick={this.handleCloseHelpModal} bsStyle="primary">{Locale.close}</Button>
@@ -997,6 +1004,7 @@ export class MenuPanel extends React.Component {
 
                                 <FormControl
                                     type="text"
+                                    style={{width: "500px"}}
                                     value={this.state.newConstraint}
                                     placeholder={Locale.constraintPlaceholder}
                                     onChange={this.handleChangeNewConstraint}

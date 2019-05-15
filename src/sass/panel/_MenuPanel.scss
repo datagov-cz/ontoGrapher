@@ -63,3 +63,16 @@
   padding: 8px 16px;
   cursor: default;
 }
+
+.helpTab{
+  max-height: 400px;
+  overflow: auto;
+}
+
+code {
+  background-color: #eee;
+  color: #000;
+  border-radius: 3px;
+  font-family: courier, monospace;
+  padding: 0 3px;
+}

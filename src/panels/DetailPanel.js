@@ -209,9 +209,11 @@ export class DetailPanel extends React.Component {
     }
 
     deleteAttribute() {
+        debugger;
         this.props.panelObject.removeAttributeByIndex(this.state.attribute);
         this.setState({attribute: 0});
-        this.props.updateLinkPosition(this.props.panelObject);
+        this.forceUpdate();
+        this.props.updateLinkPositionDelete(this.props.panelObject);
     }
 
     handleChangeAttributeName(event) {
@@ -369,7 +371,7 @@ export class DetailPanel extends React.Component {
                     <g>
                         <rect fill="#ffffff" stroke={"black"} strokeWidth="4" width={150} height={height}/>
                         <text width={150} textAnchor="middle" dominantBaseline="hanging" x="50%" y="5px"
-                              fill="#000000">{"«" + this.state.stereotype + "»"}</text>
+                              fill="#000000">{"«" + this.state.stereotype.toLowerCase() + "»"}</text>
                         <line x1="0" x2={150} y1="20px" y2="20px" strokeWidth="1" stroke="#000000"/>
                         <text width={150} textAnchor="middle" dominantBaseline="hanging" x="50%" y="25px"
                               fill="#000000">{this.state.names[this.props.language]}</text>
@@ -472,7 +474,7 @@ export class DetailPanel extends React.Component {
                         <g>
                             <rect fill="#ffffff" stroke={"black"} strokeWidth="4" width={150} height={height}/>
                             <text width={150} textAnchor="middle" dominantBaseline="hanging" x="50%" y="5px"
-                                  fill="#000000">{"«" + this.state.nodeStart.stereotype + "»"}</text>
+                                  fill="#000000">{"«" + this.state.nodeStart.stereotype.toLowerCase() + "»"}</text>
                             <line x1="0" x2={150} y1="20px" y2="20px" strokeWidth="1" stroke="#000000"/>
                             <text width={150} textAnchor="middle" dominantBaseline="hanging" x="50%" y="25px"
                                   fill="#000000">{this.state.nodeStart.names[this.props.language]}</text>
@@ -501,7 +503,7 @@ export class DetailPanel extends React.Component {
                         <g>
                             <rect fill="#ffffff" stroke={"black"} strokeWidth="4" width={150} height={height}/>
                             <text width={150} textAnchor="middle" dominantBaseline="hanging" x="50%" y="5px"
-                                  fill="#000000">{"«" + this.state.nodeEnd.stereotype + "»"}</text>
+                                  fill="#000000">{"«" + this.state.nodeEnd.stereotype.toLowerCase() + "»"}</text>
                             <line x1="0" x2={150} y1="20px" y2="20px" strokeWidth="1" stroke="#000000"/>
                             <text width={150} textAnchor="middle" dominantBaseline="hanging" x="50%" y="25px"
                                   fill="#000000">{this.state.nodeEnd.names[this.props.language]}</text>
