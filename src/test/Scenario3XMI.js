@@ -188,6 +188,18 @@ export var Scenario3Settings = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
     "        <eAnnotations source=\"dashed\">\n" +
     "            <details key=\"dashed\" value=\"false\"/>\n" +
     "        </eAnnotations>\n" +
+    "        <eAnnotations source=\"http://www.eclipse.org/ocl/examples/OCL\">\n" +
+    "            <details key=\"constraint\" value=\"self.getTargetNode().getStereotype() = &quot;Mode Type&quot; implies self.getSourceCardinality() = &quot;1&quot;\"/>\n" +
+    "        </eAnnotations>\n" +
+    "        <eAnnotations source=\"http://www.eclipse.org/ocl/examples/OCL\">\n" +
+    "            <details key=\"constraint\" value=\"self.getSourceNode().getStereotype() = &quot;Mode Type&quot; implies self.getTargetCardinality() = &quot;1&quot;\"/>\n" +
+    "        </eAnnotations>\n" +
+    "        <eAnnotations source=\"http://www.eclipse.org/ocl/examples/OCL\">\n" +
+    "            <details key=\"constraint\" value=\"self.getSourceCardinality().charAt(0) = &quot;1&quot;\"/>\n" +
+    "        </eAnnotations>\n" +
+    "        <eAnnotations source=\"http://www.eclipse.org/ocl/examples/OCL\">\n" +
+    "            <details key=\"constraint\" value=\"self.getTargetCardinality().charAt(0) = &quot;1&quot;\"/>\n" +
+    "        </eAnnotations>\n" +
     "    </eClassifiers>\n" +
     "    <eClassifiers xsi:type=\"ecore:EClass\" name=\"Component\" abstract=\"false\" interface=\"false\" eSuperTypes=\"//Relationship\">\n" +
     "        <eAnnotations source=\"linkEnd\">\n" +
@@ -232,6 +244,12 @@ export var Scenario3Settings = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
     "        <eAnnotations source=\"dashed\">\n" +
     "            <details key=\"dashed\" value=\"false\"/>\n" +
     "        </eAnnotations>\n" +
+    "        <eAnnotations source=\"http://www.eclipse.org/ocl/examples/OCL\">\n" +
+    "            <details key=\"constraint\" value=\"self.getSourceCardinality().charAt(0) = &quot;1&quot;\"/>\n" +
+    "        </eAnnotations>\n" +
+    "        <eAnnotations source=\"http://www.eclipse.org/ocl/examples/OCL\">\n" +
+    "            <details key=\"constraint\" value=\"self.getTargetCardinality().charAt(0) = &quot;1&quot;\"/>\n" +
+    "        </eAnnotations>\n" +
     "    </eClassifiers>\n" +
     "    <eClassifiers xsi:type=\"ecore:EClass\" name=\"Mediation\" abstract=\"false\" interface=\"false\" eSuperTypes=\"//Relationship\">\n" +
     "        <eAnnotations source=\"linkEnd\">\n" +
@@ -245,6 +263,12 @@ export var Scenario3Settings = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
     "        </eAnnotations>\n" +
     "        <eAnnotations source=\"http://www.eclipse.org/ocl/examples/OCL\">\n" +
     "            <details key=\"constraint\" value=\"self.getSourceNode().getStereotype() = &quot;Relator&quot; or self.getTargetNode().getStereotype() = &quot;Relator&quot;\"/>\n" +
+    "        </eAnnotations>\n" +
+    "        <eAnnotations source=\"http://www.eclipse.org/ocl/examples/OCL\">\n" +
+    "            <details key=\"constraint\" value=\"self.getSourceCardinality().charAt(0) = &quot;1&quot;\"/>\n" +
+    "        </eAnnotations>\n" +
+    "        <eAnnotations source=\"http://www.eclipse.org/ocl/examples/OCL\">\n" +
+    "            <details key=\"constraint\" value=\"self.getTargetCardinality().charAt(0) = &quot;1&quot;\"/>\n" +
     "        </eAnnotations>\n" +
     "    </eClassifiers>\n" +
     "    <eClassifiers xsi:type=\"ecore:EClass\" name=\"Member\" abstract=\"false\" interface=\"false\" eSuperTypes=\"//Relationship\">\n" +
@@ -289,6 +313,18 @@ export var Scenario3Settings = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
     "        </eAnnotations>\n" +
     "        <eAnnotations source=\"dashed\">\n" +
     "            <details key=\"dashed\" value=\"false\"/>\n" +
+    "        </eAnnotations>\n" +
+    "        <eAnnotations source=\"http://www.eclipse.org/ocl/examples/OCL\">\n" +
+    "            <details key=\"constraint\" value=\"self.getSourceNode().getStereotype() = &quot;Quality Type&quot; implies self.getTargetNode().getStereotype() &lt;&gt; &quot;Kind&quot;\"/>\n" +
+    "        </eAnnotations>\n" +
+    "        <eAnnotations source=\"http://www.eclipse.org/ocl/examples/OCL\">\n" +
+    "            <details key=\"constraint\" value=\"self.getSourceNode().getStereotype() = &quot;Quality Type&quot; implies self.getTargetNode().getStereotype() &lt;&gt; &quot;Sub-kind&quot;\"/>\n" +
+    "        </eAnnotations>\n" +
+    "        <eAnnotations source=\"http://www.eclipse.org/ocl/examples/OCL\">\n" +
+    "            <details key=\"constraint\" value=\"self.getSourceNode().getStereotype() = &quot;Quality Type&quot; implies self.getTargetNode().getStereotype() &lt;&gt; &quot;Relator&quot;\"/>\n" +
+    "        </eAnnotations>\n" +
+    "        <eAnnotations source=\"http://www.eclipse.org/ocl/examples/OCL\">\n" +
+    "            <details key=\"constraint\" value=\"self.getSourceNode().getStereotype() = &quot;Quality Type&quot; implies self.getTargetNode().getStereotype() &lt;&gt; &quot;Mode Type&quot;\"/>\n" +
     "        </eAnnotations>\n" +
     "    </eClassifiers>\n" +
     "    <eClassifiers xsi:type=\"ecore:EClass\" name=\"String\" abstract=\"false\" interface=\"false\" eSuperTypes=\"//AttributeType\"/>\n" +
