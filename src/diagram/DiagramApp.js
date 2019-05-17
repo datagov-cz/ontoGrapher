@@ -168,6 +168,14 @@ export class DiagramApp extends React.Component {
             links[link].setColor("black");
         }
         for (let link in links){
+            if (links[link].getTargetPort() === null || links[link].getTargetPort() === undefined){
+                if (!(link in result)){
+                    result[link] = [];
+                }
+                links[link].setColor("red");
+                result[link].push("self.getTargetPort() <> null");
+                continue;
+            }
             for (let constraint of links[link].constraints){
                 oclEngine.addOclExpression(constraint.constructStatement());
                 let individualResult = oclEngine.evaluate(links[link]);

@@ -1,4 +1,5 @@
 import {Locale} from "./Locale";
+import {Constraint} from "../components/misc/Constraint";
 
 // LinkEnd, Labeled, Dashed, OCL Constraints
 
@@ -22,12 +23,15 @@ export var LinkPool = {
     "Material": ["Empty", true, false, []],
     "Mediation": ["Empty", true, false, []],
     "Member": ["FilledMDiamond", true, false, []],
-    "SubCollection": ["FilledCDiamond", true, false, []],
-    "SubQuantity": ["FilledQDiamond", true, false, []]
+    "SubCollection": ["FilledCDiamond", false, false, []],
+    "SubQuantity": ["FilledQDiamond", false, false, []]
 };
 
 // Do not delete!
-LinkPool[Locale.generalization] = ["UnfilledArrow", false, false, []];
+LinkPool[Locale.generalization] = ["UnfilledArrow", false, false, [
+    new Constraint("self.getSourceCardinality() = \""+ Locale.none +"\"",Locale.generalization),
+    new Constraint("self.getTargetCardinality() = \""+ Locale.none +"\"",Locale.generalization)
+]];
 
 
 

@@ -81,7 +81,7 @@ export class NodeCommonModel extends NodeModel {
         this.attributes[this.attributes.find(attribute)] = attribute;
     }
 
-    setAttributeWithLanguageAndIndex(language: string, attr: Attribute, index: number) {
+    setAttributeWithLanguageAndIndex(language: string, attr: AttributeObject, index: number) {
         this.attributes[language][index] = attr;
     }
 
@@ -134,5 +134,17 @@ export class NodeCommonModel extends NodeModel {
             }
         }
         return links;
+    }
+
+    hasLink(linkType: string){
+        let links = [];
+        for (let port in this.getPorts()){
+            for (let link in this.getPorts()[port].getLinks()){
+                if (this.getPorts()[port].getLinks()[link].getLinktype() === linkType){
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }
