@@ -96,7 +96,7 @@ export var LocaleHelp = {
                 <li>The “Reevaluate” button rechecks whether the constraints pass.</li>
                 <li>The “Close” button closes the section.</li>
             </ul>
-            Furthemore, relationships that fail the check turn red, and relationships that were selected via the
+            Furthermore, relationships that fail the check turn red, and relationships that were selected via the
             evaluation table turn yellow.
             <h4>Validation</h4>
             <p>

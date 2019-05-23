@@ -433,7 +433,7 @@ export function validateSettingsWithCurrentSettings(source: string) {
                         errors.push(Locale.errorWrongNumberOfOCLConstraints + " " + item.name + " " + Locale.errorInExternalMetamodel);
                     } else {
                         for (let i = 3; i < item.annotations.length; i++) {
-                            if (item.annotations.length[i] !== LinkPool[item.name][3][i - 3]) {
+                            if (item.annotations[i].value[0] !== LinkPool[item.name][3][i - 3].statement) {
                                 errors.push(Locale.errorWrongOCLConstraint + " " + item.name + " " + Locale.errorInExternalMetamodel);
                             }
                         }
@@ -640,13 +640,15 @@ export function exportDiagram(model: OntoDiagramModel) {
         nodeNameClass.setAttribute("IRI", "#" + modelNodes[node].id);
         for (let language in LanguagePool) {
             if (modelNodes[node].names[language] !== undefined) {
-                let skosPrefLabel = doc.createElement("rdfs:label");
-                skosPrefLabel.innerHTML = modelNodes[node].names[language] + "@" + language;
+                let skosPrefLabel = doc.createElement("skos:label");
+                let innerHTML = modelNodes[node].names[language] + "@" + language;
+                skosPrefLabel.innerHTML = innerHTML;
                 nodeNameClass.appendChild(skosPrefLabel);
             }
             if (modelNodes[node].notes[language] !== undefined) {
                 let skosNote = doc.createElement("skos:note");
-                skosNote.innerHTML = modelNodes[node].notes[language] + "@" + language;
+                let innerHTML = modelNodes[node].notes[language] + "@" + language;
+                skosNote.innerHTML = innerHTML;
                 nodeNameClass.appendChild(skosNote);
             }
         }
