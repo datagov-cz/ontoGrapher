@@ -2,20 +2,20 @@
 
 Webová komponenta v technologii React sloužící ke grafické manipulaci s OntoUML diagramy.
 
-####Požadavky
+#### Požadavky
 
 * npm
-* webový prohlížeč s vypnutým CORS ([příklad, jak vypnout CORS v Chromu](https://stackoverflow.com/questions/3102819/disable-same-origin-policy-in-chrome))
+* webový prohlížeč s vypnutým CORS ([návod, jak vypnout CORS v Chromu](https://stackoverflow.com/questions/3102819/disable-same-origin-policy-in-chrome))
 
-####Instrukce
+#### Instrukce
 
 Po stažení extrahujte do libovolného adresáře a nainstalujte závislosti pomocí příkazu `npm install`.
 
-####Návod k použítí
+#### Návod k použítí
 
 Kompomentu spustíte příkazem `npm start`. V nabídkovém panelu klikněte na "Help".
 
-####Nedaří se instalovat závislosti?
+#### Nedaří se instalovat závislosti?
 
 * Zkuste použít Python 2.7.
 * Zkuste použít příkaz `npm install --global --production windows-build-tools` v PowerShellu za administrátora.

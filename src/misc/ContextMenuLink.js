@@ -36,7 +36,7 @@ export class ContextMenuLink extends React.Component {
     }
 
     handleClickCardinality(event) {
-        let cardinality = event.nativeEvent.path[0].innerHTML === Locale.none ? "" : event.nativeEvent.path[0].innerHTML;
+        let cardinality = event.nativeEvent.path[0].innerHTML;
         let label = new DefaultLabelModel();
         label.setLabel(cardinality);
         if (this.state.subMenuFirstCard) {

@@ -1,6 +1,6 @@
 import {DefaultLabelWidget} from "storm-react-diagrams";
 
-export class CommonLabelWidget extends DefaultLabelWidget {
+export class LabelCommonWidget extends DefaultLabelWidget {
     componentDidUpdate(prevProps) {
 
         if (prevProps.model.label !== this.props.model.label) {

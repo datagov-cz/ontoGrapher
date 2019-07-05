@@ -3,6 +3,7 @@ import React from "react";
 import * as _ from "lodash";
 import {LinkEndPool, LinkPool} from "../../config/LinkVariables";
 import {LabelModel} from "storm-react-diagrams";
+import {Locale} from "../../config/Locale";
 
 export class LinkCommonWidget extends DefaultLinkWidget {
     label: boolean;
@@ -386,7 +387,7 @@ export class LinkCommonWidget extends DefaultLinkWidget {
             <g {...this.getProps()}>
                 {paths}
                 {_.map(this.props.link.labels, labelModel => {
-                    if (labelModel.label !== "") {
+                    if (!((labelModel.label === "") || (labelModel.label === Locale.none))) {
                         return this.generateLabel(labelModel);
                     }
                 })}

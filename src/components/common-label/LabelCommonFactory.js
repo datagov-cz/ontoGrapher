@@ -2,15 +2,15 @@ import {DefaultLabelFactory} from "storm-react-diagrams";
 import {DiagramEngine} from "storm-react-diagrams";
 import {DefaultLabelModel} from "storm-react-diagrams";
 import React from "react";
-import {CommonLabelWidget} from "./CommonLabelWidget";
+import {LabelCommonWidget} from "./LabelCommonWidget";
 
-export class CommonLabelFactory extends DefaultLabelFactory {
+export class LabelCommonFactory extends DefaultLabelFactory {
     constructor() {
         super("default");
     }
 
     generateReactWidget(diagramEngine: DiagramEngine, label: DefaultLabelModel): JSX.Element {
-        return <CommonLabelWidget model={label}/>;
+        return <LabelCommonWidget model={label}/>;
     }
 
     getNewInstance(initialConfig?: any): DefaultLabelModel {

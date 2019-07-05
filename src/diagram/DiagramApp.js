@@ -1,5 +1,5 @@
 import React from "react";
-import {Defaults} from "../components/misc/Defaults";
+import {Defaults} from "./Defaults";
 import {PointModel} from "storm-react-diagrams";
 import {MenuPanel} from "../panels/MenuPanel";
 import {ElementPanel} from "../panels/ElementPanel";
@@ -12,11 +12,10 @@ import {LinkCommonModel} from "../components/common-link/LinkCommonModel";
 import PropTypes from "prop-types";
 import {NodeCommonModel} from "../components/common-node/NodeCommonModel";
 import {BottomPanel} from "../panels/BottomPanel";
-import * as OclEngine from "../misc/ocl.min";
+import * as OclEngine from "../lib/ocl.min";
 import * as SemanticWebInterface from "../misc/SemanticWebInterface";
 import {Constraint} from "../components/misc/Constraint";
-import {LinkPool} from "../config/LinkVariables";
-import * as Helper from "../misc/Helper";
+import {validateCurrent, validateSettingsWithCurrentSettings, validateSettingsWithModel} from "../misc/Validator";
 
 
 export class DiagramApp extends React.Component {
@@ -47,7 +46,7 @@ export class DiagramApp extends React.Component {
             require("../sass/main.scss");
             require("babel-core/register");
             require("babel-polyfill");
-            require("../misc/sax.js");
+            require("../lib/sax.js");
         }
 
 
@@ -117,21 +116,21 @@ export class DiagramApp extends React.Component {
     }
 
     validateCurrent(){
-        let errors = SemanticWebInterface.validateCurrent(this.diagramCanvas.engine.getDiagramModel());
+        let errors = validateCurrent(this.diagramCanvas.engine.getDiagramModel());
         this.setState({
             validationResults: errors
         });
     }
 
     validateModel(source: string) {
-        let errors = SemanticWebInterface.validateSettingsWithModel(this.diagramCanvas.engine.getDiagramModel(), source);
+        let errors = validateSettingsWithModel(this.diagramCanvas.engine.getDiagramModel(), source);
         this.setState({
             validationResults: errors
         });
     }
 
     validateSettings(source: string) {
-        let errors = SemanticWebInterface.validateSettingsWithCurrentSettings(source);
+        let errors = validateSettingsWithCurrentSettings(source);
         this.setState({
             validationResults: errors
         });

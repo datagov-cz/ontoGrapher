@@ -6,9 +6,9 @@ import {NodeCommonFactory} from "../components/common-node/NodeCommonFactory";
 import {NodeCommonPortFactory} from "../components/common-node/NodeCommonPortFactory";
 import {LinkCommonFactory} from "../components/common-link/LinkCommonFactory";
 import {LinkCommonModel} from "../components/common-link/LinkCommonModel";
-import {CommonLabelFactory} from "../components/misc/CommonLabelFactory";
+import {LabelCommonFactory} from "../components/common-label/LabelCommonFactory";
 import {OntoDiagramWidget} from "./OntoDiagramWidget";
-import {Defaults} from "../components/misc/Defaults";
+import {Defaults} from "./Defaults";
 
 
 export class DiagramCanvas extends React.Component {
@@ -19,7 +19,7 @@ export class DiagramCanvas extends React.Component {
     registerFactories() {
         this.engine.registerNodeFactory(new NodeCommonFactory(this.engine.getDiagramModel()));
         this.engine.registerLinkFactory(new LinkCommonFactory());
-        this.engine.registerLabelFactory(new CommonLabelFactory());
+        this.engine.registerLabelFactory(new LabelCommonFactory());
         this.engine.registerPortFactory(new NodeCommonPortFactory());
     }
 

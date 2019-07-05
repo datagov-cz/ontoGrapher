@@ -1,5 +1,5 @@
-import {CardinalityPool, LanguagePool} from "../../config/Variables";
-import {LinkPool} from "../../config/LinkVariables";
+import {CardinalityPool, LanguagePool} from "../config/Variables";
+import {LinkPool} from "../config/LinkVariables";
 
 export var Defaults = {
     selectedLink: Object.keys(LinkPool)[0],
