@@ -387,6 +387,7 @@ export class DiagramApp extends React.Component {
                      onClick={this.hideContextMenu}
                 >
                     <MenuPanel
+                        handleChangeNotes={this.handleChangeNotes}
                         handleChangeSelectedLink={this.handleChangeSelectedLink}
                         handleChangeFirstCardinality={this.handleChangeFirstCardinality}
                         handleChangeSecondCardinality={this.handleChangeSecondCardinality}
@@ -397,13 +398,24 @@ export class DiagramApp extends React.Component {
                         firstCardinality={this.state.firstCardinality}
                         secondCardinality={this.state.secondCardinality}
                         language={this.state.language}
-                        name={this.state.names}
+                        name={this.state.name}
                         notes={this.state.notes}
-                        saveData={this.state.saveData}
                         handleSerialize={this.serialize}
                         handleDeserialize={this.deserialize}
                         handleExport={this.export}
                         readOnly={this.props.readOnly}
+                        saveData={this.state.saveData}
+                        centerView={this.centerView}
+                        restoreZoom={this.handleZoom}
+                        success={this.state.success}
+                        handleEvaluate={this.evaluate}
+                        validateSettings={this.validateSettings}
+                        validateModel={this.validateModel}
+                        validationResults={this.state.validationResults}
+                        validateCurrent={this.validateCurrent}
+                        exportData={this.state.exportData}
+                        addConstraintGlobal={this.addConstraintGlobal}
+                        deleteConstraintGlobal={this.deleteConstraintGlobal}
                     />
                     <DiagramCanvas
                         ref={instance => {
@@ -460,7 +472,6 @@ export class DiagramApp extends React.Component {
                         validationResults={this.state.validationResults}
                         validateCurrent={this.validateCurrent}
                         exportData={this.state.exportData}
-                        handleExport={this.export}
                         addConstraintGlobal={this.addConstraintGlobal}
                         deleteConstraintGlobal={this.deleteConstraintGlobal}
                     />
