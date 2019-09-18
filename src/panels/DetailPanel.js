@@ -531,9 +531,9 @@ export class DetailPanel extends React.Component {
 
                     <g>
                         <line x1={0} x2={200} y1={25} y2={25} stroke="black" strokeWidth={3} strokeDasharray={LinkPool[this.state.linkType][2] ? "10,10" : "none"} />
-                        <text x={5} y={15}  textAnchor="start"  dominantBaseline="baseline">{this.state.labels[0].label}</text>
+                        <text x={5} y={15}  textAnchor="start"  dominantBaseline="baseline">{this.state.labels[0].label === Locale.none ? "" : this.state.labels[0].label}</text>
                         <text x={100} y={20}  textAnchor="middle" dominantBaseline="baseline">{this.state.labels[1].label}</text>
-                        <text x={195} y={15} textAnchor="end"  dominantBaseline="baseline">{this.state.labels[2].label}</text>
+                        <text x={195} y={15} textAnchor="end"  dominantBaseline="baseline">{this.state.labels[2].label === Locale.none ? "" : this.state.labels[2].label}</text>
                         <text x={100} y={30}  textAnchor="middle" dominantBaseline="hanging">{this.state.labels[3].label}</text>
                     </g>
                     <g>

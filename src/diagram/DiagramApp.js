@@ -1,7 +1,7 @@
 import React from "react";
 import {Defaults} from "./Defaults";
 import {PointModel} from "storm-react-diagrams";
-import {MenuPanel} from "../panels/MenuPanel";
+import {MenuPanel} from "../panels/menu/MenuPanel";
 import {ElementPanel} from "../panels/ElementPanel";
 import {DetailPanel} from "../panels/DetailPanel";
 import {DiagramCanvas} from "./DiagramCanvas";
@@ -14,14 +14,31 @@ import {NodeCommonModel} from "../components/common-node/NodeCommonModel";
 import {BottomPanel} from "../panels/BottomPanel";
 import * as OclEngine from "../lib/ocl.min";
 import * as SemanticWebInterface from "../misc/SemanticWebInterface";
-import {Constraint} from "../components/misc/Constraint";
-import {validateCurrent, validateSettingsWithCurrentSettings, validateSettingsWithModel} from "../misc/Validator";
+import {MenuFileNewDiagram} from "../panels/menu/file/MenuFileNewDiagram";
+import {MenuDropdownList} from "../panels/menu/MenuDropdownList";
+import {MenuFileDiagramSettings} from "../panels/menu/file/MenuFileDiagramSettings";
+import {MenuFileLoadDiagram} from "../panels/menu/file/MenuFileLoadDiagram";
+import {MenuFileSaveDiagram} from "../panels/menu/file/MenuFileSaveDiagram";
+import {MenuFileExportDiagram} from "../panels/menu/file/MenuFileExportDiagram";
+import {MenuViewCenter} from "../panels/menu/view/MenuViewCenter";
+import {MenuViewZoom} from "../panels/menu/view/MenuViewZoom";
+import {MenuToolsValidate} from "../panels/menu/tools/MenuToolsValidate";
+import {MenuToolsEvaluate} from "../panels/menu/tools/MenuToolsEvaluate";
+import {MenuSettingsLanguages} from "../panels/menu/settings/MenuSettingsLanguages";
+import {MenuSettingsNodes} from "../panels/menu/settings/MenuSettingsNodes";
+import {MenuSettingsLinks} from "../panels/menu/settings/MenuSettingsLinks";
+import {MenuSettingsCardinalities} from "../panels/menu/settings/MenuSettingsCardinalities";
+import {MenuSettingsAttributeTypes} from "../panels/menu/settings/MenuSettingsAttributeTypes";
+import {MenuSettingsImportExport} from "../panels/menu/settings/MenuSettingsImportExport";
+import {MenuSettingsConstraints} from "../panels/menu/settings/MenuSettingsConstraints";
+import {MenuButtonHelp} from "../panels/menu/buttons/MenuButtonHelp";
 
 
 export class DiagramApp extends React.Component {
     constructor(props) {
         super(props);
         document.title = Locale.untitledDiagram + " | " + Locale.appName;
+        this.diagramCanvas = React.createRef();
         this.state = {
             selectedLink: Defaults.selectedLink,
             firstCardinality: Defaults.cardinality,
@@ -59,23 +76,13 @@ export class DiagramApp extends React.Component {
         this.handleChangeName = this.handleChangeName.bind(this);
         this.showContextMenu = this.showContextMenu.bind(this);
         this.hideContextMenu = this.hideContextMenu.bind(this);
-        this.serialize = this.serialize.bind(this);
         this.deserialize = this.deserialize.bind(this);
-        this.export = this.export.bind(this);
-        this.handleSerialize = this.handleSerialize.bind(this);
-        this.handleZoom = this.handleZoom.bind(this);
-        this.centerView = this.centerView.bind(this);
         this.setName = this.setName.bind(this);
         this.handleChangeNotes = this.handleChangeNotes.bind(this);
         this.updateLinkPosition = this.updateLinkPosition.bind(this);
         this.evaluate = this.evaluate.bind(this);
         this.handleCloseBottomPanel = this.handleCloseBottomPanel.bind(this);
         this.handleLocate = this.handleLocate.bind(this);
-        this.validateModel = this.validateModel.bind(this);
-        this.validateSettings = this.validateSettings.bind(this);
-        this.validateCurrent = this.validateCurrent.bind(this);
-        this.addConstraintGlobal = this.addConstraintGlobal.bind(this);
-        this.deleteConstraintGlobal = this.deleteConstraintGlobal.bind(this);
         this.updateLinkPositionDelete = this.updateLinkPositionDelete.bind(this);
     }
 
@@ -87,7 +94,7 @@ export class DiagramApp extends React.Component {
             this.deserialize(this.props.loadDiagram);
         }
         if (this.props.readOnly) {
-            this.diagramCanvas.engine.getDiagramModel().setLocked(true);
+            this.diagramCanvas.current.setReadOnly(true);
         }
         if (typeof this.props.loadOntology === "string"){
             SemanticWebInterface.fetchStereotypes(this.props.loadOntology,true, function(){
@@ -96,48 +103,8 @@ export class DiagramApp extends React.Component {
         }
     }
 
-    addConstraintGlobal(constraint: Constraint){
-        let links = this.diagramCanvas.engine.getDiagramModel().getLinks();
-        for (let link in links){
-            console.log(link);
-            if (links[link].linkType === constraint.linkType){
-                links[link].constraints.push(constraint);
-            }
-        }
-    }
-
-    deleteConstraintGlobal(constraintIndex: number, linkType: string){
-        let links = this.diagramCanvas.engine.getDiagramModel().getLinks();
-        for (let link in links){
-            if (links[link].linkType === linkType){
-                links[link].removeConstraintByIndex(constraintIndex);
-            }
-        }
-    }
-
-    validateCurrent(){
-        let errors = validateCurrent(this.diagramCanvas.engine.getDiagramModel());
-        this.setState({
-            validationResults: errors
-        });
-    }
-
-    validateModel(source: string) {
-        let errors = validateSettingsWithModel(this.diagramCanvas.engine.getDiagramModel(), source);
-        this.setState({
-            validationResults: errors
-        });
-    }
-
-    validateSettings(source: string) {
-        let errors = validateSettingsWithCurrentSettings(source);
-        this.setState({
-            validationResults: errors
-        });
-    }
-
     handleLocate(element){
-        let links = this.diagramCanvas.engine.getDiagramModel().getLinks();
+        let links = this.diagramCanvas.current.engine.getDiagramModel().getLinks();
         let current = links[element];
         for (let link in links){
             let color = links[link].color === "black" ? "black" : "red";
@@ -147,12 +114,12 @@ export class DiagramApp extends React.Component {
             current.setColor("yellow");
             current = current.getFirstPoint();
         }
-        this.diagramCanvas.engine.getDiagramModel().setOffsetX(current.x);
-        this.diagramCanvas.engine.getDiagramModel().setOffsetY(current.y);
+        this.diagramCanvas.current.engine.getDiagramModel().setOffsetX(current.x);
+        this.diagramCanvas.current.engine.getDiagramModel().setOffsetY(current.y);
     }
 
     handleCloseBottomPanel(){
-        let links = this.diagramCanvas.engine.getDiagramModel().getLinks();
+        let links = this.diagramCanvas.current.engine.getDiagramModel().getLinks();
         for (let link in links) {
             links[link].setColor("black");
         }
@@ -162,7 +129,7 @@ export class DiagramApp extends React.Component {
     evaluate(){
         let result = {};
         const oclEngine = OclEngine.create();
-        let links = this.diagramCanvas.engine.getDiagramModel().getLinks();
+        let links = this.diagramCanvas.current.engine.getDiagramModel().getLinks();
         for (let link in links) {
             links[link].setColor("black");
         }
@@ -198,7 +165,7 @@ export class DiagramApp extends React.Component {
     updateLinkPosition(node: NodeCommonModel) {
         for (let portKey in node.getPorts()) {
             let port = node.getPorts()[portKey];
-            let coords = this.diagramCanvas.engine.getPortCenter(port);
+            let coords = this.diagramCanvas.current.engine.getPortCenter(port);
 
             for (let linkKey in port.getLinks()) {
                 let link = port.getLinks()[linkKey];
@@ -235,7 +202,7 @@ export class DiagramApp extends React.Component {
     updateLinkPositionDelete(node: NodeCommonModel) {
         for (let portKey in node.getPorts()) {
             let port = node.getPorts()[portKey];
-            let coords = this.diagramCanvas.engine.getPortCenter(port);
+            let coords = this.diagramCanvas.current.engine.getPortCenter(port);
 
             for (let linkKey in port.getLinks()) {
                 let link = port.getLinks()[linkKey];
@@ -269,6 +236,21 @@ export class DiagramApp extends React.Component {
 
     }
 
+    deserialize(diagram: string) {
+        let response = this.diagramCanvas.current.deserialize(diagram);
+        if (response){
+            this.setState({
+                language: Defaults.language,
+                selectedLink: Defaults.selectedLink,
+            });
+            this.handleChangeName(this.diagramCanvas.current.getDiagramModel().getName());
+            return true;
+        } else {
+            return false;
+        }
+
+    }
+
     showContextMenu(x: number, y: number, link: LinkCommonModel) {
         this.setState({
             contextMenuActive: true,
@@ -280,27 +262,27 @@ export class DiagramApp extends React.Component {
 
     handleChangeSelectedLink(linkType) {
         this.setState({selectedLink: linkType});
-        this.diagramCanvas.engine.getDiagramModel().selectedLink = linkType;
+        this.diagramCanvas.current.engine.getDiagramModel().selectedLink = linkType;
     }
 
     handleChangeFirstCardinality(event) {
         this.setState({firstCardinality: event.target.value});
-        this.diagramCanvas.engine.getDiagramModel().firstCardinality = event.target.value;
+        this.diagramCanvas.current.engine.getDiagramModel().firstCardinality = event.target.value;
     }
 
     handleChangeSecondCardinality(event) {
         this.setState({secondCardinality: event.target.value});
-        this.diagramCanvas.engine.getDiagramModel().secondCardinality = event.target.value;
+        this.diagramCanvas.current.engine.getDiagramModel().secondCardinality = event.target.value;
     }
 
     handleChangeLanguage(event) {
         this.setState({language: event.target.value});
-        this.diagramCanvas.engine.getDiagramModel().language = event.target.value;
-        let links = this.diagramCanvas.engine.getDiagramModel().getLinks();
+        this.diagramCanvas.current.engine.getDiagramModel().language = event.target.value;
+        let links = this.diagramCanvas.current.engine.getDiagramModel().getLinks();
         for (let link in links) {
             links[link].setNameLanguage(event.target.value);
         }
-        this.diagramCanvas.forceUpdate();
+        this.diagramCanvas.current.forceUpdate();
     }
 
     handleChangePanelObject(thing) {
@@ -311,65 +293,31 @@ export class DiagramApp extends React.Component {
         }
     }
 
-    handleChangeName(event) {
-        if (event === "") {
-            event = "untitled";
+    handleChangeName(str: string) {
+        if (str === "") {
+            str = "untitled";
         }
-        this.setState({name: event});
-        document.title = event + " | " + Locale.appName;
-        this.diagramCanvas.engine.getDiagramModel().name = event;
+        this.setState({name: str});
+        document.title = str + " | " + Locale.appName;
+        this.diagramCanvas.current.engine.getDiagramModel().setName(str);
 
     }
 
-    handleChangeNotes(event) {
-        this.setState({notes: event});
-        this.diagramCanvas.engine.getDiagramModel().notes = event;
+    handleChangeNotes(str: string) {
+        this.setState({notes: str});
+        this.diagramCanvas.engine.getDiagramModel().setNotes(str);
     }
 
     handleNew() {
-        this.diagramCanvas.registerFactories();
-        this.diagramCanvas.engine.setDiagramModel(new OntoDiagramModel(this.diagramCanvas.props, this.diagramCanvas));
+        this.diagramCanvas.current.registerFactories();
+        this.diagramCanvas.current.engine.setDiagramModel(new OntoDiagramModel(this.diagramCanvas.current.props, this.diagramCanvas.current));
         document.title = Locale.untitledDiagram + " | " + Locale.appName;
         this.setState({name: Locale.untitledDiagram});
-        this.diagramCanvas.forceUpdate();
-    }
-
-    serialize() {
-        this.diagramCanvas.serialize();
-    }
-
-    deserialize(diagram: string) {
-        let response = this.diagramCanvas.deserialize(diagram);
-        if (response){
-            this.setState({language: Defaults.language, selectedLink: Defaults.selectedLink, success: true});
-        } else {
-            this.setState({success: false});
-        }
-
-    }
-
-    export() {
-        let owl = SemanticWebInterface.exportDiagram(this.diagramCanvas.engine.getDiagramModel());
-        let serializer = new XMLSerializer();
-        let owlSerialized = serializer.serializeToString(owl);
-        this.setState({exportData: owlSerialized});
+        this.diagramCanvas.current.forceUpdate();
     }
 
     hideContextMenu() {
         this.setState({contextMenuActive: false});
-    }
-
-    handleSerialize(str) {
-        this.setState({saveData: str});
-    }
-
-    handleZoom() {
-        this.diagramCanvas.engine.getDiagramModel().zoom = 100;
-    }
-
-    centerView() {
-        this.diagramCanvas.engine.getDiagramModel().setOffsetX(Defaults.offset.x);
-        this.diagramCanvas.engine.getDiagramModel().setOffsetY(Defaults.offset.y);
     }
 
     setName(str: string) {
@@ -377,6 +325,7 @@ export class DiagramApp extends React.Component {
     }
 
     render() {
+        let eventKeyCounter = 1;
         if (this.props.readOnly) {
             return (
                 <div className="content"
@@ -386,41 +335,28 @@ export class DiagramApp extends React.Component {
                      onClick={this.hideContextMenu}
                 >
                     <MenuPanel
-                        handleChangeNotes={this.handleChangeNotes}
-                        handleChangeSelectedLink={this.handleChangeSelectedLink}
-                        handleChangeFirstCardinality={this.handleChangeFirstCardinality}
-                        handleChangeSecondCardinality={this.handleChangeSecondCardinality}
                         handleChangeLanguage={this.handleChangeLanguage}
-                        handleChangeName={this.handleChangeName}
-                        handleNew={this.handleNew}
-                        selectedLink={this.state.selectedLink}
-                        firstCardinality={this.state.firstCardinality}
-                        secondCardinality={this.state.secondCardinality}
                         language={this.state.language}
                         name={this.state.name}
-                        notes={this.state.notes}
-                        handleSerialize={this.serialize}
-                        handleDeserialize={this.deserialize}
-                        handleExport={this.export}
-                        readOnly={this.props.readOnly}
-                        saveData={this.state.saveData}
-                        centerView={this.centerView}
-                        restoreZoom={this.handleZoom}
-                        success={this.state.success}
-                        handleEvaluate={this.evaluate}
-                        validateSettings={this.validateSettings}
-                        validateModel={this.validateModel}
-                        validationResults={this.state.validationResults}
-                        validateCurrent={this.validateCurrent}
-                        exportData={this.state.exportData}
-                        addConstraintGlobal={this.addConstraintGlobal}
-                        deleteConstraintGlobal={this.deleteConstraintGlobal}
-                    />
+                    >
+                        <MenuDropdownList name={Locale.menuPanelView}>
+                            <MenuViewCenter
+                                eventKey={eventKeyCounter++}
+                                name={Locale.menuPanelCenter}
+                                canvas={this.diagramCanvas.current}
+                            />
+                            <MenuViewZoom
+                                eventKey={eventKeyCounter++}
+                                name={Locale.menuPanelZoom}
+                                canvas={this.diagramCanvas.current}
+                            />
+                        </MenuDropdownList>
+                        <MenuButtonHelp
+                            name={Locale.menuPanelHelp}
+                        />
+                    </MenuPanel>
                     <DiagramCanvas
-                        ref={instance => {
-                            this.diagramCanvas = instance;
-                        }}
-                        handleSerialize={this.handleSerialize}
+                        ref={this.diagramCanvas}
                         selectedLink={this.state.selectedLink}
                         firstCardinality={this.state.firstCardinality}
                         secondCardinality={this.state.secondCardinality}
@@ -444,36 +380,99 @@ export class DiagramApp extends React.Component {
                      onClick={this.hideContextMenu}
                 >
                     <MenuPanel
-                        handleChangeNotes={this.handleChangeNotes}
-                        handleChangeSelectedLink={this.handleChangeSelectedLink}
-                        handleChangeFirstCardinality={this.handleChangeFirstCardinality}
-                        handleChangeSecondCardinality={this.handleChangeSecondCardinality}
                         handleChangeLanguage={this.handleChangeLanguage}
-                        handleChangeName={this.handleChangeName}
-                        handleNew={this.handleNew}
-                        selectedLink={this.state.selectedLink}
-                        firstCardinality={this.state.firstCardinality}
-                        secondCardinality={this.state.secondCardinality}
                         language={this.state.language}
                         name={this.state.name}
-                        notes={this.state.notes}
-                        handleSerialize={this.serialize}
-                        handleDeserialize={this.deserialize}
-                        handleExport={this.export}
-                        readOnly={this.props.readOnly}
-                        saveData={this.state.saveData}
-                        centerView={this.centerView}
-                        restoreZoom={this.handleZoom}
-                        success={this.state.success}
-                        handleEvaluate={this.evaluate}
-                        validateSettings={this.validateSettings}
-                        validateModel={this.validateModel}
-                        validationResults={this.state.validationResults}
-                        validateCurrent={this.validateCurrent}
-                        exportData={this.state.exportData}
-                        addConstraintGlobal={this.addConstraintGlobal}
-                        deleteConstraintGlobal={this.deleteConstraintGlobal}
-                    />
+                    >
+                        <MenuDropdownList name={Locale.menuPanelFile}>
+                            <MenuFileNewDiagram
+                                eventKey={eventKeyCounter++}
+                                handleNew={this.handleNew}
+                                name={Locale.menuPanelNew}
+                            />
+                            <MenuFileDiagramSettings
+                                eventKey={eventKeyCounter++}
+                                name={Locale.menuPanelDiagram}
+                                inputName={this.state.name}
+                                inputNotes={this.state.notes}
+                                handleChangeName={this.handleChangeName}
+                                handleChangeNotes={this.handleChangeNotes}
+                                canvas={this.diagramCanvas.current}
+                            />
+                            <MenuFileLoadDiagram
+                                eventKey={eventKeyCounter++}
+                                name={Locale.menuPanelLoad}
+                                deserialize={this.deserialize}
+                            />
+                            <MenuFileSaveDiagram
+                                eventKey={eventKeyCounter++}
+                                name={Locale.menuPanelSaveDiagram}
+                                canvas={this.diagramCanvas.current}
+                            />
+                            <MenuFileExportDiagram
+                                eventKey={eventKeyCounter++}
+                                name={Locale.menuPanelExportDiagram}
+                                canvas={this.diagramCanvas.current}
+                            />
+                        </MenuDropdownList>
+                        <MenuDropdownList name={Locale.menuPanelView}>
+                            <MenuViewCenter
+                                eventKey={eventKeyCounter++}
+                                name={Locale.menuPanelCenter}
+                                canvas={this.diagramCanvas.current}
+                            />
+                            <MenuViewZoom
+                                eventKey={eventKeyCounter++}
+                                name={Locale.menuPanelZoom}
+                                canvas={this.diagramCanvas.current}
+                            />
+                        </MenuDropdownList>
+                        <MenuDropdownList name={Locale.menuPanelTools}>
+                            <MenuToolsValidate
+                                eventKey={eventKeyCounter++}
+                                name={Locale.menuPanelValidate}
+                                canvas={this.diagramCanvas.current}
+                            />
+                            <MenuToolsEvaluate
+                                eventKey={eventKeyCounter++}
+                                name={Locale.menuPanelEvaluate}
+                                action={this.evaluate}
+                            />
+                        </MenuDropdownList>
+                        <MenuDropdownList name={Locale.menuPanelSettings}>
+                            <MenuSettingsLanguages
+                                eventKey={eventKeyCounter++}
+                                name={Locale.menuPanelLanguages}
+                                />
+                            <MenuSettingsNodes
+                                eventKey={eventKeyCounter++}
+                                name={Locale.nodesSettings}
+                                />
+                            <MenuSettingsLinks
+                                eventKey={eventKeyCounter++}
+                                name={Locale.menuPanelLinks}
+                                />
+                            <MenuSettingsCardinalities
+                                eventKey={eventKeyCounter++}
+                                name={Locale.menuPanelCardinalities}
+                                />
+                            <MenuSettingsAttributeTypes
+                                eventKey={eventKeyCounter++}
+                                name={Locale.menuPanelAttributeTypes}
+                                />
+                            <MenuSettingsImportExport
+                                eventKey={eventKeyCounter++}
+                                name={Locale.importExportSettings}
+                                />
+                            <MenuSettingsConstraints
+                                eventKey={eventKeyCounter++}
+                                name={Locale.constraintSettings}
+                                />
+                        </MenuDropdownList>
+                        <MenuButtonHelp
+                            name={Locale.menuPanelHelp}
+                        />
+                    </MenuPanel>
                     <ElementPanel
                         handleChangeSelectedLink={this.handleChangeSelectedLink}
                         selectedLink={this.state.selectedLink}
@@ -485,9 +484,7 @@ export class DiagramApp extends React.Component {
                         updateLinkPositionDelete={this.updateLinkPositionDelete}
                     />
                     <DiagramCanvas
-                        ref={instance => {
-                            this.diagramCanvas = instance;
-                        }}
+                        ref={this.diagramCanvas}
                         selectedLink={this.state.selectedLink}
                         firstCardinality={this.state.firstCardinality}
                         secondCardinality={this.state.secondCardinality}
@@ -498,7 +495,6 @@ export class DiagramApp extends React.Component {
                         contextMenuY={this.state.contextMenuY}
                         contextMenuLink={this.state.contextMenuLink}
                         showContextMenu={this.showContextMenu}
-                        handleSerialize={this.handleSerialize}
                         setName={this.setName}
                     />
                     <BottomPanel

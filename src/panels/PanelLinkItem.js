@@ -1,4 +1,5 @@
 import React from 'react';
+import {OverlayTrigger, Tooltip} from "react-bootstrap";
 
 export class PanelLinkItem extends React.Component {
     constructor(props) {
@@ -25,11 +26,11 @@ export class PanelLinkItem extends React.Component {
 
     render() {
         return (
-            <div className={this.name}
-                 onClick={this.alertPanel}
-            >
-                {this.props.linkType}
-            </div>
+                <div className={this.name}
+                     onClick={this.alertPanel}
+                >
+                    {this.props.linkType}
+                </div>
         );
     }
 }

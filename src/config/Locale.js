@@ -3,7 +3,7 @@
 export var Locale = {
     menuPanelLoaded: "Loaded!",
     menuPanelInsertJSON: "Insert JSON",
-    menuPanelLoad: "Load diagram",
+    menuPanelLoad: "Load diagram...",
     menuPanelSave: "Save",
     menuPanelSaveDiagram: "Save diagram...",
     menuPanelExport: "Export",
@@ -29,7 +29,7 @@ export var Locale = {
     leftPanelStereotypes: "Stereos",
     relationship: "Relationship",
     untitledDiagram: "Untitled Diagram",
-    selectedLanguage: "Selected language",
+    selectedLanguage: "Language",
     menuPanelHelp: "Help",
     appName: "ontoUML diagram app",
     menuPanelView: "View",
@@ -137,5 +137,14 @@ export var Locale = {
     constraintPlaceholder: "Constraint",
     constraintHelp: "For more information on how to construct constraints, consult the Help section.",
     validateCurrent: "Validate current settings and model",
-    validateCurrentDescription: "Validate the current model with the current settings"
+    validateCurrentDescription: "Validate the current model with the current settings",
+    errorAbstractMenuItem: "Abstract class MenuAbstractDropdownModal cannot be instantiated directly",
+    errorAbstractMenuAction: "Abstract class MenuAbstractDropdownAction cannot be instantiated directly",
+    errorAbstractMenuItemName: "Invalid or missing name of ",
+    errorAbstractMenuItemArray: "Invalid or missing array specifying dropdown category in constructor of ",
+    errorInvalidPropType1: "Invalid prop ",
+    errorInvalidPropType2: " supplied to ",
+    errorAbstractMissingAction: "Missing action function in ",
+    errorAbstractMissingSVG: "Missing SVG function in ",
+    errorInvalidCardinality: "Invalid cardinality parameter in Cardinality constructor"
 };

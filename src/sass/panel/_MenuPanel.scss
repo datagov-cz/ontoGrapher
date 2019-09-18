@@ -2,32 +2,32 @@
   display: block;
   width: 100%;
   border: solid #000;
-  padding-bottom: 2px;
+  padding: 2px;
   border-width: 0 0 1px 0;
-
+  .dropdownList{
+    display: inline;
+    margin-right: 2px;
+  }
   .dropdown-menu{
     border-radius: 0 !important;
     a {
       cursor: default !important;
+      display: block;
+      padding: 3px 20px;
+      clear: both;
+      font-weight: 400;
+      line-height: 1.42857143;
+      color: #333;
+      white-space: nowrap;
+      &:hover,
+      &:focus {
+        color: #262626;
+        text-decoration: none;
+        background-color: #f5f5f5;
+      }
     }
   }
 
-  div:not([class]) {
-    display: inline;
-    margin: 5px;
-    font-weight: bold;
-    font-style: oblique;
-    font-size: 12pt;
-  }
-    label{
-      cursor: text;
-      margin-right: 50px;
-    }
-  label:hover{
-    margin-right: 50px;
-    cursor: text;
-    background-color: #e1e1e1;
-  }
   select{
     width:auto;
     display: inline;
@@ -37,6 +37,7 @@
   button {
     border-radius: 0 !important;
     cursor: auto !important;
+    font-style: normal;
   }
 
   button:hover{
@@ -45,13 +46,33 @@
   }
   .right{
     float:right;
+    cursor: default;
   }
-  .left{
-    margin: 0 10px;
+  .center{
+    margin: 4px;
+    position: absolute;
+    left: 50%;
     font-size: 12pt;
+    text-align: center;
     text-overflow: ellipsis;
     white-space: nowrap;
     overflow: hidden;
+    user-select: none;
+    cursor: default;
+  }
+  .menuButton{
+    display: inline;
+    width: 30px;
+    height: 30px;
+    margin-right: 2px;
+    position: absolute;
+    top: 2px;
+    &:hover,
+    &:focus {
+      color: #262626;
+      text-decoration: none;
+      background-color: #f5f5f5;
+    }
   }
 }
 
@@ -68,10 +89,10 @@
   cursor: default;
 }
 
-.helpTab{
-  max-height: 400px;
-  overflow: auto;
-}
+//.helpTab{
+//  max-height: 400px;
+//  overflow: auto;
+//}
 
 code {
   background-color: #eee;

@@ -110,7 +110,7 @@ export class LinkCommonModel extends DefaultLinkModel {
         this.width = ob.width;
         this.curvyness = ob.curvyness;
         this.linkType = ob.linkType;
-        this.name = ob.name,
+        this.name = ob.name;
         this.names = ob.names;
         this.sourceCardinality = ob.sourceCardinality;
         this.targetCardinality = ob.targetCardinality;

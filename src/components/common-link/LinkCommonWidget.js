@@ -152,7 +152,7 @@ export class LinkCommonWidget extends DefaultLinkWidget {
             strokeWidth: 20,
             onContextMenu: () => {
                 if (!this.props.diagramEngine.isModelLocked(this.props.link)) {
-                    event.preventDefault();
+                    //event.preventDefault();
                     //this.props.link.remove();
                 }
             },

@@ -9,11 +9,13 @@ import {LinkCommonModel} from "../components/common-link/LinkCommonModel";
 import {LabelCommonFactory} from "../components/common-label/LabelCommonFactory";
 import {OntoDiagramWidget} from "./OntoDiagramWidget";
 import {Defaults} from "./Defaults";
+import {Locale} from "../config/Locale";
 
 
 export class DiagramCanvas extends React.Component {
     constructor(props) {
         super(props);
+        this.readOnly = false;
     }
 
     registerFactories() {
@@ -47,13 +49,17 @@ export class DiagramCanvas extends React.Component {
 
     }
 
+    setReadOnly(value: boolean){
+        this.readOnly = value;
+    }
+
     nullPanel() {
         this.props.handleChangePanelObject(null);
     }
 
     serialize() {
         let saveData = JSON.stringify(this.engine.getDiagramModel().serializeDiagram());
-        this.props.handleSerialize(saveData);
+        return saveData;
     }
 
     showContextMenu(event: MouseEvent, link: LinkCommonModel) {
@@ -61,7 +67,7 @@ export class DiagramCanvas extends React.Component {
         this.props.showContextMenu(event.clientX, event.clientY, link);
 
     }
-
+    /*
     export() {
         const rdf = require('rdf-ext');
         const SerializerNtriples = require('@rdfjs/serializer-ntriples');
@@ -79,16 +85,19 @@ export class DiagramCanvas extends React.Component {
             console.log(ntriples.toString());
         });
     }
-
+    */
     deserialize(diagramSerialization: string) {
         let diagram = (function(raw) {
             try {
                 return JSON.parse(raw);
             } catch (err) {
+                console.log(err);
                 return false;
             }
         })(diagramSerialization);
         if (!diagram){
+            let err =  Error(Locale.loadUnsuccessful);
+            console.log(err);
             return false;
         }
         try {
@@ -121,7 +130,7 @@ export class DiagramCanvas extends React.Component {
                         this.engine.getDiagramModel().addNode(node);
                         this.forceUpdate();
                     } catch(err) {
-                        // TODO: Log service
+                        console.log(err);
                     }
                 }}
                 onDragOver={event => {
@@ -131,7 +140,7 @@ export class DiagramCanvas extends React.Component {
                     diagramEngine={this.engine}
                     allowLooseLinks={true}
                     smartRouting={false}
-                    deleteKeys={[46]}
+                    deleteKeys={this.readOnly ? [] : [46]}
                 />
             </div>
         );

@@ -12,6 +12,7 @@ export class OntoDiagramModel extends DiagramModel {
     secondCardinality: string;
     canvas: DiagramCanvas;
     name: string;
+    notes: string;
     generalizations: [];
 
     //models
@@ -30,7 +31,7 @@ export class OntoDiagramModel extends DiagramModel {
 
         this.links = {};
         this.nodes = {};
-        this.name = Locale.untitledDiagram;
+        this.name = Locale.untitled;
         this.notes = "";
 
         this.offsetX = 0;
@@ -54,6 +55,22 @@ export class OntoDiagramModel extends DiagramModel {
         this.canvas.nullPanel();
     }
 
+    getName() {
+        return this.name;
+    }
+
+    setName(name: string) {
+        this.name = name;
+    }
+
+    getNotes(){
+        return this.notes;
+    }
+
+    setNotes(notes: string){
+        this.notes = notes;
+    }
+
     serializeDiagram() {
         return _.merge(this.serialize(), {
             offsetX: this.offsetX,
@@ -64,8 +81,8 @@ export class OntoDiagramModel extends DiagramModel {
             language: this.language,
             firstCardinality: this.firstCardinality,
             secondCardinality: this.secondCardinality,
-            name: this.name,
-            notes: this.notes,
+            name: this._name,
+            notes: this._notes,
             links: _.map(this.links, link => {
                 return link.serialize();
             }),
@@ -96,8 +113,8 @@ export class OntoDiagramModel extends DiagramModel {
         this.selectedLink = object.selectedLink;
         this.firstCardinality = object.firstCardinality;
         this.secondCardinality = object.secondCardinality;
-        this.name = object.name;
-        this.notes = object.notes;
+        this.name = object._name;
+        this.notes = object._notes;
         // deserialize nodes
         _.forEach(object.nodes, (node: any) => {
             let nodeOb = diagramEngine.getNodeFactory(node.type).getNewInstance(node);
@@ -134,7 +151,7 @@ export class OntoDiagramModel extends DiagramModel {
             }
             GeneralizationPool[object.generalizations[entry][0]] = array;
         }
-        this.canvas.setName(object.name);
+        this.canvas.setName(object._name);
     }
 
 }
