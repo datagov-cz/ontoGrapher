@@ -12,7 +12,7 @@ export class MenuSettingsLanguages extends MenuAbstractDropdownModal {
         super(props);
         this.state = {
             language: Object.keys(LanguagePool)[0],
-        };
+        };;
         this.focus = this.focus.bind(this);
         this.handleChangeLanguageName = this.handleChangeLanguageName.bind(this);
         this.addLanguage = this.addLanguage.bind(this);
@@ -31,6 +31,18 @@ export class MenuSettingsLanguages extends MenuAbstractDropdownModal {
 
     addLanguage() {
         LanguagePool[this.state.languageName] = this.state.languageName;
+        let nodes = this.props.canvas.engine.getDiagramModel().getNodes();
+        let links = this.props.canvas.engine.getDiagramModel().getLinks();
+        for (let node in nodes){
+            nodes[node].names[this.state.languageName] = Locale.untitled;
+            nodes[node].notes[this.state.languageName] = "";
+            nodes[node].attributes[this.state.languageName] = nodes[node].attributes[Object.keys(LanguagePool)[0]];
+        }
+        for (let link in links){
+            links[link].names[this.state.languageName] = Locale.none;
+            links[link].notes[this.state.languageName] = "";
+        }
+        
         this.setState({languageName: ""});
     }
 

@@ -270,7 +270,7 @@ export class DetailPanel extends React.Component {
         }
         this.cardinalityPool = [];
         for (let cardinality of CardinalityPool) {
-            this.cardinalityPool.push(<option key={cardinality} value={cardinality}>{cardinality}</option>);
+            this.cardinalityPool.push(<option key={cardinality} value={cardinality}>{cardinality.getString()}</option>);
         }
 
         if (this.state.type === NodeCommonModel) {

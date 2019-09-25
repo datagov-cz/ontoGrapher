@@ -5,7 +5,7 @@ import Modal from "react-bootstrap/lib/Modal";
 import Button from "react-bootstrap/lib/Button";
 import {Form, FormControl} from "react-bootstrap";
 import {CardinalityPool} from "../../../config/Variables";
-
+//TODO: change cardinality settings dialogue
 export class MenuSettingsCardinalities extends MenuAbstractDropdownModal {
     constructor(props){
         super(props);
@@ -19,7 +19,7 @@ export class MenuSettingsCardinalities extends MenuAbstractDropdownModal {
         this.addCardinality = this.addCardinality.bind(this);
         this.deleteCardinality = this.deleteCardinality.bind(this);
     }
-
+//TODO: add focus function
     focus(){
 
     }

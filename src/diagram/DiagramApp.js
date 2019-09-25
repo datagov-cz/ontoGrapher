@@ -295,7 +295,7 @@ export class DiagramApp extends React.Component {
 
     handleChangeName(str: string) {
         if (str === "") {
-            str = "untitled";
+            str = Locale.untitled;
         }
         this.setState({name: str});
         document.title = str + " | " + Locale.appName;
@@ -443,6 +443,7 @@ export class DiagramApp extends React.Component {
                             <MenuSettingsLanguages
                                 eventKey={eventKeyCounter++}
                                 name={Locale.menuPanelLanguages}
+                                canvas={this.diagramCanvas.current}
                                 />
                             <MenuSettingsNodes
                                 eventKey={eventKeyCounter++}

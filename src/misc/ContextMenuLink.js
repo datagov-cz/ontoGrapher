@@ -82,8 +82,8 @@ export class ContextMenuLink extends React.Component {
         if (this.props.contextMenuLink instanceof LinkCommonModel){
             let cardinalityPool = [];
             for (let cardinality of CardinalityPool) {
-                cardinalityPool.push(<li key={cardinality} onClick={this.handleClickCardinality}
-                                         value={cardinality}>{cardinality}</li>);
+                cardinalityPool.push(<li key={cardinality.getString()} onClick={this.handleClickCardinality}
+                                         value={cardinality}>{cardinality.getString()}</li>);
             }
             return (
                 <div className="contextMenu"

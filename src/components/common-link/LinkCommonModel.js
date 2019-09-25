@@ -6,6 +6,7 @@ import * as _ from "lodash";
 import {LanguagePool} from "../../config/Variables";
 import {LinkPool} from "../../config/LinkVariables";
 import {Constraint} from "../misc/Constraint";
+import {Cardinality} from "../misc/Cardinality";
 
 export class LinkCommonModel extends DefaultLinkModel {
     width: number;
@@ -15,11 +16,10 @@ export class LinkCommonModel extends DefaultLinkModel {
     model: OntoDiagramModel;
     descriptor: boolean;
     dashed: boolean;
-    sourceCardinality: string;
-    targetCardinality: string;
+    sourceCardinality: Cardinality;
+    targetCardinality: Cardinality;
     linkEnd: string;
     labeled: boolean;
-
     constructor(model: OntoDiagramModel) {
         super();
         this.type = "link-common";
@@ -32,11 +32,12 @@ export class LinkCommonModel extends DefaultLinkModel {
         this.notes = {};
         this.constraints = [];
         this.color = "black";
-        this.sourceCardinality = Locale.none;
-        this.targetCardinality = Locale.none;
+        this.sourceCardinality = new Cardinality(Locale.none);
+        this.targetCardinality = new Cardinality(Locale.none);
         for (let language in LanguagePool) {
             if (this.names[language] === undefined) {
                 this.names[language] = "";
+                this.notes[language] = "";
             }
         }
         if (this.model instanceof OntoDiagramModel) {
@@ -153,11 +154,11 @@ export class LinkCommonModel extends DefaultLinkModel {
     }
 
     getSourceCardinality(){
-        return this.sourceCardinality;
+        return this.sourceCardinality.getString();
     }
 
     getTargetCardinality(){
-        return this.targetCardinality;
+        return this.targetCardinality.getString();
     }
 
     getLinktype(){

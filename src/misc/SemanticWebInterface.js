@@ -158,7 +158,7 @@ export function exportSettings(name: string, prefix: string, URI: string) {
         });
         eCorePackage.get('eClassifiers').add(eCoreAT);
     }
-
+    //TODO: correct cardinality exporting
     for (let cardinality of CardinalityPool) {
         let eCoreC = eCore.EClass.create({
             name: cardinality,

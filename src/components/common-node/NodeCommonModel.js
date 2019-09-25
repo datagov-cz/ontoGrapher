@@ -4,6 +4,7 @@ import {AttributeObject} from "../misc/AttributeObject";
 import {OntoDiagramModel} from "../../diagram/OntoDiagramModel";
 import * as _ from "lodash";
 import {LanguagePool} from "../../config/Variables";
+import {Locale} from "../../config/Locale";
 
 export class NodeCommonModel extends NodeModel {
     stereotype: string;
@@ -22,7 +23,7 @@ export class NodeCommonModel extends NodeModel {
             this.attributes[language] = [];
             this.notes[language] = "";
             if (this.names[language] === undefined) {
-                this.names[language] = "untitled";
+                this.names[language] = Locale.untitled;
             }
         }
         this.stereotype = stereotype;
@@ -46,7 +47,7 @@ export class NodeCommonModel extends NodeModel {
 
     getNameByLanguage(language: string) {
         if (this.names[language] === undefined){
-            this.names[language] = "untitled";
+            this.names[language] = Locale.untitled;
         }
         return this.names[language];
     }
