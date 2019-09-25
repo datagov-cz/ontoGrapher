@@ -22,7 +22,7 @@ export class BottomPanel extends React.Component{
                 let result = this.props.bottomPanelData[link].map((evaluation, j)=>
                     <tr key={keyCount}>
                         <td><a onClick={this.props.handleLocate.bind(this,link)}>{(keyCount++)+1}</a></td>
-                        <td>{link}</td>
+                        <td>{link.names[this.props.language] === "" ? link.names[this.props.language] : link}</td>
                         <td>{evaluation}</td>
                     </tr>
                 );

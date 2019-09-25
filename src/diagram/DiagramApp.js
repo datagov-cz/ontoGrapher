@@ -139,7 +139,7 @@ export class DiagramApp extends React.Component {
                     result[link] = [];
                 }
                 links[link].setColor("red");
-                result[link].push("self.getTargetPort() <> null");
+                result[link].push(Locale.constraintRelationshipTargetMissing);
                 continue;
             }
             for (let constraint of links[link].constraints){
@@ -149,7 +149,7 @@ export class DiagramApp extends React.Component {
                     if (!(link in result)){
                         result[link] = [];
                     }
-                    result[link].push(constraint.statement);
+                    result[link].push(constraint.getDescription());
                     links[link].setColor("red");
                 }
                 oclEngine.clearAllOclExpressions();
@@ -503,6 +503,7 @@ export class DiagramApp extends React.Component {
                         handleCloseBottomPanel={this.handleCloseBottomPanel}
                         handleEvaluate={this.evaluate}
                         handleLocate={this.handleLocate}
+                        language={this.state.language}
                     />
                     <ContextMenuLink
                         contextMenuActive={this.state.contextMenuActive}

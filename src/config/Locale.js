@@ -86,7 +86,7 @@ export var Locale = {
     deleteRelationship: "Delete relationship",
     menuPanelTools: "Tools",
     menuPanelEvaluate: "Evaluate...",
-    evaluation: "Constraint",
+    evaluation: "Constraint description",
     rerun: "Reevaluate",
     generalizations: "Generalization sets",
     add: "Add",
@@ -146,5 +146,6 @@ export var Locale = {
     errorInvalidPropType2: " supplied to ",
     errorAbstractMissingAction: "Missing action function in ",
     errorAbstractMissingSVG: "Missing SVG function in ",
-    errorInvalidCardinality: "Invalid cardinality parameter in Cardinality constructor"
+    errorInvalidCardinality: "Invalid cardinality parameter in Cardinality constructor",
+    constraintRelationshipTargetMissing: "Relationship is not connected to two stereotypes"
 };

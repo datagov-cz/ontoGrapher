@@ -1,7 +1,9 @@
 import {Locale} from "./Locale";
+import {Cardinality} from "../components/misc/Cardinality";
+import * as Helper from "../misc/Helper";
 
 // Represents the pool of available stereotypes.
-// Key: RDF source of the stereotype.
+// Key: IRI source of the stereotype.
 // Value: Name of the stereotype.
 
 export var StereotypePool = {
@@ -31,17 +33,31 @@ export var AttributeTypePool = [
 ];
 
 // Represents the pool of available cardinalities.
+// Should always be a string of:
+// - a star ("*"),
+// - a positive integer ("123"),
+// - a positive integer and another positive integer ("2..3"), such that the second number is greater than the first,
+// - a positive integer and a star ("2..*").
+// In the last two cases, the two elements must always be separated by two dots.
+
+// export var CardinalityPool = [
+//     "*",
+//     "0",
+//     "0..*",
+//     "0..1",
+//     "1",
+//     "1..*"
+// ];
 
 export var CardinalityPool = [
-    "*",
-    "0",
-    "0..*",
-    "0..1",
-    "1",
-    "1..",
-    "1..*"
+    new Cardinality("*"),
+    new Cardinality("0"),
+    new Cardinality("0","*"),
+    new Cardinality("0","1"),
+    new Cardinality("1"),
+    new Cardinality("1","*"),
 ];
 
 //Do not delete!
-CardinalityPool.unshift(Locale.none);
+CardinalityPool.unshift(new Cardinality(Locale.none));
 export var GeneralizationPool = {};

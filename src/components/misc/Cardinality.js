@@ -1,17 +1,29 @@
-//TODO: finish cardinalities
+import {Locale} from "../../config/Locale";
+
 export class Cardinality {
 
-    singleCardinality: boolean;
-
     constructor(first: string, second: string){
-
+        this.setFirstCardinality(first);
+        this.setSecondCardinality(second);
+        if (!this.checkCardinalities()){
+            throw new Error(Locale.errorInvalidCardinality);
+        }
     }
 
     constructor(cardinality: string){
         if (this.checkCardinality(cardinality)){
-            this.singleCardinality = true;
             this.setFirstCardinality(cardinality);
             this.setSecondCardinality(cardinality);
+        } else if (cardinality !== Locale.none){
+            throw new Error(Locale.errorInvalidCardinality);
+        }
+    }
+
+    getString(){
+        if (this.getFirstCardinality() === this.getSecondCardinality()){
+            return this.getFirstCardinality();
+        } else {
+            return this.getFirstCardinality() + ".." + this.getSecondCardinality();
         }
     }
 
@@ -33,9 +45,19 @@ export class Cardinality {
         if (!this.checkSecondCardinality()) return false;
         let regexpNumbers = new RegExp("^\\d+$");
         let regexpStar = new RegExp("^[*]$");
-        let parseIntFirst = parseInt(this.getFirstCardinality());
-        if (regexpNumbers.text(this.getFirstCardinality()) && regexpNumbers.test(this.getSecondCardinality()))
-        return true;
+        if (regexpNumbers.test(this.getFirstCardinality()) && regexpNumbers.test(this.getSecondCardinality())){
+            let parseIntFirst = parseInt(this.getFirstCardinality());
+            let parseIntSecond = parseInt(this.getSecondCardinality());
+            return parseIntFirst < parseIntSecond;
+        }
+        if (regexpStar.test(this.getFirstCardinality()) && regexpStar.test(this.getSecondCardinality())){
+            return true;
+        }
+        if (regexpStar.test(this.getFirstCardinality()) && regexpNumbers.test(this.getSecondCardinality())){
+            return false;
+        }
+        return regexpNumbers.test(this.getFirstCardinality()) && regexpStar.test(this.getSecondCardinality());
+
     }
 
     setFirstCardinality(cardinalityPart: string){
