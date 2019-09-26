@@ -16,6 +16,10 @@ export class DiagramCanvas extends React.Component {
     constructor(props) {
         super(props);
         this.readOnly = false;
+        this.engine = new DiagramEngine();
+        this.engine.setDiagramModel(new OntoDiagramModel(this.props, this));
+        this.registerFactories();
+        this.engine.getDiagramModel().setOffset(Defaults.offset.x,Defaults.offset.y);
     }
 
     registerFactories() {
@@ -23,13 +27,6 @@ export class DiagramCanvas extends React.Component {
         this.engine.registerLinkFactory(new LinkCommonFactory());
         this.engine.registerLabelFactory(new LabelCommonFactory());
         this.engine.registerPortFactory(new NodeCommonPortFactory());
-    }
-
-    componentWillMount() {
-        this.engine = new DiagramEngine();
-        this.engine.setDiagramModel(new OntoDiagramModel(this.props, this));
-        this.registerFactories();
-        this.engine.getDiagramModel().setOffset(Defaults.offset.x,Defaults.offset.y);
     }
 
     updatePanel() {

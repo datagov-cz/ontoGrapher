@@ -32,8 +32,8 @@ export class LinkCommonModel extends DefaultLinkModel {
         this.notes = {};
         this.constraints = [];
         this.color = "black";
-        this.sourceCardinality = new Cardinality(Locale.none);
-        this.targetCardinality = new Cardinality(Locale.none);
+        this.sourceCardinality = new Cardinality(Locale.none,Locale.none);
+        this.targetCardinality = new Cardinality(Locale.none,Locale.none);
         for (let language in LanguagePool) {
             if (this.names[language] === undefined) {
                 this.names[language] = "";
@@ -42,9 +42,9 @@ export class LinkCommonModel extends DefaultLinkModel {
         }
         if (this.model instanceof OntoDiagramModel) {
             this.linkType = this.model.selectedLink;
-            this.addLabel(this.model.firstCardinality === Locale.none ? "" : this.model.firstCardinality);
+            this.addLabel(this.model.firstCardinality.getString() === Locale.none ? "" : this.model.firstCardinality);
             this.addLabel("");
-            this.addLabel(this.model.secondCardinality === Locale.none ? "" : this.model.secondCardinality);
+            this.addLabel(this.model.secondCardinality.getString() === Locale.none ? "" : this.model.secondCardinality);
             this.addLabel("");
             if (LinkPool[this.linkType][1]){
                 this.addDescriptorLabel();

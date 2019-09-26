@@ -50,14 +50,14 @@ export var AttributeTypePool = [
 // ];
 
 export var CardinalityPool = [
-    new Cardinality("*"),
-    new Cardinality("0"),
+    new Cardinality("*","*"),
+    new Cardinality("0","0"),
     new Cardinality("0","*"),
     new Cardinality("0","1"),
-    new Cardinality("1"),
+    new Cardinality("1","1"),
     new Cardinality("1","*"),
 ];
 
 //Do not delete!
-CardinalityPool.unshift(new Cardinality(Locale.none));
+CardinalityPool.unshift(new Cardinality(Locale.none,Locale.none));
 export var GeneralizationPool = {};
