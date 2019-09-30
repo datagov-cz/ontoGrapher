@@ -395,4 +395,3 @@ export class LinkCommonWidget extends DefaultLinkWidget {
         );
     }
 }
-//TODO: fix label render

@@ -32,7 +32,6 @@ export class Cardinality {
     }
 
     checkCardinalities(){
-        console.log(this.getFirstCardinality(),this.getSecondCardinality());
         if (!this.checkFirstCardinality()) return false;
         if (!this.checkSecondCardinality()) return false;
         if (this.getFirstCardinality() === Locale.none && this.getSecondCardinality() === Locale.none) return true;

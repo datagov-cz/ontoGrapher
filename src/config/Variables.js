@@ -24,7 +24,7 @@ export var LanguagePool = {
 };
 
 // Represents the pool of available attribute types.
-
+//TODO: update attribute type definitions
 export var AttributeTypePool = [
     "String",
     "Long",
@@ -39,15 +39,6 @@ export var AttributeTypePool = [
 // - a positive integer and another positive integer ("2..3"), such that the second number is greater than the first,
 // - a positive integer and a star ("2..*").
 // In the last two cases, the two elements must always be separated by two dots.
-
-// export var CardinalityPool = [
-//     "*",
-//     "0",
-//     "0..*",
-//     "0..1",
-//     "1",
-//     "1..*"
-// ];
 
 export var CardinalityPool = [
     new Cardinality("*","*"),

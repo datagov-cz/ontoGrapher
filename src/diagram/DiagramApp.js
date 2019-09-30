@@ -33,7 +33,8 @@ import {MenuSettingsImportExport} from "../panels/menu/settings/MenuSettingsImpo
 import {MenuSettingsConstraints} from "../panels/menu/settings/MenuSettingsConstraints";
 import {MenuButtonHelp} from "../panels/menu/buttons/MenuButtonHelp";
 
-
+//TODO: update react-bootstrap
+//TODO: make modals more user friendly
 export class DiagramApp extends React.Component {
     constructor(props) {
         super(props);

@@ -12,6 +12,7 @@ import {LinkPool} from "../config/LinkVariables";
 import {Constraint} from "../components/misc/Constraint";
 import {Config} from "../config/Config";
 import * as Helper from "./Helper";
+import {Cardinality} from "../components/misc/Cardinality";
 
 export function fetchStereotypes(source: string, replace: boolean, callback) {
     const rdf = require('rdf-ext');
@@ -158,11 +159,27 @@ export function exportSettings(name: string, prefix: string, URI: string) {
         });
         eCorePackage.get('eClassifiers').add(eCoreAT);
     }
-    //TODO: correct cardinality exporting
+
     for (let cardinality of CardinalityPool) {
         let eCoreC = eCore.EClass.create({
-            name: cardinality,
-            eSuperTypes: [eCoreCardinality]
+            name: cardinality.getString(),
+            eSuperTypes: [eCoreCardinality],
+            eAnnotations: [
+                {
+                    source: "firstCardinality",
+                    details: {
+                        key: "firstCardinality",
+                        value: cardinality.getFirstCardinality()
+                    }
+                },
+                {
+                    source: "secondCardinality",
+                    details: {
+                        key: "secondCardinality",
+                        value: cardinality.getSecondCardinality()
+                    }
+                }
+            ]
         });
         eCorePackage.get('eClassifiers').add(eCoreC);
     }
@@ -278,7 +295,7 @@ export function importSettings(source: string) {
                     AttributeTypePool.push(item.name);
                     break;
                 case "Cardinality":
-                    CardinalityPool.push(item.name);
+                    CardinalityPool.push(new Cardinality(item.annotations[0].value[0],item.annotations[1].value[0]));
                     break;
                 case "Language":
                     LanguagePool[item.annotations[0].value[0]] = item.name;
