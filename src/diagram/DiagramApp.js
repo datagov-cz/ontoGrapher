@@ -244,7 +244,7 @@ export class DiagramApp extends React.Component {
                 language: Defaults.language,
                 selectedLink: Defaults.selectedLink,
             });
-            this.handleChangeName(this.diagramCanvas.current.getDiagramModel().getName());
+            this.handleChangeName(this.diagramCanvas.current.engine.getDiagramModel().getName());
             return true;
         } else {
             return false;

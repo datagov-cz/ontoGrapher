@@ -81,8 +81,8 @@ export class OntoDiagramModel extends DiagramModel {
             language: this.language,
             firstCardinality: this.firstCardinality,
             secondCardinality: this.secondCardinality,
-            name: this._name,
-            notes: this._notes,
+            name: this.name,
+            notes: this.notes,
             links: _.map(this.links, link => {
                 return link.serialize();
             }),
@@ -113,8 +113,8 @@ export class OntoDiagramModel extends DiagramModel {
         this.selectedLink = object.selectedLink;
         this.firstCardinality = object.firstCardinality;
         this.secondCardinality = object.secondCardinality;
-        this.name = object._name;
-        this.notes = object._notes;
+        this.name = object.name;
+        this.notes = object.notes;
         // deserialize nodes
         _.forEach(object.nodes, (node: any) => {
             let nodeOb = diagramEngine.getNodeFactory(node.type).getNewInstance(node);
