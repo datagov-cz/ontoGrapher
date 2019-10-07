@@ -19,6 +19,7 @@ export class NodeCommonModel extends NodeModel {
         this.names = {};
         this.attributes = {};
         this.notes = {};
+        this.derivation = "";
         for (let language in LanguagePool) {
             this.attributes[language] = [];
             this.notes[language] = "";
@@ -97,6 +98,7 @@ export class NodeCommonModel extends NodeModel {
         for (let port in this.ports) {
             this.ports[port].model = this.model;
         }
+        this.derivation = object.derivation;
     }
 
     getStereotype(){
@@ -111,7 +113,8 @@ export class NodeCommonModel extends NodeModel {
             attributes: this.attributes,
             names: this.names,
             rdf: this.rdf,
-            notes: this.notes
+            notes: this.notes,
+            derivation: this.derivation
         });
     }
 

@@ -6,9 +6,6 @@ import Button from "react-bootstrap/es/Button";
 export class BottomPanel extends React.Component{
     constructor(props){
         super(props);
-        this.state = ({
-            active: this.props.bottomPanelActive
-        });
     }
 
     render(){
@@ -22,7 +19,7 @@ export class BottomPanel extends React.Component{
                 let result = this.props.bottomPanelData[link].map((evaluation, j)=>
                     <tr key={keyCount}>
                         <td><a onClick={this.props.handleLocate.bind(this,link)}>{(keyCount++)+1}</a></td>
-                        <td>{link.names[this.props.language] === "" ? link.names[this.props.language] : link}</td>
+                        <td>{link}</td>
                         <td>{evaluation}</td>
                     </tr>
                 );

@@ -50,7 +50,7 @@ export class MenuToolsValidate extends MenuAbstractDropdownModal {
         let validationResults = "";
 
         if (this.validationResults.length > 0) {
-            validationResults = this.state.validationResults.map((result) => result + "\n");
+            validationResults = this.validationResults.map((result) => result + "\n");
         }
 
         return (

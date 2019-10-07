@@ -4,7 +4,7 @@ import {Locale} from "../../../config/Locale";
 import Modal from "react-bootstrap/lib/Modal";
 import Button from "react-bootstrap/lib/Button";
 import {FormControl, FormGroup, Tab, Tabs} from "react-bootstrap";
-import * as SemanticWebInterface from "../../../misc/SemanticWebInterface";
+import {exportSettings, importSettings} from "../../../misc/ImportExportInterface";
 
 export class MenuSettingsImportExport extends MenuAbstractDropdownModal {
     constructor(props){
@@ -27,10 +27,11 @@ export class MenuSettingsImportExport extends MenuAbstractDropdownModal {
 
     handleImportSettings() {
         if (this.state.importSettingsInput !== "") {
-            if (!SemanticWebInterface.importSettings(this.state.importSettingsInput)) {
+            if (!importSettings(this.state.importSettingsInput)) {
                 this.setState({failure: true});
             } else {
                 this.setState({failure: false});
+                this.handleCloseModal();
             }
         }
     }
@@ -53,7 +54,7 @@ export class MenuSettingsImportExport extends MenuAbstractDropdownModal {
 
     handleExportSettings() {
         if (this.state.exportName !== "" && this.state.exportPrefix !== "" && this.state.exportURI !== "") {
-            let exportData = SemanticWebInterface.exportSettings(this.state.exportName, this.state.exportPrefix, this.state.exportURI);
+            let exportData = exportSettings(this.state.exportName, this.state.exportPrefix, this.state.exportURI);
             this.setState({exportSettingsData: exportData});
         }
     }

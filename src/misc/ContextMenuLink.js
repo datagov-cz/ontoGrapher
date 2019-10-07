@@ -36,9 +36,9 @@ export class ContextMenuLink extends React.Component {
     }
 
     handleClickCardinality(event) {
-        let cardinality = event.nativeEvent.path[0].innerHTML;
+        let cardinality = CardinalityPool[event.target.value];
         let label = new DefaultLabelModel();
-        label.setLabel(cardinality);
+        label.setLabel(cardinality.getString());
         if (this.state.subMenuFirstCard) {
             this.props.contextMenuLink.labels[0] = label;
             this.props.contextMenuLink.sourceCardinality = cardinality;
@@ -81,9 +81,10 @@ export class ContextMenuLink extends React.Component {
     render() {
         if (this.props.contextMenuLink instanceof LinkCommonModel){
             let cardinalityPool = [];
+            let cardinalityKey = 0;
             for (let cardinality of CardinalityPool) {
-                cardinalityPool.push(<li key={cardinality.getString()} onClick={this.handleClickCardinality}
-                                         value={cardinality}>{cardinality.getString()}</li>);
+                cardinalityPool.push(<li key={cardinalityKey} onClick={this.handleClickCardinality}
+                                         value={cardinalityKey++}>{cardinality.getString()}</li>);
             }
             return (
                 <div className="contextMenu"

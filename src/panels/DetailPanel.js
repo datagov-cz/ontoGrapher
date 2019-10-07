@@ -25,7 +25,9 @@ export class DetailPanel extends React.Component {
             nodeEnd: "",
             generalizationName: "",
             generalization: "",
-            isGeneralizationMenuAvailable: false
+            isGeneralizationMenuAvailable: false,
+            derivation: "",
+            links: {}
         };
 
         this.handleChangeLanguage = this.handleChangeLanguage.bind(this);
@@ -48,6 +50,16 @@ export class DetailPanel extends React.Component {
         this.addGeneralization = this.addGeneralization.bind(this);
         this.deleteGeneralization = this.deleteGeneralization.bind(this);
         this.handleChangeGeneralizationName = this.handleChangeGeneralizationName.bind(this);
+        this.handleChangeDerivation = this.handleChangeDerivation.bind(this);
+    }
+
+    handleChangeDerivation(event){
+        this.setState({derivation: event.target.value});
+            if (event.target.value === ""){
+                this.props.panelObject.derivation = "";
+            } else {
+                this.props.panelObject.derivation = this.props.panelObject.model.getLinks()[event.target.value];
+            }
     }
 
     deleteGeneralization(event) {
@@ -96,6 +108,36 @@ export class DetailPanel extends React.Component {
         this.props.panelObject.notes[this.props.language] = this.state.notes[this.props.language];
     }
 
+    getNodeWidget(stereotype,name,attributes){
+        let attributeKey = 0;
+        let attributeLength = attributes.length;
+        let height = 48 + (attributeLength * 15);
+        return(
+            <svg
+                width={150}
+                height={height}
+                shapeRendering="optimizeSpeed"
+            >
+
+                <g>
+                    <rect fill="#ffffff" stroke={"black"} strokeWidth="4" width={150} height={height}/>
+                    <text width={150} textAnchor="middle" dominantBaseline="hanging" x="50%" y="5px"
+                          fill="#000000">{"«" + stereotype.toLowerCase() + "»"}</text>
+                    <line x1="0" x2={150} y1="20px" y2="20px" strokeWidth="1" stroke="#000000"/>
+                    <text width={150} textAnchor="middle" dominantBaseline="hanging" x="50%" y="25px"
+                          fill="#000000">{name}</text>
+                    <text width={150} textAnchor="start" dominantBaseline="hanging" x="5px" y="30px"
+                          fill="#000000">
+                        {attributes.map(
+                            (attr) => (<tspan key={attributeKey++} x="5px" dy="15px">{attr.first + ": " + attr.second}</tspan>)
+                        )}
+                    </text>
+                </g>
+
+            </svg>
+        );
+    }
+
     prepareObject(object) {
         let copy = object;
         if (copy instanceof NodeCommonModel) {
@@ -118,7 +160,11 @@ export class DetailPanel extends React.Component {
                     }
                 }
             }
-
+            if (Object.keys(object.model.getLinks()).length > 0){
+                this.setState({
+                    links: object.model.getLinks()
+                });
+            }
             this.setState({
                 type: NodeCommonModel,
                 names: copy.names,
@@ -301,8 +347,7 @@ export class DetailPanel extends React.Component {
 
             let generalizationHeader = (<h4>{Locale.generalizations}</h4>);
             let generalizationForm = (<Form inline>
-                <Button onClick={this.deleteGeneralization}
-                        bsStyle="danger">{Locale.del}</Button>
+
                 <FormControl
                     bsSize="small"
                     type="text"
@@ -310,7 +355,7 @@ export class DetailPanel extends React.Component {
                     placeholder={Locale.generalizationNamePlaceholder}
                     onChange={this.handleChangeGeneralizationName}
                 />
-                <Button onClick={this.addGeneralization} bsStyle="primary">{Locale.add}</Button>
+                <Button onClick={this.addGeneralization} bsSize="small" bsStyle="primary">{Locale.add}</Button>
             </Form>);
             let generalizationKey = 1;
 
@@ -324,16 +369,21 @@ export class DetailPanel extends React.Component {
                     (<option key={generalizationKey++} value={generalization}>{generalization}</option>)
                 ));
                 generalizationSelector = (
-                    <FormControl
-                        componentClass="select"
-                        bsSize="small"
-                        value={this.state.generalization}
-                        onChange={this.handleChangeGeneralization}
-                        onFocus={this.focus}
-                        size={1}
-                    >
-                        {generalizationList}
-                    </FormControl>
+                    <div>
+                        <FormControl
+                            componentClass="select"
+                            bsSize="small"
+                            value={this.state.generalization}
+                            onChange={this.handleChangeGeneralization}
+                            onFocus={this.focus}
+                            size={1}
+                        >
+                            {generalizationList}
+                        </FormControl>
+                        <Button onClick={this.deleteGeneralization} bsSize="small"
+                                bsStyle="danger">{Locale.del}</Button>
+                    </div>
+
                 );
             }
             let generalizationLinks = "";
@@ -360,35 +410,30 @@ export class DetailPanel extends React.Component {
                     </div>
                 );
             }
-
-            let widget = (
-                <svg
-                    width={150}
-                    height={height}
-                    shapeRendering="optimizeSpeed"
-                >
-
-                    <g>
-                        <rect fill="#ffffff" stroke={"black"} strokeWidth="4" width={150} height={height}/>
-                        <text width={150} textAnchor="middle" dominantBaseline="hanging" x="50%" y="5px"
-                              fill="#000000">{"«" + this.state.stereotype.toLowerCase() + "»"}</text>
-                        <line x1="0" x2={150} y1="20px" y2="20px" strokeWidth="1" stroke="#000000"/>
-                        <text width={150} textAnchor="middle" dominantBaseline="hanging" x="50%" y="25px"
-                              fill="#000000">{this.state.names[this.props.language]}</text>
-                        <text width={150} textAnchor="start" dominantBaseline="hanging" x="5px" y="30px"
-                              fill="#000000">
-                            {this.state.attrs[this.props.language].map(
-                                (attr) => (<tspan key={attributeKey++} x="5px" dy="15px">{attr.first + ": " + attr.second}</tspan>)
-                            )}
-                        </text>
-                    </g>
-                </svg>
-            );
+            let derivationSelector = (<h6>{Locale.noRelationships}</h6>);
+            let derivationList = [];
+            if (Object.keys(this.state.links).length > 0) {
+                let linkKey = 1;
+                derivationList.push(<option key={0} value={""}>-----</option>);
+                derivationList.push(Object.keys(this.state.links).map((link) =>
+                    (<option key={linkKey++} value={link}>{link}</option>)
+                ));
+                derivationSelector = (
+                    <FormControl
+                        componentClass="select"
+                        bsSize="small"
+                        value={this.state.derivation}
+                        onChange={this.handleChangeDerivation}
+                    >
+                        {derivationList}
+                    </FormControl>
+                );
+            }
+            let widget = this.getNodeWidget(this.state.stereotype,this.state.names[this.props.language],this.state.attrs[this.props.language]);
             return (
                 <div className="detailPanel" id="detailPanel">
                     <h2>{Locale.detailPanelTitle}</h2>
                     {widget}
-
                     <Form inline>
                         <FormGroup>
                             <h4>{Locale.detailPanelName}</h4>
@@ -441,7 +486,9 @@ export class DetailPanel extends React.Component {
                     {
                         this.state.isGeneralizationMenuAvailable ? generalizationLinks : ""
                     }
-
+                    <br/>
+                    <h4>{Locale.derivations}</h4>
+                    {derivationSelector}
                     <FormGroup>
                         <h4>{Locale.notes}</h4>
                         <FormControl
@@ -457,66 +504,13 @@ export class DetailPanel extends React.Component {
                 </div>
             );
         } else if (this.state.type === LinkCommonModel) {
-            let attributeKey = 0;
-            let attributeLength = 0;
-            let height = 0;
             let node1Widget = "";
             if (this.state.nodeStart !== ""){
-                attributeLength = this.state.nodeStart.attributes[this.props.language].length;
-                height = 48 + (attributeLength * 15);
-                node1Widget = (
-                    <svg
-                        width={150}
-                        height={height}
-                        shapeRendering="optimizeSpeed"
-                    >
-
-                        <g>
-                            <rect fill="#ffffff" stroke={"black"} strokeWidth="4" width={150} height={height}/>
-                            <text width={150} textAnchor="middle" dominantBaseline="hanging" x="50%" y="5px"
-                                  fill="#000000">{"«" + this.state.nodeStart.stereotype.toLowerCase() + "»"}</text>
-                            <line x1="0" x2={150} y1="20px" y2="20px" strokeWidth="1" stroke="#000000"/>
-                            <text width={150} textAnchor="middle" dominantBaseline="hanging" x="50%" y="25px"
-                                  fill="#000000">{this.state.nodeStart.names[this.props.language]}</text>
-                            <text width={150} textAnchor="start" dominantBaseline="hanging" x="5px" y="30px"
-                                  fill="#000000">
-                                {this.state.nodeStart.attributes[this.props.language].map(
-                                    (attr) => (<tspan key={attributeKey++} x="5px" dy="15px">{attr.first + ": " + attr.second}</tspan>)
-                                )}
-                            </text>
-                        </g>
-                    </svg>
-                );
+                node1Widget = this.getNodeWidget(this.state.nodeStart.stereotype,this.state.nodeStart.names[this.props.language],this.state.nodeStart.attributes[this.props.language]);
             }
             let node2Widget = "";
             if (this.state.nodeEnd !== ""){
-                attributeKey = 0;
-                attributeLength = this.state.nodeEnd.attributes[this.props.language].length;
-                height = 48 + (attributeLength * 15);
-                node2Widget = (
-                    <svg
-                        width={150}
-                        height={height}
-                        shapeRendering="optimizeSpeed"
-                    >
-
-                        <g>
-                            <rect fill="#ffffff" stroke={"black"} strokeWidth="4" width={150} height={height}/>
-                            <text width={150} textAnchor="middle" dominantBaseline="hanging" x="50%" y="5px"
-                                  fill="#000000">{"«" + this.state.nodeEnd.stereotype.toLowerCase() + "»"}</text>
-                            <line x1="0" x2={150} y1="20px" y2="20px" strokeWidth="1" stroke="#000000"/>
-                            <text width={150} textAnchor="middle" dominantBaseline="hanging" x="50%" y="25px"
-                                  fill="#000000">{this.state.nodeEnd.names[this.props.language]}</text>
-                            <text width={150} textAnchor="start" dominantBaseline="hanging" x="5px" y="30px"
-                                  fill="#000000">
-                                {this.state.nodeEnd.attributes[this.props.language].map(
-                                    (attr) => (<tspan key={attributeKey++} x="5px" dy="15px">{attr.first + ": " + attr.second}</tspan>)
-                                )}
-                            </text>
-                        </g>
-
-                    </svg>
-                );
+                node2Widget = this.getNodeWidget(this.state.nodeEnd.stereotype,this.state.nodeEnd.names[this.props.language],this.state.nodeEnd.attributes[this.props.language]);
             }
 
             let offset = 25;

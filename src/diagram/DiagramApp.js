@@ -32,13 +32,13 @@ import {MenuSettingsAttributeTypes} from "../panels/menu/settings/MenuSettingsAt
 import {MenuSettingsImportExport} from "../panels/menu/settings/MenuSettingsImportExport";
 import {MenuSettingsConstraints} from "../panels/menu/settings/MenuSettingsConstraints";
 import {MenuButtonHelp} from "../panels/menu/buttons/MenuButtonHelp";
+import {importSettings} from "../misc/ImportExportInterface";
 
 //TODO: update react-bootstrap
-//TODO: make modals more user friendly
 export class DiagramApp extends React.Component {
     constructor(props) {
         super(props);
-        document.title = Locale.untitledDiagram + " | " + Locale.appName;
+        document.title = Locale.untitled + " | " + Locale.appName;
         this.diagramCanvas = React.createRef();
         this.state = {
             selectedLink: Defaults.selectedLink,
@@ -89,7 +89,7 @@ export class DiagramApp extends React.Component {
 
     componentDidMount() {
         if (typeof this.props.loadSettings === "string") {
-            SemanticWebInterface.importSettings(this.props.loadSettings);
+            importSettings(this.props.loadSettings);
         }
         if (typeof this.props.loadDiagram === "string") {
             this.deserialize(this.props.loadDiagram);
@@ -448,7 +448,7 @@ export class DiagramApp extends React.Component {
                                 />
                             <MenuSettingsNodes
                                 eventKey={eventKeyCounter++}
-                                name={Locale.nodesSettings}
+                                name={Locale.menuPanelStereotypes}
                                 />
                             <MenuSettingsLinks
                                 eventKey={eventKeyCounter++}
@@ -506,6 +506,7 @@ export class DiagramApp extends React.Component {
                         handleEvaluate={this.evaluate}
                         handleLocate={this.handleLocate}
                         language={this.state.language}
+                        canvas={this.diagramCanvas.current}
                     />
                     <ContextMenuLink
                         contextMenuActive={this.state.contextMenuActive}

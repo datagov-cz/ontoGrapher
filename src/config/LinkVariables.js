@@ -14,7 +14,8 @@ import {Constraint} from "../components/misc/Constraint";
 //           Constraints are objects created with 'new Constraint(statement, linkType)',
 //           where 'statement' is the OCL statement and 'linkType' is the name of the link
 //           that the statement belongs to.
-
+//TODO: finish derivations
+//TODO: objectify stereotypes and relationships
 export var LinkPool = {
     "Characterization": ["Empty", true, false, []],
     "Component": ["FilledEmptyDiamond", false, false, []],
@@ -29,8 +30,8 @@ export var LinkPool = {
 
 // Do not delete!
 LinkPool[Locale.generalization] = ["UnfilledArrow", false, false, [
-    new Constraint("self.getSourceCardinality() = \""+ Locale.none +"\"",Locale.generalization),
-    new Constraint("self.getTargetCardinality() = \""+ Locale.none +"\"",Locale.generalization)
+    new Constraint("self.getSourceCardinality() = \""+ Locale.none +"\"",Locale.generalization,Locale.constraintGeneralization),
+    new Constraint("self.getTargetCardinality() = \""+ Locale.none +"\"",Locale.generalization,Locale.constraintGeneralization)
 ]];
 
 

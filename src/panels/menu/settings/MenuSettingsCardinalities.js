@@ -39,7 +39,6 @@ export class MenuSettingsCardinalities extends MenuAbstractDropdownModal {
     deleteCardinality() {
         for (let card of CardinalityPool){
             if (card.getString() === this.state.cardinality){
-                console.log(this.state.cardinality, card);
                 CardinalityPool.splice(CardinalityPool.indexOf(card), 1);
                 break;
             }
@@ -88,9 +87,12 @@ export class MenuSettingsCardinalities extends MenuAbstractDropdownModal {
                         >
                             {cardinalityPool}
                         </FormControl><br/>
+                        <Button onClick={this.deleteCardinality}
+                                bsStyle="danger">{Locale.deleteSelected}</Button>
+
+                        <h4>{Locale.createNew+Locale.cardinality}</h4>
                         <Form inline>
-                            <Button onClick={this.deleteCardinality}
-                                    bsStyle="danger">{Locale.del + " " + this.state.cardinality}</Button>
+
                             <FormControl
                                 type="text"
                                 value={this.state.cardinalityName1}

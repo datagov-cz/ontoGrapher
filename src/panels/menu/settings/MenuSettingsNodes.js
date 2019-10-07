@@ -3,7 +3,7 @@ import {MenuAbstractDropdownModal} from "../abstract/MenuAbstractDropdownModal"
 import {Locale} from "../../../config/Locale";
 import Modal from "react-bootstrap/lib/Modal";
 import Button from "react-bootstrap/lib/Button";
-import {Form, FormControl, FormGroup} from "react-bootstrap";
+import {Form, FormControl, FormGroup, Tab, Tabs} from "react-bootstrap";
 import {AttributeTypePool, CardinalityPool, LanguagePool, StereotypePool} from "../../../config/Variables";
 import * as SemanticWebInterface from "../../../misc/SemanticWebInterface";
 import {LinkPool} from "../../../config/LinkVariables";
@@ -15,16 +15,23 @@ export class MenuSettingsNodes extends MenuAbstractDropdownModal {
             stereotypeSource: "",
             stereotypeName: "",
             stereotypeRDF: "",
-            node: StereotypePool[0]
+            node: StereotypePool[Object.keys(StereotypePool)[0]]
         };
         this.focus = this.focus.bind(this);
+        this.addNode = this.addNode.bind(this);
+        this.handleChangeStereotypeRDF = this.handleChangeStereotypeRDF.bind(this);
+        this.handleChangeStereotypeName = this.handleChangeStereotypeName.bind(this);
+        this.handleChangeNode = this.handleChangeNode.bind(this);
+        this.handleReplaceStereotypes = this.handleReplaceStereotypes.bind(this);
+        this.handleChangeStereotypeSource = this.handleChangeStereotypeSource.bind(this);
+        this.deleteNode = this.deleteNode.bind(this);
     }
 
 
     focus() {
         if (Object.entries(StereotypePool).length === 1) {
             this.setState({
-                node: StereotypePool[0]
+                node: StereotypePool[Object.keys(StereotypePool)[0]]
             });
         }
     }
@@ -45,8 +52,10 @@ export class MenuSettingsNodes extends MenuAbstractDropdownModal {
     }
 
     deleteNode() {
-        if (Object.entries(StereotypePool).length > 1) {
-            delete StereotypePool[this.state.node];
+        if (this.state.node !== undefined){
+            if (Object.entries(StereotypePool).length > 1) {
+                delete StereotypePool[this.state.node];
+            }
         }
     }
 
@@ -74,6 +83,14 @@ export class MenuSettingsNodes extends MenuAbstractDropdownModal {
         this.setState({stereotypeSource: event.target.value});
     }
 
+    moveDownNode(){
+
+    }
+
+    moveUpNode(){
+
+    }
+    //TODO: finish move up/down functions
 
     render(){
         let stereotypePool = Object.keys(StereotypePool).map((stereotype) => {
@@ -93,16 +110,7 @@ export class MenuSettingsNodes extends MenuAbstractDropdownModal {
                         </Modal.Title>
                     </Modal.Header>
                     <Modal.Body>
-                        <FormControl
-                            type="text"
-                            value={this.state.stereotypeSource}
-                            placeholder={Locale.stereotypeSourcePlaceholder}
-                            onChange={this.handleChangeStereotypeSource}
-                        />
-                        <Button onClick={this.handleLoadStereotypes}
-                                bsStyle="primary">{Locale.loadStereotypes}</Button>
-                        <Button onClick={this.handleReplaceStereotypes}
-                                bsStyle="primary">{Locale.replaceStereotypes}</Button>
+
                         <FormGroup>
                             <FormControl
                                 componentClass="select"
@@ -115,25 +123,49 @@ export class MenuSettingsNodes extends MenuAbstractDropdownModal {
                             >
                                 {stereotypePool}
                             </FormControl>
-                            <Button onClick={this.deleteNode}
-                                    bsStyle="danger">{Locale.del + " " + StereotypePool[this.state.node]}</Button>
-                        </FormGroup>
-                        <Form inline>
 
-                            <FormControl
-                                type="text"
-                                value={this.state.stereotypeName}
-                                placeholder={Locale.stereotypeNamePlaceholder}
-                                onChange={this.handleChangeStereotypeName}
-                            />
-                            <FormControl
-                                type="text"
-                                value={this.state.stereotypeRDF}
-                                placeholder={Locale.stereotypeRDFPlaceholder}
-                                onChange={this.handleChangeStereotypeRDF}
-                            />
-                            <Button onClick={this.addNode} bsStyle="primary">{Locale.addNode}</Button>
-                        </Form>
+                            {/*
+                            <Button onClick={this.moveUpNode}*/}
+                            {/*        bsStyle="primary">{Locale.moveUp}</Button>*/}
+                            {/*<Button onClick={this.moveDownNode}*/}
+                            {/*        bsStyle="primary">{Locale.moveDown}</Button>*/}
+                            <Button onClick={this.deleteNode}
+                                    bsStyle="danger">{Locale.deleteSelected}</Button>
+
+                        </FormGroup>
+                        <h4>{Locale.createNew+Locale.stereotype}</h4>
+                        <Tabs id="newStereotypes" animation={false}>
+                            <Tab eventKey={1} title={Locale.manually}>
+                                <Form>
+                                    <FormControl
+                                        type="text"
+                                        value={this.state.stereotypeName}
+                                        placeholder={Locale.stereotypeNamePlaceholder}
+                                        onChange={this.handleChangeStereotypeName}
+                                    />
+                                    <FormControl
+                                        type="text"
+                                        value={this.state.stereotypeRDF}
+                                        placeholder={Locale.stereotypeRDFPlaceholder}
+                                        onChange={this.handleChangeStereotypeRDF}
+                                    />
+                                    <Button onClick={this.addNode} bsStyle="primary">{Locale.addNode}</Button>
+                                </Form>
+                            </Tab>
+                            <Tab eventKey={2} title={Locale.source}>
+                                <FormControl
+                                    type="text"
+                                    value={this.state.stereotypeSource}
+                                    placeholder={Locale.stereotypeSourcePlaceholder}
+                                    onChange={this.handleChangeStereotypeSource}
+                                />
+                                <Button onClick={this.handleLoadStereotypes}
+                                        bsStyle="primary">{Locale.loadStereotypes}</Button>
+                                <Button onClick={this.handleReplaceStereotypes}
+                                        bsStyle="primary">{Locale.replaceStereotypes}</Button>
+                            </Tab>
+                        </Tabs>
+
                     </Modal.Body>
                     <Modal.Footer>
                         <Button onClick={this.handleCloseModal} bsStyle="primary">{Locale.close}</Button>

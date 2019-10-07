@@ -18,6 +18,7 @@ export class MenuSettingsLanguages extends MenuAbstractDropdownModal {
         this.addLanguage = this.addLanguage.bind(this);
         this.deleteLanguage = this.deleteLanguage.bind(this);
         this.handleChangeLanguage = this.handleChangeLanguage.bind(this);
+        this.handleChangeLanguageCode = this.handleChangeLanguageCode.bind(this);
     }
 
     focus() {
@@ -25,25 +26,26 @@ export class MenuSettingsLanguages extends MenuAbstractDropdownModal {
             this.setState({
                 language: LanguagePool[0],
                 languageName: "",
+                languageCode: ""
             });
         }
     }
 
     addLanguage() {
-        LanguagePool[this.state.languageName] = this.state.languageName;
+        LanguagePool[this.state.languageCode] = this.state.languageName;
         let nodes = this.props.canvas.engine.getDiagramModel().getNodes();
         let links = this.props.canvas.engine.getDiagramModel().getLinks();
         for (let node in nodes){
-            nodes[node].names[this.state.languageName] = Locale.untitled;
-            nodes[node].notes[this.state.languageName] = "";
-            nodes[node].attributes[this.state.languageName] = nodes[node].attributes[Object.keys(LanguagePool)[0]];
+            nodes[node].names[this.state.languageCode] = Locale.untitled;
+            nodes[node].notes[this.state.languageCode] = "";
+            nodes[node].attributes[this.state.languageCode] = nodes[node].attributes[Object.keys(LanguagePool)[0]];
         }
         for (let link in links){
-            links[link].names[this.state.languageName] = Locale.none;
-            links[link].notes[this.state.languageName] = "";
+            links[link].names[this.state.languageCode] = Locale.none;
+            links[link].notes[this.state.languageCode] = "";
         }
         
-        this.setState({languageName: ""});
+        this.setState({languageName: "", languageCode: ""});
     }
 
     deleteLanguage() {
@@ -54,6 +56,10 @@ export class MenuSettingsLanguages extends MenuAbstractDropdownModal {
 
     handleChangeLanguageName(event) {
         this.setState({languageName: event.target.value});
+    }
+
+    handleChangeLanguageCode(event) {
+        this.setState({languageCode: event.target.value});
     }
 
     handleChangeLanguage(event) {
@@ -92,14 +98,22 @@ export class MenuSettingsLanguages extends MenuAbstractDropdownModal {
                         >
                             {languagePool}
                         </FormControl><br/>
+                        <Button onClick={this.deleteLanguage}
+                                bsStyle="danger">{Locale.deleteSelected}</Button>
+                        <h4>{Locale.createNew+Locale.language}</h4>
                         <Form inline>
-                            <Button onClick={this.deleteLanguage}
-                                    bsStyle="danger">{Locale.del + " " + LanguagePool[this.state.language]}</Button>
+
                             <FormControl
                                 type="text"
                                 value={this.state.languageName}
                                 placeholder={Locale.languageName}
                                 onChange={this.handleChangeLanguageName}
+                            />
+                            <FormControl
+                                type="text"
+                                value={this.state.languageCode}
+                                placeholder={Locale.languageCode}
+                                onChange={this.handleChangeLanguageCode}
                             />
                             <Button onClick={this.addLanguage} bsStyle="primary">{Locale.addLanguage}</Button>
                         </Form>

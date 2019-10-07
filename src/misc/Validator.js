@@ -3,7 +3,7 @@ import {LinkPool} from "../config/LinkVariables";
 import {Locale} from "../config/Locale";
 import {AttributeTypePool, CardinalityPool, LanguagePool, StereotypePool} from "../config/Variables";
 import * as Helper from "./Helper";
-import {fetchSettings} from "./SemanticWebInterface";
+import {fetchSettings} from "./ImportExportInterface";
 
 export function validateSettingsWithModel(model: OntoDiagramModel, source: string) {
     let linkPool = [];

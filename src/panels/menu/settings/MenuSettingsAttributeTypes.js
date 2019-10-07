@@ -75,9 +75,12 @@ export class MenuSettingsAttributeTypes extends MenuAbstractDropdownModal {
                         >
                             {attributeTypePool}
                         </FormControl><br/>
+                        <Button onClick={this.deleteAttributeType}
+                        bsStyle="danger">{Locale.deleteSelected}</Button>
+
+                    <h4>{Locale.createNew+Locale.cardinality}</h4>
                         <Form inline>
-                            <Button onClick={this.deleteAttributeType}
-                                    bsStyle="danger">{Locale.del + " " + AttributeTypePool[AttributeTypePool.indexOf(this.state.attributeType)]}</Button>
+
                             <FormControl
                                 type="text"
                                 value={this.state.attributeTypeName}

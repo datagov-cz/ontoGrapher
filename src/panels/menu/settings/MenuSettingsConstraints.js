@@ -14,6 +14,7 @@ export class MenuSettingsConstraints extends MenuAbstractDropdownModal {
             constraintLink: Object.keys(LinkPool)[0],
             constraint: undefined,
             newConstraint: "",
+            newDescription: ""
         };
         this.handleChangeConstraintLink = this.handleChangeConstraintLink.bind(this);
         this.handleChangeConstraint = this.handleChangeConstraint.bind(this);
@@ -21,12 +22,18 @@ export class MenuSettingsConstraints extends MenuAbstractDropdownModal {
         this.handleChangeNewConstraint = this.handleChangeNewConstraint.bind(this);
         this.addConstraint = this.addConstraint.bind(this);
         this.focus = this.focus.bind(this);
+        this.handleChangeNewDescription = this.handleChangeNewDescription.bind(this);
     }
 
+    handleChangeNewDescription(event){
+        this.setState({
+            newDescription: event.target.value
+        });
+    }
 
     addConstraint() {
         if (this.state.newConstraint !== "") {
-            let constraint = new Constraint(this.state.newConstraint, this.state.constraintLink)
+            let constraint = new Constraint(this.state.newConstraint, this.state.constraintLink, this.state.newDescription);
             LinkPool[this.state.constraintLink][3].push(constraint);
             let links = this.props.canvas.engine.getDiagramModel().getLinks();
             for (let link in links){
@@ -118,7 +125,8 @@ export class MenuSettingsConstraints extends MenuAbstractDropdownModal {
                             <Button onClick={this.deleteConstraint}
                                     bsStyle="danger">{Locale.del}</Button>
                         </FormGroup>
-                        <Form inline>
+                        <h4>{Locale.createNew+Locale.constraint}</h4>
+                        <Form>
 
                             <FormControl
                                 type="text"
@@ -126,6 +134,13 @@ export class MenuSettingsConstraints extends MenuAbstractDropdownModal {
                                 value={this.state.newConstraint}
                                 placeholder={Locale.constraintPlaceholder}
                                 onChange={this.handleChangeNewConstraint}
+                            />
+                            <FormControl
+                                type="text"
+                                style={{width: "500px"}}
+                                value={this.state.newDescription}
+                                placeholder={Locale.description}
+                                onChange={this.handleChangeNewDescription}
                             />
                             <Button onClick={this.addConstraint} bsStyle="primary">{Locale.add}</Button>
                         </Form>
