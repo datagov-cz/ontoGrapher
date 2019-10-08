@@ -7,6 +7,8 @@ import {Button, Form, FormControl, FormGroup} from "react-bootstrap";
 import {AttributeTypePool, CardinalityPool, GeneralizationPool} from "../config/Variables";
 import {LinkEndPool, LinkPool} from "../config/LinkVariables";
 import Table from "react-bootstrap/es/Table";
+import Tabs from "react-bootstrap/lib/Tabs";
+import Tab from "react-bootstrap/lib/Tab";
 
 export class DetailPanel extends React.Component {
     constructor(props) {
@@ -14,6 +16,8 @@ export class DetailPanel extends React.Component {
         this.state = {
             formName: "",
             newAttrName: "",
+            newAttrName2: "",
+            newAttrType2: AttributeTypePool[0],
             newAttrType: AttributeTypePool[0],
             attribute: 0,
             linkType: "",
@@ -33,12 +37,14 @@ export class DetailPanel extends React.Component {
         this.handleChangeLanguage = this.handleChangeLanguage.bind(this);
         this.handleChangeName = this.handleChangeName.bind(this);
         this.handleChangeAttributeType = this.handleChangeAttributeType.bind(this);
+        this.handleChangeAttributeType2 = this.handleChangeAttributeType2.bind(this);
         this.handleChangeAttribute = this.handleChangeAttribute.bind(this);
         this.processDialogue = this.processDialogue.bind(this);
         this.addAttribute = this.addAttribute.bind(this);
         this.saveAttribute = this.saveAttribute.bind(this);
         this.deleteAttribute = this.deleteAttribute.bind(this);
         this.handleChangeAttributeName = this.handleChangeAttributeName.bind(this);
+        this.handleChangeAttributeName2 = this.handleChangeAttributeName2.bind(this);
         this.handleChangeFirstCardinality = this.handleChangeFirstCardinality.bind(this);
         this.handleChangeSecondCardinality = this.handleChangeSecondCardinality.bind(this);
         this.focus = this.focus.bind(this);
@@ -219,6 +225,12 @@ export class DetailPanel extends React.Component {
         });
     }
 
+    handleChangeAttributeType2(event) {
+        this.setState({
+            newAttrType2: event.target.value
+        });
+    }
+
     handleChangeLanguage(event) {
         this.setState({
             language: event.target.value
@@ -241,12 +253,12 @@ export class DetailPanel extends React.Component {
     }
 
     addAttribute() {
-        if (this.state.newAttrName !== "") {
-            this.props.panelObject.addAttribute(new AttributeObject(this.state.newAttrName, this.state.newAttrType));
+        if (this.state.newAttrName2 !== "") {
+            this.props.panelObject.addAttribute(new AttributeObject(this.state.newAttrName2, this.state.newAttrType2));
             this.setState({
                 attribute: 0,
-                newAttrName: this.state.attrs[this.props.language][0].first,
-                newAttrType: this.state.attrs[this.props.language][0].second
+                newAttrName2: "",
+                newAttrType2: ""
             });
             this.props.updateLinkPosition(this.props.panelObject);
 
@@ -264,6 +276,10 @@ export class DetailPanel extends React.Component {
 
     handleChangeAttributeName(event) {
         this.setState({newAttrName: event.target.value});
+    }
+
+    handleChangeAttributeName2(event) {
+        this.setState({newAttrName2: event.target.value});
     }
 
     handleChangeFirstCardinality(event) {
@@ -331,17 +347,39 @@ export class DetailPanel extends React.Component {
             let height = 48 + (attributeLength * 15);
             if (attributeLength > 0) {
                 selector = (
-                    <FormControl
-                        componentClass="select"
-                        bsSize="small"
-                        value={this.state.attribute}
-                        onChange={this.handleChangeAttribute}
-                        onFocus={this.focus}
-                        size={attributeLength}
-                        style={{height: 12 + (attributeLength) * 15}}
-                    >
-                        {attributeList}
-                    </FormControl>
+                    <div>
+                        <FormControl
+                            componentClass="select"
+                            bsSize="small"
+                            value={this.state.attribute}
+                            onChange={this.handleChangeAttribute}
+                            onFocus={this.focus}
+                            size={attributeLength}
+                            style={{height: 12 + (attributeLength) * 15}}
+                        >
+                            {attributeList}
+                        </FormControl>
+                        <Form inline>
+                            <FormControl
+                                bsSize="small"
+                                type="text"
+                                value={this.state.newAttrName}
+                                placeholder={Locale.detailPanelNamePlaceholder}
+                                onChange={this.handleChangeAttributeName}
+                            />
+                            <FormControl
+                                componentClass="select"
+                                bsSize="small"
+                                value={this.state.newAttrType}
+                                onChange={this.handleChangeAttributeType}
+                            >
+                                {this.attributeTypes}
+                            </FormControl>
+                        </Form>
+                        <Button bsSize="small" onClick={this.saveAttribute}>{Locale.modify}</Button>
+                        <Button bsSize="small" onClick={this.deleteAttribute}>{Locale.delete}</Button>
+                    </div>
+
                 );
             }
 
@@ -449,28 +487,32 @@ export class DetailPanel extends React.Component {
                     </Form>
 
                     <h4>{Locale.detailPanelAttributes}</h4>
+                    <Tabs id={"attributesTabs"} animation={false}>
+                        <Tab eventKey={1} title={Locale.modify}>
+                            {selector}
+                        </Tab>
+                        <Tab eventKey={2} title={Locale.create}>
+                            <Form inline>
+                                <FormControl
+                                    bsSize="small"
+                                    type="text"
+                                    value={this.state.newAttrName2}
+                                    placeholder={Locale.detailPanelNamePlaceholder}
+                                    onChange={this.handleChangeAttributeName2}
+                                />
+                                <FormControl
+                                    componentClass="select"
+                                    bsSize="small"
+                                    value={this.state.newAttrType2}
+                                    onChange={this.handleChangeAttributeType2}
+                                >
+                                    {this.attributeTypes}
+                                </FormControl>
+                            </Form>
+                            <Button bsSize="small" onClick={this.addAttribute}>{Locale.detailPanelNewAttr}</Button>
+                        </Tab>
+                    </Tabs>
 
-                    {selector}
-                    <Form inline>
-                        <FormControl
-                            bsSize="small"
-                            type="text"
-                            value={this.state.newAttrName}
-                            placeholder={Locale.detailPanelNamePlaceholder}
-                            onChange={this.handleChangeAttributeName}
-                        />
-                        <FormControl
-                            componentClass="select"
-                            bsSize="small"
-                            value={this.state.newAttrType}
-                            onChange={this.handleChangeAttributeType}
-                        >
-                            {this.attributeTypes}
-                        </FormControl>
-                        <Button bsSize="small" onClick={this.saveAttribute}>{Locale.menuPanelSave}</Button>
-                    </Form>
-                    <Button bsSize="small" onClick={this.addAttribute}>{Locale.detailPanelNewAttr}</Button>
-                    <Button bsSize="small" onClick={this.deleteAttribute}>{Locale.detailPanelDeleteAttr}</Button>
 
                     {
                         this.state.isGeneralizationMenuAvailable ? generalizationHeader : ""

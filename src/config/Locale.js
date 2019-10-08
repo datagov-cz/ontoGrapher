@@ -162,5 +162,7 @@ export var Locale = {
     derivations: "Derivations",
     noRelationships: "There are no available relationships",
     constraintGeneralization: "Generalization cannot have a cardinality",
-    description: "Description"
+    description: "Description",
+    modify: "Modify",
+    create: "Create"
 };
