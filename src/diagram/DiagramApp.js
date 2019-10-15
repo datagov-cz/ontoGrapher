@@ -33,6 +33,7 @@ import {MenuSettingsImportExport} from "../panels/menu/settings/MenuSettingsImpo
 import {MenuSettingsConstraints} from "../panels/menu/settings/MenuSettingsConstraints";
 import {MenuButtonHelp} from "../panels/menu/buttons/MenuButtonHelp";
 import {importSettings} from "../misc/ImportExportInterface";
+import {getElements} from "../misc/SPARQLinterface";
 
 //TODO: update react-bootstrap
 export class DiagramApp extends React.Component {
@@ -102,6 +103,9 @@ export class DiagramApp extends React.Component {
                 this.forceUpdate();
             }.bind(this));
         }
+        getElements(Defaults.endpoint,Defaults.typeIRI,Defaults.sourceIRI, function(){
+            this.forceUpdate();
+        }.bind(this));
     }
 
     handleLocate(element){
@@ -410,11 +414,12 @@ export class DiagramApp extends React.Component {
                                 name={Locale.menuPanelSaveDiagram}
                                 canvas={this.diagramCanvas.current}
                             />
-                            <MenuFileExportDiagram
-                                eventKey={eventKeyCounter++}
-                                name={Locale.menuPanelExportDiagram}
-                                canvas={this.diagramCanvas.current}
-                            />
+                            //TODO: fix
+                            {/*<MenuFileExportDiagram*/}
+                            {/*    eventKey={eventKeyCounter++}*/}
+                            {/*    name={Locale.menuPanelExportDiagram}*/}
+                            {/*    canvas={this.diagramCanvas.current}*/}
+                            {/*/>*/}
                         </MenuDropdownList>
                         <MenuDropdownList name={Locale.menuPanelView}>
                             <MenuViewCenter
@@ -422,11 +427,12 @@ export class DiagramApp extends React.Component {
                                 name={Locale.menuPanelCenter}
                                 canvas={this.diagramCanvas.current}
                             />
-                            <MenuViewZoom
-                                eventKey={eventKeyCounter++}
-                                name={Locale.menuPanelZoom}
-                                canvas={this.diagramCanvas.current}
-                            />
+                            //TODO: fix
+                            {/*<MenuViewZoom*/}
+                            {/*    eventKey={eventKeyCounter++}*/}
+                            {/*    name={Locale.menuPanelZoom}*/}
+                            {/*    canvas={this.diagramCanvas.current}*/}
+                            {/*/>*/}
                         </MenuDropdownList>
                         <MenuDropdownList name={Locale.menuPanelTools}>
                             <MenuToolsValidate
@@ -527,5 +533,6 @@ DiagramApp.propTypes = {
     loadDiagram: PropTypes.string,
     readOnly: PropTypes.bool,
     loadSettings: PropTypes.string,
-    loadOntology: PropTypes.string
+    loadOntology: PropTypes.string,
+    loadElements: PropTypes.bool
 };

@@ -5,6 +5,7 @@ import {Button, FormControl, FormGroup, MenuItem, Modal} from "react-bootstrap";
 import * as SemanticWebInterface from "../../../misc/SemanticWebInterface";
 
 export class MenuFileExportDiagram extends MenuAbstractDropdownModal {
+    //TODO: make usable
     constructor(props){
         super(props);
         this.state = {

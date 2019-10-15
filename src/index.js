@@ -2,5 +2,5 @@ import ReactDOM from 'react-dom';
 import React from 'react';
 import {DiagramApp} from "./diagram/DiagramApp";
 import {Defaults} from "./diagram/Defaults";
-ReactDOM.render(<DiagramApp loadOntology={Defaults.stereotypeUrl} />,document.getElementById('app'));
+ReactDOM.render(<DiagramApp />,document.getElementById('app'));
 

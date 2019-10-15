@@ -5,17 +5,17 @@ import {OntoDiagramModel} from "../../diagram/OntoDiagramModel";
 import * as _ from "lodash";
 import {LanguagePool} from "../../config/Variables";
 import {Locale} from "../../config/Locale";
+import {Stereotype} from "../misc/Stereotype";
 
 export class NodeCommonModel extends NodeModel {
-    stereotype: string;
+    stereotype: Stereotype;
     attributes: {};
     names: {};
     model: OntoDiagramModel;
 
-    constructor(stereotype: string, rdf: string, model: OntoDiagramModel) {
+    constructor(stereotype: Stereotype, model: OntoDiagramModel) {
         super("common");
         this.model = model;
-        this.rdf = rdf;
         this.names = {};
         this.attributes = {};
         this.notes = {};
@@ -94,7 +94,6 @@ export class NodeCommonModel extends NodeModel {
         this.stereotype = object.stereotype;
         this.attributes = object.attributes;
         this.names = object.names;
-        this.rdf = object.rdf;
         for (let port in this.ports) {
             this.ports[port].model = this.model;
         }
@@ -112,14 +111,9 @@ export class NodeCommonModel extends NodeModel {
             stereotype: this.stereotype,
             attributes: this.attributes,
             names: this.names,
-            rdf: this.rdf,
             notes: this.notes,
             derivation: this.derivation
         });
-    }
-
-    getRDF(){
-        return this.rdf;
     }
 
     getName(language: string){

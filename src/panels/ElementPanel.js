@@ -1,6 +1,6 @@
 import React from 'react';
 import {PanelNodeItem} from "./PanelNodeItem";
-import {Tab, Tabs} from "react-bootstrap";
+import {OverlayTrigger, Tab, Tabs, Tooltip} from "react-bootstrap";
 import {PanelLinkItem} from "./PanelLinkItem";
 import {StereotypePool} from "../config/Variables";
 import {LinkPool} from "../config/LinkVariables";
@@ -15,23 +15,21 @@ export class ElementPanel extends React.Component {
         };
     }
 
-    componentDidMount() {
-        // RDF.fetchStereotypes(Defaults.stereotypeUrl, true, function(){
-        //     this.forceUpdate();
-        // }.bind(this));
-    }
-
     handleChangeSelectedLink(linkType) {
         this.props.handleChangeSelectedLink(linkType);
     }
 
     render() {
         let stereotypeItems = [];
-        for (let stereotype in StereotypePool) {
-                stereotypeItems.push(<PanelNodeItem key={StereotypePool[stereotype].toUpperCase()} model={{
-                    type: StereotypePool[stereotype],
-                    rdf: stereotype
-                }} name={StereotypePool[stereotype]}/>);
+        for (let stereotype = 0; stereotype < StereotypePool.length; stereotype++) {
+                stereotypeItems.push(
+                    <div>
+                        <PanelNodeItem key={stereotype} model={{
+                            stereotype: stereotype
+                        }} name={StereotypePool[stereotype].name}/>
+                    </div>
+
+                );
             }
 
         return (
@@ -58,6 +56,7 @@ export class ElementPanel extends React.Component {
                         </svg>
                     }>
                         {Object.keys(LinkPool).map((link) => (
+
                             <PanelLinkItem
                                 key={link}
                                 selectedLink={this.props.selectedLink}

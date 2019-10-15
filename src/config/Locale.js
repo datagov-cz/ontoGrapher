@@ -31,7 +31,7 @@ export var Locale = {
     untitledDiagram: "Untitled Diagram",
     selectedLanguage: "Language",
     menuPanelHelp: "Help",
-    appName: "ontoUML diagram app",
+    appName: "ontoGrapher",
     menuPanelView: "View",
     menuPanelCenter: "Center view",
     menuPanelZoom: "Restore zoom",
@@ -164,5 +164,6 @@ export var Locale = {
     constraintGeneralization: "Generalization cannot have a cardinality",
     description: "Description",
     modify: "Modify",
-    create: "Create"
+    create: "Create",
+    stereotypeDescriptionPlaceholder: "Description"
 };

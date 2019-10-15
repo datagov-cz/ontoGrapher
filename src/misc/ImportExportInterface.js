@@ -43,18 +43,25 @@ export function exportSettings(name: string, prefix: string, URI: string) {
     eCorePackage.get('eClassifiers').add(eCoreCardinality);
     eCorePackage.get('eClassifiers').add(eCoreLanguage);
 
-    for (let stereotype in StereotypePool) {
+    for (let stereotype of StereotypePool) {
         let eCoreS = eCore.EClass.create({
-            name: StereotypePool[stereotype],
+            name: stereotype.name,
             eSuperTypes: [eCoreStereotype],
             eAnnotations: [
                 {
                     source: "http://www.w3.org/1999/02/22-rdf-syntax-ns",
                     details: {
-                        key: "rdf",
-                        value: stereotype
+                        key: "iri",
+                        value: stereotype.iri
                     }
-                }
+                },
+                {
+                    source: "http://www.w3.org/1999/02/22-rdf-syntax-ns",
+                    details: {
+                        key: "description",
+                        value: stereotype.description
+                    }
+                },
             ]
         });
 
@@ -93,6 +100,13 @@ export function exportSettings(name: string, prefix: string, URI: string) {
                 }
             });
         }
+        annotations.push({
+            source: "iri",
+            details: {
+                key: "iri",
+                value: LinkPool[link][4]
+            }
+        });
         let eCoreL = eCore.EClass.create({
             name: link,
             eSuperTypes: [eCoreRelationship],
@@ -222,12 +236,12 @@ export function importSettings(source: string) {
         if ("type" in item) {
             switch (item.type) {
                 case "Stereotype":
-                    StereotypePool[item.annotations[0].value[0]] = item.name;
+                    StereotypePool.push(new Stereotype(item.name,item.annotations[0].value[0],item.annotations[1].value[0]));
                     break;
                 case "Relationship":
                     let specs = [];
                     let constraints = [];
-                    for (let i = 0; i < item.annotations.length; i++) {
+                    for (let i = 0; i < item.annotations.length-1; i++) {
                         if (i < 3) {
                             specs.push(item.annotations[i].value[0]);
                         } else {
@@ -237,6 +251,7 @@ export function importSettings(source: string) {
                     specs[1] = Helper.convertStringToBoolean(specs[1]);
                     specs[2] = Helper.convertStringToBoolean(specs[2]);
                     specs.push(constraints);
+                    specs.push(item.annotations[item.annotations.length-1].value[0]);
                     LinkPool[item.name] = specs;
                     break;
                 case "AttributeType":

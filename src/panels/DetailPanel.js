@@ -128,7 +128,7 @@ export class DetailPanel extends React.Component {
                 <g>
                     <rect fill="#ffffff" stroke={"black"} strokeWidth="4" width={150} height={height}/>
                     <text width={150} textAnchor="middle" dominantBaseline="hanging" x="50%" y="5px"
-                          fill="#000000">{"«" + stereotype.toLowerCase() + "»"}</text>
+                          fill="#000000">{"«" + stereotype.name.toLowerCase() + "»"}</text>
                     <line x1="0" x2={150} y1="20px" y2="20px" strokeWidth="1" stroke="#000000"/>
                     <text width={150} textAnchor="middle" dominantBaseline="hanging" x="50%" y="25px"
                           fill="#000000">{name}</text>
@@ -529,8 +529,8 @@ export class DetailPanel extends React.Component {
                         this.state.isGeneralizationMenuAvailable ? generalizationLinks : ""
                     }
                     <br/>
-                    <h4>{Locale.derivations}</h4>
-                    {derivationSelector}
+                    {/*<h4>{Locale.derivations}</h4>*/}
+                    {/*{derivationSelector}*/}
                     <FormGroup>
                         <h4>{Locale.notes}</h4>
                         <FormControl

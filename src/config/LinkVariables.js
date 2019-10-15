@@ -14,18 +14,16 @@ import {Constraint} from "../components/misc/Constraint";
 //           Constraints are objects created with 'new Constraint(statement, linkType)',
 //           where 'statement' is the OCL statement and 'linkType' is the name of the link
 //           that the statement belongs to.
-//TODO: finish derivations
-//TODO: objectify stereotypes and relationships
+//TODO: objectify relationships
 export var LinkPool = {
-    "Characterization": ["Empty", true, false, []],
-    "Component": ["FilledEmptyDiamond", false, false, []],
-    "Derivation": ["Empty", false, true, []],
-    "Formal": ["Empty", true, false, []],
-    "Material": ["Empty", true, false, []],
-    "Mediation": ["Empty", true, false, []],
-    "Member": ["FilledMDiamond", true, false, []],
-    "SubCollection": ["FilledCDiamond", false, false, []],
-    "SubQuantity": ["FilledQDiamond", false, false, []]
+    "Characterization": ["Empty", true, false, [], ""],
+    "Component": ["FilledEmptyDiamond", false, false, [], ""],
+    "Formal": ["Empty", true, false, [], ""],
+    "Material": ["Empty", true, false, [], ""],
+    "Mediation": ["Empty", true, false, [], ""],
+    "Member": ["FilledMDiamond", true, false, [], ""],
+    "SubCollection": ["FilledCDiamond", false, false, [], ""],
+    "SubQuantity": ["FilledQDiamond", false, false, [], ""]
 };
 
 // Do not delete!

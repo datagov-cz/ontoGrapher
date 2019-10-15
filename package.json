@@ -1,5 +1,5 @@
 {
-  "name": "ouml-diagram-app",
+  "name": "ontoGrapher",
   "version": "0.1.0",
   "description": "",
   "main": "index.js",
@@ -44,6 +44,7 @@
     "react-dom": "^16.9.0",
     "react-test-renderer": "^16.9.0",
     "sax": "^1.2.4",
+    "sparqljs": "^3.0.0",
     "storm-react-diagrams": "^5.2.1",
     "transform": "^1.1.2"
   }

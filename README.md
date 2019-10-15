@@ -1,4 +1,4 @@
-# ontoUML komponenta
+# ontoGrapher ontoUML komponenta
 
 Webová komponenta v technologii React sloužící ke grafické manipulaci s OntoUML diagramy.
 

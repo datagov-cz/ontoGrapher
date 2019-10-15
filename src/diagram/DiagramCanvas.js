@@ -10,6 +10,7 @@ import {LabelCommonFactory} from "../components/common-label/LabelCommonFactory"
 import {OntoDiagramWidget} from "./OntoDiagramWidget";
 import {Defaults} from "./Defaults";
 import {Locale} from "../config/Locale";
+import {StereotypePool} from "../config/Variables";
 
 
 export class DiagramCanvas extends React.Component {
@@ -120,7 +121,7 @@ export class DiagramCanvas extends React.Component {
                 onDrop={event => {
                     try {
                         const data = JSON.parse(event.dataTransfer.getData("newNode"));
-                        const node = new NodeCommonModel(data.type, data.rdf, this.engine.getDiagramModel());
+                        const node = new NodeCommonModel(StereotypePool[data.stereotype], this.engine.getDiagramModel());
                         const points = this.engine.getRelativeMousePoint(event);
                         node.x = points.x;
                         node.y = points.y;

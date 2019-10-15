@@ -7,6 +7,7 @@ import {Form, FormControl, FormGroup, Tab, Tabs} from "react-bootstrap";
 import {AttributeTypePool, CardinalityPool, LanguagePool, StereotypePool} from "../../../config/Variables";
 import * as SemanticWebInterface from "../../../misc/SemanticWebInterface";
 import {LinkPool} from "../../../config/LinkVariables";
+import {Stereotype} from "../../../components/misc/Stereotype";
 
 export class MenuSettingsNodes extends MenuAbstractDropdownModal {
     constructor(props){
@@ -15,6 +16,7 @@ export class MenuSettingsNodes extends MenuAbstractDropdownModal {
             stereotypeSource: "",
             stereotypeName: "",
             stereotypeRDF: "",
+            stereotypeDescription: "",
             node: StereotypePool[Object.keys(StereotypePool)[0]]
         };
         this.focus = this.focus.bind(this);
@@ -24,6 +26,7 @@ export class MenuSettingsNodes extends MenuAbstractDropdownModal {
         this.handleChangeNode = this.handleChangeNode.bind(this);
         this.handleReplaceStereotypes = this.handleReplaceStereotypes.bind(this);
         this.handleChangeStereotypeSource = this.handleChangeStereotypeSource.bind(this);
+        this.handleChangeStereotypeDescription = this.handleChangeStereotypeDescription.bind(this);
         this.deleteNode = this.deleteNode.bind(this);
     }
 
@@ -37,15 +40,20 @@ export class MenuSettingsNodes extends MenuAbstractDropdownModal {
     }
 
     addNode() {
-        if (this.state.stereotypeName !== "" && this.state.stereotypeRDF !== "") {
-            StereotypePool[this.state.stereotypeRDF] = this.state.stereotypeName;
-            this.setState({stereotypeRDF: "", stereotypeName: ""});
+        if (this.state.stereotypeName !== "" && this.state.stereotypeRDF !== "" && this.state.stereotypeDescription !== "") {
+            StereotypePool.push(new Stereotype(this.state.stereotypeName,this.state.stereotypeIRI,this.state.stereotypeDescription));
+            this.setState({stereotypeRDF: "", stereotypeName: "", stereotypeDescription: ""});
         }
     }
 
     handleChangeStereotypeRDF(event) {
         this.setState({stereotypeRDF: event.target.value});
     }
+
+    handleChangeStereotypeDescription(event) {
+        this.setState({stereotypeDescription: event.target.value});
+    }
+
 
     handleChangeStereotypeName(event) {
         this.setState({stereotypeName: event.target.value});
@@ -83,13 +91,6 @@ export class MenuSettingsNodes extends MenuAbstractDropdownModal {
         this.setState({stereotypeSource: event.target.value});
     }
 
-    moveDownNode(){
-
-    }
-
-    moveUpNode(){
-
-    }
     //TODO: finish move up/down functions
 
     render(){
@@ -147,6 +148,12 @@ export class MenuSettingsNodes extends MenuAbstractDropdownModal {
                                         type="text"
                                         value={this.state.stereotypeRDF}
                                         placeholder={Locale.stereotypeRDFPlaceholder}
+                                        onChange={this.handleChangeStereotypeRDF}
+                                    />
+                                    <FormControl
+                                        type="text"
+                                        value={this.state.stereotypeDescription}
+                                        placeholder={Locale.stereotypeDescriptionPlaceholder}
                                         onChange={this.handleChangeStereotypeRDF}
                                     />
                                     <Button onClick={this.addNode} bsStyle="primary">{Locale.addNode}</Button>
