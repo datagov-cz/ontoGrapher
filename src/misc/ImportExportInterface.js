@@ -1,4 +1,4 @@
-import {AttributeTypePool, CardinalityPool, LanguagePool, StereotypePool} from "../config/Variables";
+import {AttributeTypePool, CardinalityPool, LanguagePool, StereotypePool, VocabularyPool} from "../config/Variables";
 import {LinkPool} from "../config/LinkVariables";
 import {Constraint} from "../components/misc/Constraint";
 import * as Helper from "./Helper";
@@ -62,6 +62,13 @@ export function exportSettings(name: string, prefix: string, URI: string) {
                         value: stereotype.description
                     }
                 },
+                {
+                    source: "http://www.w3.org/1999/02/22-rdf-syntax-ns",
+                    details: {
+                        key: "source",
+                        value: stereotype.source
+                    }
+                },
             ]
         });
 
@@ -105,6 +112,20 @@ export function exportSettings(name: string, prefix: string, URI: string) {
             details: {
                 key: "iri",
                 value: LinkPool[link][4]
+            }
+        });
+        annotations.push({
+            source: "description",
+            details: {
+                key: "description",
+                value: LinkPool[link][5]
+            }
+        });
+        annotations.push({
+            source: "sourceName",
+            details: {
+                key: "sourceName",
+                value: LinkPool[link][6]
             }
         });
         let eCoreL = eCore.EClass.create({
@@ -236,7 +257,10 @@ export function importSettings(source: string) {
         if ("type" in item) {
             switch (item.type) {
                 case "Stereotype":
-                    StereotypePool.push(new Stereotype(item.name,item.annotations[0].value[0],item.annotations[1].value[0]));
+                    StereotypePool.push(new Stereotype(item.name,item.annotations[0].value[0],item.annotations[1].value[0],item.annotations[2].value[0]));
+                    if (!VocabularyPool.includes(item.annotations[2].value[0])){
+                        VocabularyPool.push(item.annotations[2].value[0]);
+                    }
                     break;
                 case "Relationship":
                     let specs = [];
@@ -251,11 +275,15 @@ export function importSettings(source: string) {
                     specs[1] = Helper.convertStringToBoolean(specs[1]);
                     specs[2] = Helper.convertStringToBoolean(specs[2]);
                     specs.push(constraints);
+                    specs.push(item.annotations[item.annotations.length-3].value[0]);
+                    specs.push(item.annotations[item.annotations.length-2].value[0]);
                     specs.push(item.annotations[item.annotations.length-1].value[0]);
                     LinkPool[item.name] = specs;
+                    if (!VocabularyPool.includes(item.annotations[item.annotations.length-1].value[0])){
+                        VocabularyPool.push(item.annotations[item.annotations.length-1].value[0]);
+                    }
                     break;
                 case "AttributeType":
-
                     AttributeTypePool.push(item.name);
                     break;
                 case "Cardinality":

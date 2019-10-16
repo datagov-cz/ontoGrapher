@@ -1,4 +1,4 @@
-import {Locale} from "../../../config/Locale";
+import {Locale} from "../../../config/locale/Locale";
 import {MenuItem, OverlayTrigger, Tooltip} from "react-bootstrap";
 import {MenuAbstractDropdownModal} from "./MenuAbstractDropdownModal";
 import PropTypes from "prop-types";

@@ -2,8 +2,8 @@ import {MenuAbstractButton} from "../abstract/MenuAbstractButton";
 import React from "react";
 import * as Helper from "../../../misc/Helper";
 import {Button, Modal, OverlayTrigger, Tab, Tabs, Tooltip} from "react-bootstrap";
-import {Locale} from "../../../config/Locale";
-import {LocaleHelp} from "../../../config/LocaleHelp";
+import {Locale} from "../../../config/locale/Locale";
+import {LocaleHelp} from "../../../config/locale/LocaleHelp";
 
 export class MenuButtonHelp extends MenuAbstractButton {
     constructor(props){

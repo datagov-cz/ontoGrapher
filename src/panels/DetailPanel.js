@@ -1,6 +1,6 @@
 import React from 'react';
 import {NodeCommonModel} from "../components/common-node/NodeCommonModel";
-import {Locale} from "../config/Locale";
+import {Locale} from "../config/locale/Locale";
 import {LinkCommonModel} from "../components/common-link/LinkCommonModel";
 import {AttributeObject} from "../components/misc/AttributeObject";
 import {Button, Form, FormControl, FormGroup} from "react-bootstrap";

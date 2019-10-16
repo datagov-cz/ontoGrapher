@@ -165,5 +165,12 @@ export var Locale = {
     description: "Description",
     modify: "Modify",
     create: "Create",
-    stereotypeDescriptionPlaceholder: "Description"
+    stereotypeDescriptionPlaceholder: "Description",
+    otherVocabulary: "Unsorted",
+    all: "All",
+    vocabularySettings: "Vocabulary settings",
+    menuPanelVocabulary: "Vocabularies...",
+    deleteVocabWarning: "WARNING! Deleting a vocabulary also deletes associated elements!",
+    manageVocabularies: "Manage vocabularies",
+    addVocabulary: "Add vocabulary wizard"
 };

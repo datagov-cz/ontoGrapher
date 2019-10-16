@@ -1,18 +1,25 @@
 import React from 'react';
 import {PanelNodeItem} from "./PanelNodeItem";
-import {OverlayTrigger, Tab, Tabs, Tooltip} from "react-bootstrap";
+import {FormControl, OverlayTrigger, Tab, Tabs, Tooltip} from "react-bootstrap";
 import {PanelLinkItem} from "./PanelLinkItem";
-import {StereotypePool} from "../config/Variables";
+import {LanguagePool, StereotypePool, VocabularyPool} from "../config/Variables";
 import {LinkPool} from "../config/LinkVariables";
+import {Locale} from "../config/locale/Locale";
 
 
 export class ElementPanel extends React.Component {
     constructor(props: PanelNodeItem) {
         super(props);
         this.handleChangeSelectedLink = this.handleChangeSelectedLink.bind(this);
+        this.handleChangeVocabulary = this.handleChangeVocabulary.bind(this);
         this.state = {
-            loaded: false
+            loaded: false,
+            vocabulary: "&*"
         };
+    }
+
+    handleChangeVocabulary(event){
+        this.setState({vocabulary: event.target.value});
     }
 
     handleChangeSelectedLink(linkType) {
@@ -20,20 +27,21 @@ export class ElementPanel extends React.Component {
     }
 
     render() {
-        let stereotypeItems = [];
-        for (let stereotype = 0; stereotype < StereotypePool.length; stereotype++) {
-                stereotypeItems.push(
-                    <div>
-                        <PanelNodeItem key={stereotype} model={{
-                            stereotype: stereotype
-                        }} name={StereotypePool[stereotype].name}/>
-                    </div>
+        let i = 0;
+        let vocabularyPool = [];
+        vocabularyPool.push(<option key={i++} value={"&*"}>{Locale.all}</option>);
+        for (let vocabulary of VocabularyPool){
+            vocabularyPool.push(<option key={i++} value={vocabulary}>{vocabulary}</option>)
+        }
+        vocabularyPool.push(<option key={i++} value={""}>{Locale.otherVocabulary}</option>);
 
-                );
-            }
 
         return (
             <div className="stereotypePanel" id="stereotypePanel">
+                <FormControl componentClass="select" bsSize="small" value={this.state.vocabulary}
+                             onChange={this.handleChangeVocabulary}>
+                    {vocabularyPool}
+                </FormControl>
                 <Tabs id="stereotypePanelTabs" animation={false}>
                     <Tab eventKey={1} title={
                         <svg height={10} width={15}>
@@ -41,7 +49,15 @@ export class ElementPanel extends React.Component {
                         </svg>
                     }>
                         <div className="stereotypes">
-                            {stereotypeItems}
+                            {
+                                StereotypePool.map((stereotype, i) => {
+                                    if (stereotype.source === this.state.vocabulary || this.state.vocabulary === "&*" || (this.state.vocabulary === "" && !VocabularyPool.includes(stereotype.source))){
+                                        return (<PanelNodeItem key={i++} model={{
+                                                stereotype: StereotypePool.indexOf(stereotype)
+                                            }} name={stereotype.name}/>);
+                                    }
+                                })
+                            }
                         </div>
                     </Tab>
                     <Tab eventKey={2} title={
@@ -55,15 +71,17 @@ export class ElementPanel extends React.Component {
                             />
                         </svg>
                     }>
-                        {Object.keys(LinkPool).map((link) => (
-
-                            <PanelLinkItem
-                                key={link}
-                                selectedLink={this.props.selectedLink}
-                                handleChangeSelectedLink={this.handleChangeSelectedLink}
-                                linkType={link}
-                            />
-                        ))}
+                        {Object.keys(LinkPool).map((link) => {
+                                if (LinkPool[link][6] === this.state.vocabulary || this.state.vocabulary === "&*" || (this.state.vocabulary === "" && !VocabularyPool.includes(LinkPool[link][6]) )){
+                                    return <PanelLinkItem
+                                        key={i++}
+                                        selectedLink={this.props.selectedLink}
+                                        handleChangeSelectedLink={this.handleChangeSelectedLink}
+                                        linkType={link}
+                                    />
+                                }
+                            }
+                        )}
                     </Tab>
                 </Tabs>
 

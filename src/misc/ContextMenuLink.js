@@ -1,5 +1,5 @@
 import React from 'react';
-import {Locale} from "../config/Locale";
+import {Locale} from "../config/locale/Locale";
 import {DefaultLabelModel} from "storm-react-diagrams";
 import {CardinalityPool} from "../config/Variables";
 import {NodeCommonPortModel} from "../components/common-node/NodeCommonPortModel";

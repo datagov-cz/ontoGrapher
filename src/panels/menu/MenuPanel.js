@@ -1,7 +1,7 @@
 import React from 'react';
 import {FormControl} from "react-bootstrap";
 import {LanguagePool} from "../../config/Variables";
-import {Locale} from "../../config/Locale";
+import {Locale} from "../../config/locale/Locale";
 
 
 export class MenuPanel extends React.Component {

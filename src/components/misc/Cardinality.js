@@ -1,4 +1,4 @@
-import {Locale} from "../../config/Locale";
+import {Locale} from "../../config/locale/Locale";
 
 export class Cardinality {
 

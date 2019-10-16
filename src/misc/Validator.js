@@ -1,6 +1,6 @@
 import {OntoDiagramModel} from "../diagram/OntoDiagramModel";
 import {LinkPool} from "../config/LinkVariables";
-import {Locale} from "../config/Locale";
+import {Locale} from "../config/locale/Locale";
 import {AttributeTypePool, CardinalityPool, LanguagePool, StereotypePool} from "../config/Variables";
 import * as Helper from "./Helper";
 import {fetchSettings} from "./ImportExportInterface";
@@ -17,8 +17,7 @@ export function validateSettingsWithModel(model: OntoDiagramModel, source: strin
 
     for (let node in nodes) {
         let nodeData = {
-            rdf: nodes[node].rdf,
-            name: nodes[node].stereotype
+            stereotype: nodes[node].stereotype
         };
         if (!stereotypePool.includes(nodeData)) {
             stereotypePool.push(nodeData);
@@ -47,13 +46,16 @@ export function validateSettingsWithModel(model: OntoDiagramModel, source: strin
             linkEnd: links[link].linkEnd,
             labeled: links[link].labeled,
             dashed: links[link].dashed,
-            OCL: links[link].constraints
+            OCL: links[link].constraints,
+            iri: links[link].iri,
+            description: links[link].description,
+            source: links[link].source
         };
         if (!linkPool.includes(linkData)) {
             linkPool.push(linkData);
         }
     }
-
+    //TODO: fix
     let compareArray = fetchSettings(source);
 
     let errors = [];

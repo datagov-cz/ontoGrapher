@@ -1,6 +1,6 @@
 import React from "react";
 import {MenuAbstractDropdownModal} from "../abstract/MenuAbstractDropdownModal"
-import {Locale} from "../../../config/Locale";
+import {Locale} from "../../../config/locale/Locale";
 import Modal from "react-bootstrap/lib/Modal";
 import Button from "react-bootstrap/lib/Button";
 import {Form, FormControl, FormGroup, Tab, Tabs} from "react-bootstrap";
@@ -17,7 +17,7 @@ export class MenuSettingsNodes extends MenuAbstractDropdownModal {
             stereotypeName: "",
             stereotypeRDF: "",
             stereotypeDescription: "",
-            node: StereotypePool[Object.keys(StereotypePool)[0]]
+            node: 0
         };
         this.focus = this.focus.bind(this);
         this.addNode = this.addNode.bind(this);
@@ -34,14 +34,14 @@ export class MenuSettingsNodes extends MenuAbstractDropdownModal {
     focus() {
         if (Object.entries(StereotypePool).length === 1) {
             this.setState({
-                node: StereotypePool[Object.keys(StereotypePool)[0]]
+                node: 0
             });
         }
     }
 
     addNode() {
         if (this.state.stereotypeName !== "" && this.state.stereotypeRDF !== "" && this.state.stereotypeDescription !== "") {
-            StereotypePool.push(new Stereotype(this.state.stereotypeName,this.state.stereotypeIRI,this.state.stereotypeDescription));
+            StereotypePool.push(new Stereotype(this.state.stereotypeName,this.state.stereotypeIRI,this.state.stereotypeDescription,""));
             this.setState({stereotypeRDF: "", stereotypeName: "", stereotypeDescription: ""});
         }
     }
@@ -62,7 +62,7 @@ export class MenuSettingsNodes extends MenuAbstractDropdownModal {
     deleteNode() {
         if (this.state.node !== undefined){
             if (Object.entries(StereotypePool).length > 1) {
-                delete StereotypePool[this.state.node];
+                StereotypePool.splice(this.state.node,1);
             }
         }
     }
@@ -94,9 +94,9 @@ export class MenuSettingsNodes extends MenuAbstractDropdownModal {
     //TODO: finish move up/down functions
 
     render(){
-        let stereotypePool = Object.keys(StereotypePool).map((stereotype) => {
+        let stereotypePool = StereotypePool.map((stereotype, i) => {
             return (
-                <option key={stereotype} value={stereotype}>{StereotypePool[stereotype]}</option>
+                <option key={i} value={i}>{StereotypePool[i].name}</option>
             )
         });
         let stereotypePoolLength = stereotypePool.length;
@@ -125,11 +125,6 @@ export class MenuSettingsNodes extends MenuAbstractDropdownModal {
                                 {stereotypePool}
                             </FormControl>
 
-                            {/*
-                            <Button onClick={this.moveUpNode}*/}
-                            {/*        bsStyle="primary">{Locale.moveUp}</Button>*/}
-                            {/*<Button onClick={this.moveDownNode}*/}
-                            {/*        bsStyle="primary">{Locale.moveDown}</Button>*/}
                             <Button onClick={this.deleteNode}
                                     bsStyle="danger">{Locale.deleteSelected}</Button>
 

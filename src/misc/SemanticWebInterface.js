@@ -1,13 +1,14 @@
 import {AttributeTypePool, GeneralizationPool, LanguagePool, StereotypePool} from "../config/Variables";
 import {OntoDiagramModel} from "../diagram/OntoDiagramModel";
 import React from "react";
-import {Locale} from "../config/Locale";
+import {Locale} from "../config/locale/Locale";
 import {Config} from "../config/Config";
+import {Stereotype} from "../components/misc/Stereotype";
 
 export function fetchStereotypes(source: string, replace: boolean, callback) {
     const rdf = require('rdf-ext');
     const rdfFetch = require('rdf-fetch');
-    let stereotypes = {};
+    let stereotypes = [];
     rdfFetch(source).then((res) => {
         return res.dataset();
     }).then((dataset) => {
@@ -24,21 +25,19 @@ export function fetchStereotypes(source: string, replace: boolean, callback) {
             for (let node of res[quad].toArray()) {
                 if (node.object instanceof rdf.defaults.Literal && node.predicate.value === "http://www.w3.org/2000/01/rdf-schema#label") {
                     if (node.object.language === Config.stereotypeLanguage) {
-                        stereotypes[node.subject.value] = node.object.value;
+                        stereotypes.push(new Stereotype(node.object.value,node.subject.value,"",""));
+                        //stereotypes[node.subject.value] = node.object.value;
                     }
                 }
             }
         }
 
         if (replace) {
-            for (let stereotype in StereotypePool) {
-                delete StereotypePool[stereotype];
-            }
+            StereotypePool.length = 0;
         }
 
-        for (let stereotype in stereotypes) {
-            StereotypePool[stereotype] = stereotypes[stereotype];
-        }
+        StereotypePool.push(stereotypes);
+
         callback();
     }).catch((err) => {
         console.error(err.stack || err.message);

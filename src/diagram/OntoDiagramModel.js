@@ -1,6 +1,6 @@
 import {DiagramEngine, DiagramModel, LinkModel, NodeModel} from "storm-react-diagrams";
 import {DiagramCanvas} from "./DiagramCanvas";
-import {Locale} from "../config/Locale";
+import {Locale} from "../config/locale/Locale";
 import * as _ from "lodash";
 import {GeneralizationPool, LanguagePool} from "../config/Variables";
 

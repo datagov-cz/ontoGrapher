@@ -1,6 +1,6 @@
 import * as React from "react";
 import Table from "react-bootstrap/es/Table";
-import {Locale} from "../config/Locale";
+import {Locale} from "../config/locale/Locale";
 import Button from "react-bootstrap/es/Button";
 
 export class BottomPanel extends React.Component{

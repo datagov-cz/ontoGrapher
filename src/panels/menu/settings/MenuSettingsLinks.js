@@ -1,6 +1,6 @@
 import React from "react";
 import {MenuAbstractDropdownModal} from "../abstract/MenuAbstractDropdownModal"
-import {Locale} from "../../../config/Locale";
+import {Locale} from "../../../config/locale/Locale";
 import Modal from "react-bootstrap/lib/Modal";
 import Button from "react-bootstrap/lib/Button";
 import Table from "react-bootstrap/lib/Table";

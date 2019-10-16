@@ -1,7 +1,7 @@
 import React from 'react';
 import {DefaultLabelModel, DefaultLinkModel, DiagramEngine} from 'storm-react-diagrams';
 import {OntoDiagramModel} from "../../diagram/OntoDiagramModel";
-import {Locale} from "../../config/Locale";
+import {Locale} from "../../config/locale/Locale";
 import * as _ from "lodash";
 import {LanguagePool} from "../../config/Variables";
 import {LinkPool} from "../../config/LinkVariables";
@@ -53,6 +53,9 @@ export class LinkCommonModel extends DefaultLinkModel {
             this.labeled = LinkPool[this.linkType][1];
             this.dashed = LinkPool[this.linkType][2];
             this.constraints = LinkPool[this.linkType][3];
+            this.iri = LinkPool[this.linkType][4];
+            this.description = LinkPool[this.linkType][5];
+            this.source = LinkPool[this.linkType][6];
         }
         this.addListener({
             selectionChanged: event => {
@@ -101,7 +104,10 @@ export class LinkCommonModel extends DefaultLinkModel {
             constraints: this.constraints,
             descriptor: this.descriptor,
             linkEnd: this.linkEnd,
-            labeled: this.labeled
+            labeled: this.labeled,
+            iri: this.iri,
+            description: this.description,
+            source: this.source
         });
     }
 
@@ -124,6 +130,9 @@ export class LinkCommonModel extends DefaultLinkModel {
         this.descriptor = ob.descriptor;
         this.linkEnd = ob.linkEnd;
         this.labeled = ob.labeled;
+        this.iri = ob.iri;
+        this.description = ob.description;
+        this.source = ob.source;
     }
 
     setLabel(str: string) {

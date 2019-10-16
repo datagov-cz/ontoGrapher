@@ -3,7 +3,7 @@ import React from "react";
 import * as _ from "lodash";
 import {LinkEndPool, LinkPool} from "../../config/LinkVariables";
 import {LabelModel} from "storm-react-diagrams";
-import {Locale} from "../../config/Locale";
+import {Locale} from "../../config/locale/Locale";
 
 export class LinkCommonWidget extends DefaultLinkWidget {
     label: boolean;

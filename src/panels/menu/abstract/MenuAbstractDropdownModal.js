@@ -1,5 +1,5 @@
 import React from 'react';
-import {Locale} from "../../../config/Locale";
+import {Locale} from "../../../config/locale/Locale";
 import {MenuItem} from "react-bootstrap";
 import PropTypes from 'prop-types';
 import * as Helper from "../../../misc/Helper";

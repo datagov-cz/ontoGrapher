@@ -4,7 +4,7 @@ import {AttributeObject} from "../misc/AttributeObject";
 import {OntoDiagramModel} from "../../diagram/OntoDiagramModel";
 import * as _ from "lodash";
 import {LanguagePool} from "../../config/Variables";
-import {Locale} from "../../config/Locale";
+import {Locale} from "../../config/locale/Locale";
 import {Stereotype} from "../misc/Stereotype";
 
 export class NodeCommonModel extends NodeModel {

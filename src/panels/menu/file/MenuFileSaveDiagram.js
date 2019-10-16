@@ -1,6 +1,6 @@
 import React from "react";
 import {MenuAbstractDropdownModal} from "../abstract/MenuAbstractDropdownModal"
-import {Locale} from "../../../config/Locale";
+import {Locale} from "../../../config/locale/Locale";
 import {Button, FormControl, FormGroup, MenuItem, Modal} from "react-bootstrap";
 
 export class MenuFileSaveDiagram extends MenuAbstractDropdownModal {

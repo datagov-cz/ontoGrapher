@@ -8,8 +8,8 @@ import {LinkCommonFactory} from "../components/common-link/LinkCommonFactory";
 import {LinkCommonModel} from "../components/common-link/LinkCommonModel";
 import {LabelCommonFactory} from "../components/common-label/LabelCommonFactory";
 import {OntoDiagramWidget} from "./OntoDiagramWidget";
-import {Defaults} from "./Defaults";
-import {Locale} from "../config/Locale";
+import {Defaults} from "../config/Defaults";
+import {Locale} from "../config/locale/Locale";
 import {StereotypePool} from "../config/Variables";
 
 

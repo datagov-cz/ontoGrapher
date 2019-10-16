@@ -1,12 +1,12 @@
 import React from "react";
-import {Defaults} from "./Defaults";
+import {Defaults, DefaultVocabularies} from "../config/Defaults";
 import {PointModel} from "storm-react-diagrams";
 import {MenuPanel} from "../panels/menu/MenuPanel";
 import {ElementPanel} from "../panels/ElementPanel";
 import {DetailPanel} from "../panels/DetailPanel";
 import {DiagramCanvas} from "./DiagramCanvas";
 import {OntoDiagramModel} from "./OntoDiagramModel";
-import {Locale} from "../config/Locale";
+import {Locale} from "../config/locale/Locale";
 import {ContextMenuLink} from "../misc/ContextMenuLink";
 import {LinkCommonModel} from "../components/common-link/LinkCommonModel";
 import PropTypes from "prop-types";
@@ -33,7 +33,9 @@ import {MenuSettingsImportExport} from "../panels/menu/settings/MenuSettingsImpo
 import {MenuSettingsConstraints} from "../panels/menu/settings/MenuSettingsConstraints";
 import {MenuButtonHelp} from "../panels/menu/buttons/MenuButtonHelp";
 import {importSettings} from "../misc/ImportExportInterface";
-import {getElements} from "../misc/SPARQLinterface";
+import {getElements, getElementsFromMultipleSources} from "../misc/SPARQLinterface";
+import {MenuSettingsVocabularies} from "../panels/menu/settings/MenuSettingsVocabularies";
+import {StereotypePool} from "../config/Variables";
 
 //TODO: update react-bootstrap
 export class DiagramApp extends React.Component {
@@ -103,9 +105,11 @@ export class DiagramApp extends React.Component {
                 this.forceUpdate();
             }.bind(this));
         }
-        getElements(Defaults.endpoint,Defaults.typeIRI,Defaults.sourceIRI, function(){
-            this.forceUpdate();
-        }.bind(this));
+        if (this.props.loadDefaultVocabularies){
+            getElementsFromMultipleSources(DefaultVocabularies, function(){
+                this.forceUpdate();
+            }.bind(this));
+        }
     }
 
     handleLocate(element){
@@ -389,38 +393,38 @@ export class DiagramApp extends React.Component {
                         language={this.state.language}
                         name={this.state.name}
                     >
-                        <MenuDropdownList name={Locale.menuPanelFile}>
-                            <MenuFileNewDiagram
-                                eventKey={eventKeyCounter++}
-                                handleNew={this.handleNew}
-                                name={Locale.menuPanelNew}
-                            />
-                            <MenuFileDiagramSettings
-                                eventKey={eventKeyCounter++}
-                                name={Locale.menuPanelDiagram}
-                                inputName={this.state.name}
-                                inputNotes={this.state.notes}
-                                handleChangeName={this.handleChangeName}
-                                handleChangeNotes={this.handleChangeNotes}
-                                canvas={this.diagramCanvas.current}
-                            />
-                            <MenuFileLoadDiagram
-                                eventKey={eventKeyCounter++}
-                                name={Locale.menuPanelLoad}
-                                deserialize={this.deserialize}
-                            />
-                            <MenuFileSaveDiagram
-                                eventKey={eventKeyCounter++}
-                                name={Locale.menuPanelSaveDiagram}
-                                canvas={this.diagramCanvas.current}
-                            />
-                            //TODO: fix
-                            {/*<MenuFileExportDiagram*/}
-                            {/*    eventKey={eventKeyCounter++}*/}
-                            {/*    name={Locale.menuPanelExportDiagram}*/}
-                            {/*    canvas={this.diagramCanvas.current}*/}
-                            {/*/>*/}
-                        </MenuDropdownList>
+                            <MenuDropdownList name={Locale.menuPanelFile}>
+                                <MenuFileNewDiagram
+                                    eventKey={eventKeyCounter++}
+                                    handleNew={this.handleNew}
+                                    name={Locale.menuPanelNew}
+                                />
+                                <MenuFileDiagramSettings
+                                    eventKey={eventKeyCounter++}
+                                    name={Locale.menuPanelDiagram}
+                                    inputName={this.state.name}
+                                    inputNotes={this.state.notes}
+                                    handleChangeName={this.handleChangeName}
+                                    handleChangeNotes={this.handleChangeNotes}
+                                    canvas={this.diagramCanvas.current}
+                                />
+                                <MenuFileLoadDiagram
+                                    eventKey={eventKeyCounter++}
+                                    name={Locale.menuPanelLoad}
+                                    deserialize={this.deserialize}
+                                />
+                                <MenuFileSaveDiagram
+                                    eventKey={eventKeyCounter++}
+                                    name={Locale.menuPanelSaveDiagram}
+                                    canvas={this.diagramCanvas.current}
+                                />
+                                //TODO: fix
+                                <MenuFileExportDiagram
+                                    eventKey={eventKeyCounter++}
+                                    name={Locale.menuPanelExportDiagram}
+                                    canvas={this.diagramCanvas.current}
+                                />
+                            </MenuDropdownList>
                         <MenuDropdownList name={Locale.menuPanelView}>
                             <MenuViewCenter
                                 eventKey={eventKeyCounter++}
@@ -446,6 +450,7 @@ export class DiagramApp extends React.Component {
                                 action={this.evaluate}
                             />
                         </MenuDropdownList>
+                        { this.props.immutableDefinitions ? "" :
                         <MenuDropdownList name={Locale.menuPanelSettings}>
                             <MenuSettingsLanguages
                                 eventKey={eventKeyCounter++}
@@ -476,7 +481,12 @@ export class DiagramApp extends React.Component {
                                 eventKey={eventKeyCounter++}
                                 name={Locale.constraintSettings}
                                 />
+                            <MenuSettingsVocabularies
+                                eventKey={eventKeyCounter++}
+                                name={Locale.menuPanelVocabulary}
+                                />
                         </MenuDropdownList>
+                        }
                         <MenuButtonHelp
                             name={Locale.menuPanelHelp}
                         />
@@ -534,5 +544,6 @@ DiagramApp.propTypes = {
     readOnly: PropTypes.bool,
     loadSettings: PropTypes.string,
     loadOntology: PropTypes.string,
-    loadElements: PropTypes.bool
+    loadDefaultVocabularies: PropTypes.bool,
+    immutableDefinitions: PropTypes.bool
 };

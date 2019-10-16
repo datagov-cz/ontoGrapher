@@ -1,8 +1,8 @@
 import React from "react";
-import {Locale} from "../../../config/Locale";
+import {Locale} from "../../../config/locale/Locale";
 import {Button, MenuItem, Modal} from "react-bootstrap";
 import {MenuAbstractDropdownAction} from "../abstract/MenuAbstractDropdownAction";
-import {Defaults} from "../../../diagram/Defaults";
+import {Defaults} from "../../../config/Defaults";
 import * as Helper from "../../../misc/Helper";
 
 export class MenuViewCenter extends MenuAbstractDropdownAction {

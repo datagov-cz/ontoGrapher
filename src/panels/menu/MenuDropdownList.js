@@ -1,6 +1,6 @@
 import React from 'react';
 import {DropdownButton} from "react-bootstrap";
-import {Locale} from "../../config/Locale";
+import {Locale} from "../../config/locale/Locale";
 import PropTypes from 'prop-types';
 
 export class MenuDropdownList extends React.Component {

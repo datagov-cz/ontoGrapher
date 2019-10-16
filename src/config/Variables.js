@@ -1,10 +1,8 @@
-import {Locale} from "./Locale";
+import {Locale} from "./locale/Locale";
 import {Cardinality} from "../components/misc/Cardinality";
-import * as Helper from "../misc/Helper";
+import {DefaultVocabularies} from "./Defaults";
 
 // Represents the pool of available stereotypes.
-// Key: IRI source of the stereotype.
-// Value: Name of the stereotype.
 
 export var StereotypePool = [];
     // "http://onto.fel.cvut.cz/ontologies/ufo/anti-rigid-mixin": "Anti Rigid Mixin",
@@ -49,6 +47,8 @@ export var CardinalityPool = [
     new Cardinality("1","*"),
 ];
 
-//Do not delete!
+// Do not delete!
 CardinalityPool.unshift(new Cardinality(Locale.none,Locale.none));
 export var GeneralizationPool = {};
+
+export var VocabularyPool = [];
