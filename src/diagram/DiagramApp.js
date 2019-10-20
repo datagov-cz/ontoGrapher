@@ -450,7 +450,7 @@ export class DiagramApp extends React.Component {
                                 action={this.evaluate}
                             />
                         </MenuDropdownList>
-                        { this.props.immutableDefinitions ? "" :
+                        { this.props.lockConfig ? "" :
                         <MenuDropdownList name={Locale.menuPanelSettings}>
                             <MenuSettingsLanguages
                                 eventKey={eventKeyCounter++}
@@ -546,5 +546,5 @@ DiagramApp.propTypes = {
     loadOntology: PropTypes.string,
     typeIRI: PropTypes.string,
     loadDefaultVocabularies: PropTypes.bool,
-    immutableDefinitions: PropTypes.bool
+    lockConfig: PropTypes.bool
 };
