@@ -136,10 +136,17 @@ export function exportSettings(name: string, prefix: string, URI: string) {
         eCorePackage.get('eClassifiers').add(eCoreL);
     }
 
-    for (let attrType of AttributeTypePool) {
+    for (let attrType of Object.keys(AttributeTypePool)) {
         let eCoreAT = eCore.EClass.create({
-            name: attrType,
-            eSuperTypes: [eCoreAttributeType]
+            name: AttributeTypePool[attrType],
+            eSuperTypes: [eCoreAttributeType],
+            eAnnotations: [{
+                source: "iri",
+                details: {
+                    key: "iri",
+                    value: attrType
+                }
+            }]
         });
         eCorePackage.get('eClassifiers').add(eCoreAT);
     }
@@ -243,7 +250,10 @@ export function importSettings(source: string) {
     }
 
     CardinalityPool.length = 0;
-    AttributeTypePool.length = 0;
+
+    for (let language in AttributeTypePool) {
+        delete AttributeTypePool[language];
+    }
 
     for (let stereotype in StereotypePool) {
         delete StereotypePool[stereotype];
@@ -284,7 +294,7 @@ export function importSettings(source: string) {
                     }
                     break;
                 case "AttributeType":
-                    AttributeTypePool.push(item.name);
+                    AttributeTypePool[item.annotations[0].value[0]] = item.name;
                     break;
                 case "Cardinality":
                     CardinalityPool.push(new Cardinality(item.annotations[0].value[0], item.annotations[1].value[0]));

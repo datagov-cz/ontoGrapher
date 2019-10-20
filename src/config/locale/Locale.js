@@ -172,5 +172,6 @@ export var Locale = {
     menuPanelVocabulary: "Vocabularies...",
     deleteVocabWarning: "WARNING! Deleting a vocabulary also deletes associated elements!",
     manageVocabularies: "Manage vocabularies",
-    addVocabulary: "Add vocabulary wizard"
+    addVocabulary: "Add vocabulary wizard",
+    attributeTypeIRIPlaceholder: "Attribute IRI"
 };

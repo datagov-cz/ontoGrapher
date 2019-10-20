@@ -256,12 +256,9 @@ export class MenuSettingsVocabularies extends MenuAbstractDropdownModal {
 
     deleteVocabulary() {
         if (VocabularyPool.includes(this.state.vocabulary)){
-            VocabularyPool.splice(VocabularyPool.indexOf(this.state.vocabulary),1);
-            for (let i = 0; i < StereotypePool.length; i++){
+            for (let i = StereotypePool.length - 1; i >= 0; i--){
                 if (StereotypePool[i].source === this.state.vocabulary){
                     StereotypePool.splice(i,1);
-                } else {
-                    console.log(StereotypePool[i],source);
                 }
             }
             for (let link in LinkPool){
@@ -270,6 +267,7 @@ export class MenuSettingsVocabularies extends MenuAbstractDropdownModal {
                 }
             }
         }
+        VocabularyPool.splice(VocabularyPool.indexOf(this.state.vocabulary),1);
     }
 
     render(){

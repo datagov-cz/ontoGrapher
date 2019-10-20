@@ -11,19 +11,21 @@ export class MenuSettingsAttributeTypes extends MenuAbstractDropdownModal {
         super(props);
         this.state={
             attributeTypeName: "",
-            attributeType: AttributeTypePool[0],
+            attributeTypeIRI: "",
+            attributeType: Object.keys(AttributeTypePool)[0],
         };
         this.handleChangeAttributeTypeName = this.handleChangeAttributeTypeName.bind(this);
         this.handleChangeAttributeType = this.handleChangeAttributeType.bind(this);
         this.addAttributeType = this.addAttributeType.bind(this);
         this.deleteAttributeType = this.deleteAttributeType.bind(this);
         this.focus = this.focus.bind(this);
+        this.handleChangeAttributeTypeIRI = this.handleChangeAttributeTypeIRI.bind(this);
     }
-
+    //TODO: update attribute type input form
     focus(){
-        if (AttributeTypePool.length === 1) {
+        if (Object.keys(AttributeTypePool).length === 1) {
             this.setState({
-                attributeType: AttributeTypePool[0]
+                attributeType: Object.keys(AttributeTypePool)[0]
             });
         }
     }
@@ -44,6 +46,11 @@ export class MenuSettingsAttributeTypes extends MenuAbstractDropdownModal {
     handleChangeAttributeTypeName(event) {
         this.setState({attributeTypeName: event.target.value});
     }
+
+    handleChangeAttributeTypeIRI(event) {
+        this.setState({attributeTypeIRI: event.target.value});
+    }
+
 
 
     render(){
@@ -87,9 +94,15 @@ export class MenuSettingsAttributeTypes extends MenuAbstractDropdownModal {
                                 placeholder={Locale.attributeTypePlaceholder}
                                 onChange={this.handleChangeAttributeTypeName}
                             />
-                            <Button onClick={this.addAttributeType}
-                                    bsStyle="primary">{Locale.addAttributeType}</Button>
+                            <FormControl
+                                type="text"
+                                value={this.state.attributeTypeIRI}
+                                placeholder={Locale.attributeTypeIRIPlaceholder}
+                                onChange={this.handleChangeAttributeTypeIRI}
+                            />
                         </Form>
+                        <Button onClick={this.addAttributeType}
+                                bsStyle="primary">{Locale.addAttributeType}</Button>
                     </Modal.Body>
                     <Modal.Footer>
                         <Button onClick={this.handleCloseModal}

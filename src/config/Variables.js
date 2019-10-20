@@ -5,12 +5,6 @@ import {DefaultVocabularies} from "./Defaults";
 // Represents the pool of available stereotypes.
 
 export var StereotypePool = [];
-    // "http://onto.fel.cvut.cz/ontologies/ufo/anti-rigid-mixin": "Anti Rigid Mixin",
-    // "http://onto.fel.cvut.cz/ontologies/ufo/anti-rigid-sortal": "Anti Rigid Sortal",
-    // "http://onto.fel.cvut.cz/ontologies/ufo/category": "Category",
-    // "http://onto.fel.cvut.cz/ontologies/ufo/collective": "Collective",
-    // "http://onto.fel.cvut.cz/ontologies/ufo/endurant": "Endurant"
-
 
 // Represents the pool of available languages.
 // Key: Code of the language.
@@ -22,13 +16,13 @@ export var LanguagePool = {
 };
 
 // Represents the pool of available attribute types.
-//TODO: update attribute type definitions
-export var AttributeTypePool = [
-    "String",
-    "Long",
-    "Integer",
-    "Boolean"
-];
+export var AttributeTypePool = {
+    "http://www.w3.org/2001/XMLSchema#string" : "String",
+    "http://www.w3.org/2001/XMLSchema#int" : "Integer",
+    "http://www.w3.org/2001/XMLSchema#boolean" : "Boolean",
+    "http://www.w3.org/2001/XMLSchema#float" : "Float",
+    "http://www.w3.org/2001/XMLSchema#dateTime" : "DateTime",
+};
 
 // Represents the pool of available cardinalities.
 // Should always be a string of:
@@ -50,5 +44,4 @@ export var CardinalityPool = [
 // Do not delete!
 CardinalityPool.unshift(new Cardinality(Locale.none,Locale.none));
 export var GeneralizationPool = {};
-
 export var VocabularyPool = [];

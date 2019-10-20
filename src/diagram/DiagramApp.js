@@ -101,7 +101,7 @@ export class DiagramApp extends React.Component {
             this.diagramCanvas.current.setReadOnly(true);
         }
         if (typeof this.props.loadOntology === "string"){
-            SemanticWebInterface.fetchStereotypes(this.props.loadOntology,true, function(){
+            SemanticWebInterface.fetchStereotypes(this.props.loadOntology, this.props.typeIRI, true, function(){
                 this.forceUpdate();
             }.bind(this));
         }
@@ -418,12 +418,12 @@ export class DiagramApp extends React.Component {
                                     name={Locale.menuPanelSaveDiagram}
                                     canvas={this.diagramCanvas.current}
                                 />
-                                //TODO: fix
-                                <MenuFileExportDiagram
-                                    eventKey={eventKeyCounter++}
-                                    name={Locale.menuPanelExportDiagram}
-                                    canvas={this.diagramCanvas.current}
-                                />
+                                {/*//TODO: fix*/}
+                                {/*<MenuFileExportDiagram*/}
+                                {/*    eventKey={eventKeyCounter++}*/}
+                                {/*    name={Locale.menuPanelExportDiagram}*/}
+                                {/*    canvas={this.diagramCanvas.current}*/}
+                                {/*/>*/}
                             </MenuDropdownList>
                         <MenuDropdownList name={Locale.menuPanelView}>
                             <MenuViewCenter
@@ -431,7 +431,7 @@ export class DiagramApp extends React.Component {
                                 name={Locale.menuPanelCenter}
                                 canvas={this.diagramCanvas.current}
                             />
-                            //TODO: fix
+                            {/*//TODO: fix*/}
                             {/*<MenuViewZoom*/}
                             {/*    eventKey={eventKeyCounter++}*/}
                             {/*    name={Locale.menuPanelZoom}*/}
@@ -531,7 +531,7 @@ export class DiagramApp extends React.Component {
                         contextMenuLink={this.state.contextMenuLink}
                         updateLinkPosition={this.updateLinkPosition}
                     />
-
+                    <div className="build">build 77</div>
                 </div>
             );
         }
@@ -544,6 +544,7 @@ DiagramApp.propTypes = {
     readOnly: PropTypes.bool,
     loadSettings: PropTypes.string,
     loadOntology: PropTypes.string,
+    typeIRI: PropTypes.string,
     loadDefaultVocabularies: PropTypes.bool,
     immutableDefinitions: PropTypes.bool
 };

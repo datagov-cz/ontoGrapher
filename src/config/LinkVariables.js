@@ -20,14 +20,14 @@ import {Constraint} from "../components/misc/Constraint";
 
 //TODO: objectify relationships
 export var LinkPool = {
-    "Characterization": ["Empty", true, false, [], "","",""],
-    "Component": ["FilledEmptyDiamond", false, false, [], "","",""],
-    "Formal": ["Empty", true, false, [], "","",""],
-    "Material": ["Empty", true, false, [], "","",""],
-    "Mediation": ["Empty", true, false, [], "","",""],
-    "Member": ["FilledMDiamond", true, false, [], "","",""],
-    "SubCollection": ["FilledCDiamond", false, false, [], "","",""],
-    "SubQuantity": ["FilledQDiamond", false, false, [], "","",""]
+    // "Characterization": ["Empty", true, false, [], "","",""],
+    // "Component": ["FilledEmptyDiamond", false, false, [], "","",""],
+    // "Formal": ["Empty", true, false, [], "","",""],
+    // "Material": ["Empty", true, false, [], "","",""],
+    // "Mediation": ["Empty", true, false, [], "","",""],
+    // "Member": ["FilledMDiamond", true, false, [], "","",""],
+    // "SubCollection": ["FilledCDiamond", false, false, [], "","",""],
+    // "SubQuantity": ["FilledQDiamond", false, false, [], "","",""]
 };
 
 // Do not delete!

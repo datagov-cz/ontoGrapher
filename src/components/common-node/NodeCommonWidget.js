@@ -2,6 +2,7 @@ import * as React from "react";
 import {NodeCommonModel} from "./NodeCommonModel";
 import {PortWidget} from "storm-react-diagrams";
 import {OntoDiagramModel} from "../../diagram/OntoDiagramModel";
+import {AttributeTypePool} from "../../config/Variables";
 
 export interface NodeCommonWidgetProps {
     node: NodeCommonModel;
@@ -31,7 +32,7 @@ export class NodeCommonWidget extends React.Component<NodeCommonWidgetProps, Nod
             select = "blue";
         }
         const attributeMap = attrs.map((attr) =>
-            <tspan key={attributeKey++} x="5px" dy="15px">{attr.first + ": " + attr.second}</tspan>
+            <tspan key={attributeKey++} x="5px" dy="15px">{attr.first + ": " + AttributeTypePool[attr.second]}</tspan>
         );
         return (
             <div className={this.props.node.type} width={this.props.size} height={height}>
@@ -44,7 +45,7 @@ export class NodeCommonWidget extends React.Component<NodeCommonWidgetProps, Nod
 
                     <g>
                         <rect fill="#ffffff" stroke={select} strokeWidth="4" width={this.props.size} height={height}/>
-                        <text width={this.props.size} textAnchor="middle" dominantBaseline="hanging" x="50%" y="5px"
+                        <text width={this.props.size} textAnchor="middle" dominantBaseline="hanging" x="50%" y="px"
                               fill="#000000">{"«" + this.props.node.stereotype.name.toLowerCase() + "»"}</text>
                         <line x1="0" x2={this.props.size} y1="20px" y2="20px" strokeWidth="1" stroke="#000000"/>
                         <text width={this.props.size} textAnchor="middle" dominantBaseline="hanging" x="50%" y="25px"

@@ -5,14 +5,14 @@ import {Locale} from "../config/locale/Locale";
 import {Config} from "../config/Config";
 import {Stereotype} from "../components/misc/Stereotype";
 
-export function fetchStereotypes(source: string, replace: boolean, callback) {
+export function fetchStereotypes(source: string, typeIRI: string, replace: boolean, callback) {
     const rdf = require('rdf-ext');
     const rdfFetch = require('rdf-fetch');
     let stereotypes = [];
     rdfFetch(source).then((res) => {
         return res.dataset();
     }).then((dataset) => {
-        const classes = dataset.match(null, null, rdf.namedNode("http://www.w3.org/2002/07/owl#Class"));
+        const classes = dataset.match(null, null, rdf.namedNode(typeIRI));
         let result = {};
         for (let quad of classes.toArray()) {
             if (quad.subject instanceof rdf.defaults.NamedNode) {
@@ -26,7 +26,6 @@ export function fetchStereotypes(source: string, replace: boolean, callback) {
                 if (node.object instanceof rdf.defaults.Literal && node.predicate.value === "http://www.w3.org/2000/01/rdf-schema#label") {
                     if (node.object.language === Config.stereotypeLanguage) {
                         stereotypes.push(new Stereotype(node.object.value,node.subject.value,"",""));
-                        //stereotypes[node.subject.value] = node.object.value;
                     }
                 }
             }

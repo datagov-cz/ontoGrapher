@@ -16,7 +16,7 @@ export function getElements(source, callback, callbackError) {
         "FILTER (?termType IN (<"+source.stereotypeIRI.join(">,<")+">,<"+source.relationshipIRI.join(">,<")+">,<"+source.attributeIRI.join(">,<")+">)).",
         "}"
     ].join(" ");
-
+    //console.log(query);
     let q = source.endpoint + "?query="+encodeURIComponent(query)+"&format=json";
     // TODO: fetch names and descriptions in all available languages
     fetch(q)
@@ -24,14 +24,13 @@ export function getElements(source, callback, callbackError) {
             return response.json();
         })
         .then(data => {
-
             for (let result of data.results.bindings){
                 if (source.stereotypeIRI.indexOf(result.termType.value) > -1){
                     StereotypePool.push(new Stereotype(result.termLabel.value,result.term.value,result.termDefinition.value,source.name));
                 } else if (source.relationshipIRI.indexOf(result.termType.value) > -1) {
                     LinkPool[result.termLabel.value] = ["Empty",true,false,[],result.term.value,result.termDefinition.value,source.name];
                 } else if (source.attributeIRI.indexOf(result.termType.value) > -1) {
-                    AttributeTypePool.push(result.termLabel.value);
+                    AttributeTypePool[result.term.value] = result.termLabel.value;
                 }
             }
             VocabularyPool.push(source.name);

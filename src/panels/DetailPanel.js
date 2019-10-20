@@ -17,8 +17,8 @@ export class DetailPanel extends React.Component {
             formName: "",
             newAttrName: "",
             newAttrName2: "",
-            newAttrType2: AttributeTypePool[0],
-            newAttrType: AttributeTypePool[0],
+            newAttrType2: Object.keys(AttributeTypePool)[0],
+            newAttrType: Object.keys(AttributeTypePool)[0],
             attribute: 0,
             linkType: "",
             newLabel: "",
@@ -135,7 +135,7 @@ export class DetailPanel extends React.Component {
                     <text width={150} textAnchor="start" dominantBaseline="hanging" x="5px" y="30px"
                           fill="#000000">
                         {attributes.map(
-                            (attr) => (<tspan key={attributeKey++} x="5px" dy="15px">{attr.first + ": " + attr.second}</tspan>)
+                            (attr) => (<tspan key={attributeKey++} x="5px" dy="15px">{attr.first + ": " + AttributeTypePool[attr.second]}</tspan>)
                         )}
                     </text>
                 </g>
@@ -327,8 +327,8 @@ export class DetailPanel extends React.Component {
 
     render() {
         this.attributeTypes = [];
-        for (let attrType of AttributeTypePool) {
-            this.attributeTypes.push(<option key={attrType} value={attrType}>{attrType}</option>);
+        for (let attrType of Object.keys(AttributeTypePool)) {
+            this.attributeTypes.push(<option key={attrType} value={attrType}>{AttributeTypePool[attrType]}</option>);
         }
         this.cardinalityPool = [];
         for (let cardinality of CardinalityPool) {
