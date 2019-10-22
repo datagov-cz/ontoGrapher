@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "description": "React komponenta pro ontoUML modelování",
   "main": "index.js",
-  "homepage" : "https://bindetad.github.io/ontoGrapher/",
+  "homepage": "https://bindetad.github.io/ontoGrapher/",
   "scripts": {
     "test": "mocha \"src/test/**/*.js\"",
     "start": "webpack-dev-server --mode development",

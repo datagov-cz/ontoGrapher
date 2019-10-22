@@ -37,6 +37,7 @@ export function exportSettings(name: string, prefix: string, URI: string) {
         name: "Language",
         abstract: true
     });
+
     eCorePackage.get('eClassifiers').add(eCoreStereotype);
     eCorePackage.get('eClassifiers').add(eCoreRelationship);
     eCorePackage.get('eClassifiers').add(eCoreAttributeType);
