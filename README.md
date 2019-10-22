@@ -1,6 +1,7 @@
 # ontoGrapher ontoUML komponenta
 
 Webová komponenta v technologii React sloužící ke grafické manipulaci s OntoUML diagramy.
+[Odkaz na nasazenou verzi](https://bindetad.github.io/ontoGrapher/)
 
 #### Požadavky
 

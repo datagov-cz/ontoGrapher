@@ -20,8 +20,8 @@ export var DefaultVocabularies = [
         sourceIRI: "https://slovník.gov.cz/základní/glosář",
         labelIRI: "http://www.w3.org/2004/02/skos/core#prefLabel",
         definitionIRI: "http://www.w3.org/2004/02/skos/core#definition",
-        stereotypeIRI: ["https://slovník.gov.cz/základní/pojem/typ-objektu","https://slovník.gov.cz/základní/pojem/typ-události","https://slovník.gov.cz/základní/pojem/typ-vlastnosti"],
-        relationshipIRI: ["https://slovník.gov.cz/základní/pojem/typ-vztahu"],
+        stereotypeIRI: ["http://www.w3.org/2002/07/owl#Class"],
+        relationshipIRI: ["http://www.w3.org/2002/07/owl#ObjectProperty"],
         attributeIRI: []
     },
 ];

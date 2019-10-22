@@ -31,12 +31,11 @@ export var LinkPool = {
 };
 
 // Do not delete!
-LinkPool[Locale.generalization] = ["UnfilledArrow", false, false, [
-    new Constraint("self.getSourceCardinality() = \""+ Locale.none +"\"",Locale.generalization,Locale.constraintGeneralization),
-    new Constraint("self.getTargetCardinality() = \""+ Locale.none +"\"",Locale.generalization,Locale.constraintGeneralization)
-]];
 
-
+    // LinkPool[Locale.generalization] = ["UnfilledArrow", false, false, [
+    //     new Constraint("self.getSourceCardinality() = \""+ Locale.none +"\"",Locale.generalization,Locale.constraintGeneralization),
+    //     new Constraint("self.getTargetCardinality() = \""+ Locale.none +"\"",Locale.generalization,Locale.constraintGeneralization)
+    // ]];
 
 // Defines the tips of various relationships.
 // For example, the UnfilledArrow type represents an arrow that has no text inside it and is not filled.

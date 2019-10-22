@@ -5,7 +5,7 @@ import {LinkPool} from "../config/LinkVariables";
 export function getElements(source, callback, callbackError) {
 
     let query = [
-        "SELECT ?term ?termLabel ?termType ?termDefinition",
+        "SELECT DISTINCT ?term ?termLabel ?termType ?termDefinition",
         "WHERE {",
         "?term <"+source.typeIRI+"> <"+source.sourceIRI+">.",
         "?term <"+source.labelIRI+"> ?termLabel.",
@@ -16,8 +16,9 @@ export function getElements(source, callback, callbackError) {
         "FILTER (?termType IN (<"+source.stereotypeIRI.join(">,<")+">,<"+source.relationshipIRI.join(">,<")+">,<"+source.attributeIRI.join(">,<")+">)).",
         "}"
     ].join(" ");
-    //console.log(query);
     let q = source.endpoint + "?query="+encodeURIComponent(query)+"&format=json";
+    console.log(query);
+    console.log(q);
     // TODO: fetch names and descriptions in all available languages
     fetch(q)
         .then(response => {
