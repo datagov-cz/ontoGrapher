@@ -7,7 +7,7 @@ export function getElements(source, callback, callbackError) {
     let query = [
         "SELECT DISTINCT ?term ?termLabel ?termType ?termDefinition",
         "WHERE {",
-        "?term <"+source.typeIRI+"> <"+source.sourceIRI+">.",
+        "?term <"+source.classIRI+"> <"+source.sourceIRI+">.",
         "?term <"+source.labelIRI+"> ?termLabel.",
         "?term a ?termType.",
         "FILTER langMatches(lang(?termLabel),\""+source.language+"\").",

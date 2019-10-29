@@ -2,10 +2,11 @@ import {AttributeTypePool, GeneralizationPool, LanguagePool, StereotypePool} fro
 import {OntoDiagramModel} from "../diagram/OntoDiagramModel";
 import React from "react";
 import {Locale} from "../config/locale/Locale";
-import {Config} from "../config/Config";
 import {Stereotype} from "../components/misc/Stereotype";
+import {LinkPool} from "../config/LinkVariables";
+import {Defaults} from "../config/Defaults";
 
-export function fetchStereotypes(source: string, typeIRI: string, replace: boolean, callback) {
+export function fetchClasses(source: string, typeIRI: string, replace: boolean, callback) {
     const rdf = require('rdf-ext');
     const rdfFetch = require('rdf-fetch');
     let stereotypes = [];
@@ -24,8 +25,9 @@ export function fetchStereotypes(source: string, typeIRI: string, replace: boole
         for (let quad in res) {
             for (let node of res[quad].toArray()) {
                 if (node.object instanceof rdf.defaults.Literal && node.predicate.value === "http://www.w3.org/2000/01/rdf-schema#label") {
-                    if (node.object.language === Config.stereotypeLanguage) {
+                    if (node.object.language === Defaults.sourceLanguage) {
                         stereotypes.push(new Stereotype(node.object.value,node.subject.value,"",""));
+                        continue;
                     }
                 }
             }
@@ -36,6 +38,50 @@ export function fetchStereotypes(source: string, typeIRI: string, replace: boole
         }
 
         StereotypePool.push(stereotypes);
+
+        callback();
+    }).catch((err) => {
+        console.error(err.stack || err.message);
+    });
+}
+
+export function fetchRelationships(source: string, typeIRI: string, replace: boolean, callback) {
+    const rdf = require('rdf-ext');
+    const rdfFetch = require('rdf-fetch');
+    let relationships = {};
+    rdfFetch(source).then((res) => {
+        return res.dataset();
+    }).then((dataset) => {
+        const classes = dataset.match(null, null, rdf.namedNode(typeIRI));
+        let result = {};
+        for (let quad of classes.toArray()) {
+            if (quad.subject instanceof rdf.defaults.NamedNode) {
+                result[quad.subject.value] = dataset.match(rdf.namedNode(quad.subject.value));
+            }
+        }
+        return result;
+    }).then((res) => {
+        for (let quad in res) {
+            for (let node of res[quad].toArray()) {
+                if (node.object instanceof rdf.defaults.Literal && node.predicate.value === "http://www.w3.org/2000/01/rdf-schema#label") {
+                    if (node.object.language === Defaults.sourceLanguage) {
+                        relationships[node.object.value] = ["Empty", true, false, [], node.subject.value,"",""];
+                        //stereotypes.push(new Stereotype(node.object.value,node.subject.value,"",""));
+                        continue;
+                    }
+                }
+            }
+        }
+
+        if (replace) {
+            for (let link in LinkPool) {
+                delete LinkPool[link];
+            }
+        }
+
+        for (let link in relationships) {
+            LinkPool[link] = relationships[link];
+        }
 
         callback();
     }).catch((err) => {

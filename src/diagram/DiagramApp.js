@@ -100,8 +100,13 @@ export class DiagramApp extends React.Component {
         if (this.props.readOnly) {
             this.diagramCanvas.current.setReadOnly(true);
         }
-        if (typeof this.props.loadOntology === "string"){
-            SemanticWebInterface.fetchStereotypes(this.props.loadOntology, this.props.typeIRI, true, function(){
+        if (typeof this.props.loadClasses === "string"){
+            SemanticWebInterface.fetchClasses(this.props.loadClasses, this.props.classIRI, true, function(){
+                this.forceUpdate();
+            }.bind(this));
+        }
+        if (typeof this.props.loadRelationships === "string"){
+            SemanticWebInterface.fetchRelationships(this.props.loadRelationships, this.props.relationshipIRI, true, function(){
                 this.forceUpdate();
             }.bind(this));
         }
@@ -543,8 +548,10 @@ DiagramApp.propTypes = {
     loadDiagram: PropTypes.string,
     readOnly: PropTypes.bool,
     loadSettings: PropTypes.string,
-    loadOntology: PropTypes.string,
-    typeIRI: PropTypes.string,
+    loadClasses: PropTypes.string,
+    loadRelationships: PropTypes.string,
+    classIRI: PropTypes.string,
+    relationshipIRI: PropTypes.string,
     loadDefaultVocabularies: PropTypes.bool,
     lockConfig: PropTypes.bool
 };

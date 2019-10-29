@@ -4,10 +4,10 @@ import {Locale} from "../../../config/locale/Locale";
 import Modal from "react-bootstrap/lib/Modal";
 import Button from "react-bootstrap/lib/Button";
 import {Form, FormControl, FormGroup, Tab, Tabs} from "react-bootstrap";
-import {AttributeTypePool, CardinalityPool, LanguagePool, StereotypePool} from "../../../config/Variables";
+import {StereotypePool} from "../../../config/Variables";
 import * as SemanticWebInterface from "../../../misc/SemanticWebInterface";
-import {LinkPool} from "../../../config/LinkVariables";
 import {Stereotype} from "../../../components/misc/Stereotype";
+import {Defaults} from "../../../config/Defaults";
 
 export class MenuSettingsNodes extends MenuAbstractDropdownModal {
     constructor(props){
@@ -28,11 +28,12 @@ export class MenuSettingsNodes extends MenuAbstractDropdownModal {
         this.handleChangeStereotypeSource = this.handleChangeStereotypeSource.bind(this);
         this.handleChangeStereotypeDescription = this.handleChangeStereotypeDescription.bind(this);
         this.deleteNode = this.deleteNode.bind(this);
+        this.handleLoadStereotypes = this.handleLoadStereotypes.bind(this);
     }
 
 
     focus() {
-        if (Object.entries(StereotypePool).length === 1) {
+        if (StereotypePool.length === 1) {
             this.setState({
                 node: 0
             });
@@ -40,7 +41,7 @@ export class MenuSettingsNodes extends MenuAbstractDropdownModal {
     }
 
     addNode() {
-        if (this.state.stereotypeName !== "" && this.state.stereotypeRDF !== "" && this.state.stereotypeDescription !== "") {
+        if (this.state.stereotypeName !== "" && this.state.stereotypeRDF !== "") {
             StereotypePool.push(new Stereotype(this.state.stereotypeName,this.state.stereotypeIRI,this.state.stereotypeDescription,""));
             this.setState({stereotypeRDF: "", stereotypeName: "", stereotypeDescription: ""});
         }
@@ -61,7 +62,7 @@ export class MenuSettingsNodes extends MenuAbstractDropdownModal {
 
     deleteNode() {
         if (this.state.node !== undefined){
-            if (Object.entries(StereotypePool).length > 1) {
+            if (StereotypePool.length > 1) {
                 StereotypePool.splice(this.state.node,1);
             }
         }
@@ -73,7 +74,7 @@ export class MenuSettingsNodes extends MenuAbstractDropdownModal {
 
     handleReplaceStereotypes() {
         if (this.state.stereotypeSource !== "") {
-            SemanticWebInterface.fetchStereotypes(this.state.stereotypeSource, true, () => {
+            SemanticWebInterface.fetchClasses(this.state.stereotypeSource, Defaults.classIRI, true, () => {
                 this.setState({status: ""});
             });
         }
@@ -81,7 +82,7 @@ export class MenuSettingsNodes extends MenuAbstractDropdownModal {
 
     handleLoadStereotypes() {
         if (this.state.stereotypeSource !== "") {
-            SemanticWebInterface.fetchStereotypes(this.state.stereotypeSource, false, () => {
+            SemanticWebInterface.fetchClasses(this.state.stereotypeSource, Defaults.classIRI, false, () => {
                 this.setState({status: ""});
             });
         }
@@ -149,7 +150,7 @@ export class MenuSettingsNodes extends MenuAbstractDropdownModal {
                                         type="text"
                                         value={this.state.stereotypeDescription}
                                         placeholder={Locale.stereotypeDescriptionPlaceholder}
-                                        onChange={this.handleChangeStereotypeRDF}
+                                        onChange={this.handleChangeStereotypeDescription}
                                     />
                                     <Button onClick={this.addNode} bsStyle="primary">{Locale.addNode}</Button>
                                 </Form>

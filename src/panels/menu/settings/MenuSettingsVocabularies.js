@@ -24,7 +24,8 @@ export class MenuSettingsVocabularies extends MenuAbstractDropdownModal {
             sourceStereotypeIRI: "",
             sourceRelationshipIRI: "",
             sourceAttributeIRI: "",
-            result: true
+            result: true,
+            vocabularyName: ""
         };
         this.focus = this.focus.bind(this);
         this.handleChangeVocabulary = this.handleChangeVocabulary.bind(this);
@@ -45,6 +46,8 @@ export class MenuSettingsVocabularies extends MenuAbstractDropdownModal {
         this.incrementStep3 = this.incrementStep3.bind(this);
         this.step3check = this.step3check.bind(this);
         this.submit = this.submit.bind(this);
+        this.handleChangeVocabularyName = this.handleChangeVocabularyName.bind(this);
+        this.addVocabulary = this.addVocabulary.bind(this);
 
 
         this.sourceResult = "";
@@ -60,6 +63,16 @@ export class MenuSettingsVocabularies extends MenuAbstractDropdownModal {
         }
     }
 
+    addVocabulary(){
+        if (this.state.vocabularyName !== ""){
+            VocabularyPool.push(this.state.vocabularyName);
+            this.setState({vocabularyName: ""});
+        }
+    }
+
+    handleChangeVocabularyName(event){
+        this.setState({vocabularyName: event.target.value});
+    }
 
     handleChangeVocabulary(event){
         this.setState({vocabulary: event.target.value});
@@ -139,7 +152,7 @@ export class MenuSettingsVocabularies extends MenuAbstractDropdownModal {
             name: this.state.sourceName,
             endpoint: this.state.sourceEndpoint,
             language: this.state.sourceLanguage,
-            typeIRI: this.state.sourceTypeIRI,
+            classIRI: this.state.sourceTypeIRI,
             sourceIRI: this.state.sourceIRI,
             labelIRI: "http://www.w3.org/2004/02/skos/core#prefLabel",
             definitionIRI: "http://www.w3.org/2004/02/skos/core#definition",
@@ -322,8 +335,18 @@ export class MenuSettingsVocabularies extends MenuAbstractDropdownModal {
                                     {Locale.deleteVocabWarning}
 
                                 </FormGroup>
+                                {/*<h4>{Locale.createNew+Locale.vocabulary}</h4>*/}
+                                {/*<Form>*/}
+                                {/*    <FormControl*/}
+                                {/*        type="text"*/}
+                                {/*        value={this.state.vocabularyName}*/}
+                                {/*        placeholder={Locale.vocabularyPlaceholder}*/}
+                                {/*        onChange={this.handleChangeVocabularyName}*/}
+                                {/*    />*/}
+                                {/*    <Button onClick={this.addVocabulary} bsStyle="primary">{Locale.addVocabulary}</Button>*/}
+                                {/*</Form>*/}
                             </Tab>
-                            <Tab eventKey={2} title={Locale.addVocabulary}>
+                            <Tab eventKey={2} title={Locale.addVocabularyWizard}>
                                 {this.getWizardStep(this.state.wizardStep)}
                             </Tab>
                         </Tabs>
