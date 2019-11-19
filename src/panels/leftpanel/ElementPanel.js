@@ -239,7 +239,7 @@ export class ElementPanel extends React.Component {
                             }
                         )}
                     </Tab>
-                    <Tab eventKey={3} title={"P"}>
+                    <Tab eventKey={3} title={"P&M"}>
                         <Button onClick={this.handleOpenNewModal}>{Locale.addPackage}</Button>
                         <Button onClick={this.removePackage}>{Locale.removePackage}</Button>
                         <FormControl componentClass="select" bsSize="small" value={this.state.package}
@@ -252,7 +252,7 @@ export class ElementPanel extends React.Component {
 
                             {selectedPkg}
                     </Tab>
-                    <Tab eventKey={4} title={"M"}>
+                    <Tab eventKey={4} title={"D"}>
 
                             <Button onClick={this.handleOpenModelModal} bsSize={"small"}>Manage</Button>
                             {Object.keys(Models).map((model) => <PanelModelItem
