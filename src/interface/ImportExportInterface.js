@@ -1,7 +1,13 @@
-import {AttributeTypePool, CardinalityPool, LanguagePool, StereotypePool, VocabularyPool} from "../config/Variables";
-import {LinkPool} from "../config/LinkVariables";
+import {
+    AttributeTypePool,
+    CardinalityPool,
+    LanguagePool,
+    LinkPool,
+    StereotypePool,
+    VocabularyPool
+} from "../config/Variables";
 import {Constraint} from "../components/misc/Constraint";
-import * as Helper from "./Helper";
+import * as Helper from "../misc/Helper";
 import {Cardinality} from "../components/misc/Cardinality";
 
 export function exportSettings(name: string, prefix: string, URI: string) {

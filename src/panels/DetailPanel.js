@@ -4,8 +4,7 @@ import {Locale} from "../config/locale/Locale";
 import {LinkCommonModel} from "../components/common-link/LinkCommonModel";
 import {AttributeObject} from "../components/misc/AttributeObject";
 import {Button, Form, FormControl, FormGroup} from "react-bootstrap";
-import {AttributeTypePool, CardinalityPool, GeneralizationPool} from "../config/Variables";
-import {LinkEndPool, LinkPool} from "../config/LinkVariables";
+import {AttributeTypePool, CardinalityPool, GeneralizationPool, LinkEndPool, LinkPool} from "../config/Variables";
 import Table from "react-bootstrap/es/Table";
 import Tabs from "react-bootstrap/lib/Tabs";
 import Tab from "react-bootstrap/lib/Tab";
@@ -17,8 +16,8 @@ export class DetailPanel extends React.Component {
             formName: "",
             newAttrName: "",
             newAttrName2: "",
-            newAttrType2: Object.keys(AttributeTypePool)[0],
-            newAttrType: Object.keys(AttributeTypePool)[0],
+            newAttrType2: 0,
+            newAttrType: 0,
             attribute: 0,
             linkType: "",
             newLabel: "",
@@ -27,10 +26,10 @@ export class DetailPanel extends React.Component {
             stereotype: "",
             nodeStart: "",
             nodeEnd: "",
-            generalizationName: "",
-            generalization: "",
-            isGeneralizationMenuAvailable: false,
-            derivation: "",
+            // generalizationName: "",
+            // generalization: "",
+            // isGeneralizationMenuAvailable: false,
+            // derivation: "",
             links: {}
         };
 
@@ -52,57 +51,57 @@ export class DetailPanel extends React.Component {
         this.saveLabel = this.saveLabel.bind(this);
         this.saveNotes = this.saveNotes.bind(this);
         this.handleChangeNotes = this.handleChangeNotes.bind(this);
-        this.handleChangeGeneralization = this.handleChangeGeneralization.bind(this);
-        this.addGeneralization = this.addGeneralization.bind(this);
-        this.deleteGeneralization = this.deleteGeneralization.bind(this);
-        this.handleChangeGeneralizationName = this.handleChangeGeneralizationName.bind(this);
-        this.handleChangeDerivation = this.handleChangeDerivation.bind(this);
+        // this.handleChangeGeneralization = this.handleChangeGeneralization.bind(this);
+        // this.addGeneralization = this.addGeneralization.bind(this);
+        // this.deleteGeneralization = this.deleteGeneralization.bind(this);
+        // this.handleChangeGeneralizationName = this.handleChangeGeneralizationName.bind(this);
+        // this.handleChangeDerivation = this.handleChangeDerivation.bind(this);
     }
+    //
+    // handleChangeDerivation(event){
+    //     this.setState({derivation: event.target.value});
+    //         if (event.target.value === ""){
+    //             this.props.panelObject.derivation = "";
+    //         } else {
+    //             this.props.panelObject.derivation = this.props.panelObject.model.getLinks()[event.target.value];
+    //         }
+    // }
 
-    handleChangeDerivation(event){
-        this.setState({derivation: event.target.value});
-            if (event.target.value === ""){
-                this.props.panelObject.derivation = "";
-            } else {
-                this.props.panelObject.derivation = this.props.panelObject.model.getLinks()[event.target.value];
-            }
-    }
-
-    deleteGeneralization(event) {
-        if (this.state.generalization !== "") {
-            let def = this.state.generalization;
-            this.setState({generalization: ""});
-            delete GeneralizationPool[def];
-        }
-    }
-
-    addGeneralization(event) {
-        if (this.state.generalizationName !== "") {
-            GeneralizationPool[this.state.generalizationName] = [];
-            this.setState({generalizationName: ""})
-        }
-    }
-
-    handleChangeGeneralizationName(event) {
-        this.setState({generalizationName: event.target.value});
-    }
-
-    handleChangeGeneralization(event) {
-        for (let key in GeneralizationPool) {
-            if (GeneralizationPool[key].includes(this.props.panelObject)) {
-                GeneralizationPool[key].splice(GeneralizationPool[key].indexOf(this.props.panelObject), 1);
-                break;
-            }
-        }
-        if (event.target.value !== "") {
-            if (!(event.target.value in GeneralizationPool)) {
-                GeneralizationPool[event.target.value] = [];
-            }
-            GeneralizationPool[event.target.value].push(this.props.panelObject);
-
-        }
-        this.setState({generalization: event.target.value});
-    }
+    // deleteGeneralization(event) {
+    //     if (this.state.generalization !== "") {
+    //         let def = this.state.generalization;
+    //         this.setState({generalization: ""});
+    //         delete GeneralizationPool[def];
+    //     }
+    // }
+    //
+    // addGeneralization(event) {
+    //     if (this.state.generalizationName !== "") {
+    //         GeneralizationPool[this.state.generalizationName] = [];
+    //         this.setState({generalizationName: ""})
+    //     }
+    // }
+    //
+    // handleChangeGeneralizationName(event) {
+    //     this.setState({generalizationName: event.target.value});
+    // }
+    //
+    // handleChangeGeneralization(event) {
+    //     for (let key in GeneralizationPool) {
+    //         if (GeneralizationPool[key].includes(this.props.panelObject)) {
+    //             GeneralizationPool[key].splice(GeneralizationPool[key].indexOf(this.props.panelObject), 1);
+    //             break;
+    //         }
+    //     }
+    //     if (event.target.value !== "") {
+    //         if (!(event.target.value in GeneralizationPool)) {
+    //             GeneralizationPool[event.target.value] = [];
+    //         }
+    //         GeneralizationPool[event.target.value].push(this.props.panelObject);
+    //
+    //     }
+    //     this.setState({generalization: event.target.value});
+    // }
 
     handleChangeNotes(event){
         let copy = this.state.notes;
@@ -135,7 +134,7 @@ export class DetailPanel extends React.Component {
                     <text width={150} textAnchor="start" dominantBaseline="hanging" x="5px" y="30px"
                           fill="#000000">
                         {attributes.map(
-                            (attr) => (<tspan key={attributeKey++} x="5px" dy="15px">{attr.first + ": " + AttributeTypePool[attr.second]}</tspan>)
+                            (attr) => (<tspan key={attributeKey++} x="5px" dy="15px">{attr.first + ": " + attr.second.name}</tspan>)
                         )}
                     </text>
                 </g>
@@ -258,7 +257,7 @@ export class DetailPanel extends React.Component {
             this.setState({
                 attribute: 0,
                 newAttrName2: "",
-                newAttrType2: ""
+                newAttrType2: 0
             });
             this.props.updateLinkPosition(this.props.panelObject);
 
@@ -327,24 +326,23 @@ export class DetailPanel extends React.Component {
 
     render() {
         this.attributeTypes = [];
-        for (let attrType of Object.keys(AttributeTypePool)) {
-            this.attributeTypes.push(<option key={attrType} value={attrType}>{AttributeTypePool[attrType]}</option>);
+        for (let attrType in AttributeTypePool) {
+            this.attributeTypes.push(<option key={attrType} value={attrType}>{AttributeTypePool[attrType].name}</option>);
         }
         this.cardinalityPool = [];
-        for (let cardinality of CardinalityPool) {
-            this.cardinalityPool.push(<option key={cardinality} value={cardinality}>{cardinality.getString()}</option>);
+        for (let cardinality in CardinalityPool) {
+            this.cardinalityPool.push(<option key={cardinality} value={cardinality}>{CardinalityPool[cardinality].getString()}</option>);
         }
 
         if (this.state.type === NodeCommonModel) {
             let attributeKey = 0;
 
             const attributeList = this.state.attrs[this.props.language].map((attr) =>
-                <option key={attributeKey} value={attributeKey++}>{attr.first + ": " + attr.second}</option>
+                <option key={attributeKey} value={attributeKey++}>{attr.value + ": " + attr.attributeType.name}</option>
             );
             attributeKey = 0;
             let attributeLength = this.state.attrs[this.props.language].length;
             let selector = (<h6>{Locale.noAttributes}</h6>);
-            let height = 48 + (attributeLength * 15);
             if (attributeLength > 0) {
                 selector = (
                     <div>
@@ -383,90 +381,90 @@ export class DetailPanel extends React.Component {
                 );
             }
 
-            let generalizationHeader = (<h4>{Locale.generalizations}</h4>);
-            let generalizationForm = (<Form inline>
-
-                <FormControl
-                    bsSize="small"
-                    type="text"
-                    value={this.state.generalizationName}
-                    placeholder={Locale.generalizationNamePlaceholder}
-                    onChange={this.handleChangeGeneralizationName}
-                />
-                <Button onClick={this.addGeneralization} bsSize="small" bsStyle="primary">{Locale.add}</Button>
-            </Form>);
-            let generalizationKey = 1;
-
-            let generalizationList = [];
-
-            let generalizationSelector = (<h6>{Locale.noGeneralizations}</h6>);
-            if (Object.keys(GeneralizationPool).length > 0) {
-                generalizationList.push(<option key={0} value={""}>-----</option>);
-
-                generalizationList.push(Object.keys(GeneralizationPool).map((generalization) =>
-                    (<option key={generalizationKey++} value={generalization}>{generalization}</option>)
-                ));
-                generalizationSelector = (
-                    <div>
-                        <FormControl
-                            componentClass="select"
-                            bsSize="small"
-                            value={this.state.generalization}
-                            onChange={this.handleChangeGeneralization}
-                            onFocus={this.focus}
-                            size={1}
-                        >
-                            {generalizationList}
-                        </FormControl>
-                        <Button onClick={this.deleteGeneralization} bsSize="small"
-                                bsStyle="danger">{Locale.del}</Button>
-                    </div>
-
-                );
-            }
-            let generalizationLinks = "";
-            if (this.state.generalization !== "") {
-                generalizationLinks = (
-                    <div style={{height: "100"}}>
-                        <Table striped bordered hover condensed>
-                            <thead>
-                            <tr>
-                                <th>{Locale.name}</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-
-                            {GeneralizationPool[this.state.generalization].map((field, i) =>
-                                <tr key={i}>
-                                    <td>
-                                        {field.names[this.props.language]}
-                                    </td>
-                                </tr>
-                            )}
-                            </tbody>
-                        </Table>
-                    </div>
-                );
-            }
-            let derivationSelector = (<h6>{Locale.noRelationships}</h6>);
-            let derivationList = [];
-            if (Object.keys(this.state.links).length > 0) {
-                let linkKey = 1;
-                derivationList.push(<option key={0} value={""}>-----</option>);
-                derivationList.push(Object.keys(this.state.links).map((link) =>
-                    (<option key={linkKey++} value={link}>{link}</option>)
-                ));
-                derivationSelector = (
-                    <FormControl
-                        componentClass="select"
-                        bsSize="small"
-                        value={this.state.derivation}
-                        onChange={this.handleChangeDerivation}
-                    >
-                        {derivationList}
-                    </FormControl>
-                );
-            }
+            // let generalizationHeader = (<h4>{Locale.generalizations}</h4>);
+            // let generalizationForm = (<Form inline>
+            //
+            //     <FormControl
+            //         bsSize="small"
+            //         type="text"
+            //         value={this.state.generalizationName}
+            //         placeholder={Locale.generalizationNamePlaceholder}
+            //         onChange={this.handleChangeGeneralizationName}
+            //     />
+            //     <Button onClick={this.addGeneralization} bsSize="small" bsStyle="primary">{Locale.add}</Button>
+            // </Form>);
+            // let generalizationKey = 1;
+            //
+            // let generalizationList = [];
+            //
+            // let generalizationSelector = (<h6>{Locale.noGeneralizations}</h6>);
+            // if (Object.keys(GeneralizationPool).length > 0) {
+            //     generalizationList.push(<option key={0} value={""}>-----</option>);
+            //
+            //     generalizationList.push(Object.keys(GeneralizationPool).map((generalization) =>
+            //         (<option key={generalizationKey++} value={generalization}>{generalization}</option>)
+            //     ));
+            //     generalizationSelector = (
+            //         <div>
+            //             <FormControl
+            //                 componentClass="select"
+            //                 bsSize="small"
+            //                 value={this.state.generalization}
+            //                 onChange={this.handleChangeGeneralization}
+            //                 onFocus={this.focus}
+            //                 size={1}
+            //             >
+            //                 {generalizationList}
+            //             </FormControl>
+            //             <Button onClick={this.deleteGeneralization} bsSize="small"
+            //                     bsStyle="danger">{Locale.del}</Button>
+            //         </div>
+            //
+            //     );
+            // }
+            // let generalizationLinks = "";
+            // if (this.state.generalization !== "") {
+            //     generalizationLinks = (
+            //         <div style={{height: "100"}}>
+            //             <Table striped bordered hover condensed>
+            //                 <thead>
+            //                 <tr>
+            //                     <th>{Locale.name}</th>
+            //                 </tr>
+            //                 </thead>
+            //                 <tbody>
+            //
+            //                 {GeneralizationPool[this.state.generalization].map((field, i) =>
+            //                     <tr key={i}>
+            //                         <td>
+            //                             {field.names[this.props.language]}
+            //                         </td>
+            //                     </tr>
+            //                 )}
+            //                 </tbody>
+            //             </Table>
+            //         </div>
+            //     );
+            // }
+            // let derivationSelector = (<h6>{Locale.noRelationships}</h6>);
+            // let derivationList = [];
+            // if (Object.keys(this.state.links).length > 0) {
+            //     let linkKey = 1;
+            //     derivationList.push(<option key={0} value={""}>-----</option>);
+            //     derivationList.push(Object.keys(this.state.links).map((link) =>
+            //         (<option key={linkKey++} value={link}>{link}</option>)
+            //     ));
+            //     derivationSelector = (
+            //         <FormControl
+            //             componentClass="select"
+            //             bsSize="small"
+            //             value={this.state.derivation}
+            //             onChange={this.handleChangeDerivation}
+            //         >
+            //             {derivationList}
+            //         </FormControl>
+            //     );
+            // }
             let widget = this.getNodeWidget(this.state.stereotype,this.state.names[this.props.language],this.state.attrs[this.props.language]);
             return (
                 <div className="detailPanel" id="detailPanel">
@@ -514,20 +512,20 @@ export class DetailPanel extends React.Component {
                     </Tabs>
 
 
-                    {
-                        this.state.isGeneralizationMenuAvailable ? generalizationHeader : ""
-                    }
-                    {
-                        this.state.isGeneralizationMenuAvailable ? generalizationSelector : ""
-                    }
+                    {/*{*/}
+                    {/*    this.state.isGeneralizationMenuAvailable ? generalizationHeader : ""*/}
+                    {/*}*/}
+                    {/*{*/}
+                    {/*    this.state.isGeneralizationMenuAvailable ? generalizationSelector : ""*/}
+                    {/*}*/}
 
-                    <br/>
-                    {
-                        this.state.isGeneralizationMenuAvailable ? generalizationForm : ""
-                    }
-                    {
-                        this.state.isGeneralizationMenuAvailable ? generalizationLinks : ""
-                    }
+                    {/*<br/>*/}
+                    {/*{*/}
+                    {/*    this.state.isGeneralizationMenuAvailable ? generalizationForm : ""*/}
+                    {/*}*/}
+                    {/*{*/}
+                    {/*    this.state.isGeneralizationMenuAvailable ? generalizationLinks : ""*/}
+                    {/*}*/}
                     <br/>
                     {/*<h4>{Locale.derivations}</h4>*/}
                     {/*{derivationSelector}*/}

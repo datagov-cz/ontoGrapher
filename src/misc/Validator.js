@@ -1,9 +1,8 @@
 import {OntoDiagramModel} from "../diagram/OntoDiagramModel";
-import {LinkPool} from "../config/LinkVariables";
 import {Locale} from "../config/locale/Locale";
-import {AttributeTypePool, CardinalityPool, LanguagePool, StereotypePool} from "../config/Variables";
+import {AttributeTypePool, CardinalityPool, LanguagePool, LinkPool, StereotypePool} from "../config/Variables";
 import * as Helper from "./Helper";
-import {fetchSettings} from "./ImportExportInterface";
+import {fetchSettings} from "../interface/ImportExportInterface";
 import {Stereotype} from "../components/misc/Stereotype";
 
 export function validateSettingsWithModel(model: OntoDiagramModel, source: string) {

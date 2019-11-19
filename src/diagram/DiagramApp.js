@@ -2,7 +2,7 @@ import React from "react";
 import {Defaults, DefaultVocabularies} from "../config/Defaults";
 import {PointModel} from "storm-react-diagrams";
 import {MenuPanel} from "../panels/menu/MenuPanel";
-import {ElementPanel} from "../panels/ElementPanel";
+import {ElementPanel} from "../panels/leftpanel/ElementPanel";
 import {DetailPanel} from "../panels/DetailPanel";
 import {DiagramCanvas} from "./DiagramCanvas";
 import {OntoDiagramModel} from "./OntoDiagramModel";
@@ -13,13 +13,12 @@ import PropTypes from "prop-types";
 import {NodeCommonModel} from "../components/common-node/NodeCommonModel";
 import {BottomPanel} from "../panels/BottomPanel";
 import * as OclEngine from "../lib/ocl.min";
-import * as SemanticWebInterface from "../misc/SemanticWebInterface";
+import * as SemanticWebInterface from "../interface/SemanticWebInterface";
 import {MenuFileNewDiagram} from "../panels/menu/file/MenuFileNewDiagram";
 import {MenuDropdownList} from "../panels/menu/MenuDropdownList";
 import {MenuFileDiagramSettings} from "../panels/menu/file/MenuFileDiagramSettings";
 import {MenuFileLoadDiagram} from "../panels/menu/file/MenuFileLoadDiagram";
 import {MenuFileSaveDiagram} from "../panels/menu/file/MenuFileSaveDiagram";
-import {MenuFileExportDiagram} from "../panels/menu/file/MenuFileExportDiagram";
 import {MenuViewCenter} from "../panels/menu/view/MenuViewCenter";
 import {MenuViewZoom} from "../panels/menu/view/MenuViewZoom";
 import {MenuToolsValidate} from "../panels/menu/tools/MenuToolsValidate";
@@ -32,10 +31,9 @@ import {MenuSettingsAttributeTypes} from "../panels/menu/settings/MenuSettingsAt
 import {MenuSettingsImportExport} from "../panels/menu/settings/MenuSettingsImportExport";
 import {MenuSettingsConstraints} from "../panels/menu/settings/MenuSettingsConstraints";
 import {MenuButtonHelp} from "../panels/menu/buttons/MenuButtonHelp";
-import {importSettings} from "../misc/ImportExportInterface";
-import {getElements, getElementsFromMultipleSources} from "../misc/SPARQLinterface";
-import {MenuSettingsVocabularies} from "../panels/menu/settings/MenuSettingsVocabularies";
-import {StereotypePool} from "../config/Variables";
+import {importSettings} from "../interface/ImportExportInterface";
+import {getVocabulariesFromJSONSource} from "../interface/JSONInterface";
+import {Models} from "../config/Variables";
 
 //TODO: update react-bootstrap
 export class DiagramApp extends React.Component {
@@ -60,7 +58,8 @@ export class DiagramApp extends React.Component {
             bottomPanelActive: false,
             bottomPanelData: null,
             validationResults: [],
-            exportData: ""
+            exportData: "",
+            selectedModel: Locale.untitled
         };
 
         if (!this.props.disableSCSS) {
@@ -69,7 +68,6 @@ export class DiagramApp extends React.Component {
             require("babel-polyfill");
             require("../lib/sax.js");
         }
-
 
         this.handleChangeSelectedLink = this.handleChangeSelectedLink.bind(this);
         this.handleChangeFirstCardinality = this.handleChangeFirstCardinality.bind(this);
@@ -88,6 +86,7 @@ export class DiagramApp extends React.Component {
         this.handleCloseBottomPanel = this.handleCloseBottomPanel.bind(this);
         this.handleLocate = this.handleLocate.bind(this);
         this.updateLinkPositionDelete = this.updateLinkPositionDelete.bind(this);
+        this.handleChangeSelectedModel = this.handleChangeSelectedModel.bind(this);
     }
 
     componentDidMount() {
@@ -111,9 +110,21 @@ export class DiagramApp extends React.Component {
             }.bind(this));
         }
         if (this.props.loadDefaultVocabularies){
-            getElementsFromMultipleSources(DefaultVocabularies, function(){
+            getVocabulariesFromJSONSource(Defaults.defaultVocabularies, function(){
                 this.forceUpdate();
             }.bind(this));
+        }
+    }
+
+    handleChangeSelectedModel(model){
+        Models[this.state.selectedModel] = this.diagramCanvas.current.serialize();
+        this.setState({selectedModel: model});
+        if (Models[model] !== ""){
+            this.diagramCanvas.current.deserialize(Models[model]);
+        } else {
+            this.diagramCanvas.current.registerFactories();
+            this.diagramCanvas.current.engine.setDiagramModel(new OntoDiagramModel(this.diagramCanvas.current.props, this.diagramCanvas.current));
+            this.diagramCanvas.current.forceUpdate();
         }
     }
 
@@ -486,10 +497,10 @@ export class DiagramApp extends React.Component {
                                 eventKey={eventKeyCounter++}
                                 name={Locale.constraintSettings}
                                 />
-                            <MenuSettingsVocabularies
-                                eventKey={eventKeyCounter++}
-                                name={Locale.menuPanelVocabulary}
-                                />
+                            {/*<MenuSettingsVocabularies*/}
+                            {/*    eventKey={eventKeyCounter++}*/}
+                            {/*    name={Locale.menuPanelVocabulary}*/}
+                            {/*    />*/}
                         </MenuDropdownList>
                         }
                         <MenuButtonHelp
@@ -499,6 +510,8 @@ export class DiagramApp extends React.Component {
                     <ElementPanel
                         handleChangeSelectedLink={this.handleChangeSelectedLink}
                         selectedLink={this.state.selectedLink}
+                        handleChangeSelectedModel={this.handleChangeSelectedModel}
+                        selectedModel={this.state.selectedModel}
                     />
                     <DetailPanel
                         panelObject={this.state.panelObject}

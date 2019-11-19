@@ -1,3 +1,4 @@
+//deprecated
 export class AttributeObject {
     first: string;
     second: string;

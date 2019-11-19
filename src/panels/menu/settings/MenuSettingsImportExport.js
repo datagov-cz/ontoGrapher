@@ -4,7 +4,7 @@ import {Locale} from "../../../config/locale/Locale";
 import Modal from "react-bootstrap/lib/Modal";
 import Button from "react-bootstrap/lib/Button";
 import {FormControl, FormGroup, Tab, Tabs} from "react-bootstrap";
-import {exportSettings, importSettings} from "../../../misc/ImportExportInterface";
+import {exportSettings, importSettings} from "../../../interface/ImportExportInterface";
 
 export class MenuSettingsImportExport extends MenuAbstractDropdownModal {
     constructor(props){

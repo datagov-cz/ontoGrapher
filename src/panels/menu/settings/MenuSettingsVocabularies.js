@@ -4,11 +4,10 @@ import {Locale} from "../../../config/locale/Locale";
 import Modal from "react-bootstrap/lib/Modal";
 import Button from "react-bootstrap/lib/Button";
 import {Form, FormControl, FormGroup, Tab, Tabs} from "react-bootstrap";
-import {StereotypePool, VocabularyPool} from "../../../config/Variables";
-import {LinkPool} from "../../../config/LinkVariables";
+import {LinkPool, StereotypePool, VocabularyPool} from "../../../config/Variables";
 import {LocaleImportVocabularies} from "../../../config/locale/LocaleImportVocabularies";
 import {DefaultVocabularies} from "../../../config/Defaults";
-import {getElements} from "../../../misc/SPARQLinterface";
+import {getElementsAsStereotypes} from "../../../interface/SPARQLinterface";
 
 export class MenuSettingsVocabularies extends MenuAbstractDropdownModal {
     constructor(props){
@@ -160,7 +159,7 @@ export class MenuSettingsVocabularies extends MenuAbstractDropdownModal {
             relationshipIRI: [this.state.sourceRelationshipIRI],
             attributeIRI: [this.state.sourceAttributeIRI]
         };
-        getElements(parseResult,function(){}, function(){});
+        getElementsAsStereotypes(parseResult,function(){}, function(){});
         this.handleCloseModal();
     }
 
@@ -261,7 +260,6 @@ export class MenuSettingsVocabularies extends MenuAbstractDropdownModal {
                     /><br/>
                     <Button onClick={this.goBack} bsStyle="warning">{LocaleImportVocabularies.back}</Button>
                     <Button onClick={this.submit} bsStyle="success">{LocaleImportVocabularies.finish}</Button>
-                    {this.state.result ? "Nice" : "Damn"}
                 </div>);
                 break;
         }

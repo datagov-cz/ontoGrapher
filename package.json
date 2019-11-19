@@ -1,7 +1,7 @@
 {
   "name": "ontoGrapher",
   "version": "0.1.0",
-  "description": "React komponenta pro ontoUML modelování",
+  "description": "React component for ontoUML modeling",
   "main": "index.js",
   "homepage": "https://bindetad.github.io/ontoGrapher/",
   "scripts": {
@@ -26,6 +26,7 @@
     "gh-pages": "^2.1.1",
     "html-webpack-plugin": "^3.2.0",
     "jest": "^24.9.0",
+    "json-loader": "^0.5.7",
     "mocha": "^6.2.0",
     "node-sass": "^4.12.0",
     "sass-loader": "^7.3.1",
@@ -37,6 +38,7 @@
   "dependencies": {
     "@rdfjs/serializer-ntriples": "^1.0.2",
     "ecore": "^0.12.0",
+    "is-url": "^1.2.4",
     "jsonld": "^1.8.0",
     "lodash": "^4.17.15",
     "npm": "^6.11.3",

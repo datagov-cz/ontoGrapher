@@ -4,10 +4,9 @@ import {Locale} from "../../../config/locale/Locale";
 import Modal from "react-bootstrap/lib/Modal";
 import Button from "react-bootstrap/lib/Button";
 import Table from "react-bootstrap/lib/Table";
-import {LinkEndPool, LinkPool} from "../../../config/LinkVariables";
-import {StereotypePool} from "../../../config/Variables";
+import {LinkEndPool, LinkPool, StereotypePool} from "../../../config/Variables";
 import {Form, FormControl, FormGroup, Tab, Tabs} from "react-bootstrap";
-import * as SemanticWebInterface from "../../../misc/SemanticWebInterface";
+import * as SemanticWebInterface from "../../../interface/SemanticWebInterface";
 import {Defaults} from "../../../config/Defaults";
 import {Stereotype} from "../../../components/misc/Stereotype";
 

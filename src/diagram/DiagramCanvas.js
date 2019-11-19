@@ -10,7 +10,15 @@ import {LabelCommonFactory} from "../components/common-label/LabelCommonFactory"
 import {OntoDiagramWidget} from "./OntoDiagramWidget";
 import {Defaults} from "../config/Defaults";
 import {Locale} from "../config/locale/Locale";
-import {StereotypePool} from "../config/Variables";
+import {
+    StereotypePool,
+    StereotypePoolPackage,
+    default as Variables,
+    globalCount,
+    ClassPackage
+} from "../config/Variables";
+import {Stereotype} from "../components/misc/Stereotype";
+import {Class} from "../components/misc/Class";
 
 
 export class DiagramCanvas extends React.Component {
@@ -121,11 +129,16 @@ export class DiagramCanvas extends React.Component {
                 onDrop={event => {
                     try {
                         const data = JSON.parse(event.dataTransfer.getData("newNode"));
-                        const node = new NodeCommonModel(StereotypePool[data.stereotype], this.engine.getDiagramModel());
-                        const points = this.engine.getRelativeMousePoint(event);
-                        node.x = points.x;
-                        node.y = points.y;
-                        this.engine.getDiagramModel().addNode(node);
+                        if (data.newNode){
+                            const cls = new Class(data.stereotype, Locale.untitled);
+                            ClassPackage[Locale.root].push(cls);
+                        } else {
+                            const node = new NodeCommonModel(data.stereotype, this.engine.getDiagramModel());
+                            const points = this.engine.getRelativeMousePoint(event);
+                            node.x = points.x;
+                            node.y = points.y;
+                            this.engine.getDiagramModel().addNode(node);
+                        }
                         this.forceUpdate();
                     } catch(err) {
                         console.log(err);

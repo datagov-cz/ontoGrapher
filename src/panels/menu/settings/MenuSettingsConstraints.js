@@ -3,9 +3,9 @@ import {MenuAbstractDropdownModal} from "../abstract/MenuAbstractDropdownModal"
 import {Locale} from "../../../config/locale/Locale";
 import Modal from "react-bootstrap/lib/Modal";
 import Button from "react-bootstrap/lib/Button";
-import {LinkPool} from "../../../config/LinkVariables";
 import {Form, FormControl, FormGroup} from "react-bootstrap";
 import {Constraint} from "../../../components/misc/Constraint";
+import {LinkPool} from "../../../config/Variables";
 
 export class MenuSettingsConstraints extends MenuAbstractDropdownModal {
     constructor(props){

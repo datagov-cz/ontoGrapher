@@ -2,7 +2,7 @@ import React from "react";
 import {MenuAbstractDropdownModal} from "../abstract/MenuAbstractDropdownModal"
 import {Locale} from "../../../config/locale/Locale";
 import {Button, FormControl, FormGroup, MenuItem, Modal} from "react-bootstrap";
-import * as SemanticWebInterface from "../../../misc/SemanticWebInterface";
+import * as SemanticWebInterface from "../../../interface/SemanticWebInterface";
 
 export class MenuFileExportDiagram extends MenuAbstractDropdownModal {
     //TODO: make usable

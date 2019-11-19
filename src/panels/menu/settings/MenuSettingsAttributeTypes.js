@@ -5,6 +5,7 @@ import Modal from "react-bootstrap/lib/Modal";
 import Button from "react-bootstrap/lib/Button";
 import {Form, FormControl} from "react-bootstrap";
 import {AttributeTypePool} from "../../../config/Variables";
+import {AttributeType} from "../../../components/misc/AttributeType";
 
 export class MenuSettingsAttributeTypes extends MenuAbstractDropdownModal {
     constructor(props){
@@ -12,7 +13,7 @@ export class MenuSettingsAttributeTypes extends MenuAbstractDropdownModal {
         this.state={
             attributeTypeName: "",
             attributeTypeIRI: "",
-            attributeType: Object.keys(AttributeTypePool)[0],
+            attributeType: 0,
         };
         this.handleChangeAttributeTypeName = this.handleChangeAttributeTypeName.bind(this);
         this.handleChangeAttributeType = this.handleChangeAttributeType.bind(this);
@@ -23,9 +24,9 @@ export class MenuSettingsAttributeTypes extends MenuAbstractDropdownModal {
     }
     //TODO: update attribute type input form
     focus(){
-        if (Object.keys(AttributeTypePool).length === 1) {
+        if (AttributeTypePool.length === 1) {
             this.setState({
-                attributeType: Object.keys(AttributeTypePool)[0]
+                attributeType: AttributeTypePool[0]
             });
         }
     }
@@ -35,7 +36,7 @@ export class MenuSettingsAttributeTypes extends MenuAbstractDropdownModal {
     }
 
     addAttributeType() {
-        AttributeTypePool.push(this.state.attributeTypeName);
+        AttributeTypePool.push(new AttributeType(this.state.attributeName,this.state.attributeIRI, false));
         this.setState({attributeTypeName: ""});
     }
 
@@ -54,10 +55,10 @@ export class MenuSettingsAttributeTypes extends MenuAbstractDropdownModal {
 
 
     render(){
-        let attributeTypePool = Object.keys(AttributeTypePool).map((attributeType) => {
+        let attributeTypePool = (AttributeTypePool).map((attributeType, i) => {
             return (
-                <option key={attributeType}
-                        value={AttributeTypePool[attributeType]}>{AttributeTypePool[attributeType]}</option>
+                <option key={i}
+                        value={i}>{attributeType.name}</option>
             )
         });
         return (
@@ -85,7 +86,7 @@ export class MenuSettingsAttributeTypes extends MenuAbstractDropdownModal {
                         <Button onClick={this.deleteAttributeType}
                         bsStyle="danger">{Locale.deleteSelected}</Button>
 
-                    <h4>{Locale.createNew+Locale.cardinality}</h4>
+                    <h4>{Locale.createNew+Locale.attributeType}</h4>
                         <Form inline>
 
                             <FormControl

@@ -3,8 +3,7 @@ import {DefaultLabelModel, DefaultLinkModel, DiagramEngine} from 'storm-react-di
 import {OntoDiagramModel} from "../../diagram/OntoDiagramModel";
 import {Locale} from "../../config/locale/Locale";
 import * as _ from "lodash";
-import {LanguagePool} from "../../config/Variables";
-import {LinkPool} from "../../config/LinkVariables";
+import {LanguagePool, LinkPool} from "../../config/Variables";
 import {Constraint} from "../misc/Constraint";
 import {Cardinality} from "../misc/Cardinality";
 

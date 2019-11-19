@@ -3,9 +3,10 @@ import {NodeCommonPortModel} from "./NodeCommonPortModel";
 import {AttributeObject} from "../misc/AttributeObject";
 import {OntoDiagramModel} from "../../diagram/OntoDiagramModel";
 import * as _ from "lodash";
-import {LanguagePool} from "../../config/Variables";
+import {LanguagePool, MandatoryAttributePool} from "../../config/Variables";
 import {Locale} from "../../config/locale/Locale";
 import {Stereotype} from "../misc/Stereotype";
+import {Attribute} from "../misc/Attribute";
 
 export class NodeCommonModel extends NodeModel {
     stereotype: Stereotype;
@@ -22,6 +23,11 @@ export class NodeCommonModel extends NodeModel {
         this.derivation = "";
         for (let language in LanguagePool) {
             this.attributes[language] = [];
+            if (stereotype.source in MandatoryAttributePool){
+                for (let attributeType in MandatoryAttributePool[stereotype.source]){
+                    this.attributes[language].push(new Attribute(attributeType, ""));
+                }
+            }
             this.notes[language] = "";
             if (this.names[language] === undefined) {
                 this.names[language] = Locale.untitled;

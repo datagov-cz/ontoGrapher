@@ -1,9 +1,8 @@
-import {AttributeTypePool, GeneralizationPool, LanguagePool, StereotypePool} from "../config/Variables";
+import {AttributeTypePool, GeneralizationPool, LanguagePool, LinkPool, StereotypePool} from "../config/Variables";
 import {OntoDiagramModel} from "../diagram/OntoDiagramModel";
 import React from "react";
 import {Locale} from "../config/locale/Locale";
 import {Stereotype} from "../components/misc/Stereotype";
-import {LinkPool} from "../config/LinkVariables";
 import {Defaults} from "../config/Defaults";
 
 export function fetchClasses(source: string, typeIRI: string, replace: boolean, callback) {

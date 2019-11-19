@@ -4,8 +4,7 @@ import {Locale} from "../../../config/locale/Locale";
 import Modal from "react-bootstrap/lib/Modal";
 import Button from "react-bootstrap/lib/Button";
 import {Form, FormControl} from "react-bootstrap";
-import {AttributeTypePool, CardinalityPool, LanguagePool, StereotypePool} from "../../../config/Variables";
-import {LinkPool} from "../../../config/LinkVariables";
+import {AttributeTypePool, CardinalityPool, LanguagePool, LinkPool, StereotypePool} from "../../../config/Variables";
 
 export class MenuSettingsLanguages extends MenuAbstractDropdownModal {
     constructor(props){

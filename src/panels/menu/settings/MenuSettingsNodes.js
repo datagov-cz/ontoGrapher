@@ -5,7 +5,7 @@ import Modal from "react-bootstrap/lib/Modal";
 import Button from "react-bootstrap/lib/Button";
 import {Form, FormControl, FormGroup, Tab, Tabs} from "react-bootstrap";
 import {StereotypePool} from "../../../config/Variables";
-import * as SemanticWebInterface from "../../../misc/SemanticWebInterface";
+import * as SemanticWebInterface from "../../../interface/SemanticWebInterface";
 import {Stereotype} from "../../../components/misc/Stereotype";
 import {Defaults} from "../../../config/Defaults";
 

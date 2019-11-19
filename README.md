@@ -1,22 +1,18 @@
-# ontoGrapher ontoUML komponenta
+# ontoGrapher ontoUML component
 
-Webová komponenta v technologii React sloužící ke grafické manipulaci s OntoUML diagramy.
-[Odkaz na nasazenou verzi](https://bindetad.github.io/ontoGrapher/)
+A React web component for graphical manipulation and display of ontoUML diagrams.
+[Latest deployed version](https://bindetad.github.io/ontoGrapher/)
 
-#### Požadavky
+#### Requirements for local installation
 
 * npm
-* webový prohlížeč s vypnutým CORS ([návod, jak vypnout CORS v Chromu](https://stackoverflow.com/questions/3102819/disable-same-origin-policy-in-chrome))
+* web browser with CORS disabled ([Tutorial for disabling CORS in Chrome](https://stackoverflow.com/questions/3102819/disable-same-origin-policy-in-chrome))
 
-#### Instrukce
+#### Usage instructions
 
-Po stažení extrahujte do libovolného adresáře a nainstalujte závislosti pomocí příkazu `npm install`.
+Extract the source code to a folder of your choice and then run the `npm install` command. Run the component using `npm start`. Build the component for deployment with `npm build`.
 
-#### Návod k použítí
+#### Can't install the component?
 
-Kompomentu spustíte příkazem `npm start`. V nabídkovém panelu klikněte na "Help".
-
-#### Nedaří se instalovat závislosti?
-
-* Zkuste použít Python 2.7.
-* Zkuste použít příkaz `npm install --global --production windows-build-tools` v PowerShellu za administrátora.
+* Try using Python 2.7.
+* Try running `npm install --global --production windows-build-tools` in PowerShell as administrator.
