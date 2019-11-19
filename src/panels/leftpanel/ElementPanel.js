@@ -50,6 +50,11 @@ export class ElementPanel extends React.Component {
         this.handleChangeModel = this.handleChangeModel.bind(this);
         this.handleClosePackageModal = this.handleClosePackageModal.bind(this);
         this.handleOpenPackageModal = this.handleOpenPackageModal.bind(this);
+        this.handleOpenNewModal = this.handleOpenNewModal.bind(this);
+        this.handleCloseNewModal = this.handleCloseNewModal.bind(this);
+        this.handleChangeNewName = this.handleChangeNewName.bind(this);
+        this.handleNew = this.handleNew.bind(this);
+        this.removePackage = this.removePackage.bind(this);
         this.state = {
             loaded: false,
             vocabulary: "&*",
@@ -58,12 +63,32 @@ export class ElementPanel extends React.Component {
             packageModal: false,
             modelModal: false,
             modelName: "",
+            newModal: false,
+            newName: "",
             modalDialogue: Object.keys(Models)[0]
         };
     }
 
+    removePackage(){
+        delete Packages[this.state.package];
+        this.setState({package: Object.keys(Packages)[0]});
+    }
+
+    handleNew(){
+        if (this.state.newName !== ""){
+            Packages[this.state.newName] = false;
+            ClassPackage[this.state.newName] = [];
+            this.setState({newName: ""});
+        }
+        this.handleCloseNewModal();
+    }
+
     handleChangeModelName(event){
         this.setState({modelName: event.target.value});
+    }
+
+    handleChangeNewName(event){
+        this.setState({newName: event.target.value});
     }
 
     handleChangeModel(event){
@@ -82,6 +107,16 @@ export class ElementPanel extends React.Component {
             delete Models[this.state.modalDialogue];
         }
     }
+
+
+    handleOpenNewModal(){
+        this.setState({newModal: true});
+    }
+
+    handleCloseNewModal(){
+        this.setState({newModal: false});
+    }
+
 
     handleOpenModelModal(){
         this.setState({modelModal: true});
@@ -180,13 +215,15 @@ export class ElementPanel extends React.Component {
                         )}
                     </Tab>
                     <Tab eventKey={3} title={"P"}>
-                        {!Packages[this.state.package] ?
-                        <Button onClick={this.handleOpenPackageModal} bsSize={"small"}>Manage</Button>
-                            : ""}
+                        <Button onClick={this.handleOpenNewModal}>{Locale.addPackage}</Button>
+                        <Button onClick={this.removePackage}>{Locale.removePackage}</Button>
                         <FormControl componentClass="select" bsSize="small" value={this.state.package}
                                      onChange={this.handleChangePackage}>
                             {Object.keys(Packages).map((pkg) => (<option key={i++} value={pkg}>{Packages[pkg] ? "📄"+pkg : "✏"+pkg }</option>))}
                         </FormControl>
+                        {!Packages[this.state.package] ?
+                            <Button onClick={this.handleOpenPackageModal} bsSize={"small"}>Manage</Button>
+                            : ""}
 
                             {selectedPkg}
                     </Tab>
@@ -251,7 +288,9 @@ export class ElementPanel extends React.Component {
                     </Modal.Header>
                     <Modal.Body>
 
-                        <FormGroup>
+{
+    this.state.package in ClassPackage ?
+                    <FormGroup>
                             <FormControl
                                 componentClass="select"
                                 bsSize="small"
@@ -267,7 +306,8 @@ export class ElementPanel extends React.Component {
                             <Button onClick={this.deleteModel}
                                     bsStyle="danger">{Locale.deleteSelected}</Button>
 
-                        </FormGroup>
+                        </FormGroup> : ""
+}
                         <h4>{Locale.createNew+Locale.model}</h4>
                         <Form>
                             <FormControl
@@ -281,6 +321,28 @@ export class ElementPanel extends React.Component {
                     </Modal.Body>
                     <Modal.Footer>
                         <Button onClick={this.handleClosePackageModal} bsStyle="primary">{Locale.close}</Button>
+                    </Modal.Footer>
+                </Modal>
+
+                <Modal show={this.state.newModal} onHide={this.handleCloseNewModal}>
+                    <Modal.Header>
+                        <Modal.Title>
+                            {Locale.modalNewHeading}
+                        </Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body>
+                        <p>{Locale.modalNewText}</p>
+                        <FormControl
+                            bsSize="small"
+                            type="text"
+                            value={this.state.newName}
+                            placeholder={Locale.handleChangeNewName}
+                            onChange={this.handleChangeNewName}
+                        />
+                    </Modal.Body>
+                    <Modal.Footer>
+                        <Button onClick={this.handleCloseNewModal}>{Locale.close}</Button>
+                        <Button onClick={this.handleNew} bsStyle="primary">{Locale.confirm}</Button>
                     </Modal.Footer>
                 </Modal>
 
