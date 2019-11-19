@@ -112,7 +112,7 @@ export class DiagramApp extends React.Component {
         if (this.props.loadDefaultVocabularies){
             getVocabulariesFromJSONSource(Defaults.defaultVocabularies, function(){
                 this.forceUpdate();
-                this.setState({selectedLink: Object.keys(LinkPool)[0]});
+                this.handleChangeSelectedLink(Object.keys(LinkPool)[0]);
             }.bind(this));
         }
     }
@@ -550,7 +550,7 @@ export class DiagramApp extends React.Component {
                         contextMenuLink={this.state.contextMenuLink}
                         updateLinkPosition={this.updateLinkPosition}
                     />
-                    <div className="build">build 80</div>
+                    <div className="build">build 83</div>
                 </div>
             );
         }
