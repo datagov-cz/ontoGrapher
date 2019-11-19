@@ -33,7 +33,7 @@ import {MenuSettingsConstraints} from "../panels/menu/settings/MenuSettingsConst
 import {MenuButtonHelp} from "../panels/menu/buttons/MenuButtonHelp";
 import {importSettings} from "../interface/ImportExportInterface";
 import {getVocabulariesFromJSONSource} from "../interface/JSONInterface";
-import {Models} from "../config/Variables";
+import {LinkPool, Models} from "../config/Variables";
 
 //TODO: update react-bootstrap
 export class DiagramApp extends React.Component {
@@ -112,6 +112,7 @@ export class DiagramApp extends React.Component {
         if (this.props.loadDefaultVocabularies){
             getVocabulariesFromJSONSource(Defaults.defaultVocabularies, function(){
                 this.forceUpdate();
+                this.setState({selectedLink: Object.keys(LinkPool)[0]});
             }.bind(this));
         }
     }

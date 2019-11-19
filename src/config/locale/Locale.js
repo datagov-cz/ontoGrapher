@@ -2,6 +2,8 @@
 
 export var Locale = {
     menuPanelLoaded: "Loaded!",
+    connectionList: "Connections from class",
+    moveTo: "Move class to package ",
     menuPanelInsertJSON: "Insert JSON",
     menuPanelLoad: "Load project...",
     menuPanelSave: "Save",
@@ -92,7 +94,7 @@ export var Locale = {
     menuPanelAttributeTypes: "Attribute types...",
     attributeTypePlaceholder: "Attribute type name",
     deleteMiddlePoints: "Delete middle points",
-    deleteRelationship: "Delete relationship",
+    deleteRelationship: "Hide relationship",
     menuPanelTools: "Tools",
     menuPanelEvaluate: "Evaluate...",
     evaluation: "Constraint description",

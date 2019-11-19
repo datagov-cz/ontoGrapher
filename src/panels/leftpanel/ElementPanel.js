@@ -55,18 +55,38 @@ export class ElementPanel extends React.Component {
         this.handleChangeNewName = this.handleChangeNewName.bind(this);
         this.handleNew = this.handleNew.bind(this);
         this.removePackage = this.removePackage.bind(this);
+        this.handleChangePackageItem = this.handleChangePackageItem.bind(this);
+        this.deleteClass = this.deleteClass.bind(this);
+        this.handleChangeMoveTo = this.handleChangeMoveTo.bind(this);
+        this.handleMoveTo = this.handleMoveTo.bind(this);
         this.state = {
             loaded: false,
             vocabulary: "&*",
             package: Object.keys(Packages)[0],
+            packageItem: 0,
             model: "",
             packageModal: false,
             modelModal: false,
             modelName: "",
             newModal: false,
             newName: "",
+            moveToPkg: Object.keys(ClassPackage)[0],
             modalDialogue: Object.keys(Models)[0]
         };
+    }
+
+    handleMoveTo(){
+        let cls = ClassPackage[this.state.package][this.state.packageItem];
+        ClassPackage[this.state.moveToPkg].push(cls);
+        ClassPackage[this.state.package].splice(this.state.packageItem,1);
+    }
+
+    handleChangeMoveTo(event){
+        this.setState({moveToPkg: event.target.value});
+    }
+
+    deleteClass(){
+        ClassPackage[this.state.package].splice(this.state.packageItem,1);
     }
 
     removePackage(){
@@ -85,6 +105,10 @@ export class ElementPanel extends React.Component {
 
     handleChangeModelName(event){
         this.setState({modelName: event.target.value});
+    }
+
+    handleChangePackageItem(event){
+        this.setState({packageItem: event.target.value});
     }
 
     handleChangeNewName(event){
@@ -176,6 +200,7 @@ export class ElementPanel extends React.Component {
                     }} name={cls.name}/>)
             }
         }
+
         return (
             <div className="stereotypePanel" id="stereotypePanel">
                 <Tabs id="stereotypePanelTabs" animation={false}>
@@ -289,40 +314,59 @@ export class ElementPanel extends React.Component {
                     <Modal.Body>
 
 {
-    this.state.package in ClassPackage ?
-                    <FormGroup>
-                            <FormControl
-                                componentClass="select"
-                                bsSize="small"
-                                value={this.state.packageItem}
-                                onChange={this.handleChangePackageItem}
-                                //onFocus={this.focus}
-                                size={ClassPackage[this.state.package]}
-                                style={{height: 200}}
-                            >
-                                {ClassPackage[this.state.package].map((cls, i) => <option key={i} value={cls.id}>{cls.name}</option>)}
-                            </FormControl>
+    this.state.package in ClassPackage && ClassPackage[this.state.package].length !== 0 ?
+        <div>
+            <FormGroup>
+                <FormControl
+                    componentClass="select"
+                    bsSize="small"
+                    value={this.state.packageItem}
+                    onChange={this.handleChangePackageItem}
+                    //onFocus={this.focus}
+                    size={ClassPackage[this.state.package].length}
+                    style={{height: 200}}
+                >
+                    {ClassPackage[this.state.package].map((cls, i) => <option key={i} value={i}>{cls.name}</option>)}
+                </FormControl>
 
-                            <Button onClick={this.deleteModel}
-                                    bsStyle="danger">{Locale.deleteSelected}</Button>
+                <Button onClick={this.deleteClass}
+                        bsStyle="danger">{Locale.deleteSelected}</Button><br/>
 
-                        </FormGroup> : ""
+            </FormGroup>
+            <Form inline>
+                    <Button
+                        onClick={this.handleMoveTo} bsSize="small">{Locale.moveTo}</Button>
+                    <FormControl
+                        componentClass="select"
+                        bsSize="small"
+                        value={this.state.moveToPkg}
+                        onChange={this.handleChangeMoveTo}
+                        //onFocus={this.focus}
+                        //size={ClassPackage[this.state.package]}
+                        style={{width: 150}}
+                    >
+                        {Object.keys(ClassPackage).map((pkg, i) => <option key={i} value={pkg}>{pkg}</option>)}
+                    </FormControl>
+                </Form>
+            <h4>{Locale.connectionList}</h4>
+            <FormControl
+                style={{height: 150, resize: "none"}}
+                bsSize="small"
+                componentClass="textarea"
+                value={this.state.newName}
+                disabled={true}
+            />
+        </div> : ""
+
 }
-                        <h4>{Locale.createNew+Locale.model}</h4>
-                        <Form>
-                            <FormControl
-                                type="text"
-                                value={this.state.modelName}
-                                placeholder={Locale.modelPlaceholder}
-                                onChange={this.handleChangeModelName}
-                            />
-                            <Button onClick={this.addModel} bsStyle="primary">{Locale.addModel}</Button>
-                        </Form>
                     </Modal.Body>
                     <Modal.Footer>
                         <Button onClick={this.handleClosePackageModal} bsStyle="primary">{Locale.close}</Button>
                     </Modal.Footer>
                 </Modal>
+
+
+
 
                 <Modal show={this.state.newModal} onHide={this.handleCloseNewModal}>
                     <Modal.Header>
