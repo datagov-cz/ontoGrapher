@@ -33,7 +33,7 @@ import {MenuSettingsConstraints} from "../panels/menu/settings/MenuSettingsConst
 import {MenuButtonHelp} from "../panels/menu/buttons/MenuButtonHelp";
 import {importSettings} from "../interface/ImportExportInterface";
 import {getVocabulariesFromJSONSource} from "../interface/JSONInterface";
-import {LinkPool, Models} from "../config/Variables";
+import {ClassPackage, LinkPool, Models} from "../config/Variables";
 
 //TODO: update react-bootstrap
 export class DiagramApp extends React.Component {
@@ -127,6 +127,31 @@ export class DiagramApp extends React.Component {
             this.diagramCanvas.current.engine.setDiagramModel(new OntoDiagramModel(this.diagramCanvas.current.props, this.diagramCanvas.current));
             this.diagramCanvas.current.forceUpdate();
         }
+    }
+
+    serializeProject(){
+        let json = {
+            models: Models,
+            classes: ClassPackage
+        };
+        return JSON.stringify(json);
+    }
+
+    deserializeProject(str: string){
+        let json = JSON.parse(str);
+        for (let mdl in Models){
+            delete Models[mdl];
+        }
+        for (let mdl in json.models){
+            Models[mdl] = json.models[mdl];
+        }
+        for (let cls in ClassPackage){
+            delete ClassPackage[cls];
+        }
+        for (let cls in json.classes){
+            ClassPackage[cls] = json.classes[cls];
+        }
+        this.diagramCanvas.current.deserialize(Models[Object.keys(Models)[0]]);
     }
 
     handleLocate(element){
@@ -428,12 +453,12 @@ export class DiagramApp extends React.Component {
                                 <MenuFileLoadDiagram
                                     eventKey={eventKeyCounter++}
                                     name={Locale.menuPanelLoad}
-                                    deserialize={this.deserialize}
+                                    deserialize={this.deserializeProject}
                                 />
                                 <MenuFileSaveDiagram
                                     eventKey={eventKeyCounter++}
                                     name={Locale.menuPanelSaveDiagram}
-                                    canvas={this.diagramCanvas.current}
+                                    serialize={this.serializeProject}
                                 />
                                 {/*//TODO: fix*/}
                                 {/*<MenuFileExportDiagram*/}

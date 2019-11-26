@@ -18,7 +18,7 @@ export class MenuFileSaveDiagram extends MenuAbstractDropdownModal {
     }
 
     serialize(){
-        let save = this.props.canvas.serialize();
+        let save = this.props.serialize();
         this.setState({
             inputSave: save
         });

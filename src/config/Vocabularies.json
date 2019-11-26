@@ -31,7 +31,7 @@
     "labelIRI": "http://www.w3.org/2004/02/skos/core#prefLabel",
     "definitionIRI": "http://www.w3.org/2004/02/skos/core#definition",
     "classIRI": ["http://www.w3.org/2002/07/owl#Class"],
-    "relationshipIRI": ["http://www.w3.org/2002/07/owl#ObjectProperty"],
+    "relationshipIRI": ["https://slovník.gov.cz/základní/pojem/typ-vztahu"],
     "attributes": []
   }
 }

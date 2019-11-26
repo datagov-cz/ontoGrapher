@@ -1,5 +1,5 @@
 import React from 'react';
-import {DefaultLabelModel, DefaultLinkModel, DiagramEngine} from 'storm-react-diagrams';
+import {DefaultLabelModel, DefaultLinkModel, DiagramEngine, PortModel, LinkModelListener} from 'storm-react-diagrams';
 import {OntoDiagramModel} from "../../diagram/OntoDiagramModel";
 import {Locale} from "../../config/locale/Locale";
 import * as _ from "lodash";
@@ -82,6 +82,33 @@ export class LinkCommonModel extends DefaultLinkModel {
 
     removeConstraintByIndex(index: number){
         this.constraints.splice(index,1);
+    }
+
+    setTargetPort(port: PortModel) {
+        if (port !== null) {
+            port.addLink(this);
+        }
+        if (this.targetPort !== null) {
+            this.targetPort.removeLink(this);
+        }
+        this.targetPort = port;
+        this.iterateListeners((listener: LinkModelListener, event) => {
+            if (listener.targetPortChanged) {
+                listener.targetPortChanged({ ...event, port: port });
+            }
+        });
+        this.getSourceNode().class.connections[this.getID()] = port.getNode().getID();
+    }
+
+    remove() {
+        delete this.getSourceNode().class.connections[this.getID()];
+        if (this.sourcePort) {
+            this.sourcePort.removeLink(this);
+        }
+        if (this.targetPort) {
+            this.targetPort.removeLink(this);
+        }
+        super.remove();
     }
 
     setDashedLine() {

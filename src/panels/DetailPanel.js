@@ -200,12 +200,14 @@ export class DetailPanel extends React.Component {
         }
 
     }
-
+    //TODO : languages
     processDialogue() {
         if (this.state.names[this.props.language] !== "") {
             this.props.panelObject.setName(this.state.names[this.props.language], this.props.language);
             if (this.state.type === LinkCommonModel) {
                 this.props.panelObject.setNameLanguage(this.props.panelObject.model.language);
+            } else {
+                this.props.panelObject.class.name = this.state.names[this.props.language];
             }
             this.forceUpdate();
             this.props.panelObject.model.canvas.forceUpdate();
@@ -484,6 +486,7 @@ export class DetailPanel extends React.Component {
                         </FormGroup>
                     </Form>
 
+                    {/*<Button bsSize="small" onClick={this.handleHide}>{Locale.hide}</Button>*/}
                     <h4>{Locale.detailPanelAttributes}</h4>
                     <Tabs id={"attributesTabs"} animation={false}>
                         <Tab eventKey={1} title={Locale.modify}>

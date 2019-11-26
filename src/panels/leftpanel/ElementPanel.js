@@ -196,7 +196,8 @@ export class ElementPanel extends React.Component {
                 selectedPkg = ClassPackage[this.state.package].map((cls) =>
                     <PanelNodeItem key={i++} model={{
                         stereotype: cls.stereotype,
-                        newNode: false
+                        newNode: false,
+                        class: cls
                     }} name={cls.name}/>)
             }
         }

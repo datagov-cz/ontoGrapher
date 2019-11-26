@@ -129,16 +129,20 @@ export class DiagramCanvas extends React.Component {
                 onDrop={event => {
                     try {
                         const data = JSON.parse(event.dataTransfer.getData("newNode"));
+                        let name = Locale.untitled + " " + data.stereotype.name;
+                        let cls = new Class(data.stereotype, name);
                         if (data.newNode){
-                            const cls = new Class(data.stereotype, Locale.untitled);
                             ClassPackage[Locale.root].push(cls);
                         } else {
-                            const node = new NodeCommonModel(data.stereotype, this.engine.getDiagramModel());
-                            const points = this.engine.getRelativeMousePoint(event);
-                            node.x = points.x;
-                            node.y = points.y;
-                            this.engine.getDiagramModel().addNode(node);
+                            cls = data.class;
+                            name = data.class.name;
                         }
+                        const node = new NodeCommonModel(name, cls, data.stereotype, this.engine.getDiagramModel());
+                        const points = this.engine.getRelativeMousePoint(event);
+                        node.x = points.x;
+                        node.y = points.y;
+                        this.engine.getDiagramModel().addNode(node);
+
                         this.forceUpdate();
                     } catch(err) {
                         console.log(err);
@@ -149,7 +153,7 @@ export class DiagramCanvas extends React.Component {
                 }}>
                 <OntoDiagramWidget
                     diagramEngine={this.engine}
-                    allowLooseLinks={true}
+                    allowLooseLinks={false}
                     smartRouting={false}
                     deleteKeys={this.readOnly ? [] : [46]}
                 />

@@ -2,6 +2,7 @@
 
 export var Locale = {
     menuPanelLoaded: "Loaded!",
+    hide: "Hide",
     connectionList: "Connections from class",
     moveTo: "Move class to package ",
     menuPanelInsertJSON: "Insert JSON",
@@ -39,8 +40,8 @@ export var Locale = {
     menuPanelHelp: "Help",
     addPackage: "Add",
     removePackage: "Remove",
-    model: "model",
-    modelPlaceholder: "Model name",
+    model: "Diagram",
+    modelPlaceholder: "Diagram name",
     appName: "ontoGrapher",
     menuPanelView: "View",
     menuPanelCenter: "Center view",
@@ -195,6 +196,6 @@ export var Locale = {
     link: "relationships",
     addLink: "Add relationship",
     vocabularyNotFound: "Vocabulary definition URL is missing or incorrect",
-    modelSettings: "Model management",
-    addModel: "Add model"
+    modelSettings: "Diagram management",
+    addModel: "Add diagram"
 };

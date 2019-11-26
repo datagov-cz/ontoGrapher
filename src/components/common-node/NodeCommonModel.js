@@ -7,6 +7,7 @@ import {LanguagePool, MandatoryAttributePool} from "../../config/Variables";
 import {Locale} from "../../config/locale/Locale";
 import {Stereotype} from "../misc/Stereotype";
 import {Attribute} from "../misc/Attribute";
+import {Class} from "../misc/Class";
 
 export class NodeCommonModel extends NodeModel {
     stereotype: Stereotype;
@@ -14,10 +15,11 @@ export class NodeCommonModel extends NodeModel {
     names: {};
     model: OntoDiagramModel;
 
-    constructor(stereotype: Stereotype, model: OntoDiagramModel) {
+    constructor(name: string, cls: Class, stereotype: Stereotype, model: OntoDiagramModel) {
         super("common");
         this.model = model;
         this.names = {};
+        this.class = cls;
         this.attributes = {};
         this.notes = {};
         this.derivation = "";
@@ -27,10 +29,13 @@ export class NodeCommonModel extends NodeModel {
                 for (let attributeType in MandatoryAttributePool[stereotype.source]){
                     this.attributes[language].push(new Attribute(attributeType, ""));
                 }
+                for (let attributeType in MandatoryAttributePool["&*"]){
+                    this.attributes[language].push(new Attribute(attributeType, ""));
+                }
             }
             this.notes[language] = "";
             if (this.names[language] === undefined) {
-                this.names[language] = Locale.untitled;
+                this.names[language] = name;
             }
         }
         this.stereotype = stereotype;

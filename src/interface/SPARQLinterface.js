@@ -23,7 +23,6 @@ export function getElementsAsStereotypes(name, jsonData, callback) {
         "}"
     ].join(" ");
     let q = jsonData.endpoint + "?query="+encodeURIComponent(query)+"&format=json";
-
     fetch(q)
         .then(response => {
             return response.json();
@@ -33,7 +32,7 @@ export function getElementsAsStereotypes(name, jsonData, callback) {
                 if (jsonData.classIRI.indexOf(result.termType.value) > -1){
                     StereotypePool.push(new Stereotype(result.termLabel.value,result.term.value,result.termDefinition === undefined ? "" : result.termDefinition.value,name));
                 } else if (jsonData.relationshipIRI.indexOf(result.termType.value) > -1) {
-                    LinkPool[result.termLabel.value] = ["Empty",true,false,[],result.term.value,result.termDefinition === undefined ? "" : result.termDefinition.value,name];
+                    LinkPool[result.termLabel.value] = ["UnfilledArrow",true,false,[],result.term.value,result.termDefinition === undefined ? "" : result.termDefinition.value,name];
                 }
                 for (let attribute of jsonData["attributes"]){
                     if (!("&*" in MandatoryAttributePool)){
@@ -42,7 +41,6 @@ export function getElementsAsStereotypes(name, jsonData, callback) {
                     let isArray = Array.isArray(attribute["type"]);
                     MandatoryAttributePool["&*"].push(new AttributeType(attribute["name"], attribute["iri"], isArray ? attribute["type"][0] : attribute["type"], isArray))
                 }
-
             }
             VocabularyPool.push(name);
             callback();
@@ -61,7 +59,8 @@ export function getElementsAsPackage(name, jsonData, callback) {
         "?term <"+jsonData.labelIRI+"> ?termLabel.",
         "?term a ?termType.",
         "FILTER langMatches(lang(?termLabel),\""+jsonData.language+"\").",
-        "FILTER (?termType IN (<"+jsonData.classIRI.join(">,<")+">,<"+jsonData.relationshipIRI.join(">,<")+">)).",
+        "FILTER (?termType IN (<"+jsonData.classIRI.join(">,<")+">)).",
+        "FILTER (?termType NOT IN (<"+jsonData.relationshipIRI.join(">,<")+">)).",
         "OPTIONAL {?term <"+jsonData.definitionIRI+"> ?termDefinition. FILTER langMatches(lang(?termDefinition),\""+jsonData.language+"\").}",
         "}"
     ].join(" ");
@@ -71,6 +70,7 @@ export function getElementsAsPackage(name, jsonData, callback) {
             return response.json();
         })
         .then(data => {
+            console.log(query);
             for (let result of data.results.bindings){
                 if (jsonData.classIRI.indexOf(result.termType.value) > -1){
                     if (!(name in StereotypePoolPackage)){
