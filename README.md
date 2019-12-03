@@ -1,18 +1,11 @@
 # ontoGrapher ontoUML component
 
 A React web component for graphical manipulation and display of ontoUML diagrams.
-[Latest deployed version](https://bindetad.github.io/ontoGrapher/)
 
-#### Requirements for local installation
+[Latest deployed version via Netlify](https://ontographer.netlify.com/) (status: [![Netlify Status](https://api.netlify.com/api/v1/badges/f293a230-0cfd-4b52-9bdc-39853ca5b02c/deploy-status)](https://app.netlify.com/sites/ontographer/deploys))
 
-* npm
-* web browser with CORS disabled ([Tutorial for disabling CORS in Chrome](https://stackoverflow.com/questions/3102819/disable-same-origin-policy-in-chrome))
+[Link to wiki](https://github.com/opendata-mvcr/ontoGrapher/wiki)
 
-#### Usage instructions
-
-Extract the source code to a folder of your choice and then run the `npm install` command. Run the component using `npm start`. Build the component for deployment with `npm build`.
-
-#### Can't install the component?
-
-* Try using Python 2.7.
-* Try running `npm install --global --production windows-build-tools` in PowerShell as administrator.
+## Branch description
+* **master**: The latest stable version. This branch is used for deployment.
+* **latest**: Latest version. May be unstable.

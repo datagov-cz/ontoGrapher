@@ -93,8 +93,8 @@ export class DiagramApp extends React.Component {
         if (typeof this.props.loadSettings === "string") {
             importSettings(this.props.loadSettings);
         }
-        if (typeof this.props.loadDiagram === "string") {
-            this.deserialize(this.props.loadDiagram);
+        if (typeof this.props.loadProject === "string") {
+            this.deserialize(this.props.loadProject);
         }
         if (this.props.readOnly) {
             this.diagramCanvas.current.setReadOnly(true);
@@ -584,7 +584,7 @@ export class DiagramApp extends React.Component {
 }
 
 DiagramApp.propTypes = {
-    loadDiagram: PropTypes.string,
+    loadProject: PropTypes.string,
     readOnly: PropTypes.bool,
     loadSettings: PropTypes.string,
     loadClasses: PropTypes.string,

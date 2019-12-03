@@ -71,7 +71,8 @@ export class ElementPanel extends React.Component {
             newModal: false,
             newName: "",
             moveToPkg: Object.keys(ClassPackage)[0],
-            modalDialogue: Object.keys(Models)[0]
+            modalDialogue: Object.keys(Models)[0],
+            connections: ""
         };
     }
 
@@ -354,7 +355,7 @@ export class ElementPanel extends React.Component {
                 style={{height: 150, resize: "none"}}
                 bsSize="small"
                 componentClass="textarea"
-                value={this.state.newName}
+                value={this.state.connections}
                 disabled={true}
             />
         </div> : ""
