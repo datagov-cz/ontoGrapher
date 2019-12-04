@@ -109,7 +109,18 @@ export class ElementPanel extends React.Component {
     }
 
     handleChangePackageItem(event){
-        this.setState({packageItem: event.target.value});
+        this.setState({packageItem: event.target.value,
+            connections: this.getConnections(this.state.package, event.target.value)
+        });
+    }
+
+    getConnections(pkg, classIndex){
+        let result = "";
+        for (let key in ClassPackage[pkg][classIndex].connections){
+            let link = this.props.canvas.engine.getDiagramModel().getLink(key);
+            let node = this.props.canvas.engine.getDiagramModel().getNode(ClassPackage[pkg][classIndex].connections[key]);
+            result += link.linkType + ">" + node.names[this.props.language] + "\n";
+        }
     }
 
     handleChangeNewName(event){

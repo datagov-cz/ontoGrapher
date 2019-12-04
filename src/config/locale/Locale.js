@@ -95,7 +95,7 @@ export var Locale = {
     menuPanelAttributeTypes: "Attribute types...",
     attributeTypePlaceholder: "Attribute type name",
     deleteMiddlePoints: "Delete middle points",
-    deleteRelationship: "Hide relationship",
+    deleteRelationship: "Delete relationship",
     menuPanelTools: "Tools",
     menuPanelEvaluate: "Evaluate...",
     evaluation: "Constraint description",
