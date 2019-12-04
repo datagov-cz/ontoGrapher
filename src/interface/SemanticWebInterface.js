@@ -225,8 +225,8 @@ export function exportDiagram(model: OntoDiagramModel) {
         let append2 = false;
         let sourceID = "#" + modelLinks[link].getSourcePort().getParent().id;
         let targetID = "#" + modelLinks[link].getTargetPort().getParent().id;
-        let sourceCardinality = modelLinks[link].sourceCardinality;
-        let targetCardinality = modelLinks[link].targetCardinality;
+        let sourceCardinality = modelLinks[link].sourceCardinality.getString();
+        let targetCardinality = modelLinks[link].targetCardinality.getString();
         let classSource = doc.createElement("Class");
         let classTarget = doc.createElement("Class");
         let objectPropertySource = doc.createElement("ObjectProperty");

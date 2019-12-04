@@ -71,7 +71,8 @@ export class ElementPanel extends React.Component {
             newModal: false,
             newName: "",
             moveToPkg: Object.keys(ClassPackage)[0],
-            modalDialogue: Object.keys(Models)[0]
+            modalDialogue: Object.keys(Models)[0],
+            connections: ""
         };
     }
 
@@ -108,7 +109,19 @@ export class ElementPanel extends React.Component {
     }
 
     handleChangePackageItem(event){
-        this.setState({packageItem: event.target.value});
+        this.setState({packageItem: event.target.value,
+            connections: this.getConnections(this.state.package, event.target.value)
+        });
+    }
+
+    getConnections(pkg, classIndex){
+        let result = "";
+        for (let key in ClassPackage[pkg][classIndex].connections){
+            let link = this.props.canvas.engine.getDiagramModel().getLink(key);
+            let node = this.props.canvas.engine.getDiagramModel().getNode(ClassPackage[pkg][classIndex].connections[key]);
+            result += link.linkType + ">" + node.names[this.props.language] + "\n";
+        }
+        return result;
     }
 
     handleChangeNewName(event){
@@ -354,7 +367,7 @@ export class ElementPanel extends React.Component {
                 style={{height: 150, resize: "none"}}
                 bsSize="small"
                 componentClass="textarea"
-                value={this.state.newName}
+                value={this.state.connections}
                 disabled={true}
             />
         </div> : ""

@@ -97,7 +97,10 @@ export class LinkCommonModel extends DefaultLinkModel {
                 listener.targetPortChanged({ ...event, port: port });
             }
         });
-        this.getSourceNode().class.connections[this.getID()] = port.getNode().getID();
+        if (this.targetPort !== null){
+            this.getSourceNode().class.connections[this.getID()] = this.targetPort.getNode().getID();
+            //console.log(this.getSourceNode().class.connections);
+        }
     }
 
     remove() {

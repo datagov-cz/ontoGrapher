@@ -33,7 +33,15 @@ import {MenuSettingsConstraints} from "../panels/menu/settings/MenuSettingsConst
 import {MenuButtonHelp} from "../panels/menu/buttons/MenuButtonHelp";
 import {importSettings} from "../interface/ImportExportInterface";
 import {getVocabulariesFromJSONSource} from "../interface/JSONInterface";
-import {ClassPackage, LinkPool, Models} from "../config/Variables";
+import {
+    ClassPackage,
+    LinkPool,
+    MandatoryAttributePool,
+    Models,
+    StereotypePoolPackage,
+    VocabularyPool
+} from "../config/Variables";
+import {getSubclasses} from "../interface/SPARQLinterface";
 
 //TODO: update react-bootstrap
 export class DiagramApp extends React.Component {
@@ -93,8 +101,8 @@ export class DiagramApp extends React.Component {
         if (typeof this.props.loadSettings === "string") {
             importSettings(this.props.loadSettings);
         }
-        if (typeof this.props.loadDiagram === "string") {
-            this.deserialize(this.props.loadDiagram);
+        if (typeof this.props.loadProject === "string") {
+            this.deserialize(this.props.loadProject);
         }
         if (this.props.readOnly) {
             this.diagramCanvas.current.setReadOnly(true);
@@ -132,7 +140,10 @@ export class DiagramApp extends React.Component {
     serializeProject(){
         let json = {
             models: Models,
-            classes: ClassPackage
+            classes: ClassPackage,
+            vocabularyPool: VocabularyPool,
+            spPackage: StereotypePoolPackage,
+            maPool: MandatoryAttributePool
         };
         return JSON.stringify(json);
     }
@@ -144,6 +155,22 @@ export class DiagramApp extends React.Component {
         }
         for (let mdl in json.models){
             Models[mdl] = json.models[mdl];
+        }
+        VocabularyPool.length = 0;
+        for (let stp in json.vocabularyPool){
+            VocabularyPool.push(stp);
+        }
+        for (let stp in StereotypePoolPackage){
+            delete StereotypePoolPackage[stp];
+        }
+        for (let stp in json.spPackage){
+            StereotypePoolPackage[stp] = json.spPackage[stp];
+        }
+        for (let stp in MandatoryAttributePool){
+            delete MandatoryAttributePool[stp];
+        }
+        for (let stp in json.maPool){
+            MandatoryAttributePool[stp] = json.maPool[stp];
         }
         for (let cls in ClassPackage){
             delete ClassPackage[cls];
@@ -460,7 +487,6 @@ export class DiagramApp extends React.Component {
                                     name={Locale.menuPanelSaveDiagram}
                                     serialize={this.serializeProject}
                                 />
-                                {/*//TODO: fix*/}
                                 {/*<MenuFileExportDiagram*/}
                                 {/*    eventKey={eventKeyCounter++}*/}
                                 {/*    name={Locale.menuPanelExportDiagram}*/}
@@ -538,6 +564,8 @@ export class DiagramApp extends React.Component {
                         selectedLink={this.state.selectedLink}
                         handleChangeSelectedModel={this.handleChangeSelectedModel}
                         selectedModel={this.state.selectedModel}
+                        canvas={this.diagramCanvas.current}
+                        language={this.state.language}
                     />
                     <DetailPanel
                         panelObject={this.state.panelObject}
@@ -575,7 +603,7 @@ export class DiagramApp extends React.Component {
                         contextMenuLink={this.state.contextMenuLink}
                         updateLinkPosition={this.updateLinkPosition}
                     />
-                    <div className="build">build 83</div>
+                    <div className="build">build 89</div>
                 </div>
             );
         }
@@ -584,7 +612,7 @@ export class DiagramApp extends React.Component {
 }
 
 DiagramApp.propTypes = {
-    loadDiagram: PropTypes.string,
+    loadProject: PropTypes.string,
     readOnly: PropTypes.bool,
     loadSettings: PropTypes.string,
     loadClasses: PropTypes.string,
