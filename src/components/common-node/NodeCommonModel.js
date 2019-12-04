@@ -53,6 +53,24 @@ export class NodeCommonModel extends NodeModel {
         });
     }
 
+    remove() {
+        super.remove();
+        _.forEach(this.ports, port => {
+            _.forEach(port.getLinks(), link => {
+                link.hide();
+            });
+        });
+    }
+
+    delete() {
+        super.remove();
+        _.forEach(this.ports, port => {
+            _.forEach(port.getLinks(), link => {
+                link.remove();
+            });
+        });
+    }
+
     setName(name: string, language: string) {
         this.names[language] = name;
     }

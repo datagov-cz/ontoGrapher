@@ -15,7 +15,7 @@ import {
     StereotypePoolPackage,
     default as Variables,
     globalCount,
-    ClassPackage
+    ClassPackage, HiddenRelationships
 } from "../config/Variables";
 import {Stereotype} from "../components/misc/Stereotype";
 import {Class} from "../components/misc/Class";
@@ -142,7 +142,13 @@ export class DiagramCanvas extends React.Component {
                         node.x = points.x;
                         node.y = points.y;
                         this.engine.getDiagramModel().addNode(node);
-
+                        for (let linkID in cls.connections){
+                            if (this.engine.getDiagramModel().getNode(cls.connections[linkID]) !== null && linkID in HiddenRelationships){
+                                let link = HiddenRelationships[linkID];
+                                link.setSourcePort(node.getPort(link.getSourcePort().getName()));
+                                this.engine.getDiagramModel().addLink(link);
+                            }
+                        }
                         this.forceUpdate();
                     } catch(err) {
                         console.log(err);

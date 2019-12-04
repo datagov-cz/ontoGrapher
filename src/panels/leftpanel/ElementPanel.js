@@ -210,7 +210,8 @@ export class ElementPanel extends React.Component {
                     <PanelNodeItem key={i++} model={{
                         stereotype: cls.stereotype,
                         newNode: false,
-                        class: cls
+                        class: cls,
+                        package: this.state.package
                     }} name={cls.name}/>)
             }
         }
