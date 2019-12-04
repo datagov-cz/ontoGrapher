@@ -121,6 +121,7 @@ export class ElementPanel extends React.Component {
             let node = this.props.canvas.engine.getDiagramModel().getNode(ClassPackage[pkg][classIndex].connections[key]);
             result += link.linkType + ">" + node.names[this.props.language] + "\n";
         }
+        return result;
     }
 
     handleChangeNewName(event){

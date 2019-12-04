@@ -565,6 +565,7 @@ export class DiagramApp extends React.Component {
                         handleChangeSelectedModel={this.handleChangeSelectedModel}
                         selectedModel={this.state.selectedModel}
                         canvas={this.diagramCanvas.current}
+                        language={this.state.language}
                     />
                     <DetailPanel
                         panelObject={this.state.panelObject}
