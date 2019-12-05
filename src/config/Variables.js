@@ -59,7 +59,7 @@ export var LinkPoolPackage = {};
 export var StereotypePoolPackage = {};
 
 export var ClassPackage = {};
-
+export var HiddenRelationships = {};
 ClassPackage[Locale.root] = [];
 
 export var LinkEndPool = {

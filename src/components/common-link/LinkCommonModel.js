@@ -3,7 +3,7 @@ import {DefaultLabelModel, DefaultLinkModel, DiagramEngine, PortModel, LinkModel
 import {OntoDiagramModel} from "../../diagram/OntoDiagramModel";
 import {Locale} from "../../config/locale/Locale";
 import * as _ from "lodash";
-import {LanguagePool, LinkPool} from "../../config/Variables";
+import {HiddenRelationships, LanguagePool, LinkPool} from "../../config/Variables";
 import {Constraint} from "../misc/Constraint";
 import {Cardinality} from "../misc/Cardinality";
 
@@ -105,6 +105,17 @@ export class LinkCommonModel extends DefaultLinkModel {
 
     remove() {
         delete this.getSourceNode().class.connections[this.getID()];
+        if (this.sourcePort) {
+            this.sourcePort.removeLink(this);
+        }
+        if (this.targetPort) {
+            this.targetPort.removeLink(this);
+        }
+        super.remove();
+    }
+
+    hide() {
+        HiddenRelationships[this.getID()] = _.cloneDeep(this);
         if (this.sourcePort) {
             this.sourcePort.removeLink(this);
         }
