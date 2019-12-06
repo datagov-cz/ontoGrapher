@@ -61,13 +61,14 @@ export class MenuButtonHelp extends MenuAbstractButton {
                         </Modal.Title>
                     </Modal.Header>
                     <Modal.Body>
-                        <Tabs id="helpTabs" animation={false}>
-                            {Object.keys(LocaleHelp).map((obj, i) => {
-                                return (<Tab key={i} eventKey={i + 1} title={obj}>
-                                    {LocaleHelp[obj]}
-                                </Tab>);
-                            })}
-                        </Tabs>
+                        {/*<Tabs id="helpTabs" animation={false}>*/}
+                        {/*    {Object.keys(LocaleHelp).map((obj, i) => {*/}
+                        {/*        return (<Tab key={i} eventKey={i + 1} title={obj}>*/}
+                        {/*            {LocaleHelp[obj]}*/}
+                        {/*        </Tab>);*/}
+                        {/*    })}*/}
+                        {/*</Tabs>*/}
+                        {LocaleHelp}
                     </Modal.Body>
                     <Modal.Footer>
                         <Button onClick={this.handleCloseModal} bsStyle="primary">{Locale.close}</Button>

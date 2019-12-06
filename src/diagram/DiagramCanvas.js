@@ -15,7 +15,7 @@ import {
     StereotypePoolPackage,
     default as Variables,
     globalCount,
-    ClassPackage, HiddenRelationships
+    ClassPackage, HiddenRelationships, HiddenInstances
 } from "../config/Variables";
 import {Stereotype} from "../components/misc/Stereotype";
 import {Class} from "../components/misc/Class";
@@ -131,22 +131,35 @@ export class DiagramCanvas extends React.Component {
                         const data = JSON.parse(event.dataTransfer.getData("newNode"));
                         let name = Locale.untitled + " " + data.stereotype.name;
                         let cls = new Class(data.stereotype, name);
+                        const points = this.engine.getRelativeMousePoint(event);
+                        let node = new NodeCommonModel(name, cls, data.stereotype, this.engine.getDiagramModel());
                         if (data.newNode){
                             ClassPackage[Locale.root].push(cls);
+                            node.x = points.x;
+                            node.y = points.y;
+                            this.engine.getDiagramModel().addNode(node);
                         } else {
                             cls = data.class;
                             name = data.class.name;
-                        }
-                        const node = new NodeCommonModel(name, cls, data.stereotype, this.engine.getDiagramModel());
-                        const points = this.engine.getRelativeMousePoint(event);
-                        node.x = points.x;
-                        node.y = points.y;
-                        this.engine.getDiagramModel().addNode(node);
-                        for (let linkID in cls.connections){
-                            if (this.engine.getDiagramModel().getNode(cls.connections[linkID]) !== null && linkID in HiddenRelationships){
-                                let link = HiddenRelationships[linkID];
-                                link.setSourcePort(node.getPort(link.getSourcePort().getName()));
-                                this.engine.getDiagramModel().addLink(link);
+                            for (let nodeID in this.engine.getDiagramModel().getNodes()){
+                                for (let linkID in this.engine.getDiagramModel().getNode(nodeID).class.connections){
+                                    if (linkID in HiddenRelationships){
+                                        let hiddenNodeID = HiddenRelationships[linkID].getTargetNode().getID();
+                                        if (hiddenNodeID in HiddenInstances){
+                                            node = _.cloneDeep(HiddenInstances[hiddenNodeID]);
+                                            // node.x = points.x;
+                                            // node.y = points.y;
+                                            this.engine.getDiagramModel().addNode(node);
+                                            delete HiddenInstances[hiddenNodeID];
+                                        }
+                                        let link = _.cloneDeep(HiddenRelationships[linkID]);
+                                        let port = node.getPort(link.getTargetPort().getName());
+                                        link.setTargetPort(port);
+                                        //link.getLastPoint().updateLocation(this.engine.getPortCenter(port));
+                                        this.engine.getDiagramModel().addLink(link);
+                                        delete HiddenRelationships[link];
+                                    }
+                                }
                             }
                         }
                         this.forceUpdate();

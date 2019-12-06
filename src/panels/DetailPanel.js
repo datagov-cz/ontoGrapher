@@ -8,6 +8,7 @@ import {AttributeTypePool, CardinalityPool, GeneralizationPool, LinkEndPool, Lin
 import Table from "react-bootstrap/es/Table";
 import Tabs from "react-bootstrap/lib/Tabs";
 import Tab from "react-bootstrap/lib/Tab";
+import {Attribute} from "../components/misc/Attribute";
 
 export class DetailPanel extends React.Component {
     constructor(props) {
@@ -117,24 +118,25 @@ export class DetailPanel extends React.Component {
         let attributeKey = 0;
         let attributeLength = attributes.length;
         let height = 48 + (attributeLength * 15);
+        let width = 200;
         return(
             <svg
-                width={150}
+                width={width}
                 height={height}
                 shapeRendering="optimizeSpeed"
             >
 
                 <g>
-                    <rect fill="#ffffff" stroke={"black"} strokeWidth="4" width={150} height={height}/>
-                    <text width={150} textAnchor="middle" dominantBaseline="hanging" x="50%" y="5px"
+                    <rect fill="#ffffff" stroke={"black"} strokeWidth="4" width={width} height={height}/>
+                    <text width={width} textAnchor="middle" dominantBaseline="hanging" x="50%" y="5px"
                           fill="#000000">{"«" + stereotype.name.toLowerCase() + "»"}</text>
-                    <line x1="0" x2={150} y1="20px" y2="20px" strokeWidth="1" stroke="#000000"/>
-                    <text width={150} textAnchor="middle" dominantBaseline="hanging" x="50%" y="25px"
+                    <line x1="0" x2={width} y1="20px" y2="20px" strokeWidth="1" stroke="#000000"/>
+                    <text width={width} textAnchor="middle" dominantBaseline="hanging" x="50%" y="25px"
                           fill="#000000">{name}</text>
-                    <text width={150} textAnchor="start" dominantBaseline="hanging" x="5px" y="30px"
+                    <text width={width} textAnchor="start" dominantBaseline="hanging" x="5px" y="30px"
                           fill="#000000">
                         {attributes.map(
-                            (attr) => (<tspan key={attributeKey++} x="5px" dy="15px">{attr.first + ": " + attr.second.name}</tspan>)
+                            (attr) => (<tspan key={attributeKey++} x="5px" dy="15px">{attr.value + ": " + attr.attributeType.type}</tspan>)
                         )}
                     </text>
                 </g>
@@ -207,7 +209,7 @@ export class DetailPanel extends React.Component {
             if (this.state.type === LinkCommonModel) {
                 this.props.panelObject.setNameLanguage(this.props.panelObject.model.language);
             } else {
-                this.props.panelObject.class.name = this.state.names[this.props.language];
+                this.props.panelObject.class.names[this.props.language] = this.state.names[this.props.language];
             }
             this.forceUpdate();
             this.props.panelObject.model.canvas.forceUpdate();
@@ -255,7 +257,7 @@ export class DetailPanel extends React.Component {
 
     addAttribute() {
         if (this.state.newAttrName2 !== "") {
-            this.props.panelObject.addAttribute(new AttributeObject(this.state.newAttrName2, this.state.newAttrType2));
+            this.props.panelObject.addAttribute(new Attribute(this.state.newAttrType2, this.state.newAttrName2));
             this.setState({
                 attribute: 0,
                 newAttrName2: "",
@@ -268,7 +270,6 @@ export class DetailPanel extends React.Component {
     }
 
     deleteAttribute() {
-        debugger;
         this.props.panelObject.removeAttributeByIndex(this.state.attribute);
         this.setState({attribute: 0});
         this.forceUpdate();
@@ -299,7 +300,7 @@ export class DetailPanel extends React.Component {
 
     saveAttribute() {
         if (this.state.newAttrName !== "") {
-            this.props.panelObject.setAttributeWithLanguageAndIndex(this.props.language, new AttributeObject(this.state.newAttrName, this.state.newAttrType), this.state.attribute);
+            this.props.panelObject.setAttributeWithLanguageAndIndex(this.props.language, new Attribute(this.state.newAttrType, this.state.newAttrName), this.state.attribute);
             this.forceUpdate();
             this.props.panelObject.model.canvas.forceUpdate();
         }
@@ -340,7 +341,7 @@ export class DetailPanel extends React.Component {
             let attributeKey = 0;
 
             const attributeList = this.state.attrs[this.props.language].map((attr) =>
-                <option key={attributeKey} value={attributeKey++}>{attr.value + ": " + attr.attributeType.name}</option>
+                <option key={attributeKey} value={attributeKey++}>{attr.value + ": " + attr.attributeType.type}</option>
             );
             attributeKey = 0;
             let attributeLength = this.state.attrs[this.props.language].length;
@@ -377,7 +378,7 @@ export class DetailPanel extends React.Component {
                             </FormControl>
                         </Form>
                         <Button bsSize="small" onClick={this.saveAttribute}>{Locale.modify}</Button>
-                        <Button bsSize="small" onClick={this.deleteAttribute}>{Locale.delete}</Button>
+                        <Button bsSize="small" onClick={this.deleteAttribute}>{Locale.del}</Button>
                     </div>
 
                 );

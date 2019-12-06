@@ -41,7 +41,6 @@ import {
     StereotypePoolPackage,
     VocabularyPool
 } from "../config/Variables";
-import {getSubclasses} from "../interface/SPARQLinterface";
 
 //TODO: update react-bootstrap
 export class DiagramApp extends React.Component {
@@ -138,6 +137,11 @@ export class DiagramApp extends React.Component {
     }
 
     serializeProject(){
+        for (let model in Models){
+            if (Models[model] === ""){
+                delete Models[model];
+            }
+        }
         let json = {
             models: Models,
             classes: ClassPackage,
@@ -149,6 +153,7 @@ export class DiagramApp extends React.Component {
     }
 
     deserializeProject(str: string){
+        this.handleNew;
         let json = JSON.parse(str);
         for (let mdl in Models){
             delete Models[mdl];
@@ -178,7 +183,7 @@ export class DiagramApp extends React.Component {
         for (let cls in json.classes){
             ClassPackage[cls] = json.classes[cls];
         }
-        this.diagramCanvas.current.deserialize(Models[Object.keys(Models)[0]]);
+        this.deserialize(Models[Object.keys(Models)[0]]);
     }
 
     handleLocate(element){
@@ -321,7 +326,7 @@ export class DiagramApp extends React.Component {
                 language: Defaults.language,
                 selectedLink: Defaults.selectedLink,
             });
-            this.handleChangeName(this.diagramCanvas.current.engine.getDiagramModel().getName());
+            //this.handleChangeName(this.diagramCanvas.current.engine.getDiagramModel().getName());
             return true;
         } else {
             return false;
@@ -585,6 +590,7 @@ export class DiagramApp extends React.Component {
                         contextMenuY={this.state.contextMenuY}
                         contextMenuLink={this.state.contextMenuLink}
                         showContextMenu={this.showContextMenu}
+                        updateLinkPosition={this.updateLinkPosition}
                         setName={this.setName}
                     />
                     <BottomPanel

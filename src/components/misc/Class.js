@@ -1,14 +1,18 @@
 import {Stereotype} from "./Stereotype";
+import {LanguagePool} from "../../config/Variables";
 
 export class Class {
     stereotype: Stereotype;
-    name: string;
+    names: {};
     //link: node
     connections: {};
 
     constructor(stereotype: Stereotype, name: string){
         this.stereotype = stereotype;
-        this.name = name;
+        this.names = {};
+        for (let language in LanguagePool){
+            this.names[language] = name;
+        }
         this.connections = {};
     }
 }

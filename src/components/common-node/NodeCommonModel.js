@@ -3,7 +3,7 @@ import {NodeCommonPortModel} from "./NodeCommonPortModel";
 import {AttributeObject} from "../misc/AttributeObject";
 import {OntoDiagramModel} from "../../diagram/OntoDiagramModel";
 import * as _ from "lodash";
-import {LanguagePool, MandatoryAttributePool} from "../../config/Variables";
+import {HiddenInstances, LanguagePool, MandatoryAttributePool} from "../../config/Variables";
 import {Locale} from "../../config/locale/Locale";
 import {Stereotype} from "../misc/Stereotype";
 import {Attribute} from "../misc/Attribute";
@@ -27,11 +27,11 @@ export class NodeCommonModel extends NodeModel {
             this.attributes[language] = [];
             if (stereotype.source in MandatoryAttributePool){
                 for (let attributeType in MandatoryAttributePool[stereotype.source]){
-                    this.attributes[language].push(new Attribute(attributeType, ""));
+                    this.attributes[language].push(new Attribute(attributeType, attributeType.name));
                 }
-                for (let attributeType in MandatoryAttributePool["&*"]){
-                    this.attributes[language].push(new Attribute(attributeType, ""));
-                }
+            }
+            for (let attributeType of MandatoryAttributePool["&*"]){
+                this.attributes[language].push(new Attribute(attributeType, attributeType.name));
             }
             this.notes[language] = "";
             if (this.names[language] === undefined) {
@@ -54,12 +54,13 @@ export class NodeCommonModel extends NodeModel {
     }
 
     remove() {
-        super.remove();
+        HiddenInstances[this.getID()] = _.cloneDeep(this);
         _.forEach(this.ports, port => {
             _.forEach(port.getLinks(), link => {
                 link.hide();
             });
         });
+        super.remove();
     }
 
     delete() {
@@ -123,6 +124,7 @@ export class NodeCommonModel extends NodeModel {
         this.stereotype = object.stereotype;
         this.attributes = object.attributes;
         this.names = object.names;
+        this.class = object.cls;
         for (let port in this.ports) {
             this.ports[port].model = this.model;
         }
@@ -141,6 +143,7 @@ export class NodeCommonModel extends NodeModel {
             attributes: this.attributes,
             names: this.names,
             notes: this.notes,
+            cls: this.class,
             derivation: this.derivation
         });
     }
