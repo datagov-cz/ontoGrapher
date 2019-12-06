@@ -41,6 +41,7 @@ import {
     StereotypePoolPackage,
     VocabularyPool
 } from "../config/Variables";
+import {MenuFileExportDiagram} from "../panels/menu/file/MenuFileExportDiagram";
 
 //TODO: update react-bootstrap
 export class DiagramApp extends React.Component {
@@ -94,6 +95,8 @@ export class DiagramApp extends React.Component {
         this.handleLocate = this.handleLocate.bind(this);
         this.updateLinkPositionDelete = this.updateLinkPositionDelete.bind(this);
         this.handleChangeSelectedModel = this.handleChangeSelectedModel.bind(this);
+        this.serializeProject = this.serializeProject.bind(this);
+        this.deserializeProject = this.deserializeProject.bind(this);
     }
 
     componentDidMount() {
@@ -137,6 +140,7 @@ export class DiagramApp extends React.Component {
     }
 
     serializeProject(){
+        Models[this.state.selectedModel] = this.diagramCanvas.current.serialize();
         for (let model in Models){
             if (Models[model] === ""){
                 delete Models[model];
@@ -146,7 +150,7 @@ export class DiagramApp extends React.Component {
             models: Models,
             classes: ClassPackage,
             vocabularyPool: VocabularyPool,
-            spPackage: StereotypePoolPackage,
+            //spPackage: StereotypePoolPackage,
             maPool: MandatoryAttributePool
         };
         return JSON.stringify(json);
@@ -161,16 +165,16 @@ export class DiagramApp extends React.Component {
         for (let mdl in json.models){
             Models[mdl] = json.models[mdl];
         }
-        VocabularyPool.length = 0;
+        VocabularyPool.splice(0,VocabularyPool.length);
         for (let stp in json.vocabularyPool){
             VocabularyPool.push(stp);
         }
-        for (let stp in StereotypePoolPackage){
-            delete StereotypePoolPackage[stp];
-        }
-        for (let stp in json.spPackage){
-            StereotypePoolPackage[stp] = json.spPackage[stp];
-        }
+        // for (let stp in StereotypePoolPackage){
+        //     delete StereotypePoolPackage[stp];
+        // }
+        // for (let stp in json.spPackage){
+        //     StereotypePoolPackage[stp] = json.spPackage[stp];
+        // }
         for (let stp in MandatoryAttributePool){
             delete MandatoryAttributePool[stp];
         }
@@ -183,7 +187,17 @@ export class DiagramApp extends React.Component {
         for (let cls in json.classes){
             ClassPackage[cls] = json.classes[cls];
         }
-        this.deserialize(Models[Object.keys(Models)[0]]);
+        let response = this.diagramCanvas.current.deserialize(Models[Object.keys(Models)[0]]);
+            if (response){
+                this.setState({
+                    language: Defaults.language,
+                    selectedLink: Defaults.selectedLink,
+                });
+                //this.handleChangeName(this.diagramCanvas.current.engine.getDiagramModel().getName());
+                return true;
+            } else {
+                return false;
+            }
     }
 
     handleLocate(element){
@@ -492,11 +506,11 @@ export class DiagramApp extends React.Component {
                                     name={Locale.menuPanelSaveDiagram}
                                     serialize={this.serializeProject}
                                 />
-                                {/*<MenuFileExportDiagram*/}
-                                {/*    eventKey={eventKeyCounter++}*/}
-                                {/*    name={Locale.menuPanelExportDiagram}*/}
-                                {/*    canvas={this.diagramCanvas.current}*/}
-                                {/*/>*/}
+                                <MenuFileExportDiagram
+                                    eventKey={eventKeyCounter++}
+                                    name={Locale.menuPanelExportDiagram}
+                                    canvas={this.diagramCanvas.current}
+                                />
                             </MenuDropdownList>
                         <MenuDropdownList name={Locale.menuPanelView}>
                             <MenuViewCenter

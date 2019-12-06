@@ -13,6 +13,7 @@ export class MenuSettingsAttributeTypes extends MenuAbstractDropdownModal {
         this.state={
             attributeTypeName: "",
             attributeTypeIRI: "",
+            attributeTypeType: "",
             attributeType: 0,
         };
         this.handleChangeAttributeTypeName = this.handleChangeAttributeTypeName.bind(this);
@@ -21,8 +22,8 @@ export class MenuSettingsAttributeTypes extends MenuAbstractDropdownModal {
         this.deleteAttributeType = this.deleteAttributeType.bind(this);
         this.focus = this.focus.bind(this);
         this.handleChangeAttributeTypeIRI = this.handleChangeAttributeTypeIRI.bind(this);
+        this.handleChangeAttributeTypeType = this.handleChangeAttributeTypeType.bind(this);
     }
-    //TODO: update attribute type input form
     focus(){
         if (AttributeTypePool.length === 1) {
             this.setState({
@@ -36,8 +37,10 @@ export class MenuSettingsAttributeTypes extends MenuAbstractDropdownModal {
     }
 
     addAttributeType() {
-        AttributeTypePool.push(new AttributeType(this.state.attributeName,this.state.attributeIRI, false));
-        this.setState({attributeTypeName: ""});
+        if (this.state.attributeTypeName !== "" && this.state.attributeTypeIRI !== "" && this.state.attributeTypeType !== ""){
+            AttributeTypePool.push(new AttributeType(this.state.attributeTypeName,this.state.attributeTypeIRI,this.state.attributeTypeType, false));
+            this.setState({attributeTypeName: "", attributeTypeType: "", attributeTypeIRI: ""});
+        }
     }
 
     deleteAttributeType() {
@@ -46,6 +49,10 @@ export class MenuSettingsAttributeTypes extends MenuAbstractDropdownModal {
 
     handleChangeAttributeTypeName(event) {
         this.setState({attributeTypeName: event.target.value});
+    }
+
+    handleChangeAttributeTypeType(event) {
+        this.setState({attributeTypeType: event.target.value});
     }
 
     handleChangeAttributeTypeIRI(event) {
@@ -87,7 +94,7 @@ export class MenuSettingsAttributeTypes extends MenuAbstractDropdownModal {
                         bsStyle="danger">{Locale.deleteSelected}</Button>
 
                     <h4>{Locale.createNew+Locale.attributeType}</h4>
-                        <Form inline>
+                        <Form>
 
                             <FormControl
                                 type="text"
@@ -100,6 +107,12 @@ export class MenuSettingsAttributeTypes extends MenuAbstractDropdownModal {
                                 value={this.state.attributeTypeIRI}
                                 placeholder={Locale.attributeTypeIRIPlaceholder}
                                 onChange={this.handleChangeAttributeTypeIRI}
+                            />
+                            <FormControl
+                                type="text"
+                                value={this.state.attributeTypeType}
+                                placeholder={Locale.attributeTypeTypePlaceholder}
+                                onChange={this.handleChangeAttributeTypeType}
                             />
                         </Form>
                         <Button onClick={this.addAttributeType}

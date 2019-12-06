@@ -38,6 +38,7 @@ export class MenuSettingsLanguages extends MenuAbstractDropdownModal {
             nodes[node].names[this.state.languageCode] = Locale.untitled;
             nodes[node].notes[this.state.languageCode] = "";
             nodes[node].attributes[this.state.languageCode] = nodes[node].attributes[Object.keys(LanguagePool)[0]];
+            nodes[node].class.names[this.state.languageCode] = Locale.untitled;
         }
         for (let link in links){
             links[link].names[this.state.languageCode] = Locale.none;

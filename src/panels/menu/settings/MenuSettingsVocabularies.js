@@ -131,35 +131,26 @@ export class MenuSettingsVocabularies extends MenuAbstractDropdownModal {
     }
     incrementStep3(){
         this.setState({wizardStep: 4});
-        this.sourceResult = `{
-            name: "${this.state.sourceName}",
-            endpoint: "${this.state.sourceEndpoint}",
-            language: "${this.state.sourceLanguage}",
-            typeIRI: "${this.state.sourceTypeIRI}",
-            sourceIRI: "${this.state.sourceIRI}",
-            labelIRI: "http://www.w3.org/2004/02/skos/core#prefLabel",
-            definitionIRI: "http://www.w3.org/2004/02/skos/core#definition",
-            stereotypeIRI: ["${this.state.sourceStereotypeIRI}"],
-            relationshipIRI: ["${this.state.sourceRelationshipIRI}"],
-            attributeIRI: ["${this.state.sourceAttributeIRI}"]
-        }`;
-
-    }
-
-    submit(){
-        let parseResult = {
-            name: this.state.sourceName,
+        let parseResult = {};
+        parseResult[this.state.sourceName] = {
+            type: "stereotype",
             endpoint: this.state.sourceEndpoint,
             language: this.state.sourceLanguage,
-            classIRI: this.state.sourceTypeIRI,
+            propertyIRI: this.state.sourceTypeIRI,
             sourceIRI: this.state.sourceIRI,
             labelIRI: "http://www.w3.org/2004/02/skos/core#prefLabel",
             definitionIRI: "http://www.w3.org/2004/02/skos/core#definition",
-            stereotypeIRI: [this.state.sourceStereotypeIRI],
+            classIRI: [this.state.sourceStereotypeIRI],
             relationshipIRI: [this.state.sourceRelationshipIRI],
-            attributeIRI: [this.state.sourceAttributeIRI]
+            attributeIRI: [this.state.sourceAttributeIRI],
+            attributes: []
         };
-        getElementsAsStereotypes(parseResult,function(){}, function(){});
+        this.sourceResult = JSON.stringify(parseResult);
+    }
+
+    submit(){
+
+        //getElementsAsStereotypes(parseResult,function(){}, function(){});
         this.handleCloseModal();
     }
 
@@ -256,7 +247,7 @@ export class MenuSettingsVocabularies extends MenuAbstractDropdownModal {
                         bsSize="small"
                         componentClass="textarea"
                         value={this.sourceResult}
-                        disabled    ={true}
+                        disabled={true}
                     /><br/>
                     <Button onClick={this.goBack} bsStyle="warning">{LocaleImportVocabularies.back}</Button>
                     <Button onClick={this.submit} bsStyle="success">{LocaleImportVocabularies.finish}</Button>

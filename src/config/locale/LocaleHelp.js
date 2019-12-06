@@ -2,7 +2,7 @@
 
 import React from "react";
 
-export var LocaleHelp = (<div>Documentation is available at the following URL: <a href="https://github.com/opendata-mvcr/ontoGrapher/wiki">https://github.com/opendata-mvcr/ontoGrapher/wiki</a></div>);
+export var LocaleHelp = (<div>Documentation is available at the following URL: <br/> <a href="https://github.com/opendata-mvcr/ontoGrapher/wiki">https://github.com/opendata-mvcr/ontoGrapher/wiki</a></div>);
 
 export var LocaleHelper = {
     "Modeling": (<div className="helpTab">

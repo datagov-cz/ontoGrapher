@@ -25,9 +25,11 @@ export class NodeCommonModel extends NodeModel {
         this.derivation = "";
         for (let language in LanguagePool) {
             this.attributes[language] = [];
-            if (stereotype.source in MandatoryAttributePool){
-                for (let attributeType in MandatoryAttributePool[stereotype.source]){
-                    this.attributes[language].push(new Attribute(attributeType, attributeType.name));
+            if (stereotype !== undefined){
+                if (stereotype.source in MandatoryAttributePool){
+                    for (let attributeType in MandatoryAttributePool[stereotype.source]){
+                        this.attributes[language].push(new Attribute(attributeType, attributeType.name));
+                    }
                 }
             }
             for (let attributeType of MandatoryAttributePool["&*"]){

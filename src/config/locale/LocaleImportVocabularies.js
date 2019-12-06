@@ -13,7 +13,7 @@ export var LocaleImportVocabularies = {
     sourceRelationshipIRIPlaceholder: "Relationship IRI",
     sourceAttributeIRIPlaceholder: "Attribute IRI",
     step3: "Next, enter the IRIs which denote the types that stereotypes, relationships and attributes fall under.",
-    step4: "If you want, you can stop here and add the following data to DefaultVocabularies in Defaults.js in the source code, or you can go ahead and add the elements right now.",
+    step4: "Here is your generated JSON file. Put it up on a URL and direct the component to it to take advantage of it. (For more information, consult the Wiki.)",
     error: "Something went wrong. Please check that you have entered everything properly.",
     finish: "Add from source"
 };
