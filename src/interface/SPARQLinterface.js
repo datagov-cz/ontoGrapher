@@ -34,13 +34,14 @@ export function getElementsAsStereotypes(name, jsonData, callback) {
                 } else if (jsonData.relationshipIRI.indexOf(result.termType.value) > -1) {
                     LinkPool[result.termLabel.value] = ["UnfilledArrow",true,false,[],result.term.value,result.termDefinition === undefined ? "" : result.termDefinition.value,name];
                 }
-                for (let attribute of jsonData["attributes"]){
-                    if (!("&*" in MandatoryAttributePool)){
-                        MandatoryAttributePool["&*"] = [];
-                    }
-                    let isArray = Array.isArray(attribute["type"]);
-                    MandatoryAttributePool["&*"].push(new AttributeType(attribute["name"], attribute["iri"], isArray ? attribute["type"][0] : attribute["type"], isArray))
+            }
+            for (let attribute of jsonData["attributes"]){
+                if (!("&*" in MandatoryAttributePool)){
+                    MandatoryAttributePool["&*"] = [];
                 }
+                let isArray = Array.isArray(attribute["type"]);
+                let atrt = new AttributeType(attribute["name"], attribute["iri"], isArray ? attribute["type"][0] : attribute["type"], isArray);
+                MandatoryAttributePool["&*"].push(atrt);
             }
             VocabularyPool.push(name);
             callback();

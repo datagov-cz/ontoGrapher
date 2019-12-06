@@ -32,7 +32,7 @@ export class NodeCommonWidget extends React.Component<NodeCommonWidgetProps, Nod
             select = "blue";
         }
         const attributeMap = attrs.map((attr) =>
-            <tspan key={attributeKey++} x="5px" dy="15px">{attr.first + ": " + attr.second.name}</tspan>
+            <tspan key={attributeKey++} x="5px" dy="15px">{attr.value + ": " + attr.attributeType.type}</tspan>
         );
         return (
             <div className={this.props.node.type} width={this.props.size} height={height}>
@@ -98,7 +98,7 @@ export class NodeCommonWidget extends React.Component<NodeCommonWidgetProps, Nod
 }
 
 NodeCommonWidget.defaultProps = {
-    size: 150,
+    size: 200,
     node: null
 };
 

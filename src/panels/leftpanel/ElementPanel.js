@@ -202,7 +202,7 @@ export class ElementPanel extends React.Component {
                     <PanelNodeItem key={i++} model={{
                         stereotype: cls,
                         newNode: false
-                    }} name={cls.name}/>)
+                    }} name={cls.names[this.props.language]}/>)
             }
         } else if (!Packages[this.state.package]){
             if (this.state.package in ClassPackage){
@@ -212,7 +212,7 @@ export class ElementPanel extends React.Component {
                         newNode: false,
                         class: cls,
                         package: this.state.package
-                    }} name={cls.name}/>)
+                    }} name={cls.names[this.props.language]}/>)
             }
         }
 
@@ -341,7 +341,7 @@ export class ElementPanel extends React.Component {
                     size={ClassPackage[this.state.package].length}
                     style={{height: 200}}
                 >
-                    {ClassPackage[this.state.package].map((cls, i) => <option key={i} value={i}>{cls.name}</option>)}
+                    {ClassPackage[this.state.package].map((cls, i) => <option key={i} value={i}>{cls.names[this.props.language]}</option>)}
                 </FormControl>
 
                 <Button onClick={this.deleteClass}

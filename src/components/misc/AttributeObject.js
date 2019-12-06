@@ -17,7 +17,6 @@ export class AttributeObject {
     }
 
     getType(){
-        console.log(this.second);
         return this.second;
     }
 

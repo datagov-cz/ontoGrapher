@@ -41,9 +41,9 @@ export class LinkCommonModel extends DefaultLinkModel {
         }
         if (this.model instanceof OntoDiagramModel) {
             this.linkType = this.model.selectedLink;
-            this.addLabel(this.model.firstCardinality.getString() === Locale.none ? "" : this.model.firstCardinality);
+            this.addLabel(this.sourceCardinality.getString() === Locale.none ? "" : this.sourceCardinality);
             this.addLabel("");
-            this.addLabel(this.model.secondCardinality.getString() === Locale.none ? "" : this.model.secondCardinality);
+            this.addLabel(this.targetCardinality.getString() === Locale.none ? "" : this.targetCardinality);
             this.addLabel("");
             if (LinkPool[this.linkType][1]){
                 this.addDescriptorLabel();
@@ -99,7 +99,6 @@ export class LinkCommonModel extends DefaultLinkModel {
         });
         if (this.targetPort !== null){
             this.getSourceNode().class.connections[this.getID()] = this.targetPort.getNode().getID();
-            //console.log(this.getSourceNode().class.connections);
         }
     }
 

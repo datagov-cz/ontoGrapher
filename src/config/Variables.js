@@ -60,6 +60,7 @@ export var StereotypePoolPackage = {};
 
 export var ClassPackage = {};
 export var HiddenRelationships = {};
+export var HiddenInstances = {};
 ClassPackage[Locale.root] = [];
 
 export var LinkEndPool = {
