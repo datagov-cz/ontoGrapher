@@ -2,6 +2,7 @@
 
 export var Locale = {
     menuPanelLoaded: "Loaded!",
+    stereotypeSourceNamePlaceholder: "Source name",
     hide: "Hide",
     connectionList: "Connections from class",
     moveTo: "Move class to package ",
@@ -74,7 +75,7 @@ export var Locale = {
     notes: "Description",
     loadUnsuccessful: "Attempt to load diagram unsuccessful. Please check input data and try again.",
     nodesSettings: "Class settings",
-    linksSettings: "Relationship overview",
+    linksSettings: "Relationship settings",
     stereotypeSourcePlaceholder: "TTL Source",
     loadStereotypes: "Add classes",
     replaceStereotypes: "Replace classes",
@@ -198,5 +199,9 @@ export var Locale = {
     addLink: "Add relationship",
     vocabularyNotFound: "Vocabulary definition URL is missing or incorrect",
     modelSettings: "Diagram management",
-    addModel: "Add diagram"
+    addModel: "Add diagram",
+    classes: "Classes",
+    relationships: "Relationships",
+    packageModel: "Packages & models",
+    diagram: "Diagrams"
 };

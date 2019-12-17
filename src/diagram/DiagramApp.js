@@ -37,7 +37,7 @@ import {
     ClassPackage,
     LinkPool,
     MandatoryAttributePool,
-    Models,
+    Models, StereotypePool,
     StereotypePoolPackage,
     VocabularyPool
 } from "../config/Variables";
@@ -110,12 +110,12 @@ export class DiagramApp extends React.Component {
             this.diagramCanvas.current.setReadOnly(true);
         }
         if (typeof this.props.loadClasses === "string"){
-            SemanticWebInterface.fetchClasses(this.props.loadClasses, this.props.classIRI, true, function(){
+            SemanticWebInterface.fetchClasses(this.props.loadClassesName, this.props.loadClasses, this.props.classIRI, true, this.props.loadLanguage, function(){
                 this.forceUpdate();
             }.bind(this));
         }
         if (typeof this.props.loadRelationships === "string"){
-            SemanticWebInterface.fetchRelationships(this.props.loadRelationships, this.props.relationshipIRI, true, function(){
+            SemanticWebInterface.fetchRelationships(this.props.loadRelationshipsName, this.props.loadRelationships, this.props.relationshipIRI, true, this.props.loadLanguage, function(){
                 this.forceUpdate();
             }.bind(this));
         }
@@ -623,7 +623,7 @@ export class DiagramApp extends React.Component {
                         contextMenuLink={this.state.contextMenuLink}
                         updateLinkPosition={this.updateLinkPosition}
                     />
-                    <div className="build">build 89</div>
+                    <div className="build">build 90</div>
                 </div>
             );
         }
@@ -632,11 +632,14 @@ export class DiagramApp extends React.Component {
 }
 
 DiagramApp.propTypes = {
+    loadClassesName: PropTypes.string,
+    loadRelationshipsName: PropTypes.string,
     loadProject: PropTypes.string,
     readOnly: PropTypes.bool,
     loadSettings: PropTypes.string,
     loadClasses: PropTypes.string,
     loadRelationships: PropTypes.string,
+    loadLanguage: PropTypes.string,
     classIRI: PropTypes.string,
     relationshipIRI: PropTypes.string,
     loadDefaultVocabularies: PropTypes.bool,

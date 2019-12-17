@@ -129,37 +129,47 @@ export class DiagramCanvas extends React.Component {
                 onDrop={event => {
                     try {
                         const data = JSON.parse(event.dataTransfer.getData("newNode"));
-                        let name = Locale.untitled + " " + data.stereotype.name;
-                        let cls = new Class(data.stereotype, name);
                         const points = this.engine.getRelativeMousePoint(event);
-                        let node = new NodeCommonModel(name, cls, data.stereotype, this.engine.getDiagramModel());
                         if (data.newNode){
+                            let name = Locale.untitled + " " + data.stereotype.name;
+                            let cls = new Class(data.stereotype, name);
+                            let node = new NodeCommonModel(name, cls, data.stereotype, this.engine.getDiagramModel());
                             ClassPackage[Locale.root].push(cls);
                             node.x = points.x;
                             node.y = points.y;
                             this.engine.getDiagramModel().addNode(node);
                         } else {
-                            cls = data.class;
-                            name = data.class.name;
-                            for (let nodeID in this.engine.getDiagramModel().getNodes()){
-                                for (let linkID in this.engine.getDiagramModel().getNode(nodeID).class.connections){
-                                    if (linkID in HiddenRelationships){
-                                        let hiddenNodeID = HiddenRelationships[linkID].getTargetNode().getID();
-                                        if (hiddenNodeID in HiddenInstances){
-                                            node = _.cloneDeep(HiddenInstances[hiddenNodeID]);
-                                            // node.x = points.x;
-                                            // node.y = points.y;
-                                            this.engine.getDiagramModel().addNode(node);
-                                            delete HiddenInstances[hiddenNodeID];
+                            let cls = data.class;
+                            let name = data.class.name;
+                            if (data.modelClass){
+                                let node = new NodeCommonModel(name, undefined, cls, this.engine.getDiagramModel());
+                                node.x = points.x;
+                                node.y = points.y;
+                                this.engine.getDiagramModel().addNode(node);
+                            } else {
+                                for (let nodeID in this.engine.getDiagramModel().getNodes()){
+                                    for (let linkID in this.engine.getDiagramModel().getNode(nodeID).class.connections){
+                                        if (linkID in HiddenRelationships){
+                                            let hiddenNodeID = HiddenRelationships[linkID].getTargetNode().getID();
+                                            if (hiddenNodeID in HiddenInstances){
+                                                let node = _.cloneDeep(HiddenInstances[hiddenNodeID]);
+                                                this.engine.getDiagramModel().addNode(node);
+                                                delete HiddenInstances[hiddenNodeID];
+                                            }
+                                            let link = _.cloneDeep(HiddenRelationships[linkID]);
+                                            let port = node.getPort(link.getTargetPort().getName());
+                                            link.setTargetPort(port);
+                                            //link.getLastPoint().updateLocation(this.engine.getPortCenter(port));
+                                            this.engine.getDiagramModel().addLink(link);
+                                            delete HiddenRelationships[link];
                                         }
-                                        let link = _.cloneDeep(HiddenRelationships[linkID]);
-                                        let port = node.getPort(link.getTargetPort().getName());
-                                        link.setTargetPort(port);
-                                        //link.getLastPoint().updateLocation(this.engine.getPortCenter(port));
-                                        this.engine.getDiagramModel().addLink(link);
-                                        delete HiddenRelationships[link];
                                     }
                                 }
+                            }
+                            if (cls.id in HiddenInstances){
+                                let node = _.cloneDeep(HiddenInstances[cls.id]);
+                                this.engine.getDiagramModel().addNode(node);
+                                delete HiddenInstances[cls.id];
                             }
                         }
                         this.forceUpdate();

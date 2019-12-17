@@ -17,6 +17,7 @@ export class MenuSettingsNodes extends MenuAbstractDropdownModal {
             stereotypeName: "",
             stereotypeRDF: "",
             stereotypeDescription: "",
+            stereotypeSourceName: "",
             node: 0
         };
         this.focus = this.focus.bind(this);
@@ -29,6 +30,7 @@ export class MenuSettingsNodes extends MenuAbstractDropdownModal {
         this.handleChangeStereotypeDescription = this.handleChangeStereotypeDescription.bind(this);
         this.deleteNode = this.deleteNode.bind(this);
         this.handleLoadStereotypes = this.handleLoadStereotypes.bind(this);
+        this.handleChangeStereotypeSourceName = this.handleChangeStereotypeSourceName.bind(this);
     }
 
 
@@ -45,6 +47,10 @@ export class MenuSettingsNodes extends MenuAbstractDropdownModal {
             StereotypePool.push(new Stereotype(this.state.stereotypeName,this.state.stereotypeIRI,this.state.stereotypeDescription,""));
             this.setState({stereotypeRDF: "", stereotypeName: "", stereotypeDescription: ""});
         }
+    }
+
+    handleChangeStereotypeSourceName(event) {
+        this.setState({stereotypeSourceName: event.target.value});
     }
 
     handleChangeStereotypeRDF(event) {
@@ -74,16 +80,16 @@ export class MenuSettingsNodes extends MenuAbstractDropdownModal {
 
     handleReplaceStereotypes() {
         if (this.state.stereotypeSource !== "") {
-            SemanticWebInterface.fetchClasses(this.state.stereotypeSource, Defaults.classIRI, true, () => {
+            SemanticWebInterface.fetchClasses(this.state.stereotypeSource, Defaults.classIRI, true, Defaults.sourceLanguage, () => {
                 this.setState({status: ""});
             });
         }
     }
 
     handleLoadStereotypes() {
-        if (this.state.stereotypeSource !== "") {
-            SemanticWebInterface.fetchClasses(this.state.stereotypeSource, Defaults.classIRI, false, () => {
-                this.setState({status: ""});
+        if (this.state.stereotypeSource !== "" && this.state.stereotypeSourceName !== "") {
+            SemanticWebInterface.fetchClasses(this.state.stereotypeSourceName, this.state.stereotypeSource, Defaults.classIRI, false, Defaults.sourceLanguage, () => {
+                this.setState({status: "", stereotypeSource: "", stereotypeSourceName: ""});
             });
         }
     }
@@ -162,10 +168,14 @@ export class MenuSettingsNodes extends MenuAbstractDropdownModal {
                                     placeholder={Locale.stereotypeSourcePlaceholder}
                                     onChange={this.handleChangeStereotypeSource}
                                 />
+                                <FormControl
+                                    type="text"
+                                    value={this.state.stereotypeSourceName}
+                                    placeholder={Locale.stereotypeSourceNamePlaceholder}
+                                    onChange={this.handleChangeStereotypeSourceName}
+                                />
                                 <Button onClick={this.handleLoadStereotypes}
                                         bsStyle="primary">{Locale.loadStereotypes}</Button>
-                                <Button onClick={this.handleReplaceStereotypes}
-                                        bsStyle="primary">{Locale.replaceStereotypes}</Button>
                             </Tab>
                         </Tabs>
 

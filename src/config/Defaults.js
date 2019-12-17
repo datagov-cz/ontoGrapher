@@ -10,5 +10,5 @@ export var Defaults = {
     relationshipIRI: "http://www.w3.org/2002/07/owl#ObjectProperty",
     sourceLanguage: "en",
     offset: {x: 0, y: 0},
-    defaultVocabularies: "https://raw.githubusercontent.com/bindetad/ontoGrapher/test/Vocabularies.json"
+    defaultVocabularies: "https://raw.githubusercontent.com/opendata-mvcr/ontoGrapher/master/src/config/Vocabularies.json"
 };

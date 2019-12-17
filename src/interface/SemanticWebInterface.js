@@ -1,92 +1,102 @@
-import {AttributeTypePool, GeneralizationPool, LanguagePool, LinkPool, StereotypePool} from "../config/Variables";
+import {
+    AttributeTypePool,
+    GeneralizationPool,
+    LanguagePool,
+    LinkPool,
+    StereotypePool,
+    VocabularyPool
+} from "../config/Variables";
 import {OntoDiagramModel} from "../diagram/OntoDiagramModel";
 import React from "react";
 import {Locale} from "../config/locale/Locale";
 import {Stereotype} from "../components/misc/Stereotype";
 import {Defaults} from "../config/Defaults";
+import * as N3 from "sparqljs";
+import {isBlankNode} from "n3/lib/N3Util";
 
-export function fetchClasses(source: string, typeIRI: string, replace: boolean, callback) {
-    const rdf = require('rdf-ext');
-    const rdfFetch = require('rdf-fetch');
-    let stereotypes = [];
-    rdfFetch(source).then((res) => {
-        return res.dataset();
-    }).then((dataset) => {
-        const classes = dataset.match(null, null, rdf.namedNode(typeIRI));
-        let result = {};
-        for (let quad of classes.toArray()) {
-            if (quad.subject instanceof rdf.defaults.NamedNode) {
-                result[quad.subject.value] = dataset.match(rdf.namedNode(quad.subject.value));
-            }
-        }
-        return result;
+export function fetchClasses(name: string, source: string, typeIRI: string, replace: boolean, language: string, callback) {
+    const N3 = require('n3');
+    const parser = new N3.Parser();
+    let result = {};
+    if (!(VocabularyPool.includes(name))){
+        VocabularyPool.push(name);
+    }
+    fetch(source).then(
+        (src)=>{
+            return src.text()}).then((text) => {
+                return parser.parse(text);
     }).then((res) => {
-        for (let quad in res) {
-            for (let node of res[quad].toArray()) {
-                if (node.object instanceof rdf.defaults.Literal && node.predicate.value === "http://www.w3.org/2000/01/rdf-schema#label") {
-                    if (node.object.language === Defaults.sourceLanguage) {
-                        stereotypes.push(new Stereotype(node.object.value,node.subject.value,"",""));
-                        continue;
+        for (let quad of res){
+                    if (!isBlankNode(quad.subject)){
+                        if(!(quad.subject.value in result)){
+                            result[quad.subject.value] = {"class": false};
+                        }
+                        const predicate = quad.predicate.value;
+
+                        switch(predicate) {
+                            case "http://www.w3.org/1999/02/22-rdf-syntax-ns#type":
+                                if (quad.object.value === typeIRI){
+                                    result[quad.subject.value]["class"] = true;
+                                }
+                            case "http://www.w3.org/2000/01/rdf-schema#label":
+                                result[quad.subject.value]["label"] = quad.object.value;
+                        }
                     }
-                }
+        }
+        for (let key in result){
+            if (result[key].class){
+                StereotypePool.push(new Stereotype(result[key].label,key,"", name));
             }
         }
-
-        if (replace) {
-            StereotypePool.length = 0;
-        }
-
-        StereotypePool.push(stereotypes);
-
         callback();
     }).catch((err) => {
         console.error(err.stack || err.message);
     });
 }
 
-export function fetchRelationships(source: string, typeIRI: string, replace: boolean, callback) {
-    const rdf = require('rdf-ext');
-    const rdfFetch = require('rdf-fetch');
-    let relationships = {};
-    rdfFetch(source).then((res) => {
-        return res.dataset();
-    }).then((dataset) => {
-        const classes = dataset.match(null, null, rdf.namedNode(typeIRI));
-        let result = {};
-        for (let quad of classes.toArray()) {
-            if (quad.subject instanceof rdf.defaults.NamedNode) {
-                result[quad.subject.value] = dataset.match(rdf.namedNode(quad.subject.value));
-            }
-        }
-        return result;
+export function fetchRelationships(name:string, source: string, typeIRI: string, replace: boolean, language: string, callback) {
+    const N3 = require('n3');
+    const parser = new N3.Parser();
+    let result = {};
+    if (!(VocabularyPool.includes(name))){
+        VocabularyPool.push(name);
+    }
+    fetch(source).then(
+        (src)=>{
+            return src.text()}).then((text) => {
+        return parser.parse(text);
     }).then((res) => {
-        for (let quad in res) {
-            for (let node of res[quad].toArray()) {
-                if (node.object instanceof rdf.defaults.Literal && node.predicate.value === "http://www.w3.org/2000/01/rdf-schema#label") {
-                    if (node.object.language === Defaults.sourceLanguage) {
-                        relationships[node.object.value] = ["Empty", true, false, [], node.subject.value,"",""];
-                        //stereotypes.push(new Stereotype(node.object.value,node.subject.value,"",""));
-                        continue;
-                    }
+        for (let quad of res){
+            if (!isBlankNode(quad.subject)){
+                if(!(quad.subject.value in result)){
+                    result[quad.subject.value] = {"relationship": false};
+                }
+                const predicate = quad.predicate.value;
+
+                switch(predicate) {
+                    case "http://www.w3.org/1999/02/22-rdf-syntax-ns#type":
+                        if (quad.object.value === typeIRI){
+                            result[quad.subject.value]["relationship"] = true;
+                        }
+                    case "http://www.w3.org/2000/01/rdf-schema#label":
+                        result[quad.subject.value]["label"] = quad.object.value;
                 }
             }
         }
-
-        if (replace) {
-            for (let link in LinkPool) {
-                delete LinkPool[link];
+        for (let key in result){
+            if (result[key].relationship){
+                LinkPool[result[key].label]=["Empty",true,false,[],key,"",""];
             }
         }
-
-        for (let link in relationships) {
-            LinkPool[link] = relationships[link];
-        }
-
         callback();
     }).catch((err) => {
         console.error(err.stack || err.message);
     });
 }
+
+
+//relationships[node.object.value] = ["Empty", true, false, [], node.subject.value,"",""];
+
 
 export function exportDiagram(model: OntoDiagramModel) {
 

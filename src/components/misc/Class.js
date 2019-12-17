@@ -6,6 +6,7 @@ export class Class {
     names: {};
     //link: node
     connections: {};
+    id: string;
 
     constructor(stereotype: Stereotype, name: string){
         this.stereotype = stereotype;

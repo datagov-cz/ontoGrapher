@@ -36,12 +36,12 @@ export function getElementsAsStereotypes(name, jsonData, callback) {
                 }
             }
             for (let attribute of jsonData["attributes"]){
-                if (!("&*" in MandatoryAttributePool)){
-                    MandatoryAttributePool["&*"] = [];
+                if (!(name in MandatoryAttributePool)){
+                    MandatoryAttributePool[name] = [];
                 }
                 let isArray = Array.isArray(attribute["type"]);
                 let atrt = new AttributeType(attribute["name"], attribute["iri"], isArray ? attribute["type"][0] : attribute["type"], isArray);
-                MandatoryAttributePool["&*"].push(atrt);
+                MandatoryAttributePool[name].push(atrt);
             }
             VocabularyPool.push(name);
             callback();

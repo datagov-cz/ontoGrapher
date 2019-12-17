@@ -17,22 +17,35 @@ import Button from "react-bootstrap/lib/Button";
 import Modal from "react-bootstrap/lib/Modal";
 import * as Helper from "../../misc/Helper";
 import {Class} from "../../components/misc/Class";
-const arrow = (
-    <svg height={10} width={15}>
-        <line x1={0} y1={5} x2={10} y2={5} stroke="black" strokeWidth={2}/>
-        <polygon
-            points="10,0 10,10 15,5"
-            fill="black"
-            stroke="black"
-            strokeWidth="1"
-        />
-    </svg>
-);
+// const arrow = (
+//     <svg height={10} width={15}>
+//         <line x1={0} y1={5} x2={10} y2={5} stroke="black" strokeWidth={2}/>
+//         <polygon
+//             points="10,0 10,10 15,5"
+//             fill="black"
+//             stroke="black"
+//             strokeWidth="1"
+//         />
+//     </svg>
+// );
+//
+// const box = (
+//     <svg height={10} width={15}>
+//         <rect width={15} height={10} fill="white" stroke="black" strokeWidth={4}/>
+//     </svg>
+// );
 
-const box = (
-    <svg height={10} width={15}>
-        <rect width={15} height={10} fill="white" stroke="black" strokeWidth={4}/>
-    </svg>
+const tooltipS = (
+    <OverlayTrigger placement="right" overlay={<Tooltip id="tooltipS">{Locale.classes}</Tooltip>}><div>⬜</div></OverlayTrigger>
+);
+const tooltipR = (
+    <OverlayTrigger placement="right" overlay={<Tooltip id="tooltipS">{Locale.relationships}</Tooltip>}><div>➡</div></OverlayTrigger>
+);
+const tooltipPM = (
+    <OverlayTrigger placement="right" overlay={<Tooltip id="tooltipS">{Locale.packageModel}</Tooltip>}><div>📦</div></OverlayTrigger>
+);
+const tooltipD = (
+    <OverlayTrigger placement="right" overlay={<Tooltip id="tooltipS">{Locale.diagram}</Tooltip>}><div>🖼️</div></OverlayTrigger>
 );
 
 export class ElementPanel extends React.Component {
@@ -200,9 +213,11 @@ export class ElementPanel extends React.Component {
             if (this.state.package in StereotypePoolPackage){
                 selectedPkg = StereotypePoolPackage[this.state.package].map((cls) =>
                     <PanelNodeItem key={i++} model={{
-                        stereotype: cls,
-                        newNode: false
-                    }} name={cls.names[this.props.language]}/>)
+                        stereotype: cls.stereotype,
+                        class: cls,
+                        newNode: false,
+                        modelClass: true
+                    }} name={cls.name}/>)
             }
         } else if (!Packages[this.state.package]){
             if (this.state.package in ClassPackage){
@@ -210,6 +225,7 @@ export class ElementPanel extends React.Component {
                     <PanelNodeItem key={i++} model={{
                         stereotype: cls.stereotype,
                         newNode: false,
+                        modelClass: false,
                         class: cls,
                         package: this.state.package
                     }} name={cls.names[this.props.language]}/>)
@@ -219,12 +235,13 @@ export class ElementPanel extends React.Component {
         return (
             <div className="stereotypePanel" id="stereotypePanel">
                 <Tabs id="stereotypePanelTabs" animation={false}>
-                    <Tab eventKey={1} title={box}>
+                    <Tab eventKey={1} title={tooltipS}>
                         <FormControl componentClass="select" bsSize="small" value={this.state.vocabulary}
                                      onChange={this.handleChangeVocabulary}>
                             {vocabularyPool}
                         </FormControl>
                         <div className="stereotypes">
+
                             {
                                 StereotypePool.map((stereotype, i) => {
                                     if (stereotype.source === this.state.vocabulary || this.state.vocabulary === "&*" || (this.state.vocabulary === "" && !VocabularyPool.includes(stereotype.source))){
@@ -237,7 +254,7 @@ export class ElementPanel extends React.Component {
                             }
                         </div>
                     </Tab>
-                    <Tab eventKey={2} title={arrow}>
+                    <Tab eventKey={2} title={tooltipR}>
                         <FormControl componentClass="select" bsSize="small" value={this.state.vocabulary}
                                      onChange={this.handleChangeVocabulary}>
                             {vocabularyPool}
@@ -254,22 +271,24 @@ export class ElementPanel extends React.Component {
                             }
                         )}
                     </Tab>
-                    <Tab eventKey={3} title={"P&M"}>
-                        <Button onClick={this.handleOpenNewModal}>{Locale.addPackage}</Button>
-                        <Button onClick={this.removePackage}>{Locale.removePackage}</Button>
+                    <Tab eventKey={3} title={tooltipPM}>
                         <FormControl componentClass="select" bsSize="small" value={this.state.package}
                                      onChange={this.handleChangePackage}>
                             {Object.keys(Packages).map((pkg) => (<option key={i++} value={pkg}>{Packages[pkg] ? "📄"+pkg : "✏"+pkg }</option>))}
                         </FormControl>
+                        <Button bsSize={"small"} onClick={this.handleOpenNewModal}>{Locale.addPackage}</Button>
                         {!Packages[this.state.package] ?
                             <Button onClick={this.handleOpenPackageModal} bsSize={"small"}>Manage</Button>
                             : ""}
-
+                        <Button bsSize={"small"} onClick={this.removePackage}>{Locale.removePackage}</Button>
+                        <hr/>
                             {selectedPkg}
-                    </Tab>
-                    <Tab eventKey={4} title={"D"}>
 
-                            <Button onClick={this.handleOpenModelModal} bsSize={"small"}>Manage</Button>
+
+                    </Tab>
+                    <Tab eventKey={4} title={tooltipD}>
+                            <div className="modelButton"><Button onClick={this.handleOpenModelModal} bsSize={"small"}>Manage</Button></div>
+                            <hr/>
                             {Object.keys(Models).map((model) => <PanelModelItem
                                 key={i++}
                                 selectedModel={this.props.selectedModel}
@@ -305,7 +324,7 @@ export class ElementPanel extends React.Component {
 
                         </FormGroup>
                         <h4>{Locale.createNew+Locale.model}</h4>
-                                <Form>
+                                <Form inline>
                                     <FormControl
                                         type="text"
                                         value={this.state.modelName}

@@ -5,7 +5,7 @@ import Modal from "react-bootstrap/lib/Modal";
 import Button from "react-bootstrap/lib/Button";
 import Table from "react-bootstrap/lib/Table";
 import {LinkEndPool, LinkPool, StereotypePool} from "../../../config/Variables";
-import {Form, FormControl, FormGroup, Tab, Tabs} from "react-bootstrap";
+import {Form, FormControl, FormGroup, Tab, Tabs, Tooltip} from "react-bootstrap";
 import * as SemanticWebInterface from "../../../interface/SemanticWebInterface";
 import {Defaults} from "../../../config/Defaults";
 import {Stereotype} from "../../../components/misc/Stereotype";
@@ -18,7 +18,8 @@ export class MenuSettingsLinks extends MenuAbstractDropdownModal {
             linkName: "",
             linkIRI: "",
             linkDescription: "",
-            linkSource: ""
+            linkSource: "",
+            linkSourceName: "",
         };
         this.focus = this.focus.bind(this);
         this.handleChangeLink = this.handleChangeLink.bind(this);
@@ -30,6 +31,7 @@ export class MenuSettingsLinks extends MenuAbstractDropdownModal {
         this.handleReplaceLinks = this.handleReplaceLinks.bind(this);
         this.deleteLink = this.deleteLink.bind(this);
         this.addLink = this.addLink.bind(this);
+        this.handleChangeLinkSourceName = this.handleChangeLinkSourceName.bind(this);
     }
 
     addLink() {
@@ -42,7 +44,7 @@ export class MenuSettingsLinks extends MenuAbstractDropdownModal {
     deleteLink() {
         if (this.state.link !== undefined){
             if (Object.entries(LinkPool).length > 1) {
-                delete LinkPool[this.state.link];
+                delete LinkPool[Object.keys(LinkPool)[this.state.link]];
             }
         }
     }
@@ -57,8 +59,8 @@ export class MenuSettingsLinks extends MenuAbstractDropdownModal {
 
     handleLoadLinks() {
         if (this.state.linkSource !== "") {
-            SemanticWebInterface.fetchRelationships(this.state.linkSource, Defaults.relationshipIRI, false, () => {
-                this.setState({status: ""});
+            SemanticWebInterface.fetchRelationships(this.state.linkSourceName, this.state.linkSource, Defaults.relationshipIRI, false, Defaults.sourceLanguage, () => {
+                this.setState({status: "", linkSourceName: "", linkSource: ""});
             });
         }
     }
@@ -69,6 +71,10 @@ export class MenuSettingsLinks extends MenuAbstractDropdownModal {
                 link: Object.keys(LinkPool)[0]
             });
         }
+    }
+
+    handleChangeLinkSourceName(event){
+        this.setState({linkSourceName: event.target.value});
     }
 
     handleChangeLink(event){
@@ -160,10 +166,14 @@ export class MenuSettingsLinks extends MenuAbstractDropdownModal {
                                     placeholder={Locale.stereotypeSourcePlaceholder}
                                     onChange={this.handleChangeLinkSource}
                                 />
+                                <FormControl
+                                    type="text"
+                                    value={this.state.linkSourceName}
+                                    placeholder={Locale.stereotypeSourceNamePlaceholder}
+                                    onChange={this.handleChangeLinkSourceName}
+                                />
                                 <Button onClick={this.handleLoadLinks}
                                         bsStyle="primary">{Locale.loadLinks}</Button>
-                                <Button onClick={this.handleReplaceLinks}
-                                        bsStyle="primary">{Locale.replaceLinks}</Button>
                             </Tab>
                         </Tabs>
 

@@ -50,7 +50,7 @@ export var GeneralizationPool = {};
 export var VocabularyPool = [];
 export var Packages = {};
 Packages[Locale.root] = false;
-export var MandatoryAttributePool = {};
+export var MandatoryAttributePool = {"&*": []};
 export var Models = {};
 Models[Locale.untitled] = "";
 //TODO: objectify relationships

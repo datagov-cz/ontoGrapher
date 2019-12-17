@@ -27,7 +27,7 @@ export class NodeCommonModel extends NodeModel {
             this.attributes[language] = [];
             if (stereotype !== undefined){
                 if (stereotype.source in MandatoryAttributePool){
-                    for (let attributeType in MandatoryAttributePool[stereotype.source]){
+                    for (let attributeType of MandatoryAttributePool[stereotype.source]){
                         this.attributes[language].push(new Attribute(attributeType, attributeType.name));
                     }
                 }
@@ -53,6 +53,7 @@ export class NodeCommonModel extends NodeModel {
                 this.model.nullPanel();
             }
         });
+        this.class.id = this.getID();
     }
 
     remove() {

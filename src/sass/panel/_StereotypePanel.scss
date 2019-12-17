@@ -11,6 +11,15 @@
   a {
     padding: 4px 6px !important;
   }
+  button {
+    border-radius: 0;
+  }
+  .modelButton{
+    text-align: center;
+    button{
+      width: 100%;
+    }
+  }
 }
 
 .stereotypes{
@@ -53,6 +62,12 @@
     -ms-user-select: none;
     user-select: none;
   }
+}
+
+hr {
+  margin: 2px 0px;
+  color: black;
+  border-top: 1px solid black;
 }
 
 .panelLinkItem {
