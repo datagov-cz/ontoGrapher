@@ -1,4 +1,5 @@
-import {CardinalityPool} from "../config/Variables";
+import {CardinalityPool, StereotypePool} from "../config/Variables";
+import {Stereotype} from "../components/misc/Stereotype";
 
 export function mergeObjects(object1, object2) {
     for (let key in object2) {
@@ -18,4 +19,14 @@ export function convertStringToBoolean(str: string){
 
 export function closeDropdown(){
     document.dispatchEvent(new MouseEvent('click'));
+}
+
+export function addSTP(input: Stereotype){
+    for (let stp in StereotypePool){
+        if (stp.iri === input.iri){
+            return false;
+        }
+    }
+    StereotypePool.push(input);
+    return true;
 }

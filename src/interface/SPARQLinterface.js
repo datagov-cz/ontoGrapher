@@ -8,6 +8,7 @@ import {
     VocabularyPool
 } from "../config/Variables";
 import {AttributeType} from "../components/misc/AttributeType";
+import * as Helper from "../misc/Helper";
 
 export function getElementsAsStereotypes(name, jsonData, callback) {
     let query = [
@@ -30,7 +31,7 @@ export function getElementsAsStereotypes(name, jsonData, callback) {
             for (let result of data.results.bindings){
                 getSubclasses(result.term.value, jsonData,"http://www.w3.org/2000/01/rdf-schema#subPropertyOf",name);
                 if (jsonData.classIRI.indexOf(result.termType.value) > -1){
-                    StereotypePool.push(new Stereotype(result.termLabel.value,result.term.value,result.termDefinition === undefined ? "" : result.termDefinition.value,name));
+                    Helper.addSTP(new Stereotype(result.termLabel.value,result.term.value,result.termDefinition === undefined ? "" : result.termDefinition.value,name));
                 } else if (jsonData.relationshipIRI.indexOf(result.termType.value) > -1) {
                     LinkPool[result.termLabel.value] = ["UnfilledArrow",true,false,[],result.term.value,result.termDefinition === undefined ? "" : result.termDefinition.value,name];
                 }
@@ -80,7 +81,7 @@ export function getSubclasses(superIRI: string, jsonData, subclassIRI, name){
                         result.termLabel.value
                     ;
                 if (jsonData.classIRI.indexOf(result.termType.value) > -1){
-                    StereotypePool.push(new Stereotype(nameLabel, result.term.value,result.termDefinition === undefined ? "" : result.termDefinition.value, name));
+                    Helper.addSTP(new Stereotype(nameLabel, result.term.value,result.termDefinition === undefined ? "" : result.termDefinition.value, name));
                 } else if (jsonData.relationshipIRI.indexOf(result.termType.value) > -1) {
                     LinkPool[nameLabel] = ["UnfilledArrow",true,false,[],result.term.value,result.termDefinition === undefined ? "" : result.termDefinition.value, name];
                 }

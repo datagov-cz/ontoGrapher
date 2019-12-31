@@ -1,11 +1,4 @@
-import {
-    AttributeTypePool,
-    GeneralizationPool,
-    LanguagePool,
-    LinkPool,
-    StereotypePool,
-    VocabularyPool
-} from "../config/Variables";
+import {AttributeTypePool, GeneralizationPool, LanguagePool, LinkPool, StereotypePool} from "../config/Variables";
 import {OntoDiagramModel} from "../diagram/OntoDiagramModel";
 import React from "react";
 import {Locale} from "../config/locale/Locale";
@@ -13,6 +6,7 @@ import {Stereotype} from "../components/misc/Stereotype";
 import {Defaults} from "../config/Defaults";
 import * as N3 from "sparqljs";
 import {isBlankNode} from "n3/lib/N3Util";
+import * as Helper from "../misc/Helper";
 
 export function fetchClasses(name: string, source: string, typeIRI: string, replace: boolean, language: string, callback) {
     const N3 = require('n3');
@@ -45,7 +39,7 @@ export function fetchClasses(name: string, source: string, typeIRI: string, repl
         }
         for (let key in result){
             if (result[key].class){
-                StereotypePool.push(new Stereotype(result[key].label,key,"", name));
+                Helper.addSTP(new Stereotype(result[key].label,key,"", name));
             }
         }
         callback();

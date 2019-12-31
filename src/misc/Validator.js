@@ -198,7 +198,7 @@ export function validateSettingsWithCurrentSettings(source: string) {
             switch (item.type) {
                 case "Stereotype":
                     let compareStereotype = new Stereotype(item.name, item.annotations[0].value[0], item.annotations[1].value[0],item.annotations[2].value[0])
-                    if (!compareStereotype in StereotypePool) {
+                    if (!(StereotypePool.includes(compareStereotype))) {
                         errors.push(Locale.errorStereotypeSourceNotFound + " " + item.name + " " + Locale.errorInExternalMetamodel);
                     }
                     break;
