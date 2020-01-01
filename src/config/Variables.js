@@ -53,7 +53,6 @@ Packages[Locale.root] = false;
 export var MandatoryAttributePool = {"&*": []};
 export var Models = {};
 Models[Locale.untitled] = "";
-//TODO: objectify relationships
 export var LinkPool = {};
 export var LinkPoolPackage = {};
 export var StereotypePoolPackage = {};

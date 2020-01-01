@@ -240,7 +240,7 @@ export class ElementPanel extends React.Component {
                                      onChange={this.handleChangeVocabulary}>
                             {vocabularyPool}
                         </FormControl>
-                        <div className="stereotypes">
+                        <div className="elements">
 
                             {
                                 StereotypePool.map((stereotype, i) => {
@@ -259,6 +259,7 @@ export class ElementPanel extends React.Component {
                                      onChange={this.handleChangeVocabulary}>
                             {vocabularyPool}
                         </FormControl>
+                        <div className="elements">
                         {Object.keys(LinkPool).map((link) => {
                                 if (LinkPool[link][6] === this.state.vocabulary || this.state.vocabulary === "&*" || (this.state.vocabulary === "" && !VocabularyPool.includes(LinkPool[link][6]) )){
                                     return <PanelLinkItem
@@ -270,6 +271,7 @@ export class ElementPanel extends React.Component {
                                 }
                             }
                         )}
+                        </div>
                     </Tab>
                     <Tab eventKey={3} title={tooltipPM}>
                         <FormControl componentClass="select" bsSize="small" value={this.state.package}
@@ -282,19 +284,22 @@ export class ElementPanel extends React.Component {
                             : ""}
                         <Button bsSize={"small"} onClick={this.removePackage}>{Locale.removePackage}</Button>
                         <hr/>
+                        <div className="elements">
                             {selectedPkg}
-
+                        </div>
 
                     </Tab>
                     <Tab eventKey={4} title={tooltipD}>
                             <div className="modelButton"><Button onClick={this.handleOpenModelModal} bsSize={"small"}>Manage</Button></div>
                             <hr/>
+                        <div className="elements">
                             {Object.keys(Models).map((model) => <PanelModelItem
                                 key={i++}
                                 selectedModel={this.props.selectedModel}
                                 handleChangeSelectedModel={this.handleChangeSelectedModel}
                                 model={model}
                             />)}
+                        </div>
                     </Tab>
                 </Tabs>
 

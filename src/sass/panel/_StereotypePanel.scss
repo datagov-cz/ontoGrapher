@@ -3,7 +3,7 @@
   float:left;
   max-width: 300px;
   min-width: 100px;
-  overflow: auto;
+  overflow: hidden;
   height: calc(100vh - 35px);
   white-space: nowrap;
   border: solid #000;
@@ -22,9 +22,10 @@
   }
 }
 
-.stereotypes{
-  overflow: auto;
+.elements{
+  overflow: scroll;
   white-space: nowrap;
+  height: 100vh;
 }
 
 .stereotypePanelItem {

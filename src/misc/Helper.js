@@ -22,7 +22,7 @@ export function closeDropdown(){
 }
 
 export function addSTP(input: Stereotype){
-    for (let stp in StereotypePool){
+    for (let stp of StereotypePool){
         if (stp.iri === input.iri){
             return false;
         }

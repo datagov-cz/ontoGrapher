@@ -1,4 +1,4 @@
-import {AttributeTypePool, GeneralizationPool, LanguagePool, LinkPool, StereotypePool} from "../config/Variables";
+import {AttributeTypePool, GeneralizationPool, LanguagePool, LinkPool, VocabularyPool} from "../config/Variables";
 import {OntoDiagramModel} from "../diagram/OntoDiagramModel";
 import React from "react";
 import {Locale} from "../config/locale/Locale";
@@ -32,8 +32,10 @@ export function fetchClasses(name: string, source: string, typeIRI: string, repl
                                 if (quad.object.value === typeIRI){
                                     result[quad.subject.value]["class"] = true;
                                 }
+                                break;
                             case "http://www.w3.org/2000/01/rdf-schema#label":
                                 result[quad.subject.value]["label"] = quad.object.value;
+                                break;
                         }
                     }
         }

@@ -8,6 +8,7 @@ import {StereotypePool} from "../../../config/Variables";
 import * as SemanticWebInterface from "../../../interface/SemanticWebInterface";
 import {Stereotype} from "../../../components/misc/Stereotype";
 import {Defaults} from "../../../config/Defaults";
+import * as Helper from "../../../misc/Helper";
 
 export class MenuSettingsNodes extends MenuAbstractDropdownModal {
     constructor(props){
@@ -44,7 +45,7 @@ export class MenuSettingsNodes extends MenuAbstractDropdownModal {
 
     addNode() {
         if (this.state.stereotypeName !== "" && this.state.stereotypeRDF !== "") {
-            StereotypePool.push(new Stereotype(this.state.stereotypeName,this.state.stereotypeIRI,this.state.stereotypeDescription,""));
+            Helper.addSTP(new Stereotype(this.state.stereotypeName,this.state.stereotypeIRI,this.state.stereotypeDescription,""));
             this.setState({stereotypeRDF: "", stereotypeName: "", stereotypeDescription: ""});
         }
     }
