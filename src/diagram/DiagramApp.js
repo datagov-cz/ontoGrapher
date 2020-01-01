@@ -623,7 +623,7 @@ export class DiagramApp extends React.Component {
                         contextMenuLink={this.state.contextMenuLink}
                         updateLinkPosition={this.updateLinkPosition}
                     />
-                    <div className="build">build 90</div>
+                    {/*<div className="build">build 90</div>*/}
                 </div>
             );
         }
