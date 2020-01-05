@@ -17,7 +17,7 @@ import {
     globalCount,
     ClassPackage, HiddenRelationships, HiddenInstances
 } from "../config/Variables";
-import {Stereotype} from "../components/misc/Stereotype";
+import {SourceData} from "../components/misc/SourceData";
 import {Class} from "../components/misc/Class";
 
 

@@ -5,17 +5,17 @@ import {OntoDiagramModel} from "../../diagram/OntoDiagramModel";
 import * as _ from "lodash";
 import {HiddenInstances, LanguagePool, MandatoryAttributePool} from "../../config/Variables";
 import {Locale} from "../../config/locale/Locale";
-import {Stereotype} from "../misc/Stereotype";
+import {SourceData} from "../misc/SourceData";
 import {Attribute} from "../misc/Attribute";
 import {Class} from "../misc/Class";
 
 export class NodeCommonModel extends NodeModel {
-    stereotype: Stereotype;
+    stereotype: SourceData;
     attributes: {};
     names: {};
     model: OntoDiagramModel;
 
-    constructor(name: string, cls: Class, stereotype: Stereotype, model: OntoDiagramModel) {
+    constructor(name: string, cls: Class, stereotype: SourceData, model: OntoDiagramModel) {
         super("common");
         this.model = model;
         this.names = {};

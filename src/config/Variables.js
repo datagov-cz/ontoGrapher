@@ -1,7 +1,7 @@
 import {Locale} from "./locale/Locale";
 import {Cardinality} from "../components/misc/Cardinality";
 import {AttributeType} from "../components/misc/AttributeType";
-import {Stereotype} from "../components/misc/Stereotype";
+import {SourceData} from "../components/misc/SourceData";
 
 // Represents the pool of available stereotypes.
 

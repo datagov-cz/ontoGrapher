@@ -9,7 +9,7 @@ import {
 import {Constraint} from "../components/misc/Constraint";
 import * as Helper from "../misc/Helper";
 import {Cardinality} from "../components/misc/Cardinality";
-import {Stereotype} from "../components/misc/Stereotype";
+import {SourceData} from "../components/misc/SourceData";
 
 export function exportSettings(name: string, prefix: string, URI: string) {
     const eCore = require('ecore/dist/ecore.xmi');
@@ -275,7 +275,7 @@ export function importSettings(source: string) {
         if ("type" in item) {
             switch (item.type) {
                 case "Stereotype":
-                    Helper.addSTP(new Stereotype(item.name,item.annotations[0].value[0],item.annotations[1].value[0],item.annotations[2].value[0]));
+                    Helper.addSTP(new SourceData(item.name,item.annotations[0].value[0],item.annotations[1].value[0],item.annotations[2].value[0]));
                     if (!VocabularyPool.includes(item.annotations[2].value[0])){
                         VocabularyPool.push(item.annotations[2].value[0]);
                     }

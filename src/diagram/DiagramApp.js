@@ -567,6 +567,7 @@ export class DiagramApp extends React.Component {
                             <MenuSettingsConstraints
                                 eventKey={eventKeyCounter++}
                                 name={Locale.constraintSettings}
+                                canvas={this.diagramCanvas.current}
                                 />
                             {/*<MenuSettingsVocabularies*/}
                             {/*    eventKey={eventKeyCounter++}*/}

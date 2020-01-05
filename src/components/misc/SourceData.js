@@ -1,4 +1,4 @@
-export class Stereotype {
+export class SourceData {
     name: string;
     iri: string;
     description: string;

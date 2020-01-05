@@ -9,7 +9,7 @@ export var LocaleImportVocabularies = {
     step2explain: "ontoGrapher will use the provided endpoint to query the source for nodes that are ",
     placeholderLanguage: "Language code",
     placeholderTypeIRI: "Predicate IRI",
-    sourceStereotypeIRIPlaceholder: "Stereotype IRI",
+    sourceStereotypeIRIPlaceholder: "SourceData IRI",
     sourceRelationshipIRIPlaceholder: "Relationship IRI",
     sourceAttributeIRIPlaceholder: "Attribute IRI",
     step3: "Next, enter the IRIs which denote the types that stereotypes, relationships and attributes fall under.",

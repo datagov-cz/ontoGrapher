@@ -6,7 +6,7 @@ import Button from "react-bootstrap/lib/Button";
 import {Form, FormControl, FormGroup, Tab, Tabs} from "react-bootstrap";
 import {StereotypePool} from "../../../config/Variables";
 import * as SemanticWebInterface from "../../../interface/SemanticWebInterface";
-import {Stereotype} from "../../../components/misc/Stereotype";
+import {SourceData} from "../../../components/misc/SourceData";
 import {Defaults} from "../../../config/Defaults";
 import * as Helper from "../../../misc/Helper";
 
@@ -45,7 +45,7 @@ export class MenuSettingsNodes extends MenuAbstractDropdownModal {
 
     addNode() {
         if (this.state.stereotypeName !== "" && this.state.stereotypeRDF !== "") {
-            Helper.addSTP(new Stereotype(this.state.stereotypeName,this.state.stereotypeIRI,this.state.stereotypeDescription,""));
+            Helper.addSTP(new SourceData(this.state.stereotypeName,this.state.stereotypeIRI,this.state.stereotypeDescription,""));
             this.setState({stereotypeRDF: "", stereotypeName: "", stereotypeDescription: ""});
         }
     }

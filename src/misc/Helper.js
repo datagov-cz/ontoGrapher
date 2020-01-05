@@ -1,5 +1,5 @@
 import {CardinalityPool, StereotypePool} from "../config/Variables";
-import {Stereotype} from "../components/misc/Stereotype";
+import {SourceData} from "../components/misc/SourceData";
 
 export function mergeObjects(object1, object2) {
     for (let key in object2) {
@@ -21,7 +21,7 @@ export function closeDropdown(){
     document.dispatchEvent(new MouseEvent('click'));
 }
 
-export function addSTP(input: Stereotype){
+export function addSTP(input: SourceData){
     for (let stp of StereotypePool){
         if (stp.iri === input.iri){
             return false;

@@ -11,7 +11,7 @@ export class LinkCommonWidget extends DefaultLinkWidget {
 
     /*
         label0 : Start cardinality
-        label1 : Stereotype
+        label1 : SourceData
         label2 : End cardinality
         label3 : Custom label
      */

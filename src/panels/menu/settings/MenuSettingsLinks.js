@@ -8,7 +8,7 @@ import {LinkEndPool, LinkPool, StereotypePool} from "../../../config/Variables";
 import {Form, FormControl, FormGroup, Tab, Tabs, Tooltip} from "react-bootstrap";
 import * as SemanticWebInterface from "../../../interface/SemanticWebInterface";
 import {Defaults} from "../../../config/Defaults";
-import {Stereotype} from "../../../components/misc/Stereotype";
+import {SourceData} from "../../../components/misc/SourceData";
 
 export class MenuSettingsLinks extends MenuAbstractDropdownModal {
     constructor(props){

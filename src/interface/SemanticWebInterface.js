@@ -2,7 +2,7 @@ import {AttributeTypePool, GeneralizationPool, LanguagePool, LinkPool, Vocabular
 import {OntoDiagramModel} from "../diagram/OntoDiagramModel";
 import React from "react";
 import {Locale} from "../config/locale/Locale";
-import {Stereotype} from "../components/misc/Stereotype";
+import {SourceData} from "../components/misc/SourceData";
 import {Defaults} from "../config/Defaults";
 import * as N3 from "sparqljs";
 import {isBlankNode} from "n3/lib/N3Util";
@@ -41,7 +41,7 @@ export function fetchClasses(name: string, source: string, typeIRI: string, repl
         }
         for (let key in result){
             if (result[key].class){
-                Helper.addSTP(new Stereotype(result[key].label,key,"", name));
+                Helper.addSTP(new SourceData(result[key].label,key,"", name));
             }
         }
         callback();

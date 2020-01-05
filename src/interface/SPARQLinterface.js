@@ -1,4 +1,4 @@
-import {Stereotype} from "../components/misc/Stereotype";
+import {SourceData} from "../components/misc/SourceData";
 import {
     Packages,
     LinkPool, LinkPoolPackage,
@@ -31,7 +31,7 @@ export function getElementsAsStereotypes(name, jsonData, callback) {
             for (let result of data.results.bindings){
                 getSubclasses(result.term.value, jsonData,"http://www.w3.org/2000/01/rdf-schema#subPropertyOf",name);
                 if (jsonData.classIRI.indexOf(result.termType.value) > -1){
-                    Helper.addSTP(new Stereotype(result.termLabel.value,result.term.value,result.termDefinition === undefined ? "" : result.termDefinition.value,name));
+                    Helper.addSTP(new SourceData(result.termLabel.value,result.term.value,result.termDefinition === undefined ? "" : result.termDefinition.value,name));
                 } else if (jsonData.relationshipIRI.indexOf(result.termType.value) > -1) {
                     LinkPool[result.termLabel.value] = ["UnfilledArrow",true,false,[],result.term.value,result.termDefinition === undefined ? "" : result.termDefinition.value,name];
                 }
@@ -81,7 +81,7 @@ export function getSubclasses(superIRI: string, jsonData, subclassIRI, name){
                         result.termLabel.value
                     ;
                 if (jsonData.classIRI.indexOf(result.termType.value) > -1){
-                    Helper.addSTP(new Stereotype(nameLabel, result.term.value,result.termDefinition === undefined ? "" : result.termDefinition.value, name));
+                    Helper.addSTP(new SourceData(nameLabel, result.term.value,result.termDefinition === undefined ? "" : result.termDefinition.value, name));
                 } else if (jsonData.relationshipIRI.indexOf(result.termType.value) > -1) {
                     LinkPool[nameLabel] = ["UnfilledArrow",true,false,[],result.term.value,result.termDefinition === undefined ? "" : result.termDefinition.value, name];
                 }
@@ -117,7 +117,7 @@ export function getElementsAsPackage(name, jsonData, callback) {
                     if (!(name in StereotypePoolPackage)){
                         StereotypePoolPackage[name] = [];
                     }
-                    StereotypePoolPackage[name].push(new Stereotype(result.termLabel.value,result.term.value,result.termDefinition === undefined ? "" : result.termDefinition.value,name));
+                    StereotypePoolPackage[name].push(new SourceData(result.termLabel.value,result.term.value,result.termDefinition === undefined ? "" : result.termDefinition.value,name));
                 }
                 // else if (jsonData.relationshipIRI.indexOf(result.termType.value) > -1) {
                 //     if (!(name in LinkPoolPackage)){

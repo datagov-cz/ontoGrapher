@@ -3,7 +3,7 @@ import {Locale} from "../config/locale/Locale";
 import {AttributeTypePool, CardinalityPool, LanguagePool, LinkPool, StereotypePool} from "../config/Variables";
 import * as Helper from "./Helper";
 import {fetchSettings} from "../interface/ImportExportInterface";
-import {Stereotype} from "../components/misc/Stereotype";
+import {SourceData} from "../components/misc/SourceData";
 
 export function validateSettingsWithModel(model: OntoDiagramModel, source: string) {
     let linkPool = [];
@@ -197,7 +197,7 @@ export function validateSettingsWithCurrentSettings(source: string) {
         if (item.type !== undefined) {
             switch (item.type) {
                 case "Stereotype":
-                    let compareStereotype = new Stereotype(item.name, item.annotations[0].value[0], item.annotations[1].value[0],item.annotations[2].value[0])
+                    let compareStereotype = new SourceData(item.name, item.annotations[0].value[0], item.annotations[1].value[0],item.annotations[2].value[0])
                     if (!(StereotypePool.includes(compareStereotype))) {
                         errors.push(Locale.errorStereotypeSourceNotFound + " " + item.name + " " + Locale.errorInExternalMetamodel);
                     }
