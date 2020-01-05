@@ -151,10 +151,13 @@ export class DiagramCanvas extends React.Component {
                                     for (let linkID in this.engine.getDiagramModel().getNode(nodeID).class.connections){
                                         if (linkID in HiddenRelationships){
                                             let hiddenNodeID = HiddenRelationships[linkID].getTargetNode().getID();
+                                            let node;
                                             if (hiddenNodeID in HiddenInstances){
-                                                let node = _.cloneDeep(HiddenInstances[hiddenNodeID]);
+                                                node = _.cloneDeep(HiddenInstances[hiddenNodeID]);
                                                 this.engine.getDiagramModel().addNode(node);
                                                 delete HiddenInstances[hiddenNodeID];
+                                            } else {
+                                                continue;
                                             }
                                             let link = _.cloneDeep(HiddenRelationships[linkID]);
                                             let port = node.getPort(link.getTargetPort().getName());
