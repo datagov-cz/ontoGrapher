@@ -1,0 +1,50 @@
+{
+  "@context": "http://schema.org/",
+  "@graph": [
+    {
+      "id": "http://kodi.cz/ZS-GOV",
+      "type": "http://kodi.cz/Vocabulary",
+      "http://kodi.cz/attribute": [
+        {
+          "id": "http://kodi.cz/atr1"
+        },
+        {
+          "id": "http://kodi.cz/atr2"
+        }
+      ],
+      "http://kodi.cz/classIRI": "http://www.w3.org/2002/07/owl#Class",
+      "http://kodi.cz/definitionIRI": "http://www.w3.org/2004/02/skos/core#definition",
+      "http://kodi.cz/endpoint": "https://slovník.gov.cz/sparql",
+      "http://kodi.cz/labelIRI": "http://www.w3.org/2004/02/skos/core#prefLabel",
+      "http://kodi.cz/language": "cs",
+      "http://kodi.cz/propertyIRI": "http://www.w3.org/2004/02/skos/core#inScheme",
+      "http://kodi.cz/relationshipIRI": "http://www.w3.org/2002/07/owl#ObjectProperty",
+      "http://kodi.cz/sourceIRI": "https://slovník.gov.cz/základní/glosář",
+      "http://kodi.cz/type": "stereotype"
+    },
+    {
+      "id": "http://kodi.cz/atr1",
+      "type": "http://kodi.cz/Attribute",
+      "http://kodi.cz/array": false,
+      "http://kodi.cz/iri": {
+        "id": "rdfs:label"
+      },
+      "http://kodi.cz/name": "term label",
+      "http://kodi.cz/type": {
+        "id": "xsd:string"
+      }
+    },
+    {
+      "id": "http://kodi.cz/atr2",
+      "type": "http://kodi.cz/Attribute",
+      "http://kodi.cz/array": true,
+      "http://kodi.cz/iri": {
+        "id": "rdfs:label"
+      },
+      "http://kodi.cz/name": "term label",
+      "http://kodi.cz/type": {
+        "id": "xsd:string"
+      }
+    }
+  ]
+}
