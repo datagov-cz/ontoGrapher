@@ -150,7 +150,6 @@ export class LinkCommonModel extends DefaultLinkModel {
 
     remove() {
         delete this.getSourceNode().class.connections[this.getID()];
-        delete HiddenRelationships[this.getID()];
         if (this.sourcePort) {
             this.sourcePort.removeLink(this);
         }
