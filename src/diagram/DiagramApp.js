@@ -506,11 +506,11 @@ export class DiagramApp extends React.Component {
                                     name={Locale.menuPanelSaveDiagram}
                                     serialize={this.serializeProject}
                                 />
-                                <MenuFileExportDiagram
-                                    eventKey={eventKeyCounter++}
-                                    name={Locale.menuPanelExportDiagram}
-                                    canvas={this.diagramCanvas.current}
-                                />
+                                {/*<MenuFileExportDiagram*/}
+                                {/*    eventKey={eventKeyCounter++}*/}
+                                {/*    name={Locale.menuPanelExportDiagram}*/}
+                                {/*    canvas={this.diagramCanvas.current}*/}
+                                {/*/>*/}
                             </MenuDropdownList>
                         <MenuDropdownList name={Locale.menuPanelView}>
                             <MenuViewCenter

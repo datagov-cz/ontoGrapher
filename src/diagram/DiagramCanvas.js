@@ -147,32 +147,33 @@ export class DiagramCanvas extends React.Component {
                                 node.y = points.y;
                                 this.engine.getDiagramModel().addNode(node);
                             } else {
-                                for (let nodeID in this.engine.getDiagramModel().getNodes()){
-                                    for (let linkID in this.engine.getDiagramModel().getNode(nodeID).class.connections){
-                                        if (linkID in HiddenRelationships){
-                                            let hiddenNodeID = HiddenRelationships[linkID].getTargetNode().getID();
-                                            let node;
-                                            if (hiddenNodeID in HiddenInstances){
-                                                node = _.cloneDeep(HiddenInstances[hiddenNodeID]);
-                                                this.engine.getDiagramModel().addNode(node);
-                                                delete HiddenInstances[hiddenNodeID];
-                                            } else {
-                                                continue;
-                                            }
-                                            let link = _.cloneDeep(HiddenRelationships[linkID]);
-                                            let port = node.getPort(link.getTargetPort().getName());
-                                            link.setTargetPort(port);
-                                            //link.getLastPoint().updateLocation(this.engine.getPortCenter(port));
+                                if (cls.id in HiddenInstances){
+                                    let node = this.engine.getNodeFactory("common").getNewInstance();
+                                    node.setParent(this.engine.getDiagramModel());
+                                    node.model = this.engine.getDiagramModel();
+                                    node.deSerialize(HiddenInstances[cls.id], this.engine);
+                                    node.setHeight();
+                                    for (let port in node.getPorts()){
+                                        node.getPorts()[port].model = this.engine.getDiagramModel();
+                                    }
+                                    node.x = points.x;
+                                    node.y = points.y;
+                                    this.engine.getDiagramModel().addNode(node);
+                                    delete HiddenInstances[cls.id];
+                                    let nodes = this.engine.getDiagramModel().getNodes();
+                                    for (let rel in HiddenRelationships){
+                                        let link = HiddenRelationships[rel];
+                                        if (link.getTargetNode().getID() in nodes && link.getSourceNode().getID() in nodes){
                                             this.engine.getDiagramModel().addLink(link);
-                                            delete HiddenRelationships[link];
+                                            link = this.engine.getDiagramModel().getLinks()[link.getID()];
+                                            let sourcePort = nodes[link.getSourceNode().getID()].getPorts()[link.getSourcePort().getName()];
+                                            let targetPort = nodes[link.getTargetNode().getID()].getPorts()[link.getTargetPort().getName()];
+                                            link.setSourcePort(sourcePort);
+                                            link.setTargetPort(targetPort);
+                                            link.updateLocationAfterPaste(points.x, points.y, cls.id === sourcePort.getNode().getID() ? "source" : "target");
                                         }
                                     }
                                 }
-                            }
-                            if (cls.id in HiddenInstances){
-                                let node = _.cloneDeep(HiddenInstances[cls.id]);
-                                this.engine.getDiagramModel().addNode(node);
-                                delete HiddenInstances[cls.id];
                             }
                         }
                         this.forceUpdate();
@@ -193,3 +194,4 @@ export class DiagramCanvas extends React.Component {
         );
     }
 }
+;

@@ -19,6 +19,7 @@ export class LinkCommonModel extends DefaultLinkModel {
     targetCardinality: Cardinality;
     linkEnd: string;
     labeled: boolean;
+
     constructor(model: OntoDiagramModel) {
         super();
         this.type = "link-common";
@@ -31,8 +32,8 @@ export class LinkCommonModel extends DefaultLinkModel {
         this.notes = {};
         this.constraints = [];
         this.color = "black";
-        this.sourceCardinality = new Cardinality(Locale.none,Locale.none);
-        this.targetCardinality = new Cardinality(Locale.none,Locale.none);
+        this.sourceCardinality = new Cardinality(Locale.none, Locale.none);
+        this.targetCardinality = new Cardinality(Locale.none, Locale.none);
         for (let language in LanguagePool) {
             if (this.names[language] === undefined) {
                 this.names[language] = "";
@@ -45,7 +46,7 @@ export class LinkCommonModel extends DefaultLinkModel {
             this.addLabel("");
             this.addLabel(this.targetCardinality.getString() === Locale.none ? "" : this.targetCardinality);
             this.addLabel("");
-            if (LinkPool[this.linkType][1]){
+            if (LinkPool[this.linkType][1]) {
                 this.addDescriptorLabel();
             }
             this.linkEnd = LinkPool[this.linkType][0];
@@ -72,16 +73,61 @@ export class LinkCommonModel extends DefaultLinkModel {
         this.descriptor = true;
     }
 
-    createConstraint(constraint: Constraint){
+    updateLocationAfterPaste(mx: number, my: number, src: string) {
+        let x, y;
+        if (src === "source"){
+            switch (this.getSourcePort().getName()) {
+                case "left":
+                    x = mx;
+                    y = my + (this.getSourceNode().height / 2);
+                    break;
+                case "right":
+                    x = mx + 200;
+                    y = my + (this.getSourceNode().height / 2);
+                    break;
+                case "top":
+                    x = mx + (200 / 2);
+                    y = my;
+                    break;
+                case "bottom":
+                    x = mx + (200 / 2);
+                    y = my + (this.getSourceNode().height);
+                    break;
+            }
+            this.getFirstPoint().updateLocation({x: x, y: y});
+        } else {
+            switch (this.getTargetPort().getName()) {
+                case "left":
+                    x = mx;
+                    y = my + (this.getTargetNode().height / 2);
+                    break;
+                case "right":
+                    x = mx + 200;
+                    y = my + (this.getTargetNode().height / 2);
+                    break;
+                case "top":
+                    x = mx + (200 / 2);
+                    y = my;
+                    break;
+                case "bottom":
+                    x = mx + (200 / 2);
+                    y = my + (this.getTargetNode().height);
+                    break;
+            }
+            this.getLastPoint().updateLocation({x: x,y: y});
+        }
+    }
+
+    createConstraint(constraint: Constraint) {
         this.constraints.push(constraint);
     }
 
-    removeConstraint(constraint: Constraint){
-        this.constraints.splice(this.constraints.indexOf(constraint),1);
+    removeConstraint(constraint: Constraint) {
+        this.constraints.splice(this.constraints.indexOf(constraint), 1);
     }
 
-    removeConstraintByIndex(index: number){
-        this.constraints.splice(index,1);
+    removeConstraintByIndex(index: number) {
+        this.constraints.splice(index, 1);
     }
 
     setTargetPort(port: PortModel) {
@@ -94,10 +140,10 @@ export class LinkCommonModel extends DefaultLinkModel {
         this.targetPort = port;
         this.iterateListeners((listener: LinkModelListener, event) => {
             if (listener.targetPortChanged) {
-                listener.targetPortChanged({ ...event, port: port });
+                listener.targetPortChanged({...event, port: port});
             }
         });
-        if (this.targetPort !== null){
+        if (this.targetPort !== null) {
             this.getSourceNode().class.connections[this.getID()] = this.targetPort.getNode().getID();
         }
     }
@@ -163,8 +209,8 @@ export class LinkCommonModel extends DefaultLinkModel {
         this.dashed = ob.dashed;
         this.notes = ob.notes;
         this.constraints = [];
-        for (let constraint of ob.constraints){
-            this.constraints.push(new Constraint(constraint.statement,constraint.linkType));
+        for (let constraint of ob.constraints) {
+            this.constraints.push(new Constraint(constraint.statement, constraint.linkType));
         }
         this.descriptor = ob.descriptor;
         this.linkEnd = ob.linkEnd;
@@ -201,27 +247,27 @@ export class LinkCommonModel extends DefaultLinkModel {
         this.labels[2].setLabel(str);
     }
 
-    getSourceCardinality(){
+    getSourceCardinality() {
         return this.sourceCardinality.getString();
     }
 
-    getTargetCardinality(){
+    getTargetCardinality() {
         return this.targetCardinality.getString();
     }
 
-    getLinktype(){
+    getLinktype() {
         return this.linkType;
     }
 
-    getName(language: string){
+    getName(language: string) {
         return this.names[language];
     }
 
-    getSourceNode(){
+    getSourceNode() {
         return this.getSourcePort().getParent();
     }
 
-    getTargetNode(){
+    getTargetNode() {
         return this.getTargetPort().getParent();
     }
 }

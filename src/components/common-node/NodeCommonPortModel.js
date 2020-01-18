@@ -5,6 +5,8 @@ import {LinkCommonModel} from "../common-link/LinkCommonModel";
 
 export class NodeCommonPortModel extends PortModel {
     model: OntoDiagramModel;
+    x: number;
+    y: number;
 
     constructor(pos: string = "port", model: OntoDiagramModel) {
         super(pos, "common");
@@ -27,5 +29,12 @@ export class NodeCommonPortModel extends PortModel {
 
     createLinkModel(): LinkModel {
         return new LinkCommonModel(this.model);
+    }
+
+    updateCoords({ x, y, width, height }: { x: number; y: number; width: number; height: number }) {
+        this.x = x;
+        this.y = y;
+        this.width = width;
+        this.height = height;
     }
 }

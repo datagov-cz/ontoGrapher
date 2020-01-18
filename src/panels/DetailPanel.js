@@ -202,7 +202,7 @@ export class DetailPanel extends React.Component {
         }
 
     }
-    //TODO : languages
+
     processDialogue() {
         if (this.state.names[this.props.language] !== "") {
             this.props.panelObject.setName(this.state.names[this.props.language], this.props.language);
@@ -264,7 +264,7 @@ export class DetailPanel extends React.Component {
                 newAttrType2: 0
             });
             this.props.updateLinkPosition(this.props.panelObject);
-
+            this.props.panelObject.setHeight();
 
         }
     }
@@ -272,6 +272,7 @@ export class DetailPanel extends React.Component {
     deleteAttribute() {
         this.props.panelObject.removeAttributeByIndex(this.state.attribute);
         this.setState({attribute: 0});
+        this.props.panelObject.setHeight();
         this.forceUpdate();
         this.props.updateLinkPositionDelete(this.props.panelObject);
     }

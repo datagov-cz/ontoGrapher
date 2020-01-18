@@ -6,6 +6,7 @@ export class Class {
     names: {};
     //link: node
     connections: {};
+    connectionsTo:  {};
     id: string;
 
     constructor(stereotype: SourceData, name: string){
@@ -15,5 +16,6 @@ export class Class {
             this.names[language] = name;
         }
         this.connections = {};
+        this.connectionsTo = {};
     }
 }

@@ -53,11 +53,19 @@ export class NodeCommonModel extends NodeModel {
                 this.model.nullPanel();
             }
         });
-        this.class.id = this.getID();
+        if (this.class !== undefined){
+            this.class.id = this.getID();
+        }
+        this.height = this.setHeight();
     }
 
+    setHeight(){
+        this.height = 48 + (this.attributes[Object.keys(this.attributes)[0]].length * 15);
+    }
+
+
     remove() {
-        HiddenInstances[this.getID()] = _.cloneDeep(this);
+        HiddenInstances[this.getID()] = this.serialize();
         _.forEach(this.ports, port => {
             _.forEach(port.getLinks(), link => {
                 link.hide();

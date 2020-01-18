@@ -15,7 +15,7 @@ export class MenuDropdownList extends React.Component {
                     title={this.props.name}
                     bsSize="small"
                     id={this.props.name}
-                    onSelect={() => {console.log("baf");}}
+                    onSelect={() => {}}
                 >
                     {this.props.children}
                 </DropdownButton>
