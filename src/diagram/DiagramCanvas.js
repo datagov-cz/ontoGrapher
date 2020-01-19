@@ -171,8 +171,9 @@ export class DiagramCanvas extends React.Component {
                                             link.setSourcePort(sourcePort);
                                             link.setTargetPort(targetPort);
                                             link.updateLocationAfterPaste(points.x, points.y, cls.id === sourcePort.getNode().getID() ? "source" : "target");
+                                            link.updateLocationAfterPaste(targetPort.getNode().x, targetPort.getNode().y, "target");
+                                            delete HiddenRelationships[rel];
                                         }
-                                        delete HiddenRelationships[rel];
                                     }
                                 }
                             }
