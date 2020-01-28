@@ -1,58 +1,53 @@
 {
-  "name": "ontoGrapher",
+  "name": "ontographer",
   "version": "0.1.0",
-  "description": "React component for ontoUML modeling",
-  "main": "index.js",
-  "homepage": "https://bindetad.github.io/ontoGrapher/",
-  "scripts": {
-    "test": "mocha \"src/test/**/*.js\"",
-    "start": "webpack-dev-server --mode development",
-    "build": "webpack --mode production",
-    "predeploy": "npm run build",
-    "deploy": "gh-pages -d dist"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "devDependencies": {
-    "babel-core": "^6.26.3",
-    "babel-loader": "^7.1.5",
-    "babel-polyfill": "^6.26.0",
-    "babel-preset-env": "^1.7.0",
-    "babel-preset-es2015": "^6.24.1",
-    "babel-preset-react": "^6.24.1",
-    "babel-preset-stage-0": "^6.24.1",
-    "css-loader": "^1.0.1",
-    "gh-pages": "^2.1.1",
-    "html-webpack-plugin": "^3.2.0",
-    "jest": "^24.9.0",
-    "json-loader": "^0.5.7",
-    "mocha": "^6.2.0",
-    "node-sass": "^4.12.0",
-    "sass-loader": "^7.3.1",
-    "style-loader": "^0.22.1",
-    "webpack": "^4.40.2",
-    "webpack-cli": "^3.3.9",
-    "webpack-dev-server": "^3.8.1"
-  },
+  "private": true,
   "dependencies": {
-    "@rdfjs/serializer-ntriples": "^1.0.2",
-    "ecore": "^0.12.0",
-    "is-url": "^1.2.4",
-    "jsonld": "^1.8.1",
+    "@testing-library/dom": "^6.11.0",
+    "@testing-library/jest-dom": "^4.2.4",
+    "@testing-library/react": "^9.4.0",
+    "@testing-library/user-event": "^7.2.1",
+    "@types/backbone": "^1.4.1",
+    "@types/dagre": "^0.7.42",
+    "@types/graphlib": "^2.1.5",
+    "@types/jest": "^24.9.1",
+    "@types/node": "^12.12.25",
+    "@types/react": "^16.9.19",
+    "@types/react-dom": "^16.9.5",
+    "backbone": "^1.4.0",
+    "dagre": "^0.8.5",
+    "fibers": "^4.0.2",
+    "graphlib": "^2.1.8",
+    "jointjs": "^3.1.1",
+    "jquery": "^3.4.1",
     "lodash": "^4.17.15",
-    "n3": "^1.3.4",
-    "npm": "^6.13.4",
-    "prop-types": "^15.7.2",
-    "rdf-ext": "^1.3.0",
-    "rdf-fetch": "^1.0.0",
-    "react": "^16.9.0",
-    "react-bootstrap": "^0.32.4",
-    "react-dom": "^16.9.0",
-    "react-test-renderer": "^16.9.0",
-    "sax": "^1.2.4",
-    "sparqljs": "^3.0.0",
-    "storm-react-diagrams": "^5.2.1",
-    "transform": "^1.1.2"
+    "node-sass": "^4.13.1",
+    "react": "^16.12.0",
+    "react-bootstrap": "^1.0.0-beta.16",
+    "react-dom": "^16.12.0",
+    "react-scripts": "3.3.0",
+    "sass": "^1.25.0",
+    "typescript": "^3.7.5"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "eslintConfig": {
+    "extends": "react-app"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
   }
 }
