@@ -1,7 +1,22 @@
 import React from 'react';
 
-export default class MenuPanel extends React.Component<any, any>{
+interface MenuPanelProps{
+    readOnly?: boolean;
+    projectName: string;
+}
+
+interface MenuPanelState{
+
+}
+
+export default class MenuPanel extends React.Component<MenuPanelProps, MenuPanelState>{
+    constructor(props: MenuPanelProps) {
+        super(props);
+    }
+
     render(){
-        return(<div>Menu</div>);
+        return(<div>
+            
+        </div>);
     }
 }
