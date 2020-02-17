@@ -1,4 +1,3 @@
-import * as LanguageJSON from '../config/Languages.json';
 import {Languages} from "./Variables";
 
 export function initVars(){
@@ -6,7 +5,8 @@ export function initVars(){
 }
 
 export function loadLanguages(){
-    for (let [code, name] of Object.entries(LanguageJSON)){
-        Languages[code] = name;
+    const json = require('../config/Languages.json');
+    for (let code in json){
+        Languages[code] = json[code];
     }
 }

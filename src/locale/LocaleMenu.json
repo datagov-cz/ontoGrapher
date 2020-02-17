@@ -1,0 +1,17 @@
+{
+  "file": "File",
+  "newProject": "New project...",
+  "fileNewModalTitle": "Start new project?",
+  "fileNewModalDescription": "Warning: ALL unsaved data will be lost!",
+  "cancel": "Cancel",
+  "confirm": "Confirm",
+  "loadProject": "Load project...",
+  "saveProject": "Save project...",
+  "projectSettings": "Project settings...",
+  "OGsettings": "ontoGrapher settings...",
+  "load": "Load",
+  "theme": "Theme",
+  "OGsettingsTitle": "ontoGrapher settings",
+  "light": "Light",
+  "dark": "Dark"
+}
