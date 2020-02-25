@@ -4,37 +4,51 @@ import ElementPanel from "../panels/ElementPanel";
 import DiagramCanvas from "./DiagramCanvas";
 import * as Locale from "../locale/LocaleMain.json";
 import * as VariableLoader from "../var/VariableLoader";
-import {Languages} from "../var/Variables";
+import {Languages, ProjectSettings} from "../var/Variables";
+import {DiagramModel} from "./DiagramModel";
 
 interface DiagramAppProps{
     readonly?: boolean;
 }
 
 interface DiagramAppState{
-    projectName: string;
+    // projectName: {[key:string]: string};
+    // projectDescription: {[key:string]: string};
     projectLanguage: string;
-    theme: "light" | "dark";
+    saveString: string;
+    //theme: "light" | "dark";
 }
 
 require("../scss/style.scss");
 
 export default class DiagramApp extends React.Component<DiagramAppProps, DiagramAppState>{
+    private readonly canvas: React.RefObject<DiagramCanvas>;
+    public model: DiagramModel;
+
     constructor(props: DiagramAppProps) {
         super(props);
+
+        this.canvas = React.createRef();
+        this.model = new DiagramModel();
 
         VariableLoader.initVars();
 
         this.state = ({
-            projectName: Locale.untitledProject,
-            theme: "light",
-            projectLanguage: Object.keys(Languages)[0]
+            // projectName: VariableLoader.initLanguageObject(Locale.untitledProject),
+            // projectDescription: VariableLoader.initLanguageObject(""),
+            //theme: "light",
+            projectLanguage: Object.keys(Languages)[0],
+            saveString: ""
         });
 
 
-        document.title = this.state.projectName + " | " + Locale.ontoGrapher;
+        document.title = ProjectSettings.name[this.state.projectLanguage] + " | " + Locale.ontoGrapher;
         this.handleChangeLanguage = this.handleChangeLanguage.bind(this);
         this.newProject = this.newProject.bind(this);
-        this.saveOGsettings = this.saveOGsettings.bind(this);
+        //this.saveOGsettings = this.saveOGsettings.bind(this);
+        this.loadProject = this.loadProject.bind(this);
+        this.saveProject = this.saveProject.bind(this);
+        this.saveProjectSettings = this.saveProjectSettings.bind(this);
     }
 
     componentDidMount(): void {
@@ -42,31 +56,56 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 
     handleChangeLanguage(languageCode: string){
         this.setState({projectLanguage: languageCode});
+        document.title = ProjectSettings.name[languageCode] + " | " + Locale.ontoGrapher;
     }
 
+    //TODO: unfinished function
     newProject(){
-        this.setState({projectName: Locale.untitledProject,
-        projectLanguage: Object.keys(Languages)[0]});
+        VariableLoader.initProjectSettings();
+        this.setState({projectLanguage: Object.keys(Languages)[0]});
     }
 
-    saveOGsettings(input: any){
-        this.setState({
-            theme: input.theme
-        })
+    //TODO: unfinished function
+    loadProject(loadString: string){
+
     }
+
+    //TODO: unfinished function
+    saveProject(){
+        this.setState({saveString: ""});
+    }
+
+    //TODO: unfinished function
+    saveProjectSettings(save: {[key:string]: string}){
+        // this.setState({
+        //     projectName: save.projectName
+        // });
+    }
+
+    // saveOGsettings(input: any){
+    //     this.setState({
+    //         theme: input.theme
+    //     })
+    // }
 
     render(){
         return(<div className={"app"}>
             <MenuPanel
                 newProject={this.newProject}
-                projectName={this.state.projectName}
                 projectLanguage={this.state.projectLanguage}
-                theme={this.state.theme}
+                saveProject={this.saveProject}
+                loadProject={this.loadProject}
+                //saveProjectSettings={this.saveProjectSettings}
+                saveString={this.state.saveString}
+                //theme={this.state.theme}
                 handleChangeLanguage={this.handleChangeLanguage}
-                saveOGSettings={this.saveOGsettings}
+                //saveOGSettings={this.saveOGsettings}
             />
             <ElementPanel/>
-            <DiagramCanvas/>
+            <DiagramCanvas
+                ref={this.canvas}
+                model={this.model}
+            />
         </div>);
   }
 }

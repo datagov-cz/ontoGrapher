@@ -1,0 +1,14 @@
+.elements{
+  overflow: visible;
+  word-wrap: break-word;
+  background-color: white;
+  float:left;
+}
+
+.custom-handle {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background-color: #838082;
+  cursor: e-resize;
+}

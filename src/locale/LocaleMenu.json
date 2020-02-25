@@ -13,5 +13,15 @@
   "theme": "Theme",
   "OGsettingsTitle": "ontoGrapher settings",
   "light": "Light",
-  "dark": "Dark"
+  "dark": "Dark",
+  "fileProjectSettingsTitle": "Project settings",
+  "saveWarning": "Any changes are not saved until you click 'Confirm'.",
+  "fileProjectSettingsTitles": "Titles",
+  "fileProjectSettingsDescriptions": "Descriptions",
+  "language": "Language",
+  "title": "Title",
+  "deleteProjectName": "Delete name",
+  "help": "Help",
+  "close": "Close",
+  "helpDescription" : "For help using the component, consult the official wiki: "
 }

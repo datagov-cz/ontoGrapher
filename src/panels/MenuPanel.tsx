@@ -1,21 +1,26 @@
 import React from 'react';
 import {Form, Nav, Navbar} from "react-bootstrap";
 import * as Locale from '../locale/LocaleMain.json';
-import {Languages} from "../var/Variables";
-import {NavbarText} from "react-bootstrap/Navbar";
+import {Languages, ProjectSettings} from "../var/Variables";
 import MenuPanelFile from "./menu/MenuPanelFile";
+import MenuPanelHelp from "./menu/MenuPanelHelp";
 
 interface MenuPanelProps{
     readOnly?: boolean;
-    projectName: string;
+    // projectName: {[key:string]: string};
+    // projectDescription: {[key:string]: string};
     projectLanguage: string;
-    theme: "light" | "dark";
+    //theme: "light" | "dark";
     handleChangeLanguage: any;
     newProject: Function;
-    saveOGSettings: Function;
+    loadProject: Function;
+    saveProject: Function;
+    //saveProjectSettings: Function;
+    saveString: string;
+    //saveOGSettings: Function;
 }
 
-interface MenuPanelState{
+interface MenuPanelState {
 }
 
 export default class MenuPanel extends React.Component<MenuPanelProps, MenuPanelState>{
@@ -29,7 +34,7 @@ export default class MenuPanel extends React.Component<MenuPanelProps, MenuPanel
     }
 
     render(){
-        return(<Navbar variant={this.props.theme} bg={this.props.theme}>
+        return(<Navbar className={"menuPanel"} variant="light" bg="light">
             <Navbar.Brand>{Locale.ontoGrapher}</Navbar.Brand>
           <Nav className="mr-auto">
               {this.props.readOnly ?
@@ -37,18 +42,24 @@ export default class MenuPanel extends React.Component<MenuPanelProps, MenuPanel
                   // <MenuPanelHelp />
                   <div></div>
                   :
-                  <MenuPanelFile
+                  <div className={"inert"}><MenuPanelFile
                     newProject={this.props.newProject}
-                    theme={this.props.theme}
-                    saveOGSettings={this.props.saveOGSettings}
+                    loadProject={this.props.loadProject}
+                    saveProject={this.props.saveProject}
+                    //saveProjectSettings={this.props.saveProjectSettings}
+                    saveString={this.props.saveString}
+                    update={() => {this.forceUpdate();}}
+                    // projectName={this.props.projectName}
+                    // projectDescription={this.props.projectDescription}
+                    // theme={this.props.theme}
+                    // saveOGSettings={this.props.saveOGSettings}
                   />
-                  // <MenuPanelEdit />
-                  // <MenuPanelView />
-                  // <MenuPanelOptions />
-                  // <MenuPanelHelp />
+                      <MenuPanelHelp /></div>
               }
           </Nav>
-            <Navbar.Text className="mr-sm-2">{this.props.projectName.length > 32 ? this.props.projectName.substr(0,32) + "..." : this.props.projectName}</Navbar.Text>
+            <Navbar.Text className="mr-sm-2">
+                {ProjectSettings.name[this.props.projectLanguage].length > 32 ? ProjectSettings.name[this.props.projectLanguage].substr(0,32) + "..." : ProjectSettings.name[this.props.projectLanguage]}
+            </Navbar.Text>
             <Form inline>
                 <Form.Control as="select" value={this.props.projectLanguage} onChange={this.handleChangeLanguage}>
                     {Object.keys(Languages).map((languageCode) => (<option key={languageCode} value={languageCode}>{Languages[languageCode]}</option>))}

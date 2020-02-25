@@ -9,8 +9,15 @@ import FileProjectSettingsModal from "./file/FileProjectSettingsModal";
 
 interface MenuPanelFileProps {
     newProject: Function;
-    theme: string;
-    saveOGSettings: Function;
+    //theme: string;
+    //saveOGSettings: Function;
+    loadProject: Function;
+    saveProject: Function;
+    //saveProjectSettings: Function;
+    saveString: string;
+    update: Function;
+    // projectName: { [key: string]: string };
+    // projectDescription: { [key: string]: string };
 }
 
 interface MenuPanelFileState {
@@ -19,6 +26,9 @@ interface MenuPanelFileState {
     modalFileLoad: boolean;
     modalFileSave: boolean;
     modalFileOGSettings: boolean;
+    loadSuccess: boolean;
+    loadString: string;
+
 }
 
 export default class MenuPanelFile extends React.Component<MenuPanelFileProps, MenuPanelFileState> {
@@ -29,9 +39,14 @@ export default class MenuPanelFile extends React.Component<MenuPanelFileProps, M
             modalFileProjectSettings: false,
             modalFileLoad: false,
             modalFileSave: false,
-            modalFileOGSettings: false
+            modalFileOGSettings: false,
+            loadSuccess: true,
+            loadString: ""
         };
         this.newProject = this.newProject.bind(this);
+        this.loadProject = this.loadProject.bind(this);
+        this.saveProject = this.saveProject.bind(this);
+        //this.saveProjectSettings = this.saveProjectSettings.bind(this);
     }
 
     newProject() {
@@ -39,11 +54,30 @@ export default class MenuPanelFile extends React.Component<MenuPanelFileProps, M
         this.props.newProject();
     }
 
+    loadProject() {
+        if (this.props.loadProject(this.state.loadString)) {
+            this.setState({
+                modalFileLoad: false,
+                loadSuccess: true
+            });
+        } else {
+            this.setState({loadSuccess: false});
+        }
+    }
+
+    saveProject() {
+        this.props.saveProject();
+    }
+    //
+    // saveProjectSettings() {
+    //     this.props.saveProjectSettings(this.state.projectSettings);
+    // }
+
     render() {
         return (<NavDropdown title={LocaleMenu.file} id="basic-nav-dropdown" variant="dark">
             <NavDropdown.Item onClick={() => {
                 this.setState({modalFileNew: true})
-            }} >{LocaleMenu.newProject}</NavDropdown.Item>
+            }}>{LocaleMenu.newProject}</NavDropdown.Item>
             <FileNewModal modal={this.state.modalFileNew} close={() => {
                 this.setState({modalFileNew: false})
             }} newProject={this.newProject}/>
@@ -53,22 +87,23 @@ export default class MenuPanelFile extends React.Component<MenuPanelFileProps, M
             }}>{LocaleMenu.loadProject}</NavDropdown.Item>
             <FileLoadModal modal={this.state.modalFileLoad} close={() => {
                 this.setState({modalFileLoad: false})
-            }} loadProject={this.newProject}/>
+            }} loadProject={this.loadProject}/>
 
             <NavDropdown.Item onClick={() => {
                 this.setState({modalFileSave: true})
             }}>{LocaleMenu.saveProject}</NavDropdown.Item>
             <FileSaveModal modal={this.state.modalFileSave} close={() => {
                 this.setState({modalFileSave: false})
-            }} saveProject={this.newProject}/>
+            }} saveProject={this.saveProject}/>
 
 
             <NavDropdown.Item onClick={() => {
                 this.setState({modalFileProjectSettings: true})
             }}>{LocaleMenu.projectSettings}</NavDropdown.Item>
             <FileProjectSettingsModal modal={this.state.modalFileProjectSettings} close={() => {
-                this.setState({modalFileProjectSettings: false})
-            }} saveProjectSettings={this.newProject}/>
+                this.setState({modalFileProjectSettings: false});
+                this.props.update();
+            }}/>
 
             {/*<NavDropdown.Divider/>*/}
             {/*<NavDropdown.Item onClick={() => {*/}
