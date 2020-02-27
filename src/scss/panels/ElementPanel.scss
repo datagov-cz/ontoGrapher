@@ -3,7 +3,37 @@
   word-wrap: break-word;
   background-color: white;
   float:left;
+  height: 100%;
+  max-width: 600px;
+  border-radius: 0;
+  .stereotypeElementItem{
+    margin: 3px;
+    padding: 5px 10px;
+    border-radius: 3px;
+    border-style: solid;
+    border-width: 2px;
+    border-color: rgba(0,0,0,0.30);
+    &:hover{
+      background-color: #e9eaeb;
+    }
+    .category{
+      padding: 0px 2px;
+      border-width: 1px;
+      border-style: solid;
+      border-radius: 4px;
+      float: right;
+      font-style: italic;
+    }
+  }
+  .elementDescription{
+    //position: absolute;
+    //background-color: #e9eaeb;
+    //bottom: 100px;
+    //width: 100%;
+  }
 }
+
+
 
 .custom-handle {
   position: absolute;

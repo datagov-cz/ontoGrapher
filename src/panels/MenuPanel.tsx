@@ -4,6 +4,7 @@ import * as Locale from '../locale/LocaleMain.json';
 import {Languages, ProjectSettings} from "../var/Variables";
 import MenuPanelFile from "./menu/MenuPanelFile";
 import MenuPanelHelp from "./menu/MenuPanelHelp";
+import MenuPanelView from "./menu/MenuPanelView";
 
 interface MenuPanelProps{
     readOnly?: boolean;
@@ -42,19 +43,22 @@ export default class MenuPanel extends React.Component<MenuPanelProps, MenuPanel
                   // <MenuPanelHelp />
                   <div></div>
                   :
-                  <div className={"inert"}><MenuPanelFile
-                    newProject={this.props.newProject}
-                    loadProject={this.props.loadProject}
-                    saveProject={this.props.saveProject}
-                    //saveProjectSettings={this.props.saveProjectSettings}
-                    saveString={this.props.saveString}
-                    update={() => {this.forceUpdate();}}
-                    // projectName={this.props.projectName}
-                    // projectDescription={this.props.projectDescription}
-                    // theme={this.props.theme}
-                    // saveOGSettings={this.props.saveOGSettings}
-                  />
-                      <MenuPanelHelp /></div>
+                  <div className={"inert"}>
+                      <MenuPanelFile
+                        newProject={this.props.newProject}
+                        loadProject={this.props.loadProject}
+                        saveProject={this.props.saveProject}
+                        //saveProjectSettings={this.props.saveProjectSettings}
+                        saveString={this.props.saveString}
+                        update={() => {this.forceUpdate();}}
+                        // projectName={this.props.projectName}
+                        // projectDescription={this.props.projectDescription}
+                        // theme={this.props.theme}
+                        // saveOGSettings={this.props.saveOGSettings}
+                      />
+                      <MenuPanelView />
+                      <MenuPanelHelp />
+                  </div>
               }
           </Nav>
             <Navbar.Text className="mr-sm-2">

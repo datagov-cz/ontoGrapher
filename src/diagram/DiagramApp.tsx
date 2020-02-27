@@ -6,6 +6,7 @@ import * as Locale from "../locale/LocaleMain.json";
 import * as VariableLoader from "../var/VariableLoader";
 import {Languages, ProjectSettings} from "../var/Variables";
 import {DiagramModel} from "./DiagramModel";
+import DetailPanel from "../panels/DetailPanel";
 
 interface DiagramAppProps{
     readonly?: boolean;
@@ -101,11 +102,14 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
                 handleChangeLanguage={this.handleChangeLanguage}
                 //saveOGSettings={this.saveOGsettings}
             />
-            <ElementPanel/>
+            <ElementPanel
+                projectLanguage={this.state.projectLanguage}
+            />
             <DiagramCanvas
                 ref={this.canvas}
                 model={this.model}
             />
+            <DetailPanel/>
         </div>);
   }
 }

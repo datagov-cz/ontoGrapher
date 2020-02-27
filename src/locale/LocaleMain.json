@@ -1,4 +1,6 @@
 {
   "untitledProject": "Untitled project",
-  "ontoGrapher": "ontoGrapher"
+  "ontoGrapher": "ontoGrapher",
+  "searchStereotypes": "Search stereotypes...",
+  "filter": "Filter by source..."
 }

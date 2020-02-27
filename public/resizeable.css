@@ -15,11 +15,11 @@
 .react-resizable-handle-sw {
     bottom: 10px;
     left: 0;
-    cursor: sw-resize;
+    cursor: e-resize;
     transform: rotate(90deg);
 }
 .react-resizable-handle-se {
-    bottom: 8px;
+    bottom: 10px;
     right: 0;
     cursor: e-resize;
 }

@@ -74,7 +74,7 @@ export default class MenuPanelFile extends React.Component<MenuPanelFileProps, M
     // }
 
     render() {
-        return (<NavDropdown title={LocaleMenu.file} id="basic-nav-dropdown" variant="dark">
+        return (<NavDropdown title={LocaleMenu.file} id="basic-nav-dropdown">
             <NavDropdown.Item onClick={() => {
                 this.setState({modalFileNew: true})
             }}>{LocaleMenu.newProject}</NavDropdown.Item>
