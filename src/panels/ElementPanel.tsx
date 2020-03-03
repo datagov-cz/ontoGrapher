@@ -1,14 +1,20 @@
 import React from 'react';
 import {Resizable, ResizableBox} from "react-resizable";
-import {InputGroup, Form} from "react-bootstrap";
+import {InputGroup, Form, Tabs, Tooltip, OverlayTrigger, Tab, Button} from "react-bootstrap";
 import * as LocaleMain from "../locale/LocaleMain.json";
 import Select from 'react-select';
-import {StereotypeCategories, Stereotypes, ViewSettings} from "../var/Variables";
+import {Diagrams, Links, StereotypeCategories, Stereotypes, ViewSettings} from "../var/Variables";
 import StereotypeElementItem from "./elements/StereotypeElementItem";
 import * as Helper from "./../misc/Helper";
+import {PanelLinkItem} from "./elements/PanelLinkItem";
+import PanelDiagramItem from "./elements/PanelDiagramItem";
 
 interface Props{
     projectLanguage: string;
+    handleChangeSelectedLink: Function;
+    selectedLink: string;
+    handleChangeSelectedModel: Function;
+    selectedModel: string;
 }
 
 interface State {
@@ -16,10 +22,24 @@ interface State {
     search: string;
 }
 
+const tooltipS = (
+    <OverlayTrigger placement="right" overlay={<Tooltip id="tooltipS">{LocaleMain.classes}</Tooltip>}><div>⬜</div></OverlayTrigger>
+);
+const tooltipR = (
+    <OverlayTrigger placement="right" overlay={<Tooltip id="tooltipS">{LocaleMain.relationships}</Tooltip>}><div>➡</div></OverlayTrigger>
+);
+const tooltipPM = (
+    <OverlayTrigger placement="right" overlay={<Tooltip id="tooltipS">{LocaleMain.packageModel}</Tooltip>}><div>📦</div></OverlayTrigger>
+);
+const tooltipD = (
+    <OverlayTrigger placement="right" overlay={<Tooltip id="tooltipS">{LocaleMain.diagram}</Tooltip>}><div>🖼️</div></OverlayTrigger>
+);
+
 export default class ElementPanel extends React.Component<Props, State>{
 
     private categories: {}[];
     private stereotypes: string[];
+    private links: string[];
 
     constructor(props: Props) {
         super(props);
@@ -29,30 +49,51 @@ export default class ElementPanel extends React.Component<Props, State>{
             search: ""
         };
         this.categories = [];
+        this.links = Object.keys(Links);
         this.stereotypes = Object.keys(Stereotypes);
         this.prepareCategories();
         this.handleChangeSelect = this.handleChangeSelect.bind(this);
         this.handleChangeSearch = this.handleChangeSearch.bind(this);
         this.handleGetInfo = this.handleGetInfo.bind(this);
         this.search = this.search.bind(this);
+        this.handleChangeSelectedLink = this.handleChangeSelectedLink.bind(this);
+    }
+
+    handleChangeSelectedLink(linkType: string) {
+        this.props.handleChangeSelectedLink(linkType);
     }
 
     search(search: string, filter: string[]){
-        let result = [];
+        let result1 = [];
         for (let stereotype in Stereotypes){
             if ((filter.includes(Stereotypes[stereotype].category) || filter.length === 0)
                     && (
                         //Stereotypes[stereotype].suffix.startsWith(this.state.search) ||
                     Stereotypes[stereotype].labels[this.props.projectLanguage].startsWith(search)
                 )){
-                result.push(stereotype);
+                result1.push(stereotype);
             }
         }
-        this.stereotypes = result;
+        let result2 = [];
+        for (let link in Links){
+            if ((filter.includes(Links[link].category) || filter.length === 0)
+                && (
+                    //Stereotypes[stereotype].suffix.startsWith(this.state.search) ||
+                    Links[link].labels[this.props.projectLanguage].startsWith(search)
+                )){
+                result2.push(link);
+            }
+        }
+        this.stereotypes = result1;
+        this.links = result2;
     }
 
+    //TODO: unfinished function
     handleGetInfo(element: string){
-        console.log(element);
+    }
+
+    handleChangeSelectedModel(model: string){
+        this.props.handleChangeSelectedModel(model);
     }
 
     handleChangeSelect(event: any){
@@ -84,12 +125,26 @@ export default class ElementPanel extends React.Component<Props, State>{
         this.categories = result;
     }
 
-    getName(element: string){
+    getNameStereotype(element: string){
         if (ViewSettings.display == 1){
             return Helper.getNameOfStereotype(element);
         } else {
             return Stereotypes[element].labels[this.props.projectLanguage];
         }
+    }
+
+    getNameLink(element: string){
+        if (ViewSettings.display == 1){
+            return Helper.getNameOfLink(element);
+        } else {
+            return Links[element].labels[this.props.projectLanguage];
+        }
+    }
+
+    update(){
+        this.stereotypes = Object.keys(Stereotypes);
+        this.prepareCategories();
+        this.links = Object.keys(Links);
     }
 
     render(){
@@ -99,7 +154,8 @@ export default class ElementPanel extends React.Component<Props, State>{
             height={1000}
             axis={"x"}
             handleSize={[8, 8]}
-            resizeHandles={['ne']}>
+            resizeHandles={['ne']}
+        >
 
             <InputGroup>
                 <InputGroup.Prepend>
@@ -120,18 +176,51 @@ export default class ElementPanel extends React.Component<Props, State>{
                     onChange={this.handleChangeSelect}
                     placeholder={LocaleMain.filter}
                 />
-                <div className={"elementList"}>
-                    {this.stereotypes.map((element)=>(<StereotypeElementItem
-                        key={element}
-                        element={element}
-                        label={this.getName(element)}
-                        category={Stereotypes[element].category}
-                        onMouseOver={() => {this.handleGetInfo(element);}}
-                    />))}
-                </div>
-                <div className={"elementDescription"}>
-                    desc
-                </div>
+                <Tabs id="stereotypePanelTabs">
+                    <Tab eventKey={1} title={tooltipS}>
+                        <div className={"elementList"}>
+                            {this.stereotypes.map((element)=>(<StereotypeElementItem
+                                key={element}
+                                element={element}
+                                label={this.getNameStereotype(element)}
+                                category={Stereotypes[element].category}
+                                onMouseOver={() => {this.handleGetInfo(element);}}
+                            />))}
+                        </div>
+                    </Tab>
+                    <Tab eventKey={2} title={tooltipR}>
+                        <div className="elementList">
+                            {this.links.map((link) => <PanelLinkItem
+                                            key={link}
+                                            selectedLink={this.props.selectedLink}
+                                            handleChangeSelectedLink={this.handleChangeSelectedLink}
+                                            linkType={link}
+                                            category={Links[link].category}
+                                            label={this.getNameLink(link)}
+                                />
+                            )}
+                        </div>
+                    </Tab>
+                    <Tab eventKey={3} title={tooltipPM}>
+                        <div className="elementList">
+                            {/*selectedPkg*/}
+                        </div>
+                    </Tab>
+                    <Tab eventKey={4} title={tooltipD}>
+                        <div className="elementList">
+                            {Object.keys(Diagrams).map((model) => <PanelDiagramItem
+                                key={model}
+                                selectedLink={this.props.selectedModel}
+                                handleChangeSelectedLink={this.handleChangeSelectedModel}
+                                linkType={model}
+                                />)}
+                        </div>
+                    </Tab>
+                </Tabs>
+
+                {/*<div className={"elementDescription"}>*/}
+                {/*    desc*/}
+                {/*</div>*/}
         </ResizableBox>);
     }
 }

@@ -55,14 +55,9 @@ export default class MenuPanelFile extends React.Component<MenuPanelFileProps, M
     }
 
     loadProject() {
-        if (this.props.loadProject(this.state.loadString)) {
-            this.setState({
-                modalFileLoad: false,
-                loadSuccess: true
-            });
-        } else {
-            this.setState({loadSuccess: false});
-        }
+        this.props.loadProject(this.state.loadString);
+
+        this.setState({modalFileLoad: false});
     }
 
     saveProject() {
@@ -90,11 +85,11 @@ export default class MenuPanelFile extends React.Component<MenuPanelFileProps, M
             }} loadProject={this.loadProject}/>
 
             <NavDropdown.Item onClick={() => {
-                this.setState({modalFileSave: true})
+                this.setState({modalFileSave: true}); this.props.saveProject();
             }}>{LocaleMenu.saveProject}</NavDropdown.Item>
             <FileSaveModal modal={this.state.modalFileSave} close={() => {
                 this.setState({modalFileSave: false})
-            }} saveProject={this.saveProject}/>
+            }} saveProject={this.saveProject} saveString={this.props.saveString}/>
 
 
             <NavDropdown.Item onClick={() => {

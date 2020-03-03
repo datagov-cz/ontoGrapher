@@ -4,12 +4,24 @@ import ElementPanel from "../panels/ElementPanel";
 import DiagramCanvas from "./DiagramCanvas";
 import * as Locale from "../locale/LocaleMain.json";
 import * as VariableLoader from "../var/VariableLoader";
-import {Languages, ProjectSettings} from "../var/Variables";
+import {Diagrams, graph, Languages, Links, ProjectSettings} from "../var/Variables";
 import {DiagramModel} from "./DiagramModel";
 import DetailPanel from "../panels/DetailPanel";
+import {getVocabulariesFromJSONSource} from "../interface/JSONInterface";
+import * as SemanticWebInterface from "../interface/SemanticWebInterface";
+import PropTypes from "prop-types";
+import {Defaults} from "../config/Defaults";
 
 interface DiagramAppProps{
     readonly?: boolean;
+    loadClasses?: string;
+    loadClassesName?: string;
+    classIRI?: string;
+    loadLanguage?: string;
+    loadRelationshipsName?: string;
+    loadRelationships?: string;
+    relationshipIRI?: string;
+    loadDefaultVocabularies?: boolean;
 }
 
 interface DiagramAppState{
@@ -17,6 +29,8 @@ interface DiagramAppState{
     // projectDescription: {[key:string]: string};
     projectLanguage: string;
     saveString: string;
+    selectedLink: string;
+    selectedModel: string;
     //theme: "light" | "dark";
 }
 
@@ -24,13 +38,15 @@ require("../scss/style.scss");
 
 export default class DiagramApp extends React.Component<DiagramAppProps, DiagramAppState>{
     private readonly canvas: React.RefObject<DiagramCanvas>;
-    public model: DiagramModel;
+    private readonly elementPanel: React.RefObject<ElementPanel>;
+    private readonly detailPanel: React.RefObject<DetailPanel>;
 
     constructor(props: DiagramAppProps) {
         super(props);
 
         this.canvas = React.createRef();
-        this.model = new DiagramModel();
+        this.elementPanel = React.createRef();
+        this.detailPanel = React.createRef();
 
         VariableLoader.initVars();
 
@@ -39,20 +55,54 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
             // projectDescription: VariableLoader.initLanguageObject(""),
             //theme: "light",
             projectLanguage: Object.keys(Languages)[0],
-            saveString: ""
+            selectedLink: Object.keys(Links)[0],
+            saveString: "",
+            selectedModel: Locale.untitled
         });
 
 
         document.title = ProjectSettings.name[this.state.projectLanguage] + " | " + Locale.ontoGrapher;
+        this.handleChangeSelectedLink = this.handleChangeSelectedLink.bind(this);
         this.handleChangeLanguage = this.handleChangeLanguage.bind(this);
         this.newProject = this.newProject.bind(this);
         //this.saveOGsettings = this.saveOGsettings.bind(this);
         this.loadProject = this.loadProject.bind(this);
         this.saveProject = this.saveProject.bind(this);
         this.saveProjectSettings = this.saveProjectSettings.bind(this);
+        this.handleChangeSelectedModel = this.handleChangeSelectedModel.bind(this);
+        this.prepareDetails = this.prepareDetails.bind(this);
     }
 
     componentDidMount(): void {
+        if (typeof this.props.loadClasses === "string"){
+            SemanticWebInterface.fetchClasses(this.props.loadClassesName, this.props.loadClasses, this.props.classIRI, true, this.props.loadLanguage, ()=>{
+                this.forceUpdate();
+            });
+        }
+        if (typeof this.props.loadRelationships === "string"){
+            SemanticWebInterface.fetchRelationships(this.props.loadRelationshipsName, this.props.loadRelationships, this.props.relationshipIRI, true, this.props.loadLanguage, ()=>{
+                this.forceUpdate();
+            });
+        }
+        if (this.props.loadDefaultVocabularies){
+            getVocabulariesFromJSONSource(Defaults.defaultVocabularies, ()=>{
+                this.forceUpdate();
+                this.handleChangeSelectedLink(Object.keys(Links)[0]);
+                // @ts-ignore
+                this.elementPanel.current.update();
+            });
+        }
+    }
+
+    prepareDetails(id: string){
+        this.detailPanel.current?.prepareDetails(id);
+    }
+
+    handleChangeSelectedModel(model: string){
+        let json = graph.toJSON();
+        Diagrams[this.state.selectedModel] = json;
+        let load = Diagrams[model];
+        graph.fromJSON(load);
     }
 
     handleChangeLanguage(languageCode: string){
@@ -63,17 +113,30 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
     //TODO: unfinished function
     newProject(){
         VariableLoader.initProjectSettings();
-        this.setState({projectLanguage: Object.keys(Languages)[0]});
+        this.setState({projectLanguage: Object.keys(Languages)[0],
+            selectedLink: Object.keys(Links)[0],
+            saveString: "",
+            selectedModel: Locale.untitled});
     }
 
     //TODO: unfinished function
     loadProject(loadString: string){
-
+        let save = JSON.parse(loadString);
+        for (let diagram in Diagrams){
+            delete Diagrams[diagram];
+        }
+        for (let diagram in save.diagrams){
+            Diagrams[diagram] = save.diagrams[diagram];
+        }
+        this.handleChangeSelectedModel(Object.keys(Diagrams)[0]);
     }
 
     //TODO: unfinished function
     saveProject(){
-        this.setState({saveString: ""});
+        let save = {
+            diagrams: JSON.stringify(Diagrams)
+        };
+        this.setState({saveString: JSON.stringify(save)});
     }
 
     //TODO: unfinished function
@@ -81,6 +144,10 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
         // this.setState({
         //     projectName: save.projectName
         // });
+    }
+
+    handleChangeSelectedLink(linkType: string) {
+        this.setState({selectedLink: linkType});
     }
 
     // saveOGsettings(input: any){
@@ -103,13 +170,22 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
                 //saveOGSettings={this.saveOGsettings}
             />
             <ElementPanel
+                ref={this.elementPanel}
                 projectLanguage={this.state.projectLanguage}
+                handleChangeSelectedLink={this.handleChangeSelectedLink}
+                selectedLink={this.state.selectedLink}
+                handleChangeSelectedModel={this.handleChangeSelectedModel}
+                selectedModel={this.state.selectedModel}
+            />
+            <DetailPanel
+                ref={this.detailPanel}
             />
             <DiagramCanvas
                 ref={this.canvas}
-                model={this.model}
+                selectedLink={this.state.selectedLink}
+                projectLanguage={this.state.projectLanguage}
+                prepareDetails={this.prepareDetails}
             />
-            <DetailPanel/>
         </div>);
   }
 }
