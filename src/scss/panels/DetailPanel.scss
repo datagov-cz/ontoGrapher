@@ -3,9 +3,20 @@
   word-wrap: break-word;
   background-color: white;
   float:right;
+  padding: 5px 10px;
   //position: absolute;
   //right: 0;
   //top: 56px;
   height: 100%;
   max-width: 600px;
+  .detailTitle{
+    margin: 10px 20px;
+  }
+  .separated{
+    margin: auto;
+    margin-bottom: 10px;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+  }
 }

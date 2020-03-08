@@ -4,7 +4,7 @@ import ElementPanel from "../panels/ElementPanel";
 import DiagramCanvas from "./DiagramCanvas";
 import * as Locale from "../locale/LocaleMain.json";
 import * as VariableLoader from "../var/VariableLoader";
-import {Diagrams, graph, Languages, Links, ProjectSettings} from "../var/Variables";
+import {Diagrams, graph, Languages, Links, ProjectElements, ProjectSettings} from "../var/Variables";
 import {DiagramModel} from "./DiagramModel";
 import DetailPanel from "../panels/DetailPanel";
 import {getVocabulariesFromJSONSource} from "../interface/JSONInterface";
@@ -31,6 +31,7 @@ interface DiagramAppState{
     saveString: string;
     selectedLink: string;
     selectedModel: string;
+    detailPanelHidden: boolean;
     //theme: "light" | "dark";
 }
 
@@ -57,7 +58,8 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
             projectLanguage: Object.keys(Languages)[0],
             selectedLink: Object.keys(Links)[0],
             saveString: "",
-            selectedModel: Locale.untitled
+            selectedModel: Locale.untitled,
+            detailPanelHidden: false
         });
 
 
@@ -88,8 +90,7 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
             getVocabulariesFromJSONSource(Defaults.defaultVocabularies, ()=>{
                 this.forceUpdate();
                 this.handleChangeSelectedLink(Object.keys(Links)[0]);
-                // @ts-ignore
-                this.elementPanel.current.update();
+                this.elementPanel.current?.update();
             });
         }
     }
@@ -108,6 +109,9 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
     handleChangeLanguage(languageCode: string){
         this.setState({projectLanguage: languageCode});
         document.title = ProjectSettings.name[languageCode] + " | " + Locale.ontoGrapher;
+        graph.getCells().forEach((cell) => {
+            cell.prop('attrs/label/text', ProjectElements[cell.id].names[languageCode]);
+        });
     }
 
     //TODO: unfinished function
@@ -179,12 +183,14 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
             />
             <DetailPanel
                 ref={this.detailPanel}
+                projectLanguage={this.state.projectLanguage}
             />
             <DiagramCanvas
                 ref={this.canvas}
                 selectedLink={this.state.selectedLink}
                 projectLanguage={this.state.projectLanguage}
                 prepareDetails={this.prepareDetails}
+                hideDetails={() => {this.detailPanel.current?.hide();}}
             />
         </div>);
   }

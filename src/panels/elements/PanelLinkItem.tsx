@@ -16,16 +16,16 @@ export class PanelLinkItem extends React.Component<Props, State> {
     constructor(props: Props) {
         super(props);
         this.state = {
-            name: this.props.linkType
+            name: this.props.linkType === this.props.selectedLink ? "stereotypeElementItem selected" : "stereotypeElementItem"
         };
         this.alertPanel = this.alertPanel.bind(this);
-        this.setClassName();
     }
 
     alertPanel() {
         this.props.handleChangeSelectedLink(this.props.linkType);
         this.setClassName();
     }
+
     componentDidMount(): void {
         this.setClassName();
     }

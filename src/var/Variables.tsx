@@ -15,6 +15,12 @@ export var ProjectSettings: {[key: string]: any} = {
     description: {}
 };
 
+//names
+//connections
+//descriptions
+//attributes
+export var ProjectElements: {[key:string]: any} = {};
+
 //display:
 //1 - namespace:name
 //2 - rdfs:label

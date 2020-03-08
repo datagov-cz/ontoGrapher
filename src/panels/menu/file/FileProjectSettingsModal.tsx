@@ -48,7 +48,6 @@ export default class FileProjectSettingsModal extends React.Component<Props, Sta
         textarea: string;
     }, language: string){
         let name = this.state.name;
-        console.log(event);
         name[language] = event.textarea;
         this.setState({name: name});
     }

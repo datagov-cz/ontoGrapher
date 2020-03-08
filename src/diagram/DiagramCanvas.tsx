@@ -1,14 +1,16 @@
 // @ts-nocheck
 import React from 'react';
 import * as joint from 'jointjs';
-import {DiagramModel} from "./DiagramModel";
-import {getName} from "../misc/Helper";
-import {graph, Links, selectedCell} from "../var/Variables";
+import {graphElement} from "../graph/GraphElement";
+import {graph, ProjectElements} from "../var/Variables";
+import {getName, addClass} from "../misc/Helper";
+import * as LocaleMain from "../locale/LocaleMain.json";
 
 interface DiagramCanvasProps {
     projectLanguage: string;
     selectedLink: string;
     prepareDetails: Function;
+    hideDetails: Function;
 }
 
 interface DiagramPropsState {
@@ -36,9 +38,85 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps, D
             gridSize: 1,
             linkPinning: false,
             background: {
-                color: 'rgba(0,0,0,0.1)'
+                color: "#e3e3e3"
+            },
+            clickThreshold: 5,
+            async: true,
+            sorting: joint.dia.Paper.sorting.APPROX,
+            connectionStrategy: joint.connectionStrategies.pinAbsolute,
+            defaultConnectionPoint: { name: 'boundary', args: { selector: 'border' }},
+            defaultLink: function() {
+                return new joint.shapes.uml.Transition();
+            },
+            validateMagnet: function(_view, magnet, evt) {
+                return magnet.getAttribute('magnet') === 'on-shift' && evt.shiftKey;
+                //return magnet.getAttribute('magnet') === 'on-shift';
             }
         });
+
+        this.paper.on({
+            'element:mouseenter': function(elementView) {
+                var model = elementView.model;
+                var bbox = model.getBBox();
+                var ellipseRadius = (1 - Math.cos(joint.g.toRad(45)));
+                var offset = model.attr(['pointers', 'pointerShape']) === 'ellipse'
+                    ? { x: -ellipseRadius * bbox.width / 2, y: ellipseRadius * bbox.height / 2  }
+                    : { x: -3, y: 3 };
+
+                elementView.addTools(new joint.dia.ToolsView({
+                    tools: [
+                        new joint.elementTools.Remove({
+                            useModelGeometry: true,
+                            y: '0%',
+                            x: '100%',
+                            offset: offset
+                        }),
+                        new joint.elementTools.InfoButton({
+                            useModelGeometry: true,
+                            y: '0%',
+                            x: '4%',
+                            offset: offset
+                        })
+                    ]
+                }));
+            },
+            'cell:mouseleave': function(cellView) {
+                cellView.removeTools();
+            },
+            'blank:pointerdown': (evt, x, y) => {
+                this.props.hideDetails();
+                var data = evt.data = {};
+                var cell;
+                if (evt.shiftKey) {
+                    cell = new joint.shapes.uml.Transition();
+                    cell.source({ x: x, y: y });
+                    cell.target({ x: x, y: y });
+                    cell.addTo(graph);
+                    data.cell = cell;
+                }
+            },
+            'blank:pointermove': function(evt, x, y) {
+                var data = evt.data;
+                var cell = data.cell;
+                if (cell !== undefined){
+                    if (cell.isLink()) {
+                        cell.target({ x: x, y: y });
+                    }
+                }
+            },
+            'blank:pointerup' : function(evt,x,y){
+                var data = evt.data;
+                var cell = data.cell;
+                if (cell !== undefined){
+                    if (cell.isLink()) {
+                        if (!("id" in cell.target())){
+                            graph.removeCells(cell);
+                        }
+                    }
+                }
+            }
+        });
+
 
         joint.elementTools.InfoButton = joint.elementTools.Button.extend({
             name: 'info-button',
@@ -64,84 +142,12 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps, D
                 }],
                 distance: 60,
                 offset: 0,
-                action: function(evt) {
-                    console.log(this);
+                action: (evt) => {
+                    this.props.prepareDetails(evt.currentTarget.getAttribute("model-id"));
                 }
             }
         });
 
-        this.paper.on({
-            'link:mouseenter': function(linkView) {
-                linkView.addTools(new joint.dia.ToolsView({
-                    tools: [
-                        new joint.linkTools.Vertices({ snapRadius: 0 }),
-                        new joint.linkTools.SourceArrowhead(),
-                        new joint.linkTools.TargetArrowhead(),
-                        new joint.linkTools.Remove({
-                            distance: 20
-                        })
-                    ]
-                }));
-            },
-            'element:mouseenter': function(elementView) {
-                var model = elementView.model;
-
-                elementView.addTools(new joint.dia.ToolsView({
-                    tools: [
-                        new joint.elementTools.Remove({
-                            useModelGeometry: true,
-                            y: '0%',
-                            x: '100%'
-                        }),
-                        new joint.elementTools.InfoButton({
-                            useModelGeometry: true,
-                            y: '0%',
-                            x: '0%'
-                        })
-                    ]
-                }));
-            },
-            'cell:mouseleave': function(cellView) {
-                cellView.removeTools();
-            },
-            'blank:pointerdown': function(evt, x, y) {
-                var data = evt.data = {};
-                var cell;
-                if (evt.shiftKey) {
-                    cell = new joint.shapes.standard.Link();
-                    cell.source({ x: x, y: y });
-                    cell.target({ x: x, y: y });
-                } else return;
-                cell.addTo(graph);
-                data.cell = cell;
-            },
-            'blank:pointermove': function(evt, x, y) {
-                var data = evt.data;
-                var cell = data.cell;
-                if (cell.isLink()) {
-                    cell.target({ x: x, y: y });
-                } else {
-                    var bbox = new g.Rect(data.x, data.y, x - data.x, y - data.y);
-                    bbox.normalize();
-                    cell.set({
-                        position: { x: bbox.x, y: bbox.y },
-                        size: { width: Math.max(bbox.width, 1), height: Math.max(bbox.height, 1) }
-                    });
-                }
-            }
-        });
-
-        graph.on('add', (cell)=>{
-            if (cell.isLink()){
-                cell.appendLabel({
-                    attrs: {
-                        text:{
-                            text: Links[this.props.selectedLink].labels[this.props.projectLanguage]
-                        }
-                    }
-                });
-            }
-        });
     }
     render() {
         return (<div
@@ -152,21 +158,18 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps, D
             }}
             onDrop={(event) => {
                 const data = event.dataTransfer.getData("newClass");
-                let cls = new joint.shapes.standard.Rectangle({
+                let cls = graphElement.create('rectangle').prop({
                     size: {width: 180, height: 50},
-                    position: this.paper.clientToLocalPoint({x: event.clientX, y: event.clientY})
+                    position: this.paper.clientToLocalPoint({x: event.clientX, y: event.clientY}),
+                    attrs: {
+                        label: {
+                            text: LocaleMain.untitled + " " + getName(data, this.props.projectLanguage),
+                        }
+                    }
                 });
-                cls.attr({
-                   body:{
-                       fill: 'white',
-                       magnet: true
-                   },
-                   label:{
-                       text: getName(data, this.props.projectLanguage),
-                       fill: 'black'
-                   }
-                });
+                addClass(cls.id, data, this.props.projectLanguage);
                 graph.addCell(cls);
+                console.log(ProjectElements);
             }}
         />);
 

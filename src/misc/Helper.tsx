@@ -1,6 +1,7 @@
-import {Links, Namespaces, Stereotypes, ViewSettings} from "../var/Variables";
+import {Links, Namespaces, ProjectElements, Stereotypes, ViewSettings} from "../var/Variables";
 import {SourceData} from "../components/SourceData";
 import * as VariableLoader from "./../var/VariableLoader";
+import * as LocaleMain from "../locale/LocaleMain.json";
 
 export function getNameOfStereotype(uri:string): string{
     let stereotype = Stereotypes[uri];
@@ -26,4 +27,15 @@ export function addSTP(data: SourceData){
         descriptions: VariableLoader.initLanguageObject(data.description),
         category: data.source
     }
+}
+
+export function addClass(id: string, iri: string, language: string){
+    let result: {[key: string]: any} = {};
+    result["iri"] = iri;
+    result["names"] = VariableLoader.initLanguageObject(LocaleMain.untitled + " " + getName(iri, language));
+    result["connections"] = {};
+    result["descriptions"] = VariableLoader.initLanguageObject("");
+    result["attributes"] = {};
+    result["diagrams"] = [];
+    ProjectElements[id] = result;
 }
