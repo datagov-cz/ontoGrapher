@@ -1,9 +1,10 @@
-//deprecated
+import {AttributeType} from "./AttributeType";
+
 export class AttributeObject {
     first: string;
-    second: string;
+    second: AttributeType;
 
-    constructor(first: string, second: string) {
+    constructor(first: string, second: AttributeType) {
         this.first = first;
         this.second = second;
     }

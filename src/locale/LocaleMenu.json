@@ -16,6 +16,8 @@
   "dark": "Dark",
   "fileProjectSettingsTitle": "Project settings",
   "saveWarning": "Any changes are not saved until you click 'Confirm'.",
+  "attributeType": "Type",
+  "delete": "Delete",
   "fileProjectSettingsTitles": "Titles",
   "fileProjectSettingsDescriptions": "Descriptions",
   "language": "Language",
@@ -27,5 +29,6 @@
   "view": "View",
   "viewAs": "Display elements as",
   "viewByLabel": "rdfs:label",
-  "viewByNamespace": "namespace:name"
+  "viewByNamespace": "namespace:name",
+  "createAttribute": "Add attribute"
 }

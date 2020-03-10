@@ -4,7 +4,15 @@ import ElementPanel from "../panels/ElementPanel";
 import DiagramCanvas from "./DiagramCanvas";
 import * as Locale from "../locale/LocaleMain.json";
 import * as VariableLoader from "../var/VariableLoader";
-import {Diagrams, graph, Languages, Links, ProjectElements, ProjectSettings} from "../var/Variables";
+import {
+    Diagrams,
+    graph,
+    Languages,
+    Links, ModelElements,
+    ProjectElements,
+    ProjectSettings, StereotypeCategories,
+    StereotypePoolPackage, Stereotypes
+} from "../var/Variables";
 import {DiagramModel} from "./DiagramModel";
 import DetailPanel from "../panels/DetailPanel";
 import {getVocabulariesFromJSONSource} from "../interface/JSONInterface";
@@ -70,8 +78,8 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
         //this.saveOGsettings = this.saveOGsettings.bind(this);
         this.loadProject = this.loadProject.bind(this);
         this.saveProject = this.saveProject.bind(this);
-        this.saveProjectSettings = this.saveProjectSettings.bind(this);
-        this.handleChangeSelectedModel = this.handleChangeSelectedModel.bind(this);
+        //this.saveProjectSettings = this.saveProjectSettings.bind(this);
+        //this.handleChangeSelectedModel = this.handleChangeSelectedModel.bind(this);
         this.prepareDetails = this.prepareDetails.bind(this);
     }
 
@@ -90,6 +98,7 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
             getVocabulariesFromJSONSource(Defaults.defaultVocabularies, ()=>{
                 this.forceUpdate();
                 this.handleChangeSelectedLink(Object.keys(Links)[0]);
+                
                 this.elementPanel.current?.update();
             });
         }
@@ -98,13 +107,11 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
     prepareDetails(id: string){
         this.detailPanel.current?.prepareDetails(id);
     }
-
-    handleChangeSelectedModel(model: string){
-        let json = graph.toJSON();
-        Diagrams[this.state.selectedModel] = json;
-        let load = Diagrams[model];
-        graph.fromJSON(load);
-    }
+    //
+    // handleChangeSelectedModel(model: string){
+    //     console.log(model);
+    //     this.setState({selectedModel: model});
+    // }
 
     handleChangeLanguage(languageCode: string){
         this.setState({projectLanguage: languageCode});
@@ -132,7 +139,7 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
         for (let diagram in save.diagrams){
             Diagrams[diagram] = save.diagrams[diagram];
         }
-        this.handleChangeSelectedModel(Object.keys(Diagrams)[0]);
+        //this.handleChangeSelectedModel(Object.keys(Diagrams)[0]);
     }
 
     //TODO: unfinished function
@@ -142,13 +149,13 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
         };
         this.setState({saveString: JSON.stringify(save)});
     }
-
-    //TODO: unfinished function
-    saveProjectSettings(save: {[key:string]: string}){
-        // this.setState({
-        //     projectName: save.projectName
-        // });
-    }
+    //
+    //
+    // saveProjectSettings(save: {[key:string]: string}){
+    //     // this.setState({
+    //     //     projectName: save.projectName
+    //     // });
+    // }
 
     handleChangeSelectedLink(linkType: string) {
         this.setState({selectedLink: linkType});
@@ -178,8 +185,6 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
                 projectLanguage={this.state.projectLanguage}
                 handleChangeSelectedLink={this.handleChangeSelectedLink}
                 selectedLink={this.state.selectedLink}
-                handleChangeSelectedModel={this.handleChangeSelectedModel}
-                selectedModel={this.state.selectedModel}
             />
             <DetailPanel
                 ref={this.detailPanel}

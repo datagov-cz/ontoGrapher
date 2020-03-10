@@ -157,19 +157,18 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps, D
                 event.preventDefault();
             }}
             onDrop={(event) => {
-                const data = event.dataTransfer.getData("newClass");
+                const data = JSON.parse(event.dataTransfer.getData("newClass"));
                 let cls = graphElement.create('rectangle').prop({
                     size: {width: 180, height: 50},
                     position: this.paper.clientToLocalPoint({x: event.clientX, y: event.clientY}),
                     attrs: {
                         label: {
-                            text: LocaleMain.untitled + " " + getName(data, this.props.projectLanguage),
+                            text: LocaleMain.untitled + " " + getName(data.elem, this.props.projectLanguage),
                         }
                     }
                 });
-                addClass(cls.id, data, this.props.projectLanguage);
+                if (data.package) {addClass(cls.id, data, this.props.projectLanguage);}
                 graph.addCell(cls);
-                console.log(ProjectElements);
             }}
         />);
 

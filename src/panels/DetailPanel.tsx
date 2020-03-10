@@ -1,6 +1,6 @@
 import React from 'react';
 import {ResizableBox} from "react-resizable";
-import {graph, Languages, ProjectElements} from "../var/Variables";
+import {AttributeTypePool, graph, Languages, ProjectElements} from "../var/Variables";
 import * as LocaleMain from "../locale/LocaleMain.json";
 import _ from 'underscore';
 import {Button, ButtonGroup, Form, Modal, Tab, Tabs} from "react-bootstrap";
@@ -11,6 +11,7 @@ import * as VariableLoader from "../var/VariableLoader";
 import {getName} from "../misc/Helper";
 // @ts-ignore
 import {RIEInput} from "riek";
+import {AttributeObject} from "../components/AttributeObject";
 
 interface Props {
     projectLanguage: string;
@@ -22,7 +23,7 @@ interface State {
     model: any;
     inputNames: {[key:string]: string};
     inputDescriptions: {[key:string]: string};
-    inputAttributes: {[key:string]: AttributeType};
+    inputAttributes: AttributeObject[];
     inputDiagrams: string[];
 }
 
@@ -35,7 +36,7 @@ export default class DetailPanel extends React.Component<Props, State> {
             changes: false,
             inputNames: VariableLoader.initLanguageObject(""),
             inputDescriptions: VariableLoader.initLanguageObject(""),
-            inputAttributes: {},
+            inputAttributes: [],
             inputDiagrams: [],
         };
         this.hide = this.hide.bind(this);
@@ -48,10 +49,36 @@ export default class DetailPanel extends React.Component<Props, State> {
         this.setState({inputNames: name});
     }
 
+    handleChangeNameAttribute(event: { textarea: string }, pos: number){
+        console.log(event,pos);
+        let attrs = this.state.inputAttributes;
+        attrs[pos].first = event.textarea;
+        this.setState({inputAttributes: attrs, changes: true});
+    }
+
+    createAttribute(){
+        let attr = new AttributeObject("", AttributeTypePool[Object.keys(AttributeTypePool)[0]]);
+        let attrs = this.state.inputAttributes;
+        attrs.push(attr);
+        this.setState({inputAttributes: attrs, changes: true});
+    }
+
+    handleChangeAttributeType(event: React.FormEvent<HTMLInputElement>, i: number) {
+        let attrs = this.state.inputAttributes;
+        attrs[i].second = AttributeTypePool[event.currentTarget.value];
+        this.setState({inputAttributes: attrs, changes: true});
+    }
+
     handleChangeDescription(event: React.ChangeEvent<HTMLInputElement>, language: string){
         let description = this.state.inputDescriptions;
         description[language] = event.target.value;
         this.setState({inputDescriptions: description, changes: true});
+    }
+
+    deleteAttribute(i: number){
+        let attrs = this.state.inputAttributes;
+        attrs.splice(i,1);
+        this.setState({inputAttributes: attrs, changes: true});
     }
 
     handleChangeName(event: {
@@ -146,7 +173,35 @@ export default class DetailPanel extends React.Component<Props, State> {
                                 </Tab>))}
                             </Tabs>
                         </Tab>
-                        <Tab eventKey={2} title={LocaleMain.detailPanelAttributes}></Tab>
+                        <Tab eventKey={2} title={LocaleMain.detailPanelAttributes}>
+                            <TableList headings={[LocaleMenu.title, LocaleMenu.attributeType]}>
+                                {this.state.inputAttributes.map((attr,i) => (
+                                    <tr key={i}>
+                                        <td>
+                                            <RIEInput
+                                                className={"rieinput"}
+                                                value={attr.first.length > 0 ? attr.first : "<blank>" }
+                                                change={(event: {textarea: string}) => {
+                                                    this.handleChangeNameAttribute(event, i);}}
+                                                propName="textarea"
+                                            />
+                                            &nbsp;
+                                            <a href="#" onClick={(event) => {this.deleteAttribute(i);} }>
+                                                {LocaleMenu.delete}</a>
+                                        </td>
+                                        <td>
+                                            <Form inline>
+                                                <Form.Control as="select" value={attr.second.iri} onChange={(event: React.FormEvent<HTMLInputElement>)=>{this.handleChangeAttributeType(event,i);}}>
+                                                    {Object.keys(AttributeTypePool).map((attrtype)=><option value={attrtype}>{AttributeTypePool[attrtype].name}</option>)}
+                                                </Form.Control>
+                                            </Form>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </TableList>
+                            <a href="#" onClick={(event) => {this.createAttribute();} }>
+                                {LocaleMenu.createAttribute}</a>
+                        </Tab>
                         <Tab eventKey={3} title={LocaleMain.connections}></Tab>
                         <Tab eventKey={4} title={LocaleMain.diagram}></Tab>
                     </Tabs>
@@ -155,4 +210,5 @@ export default class DetailPanel extends React.Component<Props, State> {
         }
 
     }
+
 }

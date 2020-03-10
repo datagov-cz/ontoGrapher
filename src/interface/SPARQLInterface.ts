@@ -116,10 +116,10 @@ export function getElementsAsPackage(name:string, jsonData: {[key:string]: any},
         .then(data => {
             for (let result of data.results.bindings){
                 if (jsonData.classIRI.indexOf(result.termType.value) > -1){
-                    if (!(name in StereotypePoolPackage)){
-                        StereotypePoolPackage[name] = [];
-                    }
-                    StereotypePoolPackage[name].push(result.term.value);
+                    // if (!(name in StereotypePoolPackage)){
+                    //     StereotypePoolPackage[name] = [];
+                    // }
+                    Helper.addModelTP(new SourceData(result.termLabel.value,result.term.value,result.termDefinition === undefined ? "" : result.termDefinition.value,name));
                 }
             }
             Packages[name] = true;

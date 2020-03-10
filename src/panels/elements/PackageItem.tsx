@@ -3,7 +3,7 @@ import {Stereotypes} from "../../var/Variables";
 
 interface Props {
     label: string;
-    element: string;
+    id: string;
     category: string;
     onMouseOver: Function;
     package: boolean;
@@ -21,10 +21,10 @@ export default class StereotypeElementItem extends React.Component<Props, State>
     render() {
         return (<div draggable
                      onDragStart={(event) =>{
-                         event.dataTransfer.setData("newClass", JSON.stringify({elem: this.props.element, package: this.props.package}));
+                         event.dataTransfer.setData("newClass", JSON.stringify({elem: this.props.id, package: false}));
                      }}
                      className={"stereotypeElementItem"} onMouseOver={()=>{this.props.onMouseOver();}}>
-            <span className={"label"}>{this.props.label}</span><span className={"category"}>{this.props.category}</span>
+            <span className={"label"}>{this.props.label}</span>
         </div>);
     }
 }

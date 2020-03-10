@@ -10,15 +10,13 @@ export var selectedCell: string = "";
 // language code : language name
 export var Languages: {[key:string]: string} = {};
 
-export var ProjectSettings: {[key: string]: any} = {
-    name: {},
-    description: {}
-};
+
 
 //names
 //connections
 //descriptions
 //attributes
+//package
 export var ProjectElements: {[key:string]: any} = {};
 
 //display:
@@ -31,6 +29,10 @@ export var ViewSettings: {[key:string]: any} = {
 export var StereotypeCategories: string[] = [
 ];
 
+export var ModelCategories: string[] = [];
+export var PackageCategories: {[key:string]: any} = {
+    0: {name: "Root", contents:{}}
+};
 //labels
 //prefix
 //suffix
@@ -38,6 +40,8 @@ export var StereotypeCategories: string[] = [
 export var Stereotypes: {[key:string]: any} = {
 
 };
+
+export var ModelElements:{[key:string]: any} = {};
 
 export var Links: {[key:string]: any} = {
 
@@ -50,16 +54,27 @@ export var Namespaces: {[key:string]: any} = {
 };
 
 export var Diagrams: {[key:string]: any} = {
-    "Untitled": {}
+    "0": {name: "Untitled", json: ""}
 };
 
-export var AttributeTypePool = [
-    new AttributeType("String", "http://www.w3.org/2001/XMLSchema#string","http://www.w3.org/2001/XMLSchema#string", false),
-    new AttributeType("Integer", "http://www.w3.org/2001/XMLSchema#int","http://www.w3.org/2001/XMLSchema#int", false),
-    new AttributeType("Boolean", "http://www.w3.org/2001/XMLSchema#boolean", "http://www.w3.org/2001/XMLSchema#boolean",false),
-    new AttributeType("Float", "http://www.w3.org/2001/XMLSchema#float", "http://www.w3.org/2001/XMLSchema#float",false),
-    new AttributeType("DateTime", "http://www.w3.org/2001/XMLSchema#dateTime", "http://www.w3.org/2001/XMLSchema#dateTime",false)
-];
+export var ProjectSettings: {[key: string]: any} = {
+    name: {},
+    description: {},
+    selectedModel: Object.keys(Diagrams)[0]
+};
+export var AttributeTypePool: {[key:string]: any} = {
+    "http://www.w3.org/2001/XMLSchema#string": {name:"String", array: false},
+    "http://www.w3.org/2001/XMLSchema#int":{name:"Integer", array: false},
+    "http://www.w3.org/2001/XMLSchema#boolean":{name:"Boolean", array: false},
+    "http://www.w3.org/2001/XMLSchema#float":{name:"Float", array: false},
+    "http://www.w3.org/2001/XMLSchema#dateTime":{name:"DateTime", array: false}
+};
+//     new AttributeType("String", "http://www.w3.org/2001/XMLSchema#string","http://www.w3.org/2001/XMLSchema#string", false),
+//     new AttributeType("Integer", "http://www.w3.org/2001/XMLSchema#int","http://www.w3.org/2001/XMLSchema#int", false),
+//     new AttributeType("Boolean", "http://www.w3.org/2001/XMLSchema#boolean", "http://www.w3.org/2001/XMLSchema#boolean",false),
+//     new AttributeType("Float", "http://www.w3.org/2001/XMLSchema#float", "http://www.w3.org/2001/XMLSchema#float",false),
+//     new AttributeType("DateTime", "http://www.w3.org/2001/XMLSchema#dateTime", "http://www.w3.org/2001/XMLSchema#dateTime",false)
+// ];
 
 export var CardinalityPool = [
     new Cardinality("*", "*"),

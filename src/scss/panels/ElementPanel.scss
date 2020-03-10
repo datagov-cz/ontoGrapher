@@ -42,6 +42,24 @@
     height: calc(100vh - 175px) !important;
     overflow: auto;
   }
+  .margins{
+    margin: 5px;
+  }
+  .packageFolder{
+    margin: 3px;
+    padding: 5px 10px;
+    border-style: solid;
+    border-width: 2px;
+    border-color: rgba(0,0,0,0.30);
+    border-left-width: 4px;
+    &:hover{
+      background-color: #e9eaeb;
+    }
+
+  }
+  .open{
+    border-left-width: 8px;
+  }
 }
 
 

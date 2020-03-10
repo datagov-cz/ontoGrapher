@@ -1,4 +1,12 @@
-import {Links, Namespaces, ProjectElements, Stereotypes, ViewSettings} from "../var/Variables";
+import {
+    Links,
+    ModelElements,
+    Namespaces,
+    PackageCategories,
+    ProjectElements,
+    Stereotypes,
+    ViewSettings
+} from "../var/Variables";
 import {SourceData} from "../components/SourceData";
 import * as VariableLoader from "./../var/VariableLoader";
 import * as LocaleMain from "../locale/LocaleMain.json";
@@ -29,13 +37,22 @@ export function addSTP(data: SourceData){
     }
 }
 
+export function addModelTP(data: SourceData){
+    ModelElements[data.iri] = {
+        labels: VariableLoader.initLanguageObject(data.name),
+        descriptions: VariableLoader.initLanguageObject(data.description),
+        category: data.source
+    }
+}
+
 export function addClass(id: string, iri: string, language: string){
     let result: {[key: string]: any} = {};
     result["iri"] = iri;
     result["names"] = VariableLoader.initLanguageObject(LocaleMain.untitled + " " + getName(iri, language));
     result["connections"] = {};
     result["descriptions"] = VariableLoader.initLanguageObject("");
-    result["attributes"] = {};
+    result["attributes"] = [];
     result["diagrams"] = [];
+    result["package"] = Object.keys(PackageCategories)[0];
     ProjectElements[id] = result;
 }
