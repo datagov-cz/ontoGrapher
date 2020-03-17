@@ -19,6 +19,7 @@ interface MenuPanelProps{
     saveProject: Function;
     //saveProjectSettings: Function;
     saveString: string;
+    update: Function;
     //saveOGSettings: Function;
 }
 
@@ -58,7 +59,7 @@ export default class MenuPanel extends React.Component<MenuPanelProps, MenuPanel
                         // saveOGSettings={this.props.saveOGSettings}
                       />
                       {/*<MenuPanelView />*/}
-                      <MenuPanelSettings  projectLanguage={this.props.projectLanguage}/>
+                      <MenuPanelSettings update={this.props.update}  projectLanguage={this.props.projectLanguage}/>
                       <MenuPanelHelp />
                   </div>
               }

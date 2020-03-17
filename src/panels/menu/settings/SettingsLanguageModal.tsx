@@ -19,10 +19,11 @@ interface State {
 export default class SettingsLanguageModal extends React.Component<Props, State> {
     constructor(props: Props) {
         super(props);
-        this.setState({
+        this.state = ({
             languageName: "",
             languageCode: ""
         });
+        this.addLanguage = this.addLanguage.bind(this);
     }
 
     deleteLanguage(string: string) {
@@ -48,7 +49,7 @@ export default class SettingsLanguageModal extends React.Component<Props, State>
     render() {
         return (<Modal centered show={this.props.modal}>
             <Modal.Header>
-                <Modal.Title>{Locale.cardinalitySettings}</Modal.Title>
+                <Modal.Title>{Locale.menuModalLanguagesHeading}</Modal.Title>
             </Modal.Header>
             <Modal.Body>
                 <TableList headings={["",""]}>
@@ -64,17 +65,14 @@ export default class SettingsLanguageModal extends React.Component<Props, State>
                         value={this.state.languageName} placeholder={Locale.languageName} onChange={(event: { currentTarget: { value: any; }; }) => {
                         this.setState({languageName: event.currentTarget.value});
                     }}
-                        style={{width: "50px"}}
                     />
-                    ..
                     <Form.Control
                         type="text"
                         value={this.state.languageCode} placeholder={Locale.languageCode} onChange={(event: { currentTarget: { value: any; }; }) => {
                         this.setState({languageCode: event.currentTarget.value});
                     }}
-                        style={{width: "50px"}}
                     />
-                    <Button onClick={this.addLanguage} variant="primary">{Locale.addCardinality}</Button>
+                    <Button onClick={this.addLanguage} variant="primary">{Locale.addLanguage}</Button>
                 </Form>
             </Modal.Body>
             <Modal.Footer>

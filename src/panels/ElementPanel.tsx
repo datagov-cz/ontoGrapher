@@ -117,7 +117,6 @@ export default class ElementPanel extends React.Component<Props, State>{
         }
         this.stereotypes = result1;
         this.links = result2;
-        console.log(result2);
         this.models = result3;
     }
 

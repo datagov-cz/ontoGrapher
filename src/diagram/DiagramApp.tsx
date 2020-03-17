@@ -162,6 +162,8 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 
     }
 
+
+
     saveProject(){
         let save = {
             projectElements: ProjectElements,
@@ -180,11 +182,12 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
             // stereotypeCategories: StereotypeCategories,
             // modelElements: ModelElements,
             // links: Links,
-            // languages: Languages,
+            // languages: Languages,otepa
             // properties: MandatoryAttributePool,
             // attributes: AttributeTypePool,
             // cardinalities: CardinalityPool,
         };
+        console.log(save.packageRoot);
         this.setState({saveString: JSON.stringify(save)});
     }
     //
@@ -220,6 +223,7 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
                 saveString={this.state.saveString}
                 //theme={this.state.theme}
                 handleChangeLanguage={this.handleChangeLanguage}
+                update={()=>{this.elementPanel.current?.update();}}
                 //saveOGSettings={this.saveOGsettings}
             />
             <ElementPanel

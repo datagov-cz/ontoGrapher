@@ -111,7 +111,7 @@ export var Packages: {[key:string]: any} = {
 
 };
 Packages[Locale.root] = false;
-export var MandatoryAttributePool: {[key:string]: any} = {"&*": []};
+export var MandatoryAttributePool: {[key:string]: any} = {"&*": [], "Manual": []};
 export var Models: {[key:string]: any} = {
 
 };

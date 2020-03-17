@@ -25,6 +25,8 @@ export default class SettingsCardinalityModal extends React.Component<Props, Sta
             cardinalityName1: "",
             cardinalityName2: ""
         };
+        this.addCardinality = this.addCardinality.bind(this);
+        this.deleteCardinality = this.deleteCardinality.bind(this);
     }
 
     addCardinality() {
@@ -34,6 +36,7 @@ export default class SettingsCardinalityModal extends React.Component<Props, Sta
 
     deleteCardinality(index: number) {
         CardinalityPool.splice(index, 1);
+        this.forceUpdate();
     }
 
     render() {
@@ -44,7 +47,7 @@ export default class SettingsCardinalityModal extends React.Component<Props, Sta
             <Modal.Body>
                 <TableList headings={[""]}>
                     {CardinalityPool.map((card,i) => (
-                        <tr>{card.getString() }&nbsp;<a href="#" onClick={()=>this.deleteCardinality(i)}>{Locale.del}</a></tr>
+                        <tr><td>{card.getString() }&nbsp;<a href="#" onClick={()=>this.deleteCardinality(i)}>{Locale.del}</a></td></tr>
                     ))}
                 </TableList>
                 <h4>{Locale.createNew + Locale.cardinality}</h4>

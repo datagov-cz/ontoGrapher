@@ -29,10 +29,11 @@ export default class SettingsAttributeTypeModal extends React.Component<Props, S
             attributeTypeType: "",
             attributeType: Object.keys(AttributeTypePool)[0]
         }
+        this.addAttributeType = this.addAttributeType.bind(this);
     }
 
     addAttributeType() {
-        if (this.state.attributeTypeName !== "" && this.state.attributeTypeIRI !== "" && this.state.attributeTypeType !== ""){
+        if (this.state.attributeTypeName !== "" && this.state.attributeTypeIRI !== ""){
             AttributeTypePool[this.state.attributeTypeIRI] = {name: this.state.attributeTypeName, array:false};
             this.setState({attributeTypeName: "", attributeTypeType: "", attributeTypeIRI: ""});
         }
@@ -47,7 +48,7 @@ export default class SettingsAttributeTypeModal extends React.Component<Props, S
     render() {
         return (<Modal centered show={this.props.modal}>
             <Modal.Header>
-                <Modal.Title>{LocaleMenu.fileNewModalTitle}</Modal.Title>
+                <Modal.Title>{LocaleMenu.attrSettings}</Modal.Title>
             </Modal.Header>
             <Modal.Body>
                 <Form inline>
@@ -65,7 +66,7 @@ export default class SettingsAttributeTypeModal extends React.Component<Props, S
                 <TableList headings={["",""]}>
                     <tr>
                        <td>{Locale.name}</td>
-                        <td>{AttributeTypePool[this.state.attributeType]}</td>
+                        <td>{AttributeTypePool[this.state.attributeType].name}</td>
                     </tr>
                     <tr>
                         <td>{LocaleMenu.iri}</td>
@@ -77,7 +78,7 @@ export default class SettingsAttributeTypeModal extends React.Component<Props, S
                 <Form>
 
                     <Form.Control
-                        as="text"
+                        as="input"
                         value={this.state.attributeTypeName}
                         placeholder={Locale.attributeTypePlaceholder}
                         onChange={(event: { currentTarget: { value: any; }; }) => {
@@ -85,7 +86,7 @@ export default class SettingsAttributeTypeModal extends React.Component<Props, S
                         }}
                     />
                     <Form.Control
-                        as="text"
+                        as="input"
                         value={this.state.attributeTypeIRI}
                         placeholder={Locale.attributeTypeIRIPlaceholder}
                         onChange={(event: { currentTarget: { value: any; }; }) => {

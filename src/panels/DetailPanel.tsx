@@ -68,7 +68,6 @@ export default class DetailPanel extends React.Component<Props, State> {
     }
 
     handleChangeNameAttribute(event: { textarea: string }, pos: number) {
-        console.log(event, pos);
         let attrs = this.state.inputAttributes;
         attrs[pos].first = event.textarea;
         this.setState({inputAttributes: attrs, changes: true});
@@ -112,7 +111,7 @@ export default class DetailPanel extends React.Component<Props, State> {
     }
 
     prepareDetails(id: string) {
-        if (graph.getCell(id).isElement()) {
+        if (graph.getCell(id).isElement() && ProjectElements[id].active) {
             this.setState({
                 hidden: false,
                 model: id,
@@ -315,9 +314,9 @@ export default class DetailPanel extends React.Component<Props, State> {
                             </Tab>
                             <Tab eventKey={3} title={LocaleMain.diagram}>
                                 <TableList headings={[LocaleMenu.diagram]}>
-                                    {this.state.inputDiagrams.map((conn) =>
+                                    {this.state.inputDiagrams.map((conn,i) =>
                                         (<tr>
-                                            <td>{Diagrams[conn].name}</td>
+                                            <td>{Diagrams[conn].name}&nbsp;<a href="#" onClick={()=>{if (this.state.inputDiagrams.length > 1){this.state.inputDiagrams.splice(i,1); this.setState({changes: true});}}}>{LocaleMain.del}</a></td>
                                         </tr>)
                                     )}
                                 </TableList>
@@ -326,7 +325,7 @@ export default class DetailPanel extends React.Component<Props, State> {
                                 <TableList
                                     headings={[LocaleMenu.connectionVia, LocaleMenu.connectionTo, LocaleMenu.diagram]}>
                                     {this.state.inputConnections.map((conn) =>
-        {                   console.log(ProjectLinks[conn]);             return(<tr>
+        {                      return(<tr>
                                             <td>{Links[ProjectLinks[conn].iri].labels[this.props.projectLanguage]}</td>
                                             <td>{ProjectElements[ProjectLinks[conn].target].names[this.props.projectLanguage]}</td>
                                             <td>{ProjectLinks[conn].diagram}</td>
@@ -357,7 +356,7 @@ export default class DetailPanel extends React.Component<Props, State> {
                         resizeHandles={['nw']}
                         className={"details"}>
                         <div>
-                            <h3>{LocaleMain.detailPanelTitle}</h3>
+                            <h3>{LocaleMain.detailPanelTitleRelationship}</h3>
                             {this.state.changes ?
                                 <p className={"bordered"}>{LocaleMain.saveChanges}<br/><br/><Button onClick={() => {
                                     this.save();

@@ -10,6 +10,7 @@ import SettingsLinksModal from "./settings/SettingsLinksModal";
 
 interface Props {
     projectLanguage:string;
+    update:Function;
 }
 
 interface State {
@@ -42,7 +43,7 @@ export default class MenuPanelSettings extends React.Component<Props, State> {
             >{LocaleMain.menuPanelStereotypes}</NavDropdown.Item>
             <SettingsStereotypeModal modal={this.state.modalStereotype} close={() => {
                 this.setState({modalStereotype: false})
-            }} projectLanguage={this.props.projectLanguage}/>
+            }} projectLanguage={this.props.projectLanguage} update={this.props.update}/>
 
             <NavDropdown.Item
                 onClick={() => {
@@ -51,17 +52,17 @@ export default class MenuPanelSettings extends React.Component<Props, State> {
             >{LocaleMain.menuPanelLinks}</NavDropdown.Item>
             <SettingsLinksModal modal={this.state.modalLink} close={() => {
                 this.setState({modalLink: false})
-            }} projectLanguage={this.props.projectLanguage}/>
+            }} projectLanguage={this.props.projectLanguage} update={this.props.update}/>
 
 
-            <NavDropdown.Item
-                onClick={() => {
-                    this.setState({modalLanguage: true})
-                }}
-            >{LocaleMain.menuPanelLanguages}</NavDropdown.Item>
-            <SettingsLanguageModal modal={this.state.modalLanguage} close={() => {
-                this.setState({modalLanguage: false})
-            }}/>
+            {/*<NavDropdown.Item*/}
+            {/*    onClick={() => {*/}
+            {/*        this.setState({modalLanguage: true})*/}
+            {/*    }}*/}
+            {/*>{LocaleMain.menuPanelLanguages}</NavDropdown.Item>*/}
+            {/*<SettingsLanguageModal modal={this.state.modalLanguage} close={() => {*/}
+            {/*    this.setState({modalLanguage: false})*/}
+            {/*}}/>*/}
 
 
             <NavDropdown.Item

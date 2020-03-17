@@ -3,7 +3,7 @@ import React from 'react';
 import * as joint from 'jointjs';
 import {graphElement} from "../graph/GraphElement";
 import {graph, Links, ProjectElements, ProjectLinks, ProjectSettings} from "../var/Variables";
-import {getName, addClass, addLink, getModelName} from "../misc/Helper";
+import {getName, addClass, addLink, getModelName, addmodel} from "../misc/Helper";
 import * as LocaleMain from "../locale/LocaleMain.json";
 
 interface DiagramCanvasProps {
@@ -64,40 +64,34 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps, D
                 var offset = model.attr(['pointers', 'pointerShape']) === 'ellipse'
                     ? { x: -ellipseRadius * bbox.width / 2, y: ellipseRadius * bbox.height / 2  }
                     : { x: -3, y: 3 };
-
+                let tools = [new joint.elementTools.RemoveButton({
+                    useModelGeometry: true,
+                    y: '0%',
+                    x: '100%',
+                    offset: offset,
+                    // action: (evt) => {
+                    //     let cell = evt.currentTarget.getAttribute("model-id");
+                    //     graph.removeCells(graph.getCell(cell));
+                    //     ProjectElements[cell].hidden[ProjectSettings.selectedModel] = true;
+                    // }
+                })];
+                if (ProjectElements[elementView.model.id].active) {tools.push(new joint.elementTools.InfoButton({
+                    useModelGeometry: true,
+                    y: '0%',
+                    x: '4%',
+                    offset: offset
+                }));}
                 elementView.addTools(new joint.dia.ToolsView({
-                    tools: [
-                        new joint.elementTools.RemoveButton({
-                            useModelGeometry: true,
-                            y: '0%',
-                            x: '100%',
-                            offset: offset,
-                            // action: (evt) => {
-                            //     let cell = evt.currentTarget.getAttribute("model-id");
-                            //     graph.removeCells(graph.getCell(cell));
-                            //     ProjectElements[cell].hidden[ProjectSettings.selectedModel] = true;
-                            // }
-                        }),
-                        new joint.elementTools.InfoButton({
-                            useModelGeometry: true,
-                            y: '0%',
-                            x: '4%',
-                            offset: offset
-                        })
-                    ]
+                    tools: tools
                 }));
             },
             'link:mouseenter': function(linkView) {
                 var infoButton = new joint.linkTools.InfoButton();
                 var verticesTool = new joint.linkTools.Vertices();
                 var segmentsTool = new joint.linkTools.Segments();
-                var sourceArrowheadTool = new joint.linkTools.SourceArrowhead();
-                var targetArrowheadTool = new joint.linkTools.TargetArrowhead();
-                var sourceAnchorTool = new joint.linkTools.SourceAnchor();
-                var targetAnchorTool = new joint.linkTools.TargetAnchor();
                 var removeButton = new joint.linkTools.Remove();
                 var toolsView = new joint.dia.ToolsView({
-                    tools: [infoButton,verticesTool,segmentsTool,sourceArrowheadTool,targetAnchorTool,targetArrowheadTool,sourceAnchorTool,removeButton]
+                    tools: [verticesTool,segmentsTool,removeButton,infoButton]
                 });
                 linkView.addTools(toolsView);
             },
@@ -206,7 +200,7 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps, D
                         'pointer-events': 'none'
                     }
                 }],
-                distance: 60,
+                distance: 40,
                 offset: 0,
                 action: (evt) => {
                     this.props.prepareDetails(evt.currentTarget.getAttribute("model-id"));
@@ -258,7 +252,7 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps, D
                 if (data.type === "stereotype" && !data.package){
                     name = getModelName(data.elem, this.props.projectLanguage);
                 } else if (data.type === "package"){
-                    name = getName(ProjectElements[data.elem].iri, this.props.projectLanguage);
+                    name = ProjectElements[data.elem].names[this.props.projectLanguage];
                 } else {
                     name = LocaleMain.untitled + " " + getName(data.elem, this.props.projectLanguage);
                 }
@@ -273,7 +267,11 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps, D
                 //     }
                 // });
                 if (data.package) {
-                    addClass(cls.id, data.elem, this.props.projectLanguage);}
+                    addClass(cls.id, data.elem, this.props.projectLanguage);
+                } else if (data.type === "stereotype" && !data.package){
+                    addmodel(cls.id, data.elem, this.props.projectLanguage, name);
+                    ProjectElements[cls.id].active = false;
+                }
                 if (data.type === "package"){
                     cls = graphElement.create(data.elem);
                     ProjectElements[data.elem].hidden[ProjectSettings.selectedModel] = false;
@@ -300,14 +298,17 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps, D
                 });
                 cls.addTo(graph);
                 //graph.addCell(cls);
+
+                this.props.addCell();
                 if (data.type === "package"){
+                    if (!(ProjectElements[id].diagrams.includes(ProjectSettings.selectedModel))){
+                        ProjectElements[id].diagrams.push(ProjectSettings.selectedModel)
+                    }
                     let id = data.elem;
-                    for (let link of ProjectLinks){
-                        if ((link.source === id || link.target === id) && (graph.getCell(link.source && graph.getCell(link.target)))){
+                    for (let link in ProjectLinks){
+                        if ((ProjectLinks[link].source === id || ProjectLinks[link].target === id) && (graph.getCell(ProjectLinks[link].source) && graph.getCell(ProjectLinks[link].target))){
                             let lnk = new joint.shapes.standard.Link({id:link});
-                            lnk.source({id:link.source});
-                            lnk.target({id: link.target});
-                            if (link.sourceCardinality.getString() !== LocaleMain.none) {
+                            if (ProjectLinks[link].sourceCardinality.getString() !== LocaleMain.none) {
                                 lnk.appendLabel({
                                     attrs: {
                                         text: {
@@ -334,18 +335,19 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps, D
                             lnk.appendLabel({
                                 attrs: {
                                     text: {
-                                        text: Links[link].labels[this.props.projectLanguage]
+                                        text: Links[ProjectLinks[link].iri].labels[this.props.projectLanguage]
                                     }
                                 },
                                 position: {
                                     distance: 0.5
                                 }
                             });
+                            lnk.source({id: ProjectLinks[link].source});
+                            lnk.target({id: ProjectLinks[link].target});
                             lnk.addTo(graph);
                         }
                     }
                 }
-                this.props.addCell();
             }}
         />);
 

@@ -1,7 +1,7 @@
 import {
     Diagrams,
     graph,
-    Links,
+    Links, MandatoryAttributePool,
     ModelElements,
     Namespaces, PackageRoot,
     ProjectElements, ProjectLinks, ProjectSettings, StereotypeCategories,
@@ -81,6 +81,24 @@ export function addClass(id: string, iri: string, language: string) {
     ProjectElements[id] = result;
 }
 
+export function addmodel(id: string, iri: string, language: string, name: string) {
+    let result: { [key: string]: any } = {};
+    result["iri"] = iri;
+    result["names"] = VariableLoader.initLanguageObject(LocaleMain.untitled + " " + name);
+    result["connections"] = [];
+    result["descriptions"] = VariableLoader.initLanguageObject("");
+    result["attributes"] = [];
+    let diagramArray: boolean[] = [];
+    Diagrams.forEach((obj, i) => {
+        diagramArray.push(false);
+    });
+    result["diagrams"] = [ProjectSettings.selectedModel];
+    result["hidden"] = diagramArray;
+    result["package"] = PackageRoot;
+    result["active"] = false;
+    ProjectElements[id] = result;
+}
+
 export function addLink(id: string, iri: string, source: string, target: string) {
     let result: { [key: string]: any } = {};
     result["iri"] = iri;
@@ -146,7 +164,7 @@ export function loadDiagram(load: {
         pos: any;
     }[], links: {
         vertices: { (): joint.dia.Link.Vertex[]; (vertices: joint.dia.Link.Vertex[]): joint.shapes.standard.Link };
-        labels: { (): joint.dia.Link.Label[]; (labels: joint.dia.Link.Label[]): joint.shapes.standard.Link };
+        labels: any;
         target: string;
         source: string;
     }[]
@@ -161,12 +179,11 @@ export function loadDiagram(load: {
         });
         cls.addTo(graph);
     }
-    console.log(graph.getCells());
     for (let link of load.links) {
         let lnk = new joint.shapes.standard.Link();
         lnk.source({id: link.source});
         lnk.target({id: link.target});
-        lnk.labels = link.labels;
+        lnk.labels(link.labels);
         // @ts-ignore
         lnk.vertices(link.vertices);
         lnk.addTo(graph);

@@ -2,7 +2,7 @@ import React from 'react';
 import {Button, Form, Modal, Tab, Tabs} from "react-bootstrap";
 import * as LocaleMenu from "../../../locale/LocaleMenu.json";
 import * as LocaleMain from "../../../locale/LocaleMain.json";
-import {Languages, Links, StereotypeCategories, Stereotypes} from "../../../var/Variables";
+import {Languages, Links, MandatoryAttributePool, StereotypeCategories, Stereotypes} from "../../../var/Variables";
 import TableList from "../../../components/TableList";
 // @ts-ignore
 import {RIEInput} from "riek";
@@ -16,6 +16,7 @@ interface Props {
     modal:boolean;
     close: Function;
     projectLanguage: string;
+    update:Function;
 }
 
 interface State {
@@ -30,7 +31,8 @@ interface State {
 export default class SettingsLinksModal extends React.Component<Props, State> {
     constructor(props: Props) {
         super(props);
-        this.setState({link: Object.keys(Links)[0],
+        this.state = ({
+            link: Object.keys(Links)[0],
             name: Links[Object.keys(Links)[0]].labels,
             changes: false,
             inputManual: "",
@@ -85,6 +87,8 @@ export default class SettingsLinksModal extends React.Component<Props, State> {
             name: Links[Object.keys(Links)[0]].labels,
             changes: false
         })
+
+        this.props.update();
     }
 
     addLink() {
@@ -99,12 +103,13 @@ export default class SettingsLinksModal extends React.Component<Props, State> {
             }
             this.setState({inputManual: ""});
         }
+        this.props.update();
     }
 
     render() {
         return (<Modal centered show={this.props.modal}>
             <Modal.Header>
-                <Modal.Title>{LocaleMain.nodesSettings}</Modal.Title>
+                <Modal.Title>{LocaleMain.linksSettings}</Modal.Title>
             </Modal.Header>
             <Modal.Body>
                 <Tabs id="stereotypeMenu">
@@ -113,7 +118,7 @@ export default class SettingsLinksModal extends React.Component<Props, State> {
                         <Form inline>
                             <Form.Control as={"select"} value={this.state.link}
                                           onChange={(event: React.FormEvent<HTMLInputElement>) => {
-                                              this.setState({link: event.currentTarget.value});
+                                              this.setState({link: event.currentTarget.value, name: Links[event.currentTarget.value].labels});
                                           }}>
                                 {Object.keys(Links).map((str) => (<option
                                     value={str}>{Links[str].labels[this.props.projectLanguage]}</option>))}

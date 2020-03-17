@@ -15,6 +15,7 @@ interface Props {
     modal: boolean;
     close: Function;
     projectLanguage: string;
+    update: Function;
 }
 
 interface State {
@@ -41,7 +42,7 @@ export default class SettingsStereotypeModal extends React.Component<Props, Stat
 
     addStereotype() {
         if (this.state.inputManual !== "") {
-            addSTP(new SourceData("", this.state.inputManual, "", "Manual"));
+            addSTP(new SourceData(this.state.inputManual, this.state.inputManual, "", "Manual"));
             this.setState({inputManual: ""});
         }
     }
@@ -75,12 +76,14 @@ export default class SettingsStereotypeModal extends React.Component<Props, Stat
             stereotype: Object.keys(Stereotypes)[0],
             name: Stereotypes[Object.keys(Stereotypes)[0]].labels,
             changes: false
-        })
+        });
+        this.props.update();
     }
 
     confirm() {
         Stereotypes[this.state.stereotype].labels = this.state.name;
         this.setState({changes: false});
+        this.props.update();
     }
 
     handleChangeName(event: {
@@ -103,7 +106,7 @@ export default class SettingsStereotypeModal extends React.Component<Props, Stat
                         <Form inline>
                             <Form.Control as={"select"} value={this.state.stereotype}
                                           onChange={(event: React.FormEvent<HTMLInputElement>) => {
-                                              this.setState({stereotype: event.currentTarget.value});
+                                              this.setState({stereotype: event.currentTarget.value, name: Stereotypes[event.currentTarget.value].labels});
                                           }}>
                                 {Object.keys(Stereotypes).map((str) => (<option
                                     value={str}>{Stereotypes[str].labels[this.props.projectLanguage]}</option>))}
@@ -145,7 +148,7 @@ export default class SettingsStereotypeModal extends React.Component<Props, Stat
                         <h5>{LocaleMenu.addManually}</h5>
                         <Form inline>
                             <Form.Control
-                                as={"text"}
+                                as={"input"}
                                 value={this.state.inputManual}
                                 placeholder={LocaleMain.stereotypeRDFPlaceholder}
                                 onChange={(event: { currentTarget: { value: any; }; }) => {
@@ -159,7 +162,7 @@ export default class SettingsStereotypeModal extends React.Component<Props, Stat
                         <h5>{LocaleMenu.addSource}</h5>
                         <Form inline>
                             <Form.Control
-                                as={"text"}
+                                as={"input"}
                                 value={this.state.inputTTL}
                                 placeholder={LocaleMain.stereotypeSourcePlaceholder}
                                 onChange={(event: { currentTarget: { value: any; }; }) => {
@@ -167,7 +170,7 @@ export default class SettingsStereotypeModal extends React.Component<Props, Stat
                                 }}
                             />
                             <Form.Control
-                                as={"text"}
+                                as={"input"}
                                 value={this.state.inputSource}
                                 placeholder={LocaleMain.stereotypeSourceNamePlaceholder}
                                 onChange={(event: { currentTarget: { value: any; }; }) => {
