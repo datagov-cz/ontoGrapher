@@ -185,7 +185,6 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
             // attributes: AttributeTypePool,
             // cardinalities: CardinalityPool,
         };
-        console.log(save.packageRoot);
         this.setState({saveString: JSON.stringify(save)});
     }
     //
