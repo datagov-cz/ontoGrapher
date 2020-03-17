@@ -2,9 +2,12 @@ import * as Locale from "../locale/LocaleMain.json";
 import {AttributeType} from "../components/AttributeType";
 import {Cardinality} from "../components/Cardinality";
 import * as joint from 'jointjs';
+import {PackageNode} from "../components/PackageNode";
+import {addLink} from "../misc/Helper";
 
 export var graph = new joint.dia.Graph;
-export var selectedCell: string = "";
+
+export var selectedModel: string = "";
 
 
 // language code : language name
@@ -13,11 +16,24 @@ export var Languages: {[key:string]: string} = {};
 
 
 //names
+//iri
 //connections
 //descriptions
 //attributes
 //package
+//diagrams
+//hidden
+//active
 export var ProjectElements: {[key:string]: any} = {};
+
+//sourceCard
+//targetCard
+//iri
+//diagram
+//source
+//target
+//description
+export var ProjectLinks:{[key:string]: any} = {};
 
 //display:
 //1 - namespace:name
@@ -30,9 +46,11 @@ export var StereotypeCategories: string[] = [
 ];
 
 export var ModelCategories: string[] = [];
-export var PackageCategories: {[key:string]: any} = {
-    0: {name: "Root", contents:{}}
-};
+// export var PackageCategories: {[key:string]: any} = {
+//     0: {name: "Root", contents:{}}
+// };
+
+export var PackageRoot: PackageNode = new PackageNode("Root", undefined, true);
 //labels
 //prefix
 //suffix
@@ -53,14 +71,13 @@ export var Namespaces: {[key:string]: any} = {
 
 };
 
-export var Diagrams: {[key:string]: any} = {
-    "0": {name: "Untitled", json: ""}
-};
-
+export var Diagrams: {[key:string]: any}[] = [
+    {name: "Untitled", json: ""}
+];
 export var ProjectSettings: {[key: string]: any} = {
     name: {},
     description: {},
-    selectedModel: Object.keys(Diagrams)[0]
+    selectedModel: 0
 };
 export var AttributeTypePool: {[key:string]: any} = {
     "http://www.w3.org/2001/XMLSchema#string": {name:"String", array: false},

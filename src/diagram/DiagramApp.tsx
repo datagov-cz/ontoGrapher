@@ -5,13 +5,14 @@ import DiagramCanvas from "./DiagramCanvas";
 import * as Locale from "../locale/LocaleMain.json";
 import * as VariableLoader from "../var/VariableLoader";
 import {
+    AttributeTypePool, CardinalityPool,
     Diagrams,
     graph,
     Languages,
-    Links, ModelElements,
-    ProjectElements,
+    Links, MandatoryAttributePool, ModelElements, PackageRoot,
+    ProjectElements, ProjectLinks,
     ProjectSettings, StereotypeCategories,
-    StereotypePoolPackage, Stereotypes
+    StereotypePoolPackage, Stereotypes, ViewSettings
 } from "../var/Variables";
 import {DiagramModel} from "./DiagramModel";
 import DetailPanel from "../panels/DetailPanel";
@@ -19,6 +20,8 @@ import {getVocabulariesFromJSONSource} from "../interface/JSONInterface";
 import * as SemanticWebInterface from "../interface/SemanticWebInterface";
 import PropTypes from "prop-types";
 import {Defaults} from "../config/Defaults";
+import {testing} from "../misc/Helper";
+import {PackageNode} from "../components/PackageNode";
 
 interface DiagramAppProps{
     readonly?: boolean;
@@ -38,7 +41,6 @@ interface DiagramAppState{
     projectLanguage: string;
     saveString: string;
     selectedLink: string;
-    selectedModel: string;
     detailPanelHidden: boolean;
     //theme: "light" | "dark";
 }
@@ -66,7 +68,6 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
             projectLanguage: Object.keys(Languages)[0],
             selectedLink: Object.keys(Links)[0],
             saveString: "",
-            selectedModel: Locale.untitled,
             detailPanelHidden: false
         });
 
@@ -102,6 +103,8 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
                 this.elementPanel.current?.update();
             });
         }
+
+        testing();
     }
 
     prepareDetails(id: string){
@@ -121,31 +124,66 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
         });
     }
 
-    //TODO: unfinished function
     newProject(){
         VariableLoader.initProjectSettings();
         this.setState({projectLanguage: Object.keys(Languages)[0],
             selectedLink: Object.keys(Links)[0],
-            saveString: "",
-            selectedModel: Locale.untitled});
+            saveString: ""});
+        Diagrams.length = 0;
+        Diagrams.push([Locale.untitled, {}]);
+        StereotypeCategories.length = 0;
+        Object.keys(ProjectElements).forEach(el => delete ProjectElements[el]);
+        Object.keys(ProjectLinks).forEach(el => delete ProjectLinks[el]);
+        PackageRoot.elements = [];
+        PackageRoot.children = [];
+        this.elementPanel.current?.update();
     }
 
-    //TODO: unfinished function
     loadProject(loadString: string){
         let save = JSON.parse(loadString);
-        for (let diagram in Diagrams){
-            delete Diagrams[diagram];
+        this.newProject();
+        this.setState({
+            selectedLink: save.selectedLink,
+            projectLanguage: save.projectLanguage
+        });
+        for (let key in save.projectElements){
+            ProjectElements[key] = save.projectElements[key];
         }
-        for (let diagram in save.diagrams){
-            Diagrams[diagram] = save.diagrams[diagram];
+        for (let key in save.projectLinks){
+            ProjectLinks[key] = save.projectLinks[key];
         }
-        //this.handleChangeSelectedModel(Object.keys(Diagrams)[0]);
+        ProjectSettings.name = save.projectSettings.name;
+        ProjectSettings.description = save.projectSettings.description;
+        ProjectSettings.selectedModel = save.projectSettings.selectedModel;
+        save.diagrams.forEach((diagram: { [key: string]: any; })=>{Diagrams.push(diagram)});
+        PackageRoot.children = save.packageRoot.children;
+        PackageRoot.elements = save.packageRoot.elements;
+        this.elementPanel.current?.update();
+
     }
 
-    //TODO: unfinished function
     saveProject(){
         let save = {
-            diagrams: JSON.stringify(Diagrams)
+            projectElements: ProjectElements,
+            projectLinks: ProjectLinks,
+            projectSettings: ProjectSettings,
+            selectedLink: this.state.selectedLink,
+            projectLanguage: this.state.projectLanguage,
+            diagrams: Diagrams,
+            //viewSettings: ViewSettings,
+            packageRoot: {
+                children: PackageRoot.children,
+                elements: PackageRoot.elements
+            },
+            // //loaded things
+            // stereotypes: Stereotypes,
+            // stereotypeCategories: StereotypeCategories,
+            // modelElements: ModelElements,
+            // links: Links,
+            // languages: Languages,
+            // properties: MandatoryAttributePool,
+            // attributes: AttributeTypePool,
+            // cardinalities: CardinalityPool,
         };
         this.setState({saveString: JSON.stringify(save)});
     }
@@ -167,6 +205,10 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
     //     })
     // }
 
+    hide(id:string, diagram: number){
+        ProjectElements[id].hidden[diagram] = true;
+    }
+
     render(){
         return(<div className={"app"}>
             <MenuPanel
@@ -185,17 +227,20 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
                 projectLanguage={this.state.projectLanguage}
                 handleChangeSelectedLink={this.handleChangeSelectedLink}
                 selectedLink={this.state.selectedLink}
+
             />
             <DetailPanel
                 ref={this.detailPanel}
                 projectLanguage={this.state.projectLanguage}
             />
             <DiagramCanvas
+                hide={this.hide}
                 ref={this.canvas}
                 selectedLink={this.state.selectedLink}
                 projectLanguage={this.state.projectLanguage}
                 prepareDetails={this.prepareDetails}
                 hideDetails={() => {this.detailPanel.current?.hide();}}
+                addCell={() => {this.elementPanel.current?.forceUpdate();}}
             />
         </div>);
   }

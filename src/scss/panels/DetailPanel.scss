@@ -12,10 +12,14 @@
   .detailTitle{
     margin: 10px 20px;
   }
-  .separated{
+  .bordered{
     margin: auto;
     margin-bottom: 10px;
+    padding: 2px;
     display: flex;
+    border-style: solid;
+    border-width: 2px;
+    border-color: red;
     flex-direction: row;
     justify-content: center;
   }

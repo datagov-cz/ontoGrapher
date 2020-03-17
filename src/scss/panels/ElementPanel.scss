@@ -58,7 +58,11 @@
 
   }
   .open{
-    border-left-width: 8px;
+    border-left-width: 10px;
+  }
+  .hidden{
+    border-style: dashed;
+    border-color: rgba(0,0,0,0.10);
   }
 }
 

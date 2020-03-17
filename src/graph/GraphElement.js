@@ -1,6 +1,6 @@
 import * as joint from "jointjs";
 
-export var graphElement = joint.dia.Element.define('element.Rectangle', {
+export var graphElement = joint.dia.Element.define('custom.customRectangle', {
     z: 2,
     attrs: {
         root: {
@@ -11,12 +11,18 @@ export var graphElement = joint.dia.Element.define('element.Rectangle', {
         },
         border: {
             stroke: '#000',
-            strokeWidth: 1
+            strokeWidth: 1,
+            rough: {
+                type: 'rectangle'
+            }
         },
         body: {
             strokeWidth: 1,
             stroke: '#000',
-            fill: '#FFFFFF'
+            fill: '#FFFFFF',
+            rough: {
+                type: 'rectangle'
+            }
         },
         label: {
             textVerticalAnchor: 'middle',
@@ -54,27 +60,10 @@ export var graphElement = joint.dia.Element.define('element.Rectangle', {
     }]
 }, {
 
-    create: function(type) {
-        return new this({
-            attrs: {
-                pointers: {
-                    pointerShape: 'rectangle'
-                },
-                body: {
-                    rough: {
-                        type: 'rectangle'
-                    }
-                },
-                border: {
-                    rough: {
-                        type: 'rectangle'
-                    }
-                }
-            }
-        });
-    },
-
-    attributes: {
+    create: function(id) {
+        return new this({id: id});
+    }
+    ,attributes: {
         rough: {
             set: function(opt, bbox) {
                 var width = bbox.width;

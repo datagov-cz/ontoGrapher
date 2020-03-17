@@ -21,7 +21,7 @@ export default class StereotypeElementItem extends React.Component<Props, State>
     render() {
         return (<div draggable
                      onDragStart={(event) =>{
-                         event.dataTransfer.setData("newClass", JSON.stringify({elem: this.props.element, package: this.props.package}));
+                         event.dataTransfer.setData("newClass", JSON.stringify({type: "stereotype", elem: this.props.element, package: this.props.package}));
                      }}
                      className={"stereotypeElementItem"} onMouseOver={()=>{this.props.onMouseOver();}}>
             <span className={"label"}>{this.props.label}</span><span className={"category"}>{this.props.category}</span>

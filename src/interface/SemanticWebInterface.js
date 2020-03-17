@@ -1,8 +1,17 @@
-import {AttributeTypePool, GeneralizationPool, Languages, LinkPool, VocabularyPool} from "../var/Variables";
+import {
+    AttributeTypePool,
+    GeneralizationPool,
+    Languages,
+    LinkPool,
+    Links,
+    StereotypeCategories,
+    VocabularyPool
+} from "../var/Variables";
 import * as Locale from "../locale/LocaleMain.json";
 import {SourceData} from "../components/SourceData";
 import {isBlankNode} from "n3/lib/N3Util";
 import * as Helper from "../misc/Helper";
+import * as VariableLoader from "../var/VariableLoader";
 
 export function fetchClasses(name, source, typeIRI, replace, language, callback) {
     const N3 = require('n3');
@@ -78,7 +87,15 @@ export function fetchRelationships(name, source, typeIRI, replace, language, cal
         for (let key in result){
             if (result[key].relationship){
                 LinkPool[result[key].label]=["Empty",true,false,[],key,"",""];
+                Links[key] = {
+                    labels: VariableLoader.initLanguageObject(result[key].label),
+                    descriptions: VariableLoader.initLanguageObject(""),
+                    category: name
+                }
             }
+        }
+        if (!(StereotypeCategories.includes(name))){
+            StereotypeCategories.push(name);
         }
         callback();
     }).catch((err) => {

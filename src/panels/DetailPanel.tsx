@@ -1,9 +1,17 @@
 import React from 'react';
 import {ResizableBox} from "react-resizable";
-import {AttributeTypePool, graph, Languages, ProjectElements} from "../var/Variables";
+import {
+    AttributeTypePool, CardinalityPool, Diagrams,
+    graph,
+    Languages, Links,
+    MandatoryAttributePool,
+    ProjectElements,
+    ProjectLinks,
+    Stereotypes
+} from "../var/Variables";
 import * as LocaleMain from "../locale/LocaleMain.json";
 import _ from 'underscore';
-import {Button, ButtonGroup, Form, Modal, Tab, Tabs} from "react-bootstrap";
+import {Button, ButtonGroup, Form, Modal, OverlayTrigger, Tab, Tabs, Tooltip} from "react-bootstrap";
 import {AttributeType} from "../components/AttributeType";
 import TableList from "../components/TableList";
 import * as LocaleMenu from "../locale/LocaleMenu.json";
@@ -21,10 +29,15 @@ interface State {
     hidden: boolean;
     changes: boolean;
     model: any;
-    inputNames: {[key:string]: string};
-    inputDescriptions: {[key:string]: string};
+    inputNames: { [key: string]: string };
+    inputDescriptions: { [key: string]: string };
     inputAttributes: AttributeObject[];
-    inputDiagrams: string[];
+    inputDiagrams: number[];
+    sourceCardinality: string;
+    targetCardinality: string;
+    inputConnections: [];
+    iri: string;
+    type: string;
 }
 
 export default class DetailPanel extends React.Component<Props, State> {
@@ -38,25 +51,30 @@ export default class DetailPanel extends React.Component<Props, State> {
             inputDescriptions: VariableLoader.initLanguageObject(""),
             inputAttributes: [],
             inputDiagrams: [],
+            inputConnections: [],
+            iri: "",
+            sourceCardinality: "0",
+            targetCardinality: "0",
+            type: ""
         };
         this.hide = this.hide.bind(this);
         this.save = this.save.bind(this);
     }
 
-    deleteName(language: string){
+    deleteName(language: string) {
         let name = this.state.inputNames;
         name[language] = "";
         this.setState({inputNames: name});
     }
 
-    handleChangeNameAttribute(event: { textarea: string }, pos: number){
-        console.log(event,pos);
+    handleChangeNameAttribute(event: { textarea: string }, pos: number) {
+        console.log(event, pos);
         let attrs = this.state.inputAttributes;
         attrs[pos].first = event.textarea;
         this.setState({inputAttributes: attrs, changes: true});
     }
 
-    createAttribute(){
+    createAttribute() {
         let attr = new AttributeObject("", AttributeTypePool[Object.keys(AttributeTypePool)[0]]);
         let attrs = this.state.inputAttributes;
         attrs.push(attr);
@@ -69,144 +87,361 @@ export default class DetailPanel extends React.Component<Props, State> {
         this.setState({inputAttributes: attrs, changes: true});
     }
 
-    handleChangeDescription(event: React.ChangeEvent<HTMLInputElement>, language: string){
+    handleChangeDescription(event: React.ChangeEvent<HTMLInputElement>, language: string) {
         let description = this.state.inputDescriptions;
         description[language] = event.target.value;
         this.setState({inputDescriptions: description, changes: true});
     }
 
-    deleteAttribute(i: number){
+    deleteAttribute(i: number) {
         let attrs = this.state.inputAttributes;
-        attrs.splice(i,1);
+        attrs.splice(i, 1);
         this.setState({inputAttributes: attrs, changes: true});
     }
 
     handleChangeName(event: {
         textarea: string;
-    }, language: string){
+    }, language: string) {
         let name = this.state.inputNames;
         name[language] = event.textarea;
         this.setState({inputNames: name, changes: true});
     }
 
-    hide(){
+    hide() {
         this.setState({hidden: true});
     }
 
-    prepareDetails(id: string){
-        this.setState({
-            hidden: false,
-            model: id,
-            inputNames: ProjectElements[id].names,
-            inputDescriptions: ProjectElements[id].descriptions,
-            inputAttributes: ProjectElements[id].attributes,
-            inputDiagrams: ProjectElements[id].diagrams,
-        });
-
+    prepareDetails(id: string) {
+        if (graph.getCell(id).isElement()) {
+            this.setState({
+                hidden: false,
+                model: id,
+                inputNames: ProjectElements[id].names,
+                inputDescriptions: ProjectElements[id].descriptions,
+                inputAttributes: ProjectElements[id].attributes,
+                inputDiagrams: ProjectElements[id].diagrams,
+                inputConnections: ProjectElements[id].connections,
+                iri: ProjectElements[id].iri,
+                type: "elem"
+            });
+        } else if (graph.getCell(id).isLink()) {
+            this.setState({
+                sourceCardinality: CardinalityPool.indexOf(ProjectLinks[id].sourceCardinality).toString(10),
+                targetCardinality: CardinalityPool.indexOf(ProjectLinks[id].targetCardinality).toString(10),
+                iri: ProjectLinks[id].iri,
+                model: id,
+                type: "link",
+                hidden: false
+            });
+        }
     }
 
-    save(){
+    save() {
         this.setState({
-           changes: false
+            changes: false
         });
-        ProjectElements[this.state.model].names = this.state.inputNames;
-        ProjectElements[this.state.model].descriptions = this.state.inputDescriptions;
-        ProjectElements[this.state.model].attributes = this.state.inputAttributes;
-        ProjectElements[this.state.model].diagrams = this.state.inputDiagrams;
-        graph.getCell(this.state.model).attr({
-            label: {
-                text: ProjectElements[this.state.model].names[this.props.projectLanguage]
+        if (this.state.type === "elem") {
+            ProjectElements[this.state.model].names = this.state.inputNames;
+            ProjectElements[this.state.model].descriptions = this.state.inputDescriptions;
+            ProjectElements[this.state.model].attributes = this.state.inputAttributes;
+            ProjectElements[this.state.model].diagrams = this.state.inputDiagrams;
+            graph.getCell(this.state.model).attr({
+                label: {
+                    text: ProjectElements[this.state.model].names[this.props.projectLanguage]
+                }
+            });
+        } else {
+            ProjectLinks[this.state.model].sourceCardinality = CardinalityPool[parseInt(this.state.sourceCardinality, 10)];
+            ProjectLinks[this.state.model].targetCardinality = CardinalityPool[parseInt(this.state.targetCardinality, 10)];
+            ProjectLinks[this.state.model].iri = this.state.iri;
+            let links = graph.getLinks();
+            for (let link of links) {
+                if (link.id === this.state.model) {
+                    switch (link.labels.length) {
+                        case 1:
+                            link.removeLabel(0);
+                            break;
+                        case 2:
+                            link.removeLabel(0);
+                            link.removeLabel(0);
+                            break;
+                        case 3:
+                            link.removeLabel(0);
+                            link.removeLabel(0);
+                            link.removeLabel(0);
+                            break;
+                    }
+                    if (ProjectLinks[this.state.model].sourceCardinality.getString() !== LocaleMain.none) {
+                        link.appendLabel({
+                            attrs: {
+                                text: {
+                                    text: ProjectLinks[this.state.model].sourceCardinality.getString()
+                                }
+                            },
+                            position: {
+                                distance: 20
+                            }
+                        });
+                    }
+                    if (ProjectLinks[this.state.model].targetCardinality.getString() !== LocaleMain.none) {
+                        link.appendLabel({
+                            attrs: {
+                                text: {
+                                    text: ProjectLinks[this.state.model].targetCardinality.getString()
+                                }
+                            },
+                            position: {
+                                distance: -20
+                            }
+                        });
+                    }
+                    link.appendLabel({
+                        attrs: {
+                            text: {
+                                text: Links[this.state.iri].labels[this.props.projectLanguage]
+                            }
+                        },
+                        position: {
+                            distance: 0.5
+                        }
+                    });
+                }
             }
-        });
+        }
+
     }
 
     render() {
-        if (this.state.hidden){
-            return (<div></div>)
-        } else {
-            return(<ResizableBox
-                width={300}
-                height={1000}
-                axis={"x"}
-                handleSize={[8, 8]}
-                resizeHandles={['nw']}
-                className={"details"}>
-                <div>
-                    <h3>{LocaleMain.detailPanelTitle}</h3>
-                    {this.state.changes ? <p className={"red"}>{LocaleMain.saveChanges}</p> : <p></p>}
-                    <div className={"separated"}>
-                        <ButtonGroup>
-                            <Button onClick={()=>{this.save();}}>{LocaleMain.menuPanelSave}</Button>
-                            <Button>{LocaleMain.locate}</Button>
-                        </ButtonGroup>
+        if (!this.state.hidden) {
+            if (this.state.type === "elem") {
+                return (<ResizableBox
+                    width={300}
+                    height={1000}
+                    axis={"x"}
+                    handleSize={[8, 8]}
+                    resizeHandles={['nw']}
+                    className={"details"}>
+                    <div>
+                        <h3>{LocaleMain.detailPanelTitle}</h3>
+                        {this.state.changes ?
+                            <p className={"bordered"}>{LocaleMain.saveChanges}<br/><br/><Button onClick={() => {
+                                this.save();
+                            }}>{LocaleMain.menuPanelSave}</Button></p> : <p></p>}
+                        <Tabs id={"detailsTabs"}>
+                            <Tab eventKey={1} title={LocaleMain.description}>
+                                <TableList headings={[LocaleMenu.itemInfo,""]}>
+                                    <tr>
+                                        <td>{LocaleMenu.stereotype}</td>
+                                        <td>{Stereotypes[this.state.iri].labels[this.props.projectLanguage]}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>{LocaleMenu.iri}</td>
+                                        <td>{this.state.iri}</td>
+                                    </tr>
+                                </TableList>
+                                <h5>{LocaleMenu.fileProjectSettingsTitles}</h5>
+                                <TableList headings={[LocaleMenu.title, LocaleMenu.language]}>
+                                    {Object.keys(Languages).map((language) => (
+                                        <tr key={language}>
+                                            <td>
+                                                <RIEInput
+                                                    className={"rieinput"}
+                                                    value={this.state.inputNames[language].length > 0 ? this.state.inputNames[language] : "<blank>"}
+                                                    change={(event: { textarea: string }) => {
+                                                        this.handleChangeName(event, language);
+                                                    }}
+                                                    propName="textarea"
+                                                />
+                                                &nbsp;
+                                                <a href="#" onClick={() => this.deleteName(language)}>
+                                                    {LocaleMenu.deleteProjectName}</a>
+                                            </td>
+                                            <td>{Languages[language]}</td>
+                                        </tr>
+                                    ))}
+                                </TableList>
+                                <h5>{LocaleMenu.fileProjectSettingsDescriptions}</h5>
+                                <Tabs id={"descriptions"}>
+                                    {Object.keys(Languages).map((language) => (
+                                        <Tab eventKey={language} title={Languages[language]}>
+                                            <Form.Control
+                                                as={"textarea"}
+                                                rows={3}
+                                                onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                                                    this.handleChangeDescription(event, language);
+                                                }}
+                                                value={this.state.inputDescriptions[language]}
+                                            />
+                                        </Tab>))}
+                                </Tabs>
+                            </Tab>
+                            <Tab eventKey={2} title={LocaleMain.detailPanelAttributes}>
+                                <TableList headings={[LocaleMenu.title, LocaleMenu.attributeType]}>
+                                    {this.state.inputAttributes.map((attr, i) => (
+                                        <tr key={i}>
+                                            <td>
+                                                <RIEInput
+                                                    className={"rieinput"}
+                                                    value={attr.first.length > 0 ? attr.first : "<blank>"}
+                                                    change={(event: { textarea: string }) => {
+                                                        this.handleChangeNameAttribute(event, i);
+                                                    }}
+                                                    propName="textarea"
+                                                />
+                                                &nbsp;
+                                                <a href="#" onClick={(event) => {
+                                                    this.deleteAttribute(i);
+                                                }}>
+                                                    {LocaleMenu.delete}</a>
+                                            </td>
+                                            <td>
+                                                <Form inline>
+                                                    <Form.Control as="select" value={attr.second.iri}
+                                                                  onChange={(event: React.FormEvent<HTMLInputElement>) => {
+                                                                      this.handleChangeAttributeType(event, i);
+                                                                  }}>
+                                                        {Object.keys(AttributeTypePool).map((attrtype) => <option
+                                                            value={attrtype}>{AttributeTypePool[attrtype].name}</option>)}
+                                                    </Form.Control>
+                                                </Form>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </TableList>
+                                <a href="#" onClick={(event) => {
+                                    this.createAttribute();
+                                }}>
+                                    {LocaleMenu.createAttribute}</a>
+                            </Tab>
+                            <Tab eventKey={3} title={LocaleMain.diagram}>
+                                <TableList headings={[LocaleMenu.diagram]}>
+                                    {this.state.inputDiagrams.map((conn) =>
+                                        (<tr>
+                                            <td>{Diagrams[conn].name}</td>
+                                        </tr>)
+                                    )}
+                                </TableList>
+                            </Tab>
+                            <Tab eventKey={4} title={LocaleMain.connections}>
+                                <TableList
+                                    headings={[LocaleMenu.connectionVia, LocaleMenu.connectionTo, LocaleMenu.diagram]}>
+                                    {this.state.inputConnections.map((conn) =>
+        {                   console.log(ProjectLinks[conn]);             return(<tr>
+                                            <td>{Links[ProjectLinks[conn].iri].labels[this.props.projectLanguage]}</td>
+                                            <td>{ProjectElements[ProjectLinks[conn].target].names[this.props.projectLanguage]}</td>
+                                            <td>{ProjectLinks[conn].diagram}</td>
+                                        </tr>);}
+                                    )}
+                                </TableList>
+                            </Tab>
+                            <Tab eventKey={5} title={LocaleMain.properties}>
+                                <TableList headings={[LocaleMenu.title, LocaleMenu.attributeType]}>
+                                    {MandatoryAttributePool[Stereotypes[this.state.iri].category].map((attr: AttributeType) =>
+                                        (<tr>
+                                            <td>{attr.name}</td>
+                                            <td>{attr.type}</td>
+                                        </tr>)
+                                    )}
+                                </TableList>
+                            </Tab>
+                        </Tabs>
                     </div>
-                    <Tabs id={"detailsTabs"}>
-                        <Tab eventKey={1} title={LocaleMain.description}>
-                            <TableList headings={[LocaleMenu.title, LocaleMenu.language]}>
-                                {Object.keys(Languages).map((language) => (
-                                    <tr key={language}>
-                                        <td>
-                                            <RIEInput
-                                                className={"rieinput"}
-                                                value={this.state.inputNames[language].length > 0 ? this.state.inputNames[language] : "<blank>" }
-                                                change={(event: {textarea: string}) => {
-                                                    this.handleChangeName(event, language);}}
-                                                propName="textarea"
-                                            />
-                                            &nbsp;
-                                            <a href="#" onClick={() => this.deleteName(language)}>
-                                                {LocaleMenu.deleteProjectName}</a>
-                                        </td>
-                                        <td>{Languages[language]}</td>
-                                    </tr>
-                                ))}
+                </ResizableBox>);
+            } else {
+                return (
+                    <ResizableBox
+                        width={300}
+                        height={1000}
+                        axis={"x"}
+                        handleSize={[8, 8]}
+                        resizeHandles={['nw']}
+                        className={"details"}>
+                        <div>
+                            <h3>{LocaleMain.detailPanelTitle}</h3>
+                            {this.state.changes ?
+                                <p className={"bordered"}>{LocaleMain.saveChanges}<br/><br/><Button onClick={() => {
+                                    this.save();
+                                }}>{LocaleMain.menuPanelSave}</Button></p> : <p></p>}
+                            <TableList headings={[LocaleMenu.linkInfo, ""]}>
+                                <tr>
+                                    <td>
+                                        <OverlayTrigger overlay={<Tooltip id="tooltipS">{LocaleMain.sourceCardinalityExplainer}</Tooltip>}
+                                                        placement={"bottom"}>
+                                            <span>{LocaleMain.sourceCardinality}</span>
+                                        </OverlayTrigger>
+                                    </td>
+                                    <td>
+                                        <Form.Control as="select" value={this.state.sourceCardinality}
+                                                      onChange={(event: React.FormEvent<HTMLInputElement>) => {
+                                                          this.setState({
+                                                              sourceCardinality: event.currentTarget.value,
+                                                              changes: true
+                                                          });
+                                                      }
+                                                      }>
+                                            {CardinalityPool.map((card, i) =>
+                                                (<option key={i} value={i.toString(10)}>{card.getString()}</option>)
+                                            )}
+                                        </Form.Control>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td>
+                                        <OverlayTrigger overlay={<Tooltip
+                                            id="tooltipS">{LocaleMain.targetCardinalityExplainer}</Tooltip>}
+                                                        placement={"bottom"}>
+                                            <span>{LocaleMain.sourceCardinality}</span>
+                                        </OverlayTrigger>
+                                    </td>
+                                    <td>
+                                        <Form.Control as="select" value={this.state.targetCardinality}
+                                                      onChange={(event: React.FormEvent<HTMLInputElement>) => {
+                                                          this.setState({
+                                                              targetCardinality: event.currentTarget.value,
+                                                              changes: true
+                                                          });
+                                                      }
+                                                      }>
+                                            {CardinalityPool.map((card, i) =>
+                                                (<option key={i} value={i.toString(10)}>{card.getString()}</option>)
+                                            )}
+                                        </Form.Control>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td>
+                                        <OverlayTrigger
+                                            overlay={<Tooltip id="tooltipS">{LocaleMain.linkTypeExplainer}</Tooltip>}
+                                            placement={"bottom"}>
+                                            <span>{LocaleMain.linkType}</span>
+                                        </OverlayTrigger>
+                                    </td>
+                                    <td>
+                                        <Form.Control as="select" value={this.state.targetCardinality}
+                                                      onChange={(event: React.FormEvent<HTMLInputElement>) => {
+                                                          this.setState({
+                                                              iri: event.currentTarget.value,
+                                                              changes: true
+                                                          });
+                                                      }
+                                                      }>
+                                            {Object.keys(Links).map((iri, i) =>
+                                                (<option key={i}
+                                                         value={iri}>{Links[iri].labels[this.props.projectLanguage]}</option>)
+                                            )}
+                                        </Form.Control>
+                                    </td>
+                                </tr>
+
                             </TableList>
-                            <h5>{LocaleMenu.fileProjectSettingsDescriptions}</h5>
-                            <Tabs id={"descriptions"}>
-                                {Object.keys(Languages).map((language) => (<Tab eventKey={language} title={Languages[language]}>
-                                    <Form.Control
-                                        as={"textarea"}
-                                        rows={3}
-                                        onChange={(event: React.ChangeEvent<HTMLInputElement>) => {this.handleChangeDescription(event, language);}}
-                                        value={this.state.inputDescriptions[language]}
-                                    />
-                                </Tab>))}
-                            </Tabs>
-                        </Tab>
-                        <Tab eventKey={2} title={LocaleMain.detailPanelAttributes}>
-                            <TableList headings={[LocaleMenu.title, LocaleMenu.attributeType]}>
-                                {this.state.inputAttributes.map((attr,i) => (
-                                    <tr key={i}>
-                                        <td>
-                                            <RIEInput
-                                                className={"rieinput"}
-                                                value={attr.first.length > 0 ? attr.first : "<blank>" }
-                                                change={(event: {textarea: string}) => {
-                                                    this.handleChangeNameAttribute(event, i);}}
-                                                propName="textarea"
-                                            />
-                                            &nbsp;
-                                            <a href="#" onClick={(event) => {this.deleteAttribute(i);} }>
-                                                {LocaleMenu.delete}</a>
-                                        </td>
-                                        <td>
-                                            <Form inline>
-                                                <Form.Control as="select" value={attr.second.iri} onChange={(event: React.FormEvent<HTMLInputElement>)=>{this.handleChangeAttributeType(event,i);}}>
-                                                    {Object.keys(AttributeTypePool).map((attrtype)=><option value={attrtype}>{AttributeTypePool[attrtype].name}</option>)}
-                                                </Form.Control>
-                                            </Form>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </TableList>
-                            <a href="#" onClick={(event) => {this.createAttribute();} }>
-                                {LocaleMenu.createAttribute}</a>
-                        </Tab>
-                        <Tab eventKey={3} title={LocaleMain.connections}></Tab>
-                        <Tab eventKey={4} title={LocaleMain.diagram}></Tab>
-                    </Tabs>
-                </div>
-            </ResizableBox>);
+                        </div>
+                </ResizableBox>
+                );
+            }
+        } else {
+            return (<div/>);
         }
 
     }

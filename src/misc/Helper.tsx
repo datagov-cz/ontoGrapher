@@ -1,35 +1,52 @@
 import {
+    Diagrams,
+    graph,
     Links,
     ModelElements,
-    Namespaces,
-    PackageCategories,
-    ProjectElements,
+    Namespaces, PackageRoot,
+    ProjectElements, ProjectLinks, ProjectSettings, StereotypeCategories,
     Stereotypes,
     ViewSettings
 } from "../var/Variables";
 import {SourceData} from "../components/SourceData";
 import * as VariableLoader from "./../var/VariableLoader";
 import * as LocaleMain from "../locale/LocaleMain.json";
+import {PackageNode} from "../components/PackageNode";
+import {Cardinality} from "../components/Cardinality";
+import {graphElement} from "../graph/GraphElement";
+import * as joint from 'jointjs';
 
-export function getNameOfStereotype(uri:string): string{
+export function getNameOfStereotype(uri: string): string {
     let stereotype = Stereotypes[uri];
     return Namespaces[stereotype.prefix] + stereotype.name;
 }
 
-export function getNameOfLink(uri:string): string{
+export function getNameOfLink(uri: string): string {
     let stereotype = Links[uri];
     return Namespaces[stereotype.prefix] + stereotype.name;
 }
 
-export function getName(element: string, language: string){
-    if (ViewSettings.display == 1){
+export function getName(element: string, language: string) {
+    if (ViewSettings.display == 1) {
         return getNameOfStereotype(element);
     } else {
         return Stereotypes[element].labels[language];
     }
 }
 
-export function addSTP(data: SourceData){
+
+export function getModelName(element: string, language: string) {
+    if (ViewSettings.display == 1) {
+        return getNameOfStereotype(element);
+    } else {
+        return ModelElements[element].labels[language];
+    }
+}
+
+export function addSTP(data: SourceData) {
+    if (!(StereotypeCategories.includes(data.source))){
+        StereotypeCategories.push(data.source);
+    }
     Stereotypes[data.iri] = {
         labels: VariableLoader.initLanguageObject(data.name),
         descriptions: VariableLoader.initLanguageObject(data.description),
@@ -37,7 +54,7 @@ export function addSTP(data: SourceData){
     }
 }
 
-export function addModelTP(data: SourceData){
+export function addModelTP(data: SourceData) {
     ModelElements[data.iri] = {
         labels: VariableLoader.initLanguageObject(data.name),
         descriptions: VariableLoader.initLanguageObject(data.description),
@@ -45,14 +62,113 @@ export function addModelTP(data: SourceData){
     }
 }
 
-export function addClass(id: string, iri: string, language: string){
-    let result: {[key: string]: any} = {};
+export function addClass(id: string, iri: string, language: string) {
+    let result: { [key: string]: any } = {};
     result["iri"] = iri;
     result["names"] = VariableLoader.initLanguageObject(LocaleMain.untitled + " " + getName(iri, language));
-    result["connections"] = {};
+    result["connections"] = [];
     result["descriptions"] = VariableLoader.initLanguageObject("");
     result["attributes"] = [];
-    result["diagrams"] = [];
-    result["package"] = Object.keys(PackageCategories)[0];
+    let diagramArray: boolean[] = [];
+    Diagrams.forEach((obj, i) => {
+        diagramArray.push(false);
+    });
+    result["diagrams"] = [ProjectSettings.selectedModel];
+    result["hidden"] = diagramArray;
+    result["package"] = PackageRoot;
+    result["active"] = true;
+    PackageRoot.elements.push(id);
     ProjectElements[id] = result;
+}
+
+export function addLink(id: string, iri: string, source: string, target: string) {
+    let result: { [key: string]: any } = {};
+    result["iri"] = iri;
+    result["sourceCardinality"] = new Cardinality(LocaleMain.none, LocaleMain.none);
+    result["targetCardinality"] = new Cardinality(LocaleMain.none, LocaleMain.none);
+    result["source"] = source;
+    result["target"] = target;
+    result["diagram"] = Diagrams[ProjectSettings.selectedModel].name;
+    ProjectLinks[id] = result;
+}
+
+//TODO
+export function testing() {
+    let node = new PackageNode("test", undefined);
+    node.parent = PackageRoot;
+    PackageRoot.children.push(node);
+}
+
+export function deletePackageItem(id: string) {
+    let folder = ProjectElements[id].package;
+    folder.elements.splice(folder.elements.indexOf(id), 1);
+    if (graph.getCell(id)){
+        graph.removeCells([graph.getCell(id)]);
+    }
+    ProjectElements[id].active = false;
+}
+
+export function changeDiagrams(diagram: any) {
+    ProjectSettings.selectedModel = diagram;
+    graph.fromJSON(Diagrams[diagram].json);
+}
+
+export function saveDiagram() {
+    let cells = graph.getCells();
+    let elements = [];
+    let links = [];
+    for (let cell of cells) {
+        if (cell.id in ProjectElements) {
+            elements.push({
+                id: cell.id,
+                pos: cell.get('position'),
+                label: cell.attr('label/text')
+            });
+        }
+    }
+
+    for (let link of graph.getLinks()) {
+        links.push({
+            id: link.id,
+            source: link.getSourceCell()?.id,
+            target: link.getTargetCell()?.id,
+            vertices: link.vertices(),
+            labels: link.labels()
+        });
+    }
+    return {elements: elements, links: links}
+}
+
+export function loadDiagram(load: {
+    elements: {
+        id: any;
+        label: any;
+        pos: any;
+    }[], links: {
+        vertices: { (): joint.dia.Link.Vertex[]; (vertices: joint.dia.Link.Vertex[]): joint.shapes.standard.Link };
+        labels: { (): joint.dia.Link.Label[]; (labels: joint.dia.Link.Label[]): joint.shapes.standard.Link };
+        target: string;
+        source: string;
+    }[]
+}) {
+    graph.clear();
+    for (let elem of load.elements) {
+        // @ts-ignore
+        let cls = graphElement.create(elem.id).prop({
+            size: {width: 180, height: 50},
+            position: elem.pos,
+            attrs: {label: {text: elem.label}}
+        });
+        cls.addTo(graph);
+    }
+    console.log(graph.getCells());
+    for (let link of load.links) {
+        let lnk = new joint.shapes.standard.Link();
+        lnk.source({id: link.source});
+        lnk.target({id: link.target});
+        lnk.labels = link.labels;
+        // @ts-ignore
+        lnk.vertices(link.vertices);
+        lnk.addTo(graph);
+    }
 }

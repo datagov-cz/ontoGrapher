@@ -5,6 +5,7 @@ import {Languages, ProjectSettings} from "../var/Variables";
 import MenuPanelFile from "./menu/MenuPanelFile";
 import MenuPanelHelp from "./menu/MenuPanelHelp";
 import MenuPanelView from "./menu/MenuPanelView";
+import MenuPanelSettings from "./menu/MenuPanelSettings";
 
 interface MenuPanelProps{
     readOnly?: boolean;
@@ -57,6 +58,7 @@ export default class MenuPanel extends React.Component<MenuPanelProps, MenuPanel
                         // saveOGSettings={this.props.saveOGSettings}
                       />
                       {/*<MenuPanelView />*/}
+                      <MenuPanelSettings  projectLanguage={this.props.projectLanguage}/>
                       <MenuPanelHelp />
                   </div>
               }

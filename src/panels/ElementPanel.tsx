@@ -6,7 +6,7 @@ import Select from 'react-select';
 import {
     Diagrams,
     Links,
-    ModelElements, PackageCategories,
+    ModelElements, PackageRoot, ProjectElements,
     ProjectSettings,
     StereotypeCategories,
     Stereotypes,
@@ -17,6 +17,9 @@ import * as Helper from "./../misc/Helper";
 import {PanelLinkItem} from "./elements/PanelLinkItem";
 import PanelDiagramItem from "./elements/PanelDiagramItem";
 import PackageFolder from "./elements/PackageFolder";
+import {PackageNode} from "../components/PackageNode";
+import PackageItem from "./elements/PackageItem";
+import { ContextMenu, MenuItem, ContextMenuTrigger } from "react-contextmenu";
 
 interface Props{
     projectLanguage: string;
@@ -102,8 +105,20 @@ export default class ElementPanel extends React.Component<Props, State>{
                 result2.push(link);
             }
         }
+        let result3: string[] = [];
+        for (let model in ModelElements){
+            if ((filter.includes(ModelElements[model].category) || filter.length === 0)
+                && (
+                    //Stereotypes[stereotype].suffix.startsWith(this.state.search) ||
+                    ModelElements[model].labels[this.props.projectLanguage].startsWith(search)
+                )){
+                result3.push(model);
+            }
+        }
         this.stereotypes = result1;
         this.links = result2;
+        console.log(result2);
+        this.models = result3;
     }
 
     //TODO: unfinished function
@@ -171,6 +186,27 @@ export default class ElementPanel extends React.Component<Props, State>{
         this.forceUpdate();
     }
 
+    getFoldersDFS(arr: JSX.Element[], node: PackageNode , depth:number){
+        if (node !== PackageRoot){
+            arr.push(<PackageFolder node={node} depth={depth} update={()=>{this.forceUpdate();}}>
+                {node.elements.map((id) => <PackageItem label={ProjectElements[id].names[this.props.projectLanguage]} depth={depth} id={id} update={()=>{this.forceUpdate();}}/>)}
+            </PackageFolder>);
+        } else {
+            {node.elements.map((id) => {if (ProjectElements[id].active) arr.push(<PackageItem label={ProjectElements[id].names[this.props.projectLanguage]} depth={depth} id={id} update={()=>{this.forceUpdate();}}/>)})}
+        }
+        if (node.open){
+            for (let subnode of node.children){
+                this.getFoldersDFS(arr, subnode, depth+1);
+            }
+        }
+    }
+
+    getFolders(){
+        let result: JSX.Element[] = [];
+        this.getFoldersDFS(result, PackageRoot, 0);
+        return result;
+    }
+
     render(){
         return(<ResizableBox
             className={"elements"}
@@ -200,7 +236,6 @@ export default class ElementPanel extends React.Component<Props, State>{
                     onChange={this.handleChangeSelect}
                     placeholder={LocaleMain.filter}
                 />
-                {/*<a href="#" onClick={()=>{this.update();}}>test</a>*/}
                 <Tabs id="stereotypePanelTabs">
                     <Tab eventKey={1} title={tooltipS}>
                         <div className={"elementList"}>
@@ -227,11 +262,9 @@ export default class ElementPanel extends React.Component<Props, State>{
                         </div>
                     </Tab>
                     <Tab eventKey={3} title={tooltipPM}>
-                        <div className="elementList">
-                            {PackageCategories.map((folder, i)=><PackageFolder key={i} label={folder}>
-                                {Object.keys()}
-                            </PackageFolder>)}
-                        </div>
+                            <div className="elementList">
+                                {this.getFolders()}
+                            </div>
                     </Tab>
                     <Tab eventKey={4} title={tooltipM}>
                         <div className="elementList">
@@ -247,16 +280,13 @@ export default class ElementPanel extends React.Component<Props, State>{
                     </Tab>
                     <Tab eventKey={5} title={tooltipD}>
                         <div className="elementList">
-                            {Object.keys(Diagrams).map((model) => <PanelDiagramItem
-                                key={model}
-                                linkType={model}
+                            {Diagrams.map((model, i) => <PanelDiagramItem
+                                key={i}
+                                diagram={i}
+                                selectedModel={ProjectSettings.selectedModel}
+                                update={()=>{this.forceUpdate();}}
                                 />
                                  )}
-                                <a className={"margins"} onClick={()=>{
-                                    Diagrams[Object.keys(Diagrams).length.toString()] = {name: LocaleMain.untitled, save: ""};
-                                    console.log(Diagrams);
-                                    this.forceUpdate();
-                                }} href="#">{LocaleMain.addDiagram}</a>
                         </div>
                     </Tab>
                 </Tabs>

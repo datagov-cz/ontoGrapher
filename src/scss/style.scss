@@ -12,6 +12,16 @@ body{
   display: inline-flex;
 }
 
+.italic{
+  font-style: italic;
+}
+
+.fixed{
+    max-width: 500px;
+    max-height: 500px;
+    overflow: scroll;
+}
+
 .red{
   color: red;
 }
