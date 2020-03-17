@@ -156,8 +156,6 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
         ProjectSettings.description = save.projectSettings.description;
         ProjectSettings.selectedModel = save.projectSettings.selectedModel;
         save.diagrams.forEach((diagram: { [key: string]: any; })=>{Diagrams.push(diagram)});
-        PackageRoot.children = save.packageRoot.children;
-        PackageRoot.elements = save.packageRoot.elements;
         this.elementPanel.current?.update();
 
     }
@@ -173,10 +171,10 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
             projectLanguage: this.state.projectLanguage,
             diagrams: Diagrams,
             //viewSettings: ViewSettings,
-            packageRoot: {
-                children: PackageRoot.children,
-                elements: PackageRoot.elements
-            },
+            // packageRoot: {
+            //     children: PackageRoot.children,
+            //     elements: PackageRoot.elements
+            // },
             // //loaded things
             // stereotypes: Stereotypes,
             // stereotypeCategories: StereotypeCategories,
