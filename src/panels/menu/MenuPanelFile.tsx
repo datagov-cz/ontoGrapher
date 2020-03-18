@@ -54,8 +54,8 @@ export default class MenuPanelFile extends React.Component<MenuPanelFileProps, M
         this.props.newProject();
     }
 
-    loadProject() {
-        this.props.loadProject(this.state.loadString);
+    loadProject(load: string) {
+        this.props.loadProject(load);
 
         this.setState({modalFileLoad: false});
     }

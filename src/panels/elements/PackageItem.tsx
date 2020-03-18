@@ -1,5 +1,5 @@
 import React from 'react';
-import {ProjectElements, ProjectSettings, selectedModel, Stereotypes} from "../../var/Variables";
+import {ProjectElements, ProjectSettings, Stereotypes} from "../../var/Variables";
 import {Button, Modal, OverlayTrigger, Tooltip} from "react-bootstrap";
 import {PackageNode} from "../../components/PackageNode";
 import * as LocaleMain from "../../locale/LocaleMain.json";
@@ -35,7 +35,11 @@ export default class PackageItem extends React.Component<Props, State> {
         return (<div>
                 <div draggable
                      onDragStart={(event) => {
-                         event.dataTransfer.setData("newClass", JSON.stringify({type: "package", elem: this.props.id, package: false}));
+                         event.dataTransfer.setData("newClass", JSON.stringify({
+                             type: "package",
+                             elem: this.props.id,
+                             package: false
+                         }));
                      }}
                      onMouseOver={() => {
                          this.setState({hover: true})
@@ -43,7 +47,7 @@ export default class PackageItem extends React.Component<Props, State> {
                      onMouseLeave={() => {
                          this.setState({hover: false})
                      }}
-                     className={"stereotypeElementItem"+ (ProjectElements[this.props.id].hidden[ProjectSettings.selectedModel] ? " hidden" : "")}
+                     className={"stereotypeElementItem" + (ProjectElements[this.props.id].hidden[ProjectSettings.selectedDiagram] ? " hidden" : "")}
                      style={{marginLeft: ((this.props.depth * 10) + 5) + "px"}}>
                     <span className={"label"}>{this.props.label}</span>
                     <span className={"packageOptions right"}

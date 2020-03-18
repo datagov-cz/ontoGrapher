@@ -47,7 +47,7 @@ export default class FileLoadModal extends React.Component<Props, State>{
             </Modal.Body>
             <Modal.Footer>
                 <Button onClick={() => {this.props.close();}} variant="secondary">{Locale.cancel}</Button>
-                <Button onClick={() => {this.props.loadProject();}}>{Locale.load}</Button>
+                <Button onClick={() => {this.props.loadProject(this.state.inputLoad);}}>{Locale.load}</Button>
             </Modal.Footer>
         </Modal>);
     }

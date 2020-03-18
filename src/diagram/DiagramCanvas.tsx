@@ -5,7 +5,6 @@ import {graphElement} from "../graph/GraphElement";
 import {graph, Links, ProjectElements, ProjectLinks, ProjectSettings} from "../var/Variables";
 import {getName, addClass, addLink, getModelName, addmodel} from "../misc/Helper";
 import * as LocaleMain from "../locale/LocaleMain.json";
-
 interface DiagramCanvasProps {
     projectLanguage: string;
     selectedLink: string;
@@ -22,10 +21,13 @@ interface DiagramPropsState {
 export default class DiagramCanvas extends React.Component<DiagramCanvasProps, DiagramPropsState>{
     private readonly canvasRef: React.RefObject<HTMLDivElement>;
     private paper: joint.dia.Paper | undefined;
+    private highlight: joint.dia.CellView;
+    private magnet: boolean;
 
     constructor(props: DiagramCanvasProps) {
         super(props);
         this.canvasRef = React.createRef();
+        this.magnet = false;
         this.componentDidMount = this.componentDidMount.bind(this);
     }
 
@@ -50,8 +52,10 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps, D
             defaultLink: function() {
                 return new joint.shapes.standard.Link();
             },
-            validateMagnet: function(_view, magnet, evt) {
-                return magnet.getAttribute('magnet') === 'on-shift' && evt.shiftKey;
+            validateMagnet: (_view, magnet, evt)=> {
+                //return this.magnet;
+                return magnet.getAttribute('magnet') === 'on-shift';
+                    //&& evt.shiftKey;
                 //return magnet.getAttribute('magnet') === 'on-shift';
             }
         });
@@ -74,7 +78,15 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps, D
                     //     graph.removeCells(graph.getCell(cell));
                     //     ProjectElements[cell].hidden[ProjectSettings.selectedModel] = true;
                     // }
-                })];
+                })
+                 //    ,
+                 // new joint.elementTools.createLink({
+                 //     useModelGeometry: true,
+                 //     y: '96%',
+                 //     x: '100%',
+                 //     offset: offset,
+                 // })
+                ];
                 if (ProjectElements[elementView.model.id].active) {tools.push(new joint.elementTools.InfoButton({
                     useModelGeometry: true,
                     y: '0%',
@@ -100,6 +112,9 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps, D
             },
             'blank:pointerdown': (evt, x, y) => {
                 this.props.hideDetails();
+                if (this.highlight){
+                    this.highlight.unhighlight();
+                }
                 var data = evt.data = {};
                 var cell;
                 if (evt.shiftKey) {
@@ -120,23 +135,24 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps, D
             'blank:pointermove': function(evt, x, y) {
                 var data = evt.data;
                 var cell = data.cell;
+                console.log(data);
                 if (cell !== undefined){
                     if (cell.isLink()) {
                         cell.target({ x: x, y: y });
                     }
                 }
             },
-            'blank:pointerup' : function(evt,x,y){
+            'blank:pointerup' : (evt,x,y)=>{
                 var data = evt.data;
                 var cell = data.cell;
                 if (cell !== undefined){
                     if (cell.isLink()) {
                         if (!("id" in cell.target())){
                             graph.removeCells(cell);
-                        } else {
                         }
                     }
                 }
+                this.magnet = false;
             },
             'link:pointerup' : (linkView, evt, x, y)=>{
                 let id = linkView.model.id;
@@ -169,7 +185,7 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps, D
                     for (let cell of graph.getCells()){
                         if (cell.id === id){
                             graph.removeCells(cell);
-                            ProjectElements[id].hidden[ProjectSettings.selectedModel] = true;
+                            ProjectElements[id].hidden[ProjectSettings.selectedDiagram] = true;
                             break;
                         }
                     }
@@ -203,7 +219,10 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps, D
                 distance: 40,
                 offset: 0,
                 action: (evt) => {
-                    this.props.prepareDetails(evt.currentTarget.getAttribute("model-id"));
+                    let id = evt.currentTarget.getAttribute("model-id");
+                    this.props.prepareDetails(id);
+                    this.highlight = this.paper?.findViewByModel(graph.getCell(id));
+                    this.highlight.highlight();
                 }
             }
         });
@@ -233,7 +252,56 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps, D
                 distance: 60,
                 offset: 0,
                 action: (evt) => {
-                    this.props.prepareDetails(evt.currentTarget.getAttribute("model-id"));
+                    let id = evt.currentTarget.getAttribute("model-id");
+                    this.props.prepareDetails(id);
+                    this.highlight = this.paper?.findViewByModel(graph.getCell(id));
+                    this.highlight.highlight();
+                }
+            }
+        });
+
+        joint.elementTools.createLink = joint.elementTools.Button.extend({
+            name: 'create-link-button',
+            options: {
+                markup: [{
+                    tagName: 'circle',
+                    selector: 'button',
+                    attributes: {
+                        'r': 7,
+                        'fill': '#ffed00',
+                        'cursor': 'pointer'
+                    }
+                }, {
+                    tagName: 'path',
+                    selector: 'icon',
+                    attributes: {
+                        'transform': 'scale(0.4) translate(-11 -11)',
+                        'd': 'M11 21.883l-6.235-7.527-.765.644 7.521 9 7.479-9-.764-.645-6.236 7.529v-21.884h-1v21.883z',
+                        'fill': 'none',
+                        'stroke': '#000000',
+                        'stroke-width': 2,
+                        'pointer-events': 'none'
+                    }
+                }],
+                distance: 60,
+                offset: 0,
+                action: (evt) => {
+
+
+                //     this.magnet = true;
+                    // var data = evt.data = {};
+                    // var cell = new joint.shapes.standard.Link();
+                    // cell.appendLabel({
+                    //     attrs: {
+                    //         text: {
+                    //             text: Links[this.props.selectedLink].labels[this.props.projectLanguage]
+                    //         }
+                    //     }
+                    // });
+                    // cell.source({ id: evt.currentTarget.getAttribute("model-id")});
+                    // cell.target(this.paper.clientToLocalPoint({x: evt.clientX, y: evt.clientY}));
+                    // cell.addTo(graph);
+                    // data.cell = cell;
                 }
             }
         });
@@ -257,15 +325,6 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps, D
                     name = LocaleMain.untitled + " " + getName(data.elem, this.props.projectLanguage);
                 }
                 let cls = new graphElement();
-                // let cls = graphElement.create('rectangle').prop({
-                //     size: {width: 180, height: 50},
-                //     position: this.paper.clientToLocalPoint({x: event.clientX, y: event.clientY}),
-                //     attrs: {
-                //         label: {
-                //             text: name,
-                //         }
-                //     }
-                // });
                 if (data.package) {
                     addClass(cls.id, data.elem, this.props.projectLanguage);
                 } else if (data.type === "stereotype" && !data.package){
@@ -274,7 +333,7 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps, D
                 }
                 if (data.type === "package"){
                     cls = graphElement.create(data.elem);
-                    ProjectElements[data.elem].hidden[ProjectSettings.selectedModel] = false;
+                    ProjectElements[data.elem].hidden[ProjectSettings.selectedDiagram] = false;
                 }
                 cls.set('position',this.paper.clientToLocalPoint({x: event.clientX, y: event.clientY}));
                 cls.resize(180,50);
@@ -301,8 +360,8 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps, D
 
                 this.props.addCell();
                 if (data.type === "package"){
-                    if (!(ProjectElements[id].diagrams.includes(ProjectSettings.selectedModel))){
-                        ProjectElements[id].diagrams.push(ProjectSettings.selectedModel)
+                    if (!(ProjectElements[id].diagrams.includes(ProjectSettings.selectedDiagram))){
+                        ProjectElements[id].diagrams.push(ProjectSettings.selectedDiagram)
                     }
                     let id = data.elem;
                     for (let link in ProjectLinks){

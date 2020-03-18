@@ -55,7 +55,6 @@ export default class PackageFolder extends React.Component<Props, State> {
     }
 
     move(node: PackageNode) {
-        debugger;
         let parent = this.props.node.parent;
         if (parent) {
             this.props.node.children.forEach((sub) => {
@@ -111,7 +110,7 @@ export default class PackageFolder extends React.Component<Props, State> {
                     this.setState({hover: false})
                 }}
                 onDragOver={(event)=>{event.preventDefault();}}
-                onDrop={(event)=>{this.movePackageItem(JSON.parse(event.dataTransfer.getData("newClass")));}}
+                onDrop={(event)=>{event.stopPropagation(); this.movePackageItem(JSON.parse(event.dataTransfer.getData("newClass")));}}
                 onClick={() => {
                     if (!(this.state.modalEdit || this.state.modalRemove)) {
                         this.setState({open: !this.state.open});
@@ -123,14 +122,17 @@ export default class PackageFolder extends React.Component<Props, State> {
                 style={{marginLeft: (this.props.depth - 1) * 10 + "px"}}>
                 {(this.props.depth === 1 ? " " : "↘") +"📁 " + this.props.node.name}
                 <span className={"packageOptions right"} style={{display: this.state.hover ? "inline-block" : "none"}}>
-                        <OverlayTrigger placement="bottom" overlay={tooltipA}><a onClick={() => {
+                        <OverlayTrigger placement="bottom" overlay={tooltipA}><a onClick={(event) => {
+                            event.stopPropagation();
                             this.props.node.children.push(new PackageNode(LocaleMain.untitledPackage, this.props.node));
                             this.props.update();
                         }} href="#">➕</a></OverlayTrigger>
-                        <OverlayTrigger placement="bottom" overlay={tooltipE}><a onClick={() => {
+                        <OverlayTrigger placement="bottom" overlay={tooltipE}><a onClick={(event) => {
+                            event.stopPropagation();
                             this.setState({modalEdit: true})
                         }} href="#">✏</a></OverlayTrigger>
-                        <OverlayTrigger placement="bottom" overlay={tooltipD}><a onClick={() => {
+                        <OverlayTrigger placement="bottom" overlay={tooltipD}><a onClick={(event) => {
+                            event.stopPropagation();
                             this.setState({modalRemove: true})
                         }} href="#">❌</a></OverlayTrigger>
                     </span>

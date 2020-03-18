@@ -1,7 +1,7 @@
 import {
     Diagrams,
     graph,
-    Links, MandatoryAttributePool,
+    Links, PropertyPool,
     ModelElements,
     Namespaces, PackageRoot,
     ProjectElements, ProjectLinks, ProjectSettings, StereotypeCategories,
@@ -15,6 +15,8 @@ import {PackageNode} from "../components/PackageNode";
 import {Cardinality} from "../components/Cardinality";
 import {graphElement} from "../graph/GraphElement";
 import * as joint from 'jointjs';
+import {AttributeObject} from "../components/AttributeObject";
+import { AttributeType } from "../components/AttributeType";
 
 export function getNameOfStereotype(uri: string): string {
     let stereotype = Stereotypes[uri];
@@ -44,7 +46,7 @@ export function getModelName(element: string, language: string) {
 }
 
 export function addSTP(data: SourceData) {
-    if (!(StereotypeCategories.includes(data.source))){
+    if (!(StereotypeCategories.includes(data.source))) {
         StereotypeCategories.push(data.source);
     }
     Stereotypes[data.iri] = {
@@ -69,11 +71,14 @@ export function addClass(id: string, iri: string, language: string) {
     result["connections"] = [];
     result["descriptions"] = VariableLoader.initLanguageObject("");
     result["attributes"] = [];
+    let propertyArray: AttributeObject[] = [];
+    PropertyPool[Stereotypes[iri].category].forEach((attr: AttributeType)=>propertyArray.push(new AttributeObject("",attr)));
+    result["properties"] = propertyArray;
     let diagramArray: boolean[] = [];
     Diagrams.forEach((obj, i) => {
         diagramArray.push(false);
     });
-    result["diagrams"] = [ProjectSettings.selectedModel];
+    result["diagrams"] = [ProjectSettings.selectedDiagram];
     result["hidden"] = diagramArray;
     result["package"] = PackageRoot;
     result["active"] = true;
@@ -92,7 +97,7 @@ export function addmodel(id: string, iri: string, language: string, name: string
     Diagrams.forEach((obj, i) => {
         diagramArray.push(false);
     });
-    result["diagrams"] = [ProjectSettings.selectedModel];
+    result["diagrams"] = [ProjectSettings.selectedDiagram];
     result["hidden"] = diagramArray;
     result["package"] = PackageRoot;
     result["active"] = false;
@@ -106,7 +111,7 @@ export function addLink(id: string, iri: string, source: string, target: string)
     result["targetCardinality"] = new Cardinality(LocaleMain.none, LocaleMain.none);
     result["source"] = source;
     result["target"] = target;
-    result["diagram"] = Diagrams[ProjectSettings.selectedModel].name;
+    result["diagram"] = Diagrams[ProjectSettings.selectedDiagram].name;
     ProjectLinks[id] = result;
 }
 
@@ -127,7 +132,7 @@ export function deletePackageItem(id: string) {
 }
 
 export function changeDiagrams(diagram: any) {
-    ProjectSettings.selectedModel = diagram;
+    ProjectSettings.selectedDiagram = diagram;
     graph.fromJSON(Diagrams[diagram].json);
 }
 

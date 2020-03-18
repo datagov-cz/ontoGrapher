@@ -9,7 +9,7 @@ import {
     Diagrams,
     graph,
     Languages,
-    Links, MandatoryAttributePool, ModelElements, PackageRoot,
+    Links, PropertyPool, ModelElements, PackageRoot,
     ProjectElements, ProjectLinks,
     ProjectSettings, StereotypeCategories,
     StereotypePoolPackage, Stereotypes, ViewSettings
@@ -20,8 +20,9 @@ import {getVocabulariesFromJSONSource} from "../interface/JSONInterface";
 import * as SemanticWebInterface from "../interface/SemanticWebInterface";
 import PropTypes from "prop-types";
 import {Defaults} from "../config/Defaults";
-import {testing} from "../misc/Helper";
+import {saveDiagram, testing} from "../misc/Helper";
 import {PackageNode} from "../components/PackageNode";
+import * as util from 'util';
 
 interface DiagramAppProps{
     readonly?: boolean;
@@ -104,7 +105,6 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
             });
         }
 
-        testing();
     }
 
     prepareDetails(id: string){
@@ -154,38 +154,84 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
         }
         ProjectSettings.name = save.projectSettings.name;
         ProjectSettings.description = save.projectSettings.description;
-        ProjectSettings.selectedModel = save.projectSettings.selectedModel;
+        ProjectSettings.selectedDiagram = save.projectSettings.selectedDiagram;
         save.diagrams.forEach((diagram: { [key: string]: any; })=>{Diagrams.push(diagram)});
         this.elementPanel.current?.update();
-
+        this.loadPackages(save.packageRoot);
     }
 
+    loadPackages(list: {trace: number[], elements: string[], name: string}[]){
+        for (let pkg of list){
+            let iter = PackageRoot;
+            for (let i = 0; i < pkg.trace.length; i++){
+                iter = iter.children[pkg.trace[i]];
+            }
+            let newpkg = new PackageNode(pkg.name, iter, false);
+            newpkg.elements = pkg.elements;
+            iter.children.push(newpkg);
+        }
+    }
 
+    savePackages(){
+        let result = [];
+        let level = 0;
+        let q = [];
+        q.push(PackageRoot);
+        q.push(undefined);
+        while(q.length > 0){
+            let p = q.shift();
+            if (p === undefined){
+                level++;
+                q.push(undefined);
+                if (q[0] === undefined) break;
+                else continue;
+            }
+            let trace: number[] = [];
+            let iter = p;
+            while (iter !== PackageRoot) {
+                let parent = iter.parent;
+                if (parent) {
+                    trace.unshift(parent.children.indexOf(iter));
+                    iter = parent;
+                } else break;
+            }
+            trace.shift();
+            result.push({
+                name: p.name,
+                trace: trace,
+                elements: p.elements,
+            });
+
+            for (let sp of p.children){
+                q.push(sp);
+            }
+        }
+        return result;
+    }
 
     saveProject(){
+        Diagrams[ProjectSettings.selectedDiagram].json = saveDiagram();
         let save = {
             projectElements: ProjectElements,
             projectLinks: ProjectLinks,
-            projectSettings: ProjectSettings,
+            projectSettings: {name: ProjectSettings.name, description: ProjectSettings.description},
             selectedLink: this.state.selectedLink,
             projectLanguage: this.state.projectLanguage,
             diagrams: Diagrams,
-            //viewSettings: ViewSettings,
-            // packageRoot: {
-            //     children: PackageRoot.children,
-            //     elements: PackageRoot.elements
-            // },
-            // //loaded things
-            // stereotypes: Stereotypes,
-            // stereotypeCategories: StereotypeCategories,
-            // modelElements: ModelElements,
-            // links: Links,
-            // languages: Languages,otepa
-            // properties: MandatoryAttributePool,
-            // attributes: AttributeTypePool,
-            // cardinalities: CardinalityPool,
+            packageRoot: this.savePackages(),
+            //loaded things
+            stereotypes: Stereotypes,
+            stereotypeCategories: StereotypeCategories,
+            modelElements: ModelElements,
+            links: Links,
+            languages: Languages,
+            properties: PropertyPool,
+            attributes: AttributeTypePool,
+            cardinalities: CardinalityPool
         };
-        this.setState({saveString: JSON.stringify(save)});
+        //keep this .log
+        console.log(save);
+        this.setState({saveString: (JSON.stringify(save))});
     }
     //
     //

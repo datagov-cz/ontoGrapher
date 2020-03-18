@@ -19,9 +19,9 @@ import PanelDiagramItem from "./elements/PanelDiagramItem";
 import PackageFolder from "./elements/PackageFolder";
 import {PackageNode} from "../components/PackageNode";
 import PackageItem from "./elements/PackageItem";
-import { ContextMenu, MenuItem, ContextMenuTrigger } from "react-contextmenu";
+import {ContextMenu, MenuItem, ContextMenuTrigger} from "react-contextmenu";
 
-interface Props{
+interface Props {
     projectLanguage: string;
     handleChangeSelectedLink: Function;
     selectedLink: string;
@@ -33,19 +33,29 @@ interface State {
 }
 
 const tooltipS = (
-    <OverlayTrigger placement="right" overlay={<Tooltip id="tooltipS">{LocaleMain.classes}</Tooltip>}><div>⬜</div></OverlayTrigger>
+    <OverlayTrigger placement="right" overlay={<Tooltip id="tooltipS">{LocaleMain.classes}</Tooltip>}>
+        <div>⬜</div>
+    </OverlayTrigger>
 );
 const tooltipR = (
-    <OverlayTrigger placement="right" overlay={<Tooltip id="tooltipS">{LocaleMain.relationships}</Tooltip>}><div>➡</div></OverlayTrigger>
+    <OverlayTrigger placement="right" overlay={<Tooltip id="tooltipS">{LocaleMain.relationships}</Tooltip>}>
+        <div>➡</div>
+    </OverlayTrigger>
 );
 const tooltipPM = (
-    <OverlayTrigger placement="right" overlay={<Tooltip id="tooltipS">{LocaleMain.packageModel}</Tooltip>}><div>📦</div></OverlayTrigger>
+    <OverlayTrigger placement="right" overlay={<Tooltip id="tooltipS">{LocaleMain.packageModel}</Tooltip>}>
+        <div>📦</div>
+    </OverlayTrigger>
 );
 const tooltipM = (
-    <OverlayTrigger placement="right" overlay={<Tooltip id="tooltipS">{LocaleMain.models}</Tooltip>}><div>💃🏼</div></OverlayTrigger>
+    <OverlayTrigger placement="right" overlay={<Tooltip id="tooltipS">{LocaleMain.models}</Tooltip>}>
+        <div>💃🏼</div>
+    </OverlayTrigger>
 );
 const tooltipD = (
-    <OverlayTrigger placement="right" overlay={<Tooltip id="tooltipS">{LocaleMain.diagram}</Tooltip>}><div>🖼️</div></OverlayTrigger>
+    <OverlayTrigger placement="right" overlay={<Tooltip id="tooltipS">{LocaleMain.diagram}</Tooltip>}>
+        <div>🖼️</div>
+    </OverlayTrigger>
 );
 
 export default class ElementPanel extends React.Component<Props, State>{
@@ -84,34 +94,34 @@ export default class ElementPanel extends React.Component<Props, State>{
         this.props.handleChangeSelectedLink(linkType);
     }
 
-    search(search: string, filter: string[]){
+    search(search: string, filter: string[]) {
         let result1 = [];
-        for (let stereotype in Stereotypes){
+        for (let stereotype in Stereotypes) {
             if ((filter.includes(Stereotypes[stereotype].category) || filter.length === 0)
-                    && (
-                        //Stereotypes[stereotype].suffix.startsWith(this.state.search) ||
+                && (
+                    //Stereotypes[stereotype].suffix.startsWith(this.state.search) ||
                     Stereotypes[stereotype].labels[this.props.projectLanguage].startsWith(search)
-                )){
+                )) {
                 result1.push(stereotype);
             }
         }
         let result2 = [];
-        for (let link in Links){
+        for (let link in Links) {
             if ((filter.includes(Links[link].category) || filter.length === 0)
                 && (
                     //Stereotypes[stereotype].suffix.startsWith(this.state.search) ||
                     Links[link].labels[this.props.projectLanguage].startsWith(search)
-                )){
+                )) {
                 result2.push(link);
             }
         }
         let result3: string[] = [];
-        for (let model in ModelElements){
+        for (let model in ModelElements) {
             if ((filter.includes(ModelElements[model].category) || filter.length === 0)
                 && (
                     //Stereotypes[stereotype].suffix.startsWith(this.state.search) ||
                     ModelElements[model].labels[this.props.projectLanguage].startsWith(search)
-                )){
+                )) {
                 result3.push(model);
             }
         }
@@ -121,13 +131,13 @@ export default class ElementPanel extends React.Component<Props, State>{
     }
 
     //TODO: unfinished function
-    handleGetInfo(element: string){
+    handleGetInfo(element: string) {
     }
 
-    handleChangeSelect(event: any){
+    handleChangeSelect(event: any) {
         let result = [];
-        if (Array.isArray(event)){
-            for (let e of event){
+        if (Array.isArray(event)) {
+            for (let e of event) {
                 result.push(e.value);
             }
         }
@@ -136,15 +146,15 @@ export default class ElementPanel extends React.Component<Props, State>{
         this.forceUpdate();
     }
 
-    handleChangeSearch(event: React.FormEvent<HTMLInputElement>){
+    handleChangeSearch(event: React.FormEvent<HTMLInputElement>) {
         this.setState({search: event.currentTarget.value});
         this.search(event.currentTarget.value, this.state.filter);
         this.forceUpdate();
     }
 
-    prepareCategories(){
+    prepareCategories() {
         let result = [];
-        for (let category of StereotypeCategories){
+        for (let category of StereotypeCategories) {
             result.push({
                 value: category,
                 label: category
@@ -153,31 +163,31 @@ export default class ElementPanel extends React.Component<Props, State>{
         this.stereotypeCategories = result;
     }
 
-    getNameStereotype(element: string){
-        if (ViewSettings.display == 1){
+    getNameStereotype(element: string) {
+        if (ViewSettings.display == 1) {
             return Helper.getNameOfStereotype(element);
         } else {
             return Stereotypes[element].labels[this.props.projectLanguage];
         }
     }
 
-    getNameModel(element: string){
-        if (ViewSettings.display == 1){
+    getNameModel(element: string) {
+        if (ViewSettings.display == 1) {
             return Helper.getNameOfStereotype(element);
         } else {
             return ModelElements[element].labels[this.props.projectLanguage];
         }
     }
 
-    getNameLink(element: string){
-        if (ViewSettings.display == 1){
+    getNameLink(element: string) {
+        if (ViewSettings.display == 1) {
             return Helper.getNameOfLink(element);
         } else {
             return Links[element].labels[this.props.projectLanguage];
         }
     }
 
-    update(){
+    update() {
         this.stereotypes = Object.keys(Stereotypes);
         this.links = Object.keys(Links);
         this.models = Object.keys(ModelElements);
@@ -185,29 +195,42 @@ export default class ElementPanel extends React.Component<Props, State>{
         this.forceUpdate();
     }
 
-    getFoldersDFS(arr: JSX.Element[], node: PackageNode , depth:number){
-        if (node !== PackageRoot){
-            arr.push(<PackageFolder node={node} depth={depth} update={()=>{this.forceUpdate();}}>
-                {node.elements.map((id) => <PackageItem label={ProjectElements[id].names[this.props.projectLanguage]} depth={depth} id={id} update={()=>{this.forceUpdate();}}/>)}
+    getFoldersDFS(arr: JSX.Element[], node: PackageNode, depth: number) {
+        if (node !== PackageRoot) {
+            arr.push(<PackageFolder node={node} depth={depth} update={() => {
+                this.forceUpdate();
+            }}>
+                {node.elements.map((id) => <PackageItem label={ProjectElements[id].names[this.props.projectLanguage]}
+                                                        depth={depth} id={id} update={() => {
+                    this.forceUpdate();
+                }}/>)}
             </PackageFolder>);
         } else {
-            {node.elements.map((id) => {if (ProjectElements[id].active) arr.push(<PackageItem label={ProjectElements[id].names[this.props.projectLanguage]} depth={depth} id={id} update={()=>{this.forceUpdate();}}/>)})}
+            {
+                node.elements.map((id) => {
+                    if (ProjectElements[id].active) arr.push(<PackageItem
+                        label={ProjectElements[id].names[this.props.projectLanguage]} depth={depth} id={id}
+                        update={() => {
+                            this.forceUpdate();
+                        }}/>)
+                })
+            }
         }
-        if (node.open){
-            for (let subnode of node.children){
-                this.getFoldersDFS(arr, subnode, depth+1);
+        if (node.open) {
+            for (let subnode of node.children) {
+                this.getFoldersDFS(arr, subnode, depth + 1);
             }
         }
     }
 
-    getFolders(){
+    getFolders() {
         let result: JSX.Element[] = [];
         this.getFoldersDFS(result, PackageRoot, 0);
         return result;
     }
 
-    render(){
-        return(<ResizableBox
+    render() {
+        return (<ResizableBox
             className={"elements"}
             width={300}
             height={1000}
@@ -228,67 +251,97 @@ export default class ElementPanel extends React.Component<Props, State>{
                     onChange={this.handleChangeSearch}
                 />
             </InputGroup>
-                <Select
-                    isMulti
-                    closeMenuOnSelect={false}
-                    options={this.stereotypeCategories}
-                    onChange={this.handleChangeSelect}
-                    placeholder={LocaleMain.filter}
-                />
-                <Tabs id="stereotypePanelTabs">
-                    <Tab eventKey={1} title={tooltipS}>
-                        <div className={"elementList"}>
-                            {this.stereotypes.map((element)=>(<StereotypeElementItem
-                                key={element}
-                                element={element}
-                                label={this.getNameStereotype(element)}
-                                category={Stereotypes[element].category}
-                                onMouseOver={() => {this.handleGetInfo(element);}}
-                             package={true}/>))}
+            <Select
+                isMulti
+                closeMenuOnSelect={false}
+                options={this.stereotypeCategories}
+                onChange={this.handleChangeSelect}
+                placeholder={LocaleMain.filter}
+            />
+            <Tabs id="stereotypePanelTabs">
+                <Tab eventKey={1} title={tooltipS}>
+                    <div className={"elementList"}>
+                        {this.stereotypes.map((element) => (<StereotypeElementItem
+                            key={element}
+                            element={element}
+                            label={this.getNameStereotype(element)}
+                            category={Stereotypes[element].category}
+                            onMouseOver={() => {
+                                this.handleGetInfo(element);
+                            }}
+                            package={true}/>))}
+                    </div>
+                </Tab>
+                <Tab eventKey={2} title={tooltipR}>
+                    <div className="elementList">
+                        {this.links.map((link) => <PanelLinkItem
+                                key={link}
+                                selectedLink={this.props.selectedLink}
+                                handleChangeSelectedLink={this.handleChangeSelectedLink}
+                                linkType={link}
+                                category={Links[link].category}
+                                label={this.getNameLink(link)}
+                            />
+                        )}
+                    </div>
+                </Tab>
+                <Tab eventKey={3} title={tooltipPM}>
+                        <a href="#" className={"margins"} onClick={() => {
+                            PackageRoot.children.push(new PackageNode(LocaleMain.untitledPackage, PackageRoot));
+                            this.forceUpdate();
+                        }
+                        }>{LocaleMain.addNewPackage}</a>
+                        <div className="elementList"
+                             onDragOver={(event)=>{event.preventDefault();}}
+                             onDrop={(event) => {
+                            let parse = JSON.parse(event.dataTransfer.getData("newClass"));
+                            let id = parse.elem;
+                            let oldpkg = ProjectElements[id].package;
+                            oldpkg.elements.splice(oldpkg.elements.indexOf(id), 1);
+                            ProjectElements[id].package = PackageRoot;
+                            PackageRoot.elements.push(id);
+                            this.forceUpdate();
+                        }}>
+                            {this.getFolders()}
                         </div>
-                    </Tab>
-                    <Tab eventKey={2} title={tooltipR}>
-                        <div className="elementList">
-                            {this.links.map((link) => <PanelLinkItem
-                                            key={link}
-                                            selectedLink={this.props.selectedLink}
-                                            handleChangeSelectedLink={this.handleChangeSelectedLink}
-                                            linkType={link}
-                                            category={Links[link].category}
-                                            label={this.getNameLink(link)}
-                                />
-                            )}
-                        </div>
-                    </Tab>
-                    <Tab eventKey={3} title={tooltipPM}>
-                            <div className="elementList">
-                                {this.getFolders()}
-                            </div>
-                    </Tab>
-                    <Tab eventKey={4} title={tooltipM}>
-                        <div className="elementList">
-                            {this.models.map((element)=>(<StereotypeElementItem
-                                key={element}
-                                element={element}
-                                label={this.getNameModel(element)}
-                                category={ModelElements[element].category}
-                                onMouseOver={() => {this.handleGetInfo(element);}}
-                                package={false}
-                            />))}
-                        </div>
-                    </Tab>
-                    <Tab eventKey={5} title={tooltipD}>
-                        <div className="elementList">
-                            {Diagrams.map((model, i) => <PanelDiagramItem
+                </Tab>
+                <Tab eventKey={4} title={tooltipM}>
+                    <div className="elementList">
+                        {this.models.map((element) => (<StereotypeElementItem
+                            key={element}
+                            element={element}
+                            label={this.getNameModel(element)}
+                            category={ModelElements[element].category}
+                            onMouseOver={() => {
+                                this.handleGetInfo(element);
+                            }}
+                            package={false}
+                        />))}
+                    </div>
+                </Tab>
+                <Tab eventKey={5} title={tooltipD}>
+                    <a href="#" className={"margins"} onClick={() => {
+                        Diagrams.push({name: LocaleMain.untitled, json: {}});
+                        for (let key of Object.keys(ProjectElements)){
+                            ProjectElements[key].hidden[Diagrams.length-1] = false;
+                        }
+                        this.forceUpdate();
+                    }
+                    }>{LocaleMain.addDiagram}</a>
+                    <div className="elementList">
+                        {Diagrams.map((model, i) => <PanelDiagramItem
                                 key={i}
                                 diagram={i}
-                                selectedModel={ProjectSettings.selectedModel}
-                                update={()=>{this.forceUpdate();}}
-                                />
-                                 )}
-                        </div>
-                    </Tab>
-                </Tabs>
-        </ResizableBox>);
+                                selectedDiagram={ProjectSettings.selectedDiagram}
+                                update={() => {
+                                    this.forceUpdate();
+                                }}
+                            />
+                        )}
+                    </div>
+                </Tab>
+            </Tabs>
+        </ResizableBox>
+    );
     }
-}
+    }

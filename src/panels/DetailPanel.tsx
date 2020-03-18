@@ -4,7 +4,7 @@ import {
     AttributeTypePool, CardinalityPool, Diagrams,
     graph,
     Languages, Links,
-    MandatoryAttributePool,
+    PropertyPool,
     ProjectElements,
     ProjectLinks,
     Stereotypes
@@ -36,6 +36,7 @@ interface State {
     sourceCardinality: string;
     targetCardinality: string;
     inputConnections: [];
+    inputProperties: AttributeObject[];
     iri: string;
     type: string;
 }
@@ -52,6 +53,7 @@ export default class DetailPanel extends React.Component<Props, State> {
             inputAttributes: [],
             inputDiagrams: [],
             inputConnections: [],
+            inputProperties: [],
             iri: "",
             sourceCardinality: "0",
             targetCardinality: "0",
@@ -71,6 +73,12 @@ export default class DetailPanel extends React.Component<Props, State> {
         let attrs = this.state.inputAttributes;
         attrs[pos].first = event.textarea;
         this.setState({inputAttributes: attrs, changes: true});
+    }
+
+    handleChangeNameProperty(event: { textarea: string }, pos: number) {
+        let attrs = this.state.inputProperties;
+        attrs[pos].first = event.textarea;
+        this.setState({inputProperties: attrs, changes: true});
     }
 
     createAttribute() {
@@ -120,6 +128,7 @@ export default class DetailPanel extends React.Component<Props, State> {
                 inputAttributes: ProjectElements[id].attributes,
                 inputDiagrams: ProjectElements[id].diagrams,
                 inputConnections: ProjectElements[id].connections,
+                inputProperties: ProjectElements[id].properties,
                 iri: ProjectElements[id].iri,
                 type: "elem"
             });
@@ -334,13 +343,25 @@ export default class DetailPanel extends React.Component<Props, State> {
                                 </TableList>
                             </Tab>
                             <Tab eventKey={5} title={LocaleMain.properties}>
-                                <TableList headings={[LocaleMenu.title, LocaleMenu.attributeType]}>
-                                    {MandatoryAttributePool[Stereotypes[this.state.iri].category].map((attr: AttributeType) =>
-                                        (<tr>
-                                            <td>{attr.name}</td>
-                                            <td>{attr.type}</td>
-                                        </tr>)
-                                    )}
+                                <TableList headings={[LocaleMenu.title, LocaleMenu.attributeType, LocaleMenu.value]}>
+                                    {this.state.inputProperties.map((prop, i)=>(       <tr key={i}>
+                                        <td>
+                                            {prop.getSecond().name}
+                                        </td>
+                                        <td>
+                                            {prop.getSecond().array ? "["+prop.getSecond().type+"]" : prop.getSecond().type}
+                                        </td>
+                                        <td>
+                                            <RIEInput
+                                                className={"rieinput"}
+                                                value={prop.first.length > 0 ? prop.first : "<blank>"}
+                                                change={(event: { textarea: string }) => {
+                                                    this.handleChangeNameProperty(event, i);
+                                                }}
+                                                propName="textarea"
+                                            />
+                                        </td>
+                                    </tr>))}
                                 </TableList>
                             </Tab>
                         </Tabs>

@@ -4,8 +4,8 @@ import * as Locale from '../locale/LocaleMain.json';
 import {Languages, ProjectSettings} from "../var/Variables";
 import MenuPanelFile from "./menu/MenuPanelFile";
 import MenuPanelHelp from "./menu/MenuPanelHelp";
-import MenuPanelView from "./menu/MenuPanelView";
 import MenuPanelSettings from "./menu/MenuPanelSettings";
+import MenuPanelAbout from "./menu/MenuPanelAbout";
 
 interface MenuPanelProps{
     readOnly?: boolean;
@@ -61,6 +61,7 @@ export default class MenuPanel extends React.Component<MenuPanelProps, MenuPanel
                       {/*<MenuPanelView />*/}
                       <MenuPanelSettings update={this.props.update}  projectLanguage={this.props.projectLanguage}/>
                       <MenuPanelHelp />
+                      <MenuPanelAbout />
                   </div>
               }
           </Nav>

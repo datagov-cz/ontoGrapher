@@ -16,7 +16,7 @@ export function loadLanguages(){
 export function initProjectSettings(){
     ProjectSettings.name = initLanguageObject(Locale.untitledProject);
     ProjectSettings.description = initLanguageObject("");
-    ProjectSettings.selectedModel = 0;
+    ProjectSettings.selectedDiagram = 0;
 }
 
 export function initLanguageObject(defaultString: string){

@@ -1,5 +1,5 @@
 import * as Helper from "../misc/Helper";
-import {Links, MandatoryAttributePool, Packages, StereotypeCategories, StereotypePoolPackage} from "../var/Variables";
+import {Links, PropertyPool, Packages, StereotypeCategories, StereotypePoolPackage} from "../var/Variables";
 import {AttributeType} from "../components/AttributeType";
 import {SourceData} from "../components/SourceData";
 import * as VariableLoader from "../var/VariableLoader";
@@ -35,14 +35,16 @@ export function getElementsAsStereotypes(name: string, jsonData: {[key:string]: 
                 }
             }
             for (let attribute of jsonData["attributes"]){
-                if (!(name in MandatoryAttributePool)){
-                    MandatoryAttributePool[name] = [];
+                if (!(name in PropertyPool)){
+                    PropertyPool[name] = [];
                 }
                 let isArray = Array.isArray(attribute["type"]);
                 let atrt = new AttributeType(attribute["name"], attribute["iri"], isArray ? attribute["type"][0] : attribute["type"], isArray);
-                MandatoryAttributePool[name].push(atrt);
+                PropertyPool[name].push(atrt);
             }
-            StereotypeCategories.push(name);
+            if (!(StereotypeCategories.includes(name))){
+                StereotypeCategories.push(name);
+            }
             callback();
         })
         .catch(err => {
@@ -123,7 +125,9 @@ export function getElementsAsPackage(name:string, jsonData: {[key:string]: any},
                 }
             }
             Packages[name] = true;
-            StereotypeCategories.push(name);
+            if (!(StereotypeCategories.includes(name))){
+                StereotypeCategories.push(name);
+            }
             callback();
         })
         .catch(err => {

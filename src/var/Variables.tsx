@@ -7,7 +7,7 @@ import {addLink} from "../misc/Helper";
 
 export var graph = new joint.dia.Graph;
 
-export var selectedModel: string = "";
+export var selectedDiagram: string = "";
 
 
 // language code : language name
@@ -24,6 +24,7 @@ export var Languages: {[key:string]: string} = {};
 //diagrams
 //hidden
 //active
+//properties
 export var ProjectElements: {[key:string]: any} = {};
 
 //sourceCard
@@ -49,6 +50,8 @@ export var ModelCategories: string[] = [];
 // export var PackageCategories: {[key:string]: any} = {
 //     0: {name: "Root", contents:{}}
 // };
+
+export var currentBuildDate = "build 18 March";
 
 export var PackageRoot: PackageNode = new PackageNode("Root", undefined, true);
 //labels
@@ -77,7 +80,7 @@ export var Diagrams: {[key:string]: any}[] = [
 export var ProjectSettings: {[key: string]: any} = {
     name: {},
     description: {},
-    selectedModel: 0
+    selectedDiagram: 0
 };
 export var AttributeTypePool: {[key:string]: any} = {
     "http://www.w3.org/2001/XMLSchema#string": {name:"String", array: false},
@@ -111,7 +114,7 @@ export var Packages: {[key:string]: any} = {
 
 };
 Packages[Locale.root] = false;
-export var MandatoryAttributePool: {[key:string]: any} = {"&*": [], "Manual": []};
+export var PropertyPool: {[key:string]: any} = {"&*": [], "Manual": []};
 export var Models: {[key:string]: any} = {
 
 };
