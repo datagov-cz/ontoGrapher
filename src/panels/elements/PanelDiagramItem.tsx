@@ -1,11 +1,8 @@
 import React from 'react';
-import {Diagrams, graph, ProjectElements, ProjectSettings} from "../../var/Variables";
-import {ContextMenu, MenuItem, ContextMenuTrigger} from "react-contextmenu";
+import {Diagrams, graph, ProjectSettings} from "../../var/Variables";
 import {Button, Form, Modal, OverlayTrigger, Tooltip} from "react-bootstrap";
-import {PackageNode} from "../../components/PackageNode";
 import * as LocaleMain from "../../locale/LocaleMain.json";
 import * as LocaleMenu from "../../locale/LocaleMenu.json";
-import TableList from "../../components/TableList";
 import {changeDiagrams, loadDiagram, saveDiagram} from "../../misc/Helper";
 
 interface Props {
@@ -158,13 +155,11 @@ export default class PanelDiagramItem extends React.Component<Props, State> {
                             <Modal.Title>{LocaleMenu.modalEditDiagramTitle}</Modal.Title>
                         </Modal.Header>
                         <Modal.Body>
-                            <Form>
                                 <Form.Control onChange={(event: { currentTarget: { value: any; }; }) => {
                                     this.setState({inputEdit: event.currentTarget.value})
                                 }} type="text" value={this.state.inputEdit}
                                               placeholder={LocaleMain.modalEditDiagramPlaceholder}
                                               required/>
-                            </Form>
                         </Modal.Body>
                         <Modal.Footer>
                             <Button onClick={() => {

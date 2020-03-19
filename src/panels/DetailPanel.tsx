@@ -1,18 +1,18 @@
 import React from 'react';
 import {ResizableBox} from "react-resizable";
 import {
-    AttributeTypePool, CardinalityPool, Diagrams,
+    AttributeTypePool,
+    CardinalityPool,
+    Diagrams,
     graph,
-    Languages, Links,
-    PropertyPool,
+    Languages,
+    Links,
     ProjectElements,
     ProjectLinks,
     Stereotypes
 } from "../var/Variables";
 import * as LocaleMain from "../locale/LocaleMain.json";
-import _ from 'underscore';
-import {Button, ButtonGroup, Form, Modal, OverlayTrigger, Tab, Tabs, Tooltip} from "react-bootstrap";
-import {AttributeType} from "../components/AttributeType";
+import {Button, Form, OverlayTrigger, Tab, Tabs, Tooltip} from "react-bootstrap";
 import TableList from "../components/TableList";
 import * as LocaleMenu from "../locale/LocaleMenu.json";
 import * as VariableLoader from "../var/VariableLoader";
@@ -155,7 +155,7 @@ export default class DetailPanel extends React.Component<Props, State> {
             ProjectElements[this.state.model].diagrams = this.state.inputDiagrams;
             graph.getCell(this.state.model).attr({
                 label: {
-                    text: ProjectElements[this.state.model].names[this.props.projectLanguage]
+                    text: "«"+ getName(this.state.iri, this.props.projectLanguage).toLowerCase() +"»" + "\n" + ProjectElements[this.state.model].names[this.props.projectLanguage]
                 }
             });
         } else {
@@ -439,7 +439,7 @@ export default class DetailPanel extends React.Component<Props, State> {
                                         </OverlayTrigger>
                                     </td>
                                     <td>
-                                        <Form.Control as="select" value={this.state.targetCardinality}
+                                        <Form.Control as="select" value={this.state.iri}
                                                       onChange={(event: React.FormEvent<HTMLInputElement>) => {
                                                           this.setState({
                                                               iri: event.currentTarget.value,

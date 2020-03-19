@@ -22,7 +22,14 @@ export default class AboutModal extends React.Component<Props, State> {
                 <Modal.Title>{LocaleMenu.changelog}</Modal.Title>
             </Modal.Header>
             <Modal.Body style={{overflow:"scrollbar"}}>
-                <h6>Current build</h6>
+                <h6>19.3.</h6>
+                <ul>
+                    <li>Fixed diagram renaming form behaviour (#24)</li>
+                    <li>Fixed type changing in relationships' detail panel (#25)</li>
+                    <li>Added stereotype markers to elements</li>
+                    <li>Elements now change size with label size</li>
+                </ul>
+                <h6>18.3.</h6>
                 <ul>
                     <li>Corrected detail panel's Properties tab (#18)</li>
                     <li>Included package hierarchy in the save JSON</li>

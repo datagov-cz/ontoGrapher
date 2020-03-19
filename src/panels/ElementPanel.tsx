@@ -1,12 +1,14 @@
 import React from 'react';
-import {Resizable, ResizableBox} from "react-resizable";
-import {InputGroup, Form, Tabs, Tooltip, OverlayTrigger, Tab, Button} from "react-bootstrap";
+import {ResizableBox} from "react-resizable";
+import {Form, InputGroup, OverlayTrigger, Tab, Tabs, Tooltip} from "react-bootstrap";
 import * as LocaleMain from "../locale/LocaleMain.json";
 import Select from 'react-select';
 import {
     Diagrams,
     Links,
-    ModelElements, PackageRoot, ProjectElements,
+    ModelElements,
+    PackageRoot,
+    ProjectElements,
     ProjectSettings,
     StereotypeCategories,
     Stereotypes,
@@ -19,7 +21,6 @@ import PanelDiagramItem from "./elements/PanelDiagramItem";
 import PackageFolder from "./elements/PackageFolder";
 import {PackageNode} from "../components/PackageNode";
 import PackageItem from "./elements/PackageItem";
-import {ContextMenu, MenuItem, ContextMenuTrigger} from "react-contextmenu";
 
 interface Props {
     projectLanguage: string;
@@ -229,6 +230,13 @@ export default class ElementPanel extends React.Component<Props, State>{
         return result;
     }
 
+    // getModelFolders() {
+    //     let children = [];
+    //     return (<ModelFolder depth={0} node={} update={() => {this.forceUpdate()}}>
+    //
+    //     </ModelFolder>)
+    // }
+
     render() {
         return (<ResizableBox
             className={"elements"}
@@ -296,12 +304,14 @@ export default class ElementPanel extends React.Component<Props, State>{
                              onDrop={(event) => {
                             let parse = JSON.parse(event.dataTransfer.getData("newClass"));
                             let id = parse.elem;
+                            if (id in ModelElements) return;
                             let oldpkg = ProjectElements[id].package;
                             oldpkg.elements.splice(oldpkg.elements.indexOf(id), 1);
                             ProjectElements[id].package = PackageRoot;
                             PackageRoot.elements.push(id);
                             this.forceUpdate();
                         }}>
+                            {/*{this.getModelFolders()}*/}
                             {this.getFolders()}
                         </div>
                 </Tab>

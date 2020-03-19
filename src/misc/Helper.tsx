@@ -1,10 +1,16 @@
 import {
+    CardinalityPool,
     Diagrams,
     graph,
-    Links, PropertyPool,
+    Links,
     ModelElements,
-    Namespaces, PackageRoot,
-    ProjectElements, ProjectLinks, ProjectSettings, StereotypeCategories,
+    Namespaces,
+    PackageRoot,
+    ProjectElements,
+    ProjectLinks,
+    ProjectSettings,
+    PropertyPool,
+    StereotypeCategories,
     Stereotypes,
     ViewSettings
 } from "../var/Variables";
@@ -12,11 +18,10 @@ import {SourceData} from "../components/SourceData";
 import * as VariableLoader from "./../var/VariableLoader";
 import * as LocaleMain from "../locale/LocaleMain.json";
 import {PackageNode} from "../components/PackageNode";
-import {Cardinality} from "../components/Cardinality";
 import {graphElement} from "../graph/GraphElement";
 import * as joint from 'jointjs';
 import {AttributeObject} from "../components/AttributeObject";
-import { AttributeType } from "../components/AttributeType";
+import {AttributeType} from "../components/AttributeType";
 
 export function getNameOfStereotype(uri: string): string {
     let stereotype = Stereotypes[uri];
@@ -28,7 +33,7 @@ export function getNameOfLink(uri: string): string {
     return Namespaces[stereotype.prefix] + stereotype.name;
 }
 
-export function getName(element: string, language: string) {
+export function getName(element: string, language: string): string {
     if (ViewSettings.display == 1) {
         return getNameOfStereotype(element);
     } else {
@@ -107,8 +112,8 @@ export function addmodel(id: string, iri: string, language: string, name: string
 export function addLink(id: string, iri: string, source: string, target: string) {
     let result: { [key: string]: any } = {};
     result["iri"] = iri;
-    result["sourceCardinality"] = new Cardinality(LocaleMain.none, LocaleMain.none);
-    result["targetCardinality"] = new Cardinality(LocaleMain.none, LocaleMain.none);
+    result["sourceCardinality"] = CardinalityPool[0];
+    result["targetCardinality"] = CardinalityPool[0];
     result["source"] = source;
     result["target"] = target;
     result["diagram"] = Diagrams[ProjectSettings.selectedDiagram].name;

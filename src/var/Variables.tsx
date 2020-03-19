@@ -1,12 +1,9 @@
 import * as Locale from "../locale/LocaleMain.json";
-import {AttributeType} from "../components/AttributeType";
 import {Cardinality} from "../components/Cardinality";
 import * as joint from 'jointjs';
 import {PackageNode} from "../components/PackageNode";
-import {addLink} from "../misc/Helper";
 
 export var graph = new joint.dia.Graph;
-
 export var selectedDiagram: string = "";
 
 
@@ -51,7 +48,7 @@ export var ModelCategories: string[] = [];
 //     0: {name: "Root", contents:{}}
 // };
 
-export var currentBuildDate = "build 18 March";
+export var currentBuildDate = "19 March - Changelog";
 
 export var PackageRoot: PackageNode = new PackageNode("Root", undefined, true);
 //labels

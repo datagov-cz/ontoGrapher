@@ -1,7 +1,6 @@
 import React from 'react';
-import {ProjectElements, ProjectSettings, Stereotypes} from "../../var/Variables";
+import {ProjectElements, ProjectSettings} from "../../var/Variables";
 import {Button, Modal, OverlayTrigger, Tooltip} from "react-bootstrap";
-import {PackageNode} from "../../components/PackageNode";
 import * as LocaleMain from "../../locale/LocaleMain.json";
 import * as LocaleMenu from "../../locale/LocaleMenu.json";
 import {deletePackageItem} from "../../misc/Helper";
@@ -52,7 +51,13 @@ export default class PackageItem extends React.Component<Props, State> {
                     <span className={"label"}>{this.props.label}</span>
                     <span className={"packageOptions right"}
                           style={{display: this.state.hover ? "inline-block" : "none"}}>
-                        <OverlayTrigger placement="bottom" overlay={tooltipD}><a onClick={() => {
+                        <OverlayTrigger                                                popperConfig={{
+                            modifiers: {
+                                preventOverflow: {
+                                    enabled: false
+                                }
+                            }
+                        }} placement="bottom" overlay={tooltipD}><a onClick={() => {
                             this.setState({modalRemove: true})
                         }} href="#">❌</a></OverlayTrigger>
                     </span>

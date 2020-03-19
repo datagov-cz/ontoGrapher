@@ -5,24 +5,27 @@ import DiagramCanvas from "./DiagramCanvas";
 import * as Locale from "../locale/LocaleMain.json";
 import * as VariableLoader from "../var/VariableLoader";
 import {
-    AttributeTypePool, CardinalityPool,
+    AttributeTypePool,
+    CardinalityPool,
     Diagrams,
     graph,
     Languages,
-    Links, PropertyPool, ModelElements, PackageRoot,
-    ProjectElements, ProjectLinks,
-    ProjectSettings, StereotypeCategories,
-    StereotypePoolPackage, Stereotypes, ViewSettings
+    Links,
+    ModelElements,
+    PackageRoot,
+    ProjectElements,
+    ProjectLinks,
+    ProjectSettings,
+    PropertyPool,
+    StereotypeCategories,
+    Stereotypes
 } from "../var/Variables";
-import {DiagramModel} from "./DiagramModel";
 import DetailPanel from "../panels/DetailPanel";
 import {getVocabulariesFromJSONSource} from "../interface/JSONInterface";
 import * as SemanticWebInterface from "../interface/SemanticWebInterface";
-import PropTypes from "prop-types";
 import {Defaults} from "../config/Defaults";
-import {saveDiagram, testing} from "../misc/Helper";
+import {getName, saveDiagram} from "../misc/Helper";
 import {PackageNode} from "../components/PackageNode";
-import * as util from 'util';
 
 interface DiagramAppProps{
     readonly?: boolean;
@@ -120,7 +123,7 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
         this.setState({projectLanguage: languageCode});
         document.title = ProjectSettings.name[languageCode] + " | " + Locale.ontoGrapher;
         graph.getCells().forEach((cell) => {
-            cell.prop('attrs/label/text', ProjectElements[cell.id].names[languageCode]);
+            cell.prop('attrs/label/text', "«"+ getName(ProjectElements[cell.id].iri, this.state.projectLanguage).toLowerCase() +"»" + "\n" + ProjectElements[cell.id].names[languageCode]);
         });
     }
 
