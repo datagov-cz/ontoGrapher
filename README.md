@@ -2,6 +2,9 @@
 
 A React web component for graphical manipulation and display of ontoUML diagrams.
 
+[JointJS version](https://xenodochial-tereshkova-2b9bcc.netlify.com/)
+* Note the changelog on the menu bar.
+
 [Latest deployed version](https://kbss.felk.cvut.cz/tools/ontoGrapher/)
 
 [Deployment status](https://kbss.felk.cvut.cz/jenkins/view/JavaScript/job/ontoGrapher/)
