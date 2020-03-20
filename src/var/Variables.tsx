@@ -48,7 +48,7 @@ export var ModelCategories: string[] = [];
 //     0: {name: "Root", contents:{}}
 // };
 
-export var currentBuildDate = "19 March - Changelog";
+export var currentBuildDate = "20 March - Changelog";
 
 export var PackageRoot: PackageNode = new PackageNode("Root", undefined, true);
 //labels

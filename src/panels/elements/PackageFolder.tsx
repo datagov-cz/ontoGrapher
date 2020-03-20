@@ -120,7 +120,7 @@ export default class PackageFolder extends React.Component<Props, State> {
                 }}
                 className={"packageFolder" + (this.state.open ? " open" : "")}
                 style={{marginLeft: (this.props.depth - 1) * 10 + "px"}}>
-                {(this.props.depth === 1 ? "💃🏼" : "↘") +"📁 " + this.props.node.name}
+                {(this.props.depth === 1 ? "" : "↘") +"📁 " + this.props.node.name}
                 <span className={"packageOptions right"} style={{display: this.state.hover ? "inline-block" : "none"}}>
                         <OverlayTrigger placement="bottom" overlay={tooltipA}><a onClick={(event) => {
                             event.stopPropagation();

@@ -21,6 +21,7 @@ import PanelDiagramItem from "./elements/PanelDiagramItem";
 import PackageFolder from "./elements/PackageFolder";
 import {PackageNode} from "../components/PackageNode";
 import PackageItem from "./elements/PackageItem";
+import ModelFolder from "./elements/ModelFolder";
 
 interface Props {
     projectLanguage: string;
@@ -62,12 +63,14 @@ const tooltipD = (
 export default class ElementPanel extends React.Component<Props, State>{
 
     private stereotypeCategories: {}[];
-    private modelCategories: {}[];
-    private packageCategories: {}[];
+    // private modelCategories: {}[];
+    // private packageCategories: {}[];
     private stereotypes: string[];
     private links: string[];
-    private models: string[];
-    private packageElems: string[];
+    private models: {[key: string]: any};
+    private modelFolders: boolean[];
+    private modelRoot : boolean;
+    // private packageElems: string[];
 
     constructor(props: Props) {
         super(props);
@@ -79,10 +82,12 @@ export default class ElementPanel extends React.Component<Props, State>{
         this.stereotypeCategories = [];
         this.links = Object.keys(Links);
         this.stereotypes = Object.keys(Stereotypes);
-        this.modelCategories = [];
-        this.packageCategories = [];
-        this.models = [];
-        this.packageElems = [];
+        // this.modelCategories = [];
+        // this.packageCategories = [];
+        this.modelFolders = [];
+        this.modelRoot = false;
+        this.models = {};
+        // this.packageElems = [];
         this.prepareCategories();
         this.handleChangeSelect = this.handleChangeSelect.bind(this);
         this.handleChangeSearch = this.handleChangeSearch.bind(this);
@@ -191,7 +196,16 @@ export default class ElementPanel extends React.Component<Props, State>{
     update() {
         this.stereotypes = Object.keys(Stereotypes);
         this.links = Object.keys(Links);
-        this.models = Object.keys(ModelElements);
+        //this.models = Object.keys(ModelElements);
+        let mods: {[key:string]: any} = {};
+        for (let key of Object.keys(ModelElements)){
+            if (!(ModelElements[key].category in mods)){
+                mods[ModelElements[key].category] = [];
+            }
+            mods[ModelElements[key].category].push(key);
+            this.modelFolders.push(false);
+        }
+        this.models = mods;
         this.prepareCategories();
         this.forceUpdate();
     }
@@ -230,12 +244,25 @@ export default class ElementPanel extends React.Component<Props, State>{
         return result;
     }
 
-    // getModelFolders() {
-    //     let children = [];
-    //     return (<ModelFolder depth={0} node={} update={() => {this.forceUpdate()}}>
-    //
-    //     </ModelFolder>)
-    // }
+    getModelFolders() {
+        let result: JSX.Element[] = [];
+        result.push(<ModelFolder category={LocaleMain.models} depth={0} open={()=>{this.modelRoot = !this.modelRoot; this.forceUpdate();}} update={()=>{this.forceUpdate();}}/>);
+        if (this.modelRoot){
+            Object.keys(this.models).forEach((key, i) => {
+                let contents = this.models[key].map((iri: string)=><StereotypeElementItem
+                    key={iri}
+                    label={this.getNameModel(iri)}
+                    element={iri}
+                    category={key}
+                    onMouseOver={()=>{}}
+                    package={false}/>);
+                result.push(<ModelFolder category={key} depth={1} update={()=>{this.forceUpdate();}} open={()=>{this.modelFolders[i] = !this.modelFolders[i]; this.forceUpdate();}}>
+                    {contents}
+                </ModelFolder>)
+            });
+        }
+        return result;
+    }
 
     render() {
         return (<ResizableBox
@@ -299,7 +326,7 @@ export default class ElementPanel extends React.Component<Props, State>{
                             this.forceUpdate();
                         }
                         }>{LocaleMain.addNewPackage}</a>
-                        <div className="elementList"
+                        <div className="elementLinkList"
                              onDragOver={(event)=>{event.preventDefault();}}
                              onDrop={(event) => {
                             let parse = JSON.parse(event.dataTransfer.getData("newClass"));
@@ -311,25 +338,25 @@ export default class ElementPanel extends React.Component<Props, State>{
                             PackageRoot.elements.push(id);
                             this.forceUpdate();
                         }}>
-                            {/*{this.getModelFolders()}*/}
+                            {this.getModelFolders()}
                             {this.getFolders()}
                         </div>
                 </Tab>
-                <Tab eventKey={4} title={tooltipM}>
-                    <div className="elementList">
-                        {this.models.map((element) => (<StereotypeElementItem
-                            key={element}
-                            element={element}
-                            label={this.getNameModel(element)}
-                            category={ModelElements[element].category}
-                            onMouseOver={() => {
-                                this.handleGetInfo(element);
-                            }}
-                            package={false}
-                        />))}
-                    </div>
-                </Tab>
-                <Tab eventKey={5} title={tooltipD}>
+                {/*<Tab eventKey={4} title={tooltipM}>*/}
+                {/*    <div className="elementList">*/}
+                {/*        {this.models.map((element) => (<StereotypeElementItem*/}
+                {/*            key={element}*/}
+                {/*            element={element}*/}
+                {/*            label={this.getNameModel(element)}*/}
+                {/*            category={ModelElements[element].category}*/}
+                {/*            onMouseOver={() => {*/}
+                {/*                this.handleGetInfo(element);*/}
+                {/*            }}*/}
+                {/*            package={false}*/}
+                {/*        />))}*/}
+                {/*    </div>*/}
+                {/*</Tab>*/}
+                <Tab eventKey={4} title={tooltipD}>
                     <a href="#" className={"margins"} onClick={() => {
                         Diagrams.push({name: LocaleMain.untitled, json: {}});
                         for (let key of Object.keys(ProjectElements)){
@@ -338,7 +365,7 @@ export default class ElementPanel extends React.Component<Props, State>{
                         this.forceUpdate();
                     }
                     }>{LocaleMain.addDiagram}</a>
-                    <div className="elementList">
+                    <div className="elementLinkList">
                         {Diagrams.map((model, i) => <PanelDiagramItem
                                 key={i}
                                 diagram={i}

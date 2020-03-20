@@ -53,11 +53,11 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps, D
             defaultLink: function() {
                 return new joint.shapes.standard.Link();
             },
-            validateMagnet: (_view, magnet, evt)=> {
-                //return this.magnet;
-                return evt.shiftKey;
-                //return magnet.getAttribute('magnet') === 'on-shift';
-            }
+            // validateMagnet: (_view, magnet, evt)=> {
+            //     //return this.magnet;
+            //     return evt.shiftKey;
+            //     //return magnet.getAttribute('magnet') === 'on-shift';
+            // }
         });
 
         this.paper.on({
@@ -214,6 +214,7 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps, D
                 action: (evt) => {
                     let id = evt.currentTarget.getAttribute("model-id");
                     this.props.prepareDetails(id);
+                    this.highlight.unhighlight();
                     this.highlight = this.paper?.findViewByModel(graph.getCell(id));
                     this.highlight.highlight();
                 }
@@ -316,12 +317,14 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps, D
                 let name = "";
                 if (data.type === "stereotype" && !data.package){
                     name = getModelName(data.elem, this.props.projectLanguage);
+                    name = "«"+ getModelName(data.elem, this.props.projectLanguage).toLowerCase() +"»" + "\n" + name;
                 } else if (data.type === "package"){
                     name = ProjectElements[data.elem].names[this.props.projectLanguage];
+                    name = "«"+ getName(data.elem, this.props.projectLanguage).toLowerCase() +"»" + "\n" + name;
                 } else {
                     name = LocaleMain.untitled + " " + getName(data.elem, this.props.projectLanguage);
+                    name = "«"+ getName(data.elem, this.props.projectLanguage).toLowerCase() +"»" + "\n" + name;
                 }
-                name = "«"+ getName(data.elem, this.props.projectLanguage).toLowerCase() +"»" + "\n" + name;
                 let cls = new graphElement();
                 if (data.package) {
                     addClass(cls.id, data.elem, this.props.projectLanguage);
@@ -336,7 +339,8 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps, D
                 cls.set('position',this.paper.clientToLocalPoint({x: event.clientX, y: event.clientY}));
                 cls.attr({
                     label:{
-                        text: name
+                        text: name,
+                        magnet: true
                     },
                 });
                 cls.addTo(graph);
