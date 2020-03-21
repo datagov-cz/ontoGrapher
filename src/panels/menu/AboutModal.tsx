@@ -22,6 +22,13 @@ export default class AboutModal extends React.Component<Props, State> {
                 <Modal.Title>{LocaleMenu.changelog}</Modal.Title>
             </Modal.Header>
             <Modal.Body style={{overflow:"scrollbar"}}>
+                <h6>21.3.</h6>
+                <ul>
+                    <li>Fixed highlighting issues</li>
+                    <li>Fixed weird connecting behaviour</li>
+                    <li>Instead of a central model folder, each model is displayed individually in the root</li>
+                    <li>Fixed model stereotype display</li>
+                </ul>
                 <h6>20.3.</h6>
                 <ul>
                     <li><b>Changed link creation mechanism:</b> Links are now created by dragging from the center without any keyboard input. The borders are used for moving the element. What function gets triggered on click is reflected via change in cursor. <b>Feedback is greatly appreciated.</b></li>

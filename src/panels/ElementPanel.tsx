@@ -85,7 +85,7 @@ export default class ElementPanel extends React.Component<Props, State>{
         // this.modelCategories = [];
         // this.packageCategories = [];
         this.modelFolders = [];
-        this.modelRoot = false;
+        this.modelRoot = true;
         this.models = {};
         // this.packageElems = [];
         this.prepareCategories();
@@ -246,7 +246,7 @@ export default class ElementPanel extends React.Component<Props, State>{
 
     getModelFolders() {
         let result: JSX.Element[] = [];
-        result.push(<ModelFolder category={LocaleMain.models} depth={0} open={()=>{this.modelRoot = !this.modelRoot; this.forceUpdate();}} update={()=>{this.forceUpdate();}}/>);
+        //result.push(<ModelFolder category={LocaleMain.models} depth={0} open={()=>{this.modelRoot = !this.modelRoot; this.forceUpdate();}} update={()=>{this.forceUpdate();}}/>);
         if (this.modelRoot){
             Object.keys(this.models).forEach((key, i) => {
                 let contents = this.models[key].map((iri: string)=><StereotypeElementItem
@@ -256,7 +256,7 @@ export default class ElementPanel extends React.Component<Props, State>{
                     category={key}
                     onMouseOver={()=>{}}
                     package={false}/>);
-                result.push(<ModelFolder category={key} depth={1} update={()=>{this.forceUpdate();}} open={()=>{this.modelFolders[i] = !this.modelFolders[i]; this.forceUpdate();}}>
+                result.push(<ModelFolder category={key} depth={0} update={()=>{this.forceUpdate();}} open={()=>{this.modelFolders[i] = !this.modelFolders[i]; this.forceUpdate();}}>
                     {contents}
                 </ModelFolder>)
             });

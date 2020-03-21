@@ -62,31 +62,31 @@ export var graphElement = joint.dia.Element.define('examples.CustomTextElement',
         create: function (id) {
             return new this({id: id});
         }
-        , attributes: {
-            rough: {
-                set: function (opt, bbox) {
-                    var width = bbox.width;
-                    var height = bbox.height;
-                    var vel = joint.V('rect').attr({
-                        'width': width,
-                        'height': height
-                    });
-                    return {d: vel.convertToPathData()};
-                }
-            },
-            pointerShape: {
-                set: function (type, bbox) {
-
-                    var width = bbox.width;
-                    var height = bbox.height;
-                    var vel = joint.V('rect').attr({
-                        'width': width,
-                        'height': height
-                    });
-                    return {d: vel.convertToPathData()};
-                }
-            }
-        }
+        // , attributes: {
+        //     rough: {
+        //         set: function (opt, bbox) {
+        //             var width = bbox.width;
+        //             var height = bbox.height;
+        //             var vel = joint.V('rect').attr({
+        //                 'width': width,
+        //                 'height': height
+        //             });
+        //             return {d: vel.convertToPathData()};
+        //         }
+        //     },
+        //     pointerShape: {
+        //         set: function (type, bbox) {
+        //
+        //             var width = bbox.width;
+        //             var height = bbox.height;
+        //             var vel = joint.V('rect').attr({
+        //                 'width': width,
+        //                 'height': height
+        //             });
+        //             return {d: vel.convertToPathData()};
+        //         }
+        //     }
+        // }
     }
 );
 
