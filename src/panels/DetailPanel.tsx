@@ -411,7 +411,7 @@ export default class DetailPanel extends React.Component<Props, State> {
                                         <OverlayTrigger overlay={<Tooltip
                                             id="tooltipS">{LocaleMain.targetCardinalityExplainer}</Tooltip>}
                                                         placement={"bottom"}>
-                                            <span>{LocaleMain.sourceCardinality}</span>
+                                            <span>{LocaleMain.targetCardinality}</span>
                                         </OverlayTrigger>
                                     </td>
                                     <td>
