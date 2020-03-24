@@ -121,19 +121,8 @@ export default class ElementPanel extends React.Component<Props, State>{
                 result2.push(link);
             }
         }
-        let result3: string[] = [];
-        for (let model in ModelElements) {
-            if ((filter.includes(ModelElements[model].category) || filter.length === 0)
-                && (
-                    //Stereotypes[stereotype].suffix.startsWith(this.state.search) ||
-                    ModelElements[model].labels[this.props.projectLanguage].startsWith(search)
-                )) {
-                result3.push(model);
-            }
-        }
         this.stereotypes = result1;
         this.links = result2;
-        this.models = result3;
     }
 
     //TODO: unfinished function
