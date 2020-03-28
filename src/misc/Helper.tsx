@@ -5,7 +5,7 @@ import {
     Links,
     ModelElements,
     Namespaces,
-    PackageRoot,
+    PackageRoot, Prefixes,
     ProjectElements,
     ProjectLinks,
     ProjectSettings,
@@ -56,7 +56,7 @@ export function addSTP(data: SourceData) {
     }
     Stereotypes[data.iri] = {
         labels: VariableLoader.initLanguageObject(data.name),
-        descriptions: VariableLoader.initLanguageObject(data.description),
+        definitions: VariableLoader.initLanguageObject(data.description),
         category: data.source
     }
 }
@@ -64,9 +64,14 @@ export function addSTP(data: SourceData) {
 export function addModelTP(data: SourceData) {
     ModelElements[data.iri] = {
         labels: VariableLoader.initLanguageObject(data.name),
-        descriptions: VariableLoader.initLanguageObject(data.description),
-        category: data.source
+        definitions: VariableLoader.initLanguageObject(data.description),
+        category: data.source,
+        skos: {}
     }
+}
+
+export function parsePrefix(prefix: string, name: string){
+    return Prefixes[prefix] + name;
 }
 
 export function addClass(id: string, iri: string, language: string) {
@@ -120,6 +125,12 @@ export function addLink(id: string, iri: string, source: string, target: string)
     ProjectLinks[id] = result;
 }
 
+export function createLanguageObject(init: string, lang: string){
+    let result: {[key:string]: any} = {};
+    result[lang] = init;
+    return result;
+}
+
 //TODO
 export function testing() {
     let node = new PackageNode("test", undefined);
@@ -146,7 +157,7 @@ export function saveDiagram() {
     let elements = [];
     let links = [];
     for (let cell of cells) {
-        if (cell.id in ProjectElements) {
+        if (!(cell.isLink())) {
             elements.push({
                 id: cell.id,
                 pos: cell.get('position'),

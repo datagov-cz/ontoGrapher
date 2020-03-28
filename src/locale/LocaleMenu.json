@@ -24,7 +24,7 @@
   "modalRemoveDiagramTitle": "Remove diagram?",
   "modalRemoveDiagramDescription": "Are you sure you want to remove the diagram?",
   "linkInfo": "Link info",
-  "itemInfo": "Item info",
+  "itemInfo": "Types",
   "modalEditDiagramTitle": "Rename diagram",
   "connectionVia": "using link",
   "connectionTo": "to",
@@ -32,8 +32,10 @@
   "modalRemovePackageItemDescription": "Are you sure you want to remove the package item?",
   "projectSettings": "Project settings...",
   "OGsettings": "ontoGrapher settings...",
+  "definitions": "Definitions",
   "load": "Load",
   "changelog": "Changelog",
+  "labels": "Labels",
   "theme": "Theme",
   "OGsettingsTitle": "ontoGrapher settings",
   "light": "Light",
@@ -52,7 +54,7 @@
   "addManually": "Add manually",
   "addSource": "Add with a TTL source",
   "title": "Title",
-  "deleteProjectName": "Delete name",
+  "deleteProjectName": "❌",
   "help": "Help",
   "close": "Close",
   "helpDescription" : "For help using the component, consult the official wiki: ",
@@ -60,5 +62,8 @@
   "viewAs": "Display elements as",
   "viewByLabel": "rdfs:label",
   "viewByNamespace": "namespace:name",
-  "createAttribute": "Add attribute"
+  "createAttribute": "Add attribute",
+  "inScheme": "skos:inScheme",
+  "skoslabels": "skos:prefLabel",
+  "skosdefinitions": "skos:definition"
 }

@@ -16,7 +16,7 @@ import {
     ProjectElements,
     ProjectLinks,
     ProjectSettings,
-    PropertyPool,
+    PropertyPool, Schemes,
     StereotypeCategories,
     Stereotypes
 } from "../var/Variables";
@@ -24,7 +24,7 @@ import DetailPanel from "../panels/DetailPanel";
 import {getVocabulariesFromJSONSource} from "../interface/JSONInterface";
 import * as SemanticWebInterface from "../interface/SemanticWebInterface";
 import {Defaults} from "../config/Defaults";
-import {getName, saveDiagram} from "../misc/Helper";
+import {getModelName, getName, saveDiagram} from "../misc/Helper";
 import {PackageNode} from "../components/PackageNode";
 
 interface DiagramAppProps{
@@ -103,7 +103,6 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
             getVocabulariesFromJSONSource(Defaults.defaultVocabularies, ()=>{
                 this.forceUpdate();
                 this.handleChangeSelectedLink(Object.keys(Links)[0]);
-                
                 this.elementPanel.current?.update();
             });
         }
@@ -122,8 +121,12 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
     handleChangeLanguage(languageCode: string){
         this.setState({projectLanguage: languageCode});
         document.title = ProjectSettings.name[languageCode] + " | " + Locale.ontoGrapher;
-        graph.getCells().forEach((cell) => {
-            cell.prop('attrs/label/text', "«"+ getName(ProjectElements[cell.id].iri, this.state.projectLanguage).toLowerCase() +"»" + "\n" + ProjectElements[cell.id].names[languageCode]);
+        graph.getCells().forEach((cell) =>{
+            if (ProjectElements[cell.id].active) {
+                cell.prop('attrs/label/text', "«"+ getName(ProjectElements[cell.id].iri, this.state.projectLanguage).toLowerCase() +"»" + "\n" + ProjectElements[cell.id].names[languageCode]);
+            } else {
+                cell.prop('attrs/label/text', getModelName(ProjectElements[cell.id].iri, languageCode));
+            }
         });
     }
 
@@ -282,6 +285,7 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
             <DetailPanel
                 ref={this.detailPanel}
                 projectLanguage={this.state.projectLanguage}
+                resizeElem={(id: string)=>{this.canvas.current?.resizeElem(id)}}
             />
             <DiagramCanvas
                 hide={this.hide}

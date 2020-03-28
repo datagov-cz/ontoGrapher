@@ -128,7 +128,7 @@ export default class SettingsLinksModal extends React.Component<Props, State> {
                             }} variant={"danger"}>{LocaleMain.del}</Button>
                         </Form>
                         <div className={"fixed"}>
-                            <TableList headings={[LocaleMenu.fileProjectSettingsTitles, LocaleMenu.language]}>
+                            <TableList headings={[LocaleMenu.labels, LocaleMenu.language]}>
                                 {Object.keys(Languages).map((language) => (
                                     <tr key={language}>
                                         <td>

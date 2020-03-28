@@ -4,7 +4,7 @@ import {Table} from "react-bootstrap";
 interface Props {
     width: string;
     height: string;
-    headings: string[];
+    headings?: string[];
 }
 
 interface State {
@@ -22,17 +22,28 @@ export default class TableList extends React.Component<Props, State> {
     }
 
     render() {
-        return (<div className={"tableList"} style={{width: this.props.width, height: this.props.height}}>
-            <Table striped borderless hover size={"sm"}>
-                <thead>
+        if (this.props.headings){
+            return (<div className={"tableList"} style={{width: this.props.width, height: this.props.height}}>
+                <Table striped borderless hover size={"sm"}>
+                    <thead>
                     <tr>
                         {this.props.headings.map((head) => <th>{head}</th>)}
                     </tr>
-                </thead>
-                <tbody style={{overflow: "auto"}}>
+                    </thead>
+                    <tbody style={{overflow: "auto"}}>
                     {this.props.children}
-                </tbody>
-            </Table>
-        </div>);
+                    </tbody>
+                </Table>
+            </div>);
+        } else {
+            return (<div className={"tableList"} style={{width: this.props.width, height: this.props.height}}>
+                <Table striped borderless hover size={"sm"}>
+                    <tbody style={{overflow: "auto"}}>
+                    {this.props.children}
+                    </tbody>
+                </Table>
+            </div>);
+        }
+
     }
 }

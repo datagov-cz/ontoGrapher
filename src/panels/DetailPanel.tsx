@@ -6,9 +6,9 @@ import {
     Diagrams,
     graph,
     Languages,
-    Links,
+    Links, ModelElements,
     ProjectElements,
-    ProjectLinks,
+    ProjectLinks, Schemes,
     Stereotypes
 } from "../var/Variables";
 import * as LocaleMain from "../locale/LocaleMain.json";
@@ -20,9 +20,11 @@ import {getName} from "../misc/Helper";
 // @ts-ignore
 import {RIEInput} from "riek";
 import {AttributeObject} from "../components/AttributeObject";
+import IRIlabel from "../components/IRIlabel";
 
 interface Props {
     projectLanguage: string;
+    resizeElem: Function;
 }
 
 interface State {
@@ -141,6 +143,13 @@ export default class DetailPanel extends React.Component<Props, State> {
                 type: "link",
                 hidden: false
             });
+        } else if (graph.getCell(id).isElement() && !ProjectElements[id].active) {
+            this.setState({
+                type: "model",
+                model: id,
+                iri: ProjectElements[id].iri,
+                hidden: false,
+            });
         }
     }
 
@@ -149,15 +158,17 @@ export default class DetailPanel extends React.Component<Props, State> {
             changes: false
         });
         if (this.state.type === "elem") {
+
             ProjectElements[this.state.model].names = this.state.inputNames;
             ProjectElements[this.state.model].descriptions = this.state.inputDescriptions;
             ProjectElements[this.state.model].attributes = this.state.inputAttributes;
             ProjectElements[this.state.model].diagrams = this.state.inputDiagrams;
             graph.getCell(this.state.model).attr({
                 label: {
-                    text: "«"+ getName(this.state.iri, this.props.projectLanguage).toLowerCase() +"»" + "\n" + ProjectElements[this.state.model].names[this.props.projectLanguage]
+                    text: "«" + getName(this.state.iri, this.props.projectLanguage).toLowerCase() + "»" + "\n" + ProjectElements[this.state.model].names[this.props.projectLanguage]
                 }
             });
+            this.props.resizeElem(this.state.model);
         } else {
             ProjectLinks[this.state.model].sourceCardinality = CardinalityPool[parseInt(this.state.sourceCardinality, 10)];
             ProjectLinks[this.state.model].targetCardinality = CardinalityPool[parseInt(this.state.targetCardinality, 10)];
@@ -237,18 +248,16 @@ export default class DetailPanel extends React.Component<Props, State> {
                             }}>{LocaleMain.menuPanelSave}</Button></p> : <p></p>}
                         <Tabs id={"detailsTabs"}>
                             <Tab eventKey={1} title={LocaleMain.description}>
-                                <TableList headings={[LocaleMenu.itemInfo,""]}>
+                                <TableList>
                                     <tr>
                                         <td>{LocaleMenu.stereotype}</td>
-                                        <td>{Stereotypes[this.state.iri].labels[this.props.projectLanguage]}</td>
-                                    </tr>
-                                    <tr>
-                                        <td>{LocaleMenu.iri}</td>
-                                        <td>{this.state.iri}</td>
+                                        <td><IRIlabel
+                                            label={Stereotypes[this.state.iri].labels[this.props.projectLanguage]}
+                                            iri={this.state.iri}/></td>
                                     </tr>
                                 </TableList>
-                                <h5>{LocaleMenu.fileProjectSettingsTitles}</h5>
-                                <TableList headings={[LocaleMenu.title, LocaleMenu.language]}>
+                                <h5>{LocaleMenu.labels}</h5>
+                                <TableList>
                                     {Object.keys(Languages).map((language) => (
                                         <tr key={language}>
                                             <td>
@@ -268,7 +277,7 @@ export default class DetailPanel extends React.Component<Props, State> {
                                         </tr>
                                     ))}
                                 </TableList>
-                                <h5>{LocaleMenu.fileProjectSettingsDescriptions}</h5>
+                                <h5>{LocaleMenu.definitions}</h5>
                                 <Tabs id={"descriptions"}>
                                     {Object.keys(Languages).map((language) => (
                                         <Tab eventKey={language} title={Languages[language]}>
@@ -323,9 +332,14 @@ export default class DetailPanel extends React.Component<Props, State> {
                             </Tab>
                             <Tab eventKey={3} title={LocaleMain.diagram}>
                                 <TableList headings={[LocaleMenu.diagram]}>
-                                    {this.state.inputDiagrams.map((conn,i) =>
+                                    {this.state.inputDiagrams.map((conn, i) =>
                                         (<tr>
-                                            <td>{Diagrams[conn].name}&nbsp;<a href="#" onClick={()=>{if (this.state.inputDiagrams.length > 1){this.state.inputDiagrams.splice(i,1); this.setState({changes: true});}}}>{LocaleMain.del}</a></td>
+                                            <td>{Diagrams[conn].name}&nbsp;<a href="#" onClick={() => {
+                                                if (this.state.inputDiagrams.length > 1) {
+                                                    this.state.inputDiagrams.splice(i, 1);
+                                                    this.setState({changes: true});
+                                                }
+                                            }}>{LocaleMain.del}</a></td>
                                         </tr>)
                                     )}
                                 </TableList>
@@ -333,23 +347,24 @@ export default class DetailPanel extends React.Component<Props, State> {
                             <Tab eventKey={4} title={LocaleMain.connections}>
                                 <TableList
                                     headings={[LocaleMenu.connectionVia, LocaleMenu.connectionTo, LocaleMenu.diagram]}>
-                                    {this.state.inputConnections.map((conn) =>
-        {                      return(<tr>
-                                            <td>{Links[ProjectLinks[conn].iri].labels[this.props.projectLanguage]}</td>
-                                            <td>{ProjectElements[ProjectLinks[conn].target].names[this.props.projectLanguage]}</td>
-                                            <td>{ProjectLinks[conn].diagram}</td>
-                                        </tr>);}
+                                    {this.state.inputConnections.map((conn) => {
+                                            return (<tr>
+                                                <td>{Links[ProjectLinks[conn].iri].labels[this.props.projectLanguage]}</td>
+                                                <td>{ProjectElements[ProjectLinks[conn].target].names[this.props.projectLanguage]}</td>
+                                                <td>{ProjectLinks[conn].diagram}</td>
+                                            </tr>);
+                                        }
                                     )}
                                 </TableList>
                             </Tab>
                             <Tab eventKey={5} title={LocaleMain.properties}>
                                 <TableList headings={[LocaleMenu.title, LocaleMenu.attributeType, LocaleMenu.value]}>
-                                    {this.state.inputProperties.map((prop, i)=>(       <tr key={i}>
+                                    {this.state.inputProperties.map((prop, i) => (<tr key={i}>
                                         <td>
                                             {prop.getSecond().name}
                                         </td>
                                         <td>
-                                            {prop.getSecond().array ? "["+prop.getSecond().type+"]" : prop.getSecond().type}
+                                            {prop.getSecond().array ? "[" + prop.getSecond().type + "]" : prop.getSecond().type}
                                         </td>
                                         <td>
                                             <RIEInput
@@ -367,7 +382,7 @@ export default class DetailPanel extends React.Component<Props, State> {
                         </Tabs>
                     </div>
                 </ResizableBox>);
-            } else {
+            } else if (this.state.type === "link") {
                 return (
                     <ResizableBox
                         width={300}
@@ -385,7 +400,8 @@ export default class DetailPanel extends React.Component<Props, State> {
                             <TableList headings={[LocaleMenu.linkInfo, ""]}>
                                 <tr>
                                     <td>
-                                        <OverlayTrigger overlay={<Tooltip id="tooltipS">{LocaleMain.sourceCardinalityExplainer}</Tooltip>}
+                                        <OverlayTrigger overlay={<Tooltip
+                                            id="tooltipS">{LocaleMain.sourceCardinalityExplainer}</Tooltip>}
                                                         placement={"bottom"}>
                                             <span>{LocaleMain.sourceCardinality}</span>
                                         </OverlayTrigger>
@@ -457,8 +473,60 @@ export default class DetailPanel extends React.Component<Props, State> {
 
                             </TableList>
                         </div>
-                </ResizableBox>
+                    </ResizableBox>
                 );
+
+            } else if (this.state.type === "model") {
+                return (<ResizableBox
+                    width={300}
+                    height={1000}
+                    axis={"x"}
+                    handleSize={[8, 8]}
+                    resizeHandles={['nw']}
+                    className={"details"}>
+                    <div>
+                        <h3>{LocaleMain.detailPanelModel}</h3>
+                        <TableList>
+                            <tr>
+                                <td>{LocaleMenu.stereotype}</td>
+                                <td><IRIlabel label={ModelElements[this.state.iri].labels[this.props.projectLanguage]}
+                                              iri={this.state.iri}/></td>
+                            </tr>
+                        </TableList>
+                        <h5>{LocaleMenu.inScheme}</h5>
+                        <TableList>
+                            {Object.keys(Schemes[ModelElements[this.state.iri].skos.inScheme].labels).map(lang => (
+                                <tr>
+                                    <td><IRIlabel
+                                        label={Schemes[ModelElements[this.state.iri].skos.inScheme].labels[lang]}
+                                        iri={ModelElements[this.state.iri].skos.inScheme}/></td>
+                                    <td>{Languages[lang]}</td>
+                                </tr>
+                            ))}
+                        </TableList>
+                        <h5>{LocaleMenu.skoslabels}</h5>
+                        <TableList>
+                            {Object.keys(ModelElements[this.state.iri].skos.prefLabel).map(lang => (
+                                <tr>
+                                    <td>{ModelElements[this.state.iri].skos.prefLabel[lang]}</td>
+                                    <td>{Languages[lang]}</td>
+                                </tr>
+                            ))}
+                        </TableList>
+                        <h5>{LocaleMenu.skosdefinitions}</h5>
+                        <Tabs id={"descriptions"}>
+                            {Object.keys(ModelElements[this.state.iri].skos.definition).map((language, i) => (
+                                <Tab eventKey={i} title={Languages[language]}>
+                                    <Form.Control
+                                        as={"textarea"}
+                                        rows={3}
+                                        disabled={true}
+                                        value={ModelElements[this.state.iri].skos.definition[language]}
+                                    />
+                                </Tab>))}
+                        </Tabs>
+                    </div>
+                </ResizableBox>);
             }
         } else {
             return (<div/>);

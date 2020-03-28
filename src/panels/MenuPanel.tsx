@@ -59,7 +59,7 @@ export default class MenuPanel extends React.Component<MenuPanelProps, MenuPanel
                         // saveOGSettings={this.props.saveOGSettings}
                       />
                       {/*<MenuPanelView />*/}
-                      <MenuPanelSettings update={this.props.update}  projectLanguage={this.props.projectLanguage}/>
+                      {/*<MenuPanelSettings update={this.props.update}  projectLanguage={this.props.projectLanguage}/>*/}
                       <MenuPanelHelp />
                       <MenuPanelAbout />
                   </div>

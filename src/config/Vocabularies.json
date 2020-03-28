@@ -1,0 +1,37 @@
+{
+  "Z-SGoV": {
+    "type": "stereotype",
+    "endpoint": "https://slovník.gov.cz/sparql",
+    "language": "cs",
+    "propertyIRI": "http://www.w3.org/2004/02/skos/core#inScheme",
+    "sourceIRI": "https://slovník.gov.cz/základní/glosář",
+    "labelIRI": "http://www.w3.org/2004/02/skos/core#prefLabel",
+    "definitionIRI": "http://www.w3.org/2004/02/skos/core#definition",
+    "classIRI": ["http://www.w3.org/2002/07/owl#Class"],
+    "relationshipIRI": ["http://www.w3.org/2002/07/owl#ObjectProperty"],
+    "attributes": [
+      {
+        "name": "term label",
+        "iri": "rdfs:label",
+        "type": "xsd:string"
+      },
+      {
+        "name": "search index",
+        "iri": "skos:altLabel",
+        "type": ["xsd:string"]
+      }
+    ]
+  },
+  "V-SGoV": {
+    "type": "model",
+    "endpoint": "https://slovník.gov.cz/sparql",
+    "language": "cs",
+    "propertyIRI": "http://www.w3.org/2004/02/skos/core#inScheme",
+    "sourceIRI": "https://slovník.gov.cz/veřejný-sektor/glosář",
+    "labelIRI": "http://www.w3.org/2004/02/skos/core#prefLabel",
+    "definitionIRI": "http://www.w3.org/2004/02/skos/core#definition",
+    "classIRI": ["http://www.w3.org/2002/07/owl#Class"],
+    "relationshipIRI": ["https://slovník.gov.cz/základní/pojem/typ-vztahu"],
+    "attributes": []
+  }
+}

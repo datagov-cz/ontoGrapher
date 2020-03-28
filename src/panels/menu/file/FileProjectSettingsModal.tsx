@@ -92,7 +92,7 @@ export default class FileProjectSettingsModal extends React.Component<Props, Sta
                         </tr>
                     ))}
                 </TableList>
-                <h4>{LocaleMenu.fileProjectSettingsDescriptions}</h4>
+                <h4>{LocaleMenu.definitions}</h4>
                 <Tabs id={"descriptions"}>
                     {Object.keys(Languages).map((language) => (<Tab eventKey={language} title={Languages[language]}>
                         <Form.Control

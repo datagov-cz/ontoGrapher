@@ -22,6 +22,22 @@ export default class AboutModal extends React.Component<Props, State> {
                 <Modal.Title>{LocaleMenu.changelog}</Modal.Title>
             </Modal.Header>
             <Modal.Body style={{overflow:"scrollbar"}}>
+                <h6>28.3.</h6>
+                <ul>
+                    <li>Fixed highlighting issues with links</li>
+                    <li>Fixed element button placement when renaming it</li>
+                    <li>Implemented SKOS data pulling for models</li>
+                    <li>Implemented links for IRIs in detail panel</li>
+                    <li>Links created from & to the same element are now assumed as a connection to itself; a loop is automatically created, allowing link deletion</li>
+                    <li>Slight CSS & symbol changes</li>
+                    <li>Hiding is now represented with a crossed out eye</li>
+                </ul>
+                <ul>
+                    <li>Fixed highlighting issues</li>
+                    <li>Fixed weird connecting behaviour</li>
+                    <li>Instead of a central model folder, each model is displayed individually in the root</li>
+                    <li>Fixed model stereotype display</li>
+                </ul>
                 <h6>21.3.</h6>
                 <ul>
                     <li>Fixed highlighting issues</li>

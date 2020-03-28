@@ -40,6 +40,7 @@
   "menuPanelSaveDiagram": "Save project...",
   "menuPanelExport": "Export",
   "detailPanelTitle": "Class details",
+  "detailPanelModel": "Model details",
   "detailPanelTitleRelationship": "Relationship details",
   "detailPanelName": "Name",
   "detailPanelNamePlaceholder": "Attribute name",

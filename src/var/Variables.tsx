@@ -15,7 +15,7 @@ export var Languages: {[key:string]: string} = {};
 //names
 //iri
 //connections
-//descriptions
+//definitions
 //attributes
 //package
 //diagrams
@@ -30,7 +30,7 @@ export var ProjectElements: {[key:string]: any} = {};
 //diagram
 //source
 //target
-//description
+//definitions
 export var ProjectLinks:{[key:string]: any} = {};
 
 //display:
@@ -43,12 +43,18 @@ export var ViewSettings: {[key:string]: any} = {
 export var StereotypeCategories: string[] = [
 ];
 
+export var Schemes: {[key:string]: any} = {
+};
+
+export var Prefixes: {[key:string]: string} = {
+    "skos": "http://www.w3.org/2004/02/skos/core#"
+};
 export var ModelCategories: string[] = [];
 // export var PackageCategories: {[key:string]: any} = {
 //     0: {name: "Root", contents:{}}
 // };
 
-export var currentBuildDate = "21 March - Changelog";
+export var currentBuildDate = "28 March - Changelog";
 
 export var PackageRoot: PackageNode = new PackageNode("Root", undefined, true);
 //labels
