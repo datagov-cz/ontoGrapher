@@ -26,7 +26,7 @@ export default class AboutModal extends React.Component<Props, State> {
                 <ul>
                     <li>Fixed highlighting issues with links</li>
                     <li>Fixed element button placement when renaming it</li>
-                    <li>Implemented SKOS data pulling for models</li>
+                    <li>Implemented SKOS data pulling</li>
                     <li>Implemented links for IRIs in detail panel</li>
                     <li>Links created from & to the same element are now assumed as a connection to itself; a loop is automatically created, allowing link deletion</li>
                     <li>Slight CSS & symbol changes</li>

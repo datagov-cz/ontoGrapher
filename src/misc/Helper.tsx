@@ -57,7 +57,8 @@ export function addSTP(data: SourceData) {
     Stereotypes[data.iri] = {
         labels: VariableLoader.initLanguageObject(data.name),
         definitions: VariableLoader.initLanguageObject(data.description),
-        category: data.source
+        category: data.source,
+        skos: {}
     }
 }
 

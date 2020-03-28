@@ -277,17 +277,35 @@ export default class DetailPanel extends React.Component<Props, State> {
                                         </tr>
                                     ))}
                                 </TableList>
-                                <h5>{LocaleMenu.definitions}</h5>
+                                <h5>{LocaleMenu.inScheme}</h5>
+                                <TableList>
+                                    {Object.keys(Schemes[Stereotypes[this.state.iri].skos.inScheme].labels).map(lang => (
+                                        <tr>
+                                            <td><IRIlabel
+                                                label={Schemes[Stereotypes[this.state.iri].skos.inScheme].labels[lang]}
+                                                iri={Stereotypes[this.state.iri].skos.inScheme}/></td>
+                                            <td>{Languages[lang]}</td>
+                                        </tr>
+                                    ))}
+                                </TableList>
+                                <h5>{LocaleMenu.skoslabels}</h5>
+                                <TableList>
+                                    {Object.keys(Stereotypes[this.state.iri].skos.prefLabel).map(lang => (
+                                        <tr>
+                                            <td>{Stereotypes[this.state.iri].skos.prefLabel[lang]}</td>
+                                            <td>{Languages[lang]}</td>
+                                        </tr>
+                                    ))}
+                                </TableList>
+                                <h5>{LocaleMenu.skosdefinitions}</h5>
                                 <Tabs id={"descriptions"}>
-                                    {Object.keys(Languages).map((language) => (
-                                        <Tab eventKey={language} title={Languages[language]}>
+                                    {Object.keys(Stereotypes[this.state.iri].skos.definition).map((language, i) => (
+                                        <Tab eventKey={i} title={Languages[language]}>
                                             <Form.Control
                                                 as={"textarea"}
                                                 rows={3}
-                                                onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-                                                    this.handleChangeDescription(event, language);
-                                                }}
-                                                value={this.state.inputDescriptions[language]}
+                                                disabled={true}
+                                                value={Stereotypes[this.state.iri].skos.definition[language]}
                                             />
                                         </Tab>))}
                                 </Tabs>
@@ -472,6 +490,38 @@ export default class DetailPanel extends React.Component<Props, State> {
                                 </tr>
 
                             </TableList>
+                            <h5>{LocaleMenu.inScheme}</h5>
+                            <TableList>
+                                {Object.keys(Schemes[Links[this.state.iri].skos.inScheme].labels).map(lang => (
+                                    <tr>
+                                        <td><IRIlabel
+                                            label={Schemes[Links[this.state.iri].skos.inScheme].labels[lang]}
+                                            iri={Links[this.state.iri].skos.inScheme}/></td>
+                                        <td>{Languages[lang]}</td>
+                                    </tr>
+                                ))}
+                            </TableList>
+                            <h5>{LocaleMenu.skoslabels}</h5>
+                            <TableList>
+                                {Object.keys(Links[this.state.iri].skos.prefLabel).map(lang => (
+                                    <tr>
+                                        <td>{Links[this.state.iri].skos.prefLabel[lang]}</td>
+                                        <td>{Languages[lang]}</td>
+                                    </tr>
+                                ))}
+                            </TableList>
+                            <h5>{LocaleMenu.skosdefinitions}</h5>
+                            <Tabs id={"descriptions"}>
+                                {Object.keys(Links[this.state.iri].skos.definition).map((language, i) => (
+                                    <Tab eventKey={i} title={Languages[language]}>
+                                        <Form.Control
+                                            as={"textarea"}
+                                            rows={3}
+                                            disabled={true}
+                                            value={Links[this.state.iri].skos.definition[language]}
+                                        />
+                                    </Tab>))}
+                            </Tabs>
                         </div>
                     </ResizableBox>
                 );

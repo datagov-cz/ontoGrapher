@@ -13,12 +13,18 @@ import * as VariableLoader from "../var/VariableLoader";
 import {parsePrefix} from "../misc/Helper";
 
 export function getElementsAsStereotypes(name: string, jsonData: { [key: string]: any }, callback: Function) {
+    if (!(jsonData.sourceIRI in Schemes)){
+        getScheme(jsonData.sourceIRI, jsonData.endpoint, function () {
+        });
+    }
     let query = [
-        "SELECT DISTINCT ?term ?termLabel ?termType ?termDefinition",
+        "SELECT DISTINCT ?term ?termLabel ?termType ?termDefinition ?skosLabel ?skosDefinition",
         "WHERE {",
         "?term <" + jsonData.propertyIRI + "> <" + jsonData.sourceIRI + ">.",
         "?term <" + jsonData.labelIRI + "> ?termLabel.",
         "?term a ?termType.",
+        "?term skos:prefLabel ?skosLabel.",
+        "?term skos:definition ?skosDefinition.",
         "FILTER (?termType IN (<" + jsonData.classIRI.join(">,<") + ">,<" + jsonData.relationshipIRI.join(">,<") + ">)).",
         "OPTIONAL {?term <" + jsonData.definitionIRI + "> ?termDefinition.}",
         "}"
@@ -35,19 +41,34 @@ export function getElementsAsStereotypes(name: string, jsonData: { [key: string]
                     if (result.term.value in Stereotypes) {
                         if (result.termLabel !== undefined) Stereotypes[result.term.value].labels[result.termLabel['xml:lang']] = result.termLabel.value;
                         if (result.termDefinition !== undefined) Stereotypes[result.term.value].definitions[result.termLabel['xml:lang']] = result.termDefinition.value;
+                        if (result.skosLabel !== undefined) Stereotypes[result.term.value].skos.prefLabel[result.skosLabel['xml:lang']] = result.skosLabel.value;
+                        if (result.skosDefinition !== undefined) Stereotypes[result.term.value].skos.definition[result.skosDefinition['xml:lang']] = result.skosDefinition.value;
                     } else {
                         Helper.addSTP(new SourceData(result.termLabel.value, result.term.value, result.termDefinition === undefined ? "" : result.termDefinition.value, name));
+                        Stereotypes[result.term.value].skos.prefLabel = {};
+                        Stereotypes[result.term.value].skos.definition = {};
+                        Stereotypes[result.term.value].skos.inScheme = jsonData.sourceIRI;
+                        if (result.skosLabel !== undefined) Stereotypes[result.term.value].skos.prefLabel[result.skosLabel['xml:lang']] = result.skosLabel.value;
+                        if (result.skosDefinition !== undefined) Stereotypes[result.term.value].skos.definition[result.skosDefinition['xml:lang']] = result.skosDefinition.value;
                     }
                 } else if (jsonData.relationshipIRI.indexOf(result.termType.value) > -1) {
                     if (result.term.value in Links) {
                         if (result.termLabel !== undefined) Links[result.term.value].labels[result.termLabel['xml:lang']] = result.termLabel.value;
                         if (result.termDefinition !== undefined) Links[result.term.value].definitions[result.termLabel['xml:lang']] = result.termDefinition.value;
+                        if (result.skosLabel !== undefined) Links[result.term.value].skos.prefLabel[result.skosLabel['xml:lang']] = result.skosLabel.value;
+                        if (result.skosDefinition !== undefined) Links[result.term.value].skos.definition[result.skosDefinition['xml:lang']] = result.skosDefinition.value;
                     } else {
                         Links[result.term.value] = {
                             labels: VariableLoader.initLanguageObject(result.termLabel.value),
                             definitions: VariableLoader.initLanguageObject(result.termDefinition === undefined ? "" : result.termDefinition.value),
-                            category: name
+                            category: name,
+                            skos: {}
                         };
+                        Links[result.term.value].skos.prefLabel = {};
+                        Links[result.term.value].skos.definition = {};
+                        Links[result.term.value].skos.inScheme = jsonData.sourceIRI;
+                        if (result.skosLabel !== undefined) Links[result.term.value].skos.prefLabel[result.skosLabel['xml:lang']] = result.skosLabel.value;
+                        if (result.skosDefinition !== undefined) Links[result.term.value].skos.definition[result.skosDefinition['xml:lang']] = result.skosDefinition.value;
                     }
                 }
             }
@@ -101,20 +122,35 @@ export function getSubclasses(superIRI: string, jsonData: { [key: string]: any }
                     if (result.term.value in Stereotypes) {
                         if (result.termLabel !== undefined) Stereotypes[result.term.value].labels[result.termLabel['xml:lang']] = result.termLabel.value;
                         if (result.termDefinition !== undefined) Stereotypes[result.term.value].definitions[result.termLabel['xml:lang']] = result.termDefinition.value;
+                        if (result.skosLabel !== undefined) Stereotypes[result.term.value].skos.prefLabel[result.skosLabel['xml:lang']] = result.skosLabel.value;
+                        if (result.skosDefinition !== undefined) Stereotypes[result.term.value].skos.definition[result.skosDefinition['xml:lang']] = result.skosDefinition.value;
                     } else {
                         Helper.addSTP(new SourceData(result.termLabel.value, result.term.value, result.termDefinition === undefined ? "" : result.termDefinition.value, name));
+                        Stereotypes[result.term.value].skos.prefLabel = {};
+                        Stereotypes[result.term.value].skos.definition = {};
+                        Stereotypes[result.term.value].skos.inScheme = jsonData.sourceIRI;
+                        if (result.skosLabel !== undefined) Stereotypes[result.term.value].skos.prefLabel[result.skosLabel['xml:lang']] = result.skosLabel.value;
+                        if (result.skosDefinition !== undefined) Stereotypes[result.term.value].skos.definition[result.skosDefinition['xml:lang']] = result.skosDefinition.value;
                     }
                 } else if (jsonData.relationshipIRI.indexOf(result.termType.value) > -1) {
                     if (result.term.value in Links) {
                         if (result.termLabel !== undefined) Links[result.term.value].labels[result.termLabel['xml:lang']] = result.termLabel.value;
                         if (result.termDefinition !== undefined) Links[result.term.value].definitions[result.termLabel['xml:lang']] = result.termDefinition.value;
+                        if (result.skosLabel !== undefined) Links[result.term.value].skos.prefLabel[result.skosLabel['xml:lang']] = result.skosLabel.value;
+                        if (result.skosDefinition !== undefined) Links[result.term.value].skos.definition[result.skosDefinition['xml:lang']] = result.skosDefinition.value;
                     } else {
                         let name = result.termLabel === undefined ? result.term.value.substring(result.term.value.lastIndexOf("/") + 1) : result.termLabel.value;
                         Links[result.term.value] = {
                             labels: VariableLoader.initLanguageObject(name),
                             definitions: VariableLoader.initLanguageObject(result.termDefinition === undefined ? "" : result.termDefinition.value),
-                            category: name
+                            category: name,
+                            skos: {}
                         };
+                        Links[result.term.value].skos.prefLabel = {};
+                        Links[result.term.value].skos.definition = {};
+                        Links[result.term.value].skos.inScheme = jsonData.sourceIRI;
+                        if (result.skosLabel !== undefined) Links[result.term.value].skos.prefLabel[result.skosLabel['xml:lang']] = result.skosLabel.value;
+                        if (result.skosDefinition !== undefined) Links[result.term.value].skos.definition[result.skosDefinition['xml:lang']] = result.skosDefinition.value;
                     }
                 }
             }
