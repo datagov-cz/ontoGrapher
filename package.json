@@ -2,7 +2,6 @@
   "name": "ontographer",
   "version": "0.0.1",
   "private": true,
-  "homepage": "./build",
   "dependencies": {
     "@rdfjs/fetch": "^2.0.0",
     "@testing-library/dom": "^6.11.0",
