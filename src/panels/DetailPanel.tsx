@@ -258,7 +258,7 @@ export default class DetailPanel extends React.Component<Props, State> {
                                 </TableList>
                                 <h5>{LocaleMenu.skoslabels}</h5>
                                 <TableList>
-                                    {Object.keys(Languages).map((language) => (
+                                    {Object.keys(this.state.inputNames).map((language) => (
                                         <tr key={language}>
                                             <td>
                                                 <RIEInput

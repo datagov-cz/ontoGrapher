@@ -33,9 +33,13 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps, D
     }
 
     resizeElem(id: string){
+        this.paper?.freeze();
         let view = this.paper?.findViewByModel(id);
         let bbox = view.getBBox();
-        graph.getCell(id).resize(bbox.width, bbox.height);
+        let cell = graph.getCell(id);
+        this.paper?.unfreeze();
+        cell.resize(bbox.width, bbox.height);
+        cell.position(bbox.x, bbox.y);
         view.unhighlight();
         view.highlight();
     }
@@ -53,7 +57,7 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps, D
             background: {
                 color: "#e3e3e3"
             },
-            clickThreshold: 5,
+            clickThreshold: 0,
             async: false,
             sorting: joint.dia.Paper.sorting.APPROX,
             connectionStrategy: joint.connectionStrategies.pinAbsolute,
@@ -65,20 +69,21 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps, D
 
         this.paper.on({
             'element:mouseenter': (elementView)=> {
-                let bbox = elementView.getBBox();
-                let model = elementView.model;
-                model.resize(bbox.width, bbox.height);
+                // let bbox = elementView.getBBox();
+                // let model = elementView.model;
+                // model.resize(bbox.width, bbox.height);
+                // model.position(bbox.x, bbox.y);
                 let tool = ProjectElements[elementView.model.id].active ? new joint.elementTools.HideButton({
-                    useModelGeometry: true,
+                    useModelGeometry: false,
                     x: '100%',
                     y: '0%',
                 }) : new joint.elementTools.RemoveButton({
-                    useModelGeometry: true,
+                    useModelGeometry: false,
                     x: '100%',
                     y: '0%',
                 });
                 let tools = [new joint.elementTools.InfoButton({
-                    useModelGeometry: true,
+                    useModelGeometry: false,
                     y: '0%',
                     x: '0%',
                     offset: {

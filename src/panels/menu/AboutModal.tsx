@@ -30,6 +30,7 @@ export default class AboutModal extends React.Component<Props, State> {
                     <li>IRI links now appear only on hover</li>
                     <li>Fixed a bug where holding "Shift" allowed you to create links</li>
                     <li>Merged skos:prefLabel with Label in the detail panel</li>
+                    <li>Fixed awkward behaviour of elements when renaming them (more specifically, changing their shape)</li>
                 </ul>
                 <h6>28.3.</h6>
                 <ul>
