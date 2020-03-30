@@ -3,7 +3,7 @@ import React from 'react';
 import * as joint from 'jointjs';
 import {graphElement} from "../graph/GraphElement";
 import {graph, Links, ProjectElements, ProjectLinks, ProjectSettings} from "../var/Variables";
-import {addClass, addLink, addmodel, getModelName, getName} from "../misc/Helper";
+import {addClass, addLink, addModel, getModelName, getName} from "../misc/Helper";
 import * as LocaleMain from "../locale/LocaleMain.json";
 
 interface DiagramCanvasProps {
@@ -109,22 +109,6 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps, D
                 for (let cell of graph.getCells()){
                     this.paper?.findViewByModel(cell).unhighlight();
                 }
-                var data = evt.data = {};
-                var cell;
-                if (evt.shiftKey) {
-                    cell = new joint.shapes.standard.Link();
-                    cell.appendLabel({
-                        attrs: {
-                            text: {
-                                text: Links[this.props.selectedLink].labels[this.props.projectLanguage]
-                            }
-                        }
-                    });
-                    cell.source({ x: x, y: y });
-                    cell.target({ x: x, y: y });
-                    cell.addTo(graph);
-                    data.cell = cell;
-                }
             },
             'blank:pointermove': function(evt, x, y) {
                 var data = evt.data;
@@ -229,6 +213,10 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps, D
                     let id = evt.currentTarget.getAttribute("model-id");
                     for (let cell of graph.getCells()){
                         if (cell.id === id){
+                            for (let link of graph.getConnectedLinks(cell)){
+                                ProjectLinks[link.id].vertices = link.vertices();
+                            }
+                            ProjectElements[id].position = cell.position();
                             graph.removeCells(cell);
                             ProjectElements[id].hidden[ProjectSettings.selectedDiagram] = true;
                             break;
@@ -337,7 +325,7 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps, D
                 if (data.package) {
                     addClass(cls.id, data.elem, this.props.projectLanguage);
                 } else if (data.type === "stereotype" && !data.package){
-                    addmodel(cls.id, data.elem, this.props.projectLanguage, name);
+                    addModel(cls.id, data.elem, this.props.projectLanguage, name);
                     ProjectElements[cls.id].active = false;
                 }
                 if (data.type === "package"){
@@ -354,23 +342,28 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps, D
                 cls.on('change:position',(element)=>{
                     let links = graph.getConnectedLinks(element);
                     for (let link of links){
-                        if (link.id === this.highlight.model.id){
-                            this.highlight.unhighlight();
-                            this.highlight.highlight();
+                        if (this.highlight){
+                            if (link.id === this.highlight.model.id){
+                                this.highlight.unhighlight();
+                                this.highlight.highlight();
+                            }
                         }
                     }
                 });
                 cls.addTo(graph);
+                let bbox = this.paper?.findViewByModel(cls).getBBox();
+                cls.resize(bbox.width, bbox.height);
 
                 this.props.addCell();
                 if (data.type === "package"){
                     let id = data.elem;
+                    cls.position(ProjectElements[id].position.x,ProjectElements[id].position.y);
                     if (!(ProjectElements[id].diagrams.includes(ProjectSettings.selectedDiagram))){
                         ProjectElements[id].diagrams.push(ProjectSettings.selectedDiagram)
                     }
                     for (let link in ProjectLinks){
                         if ((ProjectLinks[link].source === id || ProjectLinks[link].target === id) && (graph.getCell(ProjectLinks[link].source) && graph.getCell(ProjectLinks[link].target))){
-                            let lnk = new joint.shapes.standard.Link({id:link});
+                            let lnk = new joint.shapes.standard.Link({id: link});
                             if (ProjectLinks[link].sourceCardinality.getString() !== LocaleMain.none) {
                                 lnk.appendLabel({
                                     attrs: {
@@ -407,6 +400,7 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps, D
                             });
                             lnk.source({id: ProjectLinks[link].source});
                             lnk.target({id: ProjectLinks[link].target});
+                            lnk.vertices(ProjectLinks[link].vertices);
                             lnk.addTo(graph);
                         }
                     }

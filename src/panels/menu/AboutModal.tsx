@@ -17,11 +17,20 @@ export default class AboutModal extends React.Component<Props, State> {
     }
 
     render() {
-        return (<Modal centered show={this.props.modal}>
+        return (<Modal centered scrollable  show={this.props.modal}>
             <Modal.Header>
                 <Modal.Title>{LocaleMenu.changelog}</Modal.Title>
             </Modal.Header>
-            <Modal.Body style={{overflow:"scrollbar"}}>
+            <Modal.Body>
+                <h6>30.3.</h6>
+                <ul>
+                    <li>Fixed link re-creation when showing hidden elements</li>
+                    <li>Slight table styling changes</li>
+                    <li>Added IRI links to "Connection" tab</li>
+                    <li>IRI links now appear only on hover</li>
+                    <li>Fixed a bug where holding "Shift" allowed you to create links</li>
+                    <li>Merged skos:prefLabel with Label in the detail panel</li>
+                </ul>
                 <h6>28.3.</h6>
                 <ul>
                     <li>Fixed highlighting issues with links</li>

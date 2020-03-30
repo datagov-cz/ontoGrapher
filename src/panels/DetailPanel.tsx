@@ -250,13 +250,13 @@ export default class DetailPanel extends React.Component<Props, State> {
                             <Tab eventKey={1} title={LocaleMain.description}>
                                 <TableList>
                                     <tr>
-                                        <td>{LocaleMenu.stereotype}</td>
+                                        <td style={{width: "20%"}}><b>{LocaleMenu.stereotype}</b></td>
                                         <td><IRIlabel
                                             label={Stereotypes[this.state.iri].labels[this.props.projectLanguage]}
                                             iri={this.state.iri}/></td>
                                     </tr>
                                 </TableList>
-                                <h5>{LocaleMenu.labels}</h5>
+                                <h5>{LocaleMenu.skoslabels}</h5>
                                 <TableList>
                                     {Object.keys(Languages).map((language) => (
                                         <tr key={language}>
@@ -284,15 +284,6 @@ export default class DetailPanel extends React.Component<Props, State> {
                                             <td><IRIlabel
                                                 label={Schemes[Stereotypes[this.state.iri].skos.inScheme].labels[lang]}
                                                 iri={Stereotypes[this.state.iri].skos.inScheme}/></td>
-                                            <td>{Languages[lang]}</td>
-                                        </tr>
-                                    ))}
-                                </TableList>
-                                <h5>{LocaleMenu.skoslabels}</h5>
-                                <TableList>
-                                    {Object.keys(Stereotypes[this.state.iri].skos.prefLabel).map(lang => (
-                                        <tr>
-                                            <td>{Stereotypes[this.state.iri].skos.prefLabel[lang]}</td>
                                             <td>{Languages[lang]}</td>
                                         </tr>
                                     ))}
@@ -367,7 +358,7 @@ export default class DetailPanel extends React.Component<Props, State> {
                                     headings={[LocaleMenu.connectionVia, LocaleMenu.connectionTo, LocaleMenu.diagram]}>
                                     {this.state.inputConnections.map((conn) => {
                                             return (<tr>
-                                                <td>{Links[ProjectLinks[conn].iri].labels[this.props.projectLanguage]}</td>
+                                                <td><IRIlabel label={Links[ProjectLinks[conn].iri].labels[this.props.projectLanguage]} iri={ProjectLinks[conn].iri}/></td>
                                                 <td>{ProjectElements[ProjectLinks[conn].target].names[this.props.projectLanguage]}</td>
                                                 <td>{ProjectLinks[conn].diagram}</td>
                                             </tr>);

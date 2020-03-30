@@ -97,7 +97,7 @@ export function addClass(id: string, iri: string, language: string) {
     ProjectElements[id] = result;
 }
 
-export function addmodel(id: string, iri: string, language: string, name: string) {
+export function addModel(id: string, iri: string, language: string, name: string) {
     let result: { [key: string]: any } = {};
     result["iri"] = iri;
     result["names"] = VariableLoader.initLanguageObject(LocaleMain.untitled + " " + name);

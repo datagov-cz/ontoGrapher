@@ -18,8 +18,7 @@ export function getVocabulariesFromJSONSource(pathToJSON: string, callback: Func
             }
         );
     } else {
+        callback();
         throw new Error(Locale.vocabularyNotFound)
     }
-
-    callback();
 }

@@ -24,7 +24,7 @@ export default class TableList extends React.Component<Props, State> {
     render() {
         if (this.props.headings){
             return (<div className={"tableList"} style={{width: this.props.width, height: this.props.height}}>
-                <Table striped borderless hover size={"sm"}>
+                <Table striped bordered={true} hover size={"sm"} responsive="md">
                     <thead>
                     <tr>
                         {this.props.headings.map((head) => <th>{head}</th>)}
@@ -37,7 +37,7 @@ export default class TableList extends React.Component<Props, State> {
             </div>);
         } else {
             return (<div className={"tableList"} style={{width: this.props.width, height: this.props.height}}>
-                <Table striped borderless hover size={"sm"}>
+                <Table striped bordered={true} hover size={"sm"}>
                     <tbody style={{overflow: "auto"}}>
                     {this.props.children}
                     </tbody>

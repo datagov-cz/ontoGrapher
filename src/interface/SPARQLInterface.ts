@@ -36,7 +36,7 @@ export function getElementsAsStereotypes(name: string, jsonData: { [key: string]
         })
         .then(data => {
             for (let result of data.results.bindings) {
-                getSubclasses(result.term.value, jsonData, "http://www.w3.org/2000/01/rdf-schema#subPropertyOf", name);
+                getSubclasses(result.term.value, jsonData, "http://www.w3.org/2000/01/rdf-schema#subPropertyOf", name, callback);
                 if (jsonData.classIRI.indexOf(result.termType.value) > -1) {
                     if (result.term.value in Stereotypes) {
                         if (result.termLabel !== undefined) Stereotypes[result.term.value].labels[result.termLabel['xml:lang']] = result.termLabel.value;
@@ -87,10 +87,11 @@ export function getElementsAsStereotypes(name: string, jsonData: { [key: string]
         })
         .catch(err => {
             console.log(err);
+            callback();
         })
 }
 
-export function getSubclasses(superIRI: string, jsonData: { [key: string]: any }, subclassIRI: string, name: string) {
+export function getSubclasses(superIRI: string, jsonData: { [key: string]: any }, subclassIRI: string, name: string, callback:Function) {
     let query = [
         "SELECT DISTINCT ?term ?termLabel ?termType ?termDefinition ?scheme",
         "WHERE {",
@@ -154,8 +155,10 @@ export function getSubclasses(superIRI: string, jsonData: { [key: string]: any }
                     }
                 }
             }
+            callback();
         })
         .catch(err => {
+            callback();
             console.log(err);
         })
 }
@@ -205,6 +208,7 @@ export function getElementsAsPackage(name: string, jsonData: { [key: string]: an
             callback();
         })
         .catch(err => {
+            callback();
             console.log(err);
         })
 }
@@ -227,55 +231,10 @@ export function getScheme(iri: string, endpoint: string, callback: Function) {
                     Schemes[iri] = {labels: VariableLoader.initLanguageObject(result.termLabel.value)}
                 }
             }
-        })
-}
 
-// export function getSKOSelements(iri: string, object: {[key:string]: any}, callback: Function){
-//     const rdfFetch = require('@rdfjs/fetch');
-//     rdfFetch(iri).then((res: { dataset: () => any; }) =>  res.dataset()).then((dataset: any) =>{
-//         for (let quad of dataset){
-//             switch(quad.predicate.value){
-//                 case parsePrefix("skos", "prefLabel"):
-//                     if ("prefLabel" in object[iri].skos){
-//                         object[iri].skos.prefLabel[quad.object.language] = quad.object.value;
-//                     } else {
-//                         object[iri].skos.prefLabel = VariableLoader.initLanguageObject(quad.object.value);
-//                     }
-//                     break;
-//                 case parsePrefix("skos", "definition"):
-//                     if ("definition" in object[iri].skos){
-//                         object[iri].skos.definition[quad.object.language] = quad.object.value;
-//                     } else {
-//                         object[iri].skos.definition = VariableLoader.initLanguageObject(quad.object.value);
-//                     }
-//                     break;
-//                 case parsePrefix("skos","inScheme"):
-//                     if (!(quad.object.value in Schemes)){
-//                         getInScheme(quad.object.value, Schemes, function () {})
-//                     }
-//                     object[iri].skos.inScheme = quad.object.value;
-//                     break;
-//
-//             }
-//         }
-//     }).catch((e: any) =>{
-//         console.log(e);
-//     });
-// }
-//
-// export function getInScheme(iri: string, object: {[key:string]: any}, callback: Function){
-//     const rdfFetch = require('@rdfjs/fetch');
-//     rdfFetch(iri).then((res: { dataset: () => any; }) =>  res.dataset()).then((dataset: any) =>{
-//         for (let quad of dataset){
-//             if (quad.predicate.value === parsePrefix("skos","prefLabel")){
-//                 if (iri in Schemes){
-//                     Schemes[iri].labels[quad.object.language] = quad.object.value;
-//                 } else {
-//                     Schemes[iri] = {labels: VariableLoader.initLanguageObject(quad.object.value)};
-//                 }
-//             }
-//         }
-//     }).catch((e: any) =>{
-//         console.log(e);
-//     });
-// }
+            callback();
+        }).catch(e =>{
+            callback();
+            console.log(e);
+    })
+}

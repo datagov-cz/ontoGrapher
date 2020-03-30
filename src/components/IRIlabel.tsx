@@ -6,24 +6,24 @@ interface Props {
 }
 
 interface State {
-    // hover: boolean;
+    hover: boolean;
 }
 
 export default class IRIlabel extends React.Component<Props, State> {
     constructor(props: Props) {
         super(props);
-        // this.state = {
-        //     hover: false
-        // }
+        this.state = {
+            hover: false
+        }
     }
 
     render() {
         return (<span
-            // onMouseOver={()=>{this.setState({hover: true});}}
-            // onMouseOut={()=>{this.setState({hover: false});}}
+            onMouseOver={()=>{this.setState({hover: true});}}
+            onMouseOut={()=>{this.setState({hover: false});}}
         >
             {this.props.label}<a target="_blank" rel="noopener noreferrer"
-                                 // style={{display: this.state.hover ? "inline" : "none"}}
+                                 style={{display: this.state.hover ? "inline" : "none"}}
                                  href={this.props.iri}>↱</a>
         </span>);
     }
