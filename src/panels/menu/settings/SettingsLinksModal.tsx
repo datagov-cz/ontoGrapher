@@ -86,7 +86,7 @@ export default class SettingsLinksModal extends React.Component<Props, State> {
             link: Object.keys(Links)[0],
             name: Links[Object.keys(Links)[0]].labels,
             changes: false
-        })
+        });
 
         this.props.update();
     }

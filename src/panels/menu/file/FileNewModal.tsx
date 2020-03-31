@@ -9,9 +9,6 @@ interface Props{
 }
 
 export default class FileNewModal extends React.Component<Props, any>{
-    constructor(props: Props) {
-        super(props);
-    }
 
     render(){
         return(<Modal centered show={this.props.modal}>

@@ -28,7 +28,7 @@ export default class SettingsAttributeTypeModal extends React.Component<Props, S
             attributeTypeIRI: "",
             attributeTypeType: "",
             attributeType: Object.keys(AttributeTypePool)[0]
-        }
+        };
         this.addAttributeType = this.addAttributeType.bind(this);
     }
 

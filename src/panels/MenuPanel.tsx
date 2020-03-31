@@ -4,23 +4,17 @@ import * as Locale from '../locale/LocaleMain.json';
 import {Languages, ProjectSettings} from "../var/Variables";
 import MenuPanelFile from "./menu/MenuPanelFile";
 import MenuPanelHelp from "./menu/MenuPanelHelp";
-import MenuPanelSettings from "./menu/MenuPanelSettings";
 import MenuPanelAbout from "./menu/MenuPanelAbout";
 
 interface MenuPanelProps{
     readOnly?: boolean;
-    // projectName: {[key:string]: string};
-    // projectDescription: {[key:string]: string};
     projectLanguage: string;
-    //theme: "light" | "dark";
     handleChangeLanguage: any;
     newProject: Function;
     loadProject: Function;
     saveProject: Function;
-    //saveProjectSettings: Function;
     saveString: string;
     update: Function;
-    //saveOGSettings: Function;
 }
 
 interface MenuPanelState {

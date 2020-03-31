@@ -2,15 +2,12 @@ import * as Helper from "../misc/Helper";
 import {
     Links,
     PropertyPool,
-    Packages,
     StereotypeCategories,
-    StereotypePoolPackage,
-    Stereotypes, ModelElements, Prefixes, Schemes
+    Stereotypes, ModelElements, Schemes, loading
 } from "../var/Variables";
 import {AttributeType} from "../components/AttributeType";
 import {SourceData} from "../components/SourceData";
 import * as VariableLoader from "../var/VariableLoader";
-import {parsePrefix} from "../misc/Helper";
 
 export function getElementsAsStereotypes(name: string, jsonData: { [key: string]: any }, callback: Function) {
     if (!(jsonData.sourceIRI in Schemes)){
@@ -83,11 +80,12 @@ export function getElementsAsStereotypes(name: string, jsonData: { [key: string]
             if (!(StereotypeCategories.includes(name))) {
                 StereotypeCategories.push(name);
             }
-            callback();
+            callback(true);
+            loading.loaded++;
         })
         .catch(err => {
             console.log(err);
-            callback();
+            callback(false);
         })
 }
 
@@ -110,6 +108,7 @@ export function getSubclasses(superIRI: string, jsonData: { [key: string]: any }
         })
         .then(data => {
             if (data.results.bindings.length === 0) return;
+            loading.load++;
             for (let result of data.results.bindings) {
                 if (result.scheme !== undefined) {
                     if (result.scheme.value !== jsonData.sourceIRI) continue;
@@ -155,10 +154,11 @@ export function getSubclasses(superIRI: string, jsonData: { [key: string]: any }
                     }
                 }
             }
-            callback();
+            loading.loaded++;
+            callback(true);
         })
         .catch(err => {
-            callback();
+            callback(false);
             console.log(err);
         })
 }
@@ -188,7 +188,6 @@ export function getElementsAsPackage(name: string, jsonData: { [key: string]: an
         })
         .then(data => {
             for (let result of data.results.bindings) {
-
                 if (jsonData.classIRI.indexOf(result.termType.value) > -1) {
                     if (result.term.value in ModelElements) {
                         if (result.termLabel !== undefined) ModelElements[result.term.value].labels[result.termLabel['xml:lang']] = result.termLabel.value;
@@ -205,15 +204,17 @@ export function getElementsAsPackage(name: string, jsonData: { [key: string]: an
                     }
                 }
             }
-            callback();
+            loading.loaded++;
+            callback(true);
         })
         .catch(err => {
-            callback();
+            callback(false);
             console.log(err);
         })
 }
 
 export function getScheme(iri: string, endpoint: string, callback: Function) {
+    loading.load++;
     let query = [
         "SELECT DISTINCT ?term ?termLabel ",
         "WHERE {",
@@ -231,10 +232,10 @@ export function getScheme(iri: string, endpoint: string, callback: Function) {
                     Schemes[iri] = {labels: VariableLoader.initLanguageObject(result.termLabel.value)}
                 }
             }
-
-            callback();
+            loading.loaded++;
+            callback(true);
         }).catch(e =>{
-            callback();
+            callback(false);
             console.log(e);
     })
 }

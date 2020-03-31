@@ -1,5 +1,6 @@
 import * as Locale from "./../locale/LocaleMain.json";
 import {getElementsAsPackage, getElementsAsStereotypes} from "./SPARQLInterface";
+import {loading} from "../var/Variables";
 
 export function getVocabulariesFromJSONSource(pathToJSON: string, callback: Function) {
     const isURL = require('is-url');
@@ -9,16 +10,17 @@ export function getVocabulariesFromJSONSource(pathToJSON: string, callback: Func
                 Object.keys(json).forEach(key => {
                     let type = json[key]["type"];
                     if (type === "stereotype"){
+                        loading.load++;
                         getElementsAsStereotypes(key, json[key], callback);
                     } else if (type === "model"){
+                        loading.load++;
                         getElementsAsPackage(key, json[key], callback);
                     }
-
                 })
             }
         );
     } else {
-        callback();
+        callback(false);
         throw new Error(Locale.vocabularyNotFound)
     }
 }

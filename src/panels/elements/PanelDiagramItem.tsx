@@ -19,20 +19,8 @@ interface State {
     name: string;
 }
 
-const tooltipA = (
-    <Tooltip id="tooltipS">{LocaleMain.addDiagram}</Tooltip>
-);
 const tooltipE = (
     <Tooltip id="tooltipE">{LocaleMain.renameDiagram}</Tooltip>
-);
-const tooltipD = (
-    <Tooltip id="tooltipD">{LocaleMain.del}</Tooltip>
-);
-const tooltipU = (
-    <Tooltip id="tooltipS">{LocaleMain.moveUp}</Tooltip>
-);
-const tooltipB = (
-    <Tooltip id="tooltipS">{LocaleMain.moveDown}</Tooltip>
 );
 
 export default class PanelDiagramItem extends React.Component<Props, State> {
@@ -46,7 +34,6 @@ export default class PanelDiagramItem extends React.Component<Props, State> {
             name: this.props.diagram === ProjectSettings.selectedDiagram ? "stereotypeElementItem diagram selected" : "stereotypeElementItem diagram"
         };
         this.alertPanel = this.alertPanel.bind(this);
-        this.setClassName();
     }
 
     alertPanel() {
@@ -62,19 +49,6 @@ export default class PanelDiagramItem extends React.Component<Props, State> {
             this.setClassName();
             this.props.update();
 
-
-            //     Diagrams[ProjectSettings.selectedModel].json = JSON.stringify(graph.toJSON());
-            //
-            //     ProjectSettings.selectedModel = this.props.diagram;
-            //
-            //     let load = Diagrams[this.props.diagram].json;
-            //     if (Object.keys(load).length === 0){
-            //         graph.clear();
-            //     } else {
-            //         graph.fromJSON(JSON.parse(load));
-            //     }
-            //     this.setClassName();
-            //     this.props.update();
         }
     }
 

@@ -12,9 +12,6 @@ interface State {
 }
 
 export default class AboutModal extends React.Component<Props, State> {
-    constructor(props: Props) {
-        super(props);
-    }
 
     render() {
         return (<Modal centered scrollable  show={this.props.modal}>
@@ -22,6 +19,12 @@ export default class AboutModal extends React.Component<Props, State> {
                 <Modal.Title>{LocaleMenu.changelog}</Modal.Title>
             </Modal.Header>
             <Modal.Body>
+                <h6>31.3.</h6>
+                <ul>
+                    <li>Fixed element buttons placement issues when renaming an element with links attached</li>
+                    <li>Fixed package panel not updating when renaming element prefLabels</li>
+                    <li>Fixed wrong vocabulary assignment when fetching subclasses of found resources</li>
+                </ul>
                 <h6>30.3.</h6>
                 <ul>
                     <li>Fixed link re-creation when showing hidden elements</li>

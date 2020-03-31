@@ -245,7 +245,7 @@ export default class ElementPanel extends React.Component<Props, State>{
                     category={key}
                     onMouseOver={()=>{}}
                     package={false}/>);
-                result.push(<ModelFolder category={key} depth={0} update={()=>{this.forceUpdate();}} open={()=>{this.modelFolders[i] = !this.modelFolders[i]; this.forceUpdate();}}>
+                result.push(<ModelFolder category={key} key={key} depth={0} update={()=>{this.forceUpdate();}} open={()=>{this.modelFolders[i] = !this.modelFolders[i]; this.forceUpdate();}}>
                     {contents}
                 </ModelFolder>)
             });

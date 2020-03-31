@@ -11,9 +11,6 @@ interface Props{
 }
 
 export default class FileSaveModal extends React.Component<Props, any>{
-    constructor(props: Props) {
-        super(props);
-    }
 
     render(){
         return(<Modal centered show={this.props.modal}>

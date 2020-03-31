@@ -6,6 +6,11 @@ import {PackageNode} from "../components/PackageNode";
 export var graph = new joint.dia.Graph;
 export var selectedDiagram: string = "";
 
+export var loading = {
+    loaded: 0,
+    load: 0
+};
+
 
 // language code : language name
 export var Languages: {[key:string]: string} = {};
@@ -54,7 +59,7 @@ export var ModelCategories: string[] = [];
 //     0: {name: "Root", contents:{}}
 // };
 
-export var currentBuildDate = "30 March - Changelog";
+export var currentBuildDate = "31 March - Changelog";
 
 export var PackageRoot: PackageNode = new PackageNode("Root", undefined, true);
 //labels
@@ -92,12 +97,6 @@ export var AttributeTypePool: {[key:string]: any} = {
     "http://www.w3.org/2001/XMLSchema#float":{name:"Float", array: false},
     "http://www.w3.org/2001/XMLSchema#dateTime":{name:"DateTime", array: false}
 };
-//     new AttributeType("String", "http://www.w3.org/2001/XMLSchema#string","http://www.w3.org/2001/XMLSchema#string", false),
-//     new AttributeType("Integer", "http://www.w3.org/2001/XMLSchema#int","http://www.w3.org/2001/XMLSchema#int", false),
-//     new AttributeType("Boolean", "http://www.w3.org/2001/XMLSchema#boolean", "http://www.w3.org/2001/XMLSchema#boolean",false),
-//     new AttributeType("Float", "http://www.w3.org/2001/XMLSchema#float", "http://www.w3.org/2001/XMLSchema#float",false),
-//     new AttributeType("DateTime", "http://www.w3.org/2001/XMLSchema#dateTime", "http://www.w3.org/2001/XMLSchema#dateTime",false)
-// ];
 
 export var CardinalityPool = [
     new Cardinality("*", "*"),

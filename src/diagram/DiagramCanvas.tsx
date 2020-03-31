@@ -33,15 +33,28 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps, D
     }
 
     resizeElem(id: string){
-        this.paper?.freeze();
         let view = this.paper?.findViewByModel(id);
         let bbox = view.getBBox();
         let cell = graph.getCell(id);
-        this.paper?.unfreeze();
+        let links = graph.getConnectedLinks(cell);
+        for (let link of links){
+            if(link.getSourceCell().id === id){
+                link.source({x: bbox.x, y: bbox.y});
+            } else {
+                link.target({x: bbox.x, y: bbox.y});
+            }
+        }
         cell.resize(bbox.width, bbox.height);
         cell.position(bbox.x, bbox.y);
         view.unhighlight();
         view.highlight();
+        for (let link of links){
+            if(link.getSourceCell() === null){
+                link.source({id: id});
+            } else {
+                link.target({id: id});
+            }
+        }
     }
 
     componentDidMount(): void {
@@ -62,8 +75,17 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps, D
             sorting: joint.dia.Paper.sorting.APPROX,
             connectionStrategy: joint.connectionStrategies.pinAbsolute,
             defaultConnectionPoint: { name: 'boundary', args: { selector: 'border' }},
-            defaultLink: function() {
-                return new joint.shapes.standard.Link();
+            defaultLink: () => {
+                let link = new joint.shapes.standard.Link();
+                link.on('change', (lnk)=>{
+                    if (this.highlight){
+                        if (lnk.id === this.highlight.model.id){
+                            this.highlight.unhighlight();
+                            this.highlight.highlight();
+                        }
+                    }
+                });
+                return link;
             }
         });
 
@@ -72,7 +94,6 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps, D
                 // let bbox = elementView.getBBox();
                 // let model = elementView.model;
                 // model.resize(bbox.width, bbox.height);
-                // model.position(bbox.x, bbox.y);
                 let tool = ProjectElements[elementView.model.id].active ? new joint.elementTools.HideButton({
                     useModelGeometry: false,
                     x: '100%',

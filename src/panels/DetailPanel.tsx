@@ -166,7 +166,7 @@ export default class DetailPanel extends React.Component<Props, State> {
             ProjectElements[this.state.model].diagrams = this.state.inputDiagrams;
             graph.getCell(this.state.model).attr({
                 label: {
-                    text: "«" + getName(this.state.iri, this.props.projectLanguage).toLowerCase() + "»" + "\n" + ProjectElements[this.state.model].names[this.props.projectLanguage]
+                    text: "«" + getName(this.state.iri, this.props.projectLanguage).toLowerCase() + "»\n" + ProjectElements[this.state.model].names[this.props.projectLanguage]
                 }
             });
             this.props.resizeElem(this.state.model);
