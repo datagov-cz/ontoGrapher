@@ -1,5 +1,5 @@
 {
-  "Z-sGOV": {
+  "Z-SGoV": {
     "type": "stereotype",
     "endpoint": "https://slovník.gov.cz/sparql",
     "language": "cs",
@@ -22,7 +22,7 @@
       }
     ]
   },
-  "V-sGOV": {
+  "V-SGoV": {
     "type": "model",
     "endpoint": "https://slovník.gov.cz/sparql",
     "language": "cs",
