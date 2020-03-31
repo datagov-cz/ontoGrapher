@@ -25,6 +25,7 @@ import IRIlabel from "../components/IRIlabel";
 interface Props {
     projectLanguage: string;
     resizeElem: Function;
+    update: Function;
 }
 
 interface State {
@@ -169,6 +170,7 @@ export default class DetailPanel extends React.Component<Props, State> {
                 }
             });
             this.props.resizeElem(this.state.model);
+            this.props.update();
         } else {
             ProjectLinks[this.state.model].sourceCardinality = CardinalityPool[parseInt(this.state.sourceCardinality, 10)];
             ProjectLinks[this.state.model].targetCardinality = CardinalityPool[parseInt(this.state.targetCardinality, 10)];

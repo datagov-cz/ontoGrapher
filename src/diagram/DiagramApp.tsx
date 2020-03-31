@@ -286,6 +286,7 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
                 ref={this.detailPanel}
                 projectLanguage={this.state.projectLanguage}
                 resizeElem={(id: string)=>{this.canvas.current?.resizeElem(id)}}
+                update={()=>{this.elementPanel.current?.forceUpdate()}}
             />
             <DiagramCanvas
                 hide={this.hide}

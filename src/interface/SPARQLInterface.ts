@@ -140,9 +140,9 @@ export function getSubclasses(superIRI: string, jsonData: { [key: string]: any }
                         if (result.skosLabel !== undefined) Links[result.term.value].skos.prefLabel[result.skosLabel['xml:lang']] = result.skosLabel.value;
                         if (result.skosDefinition !== undefined) Links[result.term.value].skos.definition[result.skosDefinition['xml:lang']] = result.skosDefinition.value;
                     } else {
-                        let name = result.termLabel === undefined ? result.term.value.substring(result.term.value.lastIndexOf("/") + 1) : result.termLabel.value;
+                        let namelabels = result.termLabel === undefined ? result.term.value.substring(result.term.value.lastIndexOf("/") + 1) : result.termLabel.value;
                         Links[result.term.value] = {
-                            labels: VariableLoader.initLanguageObject(name),
+                            labels: VariableLoader.initLanguageObject(namelabels),
                             definitions: VariableLoader.initLanguageObject(result.termDefinition === undefined ? "" : result.termDefinition.value),
                             category: name,
                             skos: {}
