@@ -52,25 +52,26 @@ export var Schemes: {[key:string]: any} = {
 };
 
 export var Prefixes: {[key:string]: string} = {
-    "skos": "http://www.w3.org/2004/02/skos/core#"
+    skos: "http://www.w3.org/2004/02/skos/core#",
+    ex: "http://example.com/ontoGrapher/",
+    owl: "http://www.w3.org/2002/07/owl#",
+    rdf: "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+    rdfs: "http://www.w3.org/2000/01/rdf-schema#",
+    "z-sgov-pojem": "https://slovník.gov.cz/základní/pojem/"
 };
-export var ModelCategories: string[] = [];
-// export var PackageCategories: {[key:string]: any} = {
-//     0: {name: "Root", contents:{}}
-// };
 
 export var currentBuildDate = "31 March - Changelog";
 
 export var PackageRoot: PackageNode = new PackageNode("Root", undefined, true);
+
 //labels
-//prefix
-//suffix
 //category
 export var Stereotypes: {[key:string]: any} = {
 
 };
 
 export var ModelElements:{[key:string]: any} = {};
+
 
 export var Links: {[key:string]: any} = {
 
@@ -117,30 +118,3 @@ export var Packages: {[key:string]: any} = {
 };
 Packages[Locale.root] = false;
 export var PropertyPool: {[key:string]: any} = {"&*": [], "Manual": []};
-export var Models: {[key:string]: any} = {
-
-};
-Models[Locale.untitled] = "";
-export var LinkPool: {[key:string]: any} = {
-
-};
-export var LinkPoolPackage: {[key:string]: any} = {
-
-};
-export var StereotypePoolPackage: {[key:string]: any} = {
-
-};
-
-export var ClassPackage: {[key:string]: any} = {
-
-};
-export var HiddenRelationships: {[key:string]: any} = {
-
-};
-export var HiddenInstances: {[key:string]: any} = {
-
-};
-export var DetailPanelInstances: {[key:string]: any} = {
-
-};
-ClassPackage[Locale.root] = [];

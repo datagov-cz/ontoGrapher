@@ -10,9 +10,9 @@ import {
     Diagrams,
     graph,
     Languages,
-    Links, loading,
+    Links,
     ModelElements,
-    PackageRoot,
+    PackageRoot, Prefixes,
     ProjectElements,
     ProjectLinks,
     ProjectSettings,
@@ -24,7 +24,7 @@ import DetailPanel from "../panels/DetailPanel";
 import {getVocabulariesFromJSONSource} from "../interface/JSONInterface";
 import * as SemanticWebInterface from "../interface/SemanticWebInterface";
 import {Defaults} from "../config/Defaults";
-import {getModelName, getName, saveDiagram} from "../misc/Helper";
+import {getModelName, getName, parsePrefix, saveDiagram} from "../misc/Helper";
 import {PackageNode} from "../components/PackageNode";
 
 interface DiagramAppProps{
@@ -44,6 +44,7 @@ interface DiagramAppState{
     // projectDescription: {[key:string]: string};
     projectLanguage: string;
     saveString: string;
+    exportString: string;
     selectedLink: string;
     detailPanelHidden: boolean;
     //theme: "light" | "dark";
@@ -71,6 +72,7 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
             // projectName: VariableLoader.initLanguageObject(Locale.untitledProject),
             // projectDescription: VariableLoader.initLanguageObject(""),
             //theme: "light",
+            exportString: "",
             projectLanguage: Object.keys(Languages)[0],
             selectedLink: Object.keys(Links)[0],
             saveString: "",
@@ -243,6 +245,8 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
     //     //     projectName: save.projectName
     //     // });
     // }
+
+
 
     handleChangeSelectedLink(linkType: string) {
         this.setState({selectedLink: linkType});

@@ -6,6 +6,7 @@ import FileOGSettingsModal from "./file/FileOGSettingsModal";
 import FileLoadModal from "./file/FileLoadModal";
 import FileSaveModal from "./file/FileSaveModal";
 import FileProjectSettingsModal from "./file/FileProjectSettingsModal";
+import FileExportModal from "./file/FileExportModal";
 
 interface MenuPanelFileProps {
     newProject: Function;
@@ -25,6 +26,7 @@ interface MenuPanelFileState {
     modalFileProjectSettings: boolean;
     modalFileLoad: boolean;
     modalFileSave: boolean;
+    modalFileExport: boolean;
     modalFileOGSettings: boolean;
     loadSuccess: boolean;
     loadString: string;
@@ -39,6 +41,7 @@ export default class MenuPanelFile extends React.Component<MenuPanelFileProps, M
             modalFileProjectSettings: false,
             modalFileLoad: false,
             modalFileSave: false,
+            modalFileExport: false,
             modalFileOGSettings: false,
             loadSuccess: true,
             loadString: ""
@@ -91,6 +94,12 @@ export default class MenuPanelFile extends React.Component<MenuPanelFileProps, M
                 this.setState({modalFileSave: false})
             }} saveProject={this.saveProject} saveString={this.props.saveString}/>
 
+            <NavDropdown.Item onClick={() => {
+                this.setState({modalFileExport: true});
+            }}>{LocaleMenu.exportProject}</NavDropdown.Item>
+            <FileExportModal modal={this.state.modalFileExport} close={() => {
+                this.setState({modalFileExport: false})
+            }}/>
 
             <NavDropdown.Item onClick={() => {
                 this.setState({modalFileProjectSettings: true})

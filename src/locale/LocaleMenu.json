@@ -35,6 +35,7 @@
   "definitions": "Definitions",
   "load": "Load",
   "changelog": "Changelog",
+  "exportProject": "Export project...",
   "labels": "Labels",
   "theme": "Theme",
   "OGsettingsTitle": "ontoGrapher settings",

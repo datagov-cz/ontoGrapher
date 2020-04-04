@@ -86,7 +86,7 @@ export function fetchRelationships(name, source, typeIRI, replace, language, cal
         }
         for (let key in result){
             if (result[key].relationship){
-                LinkPool[result[key].label]=["Empty",true,false,[],key,"",""];
+                // LinkPool[result[key].label]=["Empty",true,false,[],key,"",""];
                 Links[key] = {
                     labels: VariableLoader.initLanguageObject(result[key].label),
                     descriptions: VariableLoader.initLanguageObject(""),

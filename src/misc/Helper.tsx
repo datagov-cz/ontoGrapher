@@ -9,7 +9,7 @@ import {
     ProjectElements,
     ProjectLinks,
     ProjectSettings,
-    PropertyPool,
+    PropertyPool, Schemes,
     StereotypeCategories,
     Stereotypes,
     ViewSettings
@@ -22,6 +22,7 @@ import {graphElement} from "../graph/GraphElement";
 import * as joint from 'jointjs';
 import {AttributeObject} from "../components/AttributeObject";
 import {AttributeType} from "../components/AttributeType";
+import {DataFactory} from "n3";
 
 export function getNameOfStereotype(uri: string): string {
     let stereotype = Stereotypes[uri];
@@ -132,11 +133,10 @@ export function createLanguageObject(init: string, lang: string){
     return result;
 }
 
-//TODO
 export function testing() {
-    let node = new PackageNode("test", undefined);
-    node.parent = PackageRoot;
-    PackageRoot.children.push(node);
+    // let node = new PackageNode("test", undefined);
+    // node.parent = PackageRoot;
+    // PackageRoot.children.push(node);
 }
 
 export function deletePackageItem(id: string) {
@@ -210,4 +210,47 @@ export function loadDiagram(load: {
         lnk.vertices(link.vertices);
         lnk.addTo(graph);
     }
+}
+
+// https://slovník.gov.cz/základní/pojem/model
+export function exportProject(iri: string, type: string, knowledgeStructure: string, callback: Function){
+    const N3 = require('n3');
+    const { namedNode, literal } = DataFactory;
+    const writer = new N3.Writer({ prefixes: Prefixes });
+    let project = namedNode(iri);
+    //type -zsgovmodel, ontology
+    writer.addQuad(project, namedNode(parsePrefix("rdf","type")), namedNode(parsePrefix("owl", "Ontology")));
+    writer.addQuad(project, namedNode(parsePrefix("rdf","type")), namedNode(type));
+    writer.addQuad(project, namedNode(parsePrefix("rdf","type")), namedNode(knowledgeStructure));
+    //label
+    for (let lang of Object.keys(ProjectSettings.name)){
+        if (ProjectSettings.name[lang].length > 0){
+            writer.addQuad(project, namedNode(parsePrefix("skos","prefLabel")), literal(ProjectSettings.name[lang],lang));
+        }
+    }
+    //imports
+    for (let iri of Object.keys(Schemes)){
+        writer.addQuad(project, namedNode(parsePrefix("owl","imports")), namedNode(iri));
+    }
+
+    for (let id of Object.keys(ProjectElements)){
+        if (!(ProjectElements[id].active)) continue;
+        let subject = namedNode(parsePrefix("ex", id));
+        //type
+        //writer.addQuad(subject, namedNode(parsePrefix(Prefixes.rdf,"type")), namedNode(parsePrefix(Prefixes.skos,"Concept")));
+        writer.addQuad(subject, namedNode(parsePrefix("rdf","type")), namedNode(ProjectElements[id].iri));
+        //prefLabel
+        for (let lang of Object.keys(ProjectElements[id].names)){
+            if (ProjectElements[id].names[lang].length > 0){
+                writer.addQuad(subject, namedNode(parsePrefix("skos","prefLabel")), literal(ProjectElements[id].names[lang],lang));
+            }
+        }
+        //rdfs:isDefinedBy
+        writer.addQuad(subject, namedNode(parsePrefix("rdfs","isDefinedBy")), project);
+        //relationships
+        for (let conn of ProjectElements[id].connections){
+            writer.addQuad(subject,namedNode(ProjectLinks[conn].iri), namedNode(ProjectElements[ProjectLinks[conn].target].iri));
+        }
+    }
+    return writer.end((error: any, result: any)=>{callback(result);})
 }

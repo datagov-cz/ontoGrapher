@@ -411,11 +411,7 @@ export default class DetailPanel extends React.Component<Props, State> {
                             <TableList headings={[LocaleMenu.linkInfo, ""]}>
                                 <tr>
                                     <td>
-                                        <OverlayTrigger overlay={<Tooltip
-                                            id="tooltipS">{LocaleMain.sourceCardinalityExplainer}</Tooltip>}
-                                                        placement={"bottom"}>
-                                            <span>{LocaleMain.sourceCardinality}</span>
-                                        </OverlayTrigger>
+                                        <span>{LocaleMain.sourceCardinality}</span>
                                     </td>
                                     <td>
                                         <Form.Control as="select" value={this.state.sourceCardinality}
@@ -435,11 +431,7 @@ export default class DetailPanel extends React.Component<Props, State> {
 
                                 <tr>
                                     <td>
-                                        <OverlayTrigger overlay={<Tooltip
-                                            id="tooltipS">{LocaleMain.targetCardinalityExplainer}</Tooltip>}
-                                                        placement={"bottom"}>
-                                            <span>{LocaleMain.targetCardinality}</span>
-                                        </OverlayTrigger>
+                                        <span>{LocaleMain.targetCardinality}</span>
                                     </td>
                                     <td>
                                         <Form.Control as="select" value={this.state.targetCardinality}
@@ -459,11 +451,7 @@ export default class DetailPanel extends React.Component<Props, State> {
 
                                 <tr>
                                     <td>
-                                        <OverlayTrigger
-                                            overlay={<Tooltip id="tooltipS">{LocaleMain.linkTypeExplainer}</Tooltip>}
-                                            placement={"bottom"}>
-                                            <span>{LocaleMain.linkType}</span>
-                                        </OverlayTrigger>
+                                        <span>{LocaleMain.linkType}</span>
                                     </td>
                                     <td>
                                         <Form.Control as="select" value={this.state.iri}
