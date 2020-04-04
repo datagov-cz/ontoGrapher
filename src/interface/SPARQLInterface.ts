@@ -14,6 +14,12 @@ export function getElementsAsStereotypes(name: string, jsonData: { [key: string]
         getScheme(jsonData.sourceIRI, jsonData.endpoint, function () {
         });
     }
+    let values: string[] = [];
+    for (let prefix of Object.keys(jsonData.values)){
+        for (let value of jsonData.values[prefix]){
+            values.push(prefix + value);
+        }
+    }
     let query = [
         "SELECT DISTINCT ?term ?termLabel ?termType ?termDefinition ?skosLabel ?skosDefinition",
         "WHERE {",
@@ -24,6 +30,9 @@ export function getElementsAsStereotypes(name: string, jsonData: { [key: string]
         "?term skos:definition ?skosDefinition.",
         "FILTER (?termType IN (<" + jsonData.classIRI.join(">,<") + ">,<" + jsonData.relationshipIRI.join(">,<") + ">)).",
         "OPTIONAL {?term <" + jsonData.definitionIRI + "> ?termDefinition.}",
+        "}",
+        "VALUES ?term {",
+        values.join(","),
         "}"
     ].join(" ");
     let q = jsonData.endpoint + "?query=" + encodeURIComponent(query) + "&format=json";

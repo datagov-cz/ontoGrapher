@@ -9,6 +9,25 @@
     "definitionIRI": "http://www.w3.org/2004/02/skos/core#definition",
     "classIRI": ["http://www.w3.org/2002/07/owl#Class"],
     "relationshipIRI": ["http://www.w3.org/2002/07/owl#ObjectProperty"],
+    "values": {
+      "z-sgov-pojem": [
+        "typ-vztahu",
+        "typ-vlastnosti",
+        "typ-objektu",
+        "typ-události",
+        "druh",
+        "poddruh",
+        "mixin",
+        "kategorie",
+        "role",
+        "fáze",
+        "mixin-rolí",
+        "mixin-fází"
+      ]
+    },
+    "prefixes": {
+      "z-sgov-pojem": "https://slovník.gov.cz/základní/pojem/"
+    },
     "attributes": [
       {
         "name": "term label",
