@@ -1,5 +1,5 @@
 import * as Locale from "./../locale/LocaleMain.json";
-import {getElementsAsPackage, getElementsAsStereotypes} from "./SPARQLInterface";
+import {getElementsAsPackage, getLinks, getStereotypes} from "./SPARQLInterface";
 import {loading} from "../var/Variables";
 
 export function getVocabulariesFromJSONSource(pathToJSON: string, callback: Function) {
@@ -11,7 +11,8 @@ export function getVocabulariesFromJSONSource(pathToJSON: string, callback: Func
                     let type = json[key]["type"];
                     if (type === "stereotype"){
                         loading.load++;
-                        getElementsAsStereotypes(key, json[key], callback);
+                        getStereotypes(key, json[key], callback);
+                        getLinks(key, json[key], callback);
                     } else if (type === "model"){
                         loading.load++;
                         getElementsAsPackage(key, json[key], callback);

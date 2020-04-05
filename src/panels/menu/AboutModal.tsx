@@ -26,6 +26,7 @@ export default class AboutModal extends React.Component<Props, State> {
                         <li>SKOS export</li>
                         <li>Internal cleanup</li>
                         <li>SPARQL query change</li>
+                        <li>Added tooltips for stereotypes and relationships</li>
                     </ul>
                     </Tab>
                     <Tab title={"March"} eventKey={2}> <h6>31.3.</h6>

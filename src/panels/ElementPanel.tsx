@@ -293,6 +293,7 @@ export default class ElementPanel extends React.Component<Props, State>{
                             onMouseOver={() => {
                                 this.handleGetInfo(element);
                             }}
+                            definition={Stereotypes[element].skos.definition[this.props.projectLanguage]}
                             package={true}/>))}
                     </div>
                 </Tab>
@@ -304,6 +305,7 @@ export default class ElementPanel extends React.Component<Props, State>{
                                 handleChangeSelectedLink={this.handleChangeSelectedLink}
                                 linkType={link}
                                 category={Links[link].category}
+                                definition={Links[link].skos.definition[this.props.projectLanguage]}
                                 label={this.getNameLink(link)}
                             />
                         )}

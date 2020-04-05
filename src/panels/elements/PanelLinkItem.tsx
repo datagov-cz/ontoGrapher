@@ -1,4 +1,5 @@
 import React from 'react';
+import {OverlayTrigger, Tooltip} from "react-bootstrap";
 
 interface Props{
     label: string;
@@ -6,6 +7,7 @@ interface Props{
     handleChangeSelectedLink: Function;
     selectedLink: string;
     category: string;
+    definition?: string;
 }
 
 interface State {
@@ -42,12 +44,30 @@ export class PanelLinkItem extends React.Component<Props, State> {
     }
 
     render() {
-        return (
+        if (this.props.definition){
+            return (
+                <OverlayTrigger popperConfig={{
+                    modifiers: {
+                        preventOverflow: {
+                            enabled: false
+                        }
+                    }
+                    }} placement="right" overlay={<Tooltip id={this.props.linkType}>{this.props.definition}</Tooltip>}>
+                    <div className={this.state.name}
+                         onClick={this.alertPanel}
+                    >
+                        <span className={"label"}>{this.props.label}</span><span className={"category"}>{this.props.category}</span>
+                    </div>
+                </OverlayTrigger>
+            );
+        } else {
+            return (
                 <div className={this.state.name}
                      onClick={this.alertPanel}
                 >
                     <span className={"label"}>{this.props.label}</span><span className={"category"}>{this.props.category}</span>
                 </div>
-        );
+            );
+        }
     }
 }

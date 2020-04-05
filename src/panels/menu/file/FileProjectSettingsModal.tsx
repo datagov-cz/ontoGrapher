@@ -74,8 +74,8 @@ export default class FileProjectSettingsModal extends React.Component<Props, Sta
             <Modal.Body>
                 <h4>{LocaleMenu.fileProjectSettingsTitles}</h4>
                 <TableList headings={[LocaleMenu.title, LocaleMenu.language]}>
-                    {Object.keys(Languages).map((language) => (
-                        <tr key={language}>
+                    {Object.keys(Languages).map((language,i) => (
+                        <tr key={i}>
                             <td>
                                 <RIEInput
                                     className={"rieinput"}
