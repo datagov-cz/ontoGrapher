@@ -64,6 +64,7 @@ export default class FileExportModal extends React.Component<Props, State> {
                     <Form.Label>{Locale.projectType}</Form.Label>
                     <Form.Control
                         as={"input"}
+						disabled
                         value={this.state.type}
                         onChange={(event: { currentTarget: { value: any; }; }) => {
                             this.setState({type: event.currentTarget.value});
