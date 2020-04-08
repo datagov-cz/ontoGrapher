@@ -249,7 +249,7 @@ export function exportProject(iri: string, type: string, knowledgeStructure: str
         writer.addQuad(subject, namedNode(parsePrefix("rdfs","isDefinedBy")), project);
         //relationships
         for (let conn of ProjectElements[id].connections){
-            writer.addQuad(subject,namedNode(ProjectLinks[conn].iri), namedNode(ProjectElements[ProjectLinks[conn].target].iri));
+            writer.addQuad(subject,namedNode(ProjectLinks[conn].iri), namedNode(parsePrefix("ex",ProjectLinks[conn].target)));
         }
     }
     return writer.end((error: any, result: any)=>{callback(result);})

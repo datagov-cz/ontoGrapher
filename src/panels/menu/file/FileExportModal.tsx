@@ -44,7 +44,7 @@ export default class FileExportModal extends React.Component<Props, State> {
     }
 
     render() {
-        return (<Modal centered show={this.props.modal}>
+        return (<Modal size="lg" centered show={this.props.modal}>
             <Modal.Header>
                 <Modal.Title>{Locale.menuModalExportHeading}</Modal.Title>
             </Modal.Header>
@@ -92,7 +92,7 @@ export default class FileExportModal extends React.Component<Props, State> {
             <Modal.Footer>
                 <Button onClick={() => {
                     this.props.close();
-                }} variant="secondary">{LocaleMenu.cancel}</Button>
+                }} variant="secondary">Close</Button>
             </Modal.Footer>
         </Modal>);
     }
