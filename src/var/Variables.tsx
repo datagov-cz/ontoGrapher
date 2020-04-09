@@ -60,8 +60,6 @@ export var Prefixes: {[key:string]: string} = {
     "z-sgov-pojem": "https://slovník.gov.cz/základní/pojem/"
 };
 
-export var currentBuildDate = "4 April - Changelog";
-
 export var PackageRoot: PackageNode = new PackageNode("Root", undefined, true);
 
 //labels

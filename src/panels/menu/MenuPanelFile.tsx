@@ -7,6 +7,7 @@ import FileLoadModal from "./file/FileLoadModal";
 import FileSaveModal from "./file/FileSaveModal";
 import FileProjectSettingsModal from "./file/FileProjectSettingsModal";
 import FileExportModal from "./file/FileExportModal";
+import {exportGlossary, exportModel, parsePrefix} from "../../misc/Helper";
 
 interface MenuPanelFileProps {
     newProject: Function;

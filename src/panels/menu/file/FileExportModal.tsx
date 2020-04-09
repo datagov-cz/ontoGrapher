@@ -1,8 +1,8 @@
 import React from 'react';
-import {Button, Form, Modal} from "react-bootstrap";
+import {Button, Form, Modal, Tab, Tabs} from "react-bootstrap";
 import * as LocaleMenu from "../../../locale/LocaleMenu.json";
 import * as Locale from "../../../locale/LocaleMain.json";
-import {exportProject, parsePrefix} from "../../../misc/Helper";
+import {exportGlossary, exportModel, parsePrefix} from "../../../misc/Helper";
 import {Prefixes} from "../../../var/Variables";
 
 interface Props {
@@ -11,7 +11,8 @@ interface Props {
 }
 
 interface State {
-    exportString: string;
+    exportModelString: string;
+    exportGlossaryString: string;
     iri: string;
     type: string;
     knowledgeStructure: string;
@@ -24,74 +25,91 @@ var structures: {[key:string]: string} = {
     "z-sgov-pojem:datová-struktura": parsePrefix("z-sgov-pojem", "datová-struktura")
 };
 
+var structuresShort: {[key:string]: string} = {
+    "z-sgov-pojem:základní-struktura": "základní",
+    "z-sgov-pojem:legislativní-struktura": "legislativní",
+    "z-sgov-pojem:agendová-struktura": "agendová",
+    "z-sgov-pojem:datová-struktura": "datová"
+};
+
 export default class FileExportModal extends React.Component<Props, State> {
     constructor(props: Props) {
         super(props);
         this.state = {
-            exportString: "",
+            exportModelString: "",
+            exportGlossaryString: "",
             knowledgeStructure: Object.keys(structures)[0],
-            iri: parsePrefix("ex", Date.now().toString()),
+            iri: "https://slovník.gov.cz/",
             type: parsePrefix("z-sgov-pojem","model")
         };
-        this.export = this.export.bind(this);
+        this.exportM = this.exportM.bind(this);
+        this.exportG = this.exportG.bind(this);
+        this.handleExport = this.handleExport.bind(this);
     }
 
-    export(){
-        exportProject(this.state.iri, this.state.type, this.state.knowledgeStructure, (str: string) => {
-            this.setState({exportString: str});
+    handleExport(){
+        this.exportG();
+        this.exportM();
+    }
+
+    exportM(){
+        exportModel(this.state.iri, this.state.type, this.state.knowledgeStructure, structuresShort[this.state.knowledgeStructure], (str: string) => {
+            this.setState({exportModelString: str});
             console.log(str);
+            this.forceUpdate();
+        })
+    }
+
+    exportG(){
+        exportGlossary(this.state.iri, this.state.type, this.state.knowledgeStructure, structuresShort[this.state.knowledgeStructure], (str: string) => {
+            this.setState({exportGlossaryString: str});
+            console.log(str);
+            this.forceUpdate();
         })
     }
 
     render() {
-        return (<Modal centered show={this.props.modal}>
+        return (<Modal size={"lg"} centered show={this.props.modal} onShow={this.handleExport}>
             <Modal.Header>
                 <Modal.Title>{Locale.menuModalExportHeading}</Modal.Title>
             </Modal.Header>
             <Modal.Body>
-                <Form onSubmit={this.export}>
-                    <Form.Group controlId="projectIRI">
-                    <Form.Label>{Locale.projectIRI}</Form.Label>
-                    <Form.Control
-                        as={"input"}
-                        value={this.state.iri}
-                        onChange={(event: { currentTarget: { value: any; }; }) => {
-                            this.setState({iri: event.currentTarget.value});
-                        }}
-                    />
-                    </Form.Group>
-                    <Form.Group controlId="projectType">
-                    <Form.Label>{Locale.projectType}</Form.Label>
-                    <Form.Control
-                        as={"input"}
-                        value={this.state.type}
-                        onChange={(event: { currentTarget: { value: any; }; }) => {
-                            this.setState({type: event.currentTarget.value});
-                        }}
-                    />
-                    </Form.Group>
+                <Form onSubmit={this.exportM}>
                     <Form.Group controlId="knowledgeStructure">
                     <Form.Label>{Locale.knowledgeStructure}</Form.Label>
                     <Form.Control as="select" value={this.state.knowledgeStructure}
                                   onChange={(event: React.FormEvent<HTMLInputElement>) => {
                                       this.setState({knowledgeStructure: event.currentTarget.value});
+                                      this.handleExport();
                                   }}>
-                        {Object.keys(structures).map((key,i)=><option key={i} value={structures[key]}>{key}</option>)}
+                        {Object.keys(structures).map((key,i)=><option key={i} value={key}>{key}</option>)}
                     </Form.Control>
                     </Form.Group>
-                    <Button onClick={this.export}>{Locale.exportButton}</Button>
                 </Form>
-                <Form.Control
-                    style={{height: 150, resize: "none"}}
-                    as={"textarea"}
-                    disabled
-                    value={this.state.exportString}
-                />
+                <br/>
+                <Tabs id={"exports"}>
+                    <Tab eventKey={1} title={LocaleMenu.glossary}>
+                        <Form.Control
+                            style={{height: 150, resize: "none"}}
+                            as={"textarea"}
+                            disabled
+                            value={this.state.exportGlossaryString}
+                        />
+                    </Tab>
+                    <Tab eventKey={2} title={LocaleMenu.model}>
+                        <Form.Control
+                            style={{height: 150, resize: "none"}}
+                            as={"textarea"}
+                            disabled
+                            value={this.state.exportModelString}
+                        />
+                    </Tab>
+                </Tabs>
             </Modal.Body>
             <Modal.Footer>
                 <Button onClick={() => {
                     this.props.close();
-                }} variant="secondary">{LocaleMenu.cancel}</Button>
+                }} variant="secondary">{LocaleMenu.close}</Button>
             </Modal.Footer>
         </Modal>);
     }

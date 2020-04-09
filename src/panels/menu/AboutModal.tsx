@@ -21,6 +21,16 @@ export default class AboutModal extends React.Component<Props, State> {
             <Modal.Body>
                 <Tabs id={"changelog"}>
                     <Tab title={"April"} eventKey={1}>
+                        <h6>9.4.</h6>
+                    <ul>
+                        <li>Fixed SPARQL query to include missing desired stereotypes</li>
+                        <li>Fixed export</li>
+                        <li>Changed export IRI</li>
+                        <li>Added glossary export</li>
+                        <li>Fixed changes/deletions in links not being logged</li>
+                        <li>Prohibited user choice of IRI and rdf:type</li>
+                        <li>Removed "Generate TTL" button; exporting now happens automatically and also on change of knowledge structure</li>
+                    </ul>
                         <h6>4.4.</h6>
                     <ul>
                         <li>SKOS export</li>

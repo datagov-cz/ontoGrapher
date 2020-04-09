@@ -50,6 +50,8 @@
   "delete": "Delete",
   "fileProjectSettingsTitles": "Titles",
   "value": "Value",
+  "model": "Model",
+  "glossary": "Glossary",
   "fileProjectSettingsDescriptions": "Descriptions",
   "language": "Language",
   "addManually": "Add manually",

@@ -1,5 +1,4 @@
 import React from 'react';
-import {Stereotypes} from "../../var/Variables";
 import {OverlayTrigger, Tooltip} from "react-bootstrap";
 
 interface Props {

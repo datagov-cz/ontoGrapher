@@ -119,11 +119,18 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps, D
                 var infoButton = new joint.linkTools.InfoButton();
                 var verticesTool = new joint.linkTools.Vertices();
                 var segmentsTool = new joint.linkTools.Segments();
-                var removeButton = new joint.linkTools.Remove();
-                var sourceArrowheadTool = new joint.linkTools.SourceArrowhead();
-                var targetArrowheadTool = new joint.linkTools.TargetArrowhead();
+                var removeButton = new joint.linkTools.Remove({
+                    action: ((evt, view) =>  {
+                        let id = view.model.id;
+                        let sid = view.model.getSourceCell().id;
+                        ProjectElements[sid].connections.splice(ProjectElements[sid].connections.indexOf(id),1);
+                        //let tid = view.model.getTargetCell().id;
+                        delete ProjectLinks[id];
+                        view.model.remove();
+                    })
+                });
                 var toolsView = new joint.dia.ToolsView({
-                    tools: [verticesTool,segmentsTool,sourceArrowheadTool,targetArrowheadTool,removeButton,infoButton]
+                    tools: [verticesTool,segmentsTool,removeButton,infoButton]
                 });
                 linkView.addTools(toolsView);
             },
@@ -205,7 +212,12 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps, D
                 ],
                 action: (evt) => {
                     let id = evt.currentTarget.getAttribute("model-id");
+                    let links = graph.getConnectedLinks(graph.getCell(id));
+                    for (let link of links){
+                        delete ProjectLinks[link.id];
+                    }
                     graph.getCell(id).remove();
+
                 }
             }
         });

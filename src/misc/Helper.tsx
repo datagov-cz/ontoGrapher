@@ -17,7 +17,6 @@ import {
 import {SourceData} from "../components/SourceData";
 import * as VariableLoader from "./../var/VariableLoader";
 import * as LocaleMain from "../locale/LocaleMain.json";
-import {PackageNode} from "../components/PackageNode";
 import {graphElement} from "../graph/GraphElement";
 import * as joint from 'jointjs';
 import {AttributeObject} from "../components/AttributeObject";
@@ -142,6 +141,10 @@ export function testing() {
 export function deletePackageItem(id: string) {
     let folder = ProjectElements[id].package;
     folder.elements.splice(folder.elements.indexOf(id), 1);
+    for (let connection in ProjectElements[id].connections){
+        delete ProjectLinks[ProjectElements[id].connections[connection]];
+    }
+    ProjectElements[id].connections.splice(0,ProjectElements[id].connections.length-1);
     if (graph.getCell(id)){
         graph.removeCells([graph.getCell(id)]);
     }
@@ -213,14 +216,16 @@ export function loadDiagram(load: {
 }
 
 // https://slovník.gov.cz/základní/pojem/model
-export function exportProject(iri: string, type: string, knowledgeStructure: string, callback: Function){
+export function exportModel(iri: string, type: string, knowledgeStructure: string, ksShort: string, callback: Function){
     const N3 = require('n3');
     const { namedNode, literal } = DataFactory;
     const writer = new N3.Writer({ prefixes: Prefixes });
-    let project = namedNode(iri);
+    let name: string = ProjectSettings.name[Object.keys(ProjectSettings.name)[0]].trim().replace(/\s/g, '-');;
+    let projectIRI = iri + ksShort + "/" + name;
+    let project = namedNode(projectIRI);
     //type -zsgovmodel, ontology
     writer.addQuad(project, namedNode(parsePrefix("rdf","type")), namedNode(parsePrefix("owl", "Ontology")));
-    writer.addQuad(project, namedNode(parsePrefix("rdf","type")), namedNode(type));
+    writer.addQuad(project, namedNode(parsePrefix("rdf","type")), namedNode(parsePrefix("z-sgov-pojem","model")));
     writer.addQuad(project, namedNode(parsePrefix("rdf","type")), namedNode(knowledgeStructure));
     //label
     for (let lang of Object.keys(ProjectSettings.name)){
@@ -234,8 +239,10 @@ export function exportProject(iri: string, type: string, knowledgeStructure: str
     }
 
     for (let id of Object.keys(ProjectElements)){
-        if (!(ProjectElements[id].active)) continue;
-        let subject = namedNode(parsePrefix("ex", id));
+        let iri = ProjectElements[id].iri;
+        if (!((iri) in Stereotypes)) continue;
+        let elementName = Stereotypes[iri].skos.prefLabel[Object.keys(Stereotypes[iri].skos.prefLabel)[0]].trim().replace(/\s/g, '-');
+        let subject = namedNode(projectIRI + "/pojem/" + elementName);
         //type
         //writer.addQuad(subject, namedNode(parsePrefix(Prefixes.rdf,"type")), namedNode(parsePrefix(Prefixes.skos,"Concept")));
         writer.addQuad(subject, namedNode(parsePrefix("rdf","type")), namedNode(ProjectElements[id].iri));
@@ -249,8 +256,60 @@ export function exportProject(iri: string, type: string, knowledgeStructure: str
         writer.addQuad(subject, namedNode(parsePrefix("rdfs","isDefinedBy")), project);
         //relationships
         for (let conn of ProjectElements[id].connections){
-            writer.addQuad(subject,namedNode(ProjectLinks[conn].iri), namedNode(ProjectElements[ProjectLinks[conn].target].iri));
+            let targetName = ProjectElements[ProjectLinks[conn].target].names[Object.keys(ProjectElements[ProjectLinks[conn].target].names)[0]].trim().replace(/\s/g, '-');
+            let targetIRI = projectIRI + "/pojem/" + targetName;
+            writer.addQuad(subject,namedNode(ProjectLinks[conn].iri), namedNode(targetIRI));
         }
+    }
+    return writer.end((error: any, result: any)=>{callback(result);})
+}
+
+export function exportGlossary(iri: string, type: string, knowledgeStructure: string, ksShort: string, callback: Function){
+    const N3 = require('n3');
+    const { namedNode, literal } = DataFactory;
+    const writer = new N3.Writer({ prefixes: Prefixes });
+    let terms: string[] = [];
+    let name: string = ProjectSettings.name[Object.keys(ProjectSettings.name)[0]].trim().replace(/\s/g, "-");
+    let glossaryIRI = iri + ksShort + "/" + name;
+    let glossary = namedNode(glossaryIRI);
+    writer.addQuad(glossary, namedNode(parsePrefix("rdf","type")), namedNode("z-sgov-pojem:glosář"));
+    writer.addQuad(glossary, namedNode(parsePrefix("rdf","type")), namedNode(parsePrefix("skos","ConceptScheme")));
+    writer.addQuad(glossary, namedNode(parsePrefix("rdf","type")), namedNode(knowledgeStructure));
+    for (let lang of Object.keys(ProjectSettings.name)){
+        if (ProjectSettings.name[lang].length > 0){
+            writer.addQuad(glossary, namedNode(parsePrefix("skos","prefLabel")), literal(ProjectSettings.name[lang],lang));
+        }
+    }
+    //imports
+    for (let iri of Object.keys(Schemes)){
+        writer.addQuad(glossary, namedNode(parsePrefix("owl","imports")), namedNode(iri));
+    }
+
+    for (let id of Object.keys(ProjectElements)){
+        let iri = ProjectElements[id].iri;
+        if (!((iri) in Stereotypes)) continue;
+        let name = ProjectElements[id].names[Object.keys(ProjectElements[id].names)[0]].trim().replace(/\s/g, '-');
+        if (name === "") name = LocaleMain.untitled + " " + Stereotypes[iri].labels[Object.keys(Stereotypes[iri].labels)[0]].trim().replace(/\s/g, '-');
+        name = glossaryIRI + "/pojem/" + name;
+        let count = 0;
+        if (terms.includes(name)){
+            while(terms.includes(name + count.toString(10))){
+                count++;
+            }
+            name += count.toString(10);
+        }
+        terms.push(name);
+        let subject = namedNode(name);
+        //type
+        writer.addQuad(subject, namedNode(parsePrefix("rdf","type")), namedNode(parsePrefix("skos","Concept")));
+        //prefLabel
+        for (let lang of Object.keys(ProjectElements[id].names)){
+            if (ProjectElements[id].names[lang].length > 0){
+                writer.addQuad(subject, namedNode(parsePrefix("skos","prefLabel")), literal(ProjectElements[id].names[lang],lang));
+            }
+        }
+        //rdfs:isDefinedBy
+        writer.addQuad(subject, namedNode(parsePrefix("skos","inScheme")), glossaryIRI);
     }
     return writer.end((error: any, result: any)=>{callback(result);})
 }

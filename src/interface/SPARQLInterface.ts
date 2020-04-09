@@ -100,31 +100,25 @@ export function getStereotypes(name: string, jsonData: { [key: string]: any }, c
     let values: string[] = [];
     for (let prefix of Object.keys(jsonData.values)){
         for (let value of jsonData.values[prefix]){
-            values.push("<"+jsonData.prefixes[prefix] + value+">");
+            values.push(jsonData.prefixes[prefix] + value);
         }
     }
+    console.log(values);
     let query = [
         "SELECT DISTINCT ?term ?termLabel ?termType ?termDefinition ?skosLabel ?skosDefinition",
         "WHERE {",
         "?term <" + jsonData.propertyIRI + "> <" + jsonData.sourceIRI + ">.",
         "?term <" + jsonData.labelIRI + "> ?termLabel.",
         "?term a ?termType.",
-        "?term skos:prefLabel ?skosLabel.",
-        "?term skos:definition ?skosDefinition.",
+        //"?term skos:prefLabel ?skosLabel.",
+        //"?term skos:definition ?skosDefinition.",
         //"FILTER (?termType IN (<" + jsonData.classIRI.join(">,<") + ">,<" + jsonData.relationshipIRI.join(">,<") + ">)).",
-        "FILTER (?termType IN (<" + jsonData.classIRI.join(">,<") + ">)).",
+        //"FILTER (?termType IN (<" + jsonData.classIRI.join(">,<") + ">)).",
+        "OPTIONAL {?term skos:prefLabel ?skosLabel.}",
+        "OPTIONAL {?term skos:definition ?skosDefinition.}",
         "OPTIONAL {?term <" + jsonData.definitionIRI + "> ?termDefinition.}",
-
+        "}"
     ].join(" ");
-    if (jsonData.values){
-        query +=
-        ["VALUES ?term {",
-            values.join(" "),
-            "}",
-            "}"].join(" ")
-    } else {
-        query += "}";
-    }
     console.log(query);
     let q = jsonData.endpoint + "?query=" + encodeURIComponent(query) + "&format=json";
     fetch(q)
@@ -132,9 +126,11 @@ export function getStereotypes(name: string, jsonData: { [key: string]: any }, c
             return response.json();
         })
         .then(data => {
+            console.log(data.results.bindings);
             for (let result of data.results.bindings) {
+                if (jsonData.values) {if (!(values.includes(result.term.value))) continue;}
                 getSubclasses(result.term.value, jsonData, "http://www.w3.org/2000/01/rdf-schema#subPropertyOf", name, callback);
-                if (jsonData.classIRI.indexOf(result.termType.value) > -1) {
+               // if (jsonData.classIRI.indexOf(result.termType.value) > -1) {
                     if (result.term.value in Stereotypes) {
                         if (result.termLabel !== undefined) Stereotypes[result.term.value].labels[result.termLabel['xml:lang']] = result.termLabel.value;
                         if (result.termDefinition !== undefined) Stereotypes[result.term.value].definitions[result.termLabel['xml:lang']] = result.termDefinition.value;
@@ -148,7 +144,7 @@ export function getStereotypes(name: string, jsonData: { [key: string]: any }, c
                         if (result.skosLabel !== undefined) Stereotypes[result.term.value].skos.prefLabel[result.skosLabel['xml:lang']] = result.skosLabel.value;
                         if (result.skosDefinition !== undefined) Stereotypes[result.term.value].skos.definition[result.skosDefinition['xml:lang']] = result.skosDefinition.value;
                     }
-                }
+               // }
             }
             for (let attribute of jsonData["attributes"]) {
                 if (!(name in PropertyPool)) {

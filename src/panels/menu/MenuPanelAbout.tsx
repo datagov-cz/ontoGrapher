@@ -1,9 +1,5 @@
 import React from 'react';
 import {Nav} from 'react-bootstrap';
-import * as LocaleMenu from "../../locale/LocaleMenu.json";
-import FileLoadModal from "./file/FileLoadModal";
-import HelpModal from "./HelpModal";
-import {currentBuildDate} from "../../var/Variables";
 import AboutModal from "./AboutModal";
 
 interface Props {
@@ -26,7 +22,7 @@ export default class MenuPanelAbout extends React.Component<Props, State> {
         return (<div className={"inert"}><Nav.Link onClick={() => {
             this.setState({modal: true});
         }}>
-            {currentBuildDate}
+            {"8 April - Changelog"}
         </Nav.Link>
             <AboutModal modal={this.state.modal} close={() => {
                 this.setState({modal: false})
