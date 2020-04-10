@@ -37,7 +37,7 @@ export default class MenuPanel extends React.Component<MenuPanelProps, MenuPanel
               {this.props.readOnly ?
                   // <MenuPanelView />
                   // <MenuPanelHelp />
-                  <div></div>
+                  <div/>
                   :
                   <div className={"inert"}>
                       <MenuPanelFile

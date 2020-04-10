@@ -21,6 +21,10 @@ export default class AboutModal extends React.Component<Props, State> {
             <Modal.Body>
                 <Tabs id={"changelog"}>
                     <Tab title={"April"} eventKey={1}>
+                        <h6>10.4.</h6>
+                        <ul>
+                            <li>Export now accounts for duplicates</li>
+                        </ul>
                         <h6>9.4.</h6>
                     <ul>
                         <li>Fixed SPARQL query to include missing desired stereotypes</li>

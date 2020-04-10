@@ -69,7 +69,7 @@ export default class DetailPanel extends React.Component<Props, State> {
     deleteName(language: string) {
         let name = this.state.inputNames;
         name[language] = "";
-        this.setState({inputNames: name});
+        this.setState({inputNames: name, changes: true});
     }
 
     handleChangeNameAttribute(event: { textarea: string }, pos: number) {
@@ -126,7 +126,7 @@ export default class DetailPanel extends React.Component<Props, State> {
             this.setState({
                 hidden: false,
                 model: id,
-                inputNames: ProjectElements[id].names,
+                inputNames: ProjectElements[id].untitled ? VariableLoader.initLanguageObject("") : ProjectElements[id].names,
                 inputDescriptions: ProjectElements[id].descriptions,
                 inputAttributes: ProjectElements[id].attributes,
                 inputDiagrams: ProjectElements[id].diagrams,
@@ -159,7 +159,7 @@ export default class DetailPanel extends React.Component<Props, State> {
             changes: false
         });
         if (this.state.type === "elem") {
-
+            ProjectElements[this.state.model].untitled = false;
             ProjectElements[this.state.model].names = this.state.inputNames;
             ProjectElements[this.state.model].descriptions = this.state.inputDescriptions;
             ProjectElements[this.state.model].attributes = this.state.inputAttributes;

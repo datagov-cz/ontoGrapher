@@ -213,7 +213,7 @@ export default class ElementPanel extends React.Component<Props, State>{
             {
                 node.elements.map((id) => {
                     if (ProjectElements[id].active) arr.push(<PackageItem
-                        label={ProjectElements[id].names[this.props.projectLanguage]} depth={depth} id={id}
+                        label={ProjectElements[id].names[this.props.projectLanguage] === "" ? "<untitled>" : ProjectElements[id].names[this.props.projectLanguage]} depth={depth} id={id}
                         update={() => {
                             this.forceUpdate();
                         }}/>)

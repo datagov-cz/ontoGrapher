@@ -80,6 +80,7 @@ export function addClass(id: string, iri: string, language: string) {
     result["iri"] = iri;
     result["names"] = VariableLoader.initLanguageObject(LocaleMain.untitled + " " + getName(iri, language));
     result["connections"] = [];
+    result["untitled"] = true;
     result["descriptions"] = VariableLoader.initLanguageObject("");
     result["attributes"] = [];
     let propertyArray: AttributeObject[] = [];
@@ -223,6 +224,7 @@ export function exportModel(iri: string, type: string, knowledgeStructure: strin
     let name: string = ProjectSettings.name[Object.keys(ProjectSettings.name)[0]].trim().replace(/\s/g, '-');;
     let projectIRI = iri + ksShort + "/" + name;
     let project = namedNode(projectIRI);
+    let terms: string[] = [];
     //type -zsgovmodel, ontology
     writer.addQuad(project, namedNode(parsePrefix("rdf","type")), namedNode(parsePrefix("owl", "Ontology")));
     writer.addQuad(project, namedNode(parsePrefix("rdf","type")), namedNode(parsePrefix("z-sgov-pojem","model")));
@@ -242,14 +244,26 @@ export function exportModel(iri: string, type: string, knowledgeStructure: strin
         let iri = ProjectElements[id].iri;
         if (!((iri) in Stereotypes)) continue;
         let elementName = Stereotypes[iri].skos.prefLabel[Object.keys(Stereotypes[iri].skos.prefLabel)[0]].trim().replace(/\s/g, '-');
-        let subject = namedNode(projectIRI + "/pojem/" + elementName);
+        if (elementName === "") elementName = LocaleMain.untitled + " " + Stereotypes[iri].labels[Object.keys(Stereotypes[iri].labels)[0]].trim().replace(/\s/g, '-');
+        elementName = projectIRI + "/pojem/" + elementName;
+        let count = 1;
+        if (terms.includes(elementName)){
+            while(terms.includes(elementName + "-" + count.toString(10))){
+                count++;
+            }
+            elementName += "-" + count.toString(10);
+        }
+        terms.push(elementName);
+        let subject = namedNode(elementName);
         //type
         //writer.addQuad(subject, namedNode(parsePrefix(Prefixes.rdf,"type")), namedNode(parsePrefix(Prefixes.skos,"Concept")));
         writer.addQuad(subject, namedNode(parsePrefix("rdf","type")), namedNode(ProjectElements[id].iri));
         //prefLabel
-        for (let lang of Object.keys(ProjectElements[id].names)){
-            if (ProjectElements[id].names[lang].length > 0){
-                writer.addQuad(subject, namedNode(parsePrefix("skos","prefLabel")), literal(ProjectElements[id].names[lang],lang));
+        if (!(ProjectElements[id].untitled)){
+            for (let lang of Object.keys(ProjectElements[id].names)){
+                if (ProjectElements[id].names[lang].length > 0){
+                    writer.addQuad(subject, namedNode(parsePrefix("skos","prefLabel")), literal(ProjectElements[id].names[lang],lang));
+                }
             }
         }
         //rdfs:isDefinedBy
@@ -293,19 +307,21 @@ export function exportGlossary(iri: string, type: string, knowledgeStructure: st
         name = glossaryIRI + "/pojem/" + name;
         let count = 0;
         if (terms.includes(name)){
-            while(terms.includes(name + count.toString(10))){
+            while(terms.includes(name + "-" + count.toString(10))){
                 count++;
             }
-            name += count.toString(10);
+            name += "-" + count.toString(10);
         }
         terms.push(name);
         let subject = namedNode(name);
         //type
         writer.addQuad(subject, namedNode(parsePrefix("rdf","type")), namedNode(parsePrefix("skos","Concept")));
         //prefLabel
-        for (let lang of Object.keys(ProjectElements[id].names)){
-            if (ProjectElements[id].names[lang].length > 0){
-                writer.addQuad(subject, namedNode(parsePrefix("skos","prefLabel")), literal(ProjectElements[id].names[lang],lang));
+        if (!(ProjectElements[id].untitled)){
+            for (let lang of Object.keys(ProjectElements[id].names)){
+                if (ProjectElements[id].names[lang].length > 0){
+                    writer.addQuad(subject, namedNode(parsePrefix("skos","prefLabel")), literal(ProjectElements[id].names[lang],lang));
+                }
             }
         }
         //rdfs:isDefinedBy

@@ -17,16 +17,17 @@ export var Languages: {[key:string]: string} = {};
 
 
 
-//names
-//iri
-//connections
-//definitions
-//attributes
-//package
-//diagrams
-//hidden
-//active
-//properties
+//names: {}
+//iri: string
+//connections: []
+//definitions: {}
+//attributes: {}
+//package: string
+//diagrams: []
+//hidden: boolean
+//active: boolean
+//properties: {}
+//untitled: boolean
 export var ProjectElements: {[key:string]: any} = {};
 
 //sourceCard
