@@ -243,8 +243,15 @@ export function exportModel(iri: string, type: string, knowledgeStructure: strin
     for (let id of Object.keys(ProjectElements)){
         let iri = ProjectElements[id].iri;
         if (!((iri) in Stereotypes)) continue;
-        let elementName = ProjectElements[id].names[Object.keys(ProjectElements[id].names)[0]].trim().replace(/\s/g, '-');
-        if (elementName === "") elementName = LocaleMain.untitled + " " + Stereotypes[iri].labels[Object.keys(Stereotypes[iri].labels)[0]].trim().replace(/\s/g, '-');
+        let elementName = ProjectElements[id].names[Object.keys(ProjectElements[id].names)[0]]
+        for(let lang of Object.keys(ProjectElements[id].names)){
+            if (ProjectElements[id].names[lang].length > 0){
+                elementName = ProjectElements[id].names[lang];
+                break;
+            }
+        }
+        elementName = elementName.trim().replace(/\s/g, '-');
+        if (elementName === "") elementName = (LocaleMain.untitled + "-" + Stereotypes[iri].labels[Object.keys(Stereotypes[iri].labels)[0]]).trim().replace(/\s/g, '-');
         elementName = projectIRI + "/pojem/" + elementName;
         let count = 1;
         if (terms.includes(elementName)){
@@ -271,6 +278,13 @@ export function exportModel(iri: string, type: string, knowledgeStructure: strin
         //relationships
         for (let conn of ProjectElements[id].connections){
             let targetName = ProjectElements[ProjectLinks[conn].target].names[Object.keys(ProjectElements[ProjectLinks[conn].target].names)[0]].trim().replace(/\s/g, '-');
+            for(let lang of Object.keys(ProjectElements[ProjectLinks[conn].target].names)){
+                if (ProjectElements[ProjectLinks[conn].target].names[lang].length > 0){
+                    targetName = ProjectElements[ProjectLinks[conn].target].names[lang];
+                    break;
+                }
+            }
+            targetName = targetName.trim().replace(/\s/g, '-');
             let targetIRI = projectIRI + "/pojem/" + targetName;
             writer.addQuad(subject,namedNode(ProjectLinks[conn].iri), namedNode(targetIRI));
         }
@@ -303,7 +317,14 @@ export function exportGlossary(iri: string, type: string, knowledgeStructure: st
         let iri = ProjectElements[id].iri;
         if (!((iri) in Stereotypes)) continue;
         let name = ProjectElements[id].names[Object.keys(ProjectElements[id].names)[0]].trim().replace(/\s/g, '-');
-        if (name === "") name = LocaleMain.untitled + " " + Stereotypes[iri].labels[Object.keys(Stereotypes[iri].labels)[0]].trim().replace(/\s/g, '-');
+        for(let lang of Object.keys(ProjectElements[id].names)){
+            if (ProjectElements[id].names[lang].length > 0){
+                name = ProjectElements[id].names[lang];
+                break;
+            }
+        }
+        name = name.trim().replace(/\s/g, '-');
+        if (name === "") name = (LocaleMain.untitled + "-" + Stereotypes[iri].labels[Object.keys(Stereotypes[iri].labels)[0]]).trim().replace(/\s/g, '-');
         name = glossaryIRI + "/pojem/" + name;
         let count = 0;
         if (terms.includes(name)){
