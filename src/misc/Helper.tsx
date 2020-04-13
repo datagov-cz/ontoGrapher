@@ -224,7 +224,7 @@ export function exportModel(iri: string, type: string, knowledgeStructure: strin
     let name: string = ProjectSettings.name[Object.keys(ProjectSettings.name)[0]].trim().replace(/\s/g, '-');;
     let projectIRI = iri + ksShort + "/" + name;
     let project = namedNode(projectIRI);
-    let terms: string[] = [];
+    let termObj: {[key:string]: string} = {};
     //type -zsgovmodel, ontology
     writer.addQuad(project, namedNode(parsePrefix("rdf","type")), namedNode(parsePrefix("owl", "Ontology")));
     writer.addQuad(project, namedNode(parsePrefix("rdf","type")), namedNode(parsePrefix("z-sgov-pojem","model")));
@@ -250,18 +250,21 @@ export function exportModel(iri: string, type: string, knowledgeStructure: strin
                 break;
             }
         }
-        elementName = elementName.trim().replace(/\s/g, '-');
         if (elementName === "") elementName = (LocaleMain.untitled + "-" + Stereotypes[iri].labels[Object.keys(Stereotypes[iri].labels)[0]]).trim().replace(/\s/g, '-');
-        elementName = projectIRI + "/pojem/" + elementName;
+        elementName = (projectIRI + "/pojem/" + elementName).trim().replace(/\s/g, '-');;
         let count = 1;
-        if (terms.includes(elementName)){
-            while(terms.includes(elementName + "-" + count.toString(10))){
+        if (Object.values(termObj).includes(elementName)){
+            while(Object.values(termObj).includes(elementName + "-" + count.toString(10))){
                 count++;
             }
             elementName += "-" + count.toString(10);
         }
-        terms.push(elementName);
-        let subject = namedNode(elementName);
+        termObj[id] = elementName;
+    }
+
+    for (let id of Object.keys(termObj)){
+        let iri = ProjectElements[id].iri;
+        let subject = namedNode(termObj[id]);
         //type
         //writer.addQuad(subject, namedNode(parsePrefix(Prefixes.rdf,"type")), namedNode(parsePrefix(Prefixes.skos,"Concept")));
         writer.addQuad(subject, namedNode(parsePrefix("rdf","type")), namedNode(ProjectElements[id].iri));
@@ -277,16 +280,20 @@ export function exportModel(iri: string, type: string, knowledgeStructure: strin
         writer.addQuad(subject, namedNode(parsePrefix("rdfs","isDefinedBy")), project);
         //relationships
         for (let conn of ProjectElements[id].connections){
-            let targetName = ProjectElements[ProjectLinks[conn].target].names[Object.keys(ProjectElements[ProjectLinks[conn].target].names)[0]].trim().replace(/\s/g, '-');
-            for(let lang of Object.keys(ProjectElements[ProjectLinks[conn].target].names)){
-                if (ProjectElements[ProjectLinks[conn].target].names[lang].length > 0){
-                    targetName = ProjectElements[ProjectLinks[conn].target].names[lang];
-                    break;
+            let targetIRI = termObj[ProjectLinks[conn].target];
+            let predicateIRI = ProjectLinks[conn].iri;
+            let length = 0;
+            let pref = "";
+            for (let prefix of Object.keys(Prefixes)){
+                if (predicateIRI.startsWith(Prefixes[prefix])){
+                    if (Prefixes[prefix].length > length){
+                        length = Prefixes[prefix].length;
+                        pref = prefix;
+                    }
                 }
             }
-            targetName = targetName.trim().replace(/\s/g, '-');
-            let targetIRI = projectIRI + "/pojem/" + targetName;
-            writer.addQuad(subject,namedNode(ProjectLinks[conn].iri), namedNode(targetIRI));
+            if (length > 0) predicateIRI = pref + ":" + predicateIRI.substring(length);
+            writer.addQuad(subject,namedNode(predicateIRI), namedNode(targetIRI));
         }
     }
     return writer.end((error: any, result: any)=>{callback(result);})
@@ -296,7 +303,7 @@ export function exportGlossary(iri: string, type: string, knowledgeStructure: st
     const N3 = require('n3');
     const { namedNode, literal } = DataFactory;
     const writer = new N3.Writer({ prefixes: Prefixes });
-    let terms: string[] = [];
+    let termObj: {[key:string]: string} = {};
     let name: string = ProjectSettings.name[Object.keys(ProjectSettings.name)[0]].trim().replace(/\s/g, "-");
     let glossaryIRI = iri + ksShort + "/" + name;
     let glossary = namedNode(glossaryIRI);
@@ -316,25 +323,28 @@ export function exportGlossary(iri: string, type: string, knowledgeStructure: st
     for (let id of Object.keys(ProjectElements)){
         let iri = ProjectElements[id].iri;
         if (!((iri) in Stereotypes)) continue;
-        let name = ProjectElements[id].names[Object.keys(ProjectElements[id].names)[0]].trim().replace(/\s/g, '-');
+        let elementName = ProjectElements[id].names[Object.keys(ProjectElements[id].names)[0]]
         for(let lang of Object.keys(ProjectElements[id].names)){
             if (ProjectElements[id].names[lang].length > 0){
-                name = ProjectElements[id].names[lang];
+                elementName = ProjectElements[id].names[lang];
                 break;
             }
         }
-        name = name.trim().replace(/\s/g, '-');
-        if (name === "") name = (LocaleMain.untitled + "-" + Stereotypes[iri].labels[Object.keys(Stereotypes[iri].labels)[0]]).trim().replace(/\s/g, '-');
-        name = glossaryIRI + "/pojem/" + name;
-        let count = 0;
-        if (terms.includes(name)){
-            while(terms.includes(name + "-" + count.toString(10))){
+        if (elementName === "") elementName = (LocaleMain.untitled + "-" + Stereotypes[iri].labels[Object.keys(Stereotypes[iri].labels)[0]]).trim().replace(/\s/g, '-');
+        elementName = (glossaryIRI + "/pojem/" + elementName).trim().replace(/\s/g, '-');
+        let count = 1;
+        if (Object.values(termObj).includes(elementName)){
+            while(Object.values(termObj).includes(elementName + "-" + count.toString(10))){
                 count++;
             }
-            name += "-" + count.toString(10);
+            elementName += "-" + count.toString(10);
         }
-        terms.push(name);
-        let subject = namedNode(name);
+        termObj[id] = elementName;
+    }
+
+    for (let id of Object.keys(ProjectElements)){
+        let iri = ProjectElements[id].iri;
+        let subject = namedNode(termObj[id]);
         //type
         writer.addQuad(subject, namedNode(parsePrefix("rdf","type")), namedNode(parsePrefix("skos","Concept")));
         //prefLabel
