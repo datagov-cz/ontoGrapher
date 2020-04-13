@@ -60,7 +60,7 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps, D
     componentDidMount(): void {
         const node = (this.canvasRef.current! as HTMLElement);
 
-        this.paper = new joint.dia.Paper({
+        const paper = this.paper = new joint.dia.Paper({
             el: node,
             model: graph,
             width: "auto",
@@ -88,6 +88,32 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps, D
                 return link;
             }
         });
+        // var svgPanZoom = require('svg-pan-zoom/src/svg-pan-zoom');
+        //
+        // const panZoom = svgPanZoom(paper.svg, {
+        //     viewportSelector: paper.layers,
+        //     zoomEnabled: false,
+        //     panEnabled: false,
+        //     controlIconsEnabled: false,
+        //     maxZoom: 2,
+        //     minZoom: 0.1,
+        //     onUpdatedCTM: (function() {
+        //         let currentMatrix = paper.matrix();
+        //         return function onUpdatedCTM(matrix) {
+        //             const { a, d, e, f } = matrix;
+        //             const { a: ca, d: cd, e: ce, f: cf } = currentMatrix;
+        //             const translateChanged = (e !== ce || f !== cf)
+        //             if (translateChanged) {
+        //                 paper.trigger('translate', e - ce, f - cf);
+        //             }
+        //             const scaleChanged = (a !== ca || d !== cd);
+        //             if (scaleChanged) {
+        //                 paper.trigger('scale', a, d, e, f);
+        //             }
+        //             currentMatrix = matrix;
+        //         }
+        //     })()
+        // });
 
         this.paper.on({
             'element:mouseenter': (elementView)=> {
@@ -142,6 +168,7 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps, D
                 for (let cell of graph.getCells()){
                     this.paper?.findViewByModel(cell).unhighlight();
                 }
+                //panZoom.enablePan();
             },
             'blank:pointermove': function(evt, x, y) {
                 var data = evt.data;
@@ -152,6 +179,9 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps, D
                     }
                 }
             },
+            // 'blank:pointerup' : ()=>{
+            //   panZoom.disablePan()
+            // },
             'link:pointerup' : (linkView, evt, x, y)=>{
                 let id = linkView.model.id;
                 for (let link of graph.getLinks()){
@@ -337,6 +367,21 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps, D
                 }
             }
         });
+        graph.on('add', (cell) =>{
+            if (cell.isElement()){
+                cell.on('change:position',(element)=>{
+                    let links = graph.getConnectedLinks(element);
+                    for (let link of links){
+                        if (this.highlight){
+                            if (link.id === this.highlight.model.id){
+                                this.highlight.unhighlight();
+                                this.highlight.highlight();
+                            }
+                        }
+                    }
+                });
+            }
+        })
     }
     render() {
         return (<div
@@ -377,17 +422,17 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps, D
                         magnet: true,
                     }
                 });
-                cls.on('change:position',(element)=>{
-                    let links = graph.getConnectedLinks(element);
-                    for (let link of links){
-                        if (this.highlight){
-                            if (link.id === this.highlight.model.id){
-                                this.highlight.unhighlight();
-                                this.highlight.highlight();
-                            }
-                        }
-                    }
-                });
+                // cls.on('change:position',(element)=>{
+                //     let links = graph.getConnectedLinks(element);
+                //     for (let link of links){
+                //         if (this.highlight){
+                //             if (link.id === this.highlight.model.id){
+                //                 this.highlight.unhighlight();
+                //                 this.highlight.highlight();
+                //             }
+                //         }
+                //     }
+                // });
                 cls.addTo(graph);
                 let bbox = this.paper?.findViewByModel(cls).getBBox();
                 cls.resize(bbox.width, bbox.height);

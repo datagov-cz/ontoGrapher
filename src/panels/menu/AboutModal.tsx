@@ -14,36 +14,43 @@ interface State {
 export default class AboutModal extends React.Component<Props, State> {
 
     render() {
-        return (<Modal centered scrollable  show={this.props.modal}>
+        return (<Modal centered scrollable show={this.props.modal}>
             <Modal.Header>
                 <Modal.Title>{LocaleMenu.changelog}</Modal.Title>
             </Modal.Header>
             <Modal.Body>
                 <Tabs id={"changelog"}>
                     <Tab title={"April"} eventKey={1}>
+                        <h6>13.4.</h6>
+                        <ul>
+                            <li>Export refactoring</li>
+                            <li>Save & diagram restoration fixes</li>
+                        </ul>
                         <h6>10.4.</h6>
                         <ul>
                             <li>Export now accounts for duplicates</li>
                         </ul>
                         <h6>9.4.</h6>
-                    <ul>
-                        <li>Fixed SPARQL query to include missing desired stereotypes</li>
-                        <li>Fixed export</li>
-                        <li>Changed export IRI</li>
-                        <li>Added glossary export</li>
-                        <li>Fixed changes/deletions in links not being logged</li>
-                        <li>Prohibited user choice of IRI and rdf:type</li>
-                        <li>Removed "Generate TTL" button; exporting now happens automatically and also on change of knowledge structure</li>
-                    </ul>
+                        <ul>
+                            <li>Fixed SPARQL query to include missing desired stereotypes</li>
+                            <li>Fixed export</li>
+                            <li>Changed export IRI</li>
+                            <li>Added glossary export</li>
+                            <li>Fixed changes/deletions in links not being logged</li>
+                            <li>Prohibited user choice of IRI and rdf:type</li>
+                            <li>Removed "Generate TTL" button; exporting now happens automatically and also on change of
+                                knowledge structure
+                            </li>
+                        </ul>
                         <h6>4.4.</h6>
-                    <ul>
-                        <li>SKOS export</li>
-                        <li>Internal cleanup</li>
-                        <li>SPARQL query change</li>
-                        <li>Added tooltips for stereotypes and relationships</li>
-                    </ul>
+                        <ul>
+                            <li>SKOS export</li>
+                            <li>Internal cleanup</li>
+                            <li>SPARQL query change</li>
+                            <li>Added tooltips for stereotypes and relationships</li>
+                        </ul>
                     </Tab>
-                    <Tab title={"March"} eventKey={2}> <h6>31.3.</h6>
+                    <Tab title={"March"} eventKey={2}><h6>31.3.</h6>
                         <ul>
                             <li>Fixed element buttons placement issues when renaming an element with links attached</li>
                             <li>Fixed package panel not updating when renaming element prefLabels</li>
@@ -57,7 +64,9 @@ export default class AboutModal extends React.Component<Props, State> {
                             <li>IRI links now appear only on hover</li>
                             <li>Fixed a bug where holding "Shift" allowed you to create links</li>
                             <li>Merged skos:prefLabel with Label in the detail panel</li>
-                            <li>Fixed awkward behaviour of elements when renaming them (more specifically, changing their shape)</li>
+                            <li>Fixed awkward behaviour of elements when renaming them (more specifically, changing
+                                their shape)
+                            </li>
                         </ul>
                         <h6>28.3.</h6>
                         <ul>
@@ -65,7 +74,9 @@ export default class AboutModal extends React.Component<Props, State> {
                             <li>Fixed element button placement when renaming it</li>
                             <li>Implemented SKOS data pulling</li>
                             <li>Implemented links for IRIs in detail panel</li>
-                            <li>Links created from & to the same element are now assumed as a connection to itself; a loop is automatically created, allowing link deletion</li>
+                            <li>Links created from & to the same element are now assumed as a connection to itself; a
+                                loop is automatically created, allowing link deletion
+                            </li>
                             <li>Slight CSS & symbol changes</li>
                             <li>Hiding is now represented with a crossed out eye</li>
                         </ul>
@@ -84,7 +95,10 @@ export default class AboutModal extends React.Component<Props, State> {
                         </ul>
                         <h6>20.3.</h6>
                         <ul>
-                            <li><b>Changed link creation mechanism:</b> Links are now created by dragging from the center without any keyboard input. The borders are used for moving the element. What function gets triggered on click is reflected via change in cursor. <b>Feedback is greatly appreciated.</b></li>
+                            <li><b>Changed link creation mechanism:</b> Links are now created by dragging from the
+                                center without any keyboard input. The borders are used for moving the element. What
+                                function gets triggered on click is reflected via change in cursor. <b>Feedback is
+                                    greatly appreciated.</b></li>
                             <li>Moved models to package tab as another folder</li>
                         </ul>
                         <h6>19.3.</h6>
@@ -105,11 +119,14 @@ export default class AboutModal extends React.Component<Props, State> {
                             <li>Nomenclature changes for some parts of the JSON to improve legibility</li>
                             <li>Graph elements are highlighted when selected</li>
                             <li>Dragging of package items to the root is fixed</li>
-                        </ul></Tab>
+                        </ul>
+                    </Tab>
                 </Tabs>
             </Modal.Body>
             <Modal.Footer>
-                <Button onClick={() => {this.props.close();}}>{LocaleMenu.close}</Button>
+                <Button onClick={() => {
+                    this.props.close();
+                }}>{LocaleMenu.close}</Button>
             </Modal.Footer>
         </Modal>);
     }

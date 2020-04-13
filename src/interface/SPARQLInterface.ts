@@ -103,7 +103,6 @@ export function getStereotypes(name: string, jsonData: { [key: string]: any }, c
             values.push(jsonData.prefixes[prefix] + value);
         }
     }
-    console.log(values);
     let query = [
         "SELECT DISTINCT ?term ?termLabel ?termType ?termDefinition ?skosLabel ?skosDefinition",
         "WHERE {",
@@ -119,14 +118,12 @@ export function getStereotypes(name: string, jsonData: { [key: string]: any }, c
         "OPTIONAL {?term <" + jsonData.definitionIRI + "> ?termDefinition.}",
         "}"
     ].join(" ");
-    console.log(query);
     let q = jsonData.endpoint + "?query=" + encodeURIComponent(query) + "&format=json";
     fetch(q)
         .then(response => {
             return response.json();
         })
         .then(data => {
-            console.log(data.results.bindings);
             for (let result of data.results.bindings) {
                 if (jsonData.values) {if (!(values.includes(result.term.value))) continue;}
                 getSubclasses(result.term.value, jsonData, "http://www.w3.org/2000/01/rdf-schema#subPropertyOf", name, callback);

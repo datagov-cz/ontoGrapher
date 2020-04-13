@@ -189,6 +189,7 @@ export function loadDiagram(load: {
         label: any;
         pos: any;
     }[], links: {
+        id: string,
         vertices: { (): joint.dia.Link.Vertex[]; (vertices: joint.dia.Link.Vertex[]): joint.shapes.standard.Link };
         labels: any;
         target: string;
@@ -199,14 +200,14 @@ export function loadDiagram(load: {
     for (let elem of load.elements) {
         // @ts-ignore
         let cls = graphElement.create(elem.id).prop({
-            size: {width: 180, height: 50},
+            //size: {width: 180, height: 50},
             position: elem.pos,
-            attrs: {label: {text: elem.label}}
+            attrs: {label: {text: elem.label, magnet: true}}
         });
         cls.addTo(graph);
     }
     for (let link of load.links) {
-        let lnk = new joint.shapes.standard.Link();
+        let lnk = new joint.shapes.standard.Link({id: link.id});
         lnk.source({id: link.source});
         lnk.target({id: link.target});
         lnk.labels(link.labels);

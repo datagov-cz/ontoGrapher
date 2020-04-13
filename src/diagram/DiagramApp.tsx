@@ -24,7 +24,7 @@ import DetailPanel from "../panels/DetailPanel";
 import {getVocabulariesFromJSONSource} from "../interface/JSONInterface";
 import * as SemanticWebInterface from "../interface/SemanticWebInterface";
 import {Defaults} from "../config/Defaults";
-import {getModelName, getName, parsePrefix, saveDiagram} from "../misc/Helper";
+import {getModelName, getName, loadDiagram, parsePrefix, saveDiagram} from "../misc/Helper";
 import {PackageNode} from "../components/PackageNode";
 
 interface DiagramAppProps{
@@ -157,36 +157,47 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
         for (let key in save.projectLinks){
             ProjectLinks[key] = save.projectLinks[key];
         }
+        Diagrams.length = 0;
+        save.diagrams.forEach((diagram: { [key: string]: any; })=>{Diagrams.push(diagram)});
         ProjectSettings.name = save.projectSettings.name;
         ProjectSettings.description = save.projectSettings.description;
-        ProjectSettings.selectedDiagram = save.projectSettings.selectedDiagram;
-        save.diagrams.forEach((diagram: { [key: string]: any; })=>{Diagrams.push(diagram)});
+        ProjectSettings.selectedDiagram = 0;
         this.elementPanel.current?.update();
         this.loadPackages(save.packageRoot);
+        loadDiagram(Diagrams[ProjectSettings.selectedDiagram].json);
+        this.saveProject();
     }
 
-    loadPackages(list: {trace: number[], elements: string[], name: string}[]){
+    loadPackages(list: {trace: number[], elements: string[], name: string, root: boolean}[]){
         for (let pkg of list){
-            let iter = PackageRoot;
-            for (let i = 0; i < pkg.trace.length; i++){
-                iter = iter.children[pkg.trace[i]];
+            if (pkg.root){
+                PackageRoot.elements = pkg.elements;
+                for (let elem of pkg.elements){
+                    ProjectElements[elem].package = PackageRoot;
+                }
+            } else {
+                let iter = PackageRoot;
+                for (let i = 0; i < pkg.trace.length; i++){
+                    iter = iter.children[pkg.trace[i]];
+                }
+                let newpkg = new PackageNode(pkg.name, iter, false);
+                newpkg.elements = pkg.elements;
+                iter.children.push(newpkg);
+                for (let elem of pkg.elements){
+                    ProjectElements[elem].package = newpkg;
+                }
             }
-            let newpkg = new PackageNode(pkg.name, iter, false);
-            newpkg.elements = pkg.elements;
-            iter.children.push(newpkg);
         }
     }
 
     savePackages(){
         let result = [];
-        // let level = 0;
         let q = [];
         q.push(PackageRoot);
         q.push(undefined);
         while(q.length > 0){
             let p = q.shift();
             if (p === undefined){
-                // level++;
                 q.push(undefined);
                 if (q[0] === undefined) break;
                 else continue;
@@ -205,6 +216,7 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
                 name: p.name,
                 trace: trace,
                 elements: p.elements,
+                root: p === PackageRoot
             });
 
             for (let sp of p.children){
@@ -216,8 +228,12 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 
     saveProject(){
         Diagrams[ProjectSettings.selectedDiagram].json = saveDiagram();
+        let projElem = ProjectElements;
+        for (let key of Object.keys(projElem)){
+            projElem[key].package = undefined;
+        }
         let save = {
-            projectElements: ProjectElements,
+            projectElements: projElem,
             projectLinks: ProjectLinks,
             projectSettings: {name: ProjectSettings.name, description: ProjectSettings.description},
             selectedLink: this.state.selectedLink,
