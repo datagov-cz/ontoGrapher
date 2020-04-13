@@ -342,7 +342,7 @@ export function exportGlossary(iri: string, type: string, knowledgeStructure: st
         termObj[id] = elementName;
     }
 
-    for (let id of Object.keys(ProjectElements)){
+    for (let id of Object.keys(termObj)){
         let iri = ProjectElements[id].iri;
         let subject = namedNode(termObj[id]);
         //type
