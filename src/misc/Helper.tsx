@@ -243,7 +243,7 @@ export function exportModel(iri: string, type: string, knowledgeStructure: strin
     for (let id of Object.keys(ProjectElements)){
         let iri = ProjectElements[id].iri;
         if (!((iri) in Stereotypes)) continue;
-        let elementName = Stereotypes[iri].skos.prefLabel[Object.keys(Stereotypes[iri].skos.prefLabel)[0]].trim().replace(/\s/g, '-');
+        let elementName = ProjectElements[id].names[Object.keys(ProjectElements[id].names)[0]].trim().replace(/\s/g, '-');
         if (elementName === "") elementName = LocaleMain.untitled + " " + Stereotypes[iri].labels[Object.keys(Stereotypes[iri].labels)[0]].trim().replace(/\s/g, '-');
         elementName = projectIRI + "/pojem/" + elementName;
         let count = 1;
