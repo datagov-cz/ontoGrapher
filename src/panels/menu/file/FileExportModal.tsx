@@ -46,40 +46,38 @@ export default class FileExportModal extends React.Component<Props, State> {
         this.handleExport = this.handleExport.bind(this);
     }
 
-    handleExport(){
-        this.exportG();
-        this.exportM();
+    handleExport(ks: string){
+        this.exportG(ks);
+        this.exportM(ks);
     }
 
-    exportM(){
-        exportModel(this.state.iri, this.state.type, this.state.knowledgeStructure, structuresShort[this.state.knowledgeStructure], (str: string) => {
+    exportM(ks: string){
+        exportModel(this.state.iri, this.state.type, ks, structuresShort[ks], (str: string) => {
             this.setState({exportModelString: str});
             console.log(str);
-            this.forceUpdate();
         })
     }
 
-    exportG(){
-        exportGlossary(this.state.iri, this.state.type, this.state.knowledgeStructure, structuresShort[this.state.knowledgeStructure], (str: string) => {
+    exportG(ks: string){
+        exportGlossary(this.state.iri, this.state.type, ks, structuresShort[ks], (str: string) => {
             this.setState({exportGlossaryString: str});
             console.log(str);
-            this.forceUpdate();
         })
     }
 
     render() {
-        return (<Modal size={"lg"} centered show={this.props.modal} onShow={this.handleExport}>
+        return (<Modal size={"lg"} centered show={this.props.modal} onShow={()=>{this.handleExport(this.state.knowledgeStructure)}}>
             <Modal.Header>
                 <Modal.Title>{Locale.menuModalExportHeading}</Modal.Title>
             </Modal.Header>
             <Modal.Body>
-                <Form onSubmit={this.exportM}>
+                <Form>
                     <Form.Group controlId="knowledgeStructure">
                     <Form.Label>{Locale.knowledgeStructure}</Form.Label>
                     <Form.Control as="select" value={this.state.knowledgeStructure}
                                   onChange={(event: React.FormEvent<HTMLInputElement>) => {
                                       this.setState({knowledgeStructure: event.currentTarget.value});
-                                      this.handleExport();
+                                      this.handleExport(event.currentTarget.value);
                                   }}>
                         {Object.keys(structures).map((key,i)=><option key={i} value={key}>{key}</option>)}
                     </Form.Control>
@@ -91,7 +89,7 @@ export default class FileExportModal extends React.Component<Props, State> {
                         <Form.Control
                             style={{height: 150, resize: "none"}}
                             as={"textarea"}
-                            disabled
+                            readOnly
                             value={this.state.exportGlossaryString}
                         />
                     </Tab>
@@ -99,7 +97,7 @@ export default class FileExportModal extends React.Component<Props, State> {
                         <Form.Control
                             style={{height: 150, resize: "none"}}
                             as={"textarea"}
-                            disabled
+                            readOnly
                             value={this.state.exportModelString}
                         />
                     </Tab>

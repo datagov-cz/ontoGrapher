@@ -42,7 +42,6 @@ export function getLinks(name:string, jsonData: {[key:string]: any}, callback: F
     // } else {
     //     query += "}";
     // }
-    console.log(query);
     let q = jsonData.endpoint + "?query=" + encodeURIComponent(query) + "&format=json";
     fetch(q)
         .then(response => {
