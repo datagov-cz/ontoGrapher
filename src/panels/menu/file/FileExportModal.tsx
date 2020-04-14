@@ -3,7 +3,6 @@ import {Button, Form, Modal, Tab, Tabs} from "react-bootstrap";
 import * as LocaleMenu from "../../../locale/LocaleMenu.json";
 import * as Locale from "../../../locale/LocaleMain.json";
 import {exportGlossary, exportModel, parsePrefix} from "../../../misc/Helper";
-import {Prefixes} from "../../../var/Variables";
 
 interface Props {
     modal: boolean;

@@ -65,9 +65,9 @@ export default class PackageItem extends React.Component<Props, State> {
                                     enabled: false
                                 }
                             }
-                        }} placement="bottom" overlay={tooltipD}><a onClick={() => {
+                        }} placement="bottom" overlay={tooltipD}><button className={"buttonlink"} onClick={() => {
                             this.setState({modalRemove: true})
-                        }} href="#">❌</a></OverlayTrigger>
+                        }} ><span role="img" aria-label={""}>❌</span></button></OverlayTrigger>
                     </span>
                 </div>
                 <div>

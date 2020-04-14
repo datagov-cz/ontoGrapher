@@ -5,7 +5,6 @@ import TableList from "../../../components/TableList";
 import {Languages, ProjectSettings} from "../../../var/Variables";
 // @ts-ignore
 import {RIEInput} from "riek";
-import _ from 'lodash';
 
 interface Props{
     modal: boolean;
@@ -85,8 +84,8 @@ export default class FileProjectSettingsModal extends React.Component<Props, Sta
                                     propName="textarea"
                                 />
                                 &nbsp;
-                                <a href="#" onClick={() => this.deleteName(language)}>
-                                    {LocaleMenu.deleteProjectName}</a>
+                                <button className={"buttonlink"} onClick={() => this.deleteName(language)}>
+                                    {LocaleMenu.deleteProjectName}</button>
                             </td>
                             <td>{Languages[language]}</td>
                         </tr>

@@ -1,7 +1,6 @@
 import React from 'react';
 import {Nav} from 'react-bootstrap';
 import * as LocaleMenu from "../../locale/LocaleMenu.json";
-import FileLoadModal from "./file/FileLoadModal";
 import HelpModal from "./HelpModal";
 
 interface Props {

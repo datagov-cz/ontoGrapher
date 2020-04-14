@@ -29,12 +29,12 @@ const tooltipE = (
 const tooltipD = (
     <Tooltip id="tooltipS">{LocaleMain.del}</Tooltip>
 );
-const tooltipU = (
-    <Tooltip id="tooltipS">{LocaleMain.moveUp}</Tooltip>
-);
-const tooltipB = (
-    <Tooltip id="tooltipS">{LocaleMain.moveDown}</Tooltip>
-);
+// const tooltipU = (
+//     <Tooltip id="tooltipS">{LocaleMain.moveUp}</Tooltip>
+// );
+// const tooltipB = (
+//     <Tooltip id="tooltipS">{LocaleMain.moveDown}</Tooltip>
+// );
 
 export default class PackageFolder extends React.Component<Props, State> {
     constructor(props: Props) {
@@ -74,9 +74,9 @@ export default class PackageFolder extends React.Component<Props, State> {
         } else if (node === this.props.node) {
             return (<span>{"-".repeat(depth) + node.name}</span>)
         } else {
-            return (<a href="#" onClick={() => {
+            return (<button className="buttonlink" onClick={() => {
                 this.move(node);
-            }}>{"-".repeat(depth) + node.name}</a>)
+            }}>{"-".repeat(depth) + node.name}</button>)
         }
     }
 
@@ -120,21 +120,21 @@ export default class PackageFolder extends React.Component<Props, State> {
                 }}
                 className={"packageFolder" + (this.state.open ? " open" : "")}
                 style={{marginLeft: (this.props.depth - 1) * 20 + "px"}}>
-                {(this.props.depth === 1 ? "" : "↘") + "📁"+ "" + this.props.node.name}
+                {(this.props.depth === 1 ? "" : "↘") + "📁" + this.props.node.name}
                 <span className={"packageOptions right"} style={{display: this.state.hover ? "inline-block" : "none"}}>
-                        <OverlayTrigger placement="bottom" overlay={tooltipA}><a onClick={(event) => {
+                        <OverlayTrigger placement="bottom" overlay={tooltipA}><button className={"buttonlink"} onClick={(event) => {
                             event.stopPropagation();
                             this.props.node.children.push(new PackageNode(LocaleMain.untitledPackage, this.props.node));
                             this.props.update();
-                        }} href="#">➕</a></OverlayTrigger>
-                        <OverlayTrigger placement="bottom" overlay={tooltipE}><a onClick={(event) => {
+                        }} ><span role="img" aria-label={""}>➕</span></button></OverlayTrigger>
+                        <OverlayTrigger placement="bottom" overlay={tooltipE}><button className={"buttonlink"} onClick={(event) => {
                             event.stopPropagation();
                             this.setState({modalEdit: true})
-                        }} href="#">✏</a></OverlayTrigger>
-                        <OverlayTrigger placement="bottom" overlay={tooltipD}><a onClick={(event) => {
+                        }} ><span role="img" aria-label={""}>✏</span></button></OverlayTrigger>
+                        <OverlayTrigger placement="bottom" overlay={tooltipD}><button className={"buttonlink"} onClick={(event) => {
                             event.stopPropagation();
                             this.setState({modalRemove: true})
-                        }} href="#">❌</a></OverlayTrigger>
+                        }} ><span role="img" aria-label={""}>❌</span></button></OverlayTrigger>
                     </span>
                 {this.state.open ?
                     this.props.children

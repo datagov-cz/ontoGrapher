@@ -187,11 +187,6 @@ export function getSubclasses(superIRI: string, jsonData: { [key: string]: any }
                 if (result.scheme !== undefined) {
                     if (result.scheme.value !== jsonData.sourceIRI) continue;
                 }
-                let nameLabel = result.termLabel === undefined ?
-                    result.term.value.substring(result.term.value.lastIndexOf("/") + 1)
-                    :
-                    result.termLabel.value
-                ;
                 if (jsonData.classIRI.indexOf(result.termType.value) > -1) {
                     if (result.term.value in Stereotypes) {
                         if (result.termLabel !== undefined) Stereotypes[result.term.value].labels[result.termLabel['xml:lang']] = result.termLabel.value;

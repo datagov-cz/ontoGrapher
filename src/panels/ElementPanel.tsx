@@ -36,27 +36,27 @@ interface State {
 
 const tooltipS = (
     <OverlayTrigger placement="right" overlay={<Tooltip id="tooltipS">{LocaleMain.classes}</Tooltip>}>
-        <div>⬜</div>
+        <div><span role="img" aria-label={LocaleMain.classes}>⬜</span></div>
     </OverlayTrigger>
 );
 const tooltipR = (
     <OverlayTrigger placement="right" overlay={<Tooltip id="tooltipS">{LocaleMain.relationships}</Tooltip>}>
-        <div>➡</div>
+        <div><span role="img" aria-label={LocaleMain.relationships}>➡</span></div>
     </OverlayTrigger>
 );
 const tooltipPM = (
     <OverlayTrigger placement="right" overlay={<Tooltip id="tooltipS">{LocaleMain.packageModel}</Tooltip>}>
-        <div>📦</div>
+        <div><span role="img" aria-label={LocaleMain.packageModel}>📦</span></div>
     </OverlayTrigger>
 );
-const tooltipM = (
-    <OverlayTrigger placement="right" overlay={<Tooltip id="tooltipS">{LocaleMain.models}</Tooltip>}>
-        <div>💃🏼</div>
-    </OverlayTrigger>
-);
+// const tooltipM = (
+//     <OverlayTrigger placement="right" overlay={<Tooltip id="tooltipS">{LocaleMain.models}</Tooltip>}>
+//         <div><span role="img" aria-label={LocaleMain.models}>💃🏼</span></div>
+//     </OverlayTrigger>
+// );
 const tooltipD = (
     <OverlayTrigger placement="right" overlay={<Tooltip id="tooltipS">{LocaleMain.diagram}</Tooltip>}>
-        <div>🖼️</div>
+        <div><span role="img" aria-label={LocaleMain.diagram}>🖼️</span></div>
     </OverlayTrigger>
 );
 
@@ -159,7 +159,7 @@ export default class ElementPanel extends React.Component<Props, State>{
     }
 
     getNameStereotype(element: string) {
-        if (ViewSettings.display == 1) {
+        if (ViewSettings.display === 1) {
             return Helper.getNameOfStereotype(element);
         } else {
             return Stereotypes[element].labels[this.props.projectLanguage];
@@ -167,7 +167,7 @@ export default class ElementPanel extends React.Component<Props, State>{
     }
 
     getNameModel(element: string) {
-        if (ViewSettings.display == 1) {
+        if (ViewSettings.display === 1) {
             return Helper.getNameOfStereotype(element);
         } else {
             return ModelElements[element].labels[this.props.projectLanguage];
@@ -175,7 +175,7 @@ export default class ElementPanel extends React.Component<Props, State>{
     }
 
     getNameLink(element: string) {
-        if (ViewSettings.display == 1) {
+        if (ViewSettings.display === 1) {
             return Helper.getNameOfLink(element);
         } else {
             return Links[element].labels[this.props.projectLanguage];
@@ -210,15 +210,15 @@ export default class ElementPanel extends React.Component<Props, State>{
                 }}/>)}
             </PackageFolder>);
         } else {
-            {
-                node.elements.map((id) => {
+
+                node.elements.forEach((id) => {
                     if (ProjectElements[id].active) arr.push(<PackageItem
                         label={ProjectElements[id].names[this.props.projectLanguage] === "" ? "<untitled>" : ProjectElements[id].names[this.props.projectLanguage]} depth={depth} id={id}
                         update={() => {
                             this.forceUpdate();
                         }}/>)
                 })
-            }
+
         }
         if (node.open) {
             for (let subnode of node.children) {
@@ -265,7 +265,7 @@ export default class ElementPanel extends React.Component<Props, State>{
 
             <InputGroup>
                 <InputGroup.Prepend>
-                    <InputGroup.Text id="inputGroupPrepend">🔎</InputGroup.Text>
+                    <InputGroup.Text id="inputGroupPrepend"><span role="img" aria-label={LocaleMain.searchStereotypes}>🔎</span></InputGroup.Text>
                 </InputGroup.Prepend>
                 <Form.Control
                     type="text"
@@ -312,11 +312,11 @@ export default class ElementPanel extends React.Component<Props, State>{
                     </div>
                 </Tab>
                 <Tab eventKey={3} title={tooltipPM}>
-                        <a href="#" className={"margins"} onClick={() => {
+                        <button className={"margins"} onClick={() => {
                             PackageRoot.children.push(new PackageNode(LocaleMain.untitledPackage, PackageRoot));
                             this.forceUpdate();
                         }
-                        }>{LocaleMain.addNewPackage}</a>
+                        }>{LocaleMain.addNewPackage}</button>
                         <div className="elementLinkList"
                              onDragOver={(event)=>{event.preventDefault();}}
                              onDrop={(event) => {
@@ -348,14 +348,14 @@ export default class ElementPanel extends React.Component<Props, State>{
                 {/*    </div>*/}
                 {/*</Tab>*/}
                 <Tab eventKey={4} title={tooltipD}>
-                    <a href="#" className={"margins"} onClick={() => {
+                    <button className={"margins"} onClick={() => {
                         Diagrams.push({name: LocaleMain.untitled, json: {}});
                         for (let key of Object.keys(ProjectElements)){
                             ProjectElements[key].hidden[Diagrams.length-1] = false;
                         }
                         this.forceUpdate();
                     }
-                    }>{LocaleMain.addDiagram}</a>
+                    }>{LocaleMain.addDiagram}</button>
                     <div className="elementLinkList">
                         {Diagrams.map((model, i) => <PanelDiagramItem
                                 key={i}

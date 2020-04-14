@@ -1,8 +1,4 @@
 import React from 'react';
-import {PackageNode} from "../../components/PackageNode";
-import {Tooltip} from "react-bootstrap";
-import * as LocaleMain from "../../locale/LocaleMain.json";
-import {PackageRoot, ProjectElements} from "../../var/Variables";
 
 interface Props {
     category: string;

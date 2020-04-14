@@ -12,7 +12,7 @@ import {
     Languages,
     Links,
     ModelElements,
-    PackageRoot, Prefixes,
+    PackageRoot,
     ProjectElements,
     ProjectLinks,
     ProjectSettings,
@@ -24,7 +24,7 @@ import DetailPanel from "../panels/DetailPanel";
 import {getVocabulariesFromJSONSource} from "../interface/JSONInterface";
 import * as SemanticWebInterface from "../interface/SemanticWebInterface";
 import {Defaults} from "../config/Defaults";
-import {getModelName, getName, loadDiagram, parsePrefix, saveDiagram} from "../misc/Helper";
+import {getModelName, getName, loadDiagram, saveDiagram} from "../misc/Helper";
 import {PackageNode} from "../components/PackageNode";
 
 interface DiagramAppProps{

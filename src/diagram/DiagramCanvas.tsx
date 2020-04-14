@@ -62,7 +62,7 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps, D
     componentDidMount(): void {
         const node = (this.canvasRef.current! as HTMLElement);
 
-        const paper = this.paper = new joint.dia.Paper({
+        this.paper = new joint.dia.Paper({
             el: node,
             model: graph,
             width: "auto",
@@ -383,10 +383,10 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps, D
                     //name = "«"+ getModelName(data.elem, this.props.projectLanguage).toLowerCase() +"»" + "\n" + name;
                 } else if (data.type === "package"){
                     name = ProjectElements[data.elem].names[this.props.projectLanguage];
-                    name = "«"+ getName(ProjectElements[data.elem].iri, this.props.projectLanguage).toLowerCase() +"»" + "\n" + name;
+                    name = "«"+ getName(ProjectElements[data.elem].iri, this.props.projectLanguage).toLowerCase() +"»\n" + name;
                 } else {
                     name = LocaleMain.untitled + " " + getName(data.elem, this.props.projectLanguage);
-                    name = "«"+ getName(data.elem, this.props.projectLanguage).toLowerCase() +"»" + "\n" + name;
+                    name = "«"+ getName(data.elem, this.props.projectLanguage).toLowerCase() +"»\n" + name;
                 }
                 let cls = new graphElement();
                 if (data.package) {

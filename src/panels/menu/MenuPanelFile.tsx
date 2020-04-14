@@ -2,12 +2,10 @@ import React from 'react';
 import {NavDropdown} from "react-bootstrap";
 import * as LocaleMenu from "../../locale/LocaleMenu.json";
 import FileNewModal from "./file/FileNewModal";
-import FileOGSettingsModal from "./file/FileOGSettingsModal";
 import FileLoadModal from "./file/FileLoadModal";
 import FileSaveModal from "./file/FileSaveModal";
 import FileProjectSettingsModal from "./file/FileProjectSettingsModal";
 import FileExportModal from "./file/FileExportModal";
-import {exportGlossary, exportModel, parsePrefix} from "../../misc/Helper";
 
 interface MenuPanelFileProps {
     newProject: Function;

@@ -1,13 +1,4 @@
-import {
-    AttributeTypePool,
-    GeneralizationPool,
-    Languages,
-    LinkPool,
-    Links,
-    StereotypeCategories,
-    VocabularyPool
-} from "../var/Variables";
-import * as Locale from "../locale/LocaleMain.json";
+import {Links, StereotypeCategories, VocabularyPool} from "../var/Variables";
 import {SourceData} from "../components/SourceData";
 import {isBlankNode} from "n3/lib/N3Util";
 import * as Helper from "../misc/Helper";
@@ -40,6 +31,8 @@ export function fetchClasses(name, source, typeIRI, replace, language, callback)
                         break;
                     case "http://www.w3.org/2000/01/rdf-schema#label":
                         result[quad.subject.value]["label"] = quad.object.value;
+                        break;
+                    default:
                         break;
                 }
             }
@@ -79,8 +72,12 @@ export function fetchRelationships(name, source, typeIRI, replace, language, cal
                         if (quad.object.value === typeIRI){
                             result[quad.subject.value]["relationship"] = true;
                         }
+                        break;
                     case "http://www.w3.org/2000/01/rdf-schema#label":
                         result[quad.subject.value]["label"] = quad.object.value;
+                        break;
+                    default:
+                        break;
                 }
             }
         }

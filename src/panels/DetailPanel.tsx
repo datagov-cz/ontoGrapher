@@ -6,13 +6,15 @@ import {
     Diagrams,
     graph,
     Languages,
-    Links, ModelElements,
+    Links,
+    ModelElements,
     ProjectElements,
-    ProjectLinks, Schemes,
+    ProjectLinks,
+    Schemes,
     Stereotypes
 } from "../var/Variables";
 import * as LocaleMain from "../locale/LocaleMain.json";
-import {Button, Form, OverlayTrigger, Tab, Tabs, Tooltip} from "react-bootstrap";
+import {Button, Form, Tab, Tabs} from "react-bootstrap";
 import TableList from "../components/TableList";
 import * as LocaleMenu from "../locale/LocaleMenu.json";
 import * as VariableLoader from "../var/VariableLoader";
@@ -272,8 +274,8 @@ export default class DetailPanel extends React.Component<Props, State> {
                                                     propName="textarea"
                                                 />
                                                 &nbsp;
-                                                <a href="#" onClick={() => this.deleteName(language)}>
-                                                    {LocaleMenu.deleteProjectName}</a>
+                                                <button className={"buttonlink"} onClick={() => this.deleteName(language)}>
+                                                    {LocaleMenu.deleteProjectName}</button>
                                             </td>
                                             <td>{Languages[language]}</td>
                                         </tr>
@@ -317,10 +319,10 @@ export default class DetailPanel extends React.Component<Props, State> {
                                                     propName="textarea"
                                                 />
                                                 &nbsp;
-                                                <a href="#" onClick={(event) => {
+                                                <button className={"buttonlink"} onClick={(event) => {
                                                     this.deleteAttribute(i);
                                                 }}>
-                                                    {LocaleMenu.delete}</a>
+                                                    {LocaleMenu.delete}</button>
                                             </td>
                                             <td>
                                                 <Form inline>
@@ -336,21 +338,21 @@ export default class DetailPanel extends React.Component<Props, State> {
                                         </tr>
                                     ))}
                                 </TableList>
-                                <a href="#" onClick={(event) => {
+                                <button className={"buttonlink"} onClick={(event) => {
                                     this.createAttribute();
                                 }}>
-                                    {LocaleMenu.createAttribute}</a>
+                                    {LocaleMenu.createAttribute}</button>
                             </Tab>
                             <Tab eventKey={3} title={LocaleMain.diagram}>
                                 <TableList headings={[LocaleMenu.diagram]}>
                                     {this.state.inputDiagrams.map((conn, i) =>
                                         (<tr>
-                                            <td>{Diagrams[conn].name}&nbsp;<a href="#" onClick={() => {
+                                            <td>{Diagrams[conn].name}&nbsp;<button className={"buttonLink"} onClick={() => {
                                                 if (this.state.inputDiagrams.length > 1) {
                                                     this.state.inputDiagrams.splice(i, 1);
                                                     this.setState({changes: true});
                                                 }
-                                            }}>{LocaleMain.del}</a></td>
+                                            }}>{LocaleMain.del}</button></td>
                                         </tr>)
                                     )}
                                 </TableList>

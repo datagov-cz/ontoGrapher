@@ -3,7 +3,7 @@ import {Cardinality} from "../components/Cardinality";
 import * as joint from 'jointjs';
 import {PackageNode} from "../components/PackageNode";
 
-export var graph = new joint.dia.Graph;
+export var graph = new joint.dia.Graph();
 export var selectedDiagram: string = "";
 
 export var loading = {

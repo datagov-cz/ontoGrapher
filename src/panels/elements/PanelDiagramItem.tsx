@@ -100,9 +100,9 @@ export default class PanelDiagramItem extends React.Component<Props, State> {
                                                }}
                                                placement={"bottom"}
                                >
-                                    <a onClick={() => {
+                                    <button className={"buttonlink"} onClick={() => {
                                     this.setState({modalEdit: true})
-                                }} href="#">✏</a>
+                                    }} ><span role="img" aria-label={""}>✏</span></button>
                                 </OverlayTrigger>
                                 <OverlayTrigger
                                     popperConfig={{
@@ -116,9 +116,9 @@ export default class PanelDiagramItem extends React.Component<Props, State> {
                                     overlay={
                                         (<Tooltip id={"tltip"} >{LocaleMain.del}</Tooltip>)
                                     }>
-                                    <a onClick={() => {
+                                    <button className={"buttonlink"} onClick={() => {
                                     this.setState({modalRemove: true})
-                                }} href="#">❌</a>
+                                    }} ><span role="img" aria-label={""}>❌</span></button>
                                 </OverlayTrigger>
                         </span>
                     </div>

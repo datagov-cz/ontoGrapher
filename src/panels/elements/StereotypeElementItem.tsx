@@ -15,9 +15,6 @@ interface State {
 }
 
 export default class StereotypeElementItem extends React.Component<Props, State> {
-    constructor(props: Props) {
-        super(props);
-    }
 
     render() {
         if (this.props.definition){

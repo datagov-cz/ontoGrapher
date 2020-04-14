@@ -17,10 +17,6 @@ export default class TableList extends React.Component<Props, State> {
         height: "100%"
     };
 
-    constructor(props: Props) {
-        super(props);
-    }
-
     render() {
         if (this.props.headings){
             return (<div className={"tableList"} style={{width: this.props.width, height: this.props.height}}>

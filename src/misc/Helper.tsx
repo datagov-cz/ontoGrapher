@@ -34,7 +34,7 @@ export function getNameOfLink(uri: string): string {
 }
 
 export function getName(element: string, language: string): string {
-    if (ViewSettings.display == 1) {
+    if (ViewSettings.display === 1) {
         return getNameOfStereotype(element);
     } else {
         return Stereotypes[element].labels[language];
@@ -43,7 +43,7 @@ export function getName(element: string, language: string): string {
 
 
 export function getModelName(element: string, language: string) {
-    if (ViewSettings.display == 1) {
+    if (ViewSettings.display === 1) {
         return getNameOfStereotype(element);
     } else {
         return ModelElements[element].labels[language];
@@ -264,7 +264,6 @@ export function exportModel(iri: string, type: string, knowledgeStructure: strin
     }
 
     for (let id of Object.keys(termObj)){
-        let iri = ProjectElements[id].iri;
         let subject = namedNode(termObj[id]);
         //type
         //writer.addQuad(subject, namedNode(parsePrefix(Prefixes.rdf,"type")), namedNode(parsePrefix(Prefixes.skos,"Concept")));
@@ -344,7 +343,6 @@ export function exportGlossary(iri: string, type: string, knowledgeStructure: st
     }
 
     for (let id of Object.keys(termObj)){
-        let iri = ProjectElements[id].iri;
         let subject = namedNode(termObj[id]);
         //type
         writer.addQuad(subject, namedNode(parsePrefix("rdf","type")), namedNode(parsePrefix("skos","Concept")));

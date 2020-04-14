@@ -51,7 +51,15 @@
     overflow: auto;
   }
   .margins{
-    margin: 5px;
+    border: none;
+    background: none;
+    margin: 2px 5px;
+    padding: 0;
+    color: #007bff;
+    &:hover{
+      color: blue;
+      text-decoration: underline;
+    }
   }
   .packageFolder{
     font-size: 14px;
