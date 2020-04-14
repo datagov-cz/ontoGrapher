@@ -252,7 +252,7 @@ export function exportModel(iri: string, type: string, knowledgeStructure: strin
             }
         }
         if (elementName === "") elementName = (LocaleMain.untitled + "-" + Stereotypes[iri].labels[Object.keys(Stereotypes[iri].labels)[0]]).trim().replace(/\s/g, '-');
-        elementName = (projectIRI + "/pojem/" + elementName).trim().replace(/\s/g, '-');;
+        elementName = (projectIRI + "/pojem/" + elementName).trim().replace(/\s/g, '-');
         let count = 1;
         if (Object.values(termObj).includes(elementName)){
             while(Object.values(termObj).includes(elementName + "-" + count.toString(10))){

@@ -24,12 +24,14 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps, D
     private paper: joint.dia.Paper | undefined;
     private highlight: joint.dia.CellView;
     private magnet: boolean;
+    private drag: {x: any, y: any} | undefined;
 
     constructor(props: DiagramCanvasProps) {
         super(props);
         this.canvasRef = React.createRef();
         this.magnet = false;
         this.componentDidMount = this.componentDidMount.bind(this);
+        this.drag = undefined;
     }
 
     resizeElem(id: string){
@@ -88,32 +90,32 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps, D
                 return link;
             }
         });
-        // var svgPanZoom = require('svg-pan-zoom/src/svg-pan-zoom');
-        //
-        // const panZoom = svgPanZoom(paper.svg, {
-        //     viewportSelector: paper.layers,
-        //     zoomEnabled: false,
-        //     panEnabled: false,
-        //     controlIconsEnabled: false,
-        //     maxZoom: 2,
-        //     minZoom: 0.1,
-        //     onUpdatedCTM: (function() {
-        //         let currentMatrix = paper.matrix();
-        //         return function onUpdatedCTM(matrix) {
-        //             const { a, d, e, f } = matrix;
-        //             const { a: ca, d: cd, e: ce, f: cf } = currentMatrix;
-        //             const translateChanged = (e !== ce || f !== cf)
-        //             if (translateChanged) {
-        //                 paper.trigger('translate', e - ce, f - cf);
-        //             }
-        //             const scaleChanged = (a !== ca || d !== cd);
-        //             if (scaleChanged) {
-        //                 paper.trigger('scale', a, d, e, f);
-        //             }
-        //             currentMatrix = matrix;
-        //         }
-        //     })()
-        // });
+        var svgPanZoom = require('svg-pan-zoom');
+
+        const panZoom = svgPanZoom(paper.svg, {
+            viewportSelector: paper.layers,
+            zoomEnabled: false,
+            panEnabled: false,
+            controlIconsEnabled: false,
+            maxZoom: 2,
+            minZoom: 0.1,
+            // onUpdatedCTM: (function() {
+            //     let currentMatrix = paper.matrix();
+            //     return function onUpdatedCTM(matrix) {
+            //         const { a, d, e, f } = matrix;
+            //         const { a: ca, d: cd, e: ce, f: cf } = currentMatrix;
+            //         const translateChanged = (e !== ce || f !== cf)
+            //         if (translateChanged) {
+            //             paper.trigger('translate', e - ce, f - cf);
+            //         }
+            //         const scaleChanged = (a !== ca || d !== cd);
+            //         if (scaleChanged) {
+            //             paper.trigger('scale', a, d, e, f);
+            //         }
+            //         currentMatrix = matrix;
+            //     }
+            // })()
+        });
 
         this.paper.on({
             'element:mouseenter': (elementView)=> {
@@ -169,6 +171,7 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps, D
                     this.paper?.findViewByModel(cell).unhighlight();
                 }
                 //panZoom.enablePan();
+                this.drag = {x: x, y: y}
             },
             'blank:pointermove': function(evt, x, y) {
                 var data = evt.data;
@@ -179,9 +182,10 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps, D
                     }
                 }
             },
-            // 'blank:pointerup' : ()=>{
-            //   panZoom.disablePan()
-            // },
+            'blank:pointerup' : ()=>{
+              //panZoom.disablePan
+                this.drag = undefined;
+            },
             'link:pointerup' : (linkView, evt, x, y)=>{
                 let id = linkView.model.id;
                 for (let link of graph.getLinks()){
@@ -391,6 +395,12 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps, D
             onDragOver={(event) => {
                 event.preventDefault();
             }}
+            onMouseMove={(event)=>{
+                if (this.drag){
+                    this.paper?.translate(event.nativeEvent.offsetX - this.drag.x, event.nativeEvent.offsetY - this.drag.y);
+                }
+            }
+            }
             onDrop={(event) => {
                 const data = JSON.parse(event.dataTransfer.getData("newClass"));
                 let name = "";
