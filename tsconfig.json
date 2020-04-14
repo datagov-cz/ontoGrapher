@@ -17,10 +17,9 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
-    "jsx": "react",
+    "jsx": "react"
   },
   "include": [
-    "src",
-    "node_modules/svg-pan-zoom/dist/svg-pan-zoom.d.ts"
+    "src"
   ]
 }

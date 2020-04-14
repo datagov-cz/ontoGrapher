@@ -90,32 +90,6 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps, D
                 return link;
             }
         });
-        var svgPanZoom = require('svg-pan-zoom');
-
-        const panZoom = svgPanZoom(paper.svg, {
-            viewportSelector: paper.layers,
-            zoomEnabled: false,
-            panEnabled: false,
-            controlIconsEnabled: false,
-            maxZoom: 2,
-            minZoom: 0.1,
-            // onUpdatedCTM: (function() {
-            //     let currentMatrix = paper.matrix();
-            //     return function onUpdatedCTM(matrix) {
-            //         const { a, d, e, f } = matrix;
-            //         const { a: ca, d: cd, e: ce, f: cf } = currentMatrix;
-            //         const translateChanged = (e !== ce || f !== cf)
-            //         if (translateChanged) {
-            //             paper.trigger('translate', e - ce, f - cf);
-            //         }
-            //         const scaleChanged = (a !== ca || d !== cd);
-            //         if (scaleChanged) {
-            //             paper.trigger('scale', a, d, e, f);
-            //         }
-            //         currentMatrix = matrix;
-            //     }
-            // })()
-        });
 
         this.paper.on({
             'element:mouseenter': (elementView)=> {
