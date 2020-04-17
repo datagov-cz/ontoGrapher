@@ -3,13 +3,17 @@ import {PackageNode} from "../../components/PackageNode";
 import {Button, Form, Modal, OverlayTrigger, Tooltip} from "react-bootstrap";
 import * as LocaleMain from "../../locale/LocaleMain.json";
 import * as LocaleMenu from "../../locale/LocaleMenu.json";
-import {PackageRoot, ProjectElements} from "../../var/Variables";
+import {Languages, PackageRoot, ProjectElements, ProjectSettings, Schemes} from "../../var/Variables";
 import TableList from "../../components/TableList";
+// @ts-ignore
+import {RIEInput} from "riek";
 
 interface Props {
     node: PackageNode;
     depth: number;
     update: Function;
+    name: string;
+    projectLanguage: string;
 }
 
 interface State {
@@ -17,7 +21,7 @@ interface State {
     hover: boolean;
     modalEdit: boolean;
     modalRemove: boolean;
-    inputEdit: string;
+    inputEdit: { [key: string]: string };
 }
 
 const tooltipA = (
@@ -28,6 +32,9 @@ const tooltipE = (
 );
 const tooltipD = (
     <Tooltip id="tooltipS">{LocaleMain.del}</Tooltip>
+);
+const tooltipDef = (
+    <Tooltip id="tooltipS">{LocaleMain.setAsDefault}</Tooltip>
 );
 // const tooltipU = (
 //     <Tooltip id="tooltipS">{LocaleMain.moveUp}</Tooltip>
@@ -63,6 +70,9 @@ export default class PackageFolder extends React.Component<Props, State> {
             parent.children.splice(parent.children.indexOf(this.props.node), 1);
             this.props.node.parent = node;
             node.children.push(this.props.node);
+            if (ProjectSettings.selectedPackage === this.props.node){
+                ProjectSettings.selectedPackage = PackageRoot.children[0];
+            }
             this.forceUpdate();
             this.props.update();
         }
@@ -70,13 +80,13 @@ export default class PackageFolder extends React.Component<Props, State> {
 
     getLink(node: PackageNode, depth: number) {
         if (node === this.props.node.parent) {
-            return (<span className={"italic"}>{"-".repeat(depth) + node.name}</span>)
+            return (<span className={"italic"}>{"-".repeat(depth) + node.name[this.props.projectLanguage]}</span>)
         } else if (node === this.props.node) {
-            return (<span>{"-".repeat(depth) + node.name}</span>)
+            return (<span>{"-".repeat(depth) + node.name[this.props.projectLanguage]}</span>)
         } else {
             return (<button className="buttonlink" onClick={() => {
                 this.move(node);
-            }}>{"-".repeat(depth) + node.name}</button>)
+            }}>{"-".repeat(depth) + node.name[this.props.projectLanguage]}</button>)
         }
     }
 
@@ -91,13 +101,27 @@ export default class PackageFolder extends React.Component<Props, State> {
         }
     }
 
-    movePackageItem(parse: any){
+    movePackageItem(parse: any) {
         let id = parse.elem;
         let oldpkg = ProjectElements[id].package;
-        oldpkg.elements.splice(oldpkg.elements.indexOf(id),1);
+        oldpkg.elements.splice(oldpkg.elements.indexOf(id), 1);
         ProjectElements[id].package = this.props.node;
         this.props.node.elements.push(id);
         this.props.update();
+    }
+
+    handleChangeName(event: {
+        textarea: string;
+    }, language: string) {
+        let name = this.state.inputEdit;
+        name[language] = event.textarea;
+        this.setState({inputEdit: name});
+    }
+
+    deleteName(language: string) {
+        let name = this.state.inputEdit;
+        name[language] = "";
+        this.setState({inputEdit: name});
     }
 
     render() {
@@ -109,8 +133,13 @@ export default class PackageFolder extends React.Component<Props, State> {
                 onMouseLeave={() => {
                     this.setState({hover: false})
                 }}
-                onDragOver={(event)=>{event.preventDefault();}}
-                onDrop={(event)=>{event.stopPropagation(); this.movePackageItem(JSON.parse(event.dataTransfer.getData("newClass")));}}
+                onDragOver={(event) => {
+                    event.preventDefault();
+                }}
+                onDrop={(event) => {
+                    event.stopPropagation();
+                    this.movePackageItem(JSON.parse(event.dataTransfer.getData("newClass")));
+                }}
                 onClick={() => {
                     if (!(this.state.modalEdit || this.state.modalRemove)) {
                         this.setState({open: !this.state.open});
@@ -118,23 +147,42 @@ export default class PackageFolder extends React.Component<Props, State> {
                         this.props.update();
                     }
                 }}
-                className={"packageFolder" + (this.state.open ? " open" : "")}
+                className={"packageFolder" + (this.state.open ? " open" : "") + (ProjectSettings.selectedPackage === this.props.node ? " defaultPackage" : "")}
                 style={{marginLeft: (this.props.depth - 1) * 20 + "px"}}>
-                {(this.props.depth === 1 ? "" : "↘") + "📁" + this.props.node.name}
+                {(this.props.depth === 1 ? "" : "↘") + "📁" + this.props.name}
                 <span className={"packageOptions right"} style={{display: this.state.hover ? "inline-block" : "none"}}>
-                        <OverlayTrigger placement="bottom" overlay={tooltipA}><button className={"buttonlink"} onClick={(event) => {
-                            event.stopPropagation();
-                            this.props.node.children.push(new PackageNode(LocaleMain.untitledPackage, this.props.node));
-                            this.props.update();
-                        }} ><span role="img" aria-label={""}>➕</span></button></OverlayTrigger>
-                        <OverlayTrigger placement="bottom" overlay={tooltipE}><button className={"buttonlink"} onClick={(event) => {
-                            event.stopPropagation();
-                            this.setState({modalEdit: true})
-                        }} ><span role="img" aria-label={""}>✏</span></button></OverlayTrigger>
-                        <OverlayTrigger placement="bottom" overlay={tooltipD}><button className={"buttonlink"} onClick={(event) => {
-                            event.stopPropagation();
-                            this.setState({modalRemove: true})
-                        }} ><span role="img" aria-label={""}>❌</span></button></OverlayTrigger>
+
+                        {(this.props.depth === 1 && ProjectSettings.selectedPackage === this.props.node) ? "" :
+                            <OverlayTrigger placement="bottom" overlay={tooltipDef}>
+                                <button className={"buttonlink"} onClick={(event) => {
+                                    event.stopPropagation();
+                                    ProjectSettings.selectedPackage = this.props.node;
+                                    this.props.update();
+                                }}><span role="img" aria-label={""}>🔰</span></button>
+                            </OverlayTrigger>}
+
+                    <OverlayTrigger placement="bottom" overlay={tooltipA}><button className={"buttonlink"}
+                                                                                  onClick={(event) => {
+                                                                                      event.stopPropagation();
+                                                                                      this.props.node.children.push(new PackageNode(LocaleMain.untitledPackage, this.props.node));
+                                                                                      this.props.node.open = true;
+                                                                                      this.props.update();
+                                                                                  }}><span role="img"
+                                                                                           aria-label={""}>➕</span></button></OverlayTrigger>
+                        <OverlayTrigger placement="bottom" overlay={tooltipE}><button className={"buttonlink"}
+                                                                                      onClick={(event) => {
+                                                                                          event.stopPropagation();
+                                                                                          this.setState({modalEdit: true})
+                                                                                      }}><span role="img"
+                                                                                               aria-label={""}>✏</span></button></OverlayTrigger>
+                    {(PackageRoot.children.length === 1) ? "" : <OverlayTrigger placement="bottom" overlay={tooltipD}>
+                        <button className={"buttonlink"}
+                                onClick={(event) => {
+                                    event.stopPropagation();
+                                    this.setState({modalRemove: true})
+                                }}><span role="img"
+                                         aria-label={""}>❌</span></button>
+                    </OverlayTrigger>}
                     </span>
                 {this.state.open ?
                     this.props.children
@@ -147,26 +195,46 @@ export default class PackageFolder extends React.Component<Props, State> {
                     </Modal.Header>
                     <Modal.Body>
                         <h4>{LocaleMenu.namePackageTitle}</h4>
-                        <Form>
-                            <Form.Control onChange={(event: { currentTarget: { value: any; }; }) => {
-                                this.setState({inputEdit: event.currentTarget.value})
-                            }} type="text" value={this.state.inputEdit}
-                                          placeholder={LocaleMain.modalEditPackagePlaceholder}
-                                          required/>
-                        </Form>
-                        <br/>
-                        <h4>{LocaleMenu.movePackageTitle}</h4>
-                        <p>{LocaleMenu.modalMovePackageDescription}</p>
-                        <TableList headings={[LocaleMenu.package]}>
-                            {this.getFolder()}
+                        <TableList headings={[LocaleMenu.title, LocaleMenu.language]}>
+                            {Object.keys(Languages).map((language, i) => (
+                                <tr key={i}>
+                                    <td>
+                                        <RIEInput
+                                            className={"rieinput"}
+                                            value={this.state.inputEdit[language].length > 0 ? this.state.inputEdit[language] : "<blank>"}
+                                            change={(event: { textarea: string }) => {
+                                                this.handleChangeName(event, language);
+                                            }}
+                                            propName="textarea"
+                                        />
+                                        &nbsp;
+                                        <button className={"buttonlink"} onClick={() => this.deleteName(language)}>
+                                            {LocaleMenu.deleteProjectName}</button>
+                                    </td>
+                                    <td>{Languages[language]}</td>
+                                </tr>
+                            ))}
                         </TableList>
+                        <br/>
+                        {/*// TODO: change schemes key when renaming scheme*/}
+                        {/*// TODO: change header to vocabulary settings when editing root packages*/}
+                        {PackageRoot.children.length === 1 ? <div><p>{LocaleMenu.cannotMovePackage}</p></div> : <div><h4>{LocaleMenu.movePackageTitle}</h4>
+                            <p>{LocaleMenu.modalMovePackageDescription}</p>
+                            <TableList headings={[LocaleMenu.package]}>
+                                {this.getFolder()}
+                            </TableList>
+                        </div>}
                     </Modal.Body>
                     <Modal.Footer>
+                        <p className={"red modal-warning"}>{LocaleMenu.saveWarning}</p>
                         <Button onClick={() => {
                             this.setState({modalEdit: false});
                         }} variant="secondary">{LocaleMenu.cancel}</Button>
                         <Button onClick={() => {
                             this.props.node.name = this.state.inputEdit;
+                            if (this.props.node.scheme) {
+                                Schemes[this.props.node.scheme].labels = this.state.inputEdit;
+                            }
                             this.setState({modalEdit: false});
                         }}>{LocaleMenu.confirm}</Button>
                     </Modal.Footer>
@@ -186,6 +254,9 @@ export default class PackageFolder extends React.Component<Props, State> {
                         <Button onClick={() => {
                             if (this.props.node.parent) {
                                 this.props.node.parent.children.splice(this.props.node.parent.children.indexOf(this.props.node), 1);
+                                for (let id of this.props.node.elements) {
+                                    ProjectElements[id].active = false;
+                                }
                                 this.setState({modalRemove: false});
                                 this.props.update();
                             }

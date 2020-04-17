@@ -12,7 +12,7 @@ import {
     PropertyPool, Schemes,
     StereotypeCategories,
     Stereotypes,
-    ViewSettings
+    ViewSettings, VocabularyElements
 } from "../var/Variables";
 import {SourceData} from "../components/SourceData";
 import * as VariableLoader from "./../var/VariableLoader";
@@ -22,6 +22,8 @@ import * as joint from 'jointjs';
 import {AttributeObject} from "../components/AttributeObject";
 import {AttributeType} from "../components/AttributeType";
 import {DataFactory} from "n3";
+import {PackageNode} from "../components/PackageNode";
+import {initLanguageObject} from "./../var/VariableLoader";
 
 export function getNameOfStereotype(uri: string): string {
     let stereotype = Stereotypes[uri];
@@ -37,8 +39,22 @@ export function getName(element: string, language: string): string {
     if (ViewSettings.display === 1) {
         return getNameOfStereotype(element);
     } else {
-        return Stereotypes[element].labels[language];
+        if (element in Stereotypes){
+            return Stereotypes[element].labels[language];
+        } else {
+            return VocabularyElements[element].labels[language];
+        }
     }
+}
+
+export function getStereotypeList(iris: string[], language: string) : string[]{
+    return iris.map(iri => {
+        if (iri in Stereotypes){
+            return Stereotypes[iri].labels[language];
+        } else {
+            return VocabularyElements[iri].labels[language];
+        }
+    });
 }
 
 
@@ -75,16 +91,47 @@ export function parsePrefix(prefix: string, name: string){
     return Prefixes[prefix] + name;
 }
 
-export function addClass(id: string, iri: string, language: string) {
+export function createNewScheme() : string{
+    // TODO: change to more suitable IRI
+    let result = "https://slovník.gov.cz/vocabulary1";
+    if (result in Schemes){
+        let count = 1;
+        while((result + "-" + count.toString(10)) in Schemes){
+            count++;
+        }
+        result += "-" + count.toString(10);
+    }
+    Schemes[result] = {labels: initLanguageObject("")}
+    return result;
+}
+
+export function addClass(
+    id: string,
+    iris: string[],
+    language: string,
+    scheme: string,
+    pkg: PackageNode = PackageRoot,
+    untitled: boolean = true,
+    stereotype: boolean = true,
+    names?: {}, descriptions?: {}) {
     let result: { [key: string]: any } = {};
-    result["iri"] = iri;
-    result["names"] = VariableLoader.initLanguageObject(LocaleMain.untitled + " " + getName(iri, language));
+    result["iri"] = iris;
+    result["names"] = names ? names : VariableLoader.initLanguageObject(LocaleMain.untitled + " " + getName(iris[0], language));
     result["connections"] = [];
-    result["untitled"] = true;
-    result["descriptions"] = VariableLoader.initLanguageObject("");
+    result["untitled"] = untitled;
+    result["descriptions"] = descriptions ? descriptions : VariableLoader.initLanguageObject("");
     result["attributes"] = [];
     let propertyArray: AttributeObject[] = [];
-    PropertyPool[Stereotypes[iri].category].forEach((attr: AttributeType)=>propertyArray.push(new AttributeObject("",attr)));
+    if (stereotype){
+        for (let iri of iris){
+            if (Stereotypes[iri].category in PropertyPool){
+                PropertyPool[Stereotypes[iri].category].forEach((attr: AttributeType)=>{
+                    let newAttr = new AttributeObject("",attr);
+                    if (!(propertyArray.includes(newAttr))) propertyArray.push(newAttr);
+                });
+            }
+        }
+    }
     result["properties"] = propertyArray;
     let diagramArray: boolean[] = [];
     Diagrams.forEach((obj, i) => {
@@ -92,9 +139,10 @@ export function addClass(id: string, iri: string, language: string) {
     });
     result["diagrams"] = [ProjectSettings.selectedDiagram];
     result["hidden"] = diagramArray;
-    result["package"] = PackageRoot;
+    result["package"] = pkg;
     result["active"] = true;
-    PackageRoot.elements.push(id);
+    result["scheme"] = scheme;
+    pkg.elements.push(id);
     ProjectElements[id] = result;
 }
 

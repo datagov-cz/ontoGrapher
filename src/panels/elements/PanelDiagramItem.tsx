@@ -159,7 +159,7 @@ export default class PanelDiagramItem extends React.Component<Props, State> {
                             }} variant="secondary">{LocaleMenu.cancel}</Button>
                             <Button onClick={() => {
                                 delete Diagrams[this.props.diagram];
-                                if (ProjectSettings.selectedDiagram.name === this.props.diagram) {
+                                if (ProjectSettings.selectedDiagram === this.props.diagram) {
                                     changeDiagrams(Object.keys(Diagrams)[0]);
                                 }
                                 this.setState({modalRemove: false});

@@ -13,6 +13,7 @@
   "package": "Package",
   "iri": "IRI",
   "stereotype": "Stereotype",
+  "cannotMovePackage": "Moving the package is disallowed, because there is currently not another package to set as default; create another package at root level to allow moving.",
   "selectStereotype": "Select the stereotype you wish to see:",
   "addStereotypes": "Add stereotypes",
   "editStereotype": "Edit stereotypes",

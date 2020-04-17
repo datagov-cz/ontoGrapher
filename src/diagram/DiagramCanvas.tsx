@@ -2,8 +2,8 @@
 import React from 'react';
 import * as joint from 'jointjs';
 import {graphElement} from "../graph/GraphElement";
-import {graph, Links, ProjectElements, ProjectLinks, ProjectSettings} from "../var/Variables";
-import {addClass, addLink, addModel, getModelName, getName} from "../misc/Helper";
+import {graph, Links, ProjectElements, ProjectLinks, ProjectSettings, Stereotypes} from "../var/Variables";
+import {addClass, addLink, addModel, getModelName, getName, getStereotypeList} from "../misc/Helper";
 import * as LocaleMain from "../locale/LocaleMain.json";
 
 interface DiagramCanvasProps {
@@ -383,16 +383,16 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps, D
                     //name = "«"+ getModelName(data.elem, this.props.projectLanguage).toLowerCase() +"»" + "\n" + name;
                 } else if (data.type === "package"){
                     name = ProjectElements[data.elem].names[this.props.projectLanguage];
-                    name = "«"+ getName(ProjectElements[data.elem].iri, this.props.projectLanguage).toLowerCase() +"»\n" + name;
+                    name = getStereotypeList(ProjectElements[data.elem].iri, this.props.projectLanguage).map((str)=>"«"+str.toLowerCase()+"»\n").join("") + name;
                 } else {
                     name = LocaleMain.untitled + " " + getName(data.elem, this.props.projectLanguage);
                     name = "«"+ getName(data.elem, this.props.projectLanguage).toLowerCase() +"»\n" + name;
                 }
                 let cls = new graphElement();
                 if (data.package) {
-                    addClass(cls.id, data.elem, this.props.projectLanguage);
+                    addClass(cls.id, [data.elem], this.props.projectLanguage, ProjectSettings.selectedPackage.scheme, ProjectSettings.selectedPackage);
                 } else if (data.type === "stereotype" && !data.package){
-                    addModel(cls.id, data.elem, this.props.projectLanguage, name);
+                    addModel(cls.id, [data.elem], this.props.projectLanguage, name);
                     ProjectElements[cls.id].active = false;
                 }
                 if (data.type === "package"){
@@ -406,17 +406,6 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps, D
                         magnet: true,
                     }
                 });
-                // cls.on('change:position',(element)=>{
-                //     let links = graph.getConnectedLinks(element);
-                //     for (let link of links){
-                //         if (this.highlight){
-                //             if (link.id === this.highlight.model.id){
-                //                 this.highlight.unhighlight();
-                //                 this.highlight.highlight();
-                //             }
-                //         }
-                //     }
-                // });
                 cls.addTo(graph);
                 let bbox = this.paper?.findViewByModel(cls).getBBox();
                 cls.resize(bbox.width, bbox.height);
@@ -424,7 +413,7 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps, D
                 this.props.addCell();
                 if (data.type === "package"){
                     let id = data.elem;
-                    cls.position(ProjectElements[id].position.x,ProjectElements[id].position.y);
+                    if (ProjectElements.position) cls.position(ProjectElements[id].position.x,ProjectElements[id].position.y);
                     if (!(ProjectElements[id].diagrams.includes(ProjectSettings.selectedDiagram))){
                         ProjectElements[id].diagrams.push(ProjectSettings.selectedDiagram)
                     }
@@ -432,39 +421,12 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps, D
                         if ((ProjectLinks[link].source === id || ProjectLinks[link].target === id) && (graph.getCell(ProjectLinks[link].source) && graph.getCell(ProjectLinks[link].target))){
                             let lnk = new joint.shapes.standard.Link({id: link});
                             if (ProjectLinks[link].sourceCardinality.getString() !== LocaleMain.none) {
-                                lnk.appendLabel({
-                                    attrs: {
-                                        text: {
-                                            text: ProjectLinks[link].sourceCardinality.getString()
-                                        }
-                                    },
-                                    position: {
-                                        distance: 20
-                                    }
-                                });
+                                lnk.appendLabel({attrs: {text: {text: ProjectLinks[link].sourceCardinality.getString()}}, position: {distance: 20}});
                             }
                             if (ProjectLinks[link].targetCardinality.getString() !== LocaleMain.none) {
-                                lnk.appendLabel({
-                                    attrs: {
-                                        text: {
-                                            text: ProjectLinks[link].targetCardinality.getString()
-                                        }
-                                    },
-                                    position: {
-                                        distance: -20
-                                    }
-                                });
+                                lnk.appendLabel({attrs: {text: {text: ProjectLinks[link].targetCardinality.getString()}},position: {distance: -20}});
                             }
-                            lnk.appendLabel({
-                                attrs: {
-                                    text: {
-                                        text: Links[ProjectLinks[link].iri].labels[this.props.projectLanguage]
-                                    }
-                                },
-                                position: {
-                                    distance: 0.5
-                                }
-                            });
+                            lnk.appendLabel({attrs: {text: {text: Links[ProjectLinks[link].iri].labels[this.props.projectLanguage]}},position: {distance: 0.5}});
                             lnk.source({id: ProjectLinks[link].source});
                             lnk.target({id: ProjectLinks[link].target});
                             lnk.vertices(ProjectLinks[link].vertices);

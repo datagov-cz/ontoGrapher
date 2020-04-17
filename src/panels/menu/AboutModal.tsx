@@ -21,6 +21,18 @@ export default class AboutModal extends React.Component<Props, State> {
             <Modal.Body>
                 <Tabs id={"changelog"}>
                     <Tab title={"April"} eventKey={1}>
+                        <h6>17.4.</h6>
+                        <ul>
+                            <li>PP load support: for now, the example PP is loaded.</li>
+                            <li>Packages now have names for each language</li>
+                            <li>Root-level packages now act as vocabularies: naming them affects the inScheme of contained elements</li>
+                            <li>Icon now shown to indicate loading</li>
+                            <li>Packages can now be "default" - newly created elements automatically appear in them</li>
+                            <li>"Set default package" button on hover on package added</li>
+                            <li>Elements cannot be in the root anymore, they have to be in a package</li>
+                            <li>Multiple stereotype viewing <b>(not editing)</b> support</li>
+                            <li>Parent package now opens on creation of a subpackage</li>
+                        </ul>
                         <h6>13.4.</h6>
                         <ul>
                             <li>Export refactoring</li>

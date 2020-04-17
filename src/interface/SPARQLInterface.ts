@@ -9,9 +9,9 @@ import {AttributeType} from "../components/AttributeType";
 import {SourceData} from "../components/SourceData";
 import * as VariableLoader from "../var/VariableLoader";
 
-export function getLinks(name:string, jsonData: {[key:string]: any}, callback: Function){
+export async function getLinks(name:string, jsonData: {[key:string]: any}, callback: Function){
     if (!(jsonData.sourceIRI in Schemes)){
-        getScheme(jsonData.sourceIRI, jsonData.endpoint, function () {
+        await getScheme(jsonData.sourceIRI, jsonData.endpoint, function () {
         });
     }
     // let values: string[] = [];
@@ -43,7 +43,7 @@ export function getLinks(name:string, jsonData: {[key:string]: any}, callback: F
     //     query += "}";
     // }
     let q = jsonData.endpoint + "?query=" + encodeURIComponent(query) + "&format=json";
-    fetch(q)
+    await fetch(q)
         .then(response => {
             return response.json();
         })
@@ -91,9 +91,9 @@ export function getLinks(name:string, jsonData: {[key:string]: any}, callback: F
         })
 }
 
-export function getStereotypes(name: string, jsonData: { [key: string]: any }, callback: Function) {
+export async function getStereotypes(name: string, jsonData: { [key: string]: any }, callback: Function) {
     if (!(jsonData.sourceIRI in Schemes)){
-        getScheme(jsonData.sourceIRI, jsonData.endpoint, function () {
+        await getScheme(jsonData.sourceIRI, jsonData.endpoint, function () {
         });
     }
     let values: string[] = [];
@@ -118,7 +118,7 @@ export function getStereotypes(name: string, jsonData: { [key: string]: any }, c
         "}"
     ].join(" ");
     let q = jsonData.endpoint + "?query=" + encodeURIComponent(query) + "&format=json";
-    fetch(q)
+    await fetch(q)
         .then(response => {
             return response.json();
         })
@@ -162,7 +162,7 @@ export function getStereotypes(name: string, jsonData: { [key: string]: any }, c
         })
 }
 
-export function getSubclasses(superIRI: string, jsonData: { [key: string]: any }, subclassIRI: string, name: string, callback:Function) {
+export async function getSubclasses(superIRI: string, jsonData: { [key: string]: any }, subclassIRI: string, name: string, callback:Function) {
     let query = [
         "SELECT DISTINCT ?term ?termLabel ?termType ?termDefinition ?scheme",
         "WHERE {",
@@ -175,7 +175,7 @@ export function getSubclasses(superIRI: string, jsonData: { [key: string]: any }
         "}"
     ].join(" ");
     let q = jsonData.endpoint + "?query=" + encodeURIComponent(query) + "&format=json";
-    fetch(q)
+    await fetch(q)
         .then(response => {
             return response.json();
         })
@@ -231,9 +231,9 @@ export function getSubclasses(superIRI: string, jsonData: { [key: string]: any }
         })
 }
 
-export function getElementsAsPackage(name: string, jsonData: { [key: string]: any }, callback: Function) {
+export async function getElementsAsModel(name: string, jsonData: { [key: string]: any }, callback: Function) {
     if (!(jsonData.sourceIRI in Schemes)){
-        getScheme(jsonData.sourceIRI, jsonData.endpoint, function () {
+        await getScheme(jsonData.sourceIRI, jsonData.endpoint, function () {
         });
     }
     let query = [
@@ -250,7 +250,7 @@ export function getElementsAsPackage(name: string, jsonData: { [key: string]: an
         "}"
     ].join(" ");
     let q = jsonData.endpoint + "?query=" + encodeURIComponent(query) + "&format=json";
-    fetch(q)
+    await fetch(q)
         .then(response => {
             return response.json();
         })
@@ -263,7 +263,7 @@ export function getElementsAsPackage(name: string, jsonData: { [key: string]: an
                         if (result.skosLabel !== undefined) ModelElements[result.term.value].skos.prefLabel[result.skosLabel['xml:lang']] = result.skosLabel.value;
                         if (result.skosDefinition !== undefined) ModelElements[result.term.value].skos.definition[result.skosDefinition['xml:lang']] = result.skosDefinition.value;
                     } else {
-                        Helper.addModelTP(new SourceData(result.termLabel.value, result.term.value, result.termDefinition === undefined ? "" : result.termDefinition.value, name));
+                        Helper.addModelTP(new SourceData(result.termLabel.value, result.term.value, result.termDefinition === undefined ? "" : result.termDefinition.value, jsonData.sourceIRI));
                         ModelElements[result.term.value].skos.prefLabel = {};
                         ModelElements[result.term.value].skos.definition = {};
                         ModelElements[result.term.value].skos.inScheme = jsonData.sourceIRI;
@@ -281,7 +281,7 @@ export function getElementsAsPackage(name: string, jsonData: { [key: string]: an
         })
 }
 
-export function getScheme(iri: string, endpoint: string, callback: Function) {
+export async function getScheme(iri: string, endpoint: string, callback: Function) {
     loading.load++;
     let query = [
         "SELECT DISTINCT ?term ?termLabel ",
@@ -289,8 +289,8 @@ export function getScheme(iri: string, endpoint: string, callback: Function) {
         "<" + iri + "> rdfs:label ?termLabel",
         "}"
     ].join(" ");
-    let q = endpoint + "?query=" + encodeURIComponent(query) + "&format=json";
-    fetch(q).then(response => {
+    let q = endpoint + "?query=" + encodeURIComponent(query);
+    await fetch(q, {headers: {'Accept': 'application/json'}}).then(response => {
         return response.json();
     }).then(data => {
             for (let result of data.results.bindings) {

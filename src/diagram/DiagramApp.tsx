@@ -24,8 +24,10 @@ import DetailPanel from "../panels/DetailPanel";
 import {getVocabulariesFromJSONSource} from "../interface/JSONInterface";
 import * as SemanticWebInterface from "../interface/SemanticWebInterface";
 import {Defaults} from "../config/Defaults";
-import {getModelName, getName, loadDiagram, saveDiagram} from "../misc/Helper";
+import {getModelName, getStereotypeList, loadDiagram, saveDiagram} from "../misc/Helper";
 import {PackageNode} from "../components/PackageNode";
+import {getContext} from "../interface/ContextInterface";
+import {initLanguageObject} from "../var/VariableLoader";
 
 interface DiagramAppProps{
     readonly?: boolean;
@@ -47,6 +49,7 @@ interface DiagramAppState{
     exportString: string;
     selectedLink: string;
     detailPanelHidden: boolean;
+    loading: boolean;
     //theme: "light" | "dark";
 }
 
@@ -76,7 +79,8 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
             projectLanguage: Object.keys(Languages)[0],
             selectedLink: Object.keys(Links)[0],
             saveString: "",
-            detailPanelHidden: false
+            detailPanelHidden: false,
+            loading: true
         });
 
 
@@ -105,11 +109,24 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
         }
         if (this.props.loadDefaultVocabularies){
             getVocabulariesFromJSONSource(Defaults.defaultVocabularies, (result: boolean)=>{
-                this.forceUpdate();
+            }).then(()=>{
                 this.handleChangeSelectedLink(Object.keys(Links)[0]);
-                this.elementPanel.current?.update();
+                getContext(
+                    "http://onto.fel.cvut.cz:7200/repositories/kodi-pracovni-prostor-sample",
+                    "http://example.org/kodi/slovnikovy-kontext",
+                    "application/json",
+                    "http://example.org/kodi/pouze-pro-cteni",
+                    (message) => console.log(message)
+                ).then(()=>{
+                    this.forceUpdate();
+                    this.elementPanel.current?.update();
+                    ProjectSettings.selectedPackage = PackageRoot.children[0];
+                    PackageRoot.name = initLanguageObject(Locale.root);
+                    this.setState({loading: false});
+                })
             });
         }
+
 
     }
 
@@ -122,7 +139,7 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
         document.title = ProjectSettings.name[languageCode] + " | " + Locale.ontoGrapher;
         graph.getCells().forEach((cell) =>{
             if (ProjectElements[cell.id].active) {
-                cell.prop('attrs/label/text', "«"+ getName(ProjectElements[cell.id].iri, this.state.projectLanguage).toLowerCase() +"»\n" + ProjectElements[cell.id].names[languageCode]);
+                cell.prop('attrs/label/text', getStereotypeList(ProjectElements[cell.id].iri, languageCode).map((str)=>"«"+str.toLowerCase()+"»\n").join("") + ProjectElements[cell.id].names[languageCode]);
             } else {
                 cell.prop('attrs/label/text', getModelName(ProjectElements[cell.id].iri, languageCode));
             }
@@ -282,6 +299,7 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
         return(<div className={"app"}>
             <MenuPanel
                 ref={this.menuPanel}
+                loading={this.state.loading}
                 newProject={this.newProject}
                 projectLanguage={this.state.projectLanguage}
                 saveProject={this.saveProject}
