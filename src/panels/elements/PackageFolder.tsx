@@ -236,6 +236,7 @@ export default class PackageFolder extends React.Component<Props, State> {
                                 Schemes[this.props.node.scheme].labels = this.state.inputEdit;
                             }
                             this.setState({modalEdit: false});
+                            this.props.update();
                         }}>{LocaleMenu.confirm}</Button>
                     </Modal.Footer>
                 </Modal>
