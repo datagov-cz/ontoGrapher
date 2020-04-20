@@ -22,7 +22,7 @@ interface DiagramPropsState {
 export default class DiagramCanvas extends React.Component<DiagramCanvasProps, DiagramPropsState>{
     private readonly canvasRef: React.RefObject<HTMLDivElement>;
     private paper: joint.dia.Paper | undefined;
-    private highlight: joint.dia.CellView;
+    private highlight: string;
     private magnet: boolean;
     private drag: {x: any, y: any} | undefined;
 
@@ -48,14 +48,34 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps, D
         }
         cell.resize(bbox.width, bbox.height);
         cell.position(bbox.x, bbox.y);
-        view.unhighlight();
-        view.highlight();
+        // view.unhighlight();
+        // view.highlight();
+        this.unHighlightCell(cell.id);
+        this.highlightCell(cell.id);
         for (let link of links){
             if(link.getSourceCell() === null){
                 link.source({id: id});
             } else {
                 link.target({id: id});
             }
+        }
+    }
+
+    highlightCell(id: string){
+        let cell = graph.getCell(id);
+        if (cell.isLink()){
+            cell.attr({line:{stroke:'#0000FF'}});
+        } else {
+            cell.attr({body:{stroke:'#0000FF'}});
+        }
+    }
+
+    unHighlightCell(id: string){
+        let cell = graph.getCell(id);
+        if (cell.isLink()){
+            cell.attr({line:{stroke:'#000000'}});
+        } else {
+            cell.attr({body:{stroke:'#000000'}});
         }
     }
 
@@ -79,14 +99,14 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps, D
             defaultConnectionPoint: { name: 'boundary', args: { selector: 'border' }},
             defaultLink: () => {
                 let link = new joint.shapes.standard.Link();
-                link.on('change', (lnk)=>{
-                    if (this.highlight){
-                        if (lnk.id === this.highlight.model.id){
-                            this.highlight.unhighlight();
-                            this.highlight.highlight();
-                        }
-                    }
-                });
+                // link.on('change', (lnk)=>{
+                //     if (this.highlight){
+                //         if (lnk.id === this.highlight.model.id){
+                //             this.highlight.unhighlight();
+                //             this.highlight.highlight();
+                //         }
+                //     }
+                // });
                 return link;
             }
         });
@@ -142,9 +162,9 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps, D
             'blank:pointerdown': (evt, x, y) => {
                 this.props.hideDetails();
                 for (let cell of graph.getCells()){
-                    this.paper?.findViewByModel(cell).unhighlight();
+                    this.unHighlightCell(cell.id);
+                   // this.paper?.findViewByModel(cell).unhighlight();
                 }
-                //panZoom.enablePan();
                 this.drag = {x: x, y: y}
             },
             'blank:pointermove': function(evt, x, y) {
@@ -301,10 +321,11 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps, D
                     let id = evt.currentTarget.getAttribute("model-id");
                     this.props.prepareDetails(id);
                     for (let cell of graph.getCells()){
-                        this.paper?.findViewByModel(cell).unhighlight();
+                        this.unHighlightCell(cell.id);
+                        //this.paper?.findViewByModel(cell).unhighlight();
                     }
-                    this.highlight = this.paper?.findViewByModel(graph.getCell(id));
-                    this.highlight.highlight();
+                    this.highlight = id;
+                    this.highlightCell(id);
                 }
             }
         });
@@ -338,28 +359,29 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps, D
                     let id = evt.currentTarget.getAttribute("model-id");
                     this.props.prepareDetails(id);
                     for (let cell of graph.getCells()){
-                        this.paper?.findViewByModel(cell).unhighlight();
+                        this.unHighlightCell(cell.id);
+                        //this.paper?.findViewByModel(cell).unhighlight();
                     }
-                    this.highlight = this.paper?.findViewByModel(graph.getCell(id));
-                    this.highlight.highlight();
+                    this.highlight = id;
+                    this.highlightCell(id);
                 }
             }
         });
-        graph.on('add', (cell) =>{
-            if (cell.isElement()){
-                cell.on('change:position',(element)=>{
-                    let links = graph.getConnectedLinks(element);
-                    for (let link of links){
-                        if (this.highlight){
-                            if (link.id === this.highlight.model.id){
-                                this.highlight.unhighlight();
-                                this.highlight.highlight();
-                            }
-                        }
-                    }
-                });
-            }
-        })
+        // graph.on('add', (cell) =>{
+        //     if (cell.isElement()){
+        //         cell.on('change:position',(element)=>{
+        //             let links = graph.getConnectedLinks(element);
+        //             for (let link of links){
+        //                 if (this.highlight){
+        //                     if (link.id === this.highlight.model.id){
+        //                         this.highlight.unhighlight();
+        //                         this.highlight.highlight();
+        //                     }
+        //                 }
+        //             }
+        //         });
+        //     }
+        // })
     }
     render() {
         return (<div

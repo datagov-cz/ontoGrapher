@@ -26,6 +26,7 @@ export default class AboutModal extends React.Component<Props, State> {
                             <li>Multiple stereotype support <b>(including editing)</b></li>
                             <li>Code cleanup</li>
                             <li>Fixed packages not rerendering with new name when renaming</li>
+                            <li>Fixed element and link highlighting rendering issues</li>
                         </ul>
                         <h6>17.4.</h6>
                         <ul>
