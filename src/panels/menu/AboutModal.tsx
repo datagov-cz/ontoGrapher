@@ -21,6 +21,12 @@ export default class AboutModal extends React.Component<Props, State> {
             <Modal.Body>
                 <Tabs id={"changelog"}>
                     <Tab title={"April"} eventKey={1}>
+                        <h6>20.4.</h6>
+                        <ul>
+                            <li>Multiple stereotype support <b>(including editing)</b></li>
+                            <li>Code cleanup</li>
+                            <li>Fixed packages not rerendering with new name when renaming</li>
+                        </ul>
                         <h6>17.4.</h6>
                         <ul>
                             <li>PP load support: for now, the example PP is loaded.</li>

@@ -19,7 +19,7 @@ import {Button, Form, Tab, Tabs} from "react-bootstrap";
 import TableList from "../components/TableList";
 import * as LocaleMenu from "../locale/LocaleMenu.json";
 import * as VariableLoader from "../var/VariableLoader";
-import {getStereotypeList} from "../misc/Helper";
+import {getName, getStereotypeList} from "../misc/Helper";
 // @ts-ignore
 import {RIEInput} from "riek";
 import {AttributeObject} from "../components/AttributeObject";
@@ -47,6 +47,7 @@ interface State {
     iriLink: string;
     iriModel: string;
     type: string;
+    newStereotype: string;
 }
 
 export default class DetailPanel extends React.Component<Props, State> {
@@ -67,7 +68,8 @@ export default class DetailPanel extends React.Component<Props, State> {
             iriModel: "",
             sourceCardinality: "0",
             targetCardinality: "0",
-            type: ""
+            type: "",
+            newStereotype: ""
         };
         this.hide = this.hide.bind(this);
         this.save = this.save.bind(this);
@@ -140,7 +142,8 @@ export default class DetailPanel extends React.Component<Props, State> {
                 inputConnections: ProjectElements[id].connections,
                 inputProperties: ProjectElements[id].properties,
                 iriElem: ProjectElements[id].iri,
-                type: "elem"
+                type: "elem",
+                newStereotype: Object.keys(Stereotypes)[0]
             });
         } else if (graph.getCell(id).isLink()) {
             this.setState({
@@ -261,17 +264,46 @@ export default class DetailPanel extends React.Component<Props, State> {
                                 <h5>{LocaleMenu.stereotype}</h5>
                                 <TableList>
                                     {this.state.iriElem.map(iri =>
-                                        <tr>
+                                        <tr key={iri}>
                                             <td><IRIlabel
                                                 label={
                                                     iri in Stereotypes ?
                                                         Stereotypes[iri].labels[this.props.projectLanguage]
                                                         : VocabularyElements[iri].labels[this.props.projectLanguage]
                                                 }
-                                                iri={iri}/></td>
+                                                iri={iri}/>
+                                                {this.state.iriElem.length === 1 ? "" : <button className={"buttonlink"} onClick={()=>{
+                                                    let result = this.state.iriElem;
+                                                    result.splice(result.indexOf(iri),1);
+                                                    this.setState({
+                                                        iriElem: result,
+                                                        changes: true
+                                                    });
+                                                }}>
+                                                    {LocaleMenu.deleteProjectName}</button>}
+                                            </td>
                                         </tr>
                                     )}
+                                    <tr>
+                                        <td>
+                                            <Form inline>
+                                                <Form.Control size="sm" as="select" value={this.state.newStereotype} onChange={(event)=>{this.setState({newStereotype: event.currentTarget.value})}}>
+                                                    {Object.keys(Stereotypes).map((stereotype) => (<option key={stereotype} value={stereotype}>{getName(stereotype, this.props.projectLanguage)}</option>))}
+                                                </Form.Control>
+                                                <Button size="sm" onClick={()=>{
+                                                    let result = this.state.iriElem;
+                                                    result.push(this.state.newStereotype);
+                                                    this.setState({
+                                                        iriElem: result,
+                                                        changes: true,
+                                                        newStereotype: Object.keys(Stereotypes)[0]
+                                                    })
+                                                }}>{LocaleMain.add}</Button>
+                                            </Form>
+                                        </td>
+                                    </tr>
                                 </TableList>
+
                                 <h5>{LocaleMenu.skoslabels}</h5>
                                 <TableList>
                                     {Object.keys(this.state.inputNames).map((language) => (

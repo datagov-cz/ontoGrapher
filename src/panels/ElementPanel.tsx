@@ -202,10 +202,10 @@ export default class ElementPanel extends React.Component<Props, State>{
 
     getFoldersDFS(arr: JSX.Element[], node: PackageNode, depth: number) {
         if (node !== PackageRoot) {
-            arr.push(<PackageFolder projectLanguage={this.props.projectLanguage} name={node.name[this.props.projectLanguage]} node={node} depth={depth} update={() => {
+            arr.push(<PackageFolder key={node.scheme} projectLanguage={this.props.projectLanguage} name={node.name[this.props.projectLanguage]} node={node} depth={depth} update={() => {
                 this.forceUpdate();
             }}>
-                {node.elements.map((id) => <PackageItem label={ProjectElements[id].names[this.props.projectLanguage]}
+                {node.elements.map((id) => <PackageItem key={id} label={ProjectElements[id].names[this.props.projectLanguage]}
                                                         depth={depth} id={id} update={() => {
                     this.forceUpdate();
                 }}/>)}

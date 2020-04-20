@@ -1,6 +1,6 @@
 import React from 'react';
 import {PackageNode} from "../../components/PackageNode";
-import {Button, Form, Modal, OverlayTrigger, Tooltip} from "react-bootstrap";
+import {Button, Modal, OverlayTrigger, Tooltip} from "react-bootstrap";
 import * as LocaleMain from "../../locale/LocaleMain.json";
 import * as LocaleMenu from "../../locale/LocaleMenu.json";
 import {Languages, PackageRoot, ProjectElements, ProjectSettings, Schemes} from "../../var/Variables";

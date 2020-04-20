@@ -2,7 +2,6 @@ import * as Locale from "../locale/LocaleMain.json";
 import {Cardinality} from "../components/Cardinality";
 import * as joint from 'jointjs';
 import {PackageNode} from "../components/PackageNode";
-import {initLanguageObject} from "./VariableLoader";
 
 export var graph = new joint.dia.Graph();
 

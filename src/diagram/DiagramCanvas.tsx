@@ -2,7 +2,7 @@
 import React from 'react';
 import * as joint from 'jointjs';
 import {graphElement} from "../graph/GraphElement";
-import {graph, Links, ProjectElements, ProjectLinks, ProjectSettings, Stereotypes} from "../var/Variables";
+import {graph, Links, ProjectElements, ProjectLinks, ProjectSettings} from "../var/Variables";
 import {addClass, addLink, addModel, getModelName, getName, getStereotypeList} from "../misc/Helper";
 import * as LocaleMain from "../locale/LocaleMain.json";
 

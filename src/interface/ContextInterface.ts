@@ -1,4 +1,3 @@
-import * as LocaleMain from "../locale/LocaleMain.json";
 import {ModelElements, PackageRoot, ProjectSettings, Schemes, Stereotypes, VocabularyElements} from "../var/Variables";
 import {graphElement} from "../graph/GraphElement";
 import {addClass} from "../misc/Helper";
