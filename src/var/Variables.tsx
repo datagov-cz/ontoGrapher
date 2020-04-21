@@ -2,6 +2,7 @@ import * as Locale from "../locale/LocaleMain.json";
 import {Cardinality} from "../components/Cardinality";
 import * as joint from 'jointjs';
 import {PackageNode} from "../components/PackageNode";
+import {parsePrefix} from "../misc/Helper";
 
 export var graph = new joint.dia.Graph();
 
@@ -43,6 +44,20 @@ export var ProjectLinks:{[key:string]: any} = {};
 //2 - rdfs:label
 export var ViewSettings: {[key:string]: any} = {
     display: 2
+};
+
+export var structures: {[key:string]: string} = {
+    "z-sgov-pojem:základní-struktura": parsePrefix("z-sgov-pojem", "základní-struktura"),
+    "z-sgov-pojem:legislativní-struktura": parsePrefix("z-sgov-pojem", "legislativní-struktura"),
+    "z-sgov-pojem:agendová-struktura": parsePrefix("z-sgov-pojem", "agendová-struktura"),
+    "z-sgov-pojem:datová-struktura": parsePrefix("z-sgov-pojem", "datová-struktura")
+};
+
+export var structuresShort: {[key:string]: string} = {
+    "z-sgov-pojem:základní-struktura": "základní",
+    "z-sgov-pojem:legislativní-struktura": "legislativní",
+    "z-sgov-pojem:agendová-struktura": "agendová",
+    "z-sgov-pojem:datová-struktura": "datová"
 };
 
 export var StereotypeCategories: string[] = [
@@ -90,12 +105,14 @@ export var ProjectSettings: {
     name: {[key:string]: string},
     description: {[key:string]: string},
     selectedDiagram: number,
-    selectedPackage: PackageNode
+    selectedPackage: PackageNode,
+    knowledgeStructure: string
 } = {
     name: {},
     description: {},
     selectedDiagram: 0,
-    selectedPackage: PackageRoot
+    selectedPackage: PackageRoot,
+    knowledgeStructure: Object.keys(structures)[0]
 };
 export var AttributeTypePool: {[key:string]: any} = {
     "http://www.w3.org/2001/XMLSchema#string": {name:"String", array: false},

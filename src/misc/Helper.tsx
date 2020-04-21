@@ -11,7 +11,7 @@ import {
     ProjectSettings,
     PropertyPool, Schemes,
     StereotypeCategories,
-    Stereotypes,
+    Stereotypes, structuresShort,
     ViewSettings, VocabularyElements
 } from "../var/Variables";
 import {SourceData} from "../components/SourceData";
@@ -92,8 +92,7 @@ export function parsePrefix(prefix: string, name: string){
 }
 
 export function createNewScheme() : string{
-    // TODO: change to more suitable IRI
-    let result = "https://slovník.gov.cz/vocabulary1";
+    let result = "https://slovník.gov.cz/" + structuresShort[ProjectSettings.knowledgeStructure] + "/" + LocaleMain.untitled;
     if (result in Schemes){
         let count = 1;
         while((result + "-" + count.toString(10)) in Schemes){
@@ -101,6 +100,7 @@ export function createNewScheme() : string{
         }
         result += "-" + count.toString(10);
     }
+    result = result.trim().replace(/\s/g, '-');
     Schemes[result] = {labels: initLanguageObject("")}
     return result;
 }
@@ -265,12 +265,11 @@ export function loadDiagram(load: {
     }
 }
 
-// https://slovník.gov.cz/základní/pojem/model
 export function exportModel(iri: string, type: string, knowledgeStructure: string, ksShort: string, callback: Function){
     const N3 = require('n3');
     const { namedNode, literal } = DataFactory;
     const writer = new N3.Writer({ prefixes: Prefixes });
-    let name: string = ProjectSettings.name[Object.keys(ProjectSettings.name)[0]].trim().replace(/\s/g, '-');;
+    let name: string = ProjectSettings.name[Object.keys(ProjectSettings.name)[0]].trim().replace(/\s/g, '-');
     let projectIRI = iri + ksShort + "/" + name;
     let project = namedNode(projectIRI);
     let termObj: {[key:string]: string} = {};

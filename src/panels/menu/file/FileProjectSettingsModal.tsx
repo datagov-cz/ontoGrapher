@@ -76,16 +76,17 @@ export default class FileProjectSettingsModal extends React.Component<Props, Sta
                     {Object.keys(Languages).map((language,i) => (
                         <tr key={i}>
                             <td>
-                                <RIEInput
-                                    className={"rieinput"}
-                                    value={this.state.name[language].length > 0 ? this.state.name[language] : "<blank>" }
-                                    change={(event: {textarea: string}) => {
-                                        this.handleChangeName(event, language);}}
-                                    propName="textarea"
-                                />
-                                &nbsp;
-                                <button className={"buttonlink"} onClick={() => this.deleteName(language)}>
-                                    {LocaleMenu.deleteProjectName}</button>
+                                {this.state.name[language].length > 0 ? this.state.name[language] : "<blank>" }
+                                {/*<RIEInput*/}
+                                {/*    className={"rieinput"}*/}
+                                {/*    value={this.state.name[language].length > 0 ? this.state.name[language] : "<blank>" }*/}
+                                {/*    change={(event: {textarea: string}) => {*/}
+                                {/*        this.handleChangeName(event, language);}}*/}
+                                {/*    propName="textarea"*/}
+                                {/*/>*/}
+                                {/*&nbsp;*/}
+                                {/*<button className={"buttonlink"} onClick={() => this.deleteName(language)}>*/}
+                                {/*    {LocaleMenu.deleteProjectName}</button>*/}
                             </td>
                             <td>{Languages[language]}</td>
                         </tr>

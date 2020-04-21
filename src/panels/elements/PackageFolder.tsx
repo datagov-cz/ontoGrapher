@@ -3,7 +3,7 @@ import {PackageNode} from "../../components/PackageNode";
 import {Button, Modal, OverlayTrigger, Tooltip} from "react-bootstrap";
 import * as LocaleMain from "../../locale/LocaleMain.json";
 import * as LocaleMenu from "../../locale/LocaleMenu.json";
-import {Languages, PackageRoot, ProjectElements, ProjectSettings, Schemes} from "../../var/Variables";
+import {Languages, PackageRoot, ProjectElements, ProjectSettings, Schemes, structuresShort} from "../../var/Variables";
 import TableList from "../../components/TableList";
 // @ts-ignore
 import {RIEInput} from "riek";
@@ -36,12 +36,6 @@ const tooltipD = (
 const tooltipDef = (
     <Tooltip id="tooltipS">{LocaleMain.setAsDefault}</Tooltip>
 );
-// const tooltipU = (
-//     <Tooltip id="tooltipS">{LocaleMain.moveUp}</Tooltip>
-// );
-// const tooltipB = (
-//     <Tooltip id="tooltipS">{LocaleMain.moveDown}</Tooltip>
-// );
 
 export default class PackageFolder extends React.Component<Props, State> {
     constructor(props: Props) {
@@ -216,7 +210,6 @@ export default class PackageFolder extends React.Component<Props, State> {
                             ))}
                         </TableList>
                         <br/>
-                        {/*// TODO: change schemes key when renaming scheme*/}
                         {/*// TODO: change header to vocabulary settings when editing root packages*/}
                         {PackageRoot.children.length === 1 ? <div><p>{LocaleMenu.cannotMovePackage}</p></div> : <div><h4>{LocaleMenu.movePackageTitle}</h4>
                             <p>{LocaleMenu.modalMovePackageDescription}</p>
@@ -233,6 +226,32 @@ export default class PackageFolder extends React.Component<Props, State> {
                         <Button onClick={() => {
                             this.props.node.name = this.state.inputEdit;
                             if (this.props.node.scheme) {
+                                let newkey = "";
+                                for (let lang in this.state.inputEdit){
+                                    if (this.state.inputEdit[lang].length > 0){
+                                        newkey = this.state.inputEdit[lang];
+                                        break;
+                                    }
+                                }
+                                if (newkey === "") newkey = LocaleMain.untitled;
+                                newkey = "https://slovník.gov.cz/" + structuresShort[ProjectSettings.knowledgeStructure] + "/" + newkey;
+                                if (newkey in Schemes){
+                                    let count = 1;
+                                    while((newkey + "-" + count.toString(10)) in Schemes){
+                                        count++;
+                                    }
+                                    newkey += "-" + count.toString(10);
+                                }
+                                for (let id in ProjectElements){
+                                    if (ProjectElements[id].scheme === this.props.node.scheme){
+                                        ProjectElements[id].scheme = newkey;
+                                    }
+                                }
+                                if (newkey !== this.props.node.scheme){
+                                    Schemes[newkey] = Schemes[this.props.node.scheme];
+                                    delete Schemes[this.props.node.scheme];
+                                }
+                                this.props.node.scheme = newkey;
                                 Schemes[this.props.node.scheme].labels = this.state.inputEdit;
                             }
                             this.setState({modalEdit: false});

@@ -185,7 +185,7 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
         this.saveProject();
     }
 
-    loadPackages(list: {trace: number[], elements: string[], name: string, root: boolean}[]){
+    loadPackages(list: {trace: number[], elements: string[], name: string, root: boolean, scheme: string}[]){
         for (let pkg of list){
             if (pkg.root){
                 PackageRoot.elements = pkg.elements;
@@ -198,6 +198,7 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
                     iter = iter.children[pkg.trace[i]];
                 }
                 let newpkg = new PackageNode(pkg.name, iter, false);
+                newpkg.scheme = pkg.scheme;
                 newpkg.elements = pkg.elements;
                 iter.children.push(newpkg);
                 for (let elem of pkg.elements){
@@ -233,7 +234,8 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
                 name: p.name,
                 trace: trace,
                 elements: p.elements,
-                root: p === PackageRoot
+                root: p === PackageRoot,
+                scheme: p.scheme
             });
 
             for (let sp of p.children){
