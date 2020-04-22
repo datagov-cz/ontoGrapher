@@ -46,19 +46,7 @@ export var ViewSettings: {[key:string]: any} = {
     display: 2
 };
 
-export var structures: {[key:string]: string} = {
-    "z-sgov-pojem:základní-struktura": parsePrefix("z-sgov-pojem", "základní-struktura"),
-    "z-sgov-pojem:legislativní-struktura": parsePrefix("z-sgov-pojem", "legislativní-struktura"),
-    "z-sgov-pojem:agendová-struktura": parsePrefix("z-sgov-pojem", "agendová-struktura"),
-    "z-sgov-pojem:datová-struktura": parsePrefix("z-sgov-pojem", "datová-struktura")
-};
 
-export var structuresShort: {[key:string]: string} = {
-    "z-sgov-pojem:základní-struktura": "základní",
-    "z-sgov-pojem:legislativní-struktura": "legislativní",
-    "z-sgov-pojem:agendová-struktura": "agendová",
-    "z-sgov-pojem:datová-struktura": "datová"
-};
 
 export var StereotypeCategories: string[] = [
 ];
@@ -73,6 +61,20 @@ export var Prefixes: {[key:string]: string} = {
     rdf: "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
     rdfs: "http://www.w3.org/2000/01/rdf-schema#",
     "z-sgov-pojem": "https://slovník.gov.cz/základní/pojem/"
+};
+
+export var structures: {[key:string]: string} = {
+    "z-sgov-pojem:základní-struktura": parsePrefix("z-sgov-pojem", "základní-struktura"),
+    "z-sgov-pojem:legislativní-struktura": parsePrefix("z-sgov-pojem", "legislativní-struktura"),
+    "z-sgov-pojem:agendová-struktura": parsePrefix("z-sgov-pojem", "agendová-struktura"),
+    "z-sgov-pojem:datová-struktura": parsePrefix("z-sgov-pojem", "datová-struktura")
+};
+
+export var structuresShort: {[key:string]: string} = {
+    "z-sgov-pojem:základní-struktura": "základní",
+    "z-sgov-pojem:legislativní-struktura": "legislativní",
+    "z-sgov-pojem:agendová-struktura": "agendová",
+    "z-sgov-pojem:datová-struktura": "datová"
 };
 
 export var PackageRoot: PackageNode = new PackageNode("Root", undefined, true, "");

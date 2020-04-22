@@ -4,7 +4,7 @@ import * as LocaleMenu from "../../../locale/LocaleMenu.json";
 import TableList from "../../../components/TableList";
 import {Languages, ProjectSettings} from "../../../var/Variables";
 // @ts-ignore
-import {RIEInput} from "riek";
+// import {RIEInput} from "riek";
 
 interface Props{
     modal: boolean;
