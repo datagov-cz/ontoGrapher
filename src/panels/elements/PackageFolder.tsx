@@ -190,8 +190,8 @@ export default class PackageFolder extends React.Component<Props, State> {
                         <Modal.Title>{LocaleMenu.modalEditPackageTitle}</Modal.Title>
                     </Modal.Header>
                     <Modal.Body>
-                        <h4>{LocaleMenu.namePackageTitle}</h4>
-                        <TableList headings={[LocaleMenu.title, LocaleMenu.language]}>
+                        <h5>{LocaleMenu.namePackageTitle}</h5>
+                        <TableList>
                             {Object.keys(Languages).map((language, i) => (
                                 <tr key={i}>
                                     <td>

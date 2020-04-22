@@ -23,7 +23,7 @@ export async function getContext(
         "ex:mc rdfs:label ?label .",
         "?vocabIRI owl:imports ?import .",
         "?import a skos:ConceptScheme .",
-        "?vocabIRI rdfs:label ?labelVocab.",
+        "?import rdfs:label ?labelVocab.",
         "OPTIONAL{",
         "?vocab a  ?ro . FILTER(?ro = <http://example.org/kodi/pouze-pro-cteni>) .",
         "}",
