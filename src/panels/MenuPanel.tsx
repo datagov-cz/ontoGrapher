@@ -61,7 +61,7 @@ export default class MenuPanel extends React.Component<MenuPanelProps, MenuPanel
               }
           </Nav>
             <Navbar.Text className="mr-sm-2">
-                {this.props.loading ? <Spinner animation="border" size="sm" /> : ""}
+                {this.props.loading ? <Spinner animation="border" size="sm" /> : ""}&nbsp;
                 {ProjectSettings.name[this.props.projectLanguage] === "" ? "<untitled>" : ProjectSettings.name[this.props.projectLanguage]}
             </Navbar.Text>
             <Form inline>

@@ -100,6 +100,7 @@ export default class PackageFolder extends React.Component<Props, State> {
         let oldpkg = ProjectElements[id].package;
         oldpkg.elements.splice(oldpkg.elements.indexOf(id), 1);
         ProjectElements[id].package = this.props.node;
+		if (this.props.node.scheme) ProjectElements[id].scheme = this.props.node.scheme;
         this.props.node.elements.push(id);
         this.props.update();
     }
@@ -146,7 +147,7 @@ export default class PackageFolder extends React.Component<Props, State> {
                 {(this.props.depth === 1 ? "" : "↘") + "📁" + this.props.name}
                 <span className={"packageOptions right"} style={{display: this.state.hover ? "inline-block" : "none"}}>
 
-                        {(this.props.depth === 1 && ProjectSettings.selectedPackage === this.props.node) ? "" :
+                        {(this.props.depth !== 1 || ProjectSettings.selectedPackage === this.props.node) ? "" :
                             <OverlayTrigger placement="bottom" overlay={tooltipDef}>
                                 <button className={"buttonlink"} onClick={(event) => {
                                     event.stopPropagation();

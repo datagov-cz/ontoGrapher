@@ -292,12 +292,15 @@ export default class DetailPanel extends React.Component<Props, State> {
                                                 </Form.Control>
                                                 <Button size="sm" onClick={()=>{
                                                     let result = this.state.iriElem;
-                                                    result.push(this.state.newStereotype);
+													if (!(this.state.iriElem.includes(this.state.newStereotype))){
+														result.push(this.state.newStereotype);
                                                     this.setState({
                                                         iriElem: result,
                                                         changes: true,
                                                         newStereotype: Object.keys(Stereotypes)[0]
                                                     })
+													}
+                                                    
                                                 }}>{LocaleMain.add}</Button>
                                             </Form>
                                         </td>
@@ -330,7 +333,7 @@ export default class DetailPanel extends React.Component<Props, State> {
                                     {Object.keys(Schemes[ProjectElements[this.state.model].scheme].labels).map(lang => (
                                         <tr>
                                             <td><IRIlabel
-                                                label={Schemes[ProjectElements[this.state.model].scheme].labels[lang]}
+                                                label={Schemes[ProjectElements[this.state.model].scheme].labels[lang].length === 0 ? "<blank>" : Schemes[ProjectElements[this.state.model].scheme].labels[lang]}
                                                 iri={ProjectElements[this.state.model].scheme}/></td>
                                             <td>{Languages[lang]}</td>
                                         </tr>
