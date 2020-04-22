@@ -12,6 +12,7 @@ interface MenuPanelProps{
     handleChangeLanguage: any;
     newProject: Function;
     loadProject: Function;
+    loadContext: Function;
     saveProject: Function;
     saveString: string;
     update: Function;
@@ -48,6 +49,7 @@ export default class MenuPanel extends React.Component<MenuPanelProps, MenuPanel
                         //saveProjectSettings={this.props.saveProjectSettings}
                         saveString={this.props.saveString}
                         update={() => {this.forceUpdate();}}
+                        loadContext={this.props.loadContext}
                         // projectName={this.props.projectName}
                         // projectDescription={this.props.projectDescription}
                         // theme={this.props.theme}
