@@ -71,6 +71,8 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 
         VariableLoader.initVars();
 
+        ProjectSettings.name = initLanguageObject("Fetching...");
+
         this.state = ({
             // projectName: VariableLoader.initLanguageObject(Locale.untitledProject),
             // projectDescription: VariableLoader.initLanguageObject(""),
@@ -116,13 +118,14 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
                     "http://example.org/kodi/slovnikovy-kontext",
                     "application/json",
                     "http://example.org/kodi/pouze-pro-cteni",
-                    (message) => console.log(message)
+                    (message) => {}
                 ).then(()=>{
                     this.forceUpdate();
                     this.elementPanel.current?.update();
                     ProjectSettings.selectedPackage = PackageRoot.children[0];
                     PackageRoot.name = initLanguageObject(Locale.root);
                     this.setState({loading: false});
+                    document.title = ProjectSettings.name[this.state.projectLanguage] + " | " + Locale.ontoGrapher;
                 })
             });
         }

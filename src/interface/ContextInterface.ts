@@ -3,6 +3,7 @@ import {graphElement} from "../graph/GraphElement";
 import {addClass} from "../misc/Helper";
 import {getScheme} from "./SPARQLInterface";
 import {PackageNode} from "../components/PackageNode";
+import * as Locale from "../locale/LocaleMain.json";
 
 export async function getContext(
     contextIRI: string,
@@ -10,6 +11,7 @@ export async function getContext(
     acceptType: string,
     readOnly: string,
     callback: (message: string) => any) {
+    callback(Locale.fetchingVocabularies);
     //get vocabularies
     let vocabularyQ = [
         "PREFIX ex: <http://example.org/>",
@@ -43,6 +45,7 @@ export async function getContext(
         ProjectSettings.name[result.label["xml:lang"]] = result.label.value;
     });
     //load terms
+    callback(Locale.loadingTerms);
     for (let vocab in vocabularies) {
         if (!(vocab in Schemes)) getScheme(vocab, contextIRI, function () {});
         let termQ = [

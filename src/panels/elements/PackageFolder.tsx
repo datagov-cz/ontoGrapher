@@ -160,6 +160,7 @@ export default class PackageFolder extends React.Component<Props, State> {
                                                                                       event.stopPropagation();
                                                                                       this.props.node.children.push(new PackageNode(LocaleMain.untitledPackage, this.props.node));
                                                                                       this.props.node.open = true;
+                                                                                      this.setState({open: true});
                                                                                       this.props.update();
                                                                                   }}><span role="img"
                                                                                            aria-label={""}>➕</span></button></OverlayTrigger>
