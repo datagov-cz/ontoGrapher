@@ -114,7 +114,7 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
             }).then(()=>{
                 this.handleChangeSelectedLink(Object.keys(Links)[0]);
                 getContext(
-                    "http://onto.fel.cvut.cz:7200/repositories/kodi-pracovni-prostor-sample",
+                    "https://onto.fel.cvut.cz:7200/repositories/kodi-pracovni-prostor-sample",
                     "http://example.org/kodi/slovnikovy-kontext",
                     "application/json",
                     "http://example.org/kodi/pouze-pro-cteni",
