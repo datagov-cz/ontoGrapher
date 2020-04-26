@@ -23,6 +23,7 @@ export async function testContext(contextIRI: string){
         "?import a skos:ConceptScheme .",
         "}",
     ].join(" ");
+    console.log(vocabularyQ);
     let result: {labels: string[], imports: string[], error: any} = {labels: [], imports: [], error: undefined};
     let vocabularyQurl = contextIRI + "?query=" + encodeURIComponent(vocabularyQ);
     let response: {}[] = await fetch(vocabularyQurl,
