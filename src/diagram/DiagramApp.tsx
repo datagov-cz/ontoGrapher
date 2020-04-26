@@ -96,6 +96,30 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
         //this.saveProjectSettings = this.saveProjectSettings.bind(this);
         //this.handleChangeSelectedModel = this.handleChangeSelectedModel.bind(this);
         this.prepareDetails = this.prepareDetails.bind(this);
+        this.loadVocabularies = this.loadVocabularies.bind(this);
+    }
+
+    loadVocabularies(contextIRI: string, reload: boolean = false){
+        if (reload){
+            this.newProject();
+            this.setState({loading: true});
+        }
+        getVocabulariesFromJSONSource(Defaults.defaultVocabularies, (result: boolean)=>{
+        }).then(()=>{
+            this.handleChangeSelectedLink(Object.keys(Links)[0]);
+            getContext(
+                contextIRI,
+                "application/json",
+                (message) => {}
+            ).then(()=>{
+                this.forceUpdate();
+                this.elementPanel.current?.update();
+                ProjectSettings.selectedPackage = PackageRoot.children[0];
+                PackageRoot.name = initLanguageObject(Locale.root);
+                this.setState({loading: false});
+                document.title = ProjectSettings.name[this.state.projectLanguage] + " | " + Locale.ontoGrapher;
+            })
+        });
     }
 
     componentDidMount(): void {
@@ -110,24 +134,7 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
             });
         }
         if (this.props.loadDefaultVocabularies){
-            getVocabulariesFromJSONSource(Defaults.defaultVocabularies, (result: boolean)=>{
-            }).then(()=>{
-                this.handleChangeSelectedLink(Object.keys(Links)[0]);
-                getContext(
-                    "https://onto.fel.cvut.cz:7200/repositories/kodi-pracovni-prostor-sample",
-                    "http://example.org/kodi/slovnikovy-kontext",
-                    "application/json",
-                    "http://example.org/kodi/pouze-pro-cteni",
-                    (message) => {}
-                ).then(()=>{
-                    this.forceUpdate();
-                    this.elementPanel.current?.update();
-                    ProjectSettings.selectedPackage = PackageRoot.children[0];
-                    PackageRoot.name = initLanguageObject(Locale.root);
-                    this.setState({loading: false});
-                    document.title = ProjectSettings.name[this.state.projectLanguage] + " | " + Locale.ontoGrapher;
-                })
-            });
+            this.loadVocabularies("https://onto.fel.cvut.cz:7200/repositories/kodi-pracovni-prostor-sample");
         }
 
 
@@ -141,10 +148,13 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
         this.setState({projectLanguage: languageCode});
         document.title = ProjectSettings.name[languageCode] + " | " + Locale.ontoGrapher;
         graph.getCells().forEach((cell) =>{
-            if (ProjectElements[cell.id].active) {
-                cell.prop('attrs/label/text', getStereotypeList(ProjectElements[cell.id].iri, languageCode).map((str)=>"«"+str.toLowerCase()+"»\n").join("") + ProjectElements[cell.id].names[languageCode]);
-            } else {
-                cell.prop('attrs/label/text', getModelName(ProjectElements[cell.id].iri, languageCode));
+            if (ProjectElements[cell.id]){
+
+                if (ProjectElements[cell.id].active) {
+                    cell.prop('attrs/label/text', getStereotypeList(ProjectElements[cell.id].iri, languageCode).map((str)=>"«"+str.toLowerCase()+"»\n").join("") + ProjectElements[cell.id].names[languageCode]);
+                } else {
+                    cell.prop('attrs/label/text', getModelName(ProjectElements[cell.id].iri, languageCode));
+                }
             }
         });
     }
@@ -309,6 +319,7 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
                 projectLanguage={this.state.projectLanguage}
                 saveProject={this.saveProject}
                 loadProject={this.loadProject}
+                loadContext={this.loadVocabularies}
                 //saveProjectSettings={this.saveProjectSettings}
                 saveString={this.state.saveString}
                 //theme={this.state.theme}

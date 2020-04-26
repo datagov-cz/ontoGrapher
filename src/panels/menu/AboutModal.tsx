@@ -21,6 +21,18 @@ export default class AboutModal extends React.Component<Props, State> {
             <Modal.Body>
                 <Tabs id={"changelog"}>
                     <Tab title={"April"} eventKey={1}>
+                        <h6>26.4.</h6>
+                        <ul>
+                            <li>Added connections + diagram tabs for models' detail panel</li>
+                            <li>Fixed definitions header showing despite no definitions fetched</li>
+                            <li>rdfs:domain and rdfs:range attributes now interpreted</li>
+                            <li>Types now interpreted correctly for models</li>
+                            <li>New import workspace feature</li>
+                            <li>New "Test connection to workspace" feature (in "Fetch workspace" dialogue)</li>
+                            <li>If elements of rdfs:domain & rdfs:range IRI are present, the relationship is automatically created</li>
+                            <li>Changed to d-sgov workspace ontology in fetching</li>
+                            <li>Modified SPARQL querying</li>
+                        </ul>
                         <h6>20.4.</h6>
                         <ul>
                             <li>Multiple stereotype support <b>(including editing)</b></li>

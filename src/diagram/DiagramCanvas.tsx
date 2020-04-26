@@ -2,7 +2,7 @@
 import React from 'react';
 import * as joint from 'jointjs';
 import {graphElement} from "../graph/GraphElement";
-import {graph, Links, ProjectElements, ProjectLinks, ProjectSettings} from "../var/Variables";
+import {graph, Links, ModelElements, ProjectElements, ProjectLinks, ProjectSettings} from "../var/Variables";
 import {addClass, addLink, addModel, getModelName, getName, getStereotypeList} from "../misc/Helper";
 import * as LocaleMain from "../locale/LocaleMain.json";
 
@@ -414,7 +414,7 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps, D
                 if (data.package) {
                     addClass(cls.id, [data.elem], this.props.projectLanguage, ProjectSettings.selectedPackage.scheme, ProjectSettings.selectedPackage);
                 } else if (data.type === "stereotype" && !data.package){
-                    addModel(cls.id, [data.elem], this.props.projectLanguage, name);
+                    addModel(cls.id, data.elem, this.props.projectLanguage, name);
                     ProjectElements[cls.id].active = false;
                 }
                 if (data.type === "package"){
@@ -453,6 +453,36 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps, D
                             lnk.target({id: ProjectLinks[link].target});
                             lnk.vertices(ProjectLinks[link].vertices);
                             lnk.addTo(graph);
+                        }
+                    }
+                }
+                for (let iri in ModelElements){
+                    if (data.elem === ModelElements[iri].domain){
+                        for (let cell of graph.getCells()){
+                            if (ProjectElements[cell.id].iri && ProjectElements[cell.id].iri === ModelElements[iri].range){
+                                let link = new joint.shapes.standard.Link();
+                                link.source({id: cls.id});
+                                link.target({id: cell.id});
+                                addLink(link.id, iri, cls.id, cell.id);
+                                link.appendLabel({attrs: {text: {text: ModelElements[iri].labels[this.props.projectLanguage]}},position: {distance: 0.5}});
+                                link.addTo(graph);
+                                ProjectElements[cls.id].connections.push(cell.id);
+                                break;
+                            }
+                        }
+                    }
+                    if (data.elem === ModelElements[iri].range){
+                        for (let cell of graph.getCells()){
+                            if (ProjectElements[cell.id].iri && ProjectElements[cell.id].iri === ModelElements[iri].domain){
+                                let link = new joint.shapes.standard.Link();
+                                link.target({id: cls.id});
+                                link.source({id: cell.id});
+                                addLink(link.id, iri, cell.id, cls.id);
+                                link.appendLabel({attrs: {text: {text: ModelElements[iri].labels[this.props.projectLanguage]}},position: {distance: 0.5}});
+                                link.addTo(graph);
+                                ProjectElements[cell.id].connections.push(cls.id);
+                                break;
+                            }
                         }
                     }
                 }

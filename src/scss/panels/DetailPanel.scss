@@ -1,5 +1,5 @@
 .details{
-  overflow: visible;
+  overflow: auto;
   word-wrap: break-word;
   background-color: white;
   float:right;
@@ -7,7 +7,7 @@
   //position: absolute;
   //right: 0;
   //top: 56px;
-  height: 100%;
+  height: calc(100vh - 56px) !important;
   max-width: 600px;
   .detailTitle{
     margin: 10px 20px;

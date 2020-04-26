@@ -212,7 +212,6 @@ export default class PackageFolder extends React.Component<Props, State> {
                             ))}
                         </TableList>
                         <br/>
-                        {/*// TODO: change header to vocabulary settings when editing root packages*/}
                         {PackageRoot.children.length === 1 ? <div><p>{LocaleMenu.cannotMovePackage}</p></div> : <div><h4>{LocaleMenu.movePackageTitle}</h4>
                             <p>{LocaleMenu.modalMovePackageDescription}</p>
                             <TableList headings={[LocaleMenu.package]}>

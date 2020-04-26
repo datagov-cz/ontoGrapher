@@ -244,9 +244,11 @@ export async function getElementsAsModel(name: string, jsonData: { [key: string]
         "?term a ?termType.",
         "?term skos:prefLabel ?skosLabel.",
         "?term skos:definition ?skosDefinition.",
-        "FILTER (?termType IN (<" + jsonData.classIRI.join(">,<") + ">)).",
-        "FILTER (?termType NOT IN (<" + jsonData.relationshipIRI.join(">,<") + ">)).",
+        // "FILTER (?termType IN (<" + jsonData.classIRI.join(">,<") + ">)).",
+        // "FILTER (?termType NOT IN (<" + jsonData.relationshipIRI.join(">,<") + ">)).",
         "OPTIONAL {?term <" + jsonData.definitionIRI + "> ?termDefinition. }",
+        "OPTIONAL {?term rdfs:range ?range.}",
+        "OPTIONAL {?term rdfs:domain ?domain.}",
         "}"
     ].join(" ");
     let q = jsonData.endpoint + "?query=" + encodeURIComponent(query) + "&format=json";
@@ -256,21 +258,31 @@ export async function getElementsAsModel(name: string, jsonData: { [key: string]
         })
         .then(data => {
             for (let result of data.results.bindings) {
-                if (jsonData.classIRI.indexOf(result.termType.value) > -1) {
                     if (result.term.value in ModelElements) {
                         if (result.termLabel !== undefined) ModelElements[result.term.value].labels[result.termLabel['xml:lang']] = result.termLabel.value;
                         if (result.termDefinition !== undefined) ModelElements[result.term.value].definitions[result.termDefinition['xml:lang']] = result.termDefinition.value;
                         if (result.skosLabel !== undefined) ModelElements[result.term.value].skos.prefLabel[result.skosLabel['xml:lang']] = result.skosLabel.value;
                         if (result.skosDefinition !== undefined) ModelElements[result.term.value].skos.definition[result.skosDefinition['xml:lang']] = result.skosDefinition.value;
+                        if (result.termType !== undefined && result.termType.value in Stereotypes && !(ModelElements[result.term.value].iri.includes(result.termType.value))) {
+                            ModelElements[result.term.value].iri.push(result.termType.value);
+                        }
+                        if (result.domain !== undefined) ModelElements[result.term.value].terms[result.term.value].domain = result.domain.value;
+                        if (result.range !== undefined) ModelElements[result.term.value].terms[result.term.value].range = result.range.value;
                     } else {
                         Helper.addModelTP(new SourceData(result.termLabel.value, result.term.value, result.termDefinition === undefined ? "" : result.termDefinition.value, jsonData.sourceIRI));
+                        ModelElements[result.term.value].iri = [];
                         ModelElements[result.term.value].skos.prefLabel = {};
                         ModelElements[result.term.value].skos.definition = {};
                         ModelElements[result.term.value].skos.inScheme = jsonData.sourceIRI;
                         if (result.skosLabel !== undefined) ModelElements[result.term.value].skos.prefLabel[result.skosLabel['xml:lang']] = result.skosLabel.value;
                         if (result.skosDefinition !== undefined) ModelElements[result.term.value].skos.definition[result.skosDefinition['xml:lang']] = result.skosDefinition.value;
+                        if (result.termType !== undefined && result.termType.value in Stereotypes && !(ModelElements[result.term.value].iri.includes(result.termType.value))) {
+                            ModelElements[result.term.value].iri.push(result.termType.value);
+                        }
+                        if (result.domain !== undefined) ModelElements[result.term.value].terms[result.term.value].domain = result.domain.value;
+                        if (result.range !== undefined) ModelElements[result.term.value].terms[result.term.value].range = result.range.value;
                     }
-                }
+
             }
             loading.loaded++;
             callback(true);

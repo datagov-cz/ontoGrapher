@@ -5,27 +5,71 @@ import {getScheme} from "./SPARQLInterface";
 import {PackageNode} from "../components/PackageNode";
 import * as Locale from "../locale/LocaleMain.json";
 
-export async function getContext(
-    contextIRI: string,
-    vocabularyType: string,
-    acceptType: string,
-    readOnly: string,
-    callback: (message: string) => any) {
-    callback(Locale.fetchingVocabularies);
-    //get vocabularies
+export async function testContext(contextIRI: string){
     let vocabularyQ = [
         "PREFIX ex: <http://example.org/>",
         "PREFIX owl: <http://www.w3.org/2002/07/owl#>",
         "PREFIX skos: <http://www.w3.org/2004/02/skos/core#>",
-        "select ?vocab (bound(?ro) as ?readOnly) ?labelVocab ?label ?vocabIRI ?import where {",
-        "?vocab a <http://example.org/kodi/slovnikovy-kontext> .",
-        "?vocab <http://example.org/kodi/obsahuje-slovnik> ?vocabIRI .",
-        "ex:mc rdfs:label ?label .",
+        "select ?vocab ?label ?vocabIRI where {",
+        "?vocab a ?vocabType .",
+        "VALUES ?vocabType {",
+        "<https://slovník.gov.cz/datový/pracovní-prostor/pojem/slovníkový-kontext>",
+        "<https://slovník.gov.cz/datový/pracovní-prostor/pojem/slovníkový-kontext-pouze-pro-čtení>",
+        "}",
+        "?vocab <https://slovník.gov.cz/datový/pracovní-prostor/pojem/obsahuje-slovník> ?vocabIRI .",
+        "?context a <https://slovník.gov.cz/datový/pracovní-prostor/pojem/metadatový-kontext> .",
+        "?context rdfs:label ?label .",
+        "?vocabIRI owl:imports ?import .",
+        "?import a skos:ConceptScheme .",
+        "}",
+    ].join(" ");
+    let result: {labels: string[], imports: string[], error: any} = {labels: [], imports: [], error: undefined};
+    let vocabularyQurl = contextIRI + "?query=" + encodeURIComponent(vocabularyQ);
+    let response: {}[] = await fetch(vocabularyQurl,
+        {headers: {'Accept': 'application/json'}})
+        .then((response) => response.json())
+        .then((data) => {
+            return data.results.bindings;
+        }).catch((error)=>{
+            console.log(error);
+            result.error = error;
+        });
+    if (result.error) return result;
+    else {
+        response.forEach((res:{[key:string]:any})=>{
+            if (!(result.labels.includes(res.label.value))) result.labels.push(res.label.value);
+            if (!(result.imports.includes(res.vocabIRI.value))) result.imports.push(res.vocabIRI.value);
+        });
+        return result;
+    }
+}
+
+export async function getContext(
+    contextIRI: string,
+    acceptType: string,
+    callback: (message: string) => any) {
+    callback(Locale.fetchingVocabularies);
+    //get vocabularies
+    let vocabularyQ = [
+        "PREFIX owl: <http://www.w3.org/2002/07/owl#>",
+        "PREFIX skos: <http://www.w3.org/2004/02/skos/core#>",
+        "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>",
+        "select ?vocab (bound(?ro) as ?readOnly) ?labelVocab ?label ?vocabIRI ?import",
+        "where {",
+        "?vocab a ?vocabType .",
+        "VALUES ?vocabType {",
+        "<https://slovník.gov.cz/datový/pracovní-prostor/pojem/slovníkový-kontext>",
+        "<https://slovník.gov.cz/datový/pracovní-prostor/pojem/slovníkový-kontext-pouze-pro-čtení>",
+        "}",
+        "?vocab <https://slovník.gov.cz/datový/pracovní-prostor/pojem/obsahuje-slovník> ?vocabIRI . ",
+        "?context a <https://slovník.gov.cz/datový/pracovní-prostor/pojem/metadatový-kontext> .",
+        "?context rdfs:label ?label .",
         "?vocabIRI owl:imports ?import .",
         "?import a skos:ConceptScheme .",
         "?import rdfs:label ?labelVocab.",
         "OPTIONAL{",
-        "?vocab a  ?ro . FILTER(?ro = <http://example.org/kodi/pouze-pro-cteni>) .",
+        "?vocab a  ?ro .",
+        "FILTER(?ro = <https://slovník.gov.cz/datový/pracovní-prostor/pojem/slovníkový-kontext-pouze-pro-čtení>) . ",
         "}",
         "}",
     ].join(" ");
@@ -47,15 +91,18 @@ export async function getContext(
     //load terms
     callback(Locale.loadingTerms);
     for (let vocab in vocabularies) {
-        if (!(vocab in Schemes)) getScheme(vocab, contextIRI, function () {});
+        if (!(vocab in Schemes)) getScheme(vocab, contextIRI, function (){});
         let termQ = [
             "PREFIX skos: <http://www.w3.org/2004/02/skos/core#>",
-            "SELECT DISTINCT ?term ?termType ?skosLabel ?skosDefinition",
+            "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>",
+            "SELECT DISTINCT ?term ?termType ?skosLabel ?skosDefinition ?domain ?range",
             "WHERE {",
             "?term skos:inScheme <" + vocab + ">.",
             "?term a ?termType.",
             "OPTIONAL {?term skos:prefLabel ?skosLabel.}",
             "OPTIONAL {?term skos:definition ?skosDefinition.}",
+            "OPTIONAL {?term rdfs:range ?range.}",
+            "OPTIONAL {?term rdfs:domain ?domain.}",
             "}"
         ].join(" ");
         let termsQuery = contextIRI + "?query=" + encodeURIComponent(termQ);
@@ -99,6 +146,8 @@ export async function getContext(
                 if (result.termType !== undefined && result.termType.value in Stereotypes && !(vocabularies[vocab].terms[result.term.value].iri.includes(result.termType.value))) {
                     vocabularies[vocab].terms[result.term.value].iri.push(result.termType.value);
                 }
+                if (result.domain !== undefined) vocabularies[vocab].terms[result.term.value].domain = result.domain.value;
+                if (result.range !== undefined) vocabularies[vocab].terms[result.term.value].range = result.range.value;
             }
         }
         //put into packages

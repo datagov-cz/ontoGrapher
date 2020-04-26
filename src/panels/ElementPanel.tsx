@@ -126,7 +126,6 @@ export default class ElementPanel extends React.Component<Props, State>{
         this.links = result2;
     }
 
-    //TODO: unfinished function
     handleGetInfo(element: string) {
     }
 
