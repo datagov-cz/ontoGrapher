@@ -24,7 +24,7 @@ import DetailPanel from "../panels/DetailPanel";
 import {getVocabulariesFromJSONSource} from "../interface/JSONInterface";
 import * as SemanticWebInterface from "../interface/SemanticWebInterface";
 import {Defaults} from "../config/Defaults";
-import {getModelName, getStereotypeList, loadDiagram, saveDiagram} from "../misc/Helper";
+import {addDomainOfIRIs, getModelName, getStereotypeList, loadDiagram, saveDiagram} from "../misc/Helper";
 import {PackageNode} from "../components/PackageNode";
 import {getContext} from "../interface/ContextInterface";
 import {initLanguageObject} from "../var/VariableLoader";
@@ -99,7 +99,7 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
         this.loadVocabularies = this.loadVocabularies.bind(this);
     }
 
-    loadVocabularies(contextIRI: string, reload: boolean = false){
+    loadVocabularies(contextIRI: string, contextEndpoint: string, reload: boolean = false){
         if (reload){
             this.newProject();
             this.setState({loading: true});
@@ -109,6 +109,7 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
             this.handleChangeSelectedLink(Object.keys(Links)[0]);
             getContext(
                 contextIRI,
+                contextEndpoint,
                 "application/json",
                 (message) => {}
             ).then(()=>{
@@ -117,6 +118,7 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
                 ProjectSettings.selectedPackage = PackageRoot.children[0];
                 PackageRoot.name = initLanguageObject(Locale.root);
                 this.setState({loading: false});
+                addDomainOfIRIs();
                 document.title = ProjectSettings.name[this.state.projectLanguage] + " | " + Locale.ontoGrapher;
             })
         });
@@ -134,7 +136,9 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
             });
         }
         if (this.props.loadDefaultVocabularies){
-            this.loadVocabularies("https://onto.fel.cvut.cz:7200/repositories/kodi-pracovni-prostor-sample");
+            this.loadVocabularies(
+                "http://example.org/pracovni-prostor/metadatový-kontext-123"
+                ,"https://onto.fel.cvut.cz:7200/repositories/kodi-pracovni-prostor-sample");
         }
 
 

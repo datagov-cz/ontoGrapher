@@ -274,6 +274,7 @@ export async function getElementsAsModel(name: string, jsonData: { [key: string]
                         ModelElements[result.term.value].skos.prefLabel = {};
                         ModelElements[result.term.value].skos.definition = {};
                         ModelElements[result.term.value].skos.inScheme = jsonData.sourceIRI;
+                        ModelElements[result.term.value].domainOf = [];
                         if (result.skosLabel !== undefined) ModelElements[result.term.value].skos.prefLabel[result.skosLabel['xml:lang']] = result.skosLabel.value;
                         if (result.skosDefinition !== undefined) ModelElements[result.term.value].skos.definition[result.skosDefinition['xml:lang']] = result.skosDefinition.value;
                         if (result.termType !== undefined && result.termType.value in Stereotypes && !(ModelElements[result.term.value].iri.includes(result.termType.value))) {

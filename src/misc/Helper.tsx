@@ -146,6 +146,16 @@ export function addClass(
     ProjectElements[id] = result;
 }
 
+export function addDomainOfIRIs(){
+    for (let iri in ModelElements){
+        if (ModelElements[iri].domain && ModelElements[ModelElements[iri].domain]){
+            if (!(ModelElements[ModelElements[iri].domain].domainOf.includes(iri))){
+                ModelElements[ModelElements[iri].domain].domainOf.push(iri);
+            }
+        }
+    }
+}
+
 export function addModel(id: string, iri: string, language: string, name: string) {
     let result: { [key: string]: any } = {};
     result["iri"] = iri;

@@ -256,7 +256,7 @@ export default class DetailPanel extends React.Component<Props, State> {
                     resizeHandles={['nw']}
                     className={"details"}>
                     <div>
-                        <h3>{LocaleMain.detailPanelTitle}</h3>
+                        <h3>{this.state.inputNames[this.props.projectLanguage].length > 0 ? this.state.inputNames[this.props.projectLanguage] : "<blank>"}</h3>
                         {this.state.changes ?
                             <p className={"bordered"}>{LocaleMain.saveChanges}<br/><br/><Button onClick={() => {
                                 this.save();
@@ -266,7 +266,8 @@ export default class DetailPanel extends React.Component<Props, State> {
                                 <h5>{LocaleMenu.stereotype}</h5>
                                 <TableList>
                                     {this.state.iriElem.map(iri =>
-                                        <tr key={iri}><IRIlabel
+                                        <tr key={iri}>
+                                            <IRIlabel
                                                 label={
                                                     iri in Stereotypes ?
                                                         Stereotypes[iri].labels[this.props.projectLanguage]
@@ -491,7 +492,6 @@ export default class DetailPanel extends React.Component<Props, State> {
                                         </Form.Control>
                                     </td>
                                 </tr>
-
                                 <tr>
                                     <td>
                                         <span>{LocaleMain.linkType}</span>
@@ -499,21 +499,6 @@ export default class DetailPanel extends React.Component<Props, State> {
                                     <IRIlabel label={this.state.iriLink in Links ?
                                         Links[this.state.iriLink].labels[this.props.projectLanguage] :
                                         ModelElements[this.state.iriLink].labels[this.props.projectLanguage]} iri={this.state.iriLink}/>
-                                    {/*<td>*/}
-                                        {/*<Form.Control as="select" value={this.state.iriLink}*/}
-                                        {/*              onChange={(event: React.FormEvent<HTMLInputElement>) => {*/}
-                                        {/*                  this.setState({*/}
-                                        {/*                      iriLink: event.currentTarget.value,*/}
-                                        {/*                      changes: true*/}
-                                        {/*                  });*/}
-                                        {/*              }*/}
-                                        {/*              }>*/}
-                                        {/*    {Object.keys(Links).map((iri, i) =>*/}
-                                        {/*        (<option key={i}*/}
-                                        {/*                 value={iri}>{Links[iri].labels[this.props.projectLanguage]}</option>)*/}
-                                        {/*    )}*/}
-                                        {/*</Form.Control>*/}
-                                    {/*</td>*/}
                                 </tr>
                             </TableList>
                             {ModelElements[this.state.iriLink].domain && ModelElements[this.state.iriLink].range ?
@@ -601,7 +586,7 @@ export default class DetailPanel extends React.Component<Props, State> {
                     resizeHandles={['nw']}
                     className={"details"}>
                     <div>
-                        <h3>{LocaleMain.detailPanelModel}</h3>
+                        <h3>{ModelElements[this.state.iriModel].labels[this.props.projectLanguage].length > 0 ? ModelElements[this.state.iriModel].labels[this.props.projectLanguage] : "<blank>"}</h3>
                         <Tabs id={"detailsTabs"}>
                             <Tab eventKey={1} title={LocaleMain.description}>
                                 <h5>{LocaleMenu.stereotype}</h5>
@@ -684,8 +669,47 @@ export default class DetailPanel extends React.Component<Props, State> {
                                                     </tr>);
                                                 }
                                             )}
+                                            {ModelElements[this.state.iriModel].domainOf.map((conn: string) => {
+                                                    return (<tr>
+                                                        <IRIlabel label={ModelElements[conn].labels[this.props.projectLanguage]} iri={conn}/>
+                                                        <td>{ModelElements[ModelElements[conn].range].labels[this.props.projectLanguage]}</td>
+                                                        <td>{LocaleMenu.fromModel}</td>
+                                                    </tr>);
+                                                }
+                                            )}
                                         </TableList>
                                     </Tab>
+                            <Tab eventKey={4} title={LocaleMain.detailPanelAttributes}>
+                                <TableList headings={[LocaleMenu.title, LocaleMenu.attributeType]}>
+                                    {this.state.inputAttributes.map((attr, i) => (
+                                        <tr key={i}>
+                                            <td>
+                                                <tr>
+                                                    {attr.first.length > 0 ? attr.first : "<blank>"}
+                                                </tr>
+                                            </td>
+                                            <td>
+                                                {attr.second.name}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </TableList>
+                            </Tab>
+                                <Tab eventKey={5} title={LocaleMain.properties}>
+                                    <TableList headings={[LocaleMenu.title, LocaleMenu.attributeType, LocaleMenu.value]}>
+                                        {this.state.inputProperties.map((prop, i) => (<tr key={i}>
+                                            <td>
+                                                {prop.getSecond().name}
+                                            </td>
+                                            <td>
+                                                {prop.getSecond().array ? "[" + prop.getSecond().type + "]" : prop.getSecond().type}
+                                            </td>
+                                            <td>
+                                                {prop.first.length > 0 ? prop.first : "<blank>"}
+                                            </td>
+                                        </tr>))}
+                                    </TableList>
+                                </Tab>
                         </Tabs>
                     </div>
                 </ResizableBox>);

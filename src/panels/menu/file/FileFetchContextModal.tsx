@@ -10,6 +10,7 @@ interface Props {
 }
 
 interface State {
+    contextEndpoint: string;
     contextIRI: string;
     output: string;
 }
@@ -18,7 +19,8 @@ export default class FileFetchContextModal extends React.Component<Props, State>
     constructor(props: Props) {
         super(props);
         this.state = {
-            contextIRI: "",
+            contextIRI: "http://example.org/pracovni-prostor/metadatový-kontext-123",
+            contextEndpoint: "https://onto.fel.cvut.cz:7200/repositories/kodi-pracovni-prostor-sample",
             output: ""
         }
     }
@@ -42,10 +44,19 @@ export default class FileFetchContextModal extends React.Component<Props, State>
             <Modal.Body>
                     <Form onSubmit={async (event: any)=>{
                         event.preventDefault();
-                        let out = await testContext(this.state.contextIRI);
+                        let out = await testContext(this.state.contextIRI, this.state.contextEndpoint);
                         let output: string = this.getOutput(out);
                         this.setState({output: output});
                     }}>
+                        <Form.Group controlId="formEndpoint">
+                            <Form.Label>
+                                {LocaleMenu.contextEndpoint}
+                            </Form.Label>
+                            <Form.Control placeholder={LocaleMenu.iri} value={this.state.contextEndpoint}
+                                          onChange={(event: { currentTarget: { value: any; }; }) => {
+                                              this.setState({contextEndpoint: event.currentTarget.value})
+                                          }} required/>
+                        </Form.Group>
                         <Form.Group controlId="formContextIRI">
                             <Form.Label>
                                 {LocaleMenu.contextIRI}
