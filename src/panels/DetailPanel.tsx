@@ -515,8 +515,19 @@ export default class DetailPanel extends React.Component<Props, State> {
                                         {/*</Form.Control>*/}
                                     {/*</td>*/}
                                 </tr>
-
                             </TableList>
+                            {ModelElements[this.state.iriLink].domain && ModelElements[this.state.iriLink].range ?
+                                    <TableList>
+                                        <tr>
+                                            <th>{LocaleMenu.domain}</th>
+                                            <IRIlabel iri={ModelElements[this.state.iriLink].domain} label={ModelElements[ModelElements[this.state.iriLink].domain].labels[this.props.projectLanguage]} />
+                                        </tr>
+                                        <tr>
+                                            <th>{LocaleMenu.range}</th>
+                                            <IRIlabel iri={ModelElements[this.state.iriLink].range} label={ModelElements[ModelElements[this.state.iriLink].range].labels[this.props.projectLanguage]} />
+                                        </tr>
+                                    </TableList>
+                                : ""}
                             <h5>{LocaleMenu.inScheme}</h5>
                             <TableList>
                                 {this.state.iriLink in Links ? Object.keys(Schemes[Links[this.state.iriLink].skos.inScheme].labels).map(lang => (
