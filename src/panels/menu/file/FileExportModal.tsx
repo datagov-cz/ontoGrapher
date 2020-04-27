@@ -55,6 +55,7 @@ export default class FileExportModal extends React.Component<Props, State> {
     exportM(ks: string){
         exportModel(this.state.iri, this.state.type, ks, structuresShort[ks], (str: string) => {
             this.setState({exportModelString: str});
+            //keep this .log
             console.log(str);
         })
     }
@@ -62,6 +63,7 @@ export default class FileExportModal extends React.Component<Props, State> {
     exportG(ks: string){
         exportGlossary(this.state.iri, this.state.type, ks, structuresShort[ks], (str: string) => {
             this.setState({exportGlossaryString: str});
+            //keep this .log
             console.log(str);
         })
     }

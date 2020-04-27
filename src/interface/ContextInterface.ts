@@ -24,6 +24,7 @@ export async function testContext(contextIRI: string, contextEndpoint: string) {
         "?import a skos:ConceptScheme .",
         "}",
     ].join(" ");
+    //keep this .log
     console.log(vocabularyQ);
     let result: { labels: string[], imports: string[], error: any } = {labels: [], imports: [], error: undefined};
     let vocabularyQurl = contextEndpoint + "?query=" + encodeURIComponent(vocabularyQ);
@@ -72,8 +73,6 @@ export async function getContext(
         "}",
     ].join(" ");
     let vocabularyQurl = contextEndpoint + "?query=" + encodeURIComponent(vocabularyQ);
-
-    console.log(vocabularyQurl);
     let responseInit: {}[] = await fetch(vocabularyQurl,
         {headers: {'Accept': acceptType}})
         .then((response) => response.json())

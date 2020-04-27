@@ -466,7 +466,7 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps, D
                                 addLink(link.id, iri, cls.id, cell.id);
                                 link.appendLabel({attrs: {text: {text: ModelElements[iri].labels[this.props.projectLanguage]}},position: {distance: 0.5}});
                                 link.addTo(graph);
-                                ProjectElements[cls.id].connections.push(link.id);
+                                //ProjectElements[cls.id].connections.push(link.id);
                                 break;
                             }
                         }
@@ -480,7 +480,7 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps, D
                                 addLink(link.id, iri, cell.id, cls.id);
                                 link.appendLabel({attrs: {text: {text: ModelElements[iri].labels[this.props.projectLanguage]}},position: {distance: 0.5}});
                                 link.addTo(graph);
-                                ProjectElements[cell.id].connections.push(link.id);
+                                //ProjectElements[cell.id].connections.push(link.id);
                                 break;
                             }
                         }
