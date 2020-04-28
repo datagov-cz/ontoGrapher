@@ -687,37 +687,7 @@ export default class DetailPanel extends React.Component<Props, State> {
                                                     </Tab>))}
                                             </Tabs>
                                     </Tab>
-                                    <Tab eventKey={2} title={LocaleMain.diagram}>
-                                        <TableList headings={[LocaleMenu.diagram]}>
-                                            {this.state.inputDiagrams.map((conn, i) =>
-                                                (<tr><td>{Diagrams[conn].name}</td></tr>)
-                                            )}
-                                        </TableList>
-                                    </Tab>
-                                    <Tab eventKey={3} title={LocaleMain.connections}>
-                                        <TableList
-                                            headings={[LocaleMenu.connectionVia, LocaleMenu.connectionTo, LocaleMenu.diagram]}>
-                                            {this.state.inputConnections.map((conn) => {
-                                                    return (<tr>
-                                                        <IRIlabel label={Links[ProjectLinks[conn].iri].labels[this.props.projectLanguage]} iri={ProjectLinks[conn].iri}/>
-                                                        <td>{ProjectElements[ProjectLinks[conn].target].names[this.props.projectLanguage]}</td>
-                                                        <td>{ProjectLinks[conn].diagram}</td>
-                                                    </tr>);
-                                                }
-                                            )}
-                                            {ModelElements[this.state.iriModel].domainOf.map((conn: string) => {
-                                                if (vocabOrModal(conn) && vocabOrModal(vocabOrModal(conn).range)){
-                                                    return (<tr>
-                                                        <IRIlabel label={vocabOrModal(conn).labels[this.props.projectLanguage]} iri={conn}/>
-                                                        <td>{vocabOrModal(vocabOrModal(conn).range).labels[this.props.projectLanguage]}</td>
-                                                        <td>{LocaleMenu.fromModel}</td>
-                                                    </tr>);
-                                                } else return "";
-                                                }
-                                            )}
-                                        </TableList>
-                                    </Tab>
-                            <Tab eventKey={4} title={LocaleMain.detailPanelAttributes}>
+                            <Tab eventKey={2} title={LocaleMain.detailPanelAttributes}>
                                 <TableList headings={[LocaleMenu.title, LocaleMenu.attributeType]}>
                                     {this.state.inputAttributes.map((attr, i) => (
                                         <tr key={i}>
@@ -733,7 +703,37 @@ export default class DetailPanel extends React.Component<Props, State> {
                                     ))}
                                 </TableList>
                             </Tab>
-                                <Tab eventKey={5} title={LocaleMain.properties}>
+                            <Tab eventKey={3} title={LocaleMain.diagram}>
+                                        <TableList headings={[LocaleMenu.diagram]}>
+                                            {this.state.inputDiagrams.map((conn, i) =>
+                                                (<tr><td>{Diagrams[conn].name}</td></tr>)
+                                            )}
+                                        </TableList>
+                </Tab>
+                            <Tab eventKey={4} title={LocaleMain.connections}>
+                                <TableList
+                                    headings={[LocaleMenu.connectionVia, LocaleMenu.connectionTo, LocaleMenu.diagram]}>
+                                    {this.state.inputConnections.map((conn) => {
+                                            return (<tr>
+                                                <IRIlabel label={Links[ProjectLinks[conn].iri].labels[this.props.projectLanguage]} iri={ProjectLinks[conn].iri}/>
+                                                <td>{ProjectElements[ProjectLinks[conn].target].names[this.props.projectLanguage]}</td>
+                                                <td>{ProjectLinks[conn].diagram}</td>
+                                            </tr>);
+                                        }
+                                    )}
+                                    {ModelElements[this.state.iriModel].domainOf.map((conn: string) => {
+                                        if (vocabOrModal(conn) && vocabOrModal(vocabOrModal(conn).range)){
+                                            return (<tr>
+                                                <IRIlabel label={vocabOrModal(conn).labels[this.props.projectLanguage]} iri={conn}/>
+                                                <td>{vocabOrModal(vocabOrModal(conn).range).labels[this.props.projectLanguage]}</td>
+                                                <td>{LocaleMenu.fromModel}</td>
+                                            </tr>);
+                                        } else return "";
+                                        }
+                                    )}
+                                </TableList>
+                            </Tab>
+                            <Tab eventKey={5} title={LocaleMain.properties}>
                                     <TableList headings={[LocaleMenu.title, LocaleMenu.attributeType, LocaleMenu.value]}>
                                         {this.state.inputProperties.map((prop, i) => (<tr key={i}>
                                             <td>
@@ -747,7 +747,7 @@ export default class DetailPanel extends React.Component<Props, State> {
                                             </td>
                                         </tr>))}
                                     </TableList>
-                                </Tab>
+                            </Tab>
                         </Tabs>
                     </div>
                 </ResizableBox>);
