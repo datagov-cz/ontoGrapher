@@ -587,7 +587,7 @@ export default class DetailPanel extends React.Component<Props, State> {
                                 }
                             </TableList>
 
-                            {((this.state.iriLink in Links && Object.keys(Links[this.state.iriLink].skos.definition).length > 0) || (Object.keys(vocabOrModal(this.state.iriLink).skos.definition).length > 0)) ? <h5>{LocaleMenu.skosdefinitions}</h5> : ""}
+                            {((this.state.iriLink in Links && Object.keys(Links[this.state.iriLink].skos.definition).length > 0) || (Object.keys(vocabOrModal(this.state.iriLink).skos.definition).length > 0)) ? <h5>{<IRILink label={headers.definition[this.props.projectLanguage]} iri={"http://www.w3.org/2004/02/skos/core#definition"}/>}</h5> : ""}
                             <Tabs id={"descriptions"}>
                                 {this.state.iriLink in Links ? Object.keys(Links[this.state.iriLink].skos.definition).map((language, i) => (
                                     <Tab eventKey={i} title={Languages[language]}>
