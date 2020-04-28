@@ -19,11 +19,19 @@ import {Button, Form, Tab, Tabs} from "react-bootstrap";
 import TableList from "../components/TableList";
 import * as LocaleMenu from "../locale/LocaleMenu.json";
 import * as VariableLoader from "../var/VariableLoader";
-import {getName, getStereotypeList} from "../misc/Helper";
+import {getName, getStereotypeList, vocabOrModal} from "../misc/Helper";
 // @ts-ignore
 import {RIEInput} from "riek";
 import {AttributeObject} from "../components/AttributeObject";
 import IRIlabel from "../components/IRIlabel";
+import IRILink from "../components/IRILink";
+
+const headers: {[key:string]: {[key:string]:string}} = {
+    labels: {"cs":"Název","en":"Label"},
+    inScheme: {"cs":"Ze slovníku", "en":"In vocabulary"},
+    definition:{"cs":"Definice", "en":"Definition"},
+    stereotype:{"cs":"Stereotyp","en":"Stereotype"}
+}
 
 interface Props {
     projectLanguage: string;
@@ -48,6 +56,7 @@ interface State {
     iriModel: string;
     type: string;
     newStereotype: string;
+    iriModelVocab: string;
 }
 
 export default class DetailPanel extends React.Component<Props, State> {
@@ -66,6 +75,7 @@ export default class DetailPanel extends React.Component<Props, State> {
             iriElem: [],
             iriLink: "",
             iriModel: "",
+            iriModelVocab: "",
             sourceCardinality: "0",
             targetCardinality: "0",
             type: "",
@@ -143,7 +153,8 @@ export default class DetailPanel extends React.Component<Props, State> {
                 inputProperties: ProjectElements[id].properties,
                 iriElem: ProjectElements[id].iri,
                 type: "elem",
-                newStereotype: Object.keys(Stereotypes)[0]
+                newStereotype: Object.keys(Stereotypes)[0],
+                iriModelVocab: ProjectElements[id].iriVocab ? ProjectElements[id].iriVocab : ""
             });
         } else if (graph.getCell(id).isLink()) {
             this.setState({
@@ -263,17 +274,19 @@ export default class DetailPanel extends React.Component<Props, State> {
                             }}>{LocaleMain.menuPanelSave}</Button></p> : <p></p>}
                         <Tabs id={"detailsTabs"}>
                             <Tab eventKey={1} title={LocaleMain.description}>
-                                <h5>{LocaleMenu.stereotype}</h5>
+                                <h5>{headers.stereotype[this.props.projectLanguage]}</h5>
                                 <TableList>
                                     {this.state.iriElem.map(iri =>
                                         <tr key={iri}>
-                                            <IRIlabel
+                                            <td>
+                                            <IRILink
                                                 label={
                                                     iri in Stereotypes ?
                                                         Stereotypes[iri].labels[this.props.projectLanguage]
                                                         : VocabularyElements[iri].labels[this.props.projectLanguage]
                                                 }
                                                 iri={iri}/>
+                                                &nbsp;
                                                 {this.state.iriElem.length === 1 ? "" : <button className={"buttonlink"} onClick={()=>{
                                                     let result = this.state.iriElem;
                                                     result.splice(result.indexOf(iri),1);
@@ -283,7 +296,7 @@ export default class DetailPanel extends React.Component<Props, State> {
                                                     });
                                                 }}>
                                                     {LocaleMenu.deleteProjectName}</button>}
-
+                                            </td>
                                         </tr>
                                     )}
                                     <tr>
@@ -309,7 +322,7 @@ export default class DetailPanel extends React.Component<Props, State> {
                                     </tr>
                                 </TableList>
 
-                                <h5>{LocaleMenu.skoslabels}</h5>
+                                <h5>{<IRILink label={headers.labels[this.props.projectLanguage]} iri={"http://www.w3.org/2004/02/skos/core#prefLabel"}/>}</h5>
                                 <TableList>
                                     {Object.keys(this.state.inputNames).map((language) => (
                                         <tr key={language}>
@@ -330,7 +343,7 @@ export default class DetailPanel extends React.Component<Props, State> {
                                         </tr>
                                     ))}
                                 </TableList>
-                                <h5>{LocaleMenu.inScheme}</h5>
+                                <h5>{<IRILink label={headers.inScheme[this.props.projectLanguage]} iri={"http://www.w3.org/2004/02/skos/core#inScheme"}/>}</h5>
                                 <TableList>
                                     {Object.keys(Schemes[ProjectElements[this.state.model].scheme].labels).map(lang => (
                                         <tr>
@@ -341,7 +354,7 @@ export default class DetailPanel extends React.Component<Props, State> {
                                         </tr>
                                     ))}
                                 </TableList>
-                                {Object.keys(this.state.inputDescriptions).length > 0 ? <h5>{LocaleMenu.skosdefinitions}</h5> : ""}
+                                {Object.keys(this.state.inputDescriptions).length > 0 ? <h5>{<IRILink label={headers.definition[this.props.projectLanguage]} iri={"http://www.w3.org/2004/02/skos/core#definition"}/>}</h5> : ""}
                                 <Tabs id={"descriptions"}>
                                     {Object.keys(this.state.inputDescriptions).map((language, i) => (
                                         <Tab eventKey={i} title={Languages[language]}>
@@ -410,6 +423,27 @@ export default class DetailPanel extends React.Component<Props, State> {
                                             </tr>);
                                         }
                                     )}
+                                    {this.state.iriModelVocab in VocabularyElements ? VocabularyElements[this.state.iriModelVocab].domainOf.map((conn: string) => {
+                                        if (conn in VocabularyElements){
+                                            return (<tr>
+                                                <IRIlabel label={VocabularyElements[conn].labels[this.props.projectLanguage]} iri={conn}/>
+                                                <td>{VocabularyElements[conn].range in VocabularyElements ?
+                                                    VocabularyElements[VocabularyElements[conn].range].labels[this.props.projectLanguage] :
+                                                    ModelElements[VocabularyElements[conn].range].labels[this.props.projectLanguage]}</td>
+                                                <td>{LocaleMenu.fromModel}</td>
+                                            </tr>);
+                                        } else {
+                                            return (<tr>
+                                                <IRIlabel label={ModelElements[conn].labels[this.props.projectLanguage]} iri={conn}/>
+                                                <td>{ModelElements[conn].range in ModelElements ?
+                                                    ModelElements[ModelElements[conn].range].labels[this.props.projectLanguage] :
+                                                    VocabularyElements[ModelElements[conn].range].labels[this.props.projectLanguage]}</td>
+                                                <td>{LocaleMenu.fromModel}</td>
+                                            </tr>);
+                                        }
+
+                                        }
+                                    ) : ""}
                                 </TableList>
                             </Tab>
                             <Tab eventKey={5} title={LocaleMain.properties}>
@@ -447,7 +481,7 @@ export default class DetailPanel extends React.Component<Props, State> {
                         resizeHandles={['nw']}
                         className={"details"}>
                         <div>
-                            <h3>{LocaleMain.detailPanelTitleRelationship}</h3>
+                            <h3>{this.state.iriLink in Links ? Links[this.state.iriLink].labels[this.props.projectLanguage] : vocabOrModal(this.state.iriLink).labels[this.props.projectLanguage]}</h3>
                             {this.state.changes ?
                                 <p className={"bordered"}>{LocaleMain.saveChanges}<br/><br/><Button onClick={() => {
                                     this.save();
@@ -498,22 +532,40 @@ export default class DetailPanel extends React.Component<Props, State> {
                                     </td>
                                     <IRIlabel label={this.state.iriLink in Links ?
                                         Links[this.state.iriLink].labels[this.props.projectLanguage] :
-                                        ModelElements[this.state.iriLink].labels[this.props.projectLanguage]} iri={this.state.iriLink}/>
+                                        this.state.iriLink in ModelElements ? ModelElements[this.state.iriLink].labels[this.props.projectLanguage] : VocabularyElements[this.state.iriLink].labels[this.props.projectLanguage]
+                                    } iri={this.state.iriLink}/>
                                 </tr>
                             </TableList>
-                            {ModelElements[this.state.iriLink].domain && ModelElements[this.state.iriLink].range ?
-                                    <TableList>
+                            {/*{ModelElements[this.state.iriLink] ?*/}
+                            {/*        <TableList>*/}
+                            {/*            <tr>*/}
+                            {/*                <th>{LocaleMenu.domain}</th>*/}
+                            {/*                <IRIlabel iri={ModelElements[this.state.iriLink].domain} label={vocabOrModal(ModelElements[this.state.iriLink].domain).labels[this.props.projectLanguage]} />*/}
+                            {/*            </tr>*/}
+                            {/*            <tr>*/}
+                            {/*                <th>{LocaleMenu.range}</th>*/}
+                            {/*                <IRIlabel iri={ModelElements[this.state.iriLink].range} label={vocabOrModal(ModelElements[this.state.iriLink].range).labels[this.props.projectLanguage]} />*/}
+                            {/*            </tr>*/}
+                            {/*        </TableList>*/}
+                            {/*    : ""}*/}
+                            <h5>{<IRILink label={headers.labels[this.props.projectLanguage]} iri={"http://www.w3.org/2004/02/skos/core#prefLabel"}/>}</h5>
+                            <TableList>
+                                {this.state.iriLink in Links ? Object.keys(Links[this.state.iriLink].skos.prefLabel).map(lang => (
                                         <tr>
-                                            <th>{LocaleMenu.domain}</th>
-                                            <IRIlabel iri={ModelElements[this.state.iriLink].domain} label={ModelElements[ModelElements[this.state.iriLink].domain].labels[this.props.projectLanguage]} />
+                                            <td>{Links[this.state.iriLink].skos.prefLabel[lang]}</td>
+                                            <td>{Languages[lang]}</td>
                                         </tr>
+                                    ))
+                                    :
+                                    Object.keys(vocabOrModal(this.state.iriLink).skos.prefLabel).map(lang => (
                                         <tr>
-                                            <th>{LocaleMenu.range}</th>
-                                            <IRIlabel iri={ModelElements[this.state.iriLink].range} label={ModelElements[ModelElements[this.state.iriLink].range].labels[this.props.projectLanguage]} />
+                                            <td>{vocabOrModal(this.state.iriLink).skos.prefLabel[lang]}</td>
+                                            <td>{Languages[lang]}</td>
                                         </tr>
-                                    </TableList>
-                                : ""}
-                            <h5>{LocaleMenu.inScheme}</h5>
+                                    ))
+                                }
+                            </TableList>
+                            <h5>{<IRILink label={headers.inScheme[this.props.projectLanguage]} iri={"http://www.w3.org/2004/02/skos/core#inScheme"}/>}</h5>
                             <TableList>
                                 {this.state.iriLink in Links ? Object.keys(Schemes[Links[this.state.iriLink].skos.inScheme].labels).map(lang => (
                                     <tr>
@@ -524,34 +576,18 @@ export default class DetailPanel extends React.Component<Props, State> {
                                     </tr>
                                 ))
                                     :
-                                    Object.keys(Schemes[ModelElements[this.state.iriLink].skos.inScheme].labels).map(lang => (
+                                    Object.keys(Schemes[vocabOrModal(this.state.iriLink).skos.inScheme].labels).map(lang => (
                                         <tr>
                                             <IRIlabel
-                                                label={Schemes[ModelElements[this.state.iriLink].skos.inScheme].labels[lang]}
-                                                iri={ModelElements[this.state.iriLink].skos.inScheme}/>
+                                                label={Schemes[vocabOrModal(this.state.iriLink).skos.inScheme].labels[lang]}
+                                                iri={vocabOrModal(this.state.iriLink).skos.inScheme}/>
                                             <td>{Languages[lang]}</td>
                                         </tr>
                                     ))
                                 }
                             </TableList>
-                            <h5>{LocaleMenu.skoslabels}</h5>
-                            <TableList>
-                                {this.state.iriLink in Links ? Object.keys(Links[this.state.iriLink].skos.prefLabel).map(lang => (
-                                    <tr>
-                                        <td>{Links[this.state.iriLink].skos.prefLabel[lang]}</td>
-                                        <td>{Languages[lang]}</td>
-                                    </tr>
-                                ))
-                                    :
-                                    Object.keys(ModelElements[this.state.iriLink].skos.prefLabel).map(lang => (
-                                        <tr>
-                                            <td>{ModelElements[this.state.iriLink].skos.prefLabel[lang]}</td>
-                                            <td>{Languages[lang]}</td>
-                                        </tr>
-                                    ))
-                                }
-                            </TableList>
-                            {((this.state.iriLink in Links && Object.keys(Links[this.state.iriLink].skos.definition).length > 0) || (Object.keys(ModelElements[this.state.iriLink].skos.definition).length > 0)) ? <h5>{LocaleMenu.skosdefinitions}</h5> : ""}
+
+                            {((this.state.iriLink in Links && Object.keys(Links[this.state.iriLink].skos.definition).length > 0) || (Object.keys(vocabOrModal(this.state.iriLink).skos.definition).length > 0)) ? <h5>{LocaleMenu.skosdefinitions}</h5> : ""}
                             <Tabs id={"descriptions"}>
                                 {this.state.iriLink in Links ? Object.keys(Links[this.state.iriLink].skos.definition).map((language, i) => (
                                     <Tab eventKey={i} title={Languages[language]}>
@@ -562,13 +598,13 @@ export default class DetailPanel extends React.Component<Props, State> {
                                             value={Links[this.state.iriLink].skos.definition[language]}
                                         />
                                     </Tab>)):
-                                    Object.keys(ModelElements[this.state.iriLink].skos.definition).map((language, i) => (
+                                    Object.keys(vocabOrModal(this.state.iriLink).skos.definition).map((language, i) => (
                                         <Tab eventKey={i} title={Languages[language]}>
                                             <Form.Control
                                                 as={"textarea"}
                                                 rows={3}
                                                 disabled={true}
-                                                value={ModelElements[this.state.iriLink].skos.definition[language]}
+                                                value={vocabOrModal(this.state.iriLink).skos.definition[language]}
                                             />
                                         </Tab>))
                                 }
@@ -586,10 +622,10 @@ export default class DetailPanel extends React.Component<Props, State> {
                     resizeHandles={['nw']}
                     className={"details"}>
                     <div>
-                        <h3>{ModelElements[this.state.iriModel].labels[this.props.projectLanguage].length > 0 ? ModelElements[this.state.iriModel].labels[this.props.projectLanguage] : "<blank>"}</h3>
+                        <h3>{ModelElements[this.state.iriModel].labels[this.props.projectLanguage] ? ModelElements[this.state.iriModel].labels[this.props.projectLanguage] : "<blank>"}</h3>
                         <Tabs id={"detailsTabs"}>
                             <Tab eventKey={1} title={LocaleMain.description}>
-                                <h5>{LocaleMenu.stereotype}</h5>
+                                <h5>{headers.stereotype[this.props.projectLanguage]}</h5>
                                             <TableList>
                                                 {ModelElements[this.state.iriModel].iri.map((iri: any) =>
                                                     <tr key={iri}><IRIlabel
@@ -618,7 +654,16 @@ export default class DetailPanel extends React.Component<Props, State> {
                                                 </TableList>
                                                 </div>
                                                 : ""}
-                                            <h5>{LocaleMenu.inScheme}</h5>
+                                    <h5>{<IRILink label={headers.labels[this.props.projectLanguage]} iri={"http://www.w3.org/2004/02/skos/core#prefLabel"}/>}</h5>
+                                    <TableList>
+                                        {Object.keys(ModelElements[this.state.iriModel].skos.prefLabel).map(lang => (
+                                            <tr>
+                                                <td>{ModelElements[this.state.iriModel].skos.prefLabel[lang]}</td>
+                                                <td>{Languages[lang]}</td>
+                                            </tr>
+                                        ))}
+                                    </TableList>
+                                            <h5>{<IRILink label={headers.inScheme[this.props.projectLanguage]} iri={"http://www.w3.org/2004/02/skos/core#inScheme"}/>}</h5>
                                             <TableList>
                                                 {Object.keys(Schemes[ModelElements[this.state.iriModel].skos.inScheme].labels).map(lang => (
                                                     <tr>
@@ -629,16 +674,7 @@ export default class DetailPanel extends React.Component<Props, State> {
                                                     </tr>
                                                 ))}
                                             </TableList>
-                                            <h5>{LocaleMenu.skoslabels}</h5>
-                                            <TableList>
-                                                {Object.keys(ModelElements[this.state.iriModel].skos.prefLabel).map(lang => (
-                                                    <tr>
-                                                        <td>{ModelElements[this.state.iriModel].skos.prefLabel[lang]}</td>
-                                                        <td>{Languages[lang]}</td>
-                                                    </tr>
-                                                ))}
-                                            </TableList>
-                                {Object.keys(ModelElements[this.state.iriModel].skos.definition).length > 0 ? <h5>{LocaleMenu.skosdefinitions}</h5> : ""}
+                                {Object.keys(ModelElements[this.state.iriModel].skos.definition).length > 0 ? <h5>{<IRILink label={headers.definition[this.props.projectLanguage]} iri={"http://www.w3.org/2004/02/skos/core#definition"}/>}</h5> : ""}
                                             <Tabs id={"descriptions"}>
                                                 {Object.keys(ModelElements[this.state.iriModel].skos.definition).map((language, i) => (
                                                     <Tab eventKey={i} title={Languages[language]}>

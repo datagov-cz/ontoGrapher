@@ -148,10 +148,11 @@ export async function getContext(
             for (let elem in vocabularies[vocab].terms) {
                 let id = new graphElement().id;
                 if (typeof id === "string") {
-                    addClass(id, vocabularies[vocab].terms[elem].iri, "cs", vocab, pkg, false, false, vocabularies[vocab].terms[elem].labels, vocabularies[vocab].terms[elem].definitions);
+                    addClass(id, vocabularies[vocab].terms[elem].iri, "cs", vocab, pkg, false, false, vocabularies[vocab].terms[elem].labels, vocabularies[vocab].terms[elem].definitions, elem);
                 }
             }
             PackageRoot.children.push(pkg);
+            console.log(VocabularyElements);
         } else {
             Object.assign(ModelElements, vocabularies[vocab].terms);
         }

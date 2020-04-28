@@ -21,6 +21,12 @@ export default class AboutModal extends React.Component<Props, State> {
             <Modal.Body>
                 <Tabs id={"changelog"}>
                     <Tab title={"April"} eventKey={1}>
+                        <h6>28.4.</h6>
+                        <ul>
+                            <li>Changed detail panel header names</li>
+                            <li>Fixed model interpretation not working between read-only and editable vocabularies</li>
+                            <li>Fixed stereotype detail panel visual artefact</li>
+                        </ul>
                         <h6>27.4.</h6>
                         <ul>
                             <li>Changed fetch workspace dialogue to include both context IRI and endpoint</li>

@@ -113,7 +113,7 @@ export function addClass(
     pkg: PackageNode = PackageRoot,
     untitled: boolean = true,
     stereotype: boolean = true,
-    names?: {}, descriptions?: {}) {
+    names?: {}, descriptions?: {}, iriVocab?: string) {
     let result: { [key: string]: any } = {};
     result["iri"] = iris;
     result["names"] = names ? names : VariableLoader.initLanguageObject(LocaleMain.untitled + " " + getName(iris[0], language));
@@ -121,6 +121,7 @@ export function addClass(
     result["untitled"] = untitled;
     result["descriptions"] = descriptions ? descriptions : VariableLoader.initLanguageObject("");
     result["attributes"] = [];
+    if (iriVocab) result["iriVocab"] = iriVocab;
     let propertyArray: AttributeObject[] = [];
     if (stereotype){
         for (let iri of iris){
@@ -146,11 +147,32 @@ export function addClass(
     ProjectElements[id] = result;
 }
 
+export function vocabOrModal(iri: string){
+    let result = iri in VocabularyElements ? VocabularyElements[iri] : ModelElements[iri];
+    return result;
+}
+
 export function addDomainOfIRIs(){
     for (let iri in ModelElements){
         if (ModelElements[iri].domain && ModelElements[ModelElements[iri].domain]){
             if (!(ModelElements[ModelElements[iri].domain].domainOf.includes(iri))){
                 ModelElements[ModelElements[iri].domain].domainOf.push(iri);
+            }
+        } else if (ModelElements[iri].domain && VocabularyElements[ModelElements[iri].domain]){
+            if (!(VocabularyElements[ModelElements[iri].domain].domainOf.includes(iri))){
+                VocabularyElements[ModelElements[iri].domain].domainOf.push(iri);
+            }
+        }
+    }
+
+    for (let iri in VocabularyElements){
+        if (VocabularyElements[iri].domain && VocabularyElements[VocabularyElements[iri].domain]){
+            if (!(VocabularyElements[VocabularyElements[iri].domain].domainOf.includes(iri))){
+                VocabularyElements[VocabularyElements[iri].domain].domainOf.push(iri);
+            }
+        } else if (VocabularyElements[iri].domain && ModelElements[VocabularyElements[iri].domain]){
+            if (!(ModelElements[VocabularyElements[iri].domain].domainOf.includes(iri))){
+                ModelElements[VocabularyElements[iri].domain].domainOf.push(iri);
             }
         }
     }
