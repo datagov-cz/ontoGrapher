@@ -706,11 +706,13 @@ export default class DetailPanel extends React.Component<Props, State> {
                                                 }
                                             )}
                                             {ModelElements[this.state.iriModel].domainOf.map((conn: string) => {
+                                                if (vocabOrModal(conn) && vocabOrModal(vocabOrModal(conn).range)){
                                                     return (<tr>
-                                                        <IRIlabel label={ModelElements[conn].labels[this.props.projectLanguage]} iri={conn}/>
-                                                        <td>{ModelElements[ModelElements[conn].range].labels[this.props.projectLanguage]}</td>
+                                                        <IRIlabel label={vocabOrModal(conn).labels[this.props.projectLanguage]} iri={conn}/>
+                                                        <td>{vocabOrModal(vocabOrModal(conn).range).labels[this.props.projectLanguage]}</td>
                                                         <td>{LocaleMenu.fromModel}</td>
                                                     </tr>);
+                                                } else return "";
                                                 }
                                             )}
                                         </TableList>

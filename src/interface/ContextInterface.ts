@@ -152,7 +152,6 @@ export async function getContext(
                 }
             }
             PackageRoot.children.push(pkg);
-            console.log(VocabularyElements);
         } else {
             Object.assign(ModelElements, vocabularies[vocab].terms);
         }
