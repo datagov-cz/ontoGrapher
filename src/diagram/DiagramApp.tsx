@@ -169,7 +169,7 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
             selectedLink: Object.keys(Links)[0],
             saveString: ""});
         Diagrams.length = 0;
-        Diagrams.push([Locale.untitled, {}]);
+        Diagrams.push({name: Locale.untitled, json: ""});
         StereotypeCategories.length = 0;
         Object.keys(ProjectElements).forEach(el => delete ProjectElements[el]);
         Object.keys(ProjectLinks).forEach(el => delete ProjectLinks[el]);

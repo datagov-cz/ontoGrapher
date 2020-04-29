@@ -81,7 +81,7 @@ export default class FileFetchContextModal extends React.Component<Props, State>
             <Modal.Footer>
                 <p className={"red modal-warning"}>{LocaleMenu.fileNewModalDescription}</p>
                 <Button onClick={() => {
-                    this.props.loadContext(this.state.contextIRI, true);
+                    this.props.loadContext(this.state.contextIRI, this.state.contextEndpoint, true);
                 }}>{LocaleMenu.fetch}</Button> &nbsp; <Button onClick={() => {
                     this.props.close();
             }} variant="secondary">{LocaleMenu.cancel}</Button>
