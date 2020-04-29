@@ -424,24 +424,11 @@ export default class DetailPanel extends React.Component<Props, State> {
                                         }
                                     )}
                                     {this.state.iriModelVocab in VocabularyElements ? VocabularyElements[this.state.iriModelVocab].domainOf.map((conn: string) => {
-                                        if (conn in VocabularyElements){
                                             return (<tr>
-                                                <IRIlabel label={VocabularyElements[conn].labels[this.props.projectLanguage]} iri={conn}/>
-                                                <td>{VocabularyElements[conn].range in VocabularyElements ?
-                                                    VocabularyElements[VocabularyElements[conn].range].labels[this.props.projectLanguage] :
-                                                    ModelElements[VocabularyElements[conn].range].labels[this.props.projectLanguage]}</td>
+                                                <IRIlabel label={vocabOrModal(conn).labels[this.props.projectLanguage]} iri={conn}/>
+                                                <td>{vocabOrModal(vocabOrModal(conn).range).labels[this.props.projectLanguage]}</td>
                                                 <td>{LocaleMenu.fromModel}</td>
                                             </tr>);
-                                        } else {
-                                            return (<tr>
-                                                <IRIlabel label={ModelElements[conn].labels[this.props.projectLanguage]} iri={conn}/>
-                                                <td>{ModelElements[conn].range in ModelElements ?
-                                                    ModelElements[ModelElements[conn].range].labels[this.props.projectLanguage] :
-                                                    VocabularyElements[ModelElements[conn].range].labels[this.props.projectLanguage]}</td>
-                                                <td>{LocaleMenu.fromModel}</td>
-                                            </tr>);
-                                        }
-
                                         }
                                     ) : ""}
                                 </TableList>

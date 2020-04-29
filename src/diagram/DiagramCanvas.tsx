@@ -148,7 +148,7 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps, D
                         if (ProjectElements[sid].connections.includes(id)) ProjectElements[sid].connections.splice(ProjectElements[sid].connections.indexOf(id),1);
                         if (vocabOrModal(ProjectLinks[id].iri)){
                             let domainOf = vocabOrModal(vocabOrModal(ProjectLinks[id].iri).domain).domainOf;
-                            if (domainOf && ((ProjectLinks[id].iri).domain in VocabularyElements)){
+                            if (domainOf && (vocabOrModal(ProjectLinks[id].iri).domain in VocabularyElements)){
                                 domainOf.splice(domainOf.indexOf(ProjectLinks[id].iri),1);
                             }
                         }
@@ -183,7 +183,6 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps, D
                 }
             },
             'blank:pointerup' : ()=>{
-              //panZoom.disablePan
                 this.drag = undefined;
             },
             'link:pointerup' : (linkView, evt, x, y)=>{
