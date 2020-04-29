@@ -3,18 +3,18 @@ import MenuPanel from "../panels/MenuPanel";
 import ElementPanel from "../panels/ElementPanel";
 import DiagramCanvas from "./DiagramCanvas";
 import * as Locale from "../locale/LocaleMain.json";
-import {Links, PackageRoot, ProjectElements, ProjectSettings} from "../config/Variables";
+import {Languages, Links, PackageRoot, ProjectElements, ProjectSettings} from "../config/Variables";
 import DetailPanel from "../panels/DetailPanel";
 import {getVocabulariesFromRemoteJSON} from "../interface/JSONInterface";
 import {
     addDomainOfIRIs,
-    getModelName,
-    getStereotypeList,
     initLanguageObject,
     initVars
 } from "../function/FunctionEditVars";
 import {getContext} from "../interface/ContextInterface";
 import {graph} from "../graph/graph";
+import {loadProject, newProject} from "../function/FunctionProject";
+import {nameGraphElement} from "../function/FunctionGraph";
 
 interface DiagramAppProps {
     readOnly?: boolean;
@@ -60,7 +60,6 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
         this.handleChangeLanguage = this.handleChangeLanguage.bind(this);
         this.newProject = this.newProject.bind(this);
         this.loadProject = this.loadProject.bind(this);
-        this.saveProject = this.saveProject.bind(this);
         this.prepareDetails = this.prepareDetails.bind(this);
         this.loadVocabularies = this.loadVocabularies.bind(this);
     }
@@ -71,14 +70,28 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
         document.title = ProjectSettings.name[languageCode] + " | " + Locale.ontoGrapher;
         graph.getCells().forEach((cell) => {
             if (ProjectElements[cell.id]) {
-
-                if (ProjectElements[cell.id].active) {
-                    cell.prop('attrs/label/text', getStereotypeList(ProjectElements[cell.id].iri, languageCode).map((str) => "«" + str.toLowerCase() + "»\n").join("") + ProjectElements[cell.id].names[languageCode]);
-                } else {
-                    cell.prop('attrs/label/text', getModelName(ProjectElements[cell.id].iri, languageCode));
-                }
+                nameGraphElement(cell, languageCode);
             }
         });
+    }
+
+    newProject(){
+        newProject();
+        this.setState({
+            projectLanguage: Object.keys(Languages)[0],
+            selectedLink: Object.keys(Links)[0]
+        });
+        this.elementPanel.current?.update();
+    }
+
+    loadProject(loadString: string){
+        this.newProject();
+        loadProject(loadString);
+        this.setState({
+            selectedLink: ProjectSettings.selectedLink,
+            projectLanguage: ProjectSettings.selectedLanguage
+        });
+        this.elementPanel.current?.update();
     }
 
     loadVocabularies(contextIRI: string, contextEndpoint: string, reload: boolean = false) {
@@ -137,7 +150,6 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
                 loading={this.state.loading}
                 newProject={this.newProject}
                 projectLanguage={this.state.projectLanguage}
-                saveProject={this.saveProject}
                 loadProject={this.loadProject}
                 loadContext={this.loadVocabularies}
                 handleChangeLanguage={this.handleChangeLanguage}

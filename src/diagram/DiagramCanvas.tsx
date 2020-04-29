@@ -6,6 +6,7 @@ import {getModelName, getName, getStereotypeList} from "../function/FunctionEdit
 import * as LocaleMain from "../locale/LocaleMain.json";
 import {addClass, addLink, addModel} from "../function/FunctionCreateVars";
 import {graph} from "../graph/graph";
+import {highlightCell, unHighlightCell} from "../function/FunctionGraph";
 
 interface DiagramCanvasProps {
     projectLanguage: string;
@@ -44,8 +45,8 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps> {
         }
         cell.resize(bbox.width, bbox.height);
         cell.position(bbox.x, bbox.y);
-        this.unHighlightCell(cell.id);
-        this.highlightCell(cell.id);
+        unHighlightCell(cell.id);
+        highlightCell(cell.id);
         for (let link of links) {
             if (link.getSourceCell() === null) {
                 link.source({id: id});
@@ -105,22 +106,7 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps> {
                 var infoButton = new joint.linkTools.InfoButton();
                 var verticesTool = new joint.linkTools.Vertices();
                 var segmentsTool = new joint.linkTools.Segments();
-                var removeButton = new joint.linkTools.Remove({
-                    action: ((evt, view) => {
-                        let id = view.model.id;
-                        let sid = view.model.getSourceCell().id;
-                        if (ProjectElements[sid].connections.includes(id)) ProjectElements[sid].connections.splice(ProjectElements[sid].connections.indexOf(id), 1);
-                        if (vocabOrModal(ProjectLinks[id].iri)) {
-                            let domainOf = vocabOrModal(vocabOrModal(ProjectLinks[id].iri).domain).domainOf;
-                            if (domainOf && (vocabOrModal(ProjectLinks[id].iri).domain in VocabularyElements)) {
-                                domainOf.splice(domainOf.indexOf(ProjectLinks[id].iri), 1);
-                            }
-                        }
-                        //let tid = view.model.getTargetCell().id;
-                        delete ProjectLinks[id];
-                        view.model.remove();
-                    })
-                });
+                var removeButton = new joint.linkTools.RemoveButton();
                 var toolsView = new joint.dia.ToolsView({
                     tools: [verticesTool, segmentsTool, removeButton, infoButton]
                 });
@@ -132,7 +118,7 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps> {
             'blank:pointerdown': (evt, x, y) => {
                 this.props.hideDetails();
                 for (let cell of graph.getCells()) {
-                    this.unHighlightCell(cell.id);
+                    unHighlightCell(cell.id);
                 }
                 this.drag = {x: x, y: y}
             },
@@ -265,44 +251,6 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps> {
                         }
                     }
                 }
-                for (let iri in ModelElements) {
-                    if (ModelElements[iri].domain && ModelElements[iri].range) {
-                        let domain = ModelElements[iri].domain;
-                        let range = ModelElements[iri].range;
-                        let domainCell = undefined;
-                        let rangeCell = undefined;
-                        for (let cell of graph.getElements()) {
-                            if (ProjectElements[cell.id].iri === domain || ProjectElements[cell.id].iriVocab === domain) {
-                                domainCell = cell.id;
-                            }
-                            if (ProjectElements[cell.id].iri === range || ProjectElements[cell.id].iriVocab === range) {
-                                rangeCell = cell.id;
-                            }
-                        }
-                        if (domainCell && rangeCell) {
-                            let link = new joint.shapes.standard.Link();
-                            link.source({id: domainCell});
-                            link.target({id: rangeCell});
-                            link.appendLabel({
-                                attrs: {text: {text: ModelElements[iri].labels[this.props.projectLanguage]}},
-                                position: {distance: 0.5}
-                            });
-                            let insert = true;
-                            for (let lnk in ProjectLinks) {
-                                if (ProjectLinks[lnk].source === domainCell &&
-                                    ProjectLinks[lnk].target === rangeCell &&
-                                    ProjectLinks[lnk].iri === iri) {
-                                    insert = false;
-                                    break;
-                                }
-                            }
-                            if (insert) {
-                                link.addTo(graph);
-                                addLink(link.id, iri, domainCell, rangeCell);
-                            }
-                        }
-                    }
-                }
 
                 for (let iri in VocabularyElements) {
                     if (VocabularyElements[iri].domain && VocabularyElements[iri].range) {
@@ -311,10 +259,10 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps> {
                         let domainCell = undefined;
                         let rangeCell = undefined;
                         for (let cell of graph.getElements()) {
-                            if (ProjectElements[cell.id].iri === domain || ProjectElements[cell.id].iriVocab === domain) {
+                            if (ProjectElements[cell.id].iri === domain) {
                                 domainCell = cell.id;
                             }
-                            if (ProjectElements[cell.id].iri === range || ProjectElements[cell.id].iriVocab === range) {
+                            if (ProjectElements[cell.id].iri === range) {
                                 rangeCell = cell.id;
                             }
                         }

@@ -1,12 +1,14 @@
 import {ProjectElements, Schemes, VocabularyElements} from "../config/Variables";
-import {getStereotypeList} from "./FunctionEditVars";
+import {getModelName, getStereotypeList} from "./FunctionEditVars";
 import {graph} from "../graph/graph";
+import {getVocabElementByElementID} from "./FunctionGetVars";
 
 export function nameGraphElement(cell: joint.dia.Cell, languageCode: string) {
-    if (Schemes[VocabularyElements[ProjectElements[cell.id].iri].inScheme].readOnly) {
-        cell.prop('attrs/label/text', getStereotypeList(ProjectElements[cell.id].iri, languageCode).map((str) => "«" + str.toLowerCase() + "»\n").join("") + ProjectElements[cell.id].names[languageCode]);
+    let vocabElem = getVocabElementByElementID(cell.id);
+    if (Schemes[vocabElem.inScheme].readOnly) {
+        cell.prop('attrs/label/text', getStereotypeList(vocabElem.types, languageCode).map((str) => "«" + str.toLowerCase() + "»\n").join("") + vocabElem.labels[languageCode]);
     } else {
-
+        cell.prop('attrs/label/text', vocabElem.labels[languageCode]);
     }
 }
 

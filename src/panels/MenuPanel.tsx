@@ -13,7 +13,6 @@ interface MenuPanelProps {
     newProject: Function;
     loadProject: Function;
     loadContext: Function;
-    saveProject: Function;
     update: Function;
     loading: boolean;
 }
@@ -42,7 +41,6 @@ export default class MenuPanel extends React.Component<MenuPanelProps, MenuPanel
                         <MenuPanelFile
                             newProject={this.props.newProject}
                             loadProject={this.props.loadProject}
-                            saveProject={this.props.saveProject}
                             update={() => {
                                 this.forceUpdate();
                             }}

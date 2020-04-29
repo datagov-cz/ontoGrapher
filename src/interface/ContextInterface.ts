@@ -90,7 +90,7 @@ export async function getContext(
     //load terms
     callback(Locale.loadingTerms);
     for (let vocab in vocabularies) {
-        if (!(vocab in Schemes)) getScheme(vocab, contextEndpoint, function () {
+        if (!(vocab in Schemes)) getScheme(vocab, contextEndpoint, vocabularies[vocab].readOnly,function () {
         });
         let termQ = [
             "PREFIX skos: <http://www.w3.org/2004/02/skos/core#>",
@@ -115,14 +115,10 @@ export async function getContext(
         for (let result of termsResult) {
             if (!(result.term.value in vocabularies[vocab].terms)) {
                 vocabularies[vocab].terms[result.term.value] = {};
-                vocabularies[vocab].terms[result.term.value].iri = [];
+                vocabularies[vocab].terms[result.term.value].types = [];
                 vocabularies[vocab].terms[result.term.value].labels = {};
                 vocabularies[vocab].terms[result.term.value].definitions = {};
-                vocabularies[vocab].terms[result.term.value].skos = {};
-                vocabularies[vocab].terms[result.term.value].skos.prefLabel = {};
-                vocabularies[vocab].terms[result.term.value].skos.definition = {};
-                vocabularies[vocab].terms[result.term.value].skos.inScheme = vocab;
-                vocabularies[vocab].terms[result.term.value].category = vocab;
+                vocabularies[vocab].terms[result.term.value].inScheme = vocab;
                 vocabularies[vocab].terms[result.term.value].domainOf = [];
             }
             if (result.skosLabel !== undefined) {
@@ -142,18 +138,14 @@ export async function getContext(
             if (result.range !== undefined) vocabularies[vocab].terms[result.term.value].range = result.range.value;
         }
         //put into packages
-        if (!vocabularies[vocab].readOnly) {
-            Object.assign(VocabularyElements, vocabularies[vocab].terms);
-            let pkg = new PackageNode(vocabularies[vocab].names["cs"], PackageRoot, false, vocab);
-            for (let elem in vocabularies[vocab].terms) {
-                let id = new graphElement().id;
-                if (typeof id === "string") {
-                    addClass(id, vocabularies[vocab].terms[elem].iri, "cs", vocab, pkg, false, false, vocabularies[vocab].terms[elem].labels, vocabularies[vocab].terms[elem].definitions, elem);
-                }
+        Object.assign(VocabularyElements, vocabularies[vocab].terms);
+        let pkg = new PackageNode(vocabularies[vocab].names["cs"], PackageRoot, false, vocab);
+        for (let elem in vocabularies[vocab].terms) {
+            let id = new graphElement().id;
+            if (typeof id === "string") {
+                addClass(id, vocabularies[vocab].terms[elem].iri, "cs", vocab, pkg, false, false, vocabularies[vocab].terms[elem].labels, vocabularies[vocab].terms[elem].definitions, elem);
             }
-            PackageRoot.children.push(pkg);
-        } else {
-            Object.assign(ModelElements, vocabularies[vocab].terms);
         }
+        PackageRoot.children.push(pkg);
     }
 }

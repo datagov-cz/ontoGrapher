@@ -2,7 +2,6 @@
   "Z-SGoV": {
     "type": "stereotype",
     "endpoint": "https://slovník.gov.cz/sparql",
-    "language": "cs",
     "sourceIRI": "https://slovník.gov.cz/základní/glosář",
     "classIRI": ["http://www.w3.org/2002/07/owl#Class"],
     "relationshipIRI": ["http://www.w3.org/2002/07/owl#ObjectProperty"],

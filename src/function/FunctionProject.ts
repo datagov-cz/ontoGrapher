@@ -20,18 +20,12 @@ import * as Locale from "../locale/LocaleMain.json";
 
 export function saveProject(): { [key: string]: any } {
     Diagrams[ProjectSettings.selectedDiagram].json = saveDiagram();
-    let projElem = ProjectElements;
-    for (let key of Object.keys(projElem)) {
-        projElem[key].package = undefined;
-    }
     let save = {
-        projectElements: projElem,
+        projectElements: ProjectElements,
         projectLinks: ProjectLinks,
         projectSettings: ProjectSettings,
-        selectedLink: this.state.selectedLink,
-        projectLanguage: this.state.projectLanguage,
         diagrams: Diagrams,
-        packageRoot: this.savePackages(),
+        packageRoot: savePackages(),
         //loaded things
         stereotypes: Stereotypes,
         vocabularyElements: VocabularyElements,
@@ -88,9 +82,6 @@ export function loadPackages(list: { trace: number[], elements: string[], name: 
     for (let pkg of list) {
         if (pkg.root) {
             PackageRoot.elements = pkg.elements;
-            for (let elem of pkg.elements) {
-                ProjectElements[elem].package = PackageRoot;
-            }
         } else {
             let iter = PackageRoot;
             for (let i = 0; i < pkg.trace.length; i++) {
@@ -100,9 +91,6 @@ export function loadPackages(list: { trace: number[], elements: string[], name: 
             newpkg.scheme = pkg.scheme;
             newpkg.elements = pkg.elements;
             iter.children.push(newpkg);
-            for (let elem of pkg.elements) {
-                ProjectElements[elem].package = newpkg;
-            }
         }
     }
 }
@@ -110,10 +98,6 @@ export function loadPackages(list: { trace: number[], elements: string[], name: 
 export function newProject() {
     graph.clear();
     initProjectSettings();
-    this.setState({
-        projectLanguage: Object.keys(Languages)[0],
-        selectedLink: Object.keys(Links)[0]
-    });
     Diagrams.length = 0;
     Diagrams.push({name: Locale.untitled, json: ""});
     Object.keys(VocabularyElements).forEach(el => delete VocabularyElements[el]);
@@ -121,16 +105,10 @@ export function newProject() {
     Object.keys(ProjectLinks).forEach(el => delete ProjectLinks[el]);
     PackageRoot.elements = [];
     PackageRoot.children = [];
-    this.elementPanel.current?.update();
 }
 
 export function loadProject(loadString: string) {
     let save = JSON.parse(loadString);
-    this.newProject();
-    this.setState({
-        selectedLink: save.selectedLink,
-        projectLanguage: save.projectLanguage
-    });
     for (let key in save.projectElements) {
         ProjectElements[key] = save.projectElements[key];
     }
@@ -141,14 +119,12 @@ export function loadProject(loadString: string) {
         VocabularyElements[key] = save.vocabularyElements[key];
     }
     Diagrams.length = 0;
-    save.diagrams.forEach((diagram: { [key: string]: any; }) => {
+    save.diagrams.forEach((diagram: { name: string, json: any }) => {
         Diagrams.push(diagram)
     });
     ProjectSettings.name = save.projectSettings.name;
     ProjectSettings.description = save.projectSettings.description;
     ProjectSettings.selectedDiagram = 0;
-    this.elementPanel.current?.update();
-    this.loadPackages(save.packageRoot);
     loadDiagram(Diagrams[ProjectSettings.selectedDiagram].json);
-    this.saveProject();
+    loadPackages(save.packageRoot);
 }

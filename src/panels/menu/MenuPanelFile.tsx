@@ -11,7 +11,6 @@ import FileFetchContextModal from "./file/FileFetchContextModal";
 interface MenuPanelFileProps {
     newProject: Function;
     loadProject: Function;
-    saveProject: Function;
     saveString: string;
     update: Function;
     loadContext: Function;
@@ -46,7 +45,6 @@ export default class MenuPanelFile extends React.Component<MenuPanelFileProps, M
         };
         this.newProject = this.newProject.bind(this);
         this.loadProject = this.loadProject.bind(this);
-        this.saveProject = this.saveProject.bind(this);
     }
 
     newProject() {
@@ -56,12 +54,7 @@ export default class MenuPanelFile extends React.Component<MenuPanelFileProps, M
 
     loadProject(load: string) {
         this.props.loadProject(load);
-
         this.setState({modalFileLoad: false});
-    }
-
-    saveProject() {
-        this.props.saveProject();
     }
 
     render() {
@@ -82,11 +75,10 @@ export default class MenuPanelFile extends React.Component<MenuPanelFileProps, M
 
             <NavDropdown.Item onClick={() => {
                 this.setState({modalFileSave: true});
-                this.props.saveProject();
             }}>{LocaleMenu.saveProject}</NavDropdown.Item>
             <FileSaveModal modal={this.state.modalFileSave} close={() => {
                 this.setState({modalFileSave: false})
-            }} saveProject={this.saveProject} saveString={this.props.saveString}/>
+            }}/>
 
             <NavDropdown.Divider/>
 

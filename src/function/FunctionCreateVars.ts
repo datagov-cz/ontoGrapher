@@ -17,6 +17,17 @@ import {AttributeType} from "../datatypes/AttributeType";
 import {getName, initLanguageObject} from "./FunctionEditVars";
 import {Cardinality} from "../datatypes/Cardinality";
 
+export function createValues(values: {[key:string]: string[]}, prefixes: {[key:string]: string}){
+    let result: string[] = [];
+    for (let key in values){
+        let prefix = prefixes[key];
+        for (let val in values[key]){
+            result.push(prefix + val);
+        }
+    }
+    return result;
+}
+
 export function createNewScheme(): string {
     let result = "https://slovník.gov.cz/" + structuresShort[ProjectSettings.knowledgeStructure] + "/" + LocaleMain.untitled;
     if (result in Schemes) {
@@ -91,7 +102,7 @@ export function addModel(id: string, iri: string, language: string, name: string
     ProjectElements[id] = result;
 }
 
-export function addLink(id: string, iri: string, source: string, target: string) {
+export function addLink(id: string | number, iri: string, source: string, target: string) {
     let result: { [key: string]: any } = {};
     result["iri"] = iri;
     result["sourceCardinality"] = CardinalityPool[0];

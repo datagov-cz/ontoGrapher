@@ -5,6 +5,17 @@ import {parsePrefix} from "../function/FunctionEditVars";
 import {AttributeObject} from "../datatypes/AttributeObject";
 import {AttributeType} from "../datatypes/AttributeType";
 
+
+//TODO: create default package on new project call
+//TODO: separate modals from items
+//TODO: retry button for fetch
+//TODO: redo/scrap addDomainOfIRIs
+//TODO: collapse canvas onDrop function
+//TODO: decouple cellTools
+//TODO: ts-nocheck on canvas
+//TODO: test saving, loading
+
+
 // language code : language labels
 export var Languages: { [key: string]: string } = {};
 
@@ -40,7 +51,9 @@ export var ProjectLinks: {
         //target cardinality Cardinality object
         targetCardinality: Cardinality,
         //diagram index
-        diagram: number
+        diagram: number,
+        //vertices
+        vertices: joint.dia.Link.Vertex[] | undefined;
     }
 } = {};
 
@@ -83,7 +96,7 @@ export var VocabularyElements: {
             definitions: { [key: string]: string },
             inScheme: string,
             domain: string | undefined,
-            range: string | undefined,
+               range: string | undefined,
             types: string[],
             domainOf: string[],
         }
