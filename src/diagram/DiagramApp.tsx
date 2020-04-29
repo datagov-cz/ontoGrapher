@@ -3,62 +3,34 @@ import MenuPanel from "../panels/MenuPanel";
 import ElementPanel from "../panels/ElementPanel";
 import DiagramCanvas from "./DiagramCanvas";
 import * as Locale from "../locale/LocaleMain.json";
-import {
-    AttributeTypePool,
-    CardinalityPool,
-    Diagrams,
-    graph,
-    Languages,
-    Links,
-    ModelElements,
-    PackageRoot,
-    ProjectElements,
-    ProjectLinks,
-    ProjectSettings,
-    PropertyPool,
-    StereotypeCategories,
-    Stereotypes
-} from "../config/Variables";
+import {Links, PackageRoot, ProjectElements, ProjectSettings} from "../config/Variables";
 import DetailPanel from "../panels/DetailPanel";
-import {getVocabulariesFromJSONSource} from "../interface/JSONInterface";
-import * as SemanticWebInterface from "../interface/SemanticWebInterface";
-import {Defaults} from "../config/Defaults";
+import {getVocabulariesFromRemoteJSON} from "../interface/JSONInterface";
 import {
     addDomainOfIRIs,
     getModelName,
     getStereotypeList,
     initLanguageObject,
-    initProjectSettings,
-    initVars,
-    loadDiagram,
-    saveDiagram
-} from "../function/Helper";
-import {PackageNode} from "../components/PackageNode";
+    initVars
+} from "../function/FunctionEditVars";
 import {getContext} from "../interface/ContextInterface";
+import {graph} from "../graph/graph";
 
-interface DiagramAppProps{
-    readonly?: boolean;
-    loadClasses?: string;
-    loadClassesName?: string;
-    classIRI?: string;
-    loadLanguage?: string;
-    loadRelationshipsName?: string;
-    loadRelationships?: string;
-    relationshipIRI?: string;
+interface DiagramAppProps {
+    readOnly?: boolean;
     loadDefaultVocabularies?: boolean;
 }
 
-interface DiagramAppState{
-    projectLanguage: string;
-    saveString: string;
+interface DiagramAppState {
     selectedLink: string;
     detailPanelHidden: boolean;
+    projectLanguage: string;
     loading: boolean;
 }
 
 require("../scss/style.scss");
 
-export default class DiagramApp extends React.Component<DiagramAppProps, DiagramAppState>{
+export default class DiagramApp extends React.Component<DiagramAppProps, DiagramAppState> {
     private readonly canvas: React.RefObject<DiagramCanvas>;
     private readonly elementPanel: React.RefObject<ElementPanel>;
     private readonly detailPanel: React.RefObject<DetailPanel>;
@@ -74,12 +46,11 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 
         initVars();
 
-        ProjectSettings.name = initLanguageObject("Fetching...");
+        ProjectSettings.status = "";
 
         this.state = ({
-            projectLanguage: Object.keys(Languages)[0],
-            selectedLink: Object.keys(Links)[0],
-            saveString: "",
+            projectLanguage: ProjectSettings.selectedLanguage,
+            selectedLink: ProjectSettings.selectedLink,
             detailPanelHidden: false,
             loading: true
         });
@@ -94,63 +65,15 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
         this.loadVocabularies = this.loadVocabularies.bind(this);
     }
 
-    loadVocabularies(contextIRI: string, contextEndpoint: string, reload: boolean = false){
-        if (reload){
-            this.newProject();
-            this.setState({loading: true});
-        }
-        getVocabulariesFromJSONSource(Defaults.defaultVocabularies, ()=>{
-        }).then(()=>{
-            this.handleChangeSelectedLink(Object.keys(Links)[0]);
-            getContext(
-                contextIRI,
-                contextEndpoint,
-                "application/json",
-                () => {}
-            ).then(()=>{
-                this.forceUpdate();
-                this.elementPanel.current?.update();
-                ProjectSettings.selectedPackage = PackageRoot.children[0];
-                PackageRoot.name = initLanguageObject(Locale.root);
-                this.setState({loading: false});
-                addDomainOfIRIs();
-                document.title = ProjectSettings.name[this.state.projectLanguage] + " | " + Locale.ontoGrapher;
-            })
-        });
-    }
-
-    componentDidMount(): void {
-        if (typeof this.props.loadClasses === "string"){
-            SemanticWebInterface.fetchClasses(this.props.loadClassesName, this.props.loadClasses, this.props.classIRI, true, this.props.loadLanguage, ()=>{
-                this.forceUpdate();
-            });
-        }
-        if (typeof this.props.loadRelationships === "string"){
-            SemanticWebInterface.fetchRelationships(this.props.loadRelationshipsName, this.props.loadRelationships, this.props.relationshipIRI, true, this.props.loadLanguage, ()=>{
-                this.forceUpdate();
-            });
-        }
-        if (this.props.loadDefaultVocabularies){
-            this.loadVocabularies(
-                "http://example.org/pracovni-prostor/metadatový-kontext-123"
-                ,"https://onto.fel.cvut.cz:7200/repositories/kodi-pracovni-prostor-sample");
-        }
-
-
-    }
-
-    prepareDetails(id: string){
-        this.detailPanel.current?.prepareDetails(id);
-    }
-
-    handleChangeLanguage(languageCode: string){
+    handleChangeLanguage(languageCode: string) {
         this.setState({projectLanguage: languageCode});
+        ProjectSettings.selectedLanguage = languageCode;
         document.title = ProjectSettings.name[languageCode] + " | " + Locale.ontoGrapher;
-        graph.getCells().forEach((cell) =>{
-            if (ProjectElements[cell.id]){
+        graph.getCells().forEach((cell) => {
+            if (ProjectElements[cell.id]) {
 
                 if (ProjectElements[cell.id].active) {
-                    cell.prop('attrs/label/text', getStereotypeList(ProjectElements[cell.id].iri, languageCode).map((str)=>"«"+str.toLowerCase()+"»\n").join("") + ProjectElements[cell.id].names[languageCode]);
+                    cell.prop('attrs/label/text', getStereotypeList(ProjectElements[cell.id].iri, languageCode).map((str) => "«" + str.toLowerCase() + "»\n").join("") + ProjectElements[cell.id].names[languageCode]);
                 } else {
                     cell.prop('attrs/label/text', getModelName(ProjectElements[cell.id].iri, languageCode));
                 }
@@ -158,145 +81,57 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
         });
     }
 
-    newProject(){
-        graph.clear();
-        initProjectSettings();
-        this.setState({projectLanguage: Object.keys(Languages)[0],
-            selectedLink: Object.keys(Links)[0],
-            saveString: ""});
-        Diagrams.length = 0;
-        Diagrams.push({name: Locale.untitled, json: ""});
-        StereotypeCategories.length = 0;
-        Object.keys(ProjectElements).forEach(el => delete ProjectElements[el]);
-        Object.keys(ProjectLinks).forEach(el => delete ProjectLinks[el]);
-        PackageRoot.elements = [];
-        PackageRoot.children = [];
-        this.elementPanel.current?.update();
-    }
-
-    loadProject(loadString: string){
-        let save = JSON.parse(loadString);
-        this.newProject();
-        this.setState({
-            selectedLink: save.selectedLink,
-            projectLanguage: save.projectLanguage
+    loadVocabularies(contextIRI: string, contextEndpoint: string, reload: boolean = false) {
+        if (reload) {
+            this.newProject();
+            this.setState({loading: true});
+            ProjectSettings.status = Locale.loading;
+        }
+        getVocabulariesFromRemoteJSON("https://raw.githubusercontent.com/opendata-mvcr/ontoGrapher/jointjs/src/config/Vocabularies.json", () => {
+        }).then(() => {
+            this.handleChangeSelectedLink(Object.keys(Links)[0]);
+            getContext(
+                contextIRI,
+                contextEndpoint,
+                "application/json",
+                () => {
+                }
+            ).then(() => {
+                this.forceUpdate();
+                this.elementPanel.current?.update();
+                ProjectSettings.selectedPackage = PackageRoot.children[0];
+                PackageRoot.labels = initLanguageObject(Locale.root);
+                this.setState({loading: false});
+                addDomainOfIRIs();
+                document.title = ProjectSettings.name[this.state.projectLanguage] + " | " + Locale.ontoGrapher;
+                ProjectSettings.status = ProjectSettings.status === Locale.loadingError ? Locale.loadingError : "";
+            })
         });
-        for (let key in save.projectElements){
-            ProjectElements[key] = save.projectElements[key];
-        }
-        for (let key in save.projectLinks){
-            ProjectLinks[key] = save.projectLinks[key];
-        }
-        Diagrams.length = 0;
-        save.diagrams.forEach((diagram: { [key: string]: any; })=>{Diagrams.push(diagram)});
-        ProjectSettings.name = save.projectSettings.name;
-        ProjectSettings.description = save.projectSettings.description;
-        ProjectSettings.selectedDiagram = 0;
-        this.elementPanel.current?.update();
-        this.loadPackages(save.packageRoot);
-        loadDiagram(Diagrams[ProjectSettings.selectedDiagram].json);
-        this.saveProject();
     }
 
-    loadPackages(list: {trace: number[], elements: string[], name: string, root: boolean, scheme: string}[]){
-        for (let pkg of list){
-            if (pkg.root){
-                PackageRoot.elements = pkg.elements;
-                for (let elem of pkg.elements){
-                    ProjectElements[elem].package = PackageRoot;
-                }
-            } else {
-                let iter = PackageRoot;
-                for (let i = 0; i < pkg.trace.length; i++){
-                    iter = iter.children[pkg.trace[i]];
-                }
-                let newpkg = new PackageNode(pkg.name, iter, false);
-                newpkg.scheme = pkg.scheme;
-                newpkg.elements = pkg.elements;
-                iter.children.push(newpkg);
-                for (let elem of pkg.elements){
-                    ProjectElements[elem].package = newpkg;
-                }
-            }
+    componentDidMount(): void {
+        if (this.props.loadDefaultVocabularies) {
+            this.loadVocabularies(
+                "http://example.org/pracovni-prostor/metadatový-kontext-123"
+                , "https://onto.fel.cvut.cz:7200/repositories/kodi-pracovni-prostor-sample");
         }
     }
 
-    savePackages(){
-        let result = [];
-        let q = [];
-        q.push(PackageRoot);
-        q.push(undefined);
-        while(q.length > 0){
-            let p = q.shift();
-            if (p === undefined){
-                q.push(undefined);
-                if (q[0] === undefined) break;
-                else continue;
-            }
-            let trace: number[] = [];
-            let iter = p;
-            while (iter !== PackageRoot) {
-                let parent = iter.parent;
-                if (parent) {
-                    trace.unshift(parent.children.indexOf(iter));
-                    iter = parent;
-                } else break;
-            }
-            trace.shift();
-            result.push({
-                name: p.name,
-                trace: trace,
-                elements: p.elements,
-                root: p === PackageRoot,
-                scheme: p.scheme
-            });
-
-            for (let sp of p.children){
-                q.push(sp);
-            }
-        }
-        return result;
-    }
-
-    saveProject(){
-        Diagrams[ProjectSettings.selectedDiagram].json = saveDiagram();
-        let projElem = ProjectElements;
-        for (let key of Object.keys(projElem)){
-            projElem[key].package = undefined;
-        }
-        let save = {
-            projectElements: projElem,
-            projectLinks: ProjectLinks,
-            projectSettings: {name: ProjectSettings.name, description: ProjectSettings.description},
-            selectedLink: this.state.selectedLink,
-            projectLanguage: this.state.projectLanguage,
-            diagrams: Diagrams,
-            packageRoot: this.savePackages(),
-            //loaded things
-            stereotypes: Stereotypes,
-            stereotypeCategories: StereotypeCategories,
-            modelElements: ModelElements,
-            links: Links,
-            languages: Languages,
-            properties: PropertyPool,
-            attributes: AttributeTypePool,
-            cardinalities: CardinalityPool
-        };
-        //keep this .log
-        console.log(save);
-        this.setState({saveString: (JSON.stringify(save))});
+    prepareDetails(id: string) {
+        this.detailPanel.current?.prepareDetails(id);
     }
 
     handleChangeSelectedLink(linkType: string) {
         this.setState({selectedLink: linkType});
+        ProjectSettings.selectedLink = linkType;
     }
 
-    hide(id:string, diagram: number){
+    hide(id: string, diagram: number) {
         ProjectElements[id].hidden[diagram] = true;
     }
 
-    render(){
-        return(<div className={"app"}>
+    render() {
+        return (<div className={"app"}>
             <MenuPanel
                 ref={this.menuPanel}
                 loading={this.state.loading}
@@ -305,9 +140,10 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
                 saveProject={this.saveProject}
                 loadProject={this.loadProject}
                 loadContext={this.loadVocabularies}
-                saveString={this.state.saveString}
                 handleChangeLanguage={this.handleChangeLanguage}
-                update={()=>{this.elementPanel.current?.update();}}
+                update={() => {
+                    this.elementPanel.current?.update();
+                }}
             />
             <ElementPanel
                 ref={this.elementPanel}
@@ -318,8 +154,12 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
             <DetailPanel
                 ref={this.detailPanel}
                 projectLanguage={this.state.projectLanguage}
-                resizeElem={(id: string)=>{this.canvas.current?.resizeElem(id)}}
-                update={()=>{this.elementPanel.current?.forceUpdate()}}
+                resizeElem={(id: string) => {
+                    this.canvas.current?.resizeElem(id)
+                }}
+                update={() => {
+                    this.elementPanel.current?.forceUpdate()
+                }}
             />
             <DiagramCanvas
                 hide={this.hide}
@@ -327,9 +167,13 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
                 selectedLink={this.state.selectedLink}
                 projectLanguage={this.state.projectLanguage}
                 prepareDetails={this.prepareDetails}
-                hideDetails={() => {this.detailPanel.current?.hide();}}
-                addCell={() => {this.elementPanel.current?.forceUpdate();}}
+                hideDetails={() => {
+                    this.detailPanel.current?.hide();
+                }}
+                addCell={() => {
+                    this.elementPanel.current?.forceUpdate();
+                }}
             />
         </div>);
-  }
+    }
 }

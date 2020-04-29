@@ -1,14 +1,15 @@
-import {initLanguageObject} from "../function/Helper";
+import {initLanguageObject} from "../function/FunctionEditVars";
 
 export class PackageNode {
     public children: PackageNode[];
     public parent?: PackageNode;
     public elements: string[];
-    public name: { [key:string]: string };
+    public labels: { [key: string]: string };
     public open: boolean;
     public scheme?: string;
+
     constructor(name: string, parent: PackageNode | undefined, open?: boolean, scheme?: string) {
-        this.name = initLanguageObject(name);
+        this.labels = initLanguageObject(name);
         this.children = [];
         this.elements = [];
         if (parent) this.parent = parent;

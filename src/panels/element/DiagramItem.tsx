@@ -3,7 +3,7 @@ import {Diagrams, graph, ProjectSettings} from "../../config/Variables";
 import {Button, Form, Modal, OverlayTrigger, Tooltip} from "react-bootstrap";
 import * as LocaleMain from "../../locale/LocaleMain.json";
 import * as LocaleMenu from "../../locale/LocaleMenu.json";
-import {changeDiagrams, loadDiagram, saveDiagram} from "../../function/Helper";
+import {changeDiagrams, loadDiagram, saveDiagram} from "../../function/FunctionDiagram";
 
 interface Props {
     diagram: number;
@@ -23,7 +23,7 @@ const tooltipE = (
     <Tooltip id="tooltipE">{LocaleMain.renameDiagram}</Tooltip>
 );
 
-export default class PanelDiagramItem extends React.Component<Props, State> {
+export default class DiagramItem extends React.Component<Props, State> {
     constructor(props: Props) {
         super(props);
         this.state = {
@@ -90,7 +90,7 @@ export default class PanelDiagramItem extends React.Component<Props, State> {
                         <span className={"label"}>{Diagrams[this.props.diagram].name}</span>
                         <span className={"packageOptions right"}
                               style={{display: this.state.hover ? "inline-block" : "none"}}>
-                               <OverlayTrigger  overlay={tooltipE}
+                               <OverlayTrigger overlay={tooltipE}
                                                popperConfig={{
                                                    modifiers: {
                                                        preventOverflow: {
@@ -101,8 +101,8 @@ export default class PanelDiagramItem extends React.Component<Props, State> {
                                                placement={"bottom"}
                                >
                                     <button className={"buttonlink"} onClick={() => {
-                                    this.setState({modalEdit: true})
-                                    }} ><span role="img" aria-label={""}>✏</span></button>
+                                        this.setState({modalEdit: true})
+                                    }}><span role="img" aria-label={""}>✏</span></button>
                                 </OverlayTrigger>
                                 <OverlayTrigger
                                     popperConfig={{
@@ -114,11 +114,11 @@ export default class PanelDiagramItem extends React.Component<Props, State> {
                                     }}
                                     placement={"bottom"}
                                     overlay={
-                                        (<Tooltip id={"tltip"} >{LocaleMain.del}</Tooltip>)
+                                        (<Tooltip id={"tltip"}>{LocaleMain.del}</Tooltip>)
                                     }>
                                     <button className={"buttonlink"} onClick={() => {
-                                    this.setState({modalRemove: true})
-                                    }} ><span role="img" aria-label={""}>❌</span></button>
+                                        this.setState({modalRemove: true})
+                                    }}><span role="img" aria-label={""}>❌</span></button>
                                 </OverlayTrigger>
                         </span>
                     </div>
@@ -129,11 +129,11 @@ export default class PanelDiagramItem extends React.Component<Props, State> {
                             <Modal.Title>{LocaleMenu.modalEditDiagramTitle}</Modal.Title>
                         </Modal.Header>
                         <Modal.Body>
-                                <Form.Control onChange={(event: { currentTarget: { value: any; }; }) => {
-                                    this.setState({inputEdit: event.currentTarget.value})
-                                }} type="text" value={this.state.inputEdit}
-                                              placeholder={LocaleMain.modalEditDiagramPlaceholder}
-                                              required/>
+                            <Form.Control onChange={(event: { currentTarget: { value: any; }; }) => {
+                                this.setState({inputEdit: event.currentTarget.value})
+                            }} type="text" value={this.state.inputEdit}
+                                          placeholder={LocaleMain.modalEditDiagramPlaceholder}
+                                          required/>
                         </Modal.Body>
                         <Modal.Footer>
                             <Button onClick={() => {

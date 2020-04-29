@@ -19,10 +19,15 @@ export default class HelpModal extends React.Component<Props, State> {
                 <Modal.Title>{LocaleMenu.help}</Modal.Title>
             </Modal.Header>
             <Modal.Body>
-                <p>{LocaleMenu.helpDescription}<a href="https://github.com/opendata-mvcr/ontoGrapher/wiki" rel="noopener noreferrer" target="_blank">https://github.com/opendata-mvcr/ontoGrapher/wiki</a></p>
+                <p>{LocaleMenu.helpDescription}<a href="https://github.com/opendata-mvcr/ontoGrapher/wiki"
+                                                  rel="noopener noreferrer"
+                                                  target="_blank">https://github.com/opendata-mvcr/ontoGrapher/wiki</a>
+                </p>
             </Modal.Body>
             <Modal.Footer>
-                <Button onClick={() => {this.props.close();}}>{LocaleMenu.close}</Button>
+                <Button onClick={() => {
+                    this.props.close();
+                }}>{LocaleMenu.close}</Button>
             </Modal.Footer>
         </Modal>);
     }

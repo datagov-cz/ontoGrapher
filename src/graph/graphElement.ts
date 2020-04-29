@@ -33,7 +33,7 @@ export var graphElement = joint.dia.Element.define('examples.CustomTextElement',
             },]
     },
     {
-        create: function (id) {
+        create: function (id: string) {
             return new this({id: id});
         }
     }

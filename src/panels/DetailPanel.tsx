@@ -18,18 +18,19 @@ import * as LocaleMain from "../locale/LocaleMain.json";
 import {Button, Form, Tab, Tabs} from "react-bootstrap";
 import TableList from "../components/TableList";
 import * as LocaleMenu from "../locale/LocaleMenu.json";
-import {getName, getStereotypeList, initLanguageObject, vocabOrModal} from "../function/Helper";
+import {getName, getStereotypeList, initLanguageObject, vocabOrModal} from "../function/FunctionEditVars";
 // @ts-ignore
 import {RIEInput} from "riek";
-import {AttributeObject} from "../components/AttributeObject";
+import {AttributeObject} from "../datatypes/AttributeObject";
 import IRIlabel from "../components/IRIlabel";
 import IRILink from "../components/IRILink";
+import DetailLink from "./detail/DetailLink";
 
-const headers: {[key:string]: {[key:string]:string}} = {
-    labels: {"cs":"Název","en":"Label"},
-    inScheme: {"cs":"Ze slovníku", "en":"In vocabulary"},
-    definition:{"cs":"Definice", "en":"Definition"},
-    stereotype:{"cs":"Stereotyp","en":"Stereotype"}
+const headers: { [key: string]: { [key: string]: string } } = {
+    labels: {"cs": "Název", "en": "Label"},
+    inScheme: {"cs": "Ze slovníku", "en": "In vocabulary"},
+    definition: {"cs": "Definice", "en": "Definition"},
+    stereotype: {"cs": "Stereotyp", "en": "Stereotype"}
 }
 
 interface Props {
@@ -92,13 +93,13 @@ export default class DetailPanel extends React.Component<Props, State> {
 
     handleChangeNameAttribute(event: { textarea: string }, pos: number) {
         let attrs = this.state.inputAttributes;
-        attrs[pos].first = event.textarea;
+        attrs[pos].name = event.textarea;
         this.setState({inputAttributes: attrs, changes: true});
     }
 
     handleChangeNameProperty(event: { textarea: string }, pos: number) {
         let attrs = this.state.inputProperties;
-        attrs[pos].first = event.textarea;
+        attrs[pos].name = event.textarea;
         this.setState({inputProperties: attrs, changes: true});
     }
 
@@ -111,7 +112,7 @@ export default class DetailPanel extends React.Component<Props, State> {
 
     handleChangeAttributeType(event: React.FormEvent<HTMLInputElement>, i: number) {
         let attrs = this.state.inputAttributes;
-        attrs[i].second = AttributeTypePool[event.currentTarget.value];
+        attrs[i].type = AttributeTypePool[event.currentTarget.value];
         this.setState({inputAttributes: attrs, changes: true});
     }
 
@@ -186,7 +187,7 @@ export default class DetailPanel extends React.Component<Props, State> {
             ProjectElements[this.state.model].descriptions = this.state.inputDescriptions;
             ProjectElements[this.state.model].attributes = this.state.inputAttributes;
             ProjectElements[this.state.model].diagrams = this.state.inputDiagrams;
-            let name = getStereotypeList(this.state.iriElem, this.props.projectLanguage).map((str)=>"«"+str.toLowerCase()+"»\n").join("") + ProjectElements[this.state.model].names[this.props.projectLanguage];
+            let name = getStereotypeList(this.state.iriElem, this.props.projectLanguage).map((str) => "«" + str.toLowerCase() + "»\n").join("") + ProjectElements[this.state.model].names[this.props.projectLanguage];
             graph.getCell(this.state.model).attr({
                 label: {
                     text: name
@@ -217,37 +218,19 @@ export default class DetailPanel extends React.Component<Props, State> {
                     }
                     if (ProjectLinks[this.state.model].sourceCardinality.getString() !== LocaleMain.none) {
                         link.appendLabel({
-                            attrs: {
-                                text: {
-                                    text: ProjectLinks[this.state.model].sourceCardinality.getString()
-                                }
-                            },
-                            position: {
-                                distance: 20
-                            }
+                            attrs: {text: {text: ProjectLinks[this.state.model].sourceCardinality.getString()}},
+                            position: {distance: 20}
                         });
                     }
                     if (ProjectLinks[this.state.model].targetCardinality.getString() !== LocaleMain.none) {
                         link.appendLabel({
-                            attrs: {
-                                text: {
-                                    text: ProjectLinks[this.state.model].targetCardinality.getString()
-                                }
-                            },
-                            position: {
-                                distance: -20
-                            }
+                            attrs: {text: {text: ProjectLinks[this.state.model].targetCardinality.getString()}},
+                            position: {distance: -20}
                         });
                     }
                     link.appendLabel({
-                        attrs: {
-                            text: {
-                                text: Links[this.state.iriLink].labels[this.props.projectLanguage]
-                            }
-                        },
-                        position: {
-                            distance: 0.5
-                        }
+                        attrs: {text: {text: Links[this.state.iriLink].labels[this.props.projectLanguage]}},
+                        position: {distance: 0.5}
                     });
                 }
             }
@@ -278,50 +261,57 @@ export default class DetailPanel extends React.Component<Props, State> {
                                     {this.state.iriElem.map(iri =>
                                         <tr key={iri}>
                                             <td>
-                                            <IRILink
-                                                label={
-                                                    iri in Stereotypes ?
-                                                        Stereotypes[iri].labels[this.props.projectLanguage]
-                                                        : VocabularyElements[iri].labels[this.props.projectLanguage]
-                                                }
-                                                iri={iri}/>
+                                                <IRILink
+                                                    label={
+                                                        iri in Stereotypes ?
+                                                            Stereotypes[iri].labels[this.props.projectLanguage]
+                                                            : VocabularyElements[iri].labels[this.props.projectLanguage]
+                                                    }
+                                                    iri={iri}/>
                                                 &nbsp;
-                                                {this.state.iriElem.length === 1 ? "" : <button className={"buttonlink"} onClick={()=>{
-                                                    let result = this.state.iriElem;
-                                                    result.splice(result.indexOf(iri),1);
-                                                    this.setState({
-                                                        iriElem: result,
-                                                        changes: true
-                                                    });
-                                                }}>
-                                                    {LocaleMenu.deleteProjectName}</button>}
+                                                {this.state.iriElem.length === 1 ? "" :
+                                                    <button className={"buttonlink"} onClick={() => {
+                                                        let result = this.state.iriElem;
+                                                        result.splice(result.indexOf(iri), 1);
+                                                        this.setState({
+                                                            iriElem: result,
+                                                            changes: true
+                                                        });
+                                                    }}>
+                                                        {LocaleMenu.deleteProjectName}</button>}
                                             </td>
                                         </tr>
                                     )}
                                     <tr>
                                         <td>
                                             <Form inline>
-                                                <Form.Control size="sm" as="select" value={this.state.newStereotype} onChange={(event)=>{this.setState({newStereotype: event.currentTarget.value})}}>
-                                                    {Object.keys(Stereotypes).map((stereotype) => (<option key={stereotype} value={stereotype}>{getName(stereotype, this.props.projectLanguage)}</option>))}
+                                                <Form.Control size="sm" as="select" value={this.state.newStereotype}
+                                                              onChange={(event) => {
+                                                                  this.setState({newStereotype: event.currentTarget.value})
+                                                              }}>
+                                                    {Object.keys(Stereotypes).map((stereotype) => (
+                                                        <option key={stereotype}
+                                                                value={stereotype}>{getName(stereotype, this.props.projectLanguage)}</option>))}
                                                 </Form.Control>
-                                                <Button size="sm" onClick={()=>{
+                                                <Button size="sm" onClick={() => {
                                                     let result = this.state.iriElem;
-													if (!(this.state.iriElem.includes(this.state.newStereotype))){
-														result.push(this.state.newStereotype);
-                                                    this.setState({
-                                                        iriElem: result,
-                                                        changes: true,
-                                                        newStereotype: Object.keys(Stereotypes)[0]
-                                                    })
-													}
-                                                    
+                                                    if (!(this.state.iriElem.includes(this.state.newStereotype))) {
+                                                        result.push(this.state.newStereotype);
+                                                        this.setState({
+                                                            iriElem: result,
+                                                            changes: true,
+                                                            newStereotype: Object.keys(Stereotypes)[0]
+                                                        })
+                                                    }
+
                                                 }}>{LocaleMain.add}</Button>
                                             </Form>
                                         </td>
                                     </tr>
                                 </TableList>
 
-                                <h5>{<IRILink label={headers.labels[this.props.projectLanguage]} iri={"http://www.w3.org/2004/02/skos/core#prefLabel"}/>}</h5>
+                                <h5>{<IRILink label={headers.labels[this.props.projectLanguage]}
+                                              iri={"http://www.w3.org/2004/02/skos/core#prefLabel"}/>}</h5>
                                 <TableList>
                                     {Object.keys(this.state.inputNames).map((language) => (
                                         <tr key={language}>
@@ -335,14 +325,16 @@ export default class DetailPanel extends React.Component<Props, State> {
                                                     propName="textarea"
                                                 />
                                                 &nbsp;
-                                                <button className={"buttonlink"} onClick={() => this.deleteName(language)}>
+                                                <button className={"buttonlink"}
+                                                        onClick={() => this.deleteName(language)}>
                                                     {LocaleMenu.deleteProjectName}</button>
                                             </td>
                                             <td>{Languages[language]}</td>
                                         </tr>
                                     ))}
                                 </TableList>
-                                <h5>{<IRILink label={headers.inScheme[this.props.projectLanguage]} iri={"http://www.w3.org/2004/02/skos/core#inScheme"}/>}</h5>
+                                <h5>{<IRILink label={headers.inScheme[this.props.projectLanguage]}
+                                              iri={"http://www.w3.org/2004/02/skos/core#inScheme"}/>}</h5>
                                 <TableList>
                                     {Object.keys(Schemes[ProjectElements[this.state.model].scheme].labels).map(lang => (
                                         <tr>
@@ -353,7 +345,9 @@ export default class DetailPanel extends React.Component<Props, State> {
                                         </tr>
                                     ))}
                                 </TableList>
-                                {Object.keys(this.state.inputDescriptions).length > 0 ? <h5>{<IRILink label={headers.definition[this.props.projectLanguage]} iri={"http://www.w3.org/2004/02/skos/core#definition"}/>}</h5> : ""}
+                                {Object.keys(this.state.inputDescriptions).length > 0 ?
+                                    <h5>{<IRILink label={headers.definition[this.props.projectLanguage]}
+                                                  iri={"http://www.w3.org/2004/02/skos/core#definition"}/>}</h5> : ""}
                                 <Tabs id={"descriptions"}>
                                     {Object.keys(this.state.inputDescriptions).map((language, i) => (
                                         <Tab eventKey={i} title={Languages[language]}>
@@ -361,7 +355,9 @@ export default class DetailPanel extends React.Component<Props, State> {
                                                 as={"textarea"}
                                                 rows={3}
                                                 value={this.state.inputDescriptions[language]}
-                                                onChange={(event: React.ChangeEvent<HTMLInputElement>)=>{this.handleChangeDescription(event,language)}}
+                                                onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                                                    this.handleChangeDescription(event, language)
+                                                }}
                                             />
                                         </Tab>))}
                                 </Tabs>
@@ -373,7 +369,7 @@ export default class DetailPanel extends React.Component<Props, State> {
                                             <td>
                                                 <RIEInput
                                                     className={"rieinput"}
-                                                    value={attr.first.length > 0 ? attr.first : "<blank>"}
+                                                    value={attr.name.length > 0 ? attr.name : "<blank>"}
                                                     change={(event: { textarea: string }) => {
                                                         this.handleChangeNameAttribute(event, i);
                                                     }}
@@ -387,7 +383,7 @@ export default class DetailPanel extends React.Component<Props, State> {
                                             </td>
                                             <td>
                                                 <Form inline>
-                                                    <Form.Control as="select" value={attr.second.iri}
+                                                    <Form.Control as="select" value={attr.type.iri}
                                                                   onChange={(event: React.FormEvent<HTMLInputElement>) => {
                                                                       this.handleChangeAttributeType(event, i);
                                                                   }}>
@@ -407,7 +403,9 @@ export default class DetailPanel extends React.Component<Props, State> {
                             <Tab eventKey={3} title={LocaleMain.diagram}>
                                 <TableList headings={[LocaleMenu.diagram]}>
                                     {this.state.inputDiagrams.map((conn) =>
-                                        (<tr><td>{Diagrams[conn].name}</td></tr>)
+                                        (<tr>
+                                            <td>{Diagrams[conn].name}</td>
+                                        </tr>)
                                     )}
                                 </TableList>
                             </Tab>
@@ -416,7 +414,9 @@ export default class DetailPanel extends React.Component<Props, State> {
                                     headings={[LocaleMenu.connectionVia, LocaleMenu.connectionTo, LocaleMenu.diagram]}>
                                     {this.state.inputConnections.map((conn) => {
                                             return (<tr>
-                                                <IRIlabel label={Links[ProjectLinks[conn].iri].labels[this.props.projectLanguage]} iri={ProjectLinks[conn].iri}/>
+                                                <IRIlabel
+                                                    label={Links[ProjectLinks[conn].iri].labels[this.props.projectLanguage]}
+                                                    iri={ProjectLinks[conn].iri}/>
                                                 <td>{ProjectElements[ProjectLinks[conn].target].names[this.props.projectLanguage]}</td>
                                                 <td>{ProjectLinks[conn].diagram}</td>
                                             </tr>);
@@ -424,7 +424,8 @@ export default class DetailPanel extends React.Component<Props, State> {
                                     )}
                                     {this.state.iriModelVocab in VocabularyElements ? VocabularyElements[this.state.iriModelVocab].domainOf.map((conn: string) => {
                                             return (<tr>
-                                                <IRIlabel label={vocabOrModal(conn).labels[this.props.projectLanguage]} iri={conn}/>
+                                                <IRIlabel label={vocabOrModal(conn).labels[this.props.projectLanguage]}
+                                                          iri={conn}/>
                                                 <td>{vocabOrModal(vocabOrModal(conn).range).labels[this.props.projectLanguage]}</td>
                                                 <td>{LocaleMenu.fromModel}</td>
                                             </tr>);
@@ -444,7 +445,7 @@ export default class DetailPanel extends React.Component<Props, State> {
                                         <td>
                                             <RIEInput
                                                 className={"rieinput"}
-                                                value={prop.first.length > 0 ? prop.first : "<blank>"}
+                                                value={prop.name.length > 0 ? prop.name : "<blank>"}
                                                 change={(event: { textarea: string }) => {
                                                     this.handleChangeNameProperty(event, i);
                                                 }}
@@ -458,147 +459,7 @@ export default class DetailPanel extends React.Component<Props, State> {
                     </div>
                 </ResizableBox>);
             } else if (this.state.type === "link") {
-                return (
-                    <ResizableBox
-                        width={300}
-                        height={1000}
-                        axis={"x"}
-                        handleSize={[8, 8]}
-                        resizeHandles={['nw']}
-                        className={"details"}>
-                        <div>
-                            <h3>{this.state.iriLink in Links ? Links[this.state.iriLink].labels[this.props.projectLanguage] : vocabOrModal(this.state.iriLink).labels[this.props.projectLanguage]}</h3>
-                            {this.state.changes ?
-                                <p className={"bordered"}>{LocaleMain.saveChanges}<br/><br/><Button onClick={() => {
-                                    this.save();
-                                }}>{LocaleMain.menuPanelSave}</Button></p> : <p/>}
-                            <TableList headings={[LocaleMenu.linkInfo, ""]}>
-                                <tr>
-                                    <td>
-                                        <span>{LocaleMain.sourceCardinality}</span>
-                                    </td>
-                                    <td>
-                                        <Form.Control as="select" value={this.state.sourceCardinality}
-                                                      onChange={(event: React.FormEvent<HTMLInputElement>) => {
-                                                          this.setState({
-                                                              sourceCardinality: event.currentTarget.value,
-                                                              changes: true
-                                                          });
-                                                      }
-                                                      }>
-                                            {CardinalityPool.map((card, i) =>
-                                                (<option key={i} value={i.toString(10)}>{card.getString()}</option>)
-                                            )}
-                                        </Form.Control>
-                                    </td>
-                                </tr>
-
-                                <tr>
-                                    <td>
-                                        <span>{LocaleMain.targetCardinality}</span>
-                                    </td>
-                                    <td>
-                                        <Form.Control as="select" value={this.state.targetCardinality}
-                                                      onChange={(event: React.FormEvent<HTMLInputElement>) => {
-                                                          this.setState({
-                                                              targetCardinality: event.currentTarget.value,
-                                                              changes: true
-                                                          });
-                                                      }
-                                                      }>
-                                            {CardinalityPool.map((card, i) =>
-                                                (<option key={i} value={i.toString(10)}>{card.getString()}</option>)
-                                            )}
-                                        </Form.Control>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <span>{LocaleMain.linkType}</span>
-                                    </td>
-                                    <IRIlabel label={this.state.iriLink in Links ?
-                                        Links[this.state.iriLink].labels[this.props.projectLanguage] :
-                                        this.state.iriLink in ModelElements ? ModelElements[this.state.iriLink].labels[this.props.projectLanguage] : VocabularyElements[this.state.iriLink].labels[this.props.projectLanguage]
-                                    } iri={this.state.iriLink}/>
-                                </tr>
-                            </TableList>
-                            {/*{ModelElements[this.state.iriLink] ?*/}
-                            {/*        <TableList>*/}
-                            {/*            <tr>*/}
-                            {/*                <th>{LocaleMenu.domain}</th>*/}
-                            {/*                <IRIlabel iri={ModelElements[this.state.iriLink].domain} label={vocabOrModal(ModelElements[this.state.iriLink].domain).labels[this.props.projectLanguage]} />*/}
-                            {/*            </tr>*/}
-                            {/*            <tr>*/}
-                            {/*                <th>{LocaleMenu.range}</th>*/}
-                            {/*                <IRIlabel iri={ModelElements[this.state.iriLink].range} label={vocabOrModal(ModelElements[this.state.iriLink].range).labels[this.props.projectLanguage]} />*/}
-                            {/*            </tr>*/}
-                            {/*        </TableList>*/}
-                            {/*    : ""}*/}
-                            <h5>{<IRILink label={headers.labels[this.props.projectLanguage]} iri={"http://www.w3.org/2004/02/skos/core#prefLabel"}/>}</h5>
-                            <TableList>
-                                {this.state.iriLink in Links ? Object.keys(Links[this.state.iriLink].skos.prefLabel).map(lang => (
-                                        <tr>
-                                            <td>{Links[this.state.iriLink].skos.prefLabel[lang]}</td>
-                                            <td>{Languages[lang]}</td>
-                                        </tr>
-                                    ))
-                                    :
-                                    Object.keys(vocabOrModal(this.state.iriLink).skos.prefLabel).map(lang => (
-                                        <tr>
-                                            <td>{vocabOrModal(this.state.iriLink).skos.prefLabel[lang]}</td>
-                                            <td>{Languages[lang]}</td>
-                                        </tr>
-                                    ))
-                                }
-                            </TableList>
-                            <h5>{<IRILink label={headers.inScheme[this.props.projectLanguage]} iri={"http://www.w3.org/2004/02/skos/core#inScheme"}/>}</h5>
-                            <TableList>
-                                {this.state.iriLink in Links ? Object.keys(Schemes[Links[this.state.iriLink].skos.inScheme].labels).map(lang => (
-                                    <tr>
-                                        <IRIlabel
-                                            label={Schemes[Links[this.state.iriLink].skos.inScheme].labels[lang]}
-                                            iri={Links[this.state.iriLink].skos.inScheme}/>
-                                        <td>{Languages[lang]}</td>
-                                    </tr>
-                                ))
-                                    :
-                                    Object.keys(Schemes[vocabOrModal(this.state.iriLink).skos.inScheme].labels).map(lang => (
-                                        <tr>
-                                            <IRIlabel
-                                                label={Schemes[vocabOrModal(this.state.iriLink).skos.inScheme].labels[lang]}
-                                                iri={vocabOrModal(this.state.iriLink).skos.inScheme}/>
-                                            <td>{Languages[lang]}</td>
-                                        </tr>
-                                    ))
-                                }
-                            </TableList>
-
-                            {((this.state.iriLink in Links && Object.keys(Links[this.state.iriLink].skos.definition).length > 0) || (Object.keys(vocabOrModal(this.state.iriLink).skos.definition).length > 0)) ? <h5>{<IRILink label={headers.definition[this.props.projectLanguage]} iri={"http://www.w3.org/2004/02/skos/core#definition"}/>}</h5> : ""}
-                            <Tabs id={"descriptions"}>
-                                {this.state.iriLink in Links ? Object.keys(Links[this.state.iriLink].skos.definition).map((language, i) => (
-                                    <Tab eventKey={i} title={Languages[language]}>
-                                        <Form.Control
-                                            as={"textarea"}
-                                            rows={3}
-                                            disabled={true}
-                                            value={Links[this.state.iriLink].skos.definition[language]}
-                                        />
-                                    </Tab>)):
-                                    Object.keys(vocabOrModal(this.state.iriLink).skos.definition).map((language, i) => (
-                                        <Tab eventKey={i} title={Languages[language]}>
-                                            <Form.Control
-                                                as={"textarea"}
-                                                rows={3}
-                                                disabled={true}
-                                                value={vocabOrModal(this.state.iriLink).skos.definition[language]}
-                                            />
-                                        </Tab>))
-                                }
-                            </Tabs>
-                        </div>
-                    </ResizableBox>
-                );
-
+                return (<DetailLink/>);
             } else if (this.state.type === "model") {
                 return (<ResizableBox
                     width={300}
@@ -612,127 +473,138 @@ export default class DetailPanel extends React.Component<Props, State> {
                         <Tabs id={"detailsTabs"}>
                             <Tab eventKey={1} title={LocaleMain.description}>
                                 <h5>{headers.stereotype[this.props.projectLanguage]}</h5>
-                                            <TableList>
-                                                {ModelElements[this.state.iriModel].iri.map((iri: any) =>
-                                                    <tr key={iri}><IRIlabel
-                                                        label={
-                                                            iri in Stereotypes ?
-                                                                Stereotypes[iri].labels[this.props.projectLanguage]
-                                                                : VocabularyElements[iri].labels[this.props.projectLanguage]
-                                                        }
-                                                        iri={iri}/>
-                                                    </tr>
-                                                )}
-                                            </TableList>
+                                <TableList>
+                                    {ModelElements[this.state.iriModel].iri.map((iri: any) =>
+                                        <tr key={iri}><IRIlabel
+                                            label={
+                                                iri in Stereotypes ?
+                                                    Stereotypes[iri].labels[this.props.projectLanguage]
+                                                    : VocabularyElements[iri].labels[this.props.projectLanguage]
+                                            }
+                                            iri={iri}/>
+                                        </tr>
+                                    )}
+                                </TableList>
 
-                                            {ModelElements[this.state.iriModel].domain && ModelElements[this.state.iriModel].range ?
-                                                <div>
-                                                    <br />
-                                                <TableList>
-                                                    <tr>
-                                                        <th>{LocaleMenu.domain}</th>
-                                                        <IRIlabel iri={ModelElements[this.state.iriModel].domain} label={ModelElements[ModelElements[this.state.iriModel].domain].labels[this.props.projectLanguage]} />
-                                                    </tr>
-                                                    <tr>
-                                                        <th>{LocaleMenu.range}</th>
-                                                        <IRIlabel iri={ModelElements[this.state.iriModel].range} label={ModelElements[ModelElements[this.state.iriModel].range].labels[this.props.projectLanguage]} />
-                                                    </tr>
-                                                </TableList>
-                                                </div>
-                                                : ""}
-                                    <h5>{<IRILink label={headers.labels[this.props.projectLanguage]} iri={"http://www.w3.org/2004/02/skos/core#prefLabel"}/>}</h5>
-                                    <TableList>
-                                        {Object.keys(ModelElements[this.state.iriModel].skos.prefLabel).map(lang => (
+                                {ModelElements[this.state.iriModel].domain && ModelElements[this.state.iriModel].range ?
+                                    <div>
+                                        <br/>
+                                        <TableList>
                                             <tr>
-                                                <td>{ModelElements[this.state.iriModel].skos.prefLabel[lang]}</td>
-                                                <td>{Languages[lang]}</td>
+                                                <th>{LocaleMenu.domain}</th>
+                                                <IRIlabel iri={ModelElements[this.state.iriModel].domain}
+                                                          label={ModelElements[ModelElements[this.state.iriModel].domain].labels[this.props.projectLanguage]}/>
                                             </tr>
-                                        ))}
-                                    </TableList>
-                                            <h5>{<IRILink label={headers.inScheme[this.props.projectLanguage]} iri={"http://www.w3.org/2004/02/skos/core#inScheme"}/>}</h5>
-                                            <TableList>
-                                                {Object.keys(Schemes[ModelElements[this.state.iriModel].skos.inScheme].labels).map(lang => (
-                                                    <tr>
-                                                        <IRIlabel
-                                                            label={Schemes[ModelElements[this.state.iriModel].skos.inScheme].labels[lang]}
-                                                            iri={ModelElements[this.state.iriModel].skos.inScheme}/>
-                                                        <td>{Languages[lang]}</td>
-                                                    </tr>
-                                                ))}
-                                            </TableList>
-                                {Object.keys(ModelElements[this.state.iriModel].skos.definition).length > 0 ? <h5>{<IRILink label={headers.definition[this.props.projectLanguage]} iri={"http://www.w3.org/2004/02/skos/core#definition"}/>}</h5> : ""}
-                                            <Tabs id={"descriptions"}>
-                                                {Object.keys(ModelElements[this.state.iriModel].skos.definition).map((language, i) => (
-                                                    <Tab eventKey={i} title={Languages[language]}>
-                                                        <Form.Control
-                                                            as={"textarea"}
-                                                            rows={3}
-                                                            disabled={true}
-                                                            value={ModelElements[this.state.iriModel].skos.definition[language]}
-                                                        />
-                                                    </Tab>))}
-                                            </Tabs>
-                                    </Tab>
+                                            <tr>
+                                                <th>{LocaleMenu.range}</th>
+                                                <IRIlabel iri={ModelElements[this.state.iriModel].range}
+                                                          label={ModelElements[ModelElements[this.state.iriModel].range].labels[this.props.projectLanguage]}/>
+                                            </tr>
+                                        </TableList>
+                                    </div>
+                                    : ""}
+                                <h5>{<IRILink label={headers.labels[this.props.projectLanguage]}
+                                              iri={"http://www.w3.org/2004/02/skos/core#prefLabel"}/>}</h5>
+                                <TableList>
+                                    {Object.keys(ModelElements[this.state.iriModel].skos.prefLabel).map(lang => (
+                                        <tr>
+                                            <td>{ModelElements[this.state.iriModel].skos.prefLabel[lang]}</td>
+                                            <td>{Languages[lang]}</td>
+                                        </tr>
+                                    ))}
+                                </TableList>
+                                <h5>{<IRILink label={headers.inScheme[this.props.projectLanguage]}
+                                              iri={"http://www.w3.org/2004/02/skos/core#inScheme"}/>}</h5>
+                                <TableList>
+                                    {Object.keys(Schemes[ModelElements[this.state.iriModel].skos.inScheme].labels).map(lang => (
+                                        <tr>
+                                            <IRIlabel
+                                                label={Schemes[ModelElements[this.state.iriModel].skos.inScheme].labels[lang]}
+                                                iri={ModelElements[this.state.iriModel].skos.inScheme}/>
+                                            <td>{Languages[lang]}</td>
+                                        </tr>
+                                    ))}
+                                </TableList>
+                                {Object.keys(ModelElements[this.state.iriModel].skos.definition).length > 0 ?
+                                    <h5>{<IRILink label={headers.definition[this.props.projectLanguage]}
+                                                  iri={"http://www.w3.org/2004/02/skos/core#definition"}/>}</h5> : ""}
+                                <Tabs id={"descriptions"}>
+                                    {Object.keys(ModelElements[this.state.iriModel].skos.definition).map((language, i) => (
+                                        <Tab eventKey={i} title={Languages[language]}>
+                                            <Form.Control
+                                                as={"textarea"}
+                                                rows={3}
+                                                disabled={true}
+                                                value={ModelElements[this.state.iriModel].skos.definition[language]}
+                                            />
+                                        </Tab>))}
+                                </Tabs>
+                            </Tab>
                             <Tab eventKey={2} title={LocaleMain.detailPanelAttributes}>
                                 <TableList headings={[LocaleMenu.title, LocaleMenu.attributeType]}>
                                     {this.state.inputAttributes.map((attr, i) => (
                                         <tr key={i}>
                                             <td>
                                                 <tr>
-                                                    {attr.first.length > 0 ? attr.first : "<blank>"}
+                                                    {attr.name.length > 0 ? attr.name : "<blank>"}
                                                 </tr>
                                             </td>
                                             <td>
-                                                {attr.second.name}
+                                                {attr.type.name}
                                             </td>
                                         </tr>
                                     ))}
                                 </TableList>
                             </Tab>
                             <Tab eventKey={3} title={LocaleMain.diagram}>
-                                        <TableList headings={[LocaleMenu.diagram]}>
-                                            {this.state.inputDiagrams.map((conn) =>
-                                                (<tr><td>{Diagrams[conn].name}</td></tr>)
-                                            )}
-                                        </TableList>
-                </Tab>
+                                <TableList headings={[LocaleMenu.diagram]}>
+                                    {this.state.inputDiagrams.map((conn) =>
+                                        (<tr>
+                                            <td>{Diagrams[conn].name}</td>
+                                        </tr>)
+                                    )}
+                                </TableList>
+                            </Tab>
                             <Tab eventKey={4} title={LocaleMain.connections}>
                                 <TableList
                                     headings={[LocaleMenu.connectionVia, LocaleMenu.connectionTo, LocaleMenu.diagram]}>
                                     {this.state.inputConnections.map((conn) => {
-                                            return (<tr>
-                                                <IRIlabel label={Links[ProjectLinks[conn].iri].labels[this.props.projectLanguage]} iri={ProjectLinks[conn].iri}/>
-                                                <td>{ProjectElements[ProjectLinks[conn].target].names[this.props.projectLanguage]}</td>
-                                                <td>{ProjectLinks[conn].diagram}</td>
-                                            </tr>);
+                                        return (<tr>
+                                            <IRIlabel
+                                                label={Links[ProjectLinks[conn].iri].labels[this.props.projectLanguage]}
+                                                iri={ProjectLinks[conn].iri}/>
+                                            <td>{ProjectElements[ProjectLinks[conn].target].names[this.props.projectLanguage]}</td>
+                                            <td>{ProjectLinks[conn].diagram}</td>
+                                        </tr>);
                                         }
                                     )}
                                     {ModelElements[this.state.iriModel].domainOf.map((conn: string) => {
-                                        if (vocabOrModal(conn) && vocabOrModal(vocabOrModal(conn).range)){
-                                            return (<tr>
-                                                <IRIlabel label={vocabOrModal(conn).labels[this.props.projectLanguage]} iri={conn}/>
-                                                <td>{vocabOrModal(vocabOrModal(conn).range).labels[this.props.projectLanguage]}</td>
-                                                <td>{LocaleMenu.fromModel}</td>
-                                            </tr>);
-                                        } else return "";
+                                            if (vocabOrModal(conn) && vocabOrModal(vocabOrModal(conn).range)) {
+                                                return (<tr>
+                                                    <IRIlabel label={vocabOrModal(conn).labels[this.props.projectLanguage]}
+                                                              iri={conn}/>
+                                                    <td>{vocabOrModal(vocabOrModal(conn).range).labels[this.props.projectLanguage]}</td>
+                                                    <td>{LocaleMenu.fromModel}</td>
+                                                </tr>);
+                                            } else return "";
                                         }
                                     )}
                                 </TableList>
                             </Tab>
                             <Tab eventKey={5} title={LocaleMain.properties}>
-                                    <TableList headings={[LocaleMenu.title, LocaleMenu.attributeType, LocaleMenu.value]}>
-                                        {this.state.inputProperties.map((prop, i) => (<tr key={i}>
-                                            <td>
-                                                {prop.getSecond().name}
-                                            </td>
-                                            <td>
-                                                {prop.getSecond().array ? "[" + prop.getSecond().type + "]" : prop.getSecond().type}
-                                            </td>
-                                            <td>
-                                                {prop.first.length > 0 ? prop.first : "<blank>"}
-                                            </td>
-                                        </tr>))}
-                                    </TableList>
+                                <TableList headings={[LocaleMenu.title, LocaleMenu.attributeType, LocaleMenu.value]}>
+                                    {this.state.inputProperties.map((prop, i) => (<tr key={i}>
+                                        <td>
+                                            {prop.getSecond().name}
+                                        </td>
+                                        <td>
+                                            {prop.getSecond().array ? "[" + prop.getSecond().type + "]" : prop.getSecond().type}
+                                        </td>
+                                        <td>
+                                            {prop.name.length > 0 ? prop.name : "<blank>"}
+                                        </td>
+                                    </tr>))}
+                                </TableList>
                             </Tab>
                         </Tabs>
                     </div>

@@ -25,8 +25,8 @@ export default class FileFetchContextModal extends React.Component<Props, State>
         }
     }
 
-    getOutput(response: {labels: string[], imports: string[], error: any}): string {
-        if (response.labels.length === 0){
+    getOutput(response: { labels: string[], imports: string[], error: any }): string {
+        if (response.labels.length === 0) {
             return "Workspace not found with error:\n" + response.error;
         } else {
             let construct = "Workspace found\nwith label(s) ";
@@ -42,48 +42,48 @@ export default class FileFetchContextModal extends React.Component<Props, State>
                 <Modal.Title>{LocaleMenu.fileFetchContextTitle}</Modal.Title>
             </Modal.Header>
             <Modal.Body>
-                    <Form onSubmit={async (event: any)=>{
-                        event.preventDefault();
-                        let out = await testContext(this.state.contextIRI, this.state.contextEndpoint);
-                        let output: string = this.getOutput(out);
-                        this.setState({output: output});
-                    }}>
-                        <Form.Group controlId="formEndpoint">
-                            <Form.Label>
-                                {LocaleMenu.contextEndpoint}
-                            </Form.Label>
-                            <Form.Control placeholder={LocaleMenu.iri} value={this.state.contextEndpoint}
-                                          onChange={(event: { currentTarget: { value: any; }; }) => {
-                                              this.setState({contextEndpoint: event.currentTarget.value})
-                                          }} required/>
-                        </Form.Group>
-                        <Form.Group controlId="formContextIRI">
-                            <Form.Label>
-                                {LocaleMenu.contextIRI}
-                            </Form.Label>
-                            <Form.Control placeholder={LocaleMenu.iri} value={this.state.contextIRI}
-                                          onChange={(event: { currentTarget: { value: any; }; }) => {
-                                              this.setState({contextIRI: event.currentTarget.value})
-                                          }} required/>
-                        </Form.Group>
-                        <Button type="submit">{LocaleMenu.test}</Button>
-                    </Form>
+                <Form onSubmit={async (event: any) => {
+                    event.preventDefault();
+                    let out = await testContext(this.state.contextIRI, this.state.contextEndpoint);
+                    let output: string = this.getOutput(out);
+                    this.setState({output: output});
+                }}>
+                    <Form.Group controlId="formEndpoint">
+                        <Form.Label>
+                            {LocaleMenu.contextEndpoint}
+                        </Form.Label>
+                        <Form.Control placeholder={LocaleMenu.iri} value={this.state.contextEndpoint}
+                                      onChange={(event: { currentTarget: { value: any; }; }) => {
+                                          this.setState({contextEndpoint: event.currentTarget.value})
+                                      }} required/>
+                    </Form.Group>
+                    <Form.Group controlId="formContextIRI">
+                        <Form.Label>
+                            {LocaleMenu.contextIRI}
+                        </Form.Label>
+                        <Form.Control placeholder={LocaleMenu.iri} value={this.state.contextIRI}
+                                      onChange={(event: { currentTarget: { value: any; }; }) => {
+                                          this.setState({contextIRI: event.currentTarget.value})
+                                      }} required/>
+                    </Form.Group>
+                    <Button type="submit">{LocaleMenu.test}</Button>
+                </Form>
                 <br/>
-                    <Form>
-                        <Form.Group controlId="formContextOutput">
-                            <Form.Label>
-                                {LocaleMenu.output}
-                            </Form.Label>
-                            <Form.Control value={this.state.output} as="textarea" disabled style={{height: 150}}/>
-                        </Form.Group>
-                    </Form>
+                <Form>
+                    <Form.Group controlId="formContextOutput">
+                        <Form.Label>
+                            {LocaleMenu.output}
+                        </Form.Label>
+                        <Form.Control value={this.state.output} as="textarea" disabled style={{height: 150}}/>
+                    </Form.Group>
+                </Form>
             </Modal.Body>
             <Modal.Footer>
                 <p className={"red modal-warning"}>{LocaleMenu.fileNewModalDescription}</p>
                 <Button onClick={() => {
                     this.props.loadContext(this.state.contextIRI, this.state.contextEndpoint, true);
                 }}>{LocaleMenu.fetch}</Button> &nbsp; <Button onClick={() => {
-                    this.props.close();
+                this.props.close();
             }} variant="secondary">{LocaleMenu.cancel}</Button>
             </Modal.Footer>
         </Modal>);

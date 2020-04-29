@@ -6,7 +6,7 @@ import MenuPanelFile from "./menu/MenuPanelFile";
 import MenuPanelHelp from "./menu/MenuPanelHelp";
 import MenuPanelAbout from "./menu/MenuPanelAbout";
 
-interface MenuPanelProps{
+interface MenuPanelProps {
     readOnly?: boolean;
     projectLanguage: string;
     handleChangeLanguage: any;
@@ -14,7 +14,6 @@ interface MenuPanelProps{
     loadProject: Function;
     loadContext: Function;
     saveProject: Function;
-    saveString: string;
     update: Function;
     loading: boolean;
 }
@@ -22,44 +21,46 @@ interface MenuPanelProps{
 interface MenuPanelState {
 }
 
-export default class MenuPanel extends React.Component<MenuPanelProps, MenuPanelState>{
+export default class MenuPanel extends React.Component<MenuPanelProps, MenuPanelState> {
     constructor(props: MenuPanelProps) {
         super(props);
         this.handleChangeLanguage = this.handleChangeLanguage.bind(this);
     }
 
-    handleChangeLanguage(event: React.FormEvent<HTMLInputElement>){
+    handleChangeLanguage(event: React.FormEvent<HTMLInputElement>) {
         this.props.handleChangeLanguage(event.currentTarget.value);
     }
 
-    render(){
-        return(<Navbar className={"menuPanel"} variant="light" bg="light">
+    render() {
+        return (<Navbar className={"menuPanel"} variant="light" bg="light">
             <Navbar.Brand>{Locale.ontoGrapher}</Navbar.Brand>
-          <Nav className="mr-auto">
-              {this.props.readOnly ?
-                  <div/>
-                  :
-                  <div className={"inert"}>
-                      <MenuPanelFile
-                        newProject={this.props.newProject}
-                        loadProject={this.props.loadProject}
-                        saveProject={this.props.saveProject}
-                        saveString={this.props.saveString}
-                        update={() => {this.forceUpdate();}}
-                        loadContext={this.props.loadContext}
-                      />
-                      <MenuPanelHelp />
-                      <MenuPanelAbout />
-                  </div>
-              }
-          </Nav>
+            <Nav className="mr-auto">
+                {this.props.readOnly ?
+                    <div/>
+                    :
+                    <div className={"inert"}>
+                        <MenuPanelFile
+                            newProject={this.props.newProject}
+                            loadProject={this.props.loadProject}
+                            saveProject={this.props.saveProject}
+                            update={() => {
+                                this.forceUpdate();
+                            }}
+                            loadContext={this.props.loadContext}
+                        />
+                        <MenuPanelHelp/>
+                        <MenuPanelAbout/>
+                    </div>
+                }
+            </Nav>
             <Navbar.Text className="mr-sm-2">
-                {this.props.loading ? <Spinner animation="border" size="sm" /> : ""}&nbsp;
+                {this.props.loading ? <Spinner animation="border" size="sm"/> : ""}&nbsp;
                 {ProjectSettings.name[this.props.projectLanguage] === "" ? "<untitled>" : ProjectSettings.name[this.props.projectLanguage]}
             </Navbar.Text>
             <Form inline>
                 <Form.Control as="select" value={this.props.projectLanguage} onChange={this.handleChangeLanguage}>
-                    {Object.keys(Languages).map((languageCode) => (<option key={languageCode} value={languageCode}>{Languages[languageCode]}</option>))}
+                    {Object.keys(Languages).map((languageCode) => (
+                        <option key={languageCode} value={languageCode}>{Languages[languageCode]}</option>))}
                 </Form.Control>
             </Form>
 

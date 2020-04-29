@@ -1,9 +1,9 @@
-import {ModelElements, PackageRoot, ProjectSettings, Schemes, Stereotypes, VocabularyElements} from "../config/Variables";
-import {graphElement} from "../graph/GraphElement";
-import {addClass} from "../function/Helper";
+import {PackageRoot, ProjectSettings, Schemes, Stereotypes, VocabularyElements} from "../config/Variables";
+import {graphElement} from "../graph/graphElement";
 import {getScheme} from "./SPARQLInterface";
-import {PackageNode} from "../components/PackageNode";
+import {PackageNode} from "../datatypes/PackageNode";
 import * as Locale from "../locale/LocaleMain.json";
+import {addClass} from "../function/FunctionCreateVars";
 
 export async function testContext(contextIRI: string, contextEndpoint: string) {
     let vocabularyQ = [
@@ -113,7 +113,7 @@ export async function getContext(
                 return data.results.bindings;
             });
         for (let result of termsResult) {
-            if (!(result.term.value in vocabularies[vocab].terms)){
+            if (!(result.term.value in vocabularies[vocab].terms)) {
                 vocabularies[vocab].terms[result.term.value] = {};
                 vocabularies[vocab].terms[result.term.value].iri = [];
                 vocabularies[vocab].terms[result.term.value].labels = {};

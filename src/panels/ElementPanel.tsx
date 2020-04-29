@@ -10,19 +10,18 @@ import {
     ProjectElements,
     ProjectSettings,
     Schemes,
-    StereotypeCategories,
     Stereotypes,
     ViewSettings
 } from "../config/Variables";
-import StereotypeElementItem from "./elements/StereotypeElementItem";
-import * as Helper from "../function/Helper";
-import {PanelLinkItem} from "./elements/PanelLinkItem";
-import PanelDiagramItem from "./elements/PanelDiagramItem";
-import PackageFolder from "./elements/PackageFolder";
-import {PackageNode} from "../components/PackageNode";
-import PackageItem from "./elements/PackageItem";
-import ModelFolder from "./elements/ModelFolder";
-import {createNewScheme} from "../function/Helper";
+import ElementItem from "./element/ElementItem";
+import * as Helper from "../function/FunctionEditVars";
+import {LinkItem} from "./element/LinkItem";
+import DiagramItem from "./element/DiagramItem";
+import PackageFolder from "./element/PackageFolder";
+import {PackageNode} from "../datatypes/PackageNode";
+import PackageItem from "./element/PackageItem";
+import ModelFolder from "./element/ModelFolder";
+import {createNewScheme} from "../function/FunctionCreateVars";
 
 interface Props {
     projectLanguage: string;
@@ -185,7 +184,7 @@ export default class ElementPanel extends React.Component<Props, State> {
     getFoldersDFS(arr: JSX.Element[], node: PackageNode, depth: number) {
         if (node !== PackageRoot) {
             arr.push(<PackageFolder key={node.scheme} projectLanguage={this.props.projectLanguage}
-                                    name={node.name[this.props.projectLanguage]} node={node} depth={depth}
+                                    name={node.labels[this.props.projectLanguage]} node={node} depth={depth}
                                     update={() => {
                                         this.forceUpdate();
                                     }}>
@@ -225,7 +224,7 @@ export default class ElementPanel extends React.Component<Props, State> {
         //result.push(<ModelFolder category={LocaleMain.models} depth={0} open={()=>{this.modelRoot = !this.modelRoot; this.forceUpdate();}} update={()=>{this.forceUpdate();}}/>);
         if (this.modelRoot) {
             Object.keys(this.models).forEach((key, i) => {
-                let contents = this.models[key].map((iri: string) => <StereotypeElementItem
+                let contents = this.models[key].map((iri: string) => <ElementItem
                     key={iri}
                     label={this.getNameModel(iri)}
                     element={iri}
@@ -277,7 +276,7 @@ export default class ElementPanel extends React.Component<Props, State> {
                 <Tabs id="stereotypePanelTabs">
                     <Tab eventKey={1} title={tooltipS}>
                         <div className={"elementList"}>
-                            {this.stereotypes.map((element) => (<StereotypeElementItem
+                            {this.stereotypes.map((element) => (<ElementItem
                                 key={element}
                                 element={element}
                                 label={this.getNameStereotype(element)}
@@ -288,7 +287,7 @@ export default class ElementPanel extends React.Component<Props, State> {
                     </Tab>
                     <Tab eventKey={2} title={tooltipR}>
                         <div className="elementList">
-                            {this.links.map((link) => <PanelLinkItem
+                            {this.links.map((link) => <LinkItem
                                     key={link}
                                     selectedLink={this.props.selectedLink}
                                     handleChangeSelectedLink={this.handleChangeSelectedLink}
@@ -322,7 +321,7 @@ export default class ElementPanel extends React.Component<Props, State> {
                         }
                         }>{LocaleMain.addDiagram}</button>
                         <div className="elementLinkList">
-                            {Diagrams.map((model, i) => <PanelDiagramItem
+                            {Diagrams.map((model, i) => <DiagramItem
                                     key={i}
                                     diagram={i}
                                     selectedDiagram={ProjectSettings.selectedDiagram}

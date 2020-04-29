@@ -1,7 +1,7 @@
 import React from 'react';
 import {OverlayTrigger, Tooltip} from "react-bootstrap";
 
-interface Props{
+interface Props {
     label: string;
     linkType: string;
     handleChangeSelectedLink: Function;
@@ -14,7 +14,7 @@ interface State {
     name: string;
 }
 
-export class PanelLinkItem extends React.Component<Props, State> {
+export class LinkItem extends React.Component<Props, State> {
     constructor(props: Props) {
         super(props);
         this.state = {
@@ -44,7 +44,7 @@ export class PanelLinkItem extends React.Component<Props, State> {
     }
 
     render() {
-        if (this.props.definition){
+        if (this.props.definition) {
             return (
                 <OverlayTrigger popperConfig={{
                     modifiers: {
@@ -52,11 +52,12 @@ export class PanelLinkItem extends React.Component<Props, State> {
                             enabled: false
                         }
                     }
-                    }} placement="right" overlay={<Tooltip id={this.props.linkType}>{this.props.definition}</Tooltip>}>
+                }} placement="right" overlay={<Tooltip id={this.props.linkType}>{this.props.definition}</Tooltip>}>
                     <div className={this.state.name}
                          onClick={this.alertPanel}
                     >
-                        <span className={"label"}>{this.props.label}</span><span className={"category"}>{this.props.category}</span>
+                        <span className={"label"}>{this.props.label}</span><span
+                        className={"category"}>{this.props.category}</span>
                     </div>
                 </OverlayTrigger>
             );
@@ -65,7 +66,8 @@ export class PanelLinkItem extends React.Component<Props, State> {
                 <div className={this.state.name}
                      onClick={this.alertPanel}
                 >
-                    <span className={"label"}>{this.props.label}</span><span className={"category"}>{this.props.category}</span>
+                    <span className={"label"}>{this.props.label}</span><span
+                    className={"category"}>{this.props.category}</span>
                 </div>
             );
         }

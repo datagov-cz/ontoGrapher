@@ -41,7 +41,9 @@ export default class AboutModal extends React.Component<Props, State> {
                             <li>Types now interpreted correctly for models</li>
                             <li>New import workspace feature</li>
                             <li>New "Test connection to workspace" feature (in "Fetch workspace" dialogue)</li>
-                            <li>If elements of rdfs:domain & rdfs:range IRI are present, the relationship is automatically created</li>
+                            <li>If elements of rdfs:domain & rdfs:range IRI are present, the relationship is
+                                automatically created
+                            </li>
                             <li>Changed to d-sgov workspace ontology in fetching</li>
                             <li>Modified SPARQL querying</li>
                         </ul>
@@ -56,7 +58,9 @@ export default class AboutModal extends React.Component<Props, State> {
                         <ul>
                             <li>PP load support: for now, the example PP is loaded.</li>
                             <li>Packages now have names for each language</li>
-                            <li>Root-level packages now act as vocabularies: naming them affects the inScheme of contained elements</li>
+                            <li>Root-level packages now act as vocabularies: naming them affects the inScheme of
+                                contained elements
+                            </li>
                             <li>Icon now shown to indicate loading</li>
                             <li>Packages can now be "default" - newly created elements automatically appear in them</li>
                             <li>"Set default package" button on hover on package added</li>

@@ -1,9 +1,16 @@
 import React from 'react';
-import {PackageNode} from "../../components/PackageNode";
+import {PackageNode} from "../../datatypes/PackageNode";
 import {Button, Modal, OverlayTrigger, Tooltip} from "react-bootstrap";
 import * as LocaleMain from "../../locale/LocaleMain.json";
 import * as LocaleMenu from "../../locale/LocaleMenu.json";
-import {Languages, PackageRoot, ProjectElements, ProjectSettings, Schemes, structuresShort} from "../../config/Variables";
+import {
+    Languages,
+    PackageRoot,
+    ProjectElements,
+    ProjectSettings,
+    Schemes,
+    structuresShort
+} from "../../config/Variables";
 import TableList from "../../components/TableList";
 // @ts-ignore
 import {RIEInput} from "riek";
@@ -45,7 +52,7 @@ export default class PackageFolder extends React.Component<Props, State> {
             hover: false,
             modalEdit: false,
             modalRemove: false,
-            inputEdit: this.props.node.name
+            inputEdit: this.props.node.labels
         }
     }
 
@@ -64,7 +71,7 @@ export default class PackageFolder extends React.Component<Props, State> {
             parent.children.splice(parent.children.indexOf(this.props.node), 1);
             this.props.node.parent = node;
             node.children.push(this.props.node);
-            if (ProjectSettings.selectedPackage === this.props.node){
+            if (ProjectSettings.selectedPackage === this.props.node) {
                 ProjectSettings.selectedPackage = PackageRoot.children[0];
             }
             this.forceUpdate();
@@ -74,13 +81,13 @@ export default class PackageFolder extends React.Component<Props, State> {
 
     getLink(node: PackageNode, depth: number) {
         if (node === this.props.node.parent) {
-            return (<span className={"italic"}>{"-".repeat(depth) + node.name[this.props.projectLanguage]}</span>)
+            return (<span className={"italic"}>{"-".repeat(depth) + node.labels[this.props.projectLanguage]}</span>)
         } else if (node === this.props.node) {
-            return (<span>{"-".repeat(depth) + node.name[this.props.projectLanguage]}</span>)
+            return (<span>{"-".repeat(depth) + node.labels[this.props.projectLanguage]}</span>)
         } else {
             return (<button className="buttonlink" onClick={() => {
                 this.move(node);
-            }}>{"-".repeat(depth) + node.name[this.props.projectLanguage]}</button>)
+            }}>{"-".repeat(depth) + node.labels[this.props.projectLanguage]}</button>)
         }
     }
 
@@ -100,7 +107,7 @@ export default class PackageFolder extends React.Component<Props, State> {
         let oldpkg = ProjectElements[id].package;
         oldpkg.elements.splice(oldpkg.elements.indexOf(id), 1);
         ProjectElements[id].package = this.props.node;
-		if (this.props.node.scheme) ProjectElements[id].scheme = this.props.node.scheme;
+        if (this.props.node.scheme) ProjectElements[id].scheme = this.props.node.scheme;
         this.props.node.elements.push(id);
         this.props.update();
     }
@@ -212,12 +219,13 @@ export default class PackageFolder extends React.Component<Props, State> {
                             ))}
                         </TableList>
                         <br/>
-                        {PackageRoot.children.length === 1 ? <div><p>{LocaleMenu.cannotMovePackage}</p></div> : <div><h4>{LocaleMenu.movePackageTitle}</h4>
-                            <p>{LocaleMenu.modalMovePackageDescription}</p>
-                            <TableList headings={[LocaleMenu.package]}>
-                                {this.getFolder()}
-                            </TableList>
-                        </div>}
+                        {PackageRoot.children.length === 1 ? <div><p>{LocaleMenu.cannotMovePackage}</p></div> :
+                            <div><h4>{LocaleMenu.movePackageTitle}</h4>
+                                <p>{LocaleMenu.modalMovePackageDescription}</p>
+                                <TableList headings={[LocaleMenu.package]}>
+                                    {this.getFolder()}
+                                </TableList>
+                            </div>}
                     </Modal.Body>
                     <Modal.Footer>
                         <p className={"red modal-warning"}>{LocaleMenu.saveWarning}</p>
@@ -225,30 +233,30 @@ export default class PackageFolder extends React.Component<Props, State> {
                             this.setState({modalEdit: false});
                         }} variant="secondary">{LocaleMenu.cancel}</Button>
                         <Button onClick={() => {
-                            this.props.node.name = this.state.inputEdit;
+                            this.props.node.labels = this.state.inputEdit;
                             if (this.props.node.scheme) {
                                 let newkey = "";
-                                for (let lang in this.state.inputEdit){
-                                    if (this.state.inputEdit[lang].length > 0){
+                                for (let lang in this.state.inputEdit) {
+                                    if (this.state.inputEdit[lang].length > 0) {
                                         newkey = this.state.inputEdit[lang];
                                         break;
                                     }
                                 }
                                 if (newkey === "") newkey = LocaleMain.untitled;
                                 newkey = "https://slovník.gov.cz/" + structuresShort[ProjectSettings.knowledgeStructure] + "/" + newkey;
-                                if (newkey in Schemes){
+                                if (newkey in Schemes) {
                                     let count = 1;
-                                    while((newkey + "-" + count.toString(10)) in Schemes){
+                                    while ((newkey + "-" + count.toString(10)) in Schemes) {
                                         count++;
                                     }
                                     newkey += "-" + count.toString(10);
                                 }
-                                for (let id in ProjectElements){
-                                    if (ProjectElements[id].scheme === this.props.node.scheme){
+                                for (let id in ProjectElements) {
+                                    if (ProjectElements[id].scheme === this.props.node.scheme) {
                                         ProjectElements[id].scheme = newkey;
                                     }
                                 }
-                                if (newkey !== this.props.node.scheme){
+                                if (newkey !== this.props.node.scheme) {
                                     Schemes[newkey] = Schemes[this.props.node.scheme];
                                     delete Schemes[this.props.node.scheme];
                                 }

@@ -3,17 +3,17 @@ import {Button, Form, Modal} from "react-bootstrap";
 import * as LocaleMenu from "../../../locale/LocaleMenu.json";
 import * as Locale from "../../../locale/LocaleMain.json";
 
-interface Props{
+interface Props {
     modal: boolean;
     saveProject: Function;
     saveString: string;
     close: Function;
 }
 
-export default class FileSaveModal extends React.Component<Props, any>{
+export default class FileSaveModal extends React.Component<Props, any> {
 
-    render(){
-        return(<Modal centered show={this.props.modal}>
+    render() {
+        return (<Modal centered show={this.props.modal}>
             <Modal.Header>
                 <Modal.Title>{Locale.menuModalSaveHeading}</Modal.Title>
             </Modal.Header>
@@ -27,7 +27,9 @@ export default class FileSaveModal extends React.Component<Props, any>{
                 />
             </Modal.Body>
             <Modal.Footer>
-                <Button onClick={() => {this.props.close();}} variant="secondary">{LocaleMenu.cancel}</Button>
+                <Button onClick={() => {
+                    this.props.close();
+                }} variant="secondary">{LocaleMenu.cancel}</Button>
             </Modal.Footer>
         </Modal>);
     }

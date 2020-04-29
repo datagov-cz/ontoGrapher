@@ -1,60 +1,57 @@
 import * as Locale from "../locale/LocaleMain.json";
-import {Cardinality} from "../components/Cardinality";
-import * as joint from 'jointjs';
-import {PackageNode} from "../components/PackageNode";
-import {parsePrefix} from "../function/Helper";
+import {Cardinality} from "../datatypes/Cardinality";
+import {PackageNode} from "../datatypes/PackageNode";
+import {parsePrefix} from "../function/FunctionEditVars";
+import {AttributeObject} from "../datatypes/AttributeObject";
+import {AttributeType} from "../datatypes/AttributeType";
 
-export var graph = new joint.dia.Graph();
+// language code : language labels
+export var Languages: { [key: string]: string } = {};
 
-export var loading = {
-    loaded: 0,
-    load: 0
-};
+export var ProjectElements: {
+    [key: string]: {
+        //iri pointing to VocabularyElements
+        iri: string,
+        //array of ProjectLink ids
+        connections: string[],
+        //whether the labels are initialized
+        untitled: boolean,
+        //AttributeObject array
+        attributes: AttributeObject[],
+        //if present in diagram index
+        diagrams: boolean[],
+        //property array
+        properties: AttributeObject[],
+        //if hidden in diagram index
+        hidden: { [key: number]: boolean }
+    }
+} = {};
 
+export var ProjectLinks: {
+    [key: string]: {
+        //iri pointing to VocabularyElements
+        iri: string,
+        //source ProjectElements id
+        source: string,
+        //target ProjectElements id
+        target: string,
+        //source cardinality Cardinality object
+        sourceCardinality: Cardinality,
+        //target cardinality Cardinality object
+        targetCardinality: Cardinality,
+        //diagram index
+        diagram: number
+    }
+} = {};
 
-// language code : language name
-export var Languages: {[key:string]: string} = {};
+export var Schemes: {
+    [key: string]: {
+        labels: { [key: string]: string },
+        readOnly: boolean,
+    }
+} = {};
 
-
-
-//names: {}
-//iriElem: string
-//connections: []
-//definitions: {}
-//attributes: {}
-//package: string
-//diagrams: []
-//hidden: boolean
-//active: boolean
-//properties: {}
-//untitled: boolean
-export var ProjectElements: {[key:string]: any} = {};
-
-//sourceCard
-//targetCard
-//iriElem
-//diagram
-//source
-//target
-//definitions
-export var ProjectLinks:{[key:string]: any} = {};
-
-//display:
-//1 - namespace:name
-//2 - rdfs:label
-export var ViewSettings: {[key:string]: any} = {
-    display: 2
-};
-
-
-
-export var StereotypeCategories: string[] = [
-];
-
-export var Schemes: {[key:string]: any} = {
-};
-
-export var Prefixes: {[key:string]: string} = {
+export var Prefixes: { [key: string]: string } = {
     skos: "http://www.w3.org/2004/02/skos/core#",
     ex: "http://example.com/ontoGrapher/",
     owl: "http://www.w3.org/2002/07/owl#",
@@ -63,14 +60,14 @@ export var Prefixes: {[key:string]: string} = {
     "z-sgov-pojem": "https://slovník.gov.cz/základní/pojem/"
 };
 
-export var structures: {[key:string]: string} = {
+export var Structures: { [key: string]: string } = {
     "z-sgov-pojem:základní-struktura": parsePrefix("z-sgov-pojem", "základní-struktura"),
     "z-sgov-pojem:legislativní-struktura": parsePrefix("z-sgov-pojem", "legislativní-struktura"),
     "z-sgov-pojem:agendová-struktura": parsePrefix("z-sgov-pojem", "agendová-struktura"),
     "z-sgov-pojem:datová-struktura": parsePrefix("z-sgov-pojem", "datová-struktura")
 };
 
-export var structuresShort: {[key:string]: string} = {
+export var structuresShort: { [key: string]: string } = {
     "z-sgov-pojem:základní-struktura": "základní",
     "z-sgov-pojem:legislativní-struktura": "legislativní",
     "z-sgov-pojem:agendová-struktura": "agendová",
@@ -79,52 +76,69 @@ export var structuresShort: {[key:string]: string} = {
 
 export var PackageRoot: PackageNode = new PackageNode("Root", undefined, true, "");
 
-//labels
-//category
-export var Stereotypes: {[key:string]: any} = {
+export var VocabularyElements: {
+    [key: string]:
+        {
+            labels: { [key: string]: string },
+            definitions: { [key: string]: string },
+            inScheme: string,
+            domain: string | undefined,
+            range: string | undefined,
+            types: string[],
+            domainOf: string[],
+        }
+} = {};
 
-};
-
-export var ModelElements:{[key:string]: any} = {};
-
-export var VocabularyElements:{[key:string]: any} = {};
-
-
-export var Links: {[key:string]: any} = {
-
-};
+export var Links: {
+    [key: string]: {
+        labels: { [key: string]: string },
+        definitions: { [key: string]: string },
+        inScheme: string,
+    }
+} = {};
 
 
-//name : address
-export var Namespaces: {[key:string]: any} = {
+export var Stereotypes: {
+    [key: string]: {
+        labels: { [key: string]: string },
+        descriptions: { [key: string]: string },
+        inScheme: string,
+    }
+} = {};
 
-};
-
-export var Diagrams: {[key:string]: any}[] = [
+export var Diagrams: { name: string, json: any }[] = [
     {name: "Untitled", json: ""}
 ];
+
 export var ProjectSettings: {
-    name: {[key:string]: string},
-    description: {[key:string]: string},
+    name: { [key: string]: string },
+    description: { [key: string]: string },
     selectedDiagram: number,
     selectedPackage: PackageNode,
-    knowledgeStructure: string
+    knowledgeStructure: string,
+    selectedLanguage: string,
+    selectedLink: string,
+    status: string
 } = {
     name: {},
     description: {},
     selectedDiagram: 0,
     selectedPackage: PackageRoot,
-    knowledgeStructure: Object.keys(structures)[0]
+    knowledgeStructure: Object.keys(Structures)[0],
+    selectedLanguage: Object.keys(Languages)[0],
+    selectedLink: Object.keys(Links)[0],
+    status: ""
 };
-export var AttributeTypePool: {[key:string]: any} = {
-    "http://www.w3.org/2001/XMLSchema#string": {name:"String", array: false},
-    "http://www.w3.org/2001/XMLSchema#int":{name:"Integer", array: false},
-    "http://www.w3.org/2001/XMLSchema#boolean":{name:"Boolean", array: false},
-    "http://www.w3.org/2001/XMLSchema#float":{name:"Float", array: false},
-    "http://www.w3.org/2001/XMLSchema#dateTime":{name:"DateTime", array: false}
+export var AttributeTypePool: { [key: string]: { name: string, array: boolean } } = {
+    "http://www.w3.org/2001/XMLSchema#string": {name: "String", array: false},
+    "http://www.w3.org/2001/XMLSchema#int": {name: "Integer", array: false},
+    "http://www.w3.org/2001/XMLSchema#boolean": {name: "Boolean", array: false},
+    "http://www.w3.org/2001/XMLSchema#float": {name: "Float", array: false},
+    "http://www.w3.org/2001/XMLSchema#dateTime": {name: "DateTime", array: false}
 };
 
-export var CardinalityPool = [
+export var CardinalityPool: Cardinality[] = [
+    new Cardinality(Locale.none, Locale.none),
     new Cardinality("*", "*"),
     new Cardinality("0", "0"),
     new Cardinality("0", "*"),
@@ -133,11 +147,4 @@ export var CardinalityPool = [
     new Cardinality("1", "*"),
 ];
 
-CardinalityPool.unshift(new Cardinality(Locale.none, Locale.none));
-
-export var VocabularyPool = [];
-export var Packages: {[key:string]: any} = {
-
-};
-Packages[Locale.root] = false;
-export var PropertyPool: {[key:string]: any} = {"&*": [], "Manual": []};
+export var PropertyPool: { [key: string]: AttributeType[] } = {};

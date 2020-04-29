@@ -17,6 +17,8 @@
   "linkTypeExplainer": "Type of the relationship",
   "fetchingVocabularies": "Fetching vocabularies...",
   "loadingTerms": "Loading terms...",
+  "loading": "Loading...",
+  "loadingError": "Loading error.",
   "finished": "All done!",
   "setAsDefault": "Set as default",
   "linkType": "Type",

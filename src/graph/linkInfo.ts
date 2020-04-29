@@ -1,6 +1,7 @@
-import * as joint from 'jointjs';
+import * as joint from "jointjs";
+import {graph} from "./graph";
 
-export var infoButton = joint.elementTools.Button.extend({
+joint.linkTools.InfoButton = joint.linkTools.Button.extend({
     name: 'info-button',
     options: {
         markup: [{
@@ -22,10 +23,17 @@ export var infoButton = joint.elementTools.Button.extend({
                 'pointer-events': 'none'
             }
         }],
-        distance: 60,
+        distance: 40,
         offset: 0,
-        action: function(evt) {
-            console.log(this);
+        action: (evt) => {
+            let id = evt.currentTarget.getAttribute("model-id");
+            this.props.prepareDetails(id);
+            for (let cell of graph.getCells()) {
+                this.unHighlightCell(cell.id);
+                //this.paper?.findViewByModel(cell).unhighlight();
+            }
+            this.highlight = id;
+            this.highlightCell(id);
         }
     }
 });

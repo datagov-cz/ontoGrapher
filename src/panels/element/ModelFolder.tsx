@@ -4,7 +4,7 @@ interface Props {
     category: string;
     depth: number;
     update: Function;
-    open:Function;
+    open: Function;
 }
 
 interface State {
@@ -37,7 +37,7 @@ export default class ModelFolder extends React.Component<Props, State> {
                 }}
                 className={"packageFolder" + (this.state.open ? " open" : "")}
                 style={{marginLeft: (this.props.depth) * 10 + "px"}}>
-                {(this.props.depth === 0 ? "💃🏼" : "↘") +"📁 " + this.props.category}
+                {(this.props.depth === 0 ? "💃🏼" : "↘") + "📁 " + this.props.category}
                 {this.state.open ?
                     this.props.children
                     : <span/>}

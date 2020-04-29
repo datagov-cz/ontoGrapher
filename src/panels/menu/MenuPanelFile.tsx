@@ -81,13 +81,14 @@ export default class MenuPanelFile extends React.Component<MenuPanelFileProps, M
             }} loadProject={this.loadProject}/>
 
             <NavDropdown.Item onClick={() => {
-                this.setState({modalFileSave: true}); this.props.saveProject();
+                this.setState({modalFileSave: true});
+                this.props.saveProject();
             }}>{LocaleMenu.saveProject}</NavDropdown.Item>
             <FileSaveModal modal={this.state.modalFileSave} close={() => {
                 this.setState({modalFileSave: false})
             }} saveProject={this.saveProject} saveString={this.props.saveString}/>
 
-            <NavDropdown.Divider />
+            <NavDropdown.Divider/>
 
             <NavDropdown.Item onClick={() => {
                 this.setState({modalFileFetchContext: true});
