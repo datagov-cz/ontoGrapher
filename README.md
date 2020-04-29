@@ -2,7 +2,7 @@
 
 A React web component for graphical manipulation and display of ontoUML diagrams.
 
-[Latest deployed version](https://xenodochial-tereshkova-2b9bcc.netlify.com/)
+[Deployed version (from master)](https://ontographer.netlify.app) [![Netlify Status](https://api.netlify.com/api/v1/badges/1ff5f477-dbd7-4b90-9927-374d0c4af77c/deploy-status)](https://app.netlify.com/sites/ontographer/deploys)
 * Note the changelog on the menu bar.
 
 [Link to wiki](https://github.com/opendata-mvcr/ontoGrapher/wiki)
