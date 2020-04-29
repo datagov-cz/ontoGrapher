@@ -2,28 +2,32 @@ import {
     CardinalityPool,
     Diagrams,
     graph,
+    Languages,
     Links,
     ModelElements,
     Namespaces,
-    PackageRoot, Prefixes,
+    PackageRoot,
+    Prefixes,
     ProjectElements,
     ProjectLinks,
     ProjectSettings,
-    PropertyPool, Schemes,
+    PropertyPool,
+    Schemes,
     StereotypeCategories,
-    Stereotypes, structuresShort,
-    ViewSettings, VocabularyElements
-} from "../var/Variables";
+    Stereotypes,
+    structuresShort,
+    ViewSettings,
+    VocabularyElements
+} from "../config/Variables";
 import {SourceData} from "../components/SourceData";
-import * as VariableLoader from "./../var/VariableLoader";
 import * as LocaleMain from "../locale/LocaleMain.json";
+import * as Locale from "../locale/LocaleMain.json";
 import {graphElement} from "../graph/GraphElement";
 import * as joint from 'jointjs';
 import {AttributeObject} from "../components/AttributeObject";
 import {AttributeType} from "../components/AttributeType";
 import {DataFactory} from "n3";
 import {PackageNode} from "../components/PackageNode";
-import {initLanguageObject} from "./../var/VariableLoader";
 
 export function getNameOfStereotype(uri: string): string {
     let stereotype = Stereotypes[uri];
@@ -66,13 +70,39 @@ export function getModelName(element: string, language: string) {
     }
 }
 
+export function initVars() {
+    loadLanguages();
+    initProjectSettings();
+}
+
+export function loadLanguages() {
+    const json = require('../config/Languages.json');
+    for (let code in json) {
+        Languages[code] = json[code];
+    }
+}
+
+export function initProjectSettings() {
+    ProjectSettings.name = initLanguageObject(Locale.untitledProject);
+    ProjectSettings.description = initLanguageObject("");
+    ProjectSettings.selectedDiagram = 0;
+}
+
+export function initLanguageObject(defaultString: string) {
+    let result: { [key: string]: string } = {};
+    for (let code in Languages) {
+        result[code] = defaultString;
+    }
+    return result;
+}
+
 export function addSTP(data: SourceData) {
     if (!(StereotypeCategories.includes(data.source))) {
         StereotypeCategories.push(data.source);
     }
     Stereotypes[data.iri] = {
-        labels: VariableLoader.initLanguageObject(data.name),
-        definitions: VariableLoader.initLanguageObject(data.description),
+        labels: initLanguageObject(data.name),
+        definitions: initLanguageObject(data.description),
         category: data.source,
         skos: {}
     }
@@ -80,8 +110,8 @@ export function addSTP(data: SourceData) {
 
 export function addModelTP(data: SourceData) {
     ModelElements[data.iri] = {
-        labels: VariableLoader.initLanguageObject(data.name),
-        definitions: VariableLoader.initLanguageObject(data.description),
+        labels: initLanguageObject(data.name),
+        definitions: initLanguageObject(data.description),
         category: data.source,
         skos: {}
     }
@@ -116,10 +146,10 @@ export function addClass(
     names?: {}, descriptions?: {}, iriVocab?: string) {
     let result: { [key: string]: any } = {};
     result["iri"] = iris;
-    result["names"] = names ? names : VariableLoader.initLanguageObject(LocaleMain.untitled + " " + getName(iris[0], language));
+    result["names"] = names ? names : initLanguageObject(LocaleMain.untitled + " " + getName(iris[0], language));
     result["connections"] = [];
     result["untitled"] = untitled;
-    result["descriptions"] = descriptions ? descriptions : VariableLoader.initLanguageObject("");
+    result["descriptions"] = descriptions ? descriptions : initLanguageObject("");
     result["attributes"] = [];
     if (iriVocab) result["iriVocab"] = iriVocab;
     let propertyArray: AttributeObject[] = [];
@@ -135,7 +165,7 @@ export function addClass(
     }
     result["properties"] = propertyArray;
     let diagramArray: boolean[] = [];
-    Diagrams.forEach((obj, i) => {
+    Diagrams.forEach(() => {
         diagramArray.push(false);
     });
     result["diagrams"] = [ProjectSettings.selectedDiagram];
@@ -148,8 +178,7 @@ export function addClass(
 }
 
 export function vocabOrModal(iri: string){
-    let result = iri in VocabularyElements ? VocabularyElements[iri] : ModelElements[iri];
-    return result;
+    return iri in VocabularyElements ? VocabularyElements[iri] : ModelElements[iri];
 }
 
 export function addDomainOfIRIs(){
@@ -181,12 +210,12 @@ export function addDomainOfIRIs(){
 export function addModel(id: string, iri: string, language: string, name: string) {
     let result: { [key: string]: any } = {};
     result["iri"] = iri;
-    result["names"] = VariableLoader.initLanguageObject(LocaleMain.untitled + " " + name);
+    result["names"] = initLanguageObject(LocaleMain.untitled + " " + name);
     result["connections"] = [];
-    result["descriptions"] = VariableLoader.initLanguageObject("");
+    result["descriptions"] = initLanguageObject("");
     result["attributes"] = [];
     let diagramArray: boolean[] = [];
-    Diagrams.forEach((obj, i) => {
+    Diagrams.forEach(() => {
         diagramArray.push(false);
     });
     result["diagrams"] = [ProjectSettings.selectedDiagram];

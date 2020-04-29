@@ -1,4 +1,4 @@
-import {initLanguageObject} from "../var/VariableLoader";
+import {initLanguageObject} from "../function/Helper";
 
 export class PackageNode {
     public children: PackageNode[];

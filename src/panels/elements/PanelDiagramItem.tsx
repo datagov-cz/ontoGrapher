@@ -1,9 +1,9 @@
 import React from 'react';
-import {Diagrams, graph, ProjectSettings} from "../../var/Variables";
+import {Diagrams, graph, ProjectSettings} from "../../config/Variables";
 import {Button, Form, Modal, OverlayTrigger, Tooltip} from "react-bootstrap";
 import * as LocaleMain from "../../locale/LocaleMain.json";
 import * as LocaleMenu from "../../locale/LocaleMenu.json";
-import {changeDiagrams, loadDiagram, saveDiagram} from "../../misc/Helper";
+import {changeDiagrams, loadDiagram, saveDiagram} from "../../function/Helper";
 
 interface Props {
     diagram: number;
@@ -80,10 +80,10 @@ export default class PanelDiagramItem extends React.Component<Props, State> {
                     <div
                         className={this.state.name}
                         onClick={this.alertPanel}
-                        onMouseOver={(event) => {
+                        onMouseOver={() => {
                             this.setState({hover: true})
                         }}
-                        onMouseLeave={(event) => {
+                        onMouseLeave={() => {
                             this.setState({hover: false})
                         }}
                     >

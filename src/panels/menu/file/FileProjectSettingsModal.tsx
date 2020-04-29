@@ -2,7 +2,7 @@ import React from 'react';
 import {Button, Modal, Tab, Tabs, Form} from "react-bootstrap";
 import * as LocaleMenu from "../../../locale/LocaleMenu.json";
 import TableList from "../../../components/TableList";
-import {Languages, ProjectSettings} from "../../../var/Variables";
+import {Languages, ProjectSettings} from "../../../config/Variables";
 // @ts-ignore
 // import {RIEInput} from "riek";
 

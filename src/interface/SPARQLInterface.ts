@@ -1,13 +1,16 @@
-import * as Helper from "../misc/Helper";
+import * as Helper from "../function/Helper";
+import {initLanguageObject} from "../function/Helper";
 import {
     Links,
+    loading,
+    ModelElements,
     PropertyPool,
+    Schemes,
     StereotypeCategories,
-    Stereotypes, ModelElements, Schemes, loading
-} from "../var/Variables";
+    Stereotypes
+} from "../config/Variables";
 import {AttributeType} from "../components/AttributeType";
 import {SourceData} from "../components/SourceData";
-import * as VariableLoader from "../var/VariableLoader";
 
 export async function getLinks(name:string, jsonData: {[key:string]: any}, callback: Function){
     if (!(jsonData.sourceIRI in Schemes)){
@@ -58,8 +61,8 @@ export async function getLinks(name:string, jsonData: {[key:string]: any}, callb
                             if (result.skosDefinition !== undefined) Links[result.term.value].skos.definition[result.skosDefinition['xml:lang']] = result.skosDefinition.value;
                         } else {
                             Links[result.term.value] = {
-                                labels: VariableLoader.initLanguageObject(result.termLabel.value),
-                                definitions: VariableLoader.initLanguageObject(result.termDefinition === undefined ? "" : result.termDefinition.value),
+                                labels: initLanguageObject(result.termLabel.value),
+                                definitions: initLanguageObject(result.termDefinition === undefined ? "" : result.termDefinition.value),
                                 category: name,
                                 skos: {}
                             };
@@ -209,8 +212,8 @@ export async function getSubclasses(superIRI: string, jsonData: { [key: string]:
                     } else {
                         let namelabels = result.termLabel === undefined ? result.term.value.substring(result.term.value.lastIndexOf("/") + 1) : result.termLabel.value;
                         Links[result.term.value] = {
-                            labels: VariableLoader.initLanguageObject(namelabels),
-                            definitions: VariableLoader.initLanguageObject(result.termDefinition === undefined ? "" : result.termDefinition.value),
+                            labels: initLanguageObject(namelabels),
+                            definitions: initLanguageObject(result.termDefinition === undefined ? "" : result.termDefinition.value),
                             category: name,
                             skos: {}
                         };
@@ -310,7 +313,7 @@ export async function getScheme(iri: string, endpoint: string, callback: Functio
                 if (iri in Schemes){
                     if (result.termLabel !== undefined) Schemes[iri].labels[result.termLabel['xml:lang']] = result.termLabel.value;
                 } else {
-                    Schemes[iri] = {labels: VariableLoader.initLanguageObject(result.termLabel.value)}
+                    Schemes[iri] = {labels: initLanguageObject(result.termLabel.value)}
                 }
             }
             loading.loaded++;

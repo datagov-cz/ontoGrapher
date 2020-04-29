@@ -40,7 +40,7 @@ export default class ModelFolder extends React.Component<Props, State> {
                 {(this.props.depth === 0 ? "💃🏼" : "↘") +"📁 " + this.props.category}
                 {this.state.open ?
                     this.props.children
-                    : <span></span>}
+                    : <span/>}
             </div>
         </div>);
     }

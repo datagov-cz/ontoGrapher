@@ -3,7 +3,6 @@ import MenuPanel from "../panels/MenuPanel";
 import ElementPanel from "../panels/ElementPanel";
 import DiagramCanvas from "./DiagramCanvas";
 import * as Locale from "../locale/LocaleMain.json";
-import * as VariableLoader from "../var/VariableLoader";
 import {
     AttributeTypePool,
     CardinalityPool,
@@ -19,15 +18,23 @@ import {
     PropertyPool,
     StereotypeCategories,
     Stereotypes
-} from "../var/Variables";
+} from "../config/Variables";
 import DetailPanel from "../panels/DetailPanel";
 import {getVocabulariesFromJSONSource} from "../interface/JSONInterface";
 import * as SemanticWebInterface from "../interface/SemanticWebInterface";
 import {Defaults} from "../config/Defaults";
-import {addDomainOfIRIs, getModelName, getStereotypeList, loadDiagram, saveDiagram} from "../misc/Helper";
+import {
+    addDomainOfIRIs,
+    getModelName,
+    getStereotypeList,
+    initLanguageObject,
+    initProjectSettings,
+    initVars,
+    loadDiagram,
+    saveDiagram
+} from "../function/Helper";
 import {PackageNode} from "../components/PackageNode";
 import {getContext} from "../interface/ContextInterface";
-import {initLanguageObject} from "../var/VariableLoader";
 
 interface DiagramAppProps{
     readonly?: boolean;
@@ -42,15 +49,11 @@ interface DiagramAppProps{
 }
 
 interface DiagramAppState{
-    // projectName: {[key:string]: string};
-    // projectDescription: {[key:string]: string};
     projectLanguage: string;
     saveString: string;
-    exportString: string;
     selectedLink: string;
     detailPanelHidden: boolean;
     loading: boolean;
-    //theme: "light" | "dark";
 }
 
 require("../scss/style.scss");
@@ -69,15 +72,11 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
         this.detailPanel = React.createRef();
         this.menuPanel = React.createRef();
 
-        VariableLoader.initVars();
+        initVars();
 
         ProjectSettings.name = initLanguageObject("Fetching...");
 
         this.state = ({
-            // projectName: VariableLoader.initLanguageObject(Locale.untitledProject),
-            // projectDescription: VariableLoader.initLanguageObject(""),
-            //theme: "light",
-            exportString: "",
             projectLanguage: Object.keys(Languages)[0],
             selectedLink: Object.keys(Links)[0],
             saveString: "",
@@ -85,16 +84,12 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
             loading: true
         });
 
-
-        document.title = ProjectSettings.name[this.state.projectLanguage] + " | " + Locale.ontoGrapher;
+        document.title = Locale.ontoGrapher;
         this.handleChangeSelectedLink = this.handleChangeSelectedLink.bind(this);
         this.handleChangeLanguage = this.handleChangeLanguage.bind(this);
         this.newProject = this.newProject.bind(this);
-        //this.saveOGsettings = this.saveOGsettings.bind(this);
         this.loadProject = this.loadProject.bind(this);
         this.saveProject = this.saveProject.bind(this);
-        //this.saveProjectSettings = this.saveProjectSettings.bind(this);
-        //this.handleChangeSelectedModel = this.handleChangeSelectedModel.bind(this);
         this.prepareDetails = this.prepareDetails.bind(this);
         this.loadVocabularies = this.loadVocabularies.bind(this);
     }
@@ -104,14 +99,14 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
             this.newProject();
             this.setState({loading: true});
         }
-        getVocabulariesFromJSONSource(Defaults.defaultVocabularies, (result: boolean)=>{
+        getVocabulariesFromJSONSource(Defaults.defaultVocabularies, ()=>{
         }).then(()=>{
             this.handleChangeSelectedLink(Object.keys(Links)[0]);
             getContext(
                 contextIRI,
                 contextEndpoint,
                 "application/json",
-                (message) => {}
+                () => {}
             ).then(()=>{
                 this.forceUpdate();
                 this.elementPanel.current?.update();
@@ -165,7 +160,7 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 
     newProject(){
         graph.clear();
-        VariableLoader.initProjectSettings();
+        initProjectSettings();
         this.setState({projectLanguage: Object.keys(Languages)[0],
             selectedLink: Object.keys(Links)[0],
             saveString: ""});
@@ -291,25 +286,10 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
         console.log(save);
         this.setState({saveString: (JSON.stringify(save))});
     }
-    //
-    //
-    // saveProjectSettings(save: {[key:string]: string}){
-    //     // this.setState({
-    //     //     projectName: save.projectName
-    //     // });
-    // }
-
-
 
     handleChangeSelectedLink(linkType: string) {
         this.setState({selectedLink: linkType});
     }
-
-    // saveOGsettings(input: any){
-    //     this.setState({
-    //         theme: input.theme
-    //     })
-    // }
 
     hide(id:string, diagram: number){
         ProjectElements[id].hidden[diagram] = true;
@@ -325,19 +305,15 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
                 saveProject={this.saveProject}
                 loadProject={this.loadProject}
                 loadContext={this.loadVocabularies}
-                //saveProjectSettings={this.saveProjectSettings}
                 saveString={this.state.saveString}
-                //theme={this.state.theme}
                 handleChangeLanguage={this.handleChangeLanguage}
                 update={()=>{this.elementPanel.current?.update();}}
-                //saveOGSettings={this.saveOGsettings}
             />
             <ElementPanel
                 ref={this.elementPanel}
                 projectLanguage={this.state.projectLanguage}
                 handleChangeSelectedLink={this.handleChangeSelectedLink}
                 selectedLink={this.state.selectedLink}
-
             />
             <DetailPanel
                 ref={this.detailPanel}

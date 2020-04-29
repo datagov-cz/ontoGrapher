@@ -1,7 +1,7 @@
 import * as Locale from "./../locale/LocaleMain.json";
 import {getElementsAsModel, getLinks, getStereotypes} from "./SPARQLInterface";
-import {loading, ProjectSettings} from "../var/Variables";
-import {initLanguageObject} from "../var/VariableLoader";
+import {loading, ProjectSettings} from "../config/Variables";
+import {initLanguageObject} from "../function/Helper";
 
 export async function getVocabulariesFromJSONSource(pathToJSON: string, callback: Function) {
     const isURL = require('is-url');

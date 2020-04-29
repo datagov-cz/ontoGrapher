@@ -10,8 +10,8 @@ import {
     ProjectLinks,
     ProjectSettings,
     VocabularyElements
-} from "../var/Variables";
-import {addClass, addLink, addModel, getModelName, getName, getStereotypeList, vocabOrModal} from "../misc/Helper";
+} from "../config/Variables";
+import {addClass, addLink, addModel, getModelName, getName, getStereotypeList, vocabOrModal} from "../function/Helper";
 import * as LocaleMain from "../locale/LocaleMain.json";
 
 interface DiagramCanvasProps {
@@ -56,8 +56,6 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps, D
         }
         cell.resize(bbox.width, bbox.height);
         cell.position(bbox.x, bbox.y);
-        // view.unhighlight();
-        // view.highlight();
         this.unHighlightCell(cell.id);
         this.highlightCell(cell.id);
         for (let link of links){
@@ -106,16 +104,12 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps, D
             connectionStrategy: joint.connectionStrategies.pinAbsolute,
             defaultConnectionPoint: { name: 'boundary', args: { selector: 'border' }},
             defaultLink: () => {
-                let link = new joint.shapes.standard.Link();
-                return link;
+                return new joint.shapes.standard.Link();
             }
         });
 
         this.paper.on({
             'element:mouseenter': (elementView)=> {
-                // let bbox = elementView.getBBox();
-                // let model = elementView.model;
-                // model.resize(bbox.width, bbox.height);
                 let tool = ProjectElements[elementView.model.id].active ? new joint.elementTools.HideButton({
                     useModelGeometry: false,
                     x: '100%',
@@ -185,7 +179,7 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps, D
             'blank:pointerup' : ()=>{
                 this.drag = undefined;
             },
-            'link:pointerup' : (linkView, evt, x, y)=>{
+            'link:pointerup' : (linkView)=>{
                 let id = linkView.model.id;
                 for (let link of graph.getLinks()){
                     if (link.id === id){

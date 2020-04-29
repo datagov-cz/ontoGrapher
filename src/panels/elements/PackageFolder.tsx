@@ -3,7 +3,7 @@ import {PackageNode} from "../../components/PackageNode";
 import {Button, Modal, OverlayTrigger, Tooltip} from "react-bootstrap";
 import * as LocaleMain from "../../locale/LocaleMain.json";
 import * as LocaleMenu from "../../locale/LocaleMenu.json";
-import {Languages, PackageRoot, ProjectElements, ProjectSettings, Schemes, structuresShort} from "../../var/Variables";
+import {Languages, PackageRoot, ProjectElements, ProjectSettings, Schemes, structuresShort} from "../../config/Variables";
 import TableList from "../../components/TableList";
 // @ts-ignore
 import {RIEInput} from "riek";
@@ -182,7 +182,7 @@ export default class PackageFolder extends React.Component<Props, State> {
                     </span>
                 {this.state.open ?
                     this.props.children
-                    : <span></span>}
+                    : <span/>}
             </div>
             <div>
                 <Modal centered show={this.state.modalEdit}>

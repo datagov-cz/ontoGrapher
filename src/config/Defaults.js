@@ -1,4 +1,4 @@
-import {CardinalityPool, Languages, Links} from "../var/Variables";
+import {CardinalityPool, Languages, Links} from "./Variables";
 
 
 export var Defaults = {

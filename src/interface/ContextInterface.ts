@@ -1,6 +1,6 @@
-import {ModelElements, PackageRoot, ProjectSettings, Schemes, Stereotypes, VocabularyElements} from "../var/Variables";
+import {ModelElements, PackageRoot, ProjectSettings, Schemes, Stereotypes, VocabularyElements} from "../config/Variables";
 import {graphElement} from "../graph/GraphElement";
-import {addClass} from "../misc/Helper";
+import {addClass} from "../function/Helper";
 import {getScheme} from "./SPARQLInterface";
 import {PackageNode} from "../components/PackageNode";
 import * as Locale from "../locale/LocaleMain.json";

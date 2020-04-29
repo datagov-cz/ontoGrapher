@@ -1,6 +1,6 @@
 import React from 'react';
 import {Button, Modal, Tab, Tabs} from "react-bootstrap";
-import * as LocaleMenu from "../../locale/LocaleMenu.json";
+import * as LocaleMenu from "../../../locale/LocaleMenu.json";
 
 interface Props {
     modal: boolean;

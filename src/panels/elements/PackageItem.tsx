@@ -1,9 +1,9 @@
 import React from 'react';
-import {ProjectElements, ProjectSettings} from "../../var/Variables";
+import {ProjectElements, ProjectSettings} from "../../config/Variables";
 import {Button, Modal, OverlayTrigger, Tooltip} from "react-bootstrap";
 import * as LocaleMain from "../../locale/LocaleMain.json";
 import * as LocaleMenu from "../../locale/LocaleMenu.json";
-import {deletePackageItem} from "../../misc/Helper";
+import {deletePackageItem} from "../../function/Helper";
 
 interface Props {
     label: string;

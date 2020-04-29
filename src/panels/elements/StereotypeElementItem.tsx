@@ -5,7 +5,6 @@ interface Props {
     label: string;
     element: string;
     category?: string;
-    onMouseOver: Function;
     package: boolean;
     definition?: string;
 }
@@ -32,9 +31,9 @@ export default class StereotypeElementItem extends React.Component<Props, State>
                          onDragStart={(event) =>{
                              event.dataTransfer.setData("newClass", JSON.stringify({type: "stereotype", elem: this.props.element, package: this.props.package}));
                          }}
-                         className={"stereotypeElementItem"} onMouseOver={()=>{this.props.onMouseOver();}}>
+                         className={"stereotypeElementItem"}>
                         <span className={"label"}>{this.props.label}</span>
-                        {this.props.category ? <span className={"category"}>{this.props.category}</span> : <span></span>}
+                        {this.props.category ? <span className={"category"}>{this.props.category}</span> : <span/>}
                     </div>
                 </OverlayTrigger>
             );
@@ -43,9 +42,9 @@ export default class StereotypeElementItem extends React.Component<Props, State>
                         onDragStart={(event) =>{
                             event.dataTransfer.setData("newClass", JSON.stringify({type: "stereotype", elem: this.props.element, package: this.props.package}));
                         }}
-                        className={"stereotypeElementItem"} onMouseOver={()=>{this.props.onMouseOver();}}>
+                        className={"stereotypeElementItem"}>
                 <span className={"label"}>{!this.props.label ? "<untitled>" : this.props.label}</span>
-                {this.props.category ? <span className={"category"}>{this.props.category}</span> : <span></span>}
+                {this.props.category ? <span className={"category"}>{this.props.category}</span> : <span/>}
             </div>);
         }
 

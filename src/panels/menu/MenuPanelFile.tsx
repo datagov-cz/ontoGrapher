@@ -10,16 +10,11 @@ import FileFetchContextModal from "./file/FileFetchContextModal";
 
 interface MenuPanelFileProps {
     newProject: Function;
-    //theme: string;
-    //saveOGSettings: Function;
     loadProject: Function;
     saveProject: Function;
-    //saveProjectSettings: Function;
     saveString: string;
     update: Function;
     loadContext: Function;
-    // projectName: { [key: string]: string };
-    // projectDescription: { [key: string]: string };
 }
 
 interface MenuPanelFileState {
@@ -52,7 +47,6 @@ export default class MenuPanelFile extends React.Component<MenuPanelFileProps, M
         this.newProject = this.newProject.bind(this);
         this.loadProject = this.loadProject.bind(this);
         this.saveProject = this.saveProject.bind(this);
-        //this.saveProjectSettings = this.saveProjectSettings.bind(this);
     }
 
     newProject() {

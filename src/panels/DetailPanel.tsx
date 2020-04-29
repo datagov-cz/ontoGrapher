@@ -13,13 +13,12 @@ import {
     Schemes,
     Stereotypes,
     VocabularyElements
-} from "../var/Variables";
+} from "../config/Variables";
 import * as LocaleMain from "../locale/LocaleMain.json";
 import {Button, Form, Tab, Tabs} from "react-bootstrap";
 import TableList from "../components/TableList";
 import * as LocaleMenu from "../locale/LocaleMenu.json";
-import * as VariableLoader from "../var/VariableLoader";
-import {getName, getStereotypeList, vocabOrModal} from "../misc/Helper";
+import {getName, getStereotypeList, initLanguageObject, vocabOrModal} from "../function/Helper";
 // @ts-ignore
 import {RIEInput} from "riek";
 import {AttributeObject} from "../components/AttributeObject";
@@ -66,8 +65,8 @@ export default class DetailPanel extends React.Component<Props, State> {
             hidden: true,
             model: undefined,
             changes: false,
-            inputNames: VariableLoader.initLanguageObject(""),
-            inputDescriptions: VariableLoader.initLanguageObject(""),
+            inputNames: initLanguageObject(""),
+            inputDescriptions: initLanguageObject(""),
             inputAttributes: [],
             inputDiagrams: [],
             inputConnections: [],
@@ -145,7 +144,7 @@ export default class DetailPanel extends React.Component<Props, State> {
             this.setState({
                 hidden: false,
                 model: id,
-                inputNames: ProjectElements[id].untitled ? VariableLoader.initLanguageObject("") : ProjectElements[id].names,
+                inputNames: ProjectElements[id].untitled ? initLanguageObject("") : ProjectElements[id].names,
                 inputDescriptions: ProjectElements[id].descriptions,
                 inputAttributes: ProjectElements[id].attributes,
                 inputDiagrams: ProjectElements[id].diagrams,
@@ -271,7 +270,7 @@ export default class DetailPanel extends React.Component<Props, State> {
                         {this.state.changes ?
                             <p className={"bordered"}>{LocaleMain.saveChanges}<br/><br/><Button onClick={() => {
                                 this.save();
-                            }}>{LocaleMain.menuPanelSave}</Button></p> : <p></p>}
+                            }}>{LocaleMain.menuPanelSave}</Button></p> : <p/>}
                         <Tabs id={"detailsTabs"}>
                             <Tab eventKey={1} title={LocaleMain.description}>
                                 <h5>{headers.stereotype[this.props.projectLanguage]}</h5>
@@ -381,7 +380,7 @@ export default class DetailPanel extends React.Component<Props, State> {
                                                     propName="textarea"
                                                 />
                                                 &nbsp;
-                                                <button className={"buttonlink"} onClick={(event) => {
+                                                <button className={"buttonlink"} onClick={() => {
                                                     this.deleteAttribute(i);
                                                 }}>
                                                     {LocaleMenu.delete}</button>
@@ -400,14 +399,14 @@ export default class DetailPanel extends React.Component<Props, State> {
                                         </tr>
                                     ))}
                                 </TableList>
-                                <button className={"buttonlink"} onClick={(event) => {
+                                <button className={"buttonlink"} onClick={() => {
                                     this.createAttribute();
                                 }}>
                                     {LocaleMenu.createAttribute}</button>
                             </Tab>
                             <Tab eventKey={3} title={LocaleMain.diagram}>
                                 <TableList headings={[LocaleMenu.diagram]}>
-                                    {this.state.inputDiagrams.map((conn, i) =>
+                                    {this.state.inputDiagrams.map((conn) =>
                                         (<tr><td>{Diagrams[conn].name}</td></tr>)
                                     )}
                                 </TableList>
@@ -472,7 +471,7 @@ export default class DetailPanel extends React.Component<Props, State> {
                             {this.state.changes ?
                                 <p className={"bordered"}>{LocaleMain.saveChanges}<br/><br/><Button onClick={() => {
                                     this.save();
-                                }}>{LocaleMain.menuPanelSave}</Button></p> : <p></p>}
+                                }}>{LocaleMain.menuPanelSave}</Button></p> : <p/>}
                             <TableList headings={[LocaleMenu.linkInfo, ""]}>
                                 <tr>
                                     <td>
@@ -692,7 +691,7 @@ export default class DetailPanel extends React.Component<Props, State> {
                             </Tab>
                             <Tab eventKey={3} title={LocaleMain.diagram}>
                                         <TableList headings={[LocaleMenu.diagram]}>
-                                            {this.state.inputDiagrams.map((conn, i) =>
+                                            {this.state.inputDiagrams.map((conn) =>
                                                 (<tr><td>{Diagrams[conn].name}</td></tr>)
                                             )}
                                         </TableList>

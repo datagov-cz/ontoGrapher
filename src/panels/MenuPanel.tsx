@@ -1,7 +1,7 @@
 import React from 'react';
 import {Form, Nav, Navbar, Spinner} from "react-bootstrap";
 import * as Locale from '../locale/LocaleMain.json';
-import {Languages, ProjectSettings} from "../var/Variables";
+import {Languages, ProjectSettings} from "../config/Variables";
 import MenuPanelFile from "./menu/MenuPanelFile";
 import MenuPanelHelp from "./menu/MenuPanelHelp";
 import MenuPanelAbout from "./menu/MenuPanelAbout";
@@ -37,8 +37,6 @@ export default class MenuPanel extends React.Component<MenuPanelProps, MenuPanel
             <Navbar.Brand>{Locale.ontoGrapher}</Navbar.Brand>
           <Nav className="mr-auto">
               {this.props.readOnly ?
-                  // <MenuPanelView />
-                  // <MenuPanelHelp />
                   <div/>
                   :
                   <div className={"inert"}>
@@ -46,17 +44,10 @@ export default class MenuPanel extends React.Component<MenuPanelProps, MenuPanel
                         newProject={this.props.newProject}
                         loadProject={this.props.loadProject}
                         saveProject={this.props.saveProject}
-                        //saveProjectSettings={this.props.saveProjectSettings}
                         saveString={this.props.saveString}
                         update={() => {this.forceUpdate();}}
                         loadContext={this.props.loadContext}
-                        // projectName={this.props.projectName}
-                        // projectDescription={this.props.projectDescription}
-                        // theme={this.props.theme}
-                        // saveOGSettings={this.props.saveOGSettings}
                       />
-                      {/*<MenuPanelView />*/}
-                      {/*<MenuPanelSettings update={this.props.update}  projectLanguage={this.props.projectLanguage}/>*/}
                       <MenuPanelHelp />
                       <MenuPanelAbout />
                   </div>

@@ -2,8 +2,8 @@ import React from 'react';
 import {Button, Form, Modal, Tab, Tabs} from "react-bootstrap";
 import * as LocaleMenu from "../../../locale/LocaleMenu.json";
 import * as Locale from "../../../locale/LocaleMain.json";
-import {exportGlossary, exportModel, parsePrefix} from "../../../misc/Helper";
-import {ProjectSettings} from "../../../var/Variables";
+import {exportGlossary, exportModel, parsePrefix} from "../../../function/Helper";
+import {ProjectSettings} from "../../../config/Variables";
 
 interface Props {
     modal: boolean;
