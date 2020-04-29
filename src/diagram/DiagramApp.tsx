@@ -164,6 +164,7 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
     }
 
     newProject(){
+        graph.clear();
         VariableLoader.initProjectSettings();
         this.setState({projectLanguage: Object.keys(Languages)[0],
             selectedLink: Object.keys(Links)[0],
