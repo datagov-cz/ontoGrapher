@@ -3,6 +3,7 @@ import {Button, Form, Modal, Tab, Tabs} from "react-bootstrap";
 import * as LocaleMenu from "../../../locale/LocaleMenu.json";
 import * as Locale from "../../../locale/LocaleMain.json";
 import {exportGlossary, exportModel, parsePrefix} from "../../../misc/Helper";
+import {ProjectSettings} from "../../../var/Variables";
 
 interface Props {
     modal: boolean;
@@ -54,6 +55,7 @@ export default class FileExportModal extends React.Component<Props, State> {
     exportM(ks: string){
         exportModel(this.state.iri, this.state.type, ks, structuresShort[ks], (str: string) => {
             this.setState({exportModelString: str});
+            //keep this .log
             console.log(str);
         })
     }
@@ -61,6 +63,7 @@ export default class FileExportModal extends React.Component<Props, State> {
     exportG(ks: string){
         exportGlossary(this.state.iri, this.state.type, ks, structuresShort[ks], (str: string) => {
             this.setState({exportGlossaryString: str});
+            //keep this .log
             console.log(str);
         })
     }
@@ -77,6 +80,7 @@ export default class FileExportModal extends React.Component<Props, State> {
                     <Form.Control as="select" value={this.state.knowledgeStructure}
                                   onChange={(event: React.FormEvent<HTMLInputElement>) => {
                                       this.setState({knowledgeStructure: event.currentTarget.value});
+                                      ProjectSettings.knowledgeStructure = event.currentTarget.value;
                                       this.handleExport(event.currentTarget.value);
                                   }}>
                         {Object.keys(structures).map((key,i)=><option key={i} value={key}>{key}</option>)}

@@ -11,8 +11,8 @@ import {
     ProjectSettings,
     PropertyPool, Schemes,
     StereotypeCategories,
-    Stereotypes,
-    ViewSettings
+    Stereotypes, structuresShort,
+    ViewSettings, VocabularyElements
 } from "../var/Variables";
 import {SourceData} from "../components/SourceData";
 import * as VariableLoader from "./../var/VariableLoader";
@@ -22,6 +22,8 @@ import * as joint from 'jointjs';
 import {AttributeObject} from "../components/AttributeObject";
 import {AttributeType} from "../components/AttributeType";
 import {DataFactory} from "n3";
+import {PackageNode} from "../components/PackageNode";
+import {initLanguageObject} from "./../var/VariableLoader";
 
 export function getNameOfStereotype(uri: string): string {
     let stereotype = Stereotypes[uri];
@@ -37,8 +39,22 @@ export function getName(element: string, language: string): string {
     if (ViewSettings.display === 1) {
         return getNameOfStereotype(element);
     } else {
-        return Stereotypes[element].labels[language];
+        if (element in Stereotypes){
+            return Stereotypes[element].labels[language];
+        } else {
+            return VocabularyElements[element].labels[language];
+        }
     }
+}
+
+export function getStereotypeList(iris: string[], language: string) : string[]{
+    return iris.map(iri => {
+        if (iri in Stereotypes){
+            return Stereotypes[iri].labels[language];
+        } else {
+            return VocabularyElements[iri].labels[language];
+        }
+    });
 }
 
 
@@ -75,16 +91,48 @@ export function parsePrefix(prefix: string, name: string){
     return Prefixes[prefix] + name;
 }
 
-export function addClass(id: string, iri: string, language: string) {
+export function createNewScheme() : string{
+    let result = "https://slovník.gov.cz/" + structuresShort[ProjectSettings.knowledgeStructure] + "/" + LocaleMain.untitled;
+    if (result in Schemes){
+        let count = 1;
+        while((result + "-" + count.toString(10)) in Schemes){
+            count++;
+        }
+        result += "-" + count.toString(10);
+    }
+    result = result.trim().replace(/\s/g, '-');
+    Schemes[result] = {labels: initLanguageObject("")}
+    return result;
+}
+
+export function addClass(
+    id: string,
+    iris: string[],
+    language: string,
+    scheme: string,
+    pkg: PackageNode = PackageRoot,
+    untitled: boolean = true,
+    stereotype: boolean = true,
+    names?: {}, descriptions?: {}, iriVocab?: string) {
     let result: { [key: string]: any } = {};
-    result["iri"] = iri;
-    result["names"] = VariableLoader.initLanguageObject(LocaleMain.untitled + " " + getName(iri, language));
+    result["iri"] = iris;
+    result["names"] = names ? names : VariableLoader.initLanguageObject(LocaleMain.untitled + " " + getName(iris[0], language));
     result["connections"] = [];
-    result["untitled"] = true;
-    result["descriptions"] = VariableLoader.initLanguageObject("");
+    result["untitled"] = untitled;
+    result["descriptions"] = descriptions ? descriptions : VariableLoader.initLanguageObject("");
     result["attributes"] = [];
+    if (iriVocab) result["iriVocab"] = iriVocab;
     let propertyArray: AttributeObject[] = [];
-    PropertyPool[Stereotypes[iri].category].forEach((attr: AttributeType)=>propertyArray.push(new AttributeObject("",attr)));
+    if (stereotype){
+        for (let iri of iris){
+            if (Stereotypes[iri].category in PropertyPool){
+                PropertyPool[Stereotypes[iri].category].forEach((attr: AttributeType)=>{
+                    let newAttr = new AttributeObject("",attr);
+                    if (!(propertyArray.includes(newAttr))) propertyArray.push(newAttr);
+                });
+            }
+        }
+    }
     result["properties"] = propertyArray;
     let diagramArray: boolean[] = [];
     Diagrams.forEach((obj, i) => {
@@ -92,10 +140,42 @@ export function addClass(id: string, iri: string, language: string) {
     });
     result["diagrams"] = [ProjectSettings.selectedDiagram];
     result["hidden"] = diagramArray;
-    result["package"] = PackageRoot;
+    result["package"] = pkg;
     result["active"] = true;
-    PackageRoot.elements.push(id);
+    result["scheme"] = scheme;
+    pkg.elements.push(id);
     ProjectElements[id] = result;
+}
+
+export function vocabOrModal(iri: string){
+    let result = iri in VocabularyElements ? VocabularyElements[iri] : ModelElements[iri];
+    return result;
+}
+
+export function addDomainOfIRIs(){
+    for (let iri in ModelElements){
+        if (ModelElements[iri].domain && ModelElements[ModelElements[iri].domain]){
+            if (!(ModelElements[ModelElements[iri].domain].domainOf.includes(iri))){
+                ModelElements[ModelElements[iri].domain].domainOf.push(iri);
+            }
+        } else if (ModelElements[iri].domain && VocabularyElements[ModelElements[iri].domain]){
+            if (!(VocabularyElements[ModelElements[iri].domain].domainOf.includes(iri))){
+                VocabularyElements[ModelElements[iri].domain].domainOf.push(iri);
+            }
+        }
+    }
+
+    for (let iri in VocabularyElements){
+        if (VocabularyElements[iri].domain && VocabularyElements[VocabularyElements[iri].domain]){
+            if (!(VocabularyElements[VocabularyElements[iri].domain].domainOf.includes(iri))){
+                VocabularyElements[VocabularyElements[iri].domain].domainOf.push(iri);
+            }
+        } else if (VocabularyElements[iri].domain && ModelElements[VocabularyElements[iri].domain]){
+            if (!(ModelElements[VocabularyElements[iri].domain].domainOf.includes(iri))){
+                ModelElements[VocabularyElements[iri].domain].domainOf.push(iri);
+            }
+        }
+    }
 }
 
 export function addModel(id: string, iri: string, language: string, name: string) {
@@ -217,12 +297,11 @@ export function loadDiagram(load: {
     }
 }
 
-// https://slovník.gov.cz/základní/pojem/model
 export function exportModel(iri: string, type: string, knowledgeStructure: string, ksShort: string, callback: Function){
     const N3 = require('n3');
     const { namedNode, literal } = DataFactory;
     const writer = new N3.Writer({ prefixes: Prefixes });
-    let name: string = ProjectSettings.name[Object.keys(ProjectSettings.name)[0]].trim().replace(/\s/g, '-');;
+    let name: string = ProjectSettings.name[Object.keys(ProjectSettings.name)[0]].trim().replace(/\s/g, '-');
     let projectIRI = iri + ksShort + "/" + name;
     let project = namedNode(projectIRI);
     let termObj: {[key:string]: string} = {};
@@ -243,7 +322,17 @@ export function exportModel(iri: string, type: string, knowledgeStructure: strin
 
     for (let id of Object.keys(ProjectElements)){
         let iri = ProjectElements[id].iri;
-        if (!((iri) in Stereotypes)) continue;
+        if (Array.isArray(ProjectElements[id].iri)){
+            let cont = false;
+            for (let iri of ProjectElements[id].iri){
+                if (iri in Stereotypes){
+                    cont = true;
+                }
+            }
+            if (!cont) continue;
+        } else {
+            if (!((iri) in Stereotypes)) continue;
+        }
         let elementName = ProjectElements[id].names[Object.keys(ProjectElements[id].names)[0]]
         for(let lang of Object.keys(ProjectElements[id].names)){
             if (ProjectElements[id].names[lang].length > 0){
@@ -251,7 +340,8 @@ export function exportModel(iri: string, type: string, knowledgeStructure: strin
                 break;
             }
         }
-        if (elementName === "") elementName = (LocaleMain.untitled + "-" + Stereotypes[iri].labels[Object.keys(Stereotypes[iri].labels)[0]]).trim().replace(/\s/g, '-');
+        let stereotypeIRI = Array.isArray(ProjectElements[id].iri) ? ProjectElements[id].iri[0] : ProjectElements[id].iri;
+        if (elementName === "") elementName = (LocaleMain.untitled + "-" + Stereotypes[stereotypeIRI].labels[Object.keys(Stereotypes[stereotypeIRI].labels)[0]]).trim().replace(/\s/g, '-');
         elementName = (projectIRI + "/pojem/" + elementName).trim().replace(/\s/g, '-');
         let count = 1;
         if (Object.values(termObj).includes(elementName)){
@@ -267,7 +357,14 @@ export function exportModel(iri: string, type: string, knowledgeStructure: strin
         let subject = namedNode(termObj[id]);
         //type
         //writer.addQuad(subject, namedNode(parsePrefix(Prefixes.rdf,"type")), namedNode(parsePrefix(Prefixes.skos,"Concept")));
-        writer.addQuad(subject, namedNode(parsePrefix("rdf","type")), namedNode(ProjectElements[id].iri));
+        if (Array.isArray(ProjectElements[id].iri)){
+            for (let iri of ProjectElements[id].iri){
+                writer.addQuad(subject, namedNode(parsePrefix("rdf","type")), namedNode(iri));
+            }
+        } else {
+            writer.addQuad(subject, namedNode(parsePrefix("rdf","type")), namedNode(ProjectElements[id].iri));
+        }
+
         //prefLabel
         if (!(ProjectElements[id].untitled)){
             for (let lang of Object.keys(ProjectElements[id].names)){
@@ -318,6 +415,16 @@ export function exportGlossary(iri: string, type: string, knowledgeStructure: st
     //imports
     for (let iri of Object.keys(Schemes)){
         writer.addQuad(glossary, namedNode(parsePrefix("owl","imports")), namedNode(iri));
+
+        let scheme = namedNode(iri);
+        writer.addQuad(scheme, namedNode(parsePrefix("rdf","type")), namedNode("z-sgov-pojem:glosář"));
+        writer.addQuad(scheme, namedNode(parsePrefix("rdf","type")), namedNode(parsePrefix("skos","ConceptScheme")));
+        writer.addQuad(scheme, namedNode(parsePrefix("rdf","type")), namedNode(knowledgeStructure));
+        for (let lang of Object.keys(ProjectSettings.name)){
+            if (ProjectSettings.name[lang].length > 0){
+                writer.addQuad(scheme, namedNode(parsePrefix("skos","prefLabel")), literal(ProjectSettings.name[lang],lang));
+            }
+        }
     }
 
     for (let id of Object.keys(ProjectElements)){
@@ -355,7 +462,7 @@ export function exportGlossary(iri: string, type: string, knowledgeStructure: st
             }
         }
         //rdfs:isDefinedBy
-        writer.addQuad(subject, namedNode(parsePrefix("skos","inScheme")), glossaryIRI);
+        writer.addQuad(subject, namedNode(parsePrefix("skos","inScheme")), namedNode(ProjectElements[id].scheme));
     }
     return writer.end((error: any, result: any)=>{callback(result);})
 }

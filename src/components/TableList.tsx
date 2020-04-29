@@ -23,7 +23,7 @@ export default class TableList extends React.Component<Props, State> {
                 <Table striped bordered={true} hover size={"sm"} responsive="md">
                     <thead>
                     <tr>
-                        {this.props.headings.map((head) => <th>{head}</th>)}
+                        {this.props.headings.map((head) => <th key={head}>{head}</th>)}
                     </tr>
                     </thead>
                     <tbody style={{overflow: "auto"}}>

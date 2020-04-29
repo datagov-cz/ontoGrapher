@@ -24,8 +24,10 @@ import DetailPanel from "../panels/DetailPanel";
 import {getVocabulariesFromJSONSource} from "../interface/JSONInterface";
 import * as SemanticWebInterface from "../interface/SemanticWebInterface";
 import {Defaults} from "../config/Defaults";
-import {getModelName, getName, loadDiagram, saveDiagram} from "../misc/Helper";
+import {addDomainOfIRIs, getModelName, getStereotypeList, loadDiagram, saveDiagram} from "../misc/Helper";
 import {PackageNode} from "../components/PackageNode";
+import {getContext} from "../interface/ContextInterface";
+import {initLanguageObject} from "../var/VariableLoader";
 
 interface DiagramAppProps{
     readonly?: boolean;
@@ -47,6 +49,7 @@ interface DiagramAppState{
     exportString: string;
     selectedLink: string;
     detailPanelHidden: boolean;
+    loading: boolean;
     //theme: "light" | "dark";
 }
 
@@ -68,6 +71,8 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 
         VariableLoader.initVars();
 
+        ProjectSettings.name = initLanguageObject("Fetching...");
+
         this.state = ({
             // projectName: VariableLoader.initLanguageObject(Locale.untitledProject),
             // projectDescription: VariableLoader.initLanguageObject(""),
@@ -76,7 +81,8 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
             projectLanguage: Object.keys(Languages)[0],
             selectedLink: Object.keys(Links)[0],
             saveString: "",
-            detailPanelHidden: false
+            detailPanelHidden: false,
+            loading: true
         });
 
 
@@ -90,6 +96,32 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
         //this.saveProjectSettings = this.saveProjectSettings.bind(this);
         //this.handleChangeSelectedModel = this.handleChangeSelectedModel.bind(this);
         this.prepareDetails = this.prepareDetails.bind(this);
+        this.loadVocabularies = this.loadVocabularies.bind(this);
+    }
+
+    loadVocabularies(contextIRI: string, contextEndpoint: string, reload: boolean = false){
+        if (reload){
+            this.newProject();
+            this.setState({loading: true});
+        }
+        getVocabulariesFromJSONSource(Defaults.defaultVocabularies, (result: boolean)=>{
+        }).then(()=>{
+            this.handleChangeSelectedLink(Object.keys(Links)[0]);
+            getContext(
+                contextIRI,
+                contextEndpoint,
+                "application/json",
+                (message) => {}
+            ).then(()=>{
+                this.forceUpdate();
+                this.elementPanel.current?.update();
+                ProjectSettings.selectedPackage = PackageRoot.children[0];
+                PackageRoot.name = initLanguageObject(Locale.root);
+                this.setState({loading: false});
+                addDomainOfIRIs();
+                document.title = ProjectSettings.name[this.state.projectLanguage] + " | " + Locale.ontoGrapher;
+            })
+        });
     }
 
     componentDidMount(): void {
@@ -104,12 +136,11 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
             });
         }
         if (this.props.loadDefaultVocabularies){
-            getVocabulariesFromJSONSource(Defaults.defaultVocabularies, (result: boolean)=>{
-                this.forceUpdate();
-                this.handleChangeSelectedLink(Object.keys(Links)[0]);
-                this.elementPanel.current?.update();
-            });
+            this.loadVocabularies(
+                "http://example.org/pracovni-prostor/metadatový-kontext-123"
+                ,"https://onto.fel.cvut.cz:7200/repositories/kodi-pracovni-prostor-sample");
         }
+
 
     }
 
@@ -121,10 +152,13 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
         this.setState({projectLanguage: languageCode});
         document.title = ProjectSettings.name[languageCode] + " | " + Locale.ontoGrapher;
         graph.getCells().forEach((cell) =>{
-            if (ProjectElements[cell.id].active) {
-                cell.prop('attrs/label/text', "«"+ getName(ProjectElements[cell.id].iri, this.state.projectLanguage).toLowerCase() +"»\n" + ProjectElements[cell.id].names[languageCode]);
-            } else {
-                cell.prop('attrs/label/text', getModelName(ProjectElements[cell.id].iri, languageCode));
+            if (ProjectElements[cell.id]){
+
+                if (ProjectElements[cell.id].active) {
+                    cell.prop('attrs/label/text', getStereotypeList(ProjectElements[cell.id].iri, languageCode).map((str)=>"«"+str.toLowerCase()+"»\n").join("") + ProjectElements[cell.id].names[languageCode]);
+                } else {
+                    cell.prop('attrs/label/text', getModelName(ProjectElements[cell.id].iri, languageCode));
+                }
             }
         });
     }
@@ -168,7 +202,7 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
         this.saveProject();
     }
 
-    loadPackages(list: {trace: number[], elements: string[], name: string, root: boolean}[]){
+    loadPackages(list: {trace: number[], elements: string[], name: string, root: boolean, scheme: string}[]){
         for (let pkg of list){
             if (pkg.root){
                 PackageRoot.elements = pkg.elements;
@@ -181,6 +215,7 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
                     iter = iter.children[pkg.trace[i]];
                 }
                 let newpkg = new PackageNode(pkg.name, iter, false);
+                newpkg.scheme = pkg.scheme;
                 newpkg.elements = pkg.elements;
                 iter.children.push(newpkg);
                 for (let elem of pkg.elements){
@@ -216,7 +251,8 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
                 name: p.name,
                 trace: trace,
                 elements: p.elements,
-                root: p === PackageRoot
+                root: p === PackageRoot,
+                scheme: p.scheme
             });
 
             for (let sp of p.children){
@@ -282,10 +318,12 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
         return(<div className={"app"}>
             <MenuPanel
                 ref={this.menuPanel}
+                loading={this.state.loading}
                 newProject={this.newProject}
                 projectLanguage={this.state.projectLanguage}
                 saveProject={this.saveProject}
                 loadProject={this.loadProject}
+                loadContext={this.loadVocabularies}
                 //saveProjectSettings={this.saveProjectSettings}
                 saveString={this.state.saveString}
                 //theme={this.state.theme}

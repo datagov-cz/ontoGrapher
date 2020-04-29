@@ -47,7 +47,7 @@
   }
 
   .elementLinkList{
-    height: calc(100vh - 196px) !important;
+    height: calc(100vh - 164px) !important;
     overflow: auto;
   }
   .margins{
@@ -77,6 +77,9 @@
   }
   .open{
     border-left-width: 10px;
+  }
+  .defaultPackage{
+    background-color: rgba(198, 200, 250, 0.5) !important;
   }
   //.hidden{
   //  border-style: dashed;

@@ -1,5 +1,5 @@
 import React from 'react';
-import {Form, Nav, Navbar} from "react-bootstrap";
+import {Form, Nav, Navbar, Spinner} from "react-bootstrap";
 import * as Locale from '../locale/LocaleMain.json';
 import {Languages, ProjectSettings} from "../var/Variables";
 import MenuPanelFile from "./menu/MenuPanelFile";
@@ -12,9 +12,11 @@ interface MenuPanelProps{
     handleChangeLanguage: any;
     newProject: Function;
     loadProject: Function;
+    loadContext: Function;
     saveProject: Function;
     saveString: string;
     update: Function;
+    loading: boolean;
 }
 
 interface MenuPanelState {
@@ -47,6 +49,7 @@ export default class MenuPanel extends React.Component<MenuPanelProps, MenuPanel
                         //saveProjectSettings={this.props.saveProjectSettings}
                         saveString={this.props.saveString}
                         update={() => {this.forceUpdate();}}
+                        loadContext={this.props.loadContext}
                         // projectName={this.props.projectName}
                         // projectDescription={this.props.projectDescription}
                         // theme={this.props.theme}
@@ -60,7 +63,8 @@ export default class MenuPanel extends React.Component<MenuPanelProps, MenuPanel
               }
           </Nav>
             <Navbar.Text className="mr-sm-2">
-                {ProjectSettings.name[this.props.projectLanguage].length > 32 ? ProjectSettings.name[this.props.projectLanguage].substr(0,32) + "..." : ProjectSettings.name[this.props.projectLanguage]}
+                {this.props.loading ? <Spinner animation="border" size="sm" /> : ""}&nbsp;
+                {ProjectSettings.name[this.props.projectLanguage] === "" ? "<untitled>" : ProjectSettings.name[this.props.projectLanguage]}
             </Navbar.Text>
             <Form inline>
                 <Form.Control as="select" value={this.props.projectLanguage} onChange={this.handleChangeLanguage}>

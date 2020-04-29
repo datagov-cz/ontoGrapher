@@ -9,7 +9,7 @@ interface State {
     hover: boolean;
 }
 
-export default class IRIlabel extends React.Component<Props, State> {
+export default class IRILink extends React.Component<Props, State> {
     constructor(props: Props) {
         super(props);
         this.state = {
@@ -18,15 +18,13 @@ export default class IRIlabel extends React.Component<Props, State> {
     }
 
     render() {
-        return (<td
+        return (<span
             onMouseOver={()=>{this.setState({hover: true});}}
             onMouseOut={()=>{this.setState({hover: false});}}
-        ><span
-
         >
             {this.props.label}<a target="_blank" rel="noopener noreferrer"
                                  style={{display: this.state.hover ? "inline" : "none"}}
                                  href={this.props.iri}>↱</a>
-        </span></td>);
+        </span>);
     }
 }

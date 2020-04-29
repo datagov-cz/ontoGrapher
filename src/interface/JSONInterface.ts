@@ -1,23 +1,25 @@
 import * as Locale from "./../locale/LocaleMain.json";
-import {getElementsAsPackage, getLinks, getStereotypes} from "./SPARQLInterface";
-import {loading} from "../var/Variables";
+import {getElementsAsModel, getLinks, getStereotypes} from "./SPARQLInterface";
+import {loading, ProjectSettings} from "../var/Variables";
+import {initLanguageObject} from "../var/VariableLoader";
 
-export function getVocabulariesFromJSONSource(pathToJSON: string, callback: Function) {
+export async function getVocabulariesFromJSONSource(pathToJSON: string, callback: Function) {
     const isURL = require('is-url');
     if (isURL(pathToJSON)) {
-        fetch(pathToJSON).then(response => response.json()).then(
-            json => {
-                Object.keys(json).forEach(key => {
+        ProjectSettings.name = initLanguageObject("Loading...");
+        await fetch(pathToJSON).then(response => response.json()).then(
+            async json => {
+                for (const key of Object.keys(json)) {
                     let type = json[key]["type"];
                     if (type === "stereotype"){
                         loading.load++;
-                        getStereotypes(key, json[key], callback);
-                        getLinks(key, json[key], callback);
+                        await getStereotypes(key, json[key], callback);
+                        await getLinks(key, json[key], callback);
                     } else if (type === "model"){
                         loading.load++;
-                        getElementsAsPackage(key, json[key], callback);
+                        await getElementsAsModel(key, json[key], callback);
                     }
-                })
+                }
             }
         );
     } else {

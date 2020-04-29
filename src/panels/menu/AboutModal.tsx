@@ -21,6 +21,49 @@ export default class AboutModal extends React.Component<Props, State> {
             <Modal.Body>
                 <Tabs id={"changelog"}>
                     <Tab title={"April"} eventKey={1}>
+                        <h6>28.4.</h6>
+                        <ul>
+                            <li>Changed detail panel header names</li>
+                            <li>Fixed model interpretation not working between read-only and editable vocabularies</li>
+                            <li>Fixed stereotype detail panel visual artefact</li>
+                        </ul>
+                        <h6>27.4.</h6>
+                        <ul>
+                            <li>Changed fetch workspace dialogue to include both context IRI and endpoint</li>
+                            <li>Changed class detail panel title to class label</li>
+                            <li>Fixed read-only detail panel to include attributes and properties</li>
+                        </ul>
+                        <h6>26.4.</h6>
+                        <ul>
+                            <li>Added connections + diagram tabs for models' detail panel</li>
+                            <li>Fixed definitions header showing despite no definitions fetched</li>
+                            <li>rdfs:domain and rdfs:range attributes now interpreted</li>
+                            <li>Types now interpreted correctly for models</li>
+                            <li>New import workspace feature</li>
+                            <li>New "Test connection to workspace" feature (in "Fetch workspace" dialogue)</li>
+                            <li>If elements of rdfs:domain & rdfs:range IRI are present, the relationship is automatically created</li>
+                            <li>Changed to d-sgov workspace ontology in fetching</li>
+                            <li>Modified SPARQL querying</li>
+                        </ul>
+                        <h6>20.4.</h6>
+                        <ul>
+                            <li>Multiple stereotype support <b>(including editing)</b></li>
+                            <li>Code cleanup</li>
+                            <li>Fixed packages not rerendering with new name when renaming</li>
+                            <li>Fixed element and link highlighting rendering issues</li>
+                        </ul>
+                        <h6>17.4.</h6>
+                        <ul>
+                            <li>PP load support: for now, the example PP is loaded.</li>
+                            <li>Packages now have names for each language</li>
+                            <li>Root-level packages now act as vocabularies: naming them affects the inScheme of contained elements</li>
+                            <li>Icon now shown to indicate loading</li>
+                            <li>Packages can now be "default" - newly created elements automatically appear in them</li>
+                            <li>"Set default package" button on hover on package added</li>
+                            <li>Elements cannot be in the root anymore, they have to be in a package</li>
+                            <li>Multiple stereotype viewing <b>(not editing)</b> support</li>
+                            <li>Parent package now opens on creation of a subpackage</li>
+                        </ul>
                         <h6>13.4.</h6>
                         <ul>
                             <li>Export refactoring</li>

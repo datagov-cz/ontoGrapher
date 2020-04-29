@@ -2,9 +2,9 @@ import * as Locale from "../locale/LocaleMain.json";
 import {Cardinality} from "../components/Cardinality";
 import * as joint from 'jointjs';
 import {PackageNode} from "../components/PackageNode";
+import {parsePrefix} from "../misc/Helper";
 
 export var graph = new joint.dia.Graph();
-export var selectedDiagram: string = "";
 
 export var loading = {
     loaded: 0,
@@ -18,7 +18,7 @@ export var Languages: {[key:string]: string} = {};
 
 
 //names: {}
-//iri: string
+//iriElem: string
 //connections: []
 //definitions: {}
 //attributes: {}
@@ -32,7 +32,7 @@ export var ProjectElements: {[key:string]: any} = {};
 
 //sourceCard
 //targetCard
-//iri
+//iriElem
 //diagram
 //source
 //target
@@ -45,6 +45,8 @@ export var ProjectLinks:{[key:string]: any} = {};
 export var ViewSettings: {[key:string]: any} = {
     display: 2
 };
+
+
 
 export var StereotypeCategories: string[] = [
 ];
@@ -61,7 +63,21 @@ export var Prefixes: {[key:string]: string} = {
     "z-sgov-pojem": "https://slovník.gov.cz/základní/pojem/"
 };
 
-export var PackageRoot: PackageNode = new PackageNode("Root", undefined, true);
+export var structures: {[key:string]: string} = {
+    "z-sgov-pojem:základní-struktura": parsePrefix("z-sgov-pojem", "základní-struktura"),
+    "z-sgov-pojem:legislativní-struktura": parsePrefix("z-sgov-pojem", "legislativní-struktura"),
+    "z-sgov-pojem:agendová-struktura": parsePrefix("z-sgov-pojem", "agendová-struktura"),
+    "z-sgov-pojem:datová-struktura": parsePrefix("z-sgov-pojem", "datová-struktura")
+};
+
+export var structuresShort: {[key:string]: string} = {
+    "z-sgov-pojem:základní-struktura": "základní",
+    "z-sgov-pojem:legislativní-struktura": "legislativní",
+    "z-sgov-pojem:agendová-struktura": "agendová",
+    "z-sgov-pojem:datová-struktura": "datová"
+};
+
+export var PackageRoot: PackageNode = new PackageNode("Root", undefined, true, "");
 
 //labels
 //category
@@ -70,6 +86,8 @@ export var Stereotypes: {[key:string]: any} = {
 };
 
 export var ModelElements:{[key:string]: any} = {};
+
+export var VocabularyElements:{[key:string]: any} = {};
 
 
 export var Links: {[key:string]: any} = {
@@ -85,10 +103,18 @@ export var Namespaces: {[key:string]: any} = {
 export var Diagrams: {[key:string]: any}[] = [
     {name: "Untitled", json: ""}
 ];
-export var ProjectSettings: {[key: string]: any} = {
+export var ProjectSettings: {
+    name: {[key:string]: string},
+    description: {[key:string]: string},
+    selectedDiagram: number,
+    selectedPackage: PackageNode,
+    knowledgeStructure: string
+} = {
     name: {},
     description: {},
-    selectedDiagram: 0
+    selectedDiagram: 0,
+    selectedPackage: PackageRoot,
+    knowledgeStructure: Object.keys(structures)[0]
 };
 export var AttributeTypePool: {[key:string]: any} = {
     "http://www.w3.org/2001/XMLSchema#string": {name:"String", array: false},
@@ -108,9 +134,7 @@ export var CardinalityPool = [
 ];
 
 CardinalityPool.unshift(new Cardinality(Locale.none, Locale.none));
-export var GeneralizationPool: {[key:string]: any} = {
 
-};
 export var VocabularyPool = [];
 export var Packages: {[key:string]: any} = {
 

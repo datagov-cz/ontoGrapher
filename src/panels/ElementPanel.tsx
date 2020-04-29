@@ -2,7 +2,6 @@ import React from 'react';
 import {ResizableBox} from "react-resizable";
 import {Form, InputGroup, OverlayTrigger, Tab, Tabs, Tooltip} from "react-bootstrap";
 import * as LocaleMain from "../locale/LocaleMain.json";
-import Select from 'react-select';
 import {
     Diagrams,
     Links,
@@ -10,6 +9,7 @@ import {
     PackageRoot,
     ProjectElements,
     ProjectSettings,
+    Schemes,
     StereotypeCategories,
     Stereotypes,
     ViewSettings
@@ -22,6 +22,7 @@ import PackageFolder from "./elements/PackageFolder";
 import {PackageNode} from "../components/PackageNode";
 import PackageItem from "./elements/PackageItem";
 import ModelFolder from "./elements/ModelFolder";
+import {createNewScheme} from "./../misc/Helper";
 
 interface Props {
     projectLanguage: string;
@@ -125,7 +126,6 @@ export default class ElementPanel extends React.Component<Props, State>{
         this.links = result2;
     }
 
-    //TODO: unfinished function
     handleGetInfo(element: string) {
     }
 
@@ -201,10 +201,10 @@ export default class ElementPanel extends React.Component<Props, State>{
 
     getFoldersDFS(arr: JSX.Element[], node: PackageNode, depth: number) {
         if (node !== PackageRoot) {
-            arr.push(<PackageFolder node={node} depth={depth} update={() => {
+            arr.push(<PackageFolder key={node.scheme} projectLanguage={this.props.projectLanguage} name={node.name[this.props.projectLanguage]} node={node} depth={depth} update={() => {
                 this.forceUpdate();
             }}>
-                {node.elements.map((id) => <PackageItem label={ProjectElements[id].names[this.props.projectLanguage]}
+                {node.elements.map((id) => <PackageItem key={id} label={ProjectElements[id].names[this.props.projectLanguage]}
                                                         depth={depth} id={id} update={() => {
                     this.forceUpdate();
                 }}/>)}
@@ -242,10 +242,10 @@ export default class ElementPanel extends React.Component<Props, State>{
                     key={iri}
                     label={this.getNameModel(iri)}
                     element={iri}
-                    category={key}
+                    //category={key}
                     onMouseOver={()=>{}}
                     package={false}/>);
-                result.push(<ModelFolder category={key} key={key} depth={0} update={()=>{this.forceUpdate();}} open={()=>{this.modelFolders[i] = !this.modelFolders[i]; this.forceUpdate();}}>
+                result.push(<ModelFolder category={Schemes[key].labels[this.props.projectLanguage]} key={key} depth={0} update={()=>{this.forceUpdate();}} open={()=>{this.modelFolders[i] = !this.modelFolders[i]; this.forceUpdate();}}>
                     {contents}
                 </ModelFolder>)
             });
@@ -275,13 +275,13 @@ export default class ElementPanel extends React.Component<Props, State>{
                     onChange={this.handleChangeSearch}
                 />
             </InputGroup>
-            <Select
-                isMulti
-                closeMenuOnSelect={false}
-                options={this.stereotypeCategories}
-                onChange={this.handleChangeSelect}
-                placeholder={LocaleMain.filter}
-            />
+            {/*<Select*/}
+            {/*    isMulti*/}
+            {/*    closeMenuOnSelect={false}*/}
+            {/*    options={this.stereotypeCategories}*/}
+            {/*    onChange={this.handleChangeSelect}*/}
+            {/*    placeholder={LocaleMain.filter}*/}
+            {/*/>*/}
             <Tabs id="stereotypePanelTabs">
                 <Tab eventKey={1} title={tooltipS}>
                     <div className={"elementList"}>
@@ -313,40 +313,28 @@ export default class ElementPanel extends React.Component<Props, State>{
                 </Tab>
                 <Tab eventKey={3} title={tooltipPM}>
                         <button className={"margins"} onClick={() => {
-                            PackageRoot.children.push(new PackageNode(LocaleMain.untitledPackage, PackageRoot));
+                            let scheme = createNewScheme();
+                            PackageRoot.children.push(new PackageNode(LocaleMain.untitledPackage, PackageRoot, true, scheme));
                             this.forceUpdate();
                         }
                         }>{LocaleMain.addNewPackage}</button>
                         <div className="elementLinkList"
-                             onDragOver={(event)=>{event.preventDefault();}}
-                             onDrop={(event) => {
-                            let parse = JSON.parse(event.dataTransfer.getData("newClass"));
-                            let id = parse.elem;
-                            if (id in ModelElements) return;
-                            let oldpkg = ProjectElements[id].package;
-                            oldpkg.elements.splice(oldpkg.elements.indexOf(id), 1);
-                            ProjectElements[id].package = PackageRoot;
-                            PackageRoot.elements.push(id);
-                            this.forceUpdate();
-                        }}>
+                        //      onDragOver={(event)=>{event.preventDefault();}}
+                        //      onDrop={(event) => {
+                        //     let parse = JSON.parse(event.dataTransfer.getData("newClass"));
+                        //     let id = parse.elem;
+                        //     if (id in ModelElements) return;
+                        //     let oldpkg = ProjectElements[id].package;
+                        //     oldpkg.elements.splice(oldpkg.elements.indexOf(id), 1);
+                        //     ProjectElements[id].package = PackageRoot;
+                        //     PackageRoot.elements.push(id);
+                        //     this.forceUpdate();
+                        // }}
+                        >
                             {this.getModelFolders()}
                             {this.getFolders()}
                         </div>
                 </Tab>
-                {/*<Tab eventKey={4} title={tooltipM}>*/}
-                {/*    <div className="elementList">*/}
-                {/*        {this.models.map((element) => (<StereotypeElementItem*/}
-                {/*            key={element}*/}
-                {/*            element={element}*/}
-                {/*            label={this.getNameModel(element)}*/}
-                {/*            category={ModelElements[element].category}*/}
-                {/*            onMouseOver={() => {*/}
-                {/*                this.handleGetInfo(element);*/}
-                {/*            }}*/}
-                {/*            package={false}*/}
-                {/*        />))}*/}
-                {/*    </div>*/}
-                {/*</Tab>*/}
                 <Tab eventKey={4} title={tooltipD}>
                     <button className={"margins"} onClick={() => {
                         Diagrams.push({name: LocaleMain.untitled, json: {}});

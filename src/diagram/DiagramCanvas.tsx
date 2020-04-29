@@ -2,8 +2,16 @@
 import React from 'react';
 import * as joint from 'jointjs';
 import {graphElement} from "../graph/GraphElement";
-import {graph, Links, ProjectElements, ProjectLinks, ProjectSettings} from "../var/Variables";
-import {addClass, addLink, addModel, getModelName, getName} from "../misc/Helper";
+import {
+    graph,
+    Links,
+    ModelElements,
+    ProjectElements,
+    ProjectLinks,
+    ProjectSettings,
+    VocabularyElements
+} from "../var/Variables";
+import {addClass, addLink, addModel, getModelName, getName, getStereotypeList, vocabOrModal} from "../misc/Helper";
 import * as LocaleMain from "../locale/LocaleMain.json";
 
 interface DiagramCanvasProps {
@@ -22,7 +30,7 @@ interface DiagramPropsState {
 export default class DiagramCanvas extends React.Component<DiagramCanvasProps, DiagramPropsState>{
     private readonly canvasRef: React.RefObject<HTMLDivElement>;
     private paper: joint.dia.Paper | undefined;
-    private highlight: joint.dia.CellView;
+    private highlight: string;
     private magnet: boolean;
     private drag: {x: any, y: any} | undefined;
 
@@ -48,14 +56,34 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps, D
         }
         cell.resize(bbox.width, bbox.height);
         cell.position(bbox.x, bbox.y);
-        view.unhighlight();
-        view.highlight();
+        // view.unhighlight();
+        // view.highlight();
+        this.unHighlightCell(cell.id);
+        this.highlightCell(cell.id);
         for (let link of links){
             if(link.getSourceCell() === null){
                 link.source({id: id});
             } else {
                 link.target({id: id});
             }
+        }
+    }
+
+    highlightCell(id: string){
+        let cell = graph.getCell(id);
+        if (cell.isLink()){
+            cell.attr({line:{stroke:'#0000FF'}});
+        } else {
+            cell.attr({body:{stroke:'#0000FF'}});
+        }
+    }
+
+    unHighlightCell(id: string){
+        let cell = graph.getCell(id);
+        if (cell.isLink()){
+            cell.attr({line:{stroke:'#000000'}});
+        } else {
+            cell.attr({body:{stroke:'#000000'}});
         }
     }
 
@@ -79,14 +107,6 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps, D
             defaultConnectionPoint: { name: 'boundary', args: { selector: 'border' }},
             defaultLink: () => {
                 let link = new joint.shapes.standard.Link();
-                link.on('change', (lnk)=>{
-                    if (this.highlight){
-                        if (lnk.id === this.highlight.model.id){
-                            this.highlight.unhighlight();
-                            this.highlight.highlight();
-                        }
-                    }
-                });
                 return link;
             }
         });
@@ -125,7 +145,13 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps, D
                     action: ((evt, view) =>  {
                         let id = view.model.id;
                         let sid = view.model.getSourceCell().id;
-                        ProjectElements[sid].connections.splice(ProjectElements[sid].connections.indexOf(id),1);
+                        if (ProjectElements[sid].connections.includes(id)) ProjectElements[sid].connections.splice(ProjectElements[sid].connections.indexOf(id),1);
+                        if (vocabOrModal(ProjectLinks[id].iri)){
+                            let domainOf = vocabOrModal(vocabOrModal(ProjectLinks[id].iri).domain).domainOf;
+                            if (domainOf && (vocabOrModal(ProjectLinks[id].iri).domain in VocabularyElements)){
+                                domainOf.splice(domainOf.indexOf(ProjectLinks[id].iri),1);
+                            }
+                        }
                         //let tid = view.model.getTargetCell().id;
                         delete ProjectLinks[id];
                         view.model.remove();
@@ -142,9 +168,9 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps, D
             'blank:pointerdown': (evt, x, y) => {
                 this.props.hideDetails();
                 for (let cell of graph.getCells()){
-                    this.paper?.findViewByModel(cell).unhighlight();
+                    this.unHighlightCell(cell.id);
+                   // this.paper?.findViewByModel(cell).unhighlight();
                 }
-                //panZoom.enablePan();
                 this.drag = {x: x, y: y}
             },
             'blank:pointermove': function(evt, x, y) {
@@ -157,7 +183,6 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps, D
                 }
             },
             'blank:pointerup' : ()=>{
-              //panZoom.disablePan
                 this.drag = undefined;
             },
             'link:pointerup' : (linkView, evt, x, y)=>{
@@ -301,10 +326,11 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps, D
                     let id = evt.currentTarget.getAttribute("model-id");
                     this.props.prepareDetails(id);
                     for (let cell of graph.getCells()){
-                        this.paper?.findViewByModel(cell).unhighlight();
+                        this.unHighlightCell(cell.id);
+                        //this.paper?.findViewByModel(cell).unhighlight();
                     }
-                    this.highlight = this.paper?.findViewByModel(graph.getCell(id));
-                    this.highlight.highlight();
+                    this.highlight = id;
+                    this.highlightCell(id);
                 }
             }
         });
@@ -338,28 +364,14 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps, D
                     let id = evt.currentTarget.getAttribute("model-id");
                     this.props.prepareDetails(id);
                     for (let cell of graph.getCells()){
-                        this.paper?.findViewByModel(cell).unhighlight();
+                        this.unHighlightCell(cell.id);
+                        //this.paper?.findViewByModel(cell).unhighlight();
                     }
-                    this.highlight = this.paper?.findViewByModel(graph.getCell(id));
-                    this.highlight.highlight();
+                    this.highlight = id;
+                    this.highlightCell(id);
                 }
             }
         });
-        graph.on('add', (cell) =>{
-            if (cell.isElement()){
-                cell.on('change:position',(element)=>{
-                    let links = graph.getConnectedLinks(element);
-                    for (let link of links){
-                        if (this.highlight){
-                            if (link.id === this.highlight.model.id){
-                                this.highlight.unhighlight();
-                                this.highlight.highlight();
-                            }
-                        }
-                    }
-                });
-            }
-        })
     }
     render() {
         return (<div
@@ -383,14 +395,14 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps, D
                     //name = "«"+ getModelName(data.elem, this.props.projectLanguage).toLowerCase() +"»" + "\n" + name;
                 } else if (data.type === "package"){
                     name = ProjectElements[data.elem].names[this.props.projectLanguage];
-                    name = "«"+ getName(ProjectElements[data.elem].iri, this.props.projectLanguage).toLowerCase() +"»\n" + name;
+                    name = getStereotypeList(ProjectElements[data.elem].iri, this.props.projectLanguage).map((str)=>"«"+str.toLowerCase()+"»\n").join("") + name;
                 } else {
                     name = LocaleMain.untitled + " " + getName(data.elem, this.props.projectLanguage);
                     name = "«"+ getName(data.elem, this.props.projectLanguage).toLowerCase() +"»\n" + name;
                 }
                 let cls = new graphElement();
                 if (data.package) {
-                    addClass(cls.id, data.elem, this.props.projectLanguage);
+                    addClass(cls.id, [data.elem], this.props.projectLanguage, ProjectSettings.selectedPackage.scheme, ProjectSettings.selectedPackage);
                 } else if (data.type === "stereotype" && !data.package){
                     addModel(cls.id, data.elem, this.props.projectLanguage, name);
                     ProjectElements[cls.id].active = false;
@@ -406,17 +418,6 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps, D
                         magnet: true,
                     }
                 });
-                // cls.on('change:position',(element)=>{
-                //     let links = graph.getConnectedLinks(element);
-                //     for (let link of links){
-                //         if (this.highlight){
-                //             if (link.id === this.highlight.model.id){
-                //                 this.highlight.unhighlight();
-                //                 this.highlight.highlight();
-                //             }
-                //         }
-                //     }
-                // });
                 cls.addTo(graph);
                 let bbox = this.paper?.findViewByModel(cls).getBBox();
                 cls.resize(bbox.width, bbox.height);
@@ -424,7 +425,7 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps, D
                 this.props.addCell();
                 if (data.type === "package"){
                     let id = data.elem;
-                    cls.position(ProjectElements[id].position.x,ProjectElements[id].position.y);
+                    if (ProjectElements.position) cls.position(ProjectElements[id].position.x,ProjectElements[id].position.y);
                     if (!(ProjectElements[id].diagrams.includes(ProjectSettings.selectedDiagram))){
                         ProjectElements[id].diagrams.push(ProjectSettings.selectedDiagram)
                     }
@@ -432,43 +433,87 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps, D
                         if ((ProjectLinks[link].source === id || ProjectLinks[link].target === id) && (graph.getCell(ProjectLinks[link].source) && graph.getCell(ProjectLinks[link].target))){
                             let lnk = new joint.shapes.standard.Link({id: link});
                             if (ProjectLinks[link].sourceCardinality.getString() !== LocaleMain.none) {
-                                lnk.appendLabel({
-                                    attrs: {
-                                        text: {
-                                            text: ProjectLinks[link].sourceCardinality.getString()
-                                        }
-                                    },
-                                    position: {
-                                        distance: 20
-                                    }
-                                });
+                                lnk.appendLabel({attrs: {text: {text: ProjectLinks[link].sourceCardinality.getString()}}, position: {distance: 20}});
                             }
                             if (ProjectLinks[link].targetCardinality.getString() !== LocaleMain.none) {
-                                lnk.appendLabel({
-                                    attrs: {
-                                        text: {
-                                            text: ProjectLinks[link].targetCardinality.getString()
-                                        }
-                                    },
-                                    position: {
-                                        distance: -20
-                                    }
-                                });
+                                lnk.appendLabel({attrs: {text: {text: ProjectLinks[link].targetCardinality.getString()}},position: {distance: -20}});
                             }
-                            lnk.appendLabel({
-                                attrs: {
-                                    text: {
-                                        text: Links[ProjectLinks[link].iri].labels[this.props.projectLanguage]
-                                    }
-                                },
-                                position: {
-                                    distance: 0.5
-                                }
-                            });
+                            lnk.appendLabel({attrs: {text: {text: Links[ProjectLinks[link].iri].labels[this.props.projectLanguage]}},position: {distance: 0.5}});
                             lnk.source({id: ProjectLinks[link].source});
                             lnk.target({id: ProjectLinks[link].target});
                             lnk.vertices(ProjectLinks[link].vertices);
                             lnk.addTo(graph);
+                        }
+                    }
+                }
+                for (let iri in ModelElements){
+                    if (ModelElements[iri].domain && ModelElements[iri].range){
+                        let domain = ModelElements[iri].domain;
+                        let range = ModelElements[iri].range;
+                        let domainCell = undefined;
+                        let rangeCell = undefined;
+                        for (let cell of graph.getElements()){
+                            if (ProjectElements[cell.id].iri === domain || ProjectElements[cell.id].iriVocab === domain){
+                                domainCell = cell.id;
+                            }
+                            if (ProjectElements[cell.id].iri === range || ProjectElements[cell.id].iriVocab === range){
+                                rangeCell = cell.id;
+                            }
+                        }
+                        if (domainCell && rangeCell){
+                            let link = new joint.shapes.standard.Link();
+                            link.source({id: domainCell});
+                            link.target({id: rangeCell});
+                            link.appendLabel({attrs: {text: {text: ModelElements[iri].labels[this.props.projectLanguage]}},position: {distance: 0.5}});
+                            let insert = true;
+                            for (let lnk in ProjectLinks) {
+                                if (ProjectLinks[lnk].source === domainCell &&
+                                    ProjectLinks[lnk].target === rangeCell &&
+                                    ProjectLinks[lnk].iri === iri) {
+                                    insert = false;
+                                    break;
+                                }
+                            }
+                            if (insert) {
+                                link.addTo(graph);
+                                addLink(link.id, iri, domainCell, rangeCell);
+                            }
+                        }
+                    }
+                }
+
+                for (let iri in VocabularyElements){
+                    if (VocabularyElements[iri].domain && VocabularyElements[iri].range){
+                        let domain = VocabularyElements[iri].domain;
+                        let range = VocabularyElements[iri].range;
+                        let domainCell = undefined;
+                        let rangeCell = undefined;
+                        for (let cell of graph.getElements()){
+                            if (ProjectElements[cell.id].iri === domain || ProjectElements[cell.id].iriVocab === domain){
+                                domainCell = cell.id;
+                            }
+                            if (ProjectElements[cell.id].iri === range || ProjectElements[cell.id].iriVocab === range){
+                                rangeCell = cell.id;
+                            }
+                        }
+                        if (domainCell && rangeCell){
+                            let link = new joint.shapes.standard.Link();
+                            link.source({id: domainCell});
+                            link.target({id: rangeCell});
+                            link.appendLabel({attrs: {text: {text: VocabularyElements[iri].labels[this.props.projectLanguage]}},position: {distance: 0.5}});
+                            let insert = true;
+                            for (let lnk in ProjectLinks) {
+                                if (ProjectLinks[lnk].source === domainCell &&
+                                    ProjectLinks[lnk].target === rangeCell &&
+                                    ProjectLinks[lnk].iri === iri) {
+                                    insert = false;
+                                    break;
+                                }
+                            }
+                            if (insert) {
+                                link.addTo(graph);
+                                addLink(link.id, iri, domainCell, rangeCell);
+                            }
                         }
                     }
                 }
