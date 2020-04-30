@@ -3,7 +3,15 @@ import MenuPanel from "../panels/MenuPanel";
 import ElementPanel from "../panels/ElementPanel";
 import DiagramCanvas from "./DiagramCanvas";
 import * as Locale from "../locale/LocaleMain.json";
-import {Languages, Links, PackageRoot, ProjectElements, ProjectSettings} from "../config/Variables";
+import {
+    Languages,
+    Links,
+    PackageRoot,
+    ProjectElements,
+    ProjectSettings,
+    Stereotypes,
+    VocabularyElements
+} from "../config/Variables";
 import DetailPanel from "../panels/DetailPanel";
 import {getVocabulariesFromRemoteJSON} from "../interface/JSONInterface";
 import {addDomainOfIRIs, initLanguageObject, initVars} from "../function/FunctionEditVars";
@@ -11,6 +19,7 @@ import {getContext} from "../interface/ContextInterface";
 import {graph} from "../graph/graph";
 import {loadProject, newProject} from "../function/FunctionProject";
 import {nameGraphElement} from "../function/FunctionGraph";
+import {checkLabels} from "../function/FunctionGetVars";
 
 interface DiagramAppProps {
     readOnly?: boolean;
@@ -50,7 +59,7 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
             detailPanelHidden: false,
             loading: true
         });
-
+        console.log(this.state);
         document.title = Locale.ontoGrapher;
         this.handleChangeSelectedLink = this.handleChangeSelectedLink.bind(this);
         this.handleChangeLanguage = this.handleChangeLanguage.bind(this);
@@ -105,14 +114,18 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
                 () => {
                 }
             ).then(() => {
-                this.forceUpdate();
-                this.elementPanel.current?.update();
                 ProjectSettings.selectedPackage = PackageRoot.children[0];
                 PackageRoot.labels = initLanguageObject(Locale.root);
                 this.setState({loading: false});
                 addDomainOfIRIs();
                 document.title = ProjectSettings.name[this.state.projectLanguage] + " | " + Locale.ontoGrapher;
                 ProjectSettings.status = ProjectSettings.status === Locale.loadingError ? Locale.loadingError : "";
+                console.log(Stereotypes, Links, VocabularyElements);
+                this.handleChangeLanguage(Object.keys(Languages)[0]);
+                checkLabels();
+                console.log(Links);
+                this.forceUpdate();
+                this.elementPanel.current?.update();
             })
         });
     }

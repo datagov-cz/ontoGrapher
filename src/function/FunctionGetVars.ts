@@ -1,4 +1,4 @@
-import {Links, ProjectElements, Schemes, Stereotypes, VocabularyElements} from "../config/Variables";
+import {Languages, Links, ProjectElements, Schemes, Stereotypes, VocabularyElements} from "../config/Variables";
 
 export function getVocabElementByElementID(id: string): { [key: string]: any } {
     return VocabularyElements[ProjectElements[id].iri];
@@ -20,10 +20,23 @@ export function getLabelOrBlank(elem: any, language: string): string {
     return elem.labels.length > 0 ? elem.labels[language] : "<blank>";
 }
 
+export function getNameOrBlank(name: string) {
+    return name.length > 0 ? name : "<blank>";
+}
+
 export function isElemReadOnlyByID(id: string): boolean {
     return Schemes[VocabularyElements[ProjectElements[id].iri].inScheme].readOnly;
 }
 
 export function isElemReadOnlyByIRI(iri: string): boolean {
     return Schemes[VocabularyElements[iri].inScheme].readOnly;
+}
+
+export function checkLabels() {
+    for (let link in Links) {
+        if (Links[link].labels[Object.keys(Languages)[0]]) {
+            let label = Links[link].labels[Object.keys(Languages)[0]].lastIndexOf('/');
+            Links[link].labels[Object.keys(Languages)[0]] = Links[link].labels[Object.keys(Languages)[0]].substring(label + 1);
+        }
+    }
 }

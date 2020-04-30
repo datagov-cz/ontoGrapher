@@ -15,9 +15,6 @@ interface Props {
 }
 
 export default class ElemConnections extends React.Component<Props> {
-    constructor(props: Props) {
-        super(props);
-    }
 
     render() {
         return (
@@ -43,7 +40,7 @@ export default class ElemConnections extends React.Component<Props> {
                                     <td>{getLabelOrBlank(VocabularyElements[range], this.props.projectLanguage)}</td>
                                     <td>{LocaleMenu.fromModel}</td>
                                 </tr>);
-                            }
+                            } else return ""
                         }
                     ) : ""}
                 </TableList>

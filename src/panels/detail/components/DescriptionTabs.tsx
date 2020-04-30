@@ -8,9 +8,6 @@ interface Props {
 }
 
 export default class DescriptionTabs extends React.Component<Props> {
-    constructor(props: Props) {
-        super(props);
-    }
 
     render() {
         return (<Tabs id={"descriptionTabs"}>

@@ -122,15 +122,13 @@ export async function getContext(
                 vocabularies[vocab].terms[result.term.value].domainOf = [];
             }
             if (result.skosLabel !== undefined) {
-                vocabularies[vocab].terms[result.term.value].skos.prefLabel[result.skosLabel['xml:lang']] = result.skosLabel.value;
                 vocabularies[vocab].terms[result.term.value].labels[result.skosLabel['xml:lang']] = result.skosLabel.value;
             }
             if (result.skosDefinition !== undefined) {
-                vocabularies[vocab].terms[result.term.value].skos.definition[result.skosDefinition['xml:lang']] = result.skosDefinition.value;
                 vocabularies[vocab].terms[result.term.value].definitions[result.skosDefinition['xml:lang']] = result.skosDefinition.value;
             }
-            if (result.termType !== undefined && result.termType.value in Stereotypes && !(vocabularies[vocab].terms[result.term.value].iri.includes(result.termType.value))) {
-                vocabularies[vocab].terms[result.term.value].iri.push(result.termType.value);
+            if (result.termType !== undefined && result.termType.value in Stereotypes && !(vocabularies[vocab].terms[result.term.value].types.includes(result.termType.value))) {
+                vocabularies[vocab].terms[result.term.value].types.push(result.termType.value);
             }
             if (result.domain !== undefined) {
                 vocabularies[vocab].terms[result.term.value].domain = result.domain.value;
@@ -143,7 +141,7 @@ export async function getContext(
         for (let elem in vocabularies[vocab].terms) {
             let id = new graphElement().id;
             if (typeof id === "string") {
-                addClass(id, vocabularies[vocab].terms[elem].iri, "cs", vocab, pkg, false, false, vocabularies[vocab].terms[elem].labels, vocabularies[vocab].terms[elem].definitions, elem);
+                addClass(id, elem, pkg, false);
             }
         }
         PackageRoot.children.push(pkg);

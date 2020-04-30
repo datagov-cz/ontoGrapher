@@ -12,9 +12,6 @@ interface Props {
 }
 
 export default class LabelTable extends React.Component<Props> {
-    constructor(props: Props) {
-        super(props);
-    }
 
     render() {
         return (<TableList>

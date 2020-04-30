@@ -90,14 +90,18 @@ export function restoreDomainOfConns() {
         if (VocabularyElements[iri].domain && VocabularyElements[iri].range) {
             let domain = VocabularyElements[iri].domain;
             let range = VocabularyElements[iri].range;
-            let domainCell = undefined;
-            let rangeCell = undefined;
+            let domainCell = "";
+            let rangeCell = "";
             for (let cell of graph.getElements()) {
                 if (ProjectElements[cell.id].iri === domain) {
-                    domainCell = cell.id;
+                    if (typeof cell.id === "string") {
+                        domainCell = cell.id;
+                    }
                 }
                 if (ProjectElements[cell.id].iri === range) {
-                    rangeCell = cell.id;
+                    if (typeof cell.id === "string") {
+                        rangeCell = cell.id;
+                    }
                 }
             }
             if (domainCell && rangeCell) {
@@ -105,7 +109,7 @@ export function restoreDomainOfConns() {
                 link.source({id: domainCell});
                 link.target({id: rangeCell});
                 link.appendLabel({
-                    attrs: {text: {text: VocabularyElements[iri].labels[this.props.projectLanguage]}},
+                    attrs: {text: {text: VocabularyElements[iri].labels[ProjectSettings.selectedLanguage]}},
                     position: {distance: 0.5}
                 });
                 let insert = true;

@@ -1,6 +1,7 @@
-import {Diagrams, graph, ProjectSettings} from "../config/Variables";
+import {Diagrams, ProjectSettings} from "../config/Variables";
 import * as joint from "jointjs";
 import {graphElement} from "../graph/graphElement";
+import {graph} from "../graph/graph";
 
 export function changeDiagrams(diagram: any) {
     ProjectSettings.selectedDiagram = diagram;

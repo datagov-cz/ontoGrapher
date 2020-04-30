@@ -1,5 +1,13 @@
 import {DataFactory} from "n3";
-import {Prefixes, ProjectElements, ProjectLinks, ProjectSettings, Schemes, Stereotypes} from "../config/Variables";
+import {
+    Prefixes,
+    ProjectElements,
+    ProjectLinks,
+    ProjectSettings,
+    Schemes,
+    Stereotypes,
+    VocabularyElements
+} from "../config/Variables";
 import * as LocaleMain from "../locale/LocaleMain.json";
 import {parsePrefix} from "./FunctionEditVars";
 
@@ -39,10 +47,10 @@ export function exportModel(iri: string, type: string, knowledgeStructure: strin
         } else {
             if (!((iri) in Stereotypes)) continue;
         }
-        let elementName = ProjectElements[id].names[Object.keys(ProjectElements[id].names)[0]]
-        for (let lang of Object.keys(ProjectElements[id].names)) {
-            if (ProjectElements[id].names[lang].length > 0) {
-                elementName = ProjectElements[id].names[lang];
+        let elementName = Object.values(VocabularyElements[ProjectElements[id].iri].labels)[0];
+        for (let lang of Object.keys(VocabularyElements[ProjectElements[id].iri].labels)) {
+            if (VocabularyElements[ProjectElements[id].iri].labels[lang].length > 0) {
+                elementName = VocabularyElements[ProjectElements[id].iri].labels[lang];
                 break;
             }
         }
@@ -73,9 +81,9 @@ export function exportModel(iri: string, type: string, knowledgeStructure: strin
 
         //prefLabel
         if (!(ProjectElements[id].untitled)) {
-            for (let lang of Object.keys(ProjectElements[id].names)) {
-                if (ProjectElements[id].names[lang].length > 0) {
-                    writer.addQuad(subject, namedNode(parsePrefix("skos", "prefLabel")), literal(ProjectElements[id].names[lang], lang));
+            for (let lang of Object.keys(VocabularyElements[ProjectElements[id].iri].labels)) {
+                if (VocabularyElements[ProjectElements[id].iri].labels[lang].length > 0) {
+                    writer.addQuad(subject, namedNode(parsePrefix("skos", "prefLabel")), literal(VocabularyElements[ProjectElements[id].iri].labels[lang], lang));
                 }
             }
         }
@@ -138,10 +146,10 @@ export function exportGlossary(iri: string, type: string, knowledgeStructure: st
     for (let id of Object.keys(ProjectElements)) {
         let iri = ProjectElements[id].iri;
         if (!((iri) in Stereotypes)) continue;
-        let elementName = ProjectElements[id].names[Object.keys(ProjectElements[id].names)[0]]
-        for (let lang of Object.keys(ProjectElements[id].names)) {
-            if (ProjectElements[id].names[lang].length > 0) {
-                elementName = ProjectElements[id].names[lang];
+        let elementName = VocabularyElements[ProjectElements[id].iri].labels[Object.keys(VocabularyElements[ProjectElements[id].iri].labels)[0]]
+        for (let lang of Object.keys(VocabularyElements[ProjectElements[id].iri].labels)) {
+            if (VocabularyElements[ProjectElements[id].iri].labels[lang].length > 0) {
+                elementName = VocabularyElements[ProjectElements[id].iri].labels[lang];
                 break;
             }
         }
@@ -163,14 +171,14 @@ export function exportGlossary(iri: string, type: string, knowledgeStructure: st
         writer.addQuad(subject, namedNode(parsePrefix("rdf", "type")), namedNode(parsePrefix("skos", "Concept")));
         //prefLabel
         if (!(ProjectElements[id].untitled)) {
-            for (let lang of Object.keys(ProjectElements[id].names)) {
-                if (ProjectElements[id].names[lang].length > 0) {
-                    writer.addQuad(subject, namedNode(parsePrefix("skos", "prefLabel")), literal(ProjectElements[id].names[lang], lang));
+            for (let lang of Object.keys(VocabularyElements[ProjectElements[id].iri].labels)) {
+                if (VocabularyElements[ProjectElements[id].iri].labels[lang].length > 0) {
+                    writer.addQuad(subject, namedNode(parsePrefix("skos", "prefLabel")), literal(VocabularyElements[ProjectElements[id].iri].labels[lang], lang));
                 }
             }
         }
         //rdfs:isDefinedBy
-        writer.addQuad(subject, namedNode(parsePrefix("skos", "inScheme")), namedNode(ProjectElements[id].scheme));
+        writer.addQuad(subject, namedNode(parsePrefix("skos", "inScheme")), namedNode(VocabularyElements[ProjectElements[id].iri].inScheme));
     }
     return writer.end((error: any, result: any) => {
         callback(result);

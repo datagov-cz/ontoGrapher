@@ -20,9 +20,6 @@ interface State {
 }
 
 export default class ElemAttributes extends React.Component<Props, State> {
-    constructor(props: Props) {
-        super(props);
-    }
 
     prepareDetails() {
         this.setState({

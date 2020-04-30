@@ -17,7 +17,7 @@ export default class FileSaveModal extends React.Component<Props, State> {
     constructor(props: Props) {
         super(props);
         this.state = {
-            saveString: JSON.stringify(saveProject())
+            saveString: ""
         }
     }
     render() {

@@ -184,8 +184,8 @@ export default class ElementPanel extends React.Component<Props, State> {
             Object.keys(this.models).forEach((key, i) => {
                 let contents = this.models[key].map((iri: string) => <ElementItem
                     key={iri}
-                    label={getLabelOrBlank(VocabularyElements[iri], this.props.projectLanguage)}
                     iri={iri}
+                    label={VocabularyElements[iri].labels[this.props.projectLanguage]}
                 />);
                 result.push(<ModelFolder category={Schemes[key].labels[this.props.projectLanguage]} key={key} depth={0}
                                          update={() => {
@@ -227,24 +227,26 @@ export default class ElementPanel extends React.Component<Props, State> {
                 <Tabs id="stereotypePanelTabs">
                     <Tab eventKey={1} title={tooltipS}>
                         <div className={"elementList"}>
-                            {this.stereotypes.map((element) => (<ElementItem
-                                key={element}
-                                label={this.getNameStereotype(element)}
-                                scheme={Stereotypes[element].inScheme}
-                                definition={Stereotypes[element].definitions[this.props.projectLanguage]}
-                                iri={element}/>))}
+                            {this.stereotypes.map((element) => (
+                                <ElementItem
+                                    key={element}
+                                    iri={element}
+                                    definition={Stereotypes[element].definitions[this.props.projectLanguage]}
+                                    label={Stereotypes[element].labels[this.props.projectLanguage]}
+                                    scheme={Schemes[Stereotypes[element].inScheme].labels[this.props.projectLanguage]}
+                                />))}
                         </div>
                     </Tab>
                     <Tab eventKey={2} title={tooltipR}>
                         <div className="elementList">
                             {this.links.map((link) => <LinkItem
-                                    key={link}
-                                    selectedLink={this.props.selectedLink}
-                                    handleChangeSelectedLink={this.handleChangeSelectedLink}
-                                    linkType={link}
-                                    scheme={Links[link].inScheme}
-                                    definition={Links[link].definitions[this.props.projectLanguage]}
-                                    label={this.getNameLink(link)}
+                                key={link}
+                                selectedLink={this.props.selectedLink}
+                                handleChangeSelectedLink={this.handleChangeSelectedLink}
+                                linkType={link}
+                                scheme={Schemes[Links[link].inScheme].labels[this.props.projectLanguage]}
+                                definition={Links[link].definitions[this.props.projectLanguage]}
+                                label={Links[link].labels[this.props.projectLanguage]}
                                 />
                             )}
                         </div>

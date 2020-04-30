@@ -1,5 +1,6 @@
 import React from 'react';
 import {OverlayTrigger, Tooltip} from "react-bootstrap";
+import {getNameOrBlank} from "../../function/FunctionGetVars";
 
 interface Props {
     label: string;
@@ -56,8 +57,8 @@ export class LinkItem extends React.Component<Props, State> {
                     <div className={this.state.name}
                          onClick={this.alertPanel}
                     >
-                        <span className={"label"}>{this.props.label}</span><span
-                        className={"category"}>{this.props.scheme}</span>
+                        <span className={"label"}>{getNameOrBlank(this.props.label)}</span>
+                        {this.props.scheme ? <span className={"category"}>{this.props.scheme}</span> : <span/>}
                     </div>
                 </OverlayTrigger>
             );
@@ -66,8 +67,8 @@ export class LinkItem extends React.Component<Props, State> {
                 <div className={this.state.name}
                      onClick={this.alertPanel}
                 >
-                    <span className={"label"}>{this.props.label}</span><span
-                    className={"category"}>{this.props.scheme}</span>
+                    <span className={"label"}>{this.props.label}</span>
+                    {this.props.scheme ? <span className={"category"}>{this.props.scheme}</span> : <span/>}
                 </div>
             );
         }

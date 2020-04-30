@@ -10,12 +10,13 @@ import {
 import * as LocaleMain from "../locale/LocaleMain.json";
 import {AttributeObject} from "../datatypes/AttributeObject";
 import {initLanguageObject} from "./FunctionEditVars";
+import {PackageNode} from "../datatypes/PackageNode";
 
 export function createValues(values: {[key:string]: string[]}, prefixes: {[key:string]: string}){
     let result: string[] = [];
     for (let key in values){
         let prefix = prefixes[key];
-        for (let val in values[key]){
+        for (let val of values[key]) {
             result.push(prefix + val);
         }
     }
@@ -38,17 +39,19 @@ export function createNewScheme(): string {
 
 export function initProperties(scheme: string): AttributeObject[] {
     let result: AttributeObject[] = [];
-    PropertyPool[scheme].forEach((atrt) => {
-        result.push(atrt);
-    })
+    if (PropertyPool[scheme]) {
+        PropertyPool[scheme].forEach((atrt) => {
+            result.push(atrt);
+        })
+    }
     return result;
 }
 
 export function addClass(
     id: string,
     iri: string,
-    untitled: boolean = true,
-) {
+    pkg: PackageNode,
+    untitled: boolean = true) {
     ProjectElements[id] = {
         iri: iri,
         connections: [],
@@ -57,7 +60,9 @@ export function addClass(
         diagrams: [ProjectSettings.selectedDiagram],
         properties: initProperties(iri),
         hidden: {[ProjectSettings.selectedDiagram]: false},
-        position: {[ProjectSettings.selectedDiagram]: {x: 0, y: 0}}
+        position: {[ProjectSettings.selectedDiagram]: {x: 0, y: 0}},
+        package: pkg,
+        active: true
     }
 }
 
@@ -70,5 +75,5 @@ export function addLink(id: string, iri: string, source: string, target: string)
         targetCardinality: CardinalityPool[0],
         diagram: ProjectSettings.selectedDiagram,
         vertices: []
-    };
+    }
 }

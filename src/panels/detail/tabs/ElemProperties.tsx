@@ -19,9 +19,6 @@ interface State {
 }
 
 export default class ElemProperties extends React.Component<Props, State> {
-    constructor(props: Props) {
-        super(props);
-    }
 
     handleChangeNameProperty(event: { textarea: string }, pos: number) {
         let attrs = this.state.inputProperties;

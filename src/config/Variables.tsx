@@ -12,6 +12,8 @@ import {AttributeObject} from "../datatypes/AttributeObject";
 //TODO: &format=json missing
 //TODO: load info in detailLink
 //TODO: model loading in elementPanel
+//TODO: key of PackageFolder
+//TODO: export fixing
 
 // language code : language labels
 export var Languages: { [key: string]: string } = {};
