@@ -3,18 +3,15 @@ import {Cardinality} from "../datatypes/Cardinality";
 import {PackageNode} from "../datatypes/PackageNode";
 import {parsePrefix} from "../function/FunctionEditVars";
 import {AttributeObject} from "../datatypes/AttributeObject";
-import {AttributeType} from "../datatypes/AttributeType";
-
 
 //TODO: create default package on new project call
 //TODO: separate modals from items
 //TODO: retry button for fetch
 //TODO: redo/scrap addDomainOfIRIs
-//TODO: collapse canvas onDrop function
-//TODO: decouple cellTools
-//TODO: ts-nocheck on canvas
 //TODO: test saving, loading
-
+//TODO: &format=json missing
+//TODO: load info in detailLink
+//TODO: model loading in elementPanel
 
 // language code : language labels
 export var Languages: { [key: string]: string } = {};
@@ -29,12 +26,18 @@ export var ProjectElements: {
         untitled: boolean,
         //AttributeObject array
         attributes: AttributeObject[],
-        //if present in diagram index
-        diagrams: boolean[],
+        //diagram indexes in which elem is present/hidden
+        diagrams: number[],
         //property array
         properties: AttributeObject[],
         //if hidden in diagram index
         hidden: { [key: number]: boolean }
+        //position on graph by diagram index
+        position: { [key: number]: { x: number, y: number } };
+        //if usable in graph
+        active: boolean;
+        //package
+        package: PackageNode;
     }
 } = {};
 
@@ -53,7 +56,7 @@ export var ProjectLinks: {
         //diagram index
         diagram: number,
         //vertices
-        vertices: joint.dia.Link.Vertex[] | undefined;
+        vertices: joint.dia.Link.Vertex[];
     }
 } = {};
 
@@ -96,7 +99,7 @@ export var VocabularyElements: {
             definitions: { [key: string]: string },
             inScheme: string,
             domain: string | undefined,
-               range: string | undefined,
+            range: string | undefined,
             types: string[],
             domainOf: string[],
         }
@@ -114,7 +117,7 @@ export var Links: {
 export var Stereotypes: {
     [key: string]: {
         labels: { [key: string]: string },
-        descriptions: { [key: string]: string },
+        definitions: { [key: string]: string },
         inScheme: string,
     }
 } = {};
@@ -142,7 +145,7 @@ export var ProjectSettings: {
     selectedLink: Object.keys(Links)[0],
     status: ""
 };
-export var AttributeTypePool: { [key: string]: { name: string, array: boolean } } = {
+export var AttributeTypePool: { [key: string]: { name: string, array: boolean, type?: string } } = {
     "http://www.w3.org/2001/XMLSchema#string": {name: "String", array: false},
     "http://www.w3.org/2001/XMLSchema#int": {name: "Integer", array: false},
     "http://www.w3.org/2001/XMLSchema#boolean": {name: "Boolean", array: false},
@@ -160,4 +163,4 @@ export var CardinalityPool: Cardinality[] = [
     new Cardinality("1", "*"),
 ];
 
-export var PropertyPool: { [key: string]: AttributeType[] } = {};
+export var PropertyPool: { [key: string]: AttributeObject[] } = {};

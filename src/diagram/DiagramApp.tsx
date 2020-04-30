@@ -6,11 +6,7 @@ import * as Locale from "../locale/LocaleMain.json";
 import {Languages, Links, PackageRoot, ProjectElements, ProjectSettings} from "../config/Variables";
 import DetailPanel from "../panels/DetailPanel";
 import {getVocabulariesFromRemoteJSON} from "../interface/JSONInterface";
-import {
-    addDomainOfIRIs,
-    initLanguageObject,
-    initVars
-} from "../function/FunctionEditVars";
+import {addDomainOfIRIs, initLanguageObject, initVars} from "../function/FunctionEditVars";
 import {getContext} from "../interface/ContextInterface";
 import {graph} from "../graph/graph";
 import {loadProject, newProject} from "../function/FunctionProject";
@@ -60,7 +56,6 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
         this.handleChangeLanguage = this.handleChangeLanguage.bind(this);
         this.newProject = this.newProject.bind(this);
         this.loadProject = this.loadProject.bind(this);
-        this.prepareDetails = this.prepareDetails.bind(this);
         this.loadVocabularies = this.loadVocabularies.bind(this);
     }
 
@@ -130,17 +125,9 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
         }
     }
 
-    prepareDetails(id: string) {
-        this.detailPanel.current?.prepareDetails(id);
-    }
-
     handleChangeSelectedLink(linkType: string) {
         this.setState({selectedLink: linkType});
         ProjectSettings.selectedLink = linkType;
-    }
-
-    hide(id: string, diagram: number) {
-        ProjectElements[id].hidden[diagram] = true;
     }
 
     render() {
@@ -167,22 +154,23 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
                 ref={this.detailPanel}
                 projectLanguage={this.state.projectLanguage}
                 resizeElem={(id: string) => {
-                    this.canvas.current?.resizeElem(id)
+                    this.canvas.current?.resizeElem(id);
                 }}
                 update={() => {
-                    this.elementPanel.current?.forceUpdate()
+                    this.elementPanel.current?.forceUpdate();
                 }}
             />
             <DiagramCanvas
-                hide={this.hide}
                 ref={this.canvas}
                 selectedLink={this.state.selectedLink}
                 projectLanguage={this.state.projectLanguage}
-                prepareDetails={this.prepareDetails}
+                prepareDetails={(id: string) => {
+                    this.detailPanel.current?.prepareDetails(id);
+                }}
                 hideDetails={() => {
                     this.detailPanel.current?.hide();
                 }}
-                addCell={() => {
+                updateElementPanel={() => {
                     this.elementPanel.current?.forceUpdate();
                 }}
             />

@@ -27,18 +27,13 @@ export async function fetchConcepts(
         "WHERE {",
         "?term skos:inScheme <" + source + ">.",
         "?term a ?termType.",
-        subclassOf ? "?term rdfs:subClassOf <"+subclassOf+">" : "",
-        requiredTypes ?
-            "VALUES ?termType {<" + requiredTypes.join("> <") + ">}"
-            : "",
-        requiredValues ?
-            "VALUES ?term {<" + requiredValues.join("> <") + ">}"
-            : "",
+        subclassOf ? "?term rdfs:subClassOf <" + subclassOf + ">" : "",
+        requiredTypes ? "VALUES ?termType {<" + requiredTypes.join("> <") + ">}" : "",
+        requiredValues ? "VALUES ?term {<" + requiredValues.join("> <") + ">}" : "",
         "OPTIONAL {?term skos:prefLabel ?termLabel.}",
         "OPTIONAL {?term skos:definition ?termDefinition.}",
         "}"
     ].join(" ");
-    //TODO: &format=json missing
     let q = endpoint + "?query=" + encodeURIComponent(query);
     await fetch(q, {headers: {"Accept": "application/json"}}).then(
         response => response.json()

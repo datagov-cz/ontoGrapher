@@ -1,21 +1,15 @@
 import {
     CardinalityPool,
-    Diagrams,
-    PackageRoot,
     ProjectElements,
     ProjectLinks,
     ProjectSettings,
     PropertyPool,
     Schemes,
-    Stereotypes,
     structuresShort
 } from "../config/Variables";
 import * as LocaleMain from "../locale/LocaleMain.json";
-import {PackageNode} from "../datatypes/PackageNode";
 import {AttributeObject} from "../datatypes/AttributeObject";
-import {AttributeType} from "../datatypes/AttributeType";
-import {getName, initLanguageObject} from "./FunctionEditVars";
-import {Cardinality} from "../datatypes/Cardinality";
+import {initLanguageObject} from "./FunctionEditVars";
 
 export function createValues(values: {[key:string]: string[]}, prefixes: {[key:string]: string}){
     let result: string[] = [];
@@ -38,84 +32,43 @@ export function createNewScheme(): string {
         result += "-" + count.toString(10);
     }
     result = result.trim().replace(/\s/g, '-');
-    Schemes[result] = {labels: initLanguageObject("")}
+    Schemes[result] = {labels: initLanguageObject(""), readOnly: false}
+    return result;
+}
+
+export function initProperties(scheme: string): AttributeObject[] {
+    let result: AttributeObject[] = [];
+    PropertyPool[scheme].forEach((atrt) => {
+        result.push(atrt);
+    })
     return result;
 }
 
 export function addClass(
     id: string,
-    iris: string[],
-    language: string,
-    scheme: string,
-    pkg: PackageNode = PackageRoot,
+    iri: string,
     untitled: boolean = true,
-    stereotype: boolean = true,
-    names?: {}, descriptions?: {}, iriVocab?: string) {
-    let result: { [key: string]: any } = {};
-    result["iri"] = iris;
-    result["names"] = names ? names : initLanguageObject(LocaleMain.untitled + " " + getName(iris[0], language));
-    result["connections"] = [];
-    result["untitled"] = untitled;
-    result["descriptions"] = descriptions ? descriptions : initLanguageObject("");
-    result["attributes"] = [];
-    if (iriVocab) result["iriVocab"] = iriVocab;
-    let propertyArray: AttributeObject[] = [];
-    if (stereotype) {
-        for (let iri of iris) {
-            if (Stereotypes[iri].category in PropertyPool) {
-                PropertyPool[Stereotypes[iri].category].forEach((attr: AttributeType) => {
-                    let newAttr = new AttributeObject("", attr);
-                    if (!(propertyArray.includes(newAttr))) propertyArray.push(newAttr);
-                });
-            }
-        }
+) {
+    ProjectElements[id] = {
+        iri: iri,
+        connections: [],
+        untitled: untitled,
+        attributes: [],
+        diagrams: [ProjectSettings.selectedDiagram],
+        properties: initProperties(iri),
+        hidden: {[ProjectSettings.selectedDiagram]: false},
+        position: {[ProjectSettings.selectedDiagram]: {x: 0, y: 0}}
     }
-    result["properties"] = propertyArray;
-    let diagramArray: boolean[] = [];
-    Diagrams.forEach(() => {
-        diagramArray.push(false);
-    });
-    result["diagrams"] = [ProjectSettings.selectedDiagram];
-    result["hidden"] = diagramArray;
-    result["package"] = pkg;
-    result["active"] = true;
-    result["scheme"] = scheme;
-    pkg.elements.push(id);
-    ProjectElements[id] = result;
 }
 
-export function addModel(id: string, iri: string, language: string, name: string) {
-    let result: { [key: string]: any } = {};
-    result["iri"] = iri;
-    result["names"] = initLanguageObject(LocaleMain.untitled + " " + name);
-    result["connections"] = [];
-    result["descriptions"] = initLanguageObject("");
-    result["attributes"] = [];
-    let diagramArray: boolean[] = [];
-    Diagrams.forEach(() => {
-        diagramArray.push(false);
-    });
-    result["diagrams"] = [ProjectSettings.selectedDiagram];
-    result["hidden"] = diagramArray;
-    result["package"] = PackageRoot;
-    result["active"] = false;
-    ProjectElements[id] = result;
-}
-
-export function addLink(id: string | number, iri: string, source: string, target: string) {
-    let result: { [key: string]: any } = {};
-    result["iri"] = iri;
-    result["sourceCardinality"] = CardinalityPool[0];
-    result["targetCardinality"] = CardinalityPool[0];
-    result["source"] = source;
-    result["target"] = target;
-    result["diagram"] = ProjectSettings.selectedDiagram;
+export function addLink(id: string, iri: string, source: string, target: string) {
     ProjectLinks[id] = {
-        iri: string,
-        source: string,
-        target: string,
-        sourceCardinality: Cardinality,
-        targetCardinality: Cardinality,
-        diagram: number
+        iri: iri,
+        source: source,
+        target: target,
+        sourceCardinality: CardinalityPool[0],
+        targetCardinality: CardinalityPool[0],
+        diagram: ProjectSettings.selectedDiagram,
+        vertices: []
     };
 }

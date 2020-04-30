@@ -1,10 +1,10 @@
-import {AttributeType} from "./AttributeType";
+
 
 export class AttributeObject {
     name: string;
-    type: AttributeType;
+    type: string;
 
-    constructor(name: string, type: AttributeType) {
+    constructor(name: string, type: string) {
         this.name = name;
         this.type = type;
     }

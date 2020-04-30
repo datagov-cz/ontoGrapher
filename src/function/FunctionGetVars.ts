@@ -1,5 +1,29 @@
-import {ProjectElements, VocabularyElements} from "../config/Variables";
+import {Links, ProjectElements, Schemes, Stereotypes, VocabularyElements} from "../config/Variables";
 
-export function getVocabElementByElementID(id: string | number){
+export function getVocabElementByElementID(id: string): { [key: string]: any } {
     return VocabularyElements[ProjectElements[id].iri];
+}
+
+export function getLinkOrVocabElem(iri: string): { [key: string]: any } {
+    return iri in Links ? Links[iri] : VocabularyElements[iri];
+}
+
+export function getStereotypeOrVocabElem(iri: string): { [key: string]: any } {
+    return iri in Stereotypes ? Stereotypes[iri] : VocabularyElements[iri];
+}
+
+export function isLinkElem(iri: string): boolean {
+    return iri in Links;
+}
+
+export function getLabelOrBlank(elem: any, language: string): string {
+    return elem.labels.length > 0 ? elem.labels[language] : "<blank>";
+}
+
+export function isElemReadOnlyByID(id: string): boolean {
+    return Schemes[VocabularyElements[ProjectElements[id].iri].inScheme].readOnly;
+}
+
+export function isElemReadOnlyByIRI(iri: string): boolean {
+    return Schemes[VocabularyElements[iri].inScheme].readOnly;
 }

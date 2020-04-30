@@ -1,14 +1,15 @@
 import * as joint from "jointjs";
-import {ProjectElements, ProjectLinks, VocabularyElements} from "../config/Variables";
-
+import {ProjectElements, ProjectLinks, Schemes, VocabularyElements} from "../config/Variables";
+// @ts-ignore
 joint.linkTools.RemoveButton = joint.linkTools.Remove.extend({
-    action: ((evt, view) => {
+    action: ((evt: any, view: { model: { id: any; getSourceCell: () => { (): any; new(): any; id: any; }; remove: () => void; }; }) => {
         let id = view.model.id;
         let sid = view.model.getSourceCell().id;
         if (ProjectElements[sid].connections.includes(id)) ProjectElements[sid].connections.splice(ProjectElements[sid].connections.indexOf(id), 1);
-        if (vocabOrModal(ProjectLinks[id].iri)) {
-            let domainOf = vocabOrModal(vocabOrModal(ProjectLinks[id].iri).domain).domainOf;
-            if (domainOf && (vocabOrModal(ProjectLinks[id].iri).domain in VocabularyElements)) {
+        let vocabElem = VocabularyElements[ProjectLinks[id].iri];
+        if (vocabElem && vocabElem.domain) {
+            let domainOf = VocabularyElements[vocabElem.domain].domainOf;
+            if (domainOf && (Schemes[VocabularyElements[vocabElem.domain].inScheme].readOnly)) {
                 domainOf.splice(domainOf.indexOf(ProjectLinks[id].iri), 1);
             }
         }

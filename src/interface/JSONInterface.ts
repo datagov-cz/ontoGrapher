@@ -40,6 +40,7 @@ export async function getVocabulariesFromRemoteJSON(pathToJSON: string, callback
                         )
                         Object.assign(VocabularyElements, model);
                     }
+
                 }
             }
         );

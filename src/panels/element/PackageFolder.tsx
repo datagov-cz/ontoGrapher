@@ -9,7 +9,8 @@ import {
     ProjectElements,
     ProjectSettings,
     Schemes,
-    structuresShort
+    structuresShort,
+    VocabularyElements
 } from "../../config/Variables";
 import TableList from "../../components/TableList";
 // @ts-ignore
@@ -107,7 +108,7 @@ export default class PackageFolder extends React.Component<Props, State> {
         let oldpkg = ProjectElements[id].package;
         oldpkg.elements.splice(oldpkg.elements.indexOf(id), 1);
         ProjectElements[id].package = this.props.node;
-        if (this.props.node.scheme) ProjectElements[id].scheme = this.props.node.scheme;
+        if (this.props.node.scheme) VocabularyElements[ProjectElements[id].iri].inScheme = this.props.node.scheme;
         this.props.node.elements.push(id);
         this.props.update();
     }
@@ -252,8 +253,8 @@ export default class PackageFolder extends React.Component<Props, State> {
                                     newkey += "-" + count.toString(10);
                                 }
                                 for (let id in ProjectElements) {
-                                    if (ProjectElements[id].scheme === this.props.node.scheme) {
-                                        ProjectElements[id].scheme = newkey;
+                                    if (VocabularyElements[ProjectElements[id].iri].inScheme === this.props.node.scheme) {
+                                        VocabularyElements[ProjectElements[id].iri].inScheme = newkey;
                                     }
                                 }
                                 if (newkey !== this.props.node.scheme) {

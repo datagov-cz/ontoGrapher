@@ -11,7 +11,6 @@ import FileFetchContextModal from "./file/FileFetchContextModal";
 interface MenuPanelFileProps {
     newProject: Function;
     loadProject: Function;
-    saveString: string;
     update: Function;
     loadContext: Function;
 }

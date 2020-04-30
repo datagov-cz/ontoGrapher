@@ -5,16 +5,14 @@ import * as LocaleMain from "../locale/LocaleMain.json";
 import {
     Diagrams,
     Links,
-    ModelElements,
     PackageRoot,
     ProjectElements,
     ProjectSettings,
     Schemes,
     Stereotypes,
-    ViewSettings
+    VocabularyElements
 } from "../config/Variables";
 import ElementItem from "./element/ElementItem";
-import * as Helper from "../function/FunctionEditVars";
 import {LinkItem} from "./element/LinkItem";
 import DiagramItem from "./element/DiagramItem";
 import PackageFolder from "./element/PackageFolder";
@@ -22,6 +20,7 @@ import {PackageNode} from "../datatypes/PackageNode";
 import PackageItem from "./element/PackageItem";
 import ModelFolder from "./element/ModelFolder";
 import {createNewScheme} from "../function/FunctionCreateVars";
+import {getLabelOrBlank} from "../function/FunctionGetVars";
 
 interface Props {
     projectLanguage: string;
@@ -57,12 +56,11 @@ const tooltipD = (
 
 export default class ElementPanel extends React.Component<Props, State> {
 
-    //private stereotypeCategories: {}[];
     private stereotypes: string[];
     private links: string[];
     private models: { [key: string]: any };
-    private modelFolders: boolean[];
-    private modelRoot: boolean;
+    private readonly modelFolders: boolean[];
+    private readonly modelRoot: boolean;
 
     constructor(props: Props) {
         super(props);
@@ -71,13 +69,11 @@ export default class ElementPanel extends React.Component<Props, State> {
             filter: [],
             search: ""
         };
-        //this.stereotypeCategories = [];
         this.links = Object.keys(Links);
         this.stereotypes = Object.keys(Stereotypes);
         this.modelFolders = [];
         this.modelRoot = true;
         this.models = {};
-        //this.prepareCategories();
         this.handleChangeSelect = this.handleChangeSelect.bind(this);
         this.handleChangeSearch = this.handleChangeSearch.bind(this);
         this.search = this.search.bind(this);
@@ -91,7 +87,7 @@ export default class ElementPanel extends React.Component<Props, State> {
     search(search: string, filter: string[]) {
         let result1 = [];
         for (let stereotype in Stereotypes) {
-            if ((filter.includes(Stereotypes[stereotype].category) || filter.length === 0)
+            if ((filter.includes(Stereotypes[stereotype].inScheme) || filter.length === 0)
                 && (
                     Stereotypes[stereotype].labels[this.props.projectLanguage].startsWith(search)
                 )) {
@@ -100,7 +96,7 @@ export default class ElementPanel extends React.Component<Props, State> {
         }
         let result2 = [];
         for (let link in Links) {
-            if ((filter.includes(Links[link].category) || filter.length === 0)
+            if ((filter.includes(Links[link].inScheme) || filter.length === 0)
                 && (
                     Links[link].labels[this.props.projectLanguage].startsWith(search)
                 )) {
@@ -129,55 +125,18 @@ export default class ElementPanel extends React.Component<Props, State> {
         this.forceUpdate();
     }
 
-    // prepareCategories() {
-    //     let result = [];
-    //     for (let category of StereotypeCategories) {
-    //         result.push({
-    //             value: category,
-    //             label: category
-    //         });
-    //     }
-    //     this.stereotypeCategories = result;
-    // }
-
     getNameStereotype(element: string) {
-        if (ViewSettings.display === 1) {
-            return Helper.getNameOfStereotype(element);
-        } else {
-            return Stereotypes[element].labels[this.props.projectLanguage];
-        }
-    }
-
-    getNameModel(element: string) {
-        if (ViewSettings.display === 1) {
-            return Helper.getNameOfStereotype(element);
-        } else {
-            return ModelElements[element].labels[this.props.projectLanguage];
-        }
+        return Stereotypes[element].labels[this.props.projectLanguage];
     }
 
     getNameLink(element: string) {
-        if (ViewSettings.display === 1) {
-            return Helper.getNameOfLink(element);
-        } else {
-            return Links[element].labels[this.props.projectLanguage];
-        }
+        return Links[element].labels[this.props.projectLanguage];
     }
 
     update() {
         this.stereotypes = Object.keys(Stereotypes);
         this.links = Object.keys(Links);
-        //this.models = Object.keys(ModelElements);
-        let mods: { [key: string]: any } = {};
-        for (let key of Object.keys(ModelElements)) {
-            if (!(ModelElements[key].category in mods)) {
-                mods[ModelElements[key].category] = [];
-            }
-            mods[ModelElements[key].category].push(key);
-            this.modelFolders.push(false);
-        }
-        this.models = mods;
-        //this.prepareCategories();
+        this.models = {};
         this.forceUpdate();
     }
 
@@ -189,7 +148,7 @@ export default class ElementPanel extends React.Component<Props, State> {
                                         this.forceUpdate();
                                     }}>
                 {node.elements.map((id) => <PackageItem key={id}
-                                                        label={ProjectElements[id].names[this.props.projectLanguage]}
+                                                        label={getLabelOrBlank(VocabularyElements[ProjectElements[id].iri], this.props.projectLanguage)}
                                                         depth={depth} id={id} update={() => {
                     this.forceUpdate();
                 }}/>)}
@@ -197,8 +156,8 @@ export default class ElementPanel extends React.Component<Props, State> {
         } else {
 
             node.elements.forEach((id) => {
-                if (ProjectElements[id].active) arr.push(<PackageItem
-                    label={ProjectElements[id].names[this.props.projectLanguage] === "" ? "<untitled>" : ProjectElements[id].names[this.props.projectLanguage]}
+                arr.push(<PackageItem
+                    label={getLabelOrBlank(ProjectElements[id], this.props.projectLanguage)}
                     depth={depth} id={id}
                     update={() => {
                         this.forceUpdate();
@@ -221,14 +180,13 @@ export default class ElementPanel extends React.Component<Props, State> {
 
     getModelFolders() {
         let result: JSX.Element[] = [];
-        //result.push(<ModelFolder category={LocaleMain.models} depth={0} open={()=>{this.modelRoot = !this.modelRoot; this.forceUpdate();}} update={()=>{this.forceUpdate();}}/>);
         if (this.modelRoot) {
             Object.keys(this.models).forEach((key, i) => {
                 let contents = this.models[key].map((iri: string) => <ElementItem
                     key={iri}
-                    label={this.getNameModel(iri)}
-                    element={iri}
-                    package={false}/>);
+                    label={getLabelOrBlank(VocabularyElements[iri], this.props.projectLanguage)}
+                    iri={iri}
+                />);
                 result.push(<ModelFolder category={Schemes[key].labels[this.props.projectLanguage]} key={key} depth={0}
                                          update={() => {
                                              this.forceUpdate();
@@ -266,23 +224,15 @@ export default class ElementPanel extends React.Component<Props, State> {
                         onChange={this.handleChangeSearch}
                     />
                 </InputGroup>
-                {/*<Select*/}
-                {/*    isMulti*/}
-                {/*    closeMenuOnSelect={false}*/}
-                {/*    options={this.stereotypeCategories}*/}
-                {/*    onChange={this.handleChangeSelect}*/}
-                {/*    placeholder={LocaleMain.filter}*/}
-                {/*/>*/}
                 <Tabs id="stereotypePanelTabs">
                     <Tab eventKey={1} title={tooltipS}>
                         <div className={"elementList"}>
                             {this.stereotypes.map((element) => (<ElementItem
                                 key={element}
-                                element={element}
                                 label={this.getNameStereotype(element)}
-                                category={Stereotypes[element].category}
-                                definition={Stereotypes[element].skos.definition[this.props.projectLanguage]}
-                                package={true}/>))}
+                                scheme={Stereotypes[element].inScheme}
+                                definition={Stereotypes[element].definitions[this.props.projectLanguage]}
+                                iri={element}/>))}
                         </div>
                     </Tab>
                     <Tab eventKey={2} title={tooltipR}>
@@ -292,8 +242,8 @@ export default class ElementPanel extends React.Component<Props, State> {
                                     selectedLink={this.props.selectedLink}
                                     handleChangeSelectedLink={this.handleChangeSelectedLink}
                                     linkType={link}
-                                    category={Links[link].category}
-                                    definition={Links[link].skos.definition[this.props.projectLanguage]}
+                                    scheme={Links[link].inScheme}
+                                    definition={Links[link].definitions[this.props.projectLanguage]}
                                     label={this.getNameLink(link)}
                                 />
                             )}

@@ -19,6 +19,7 @@ export var graphElement = joint.dia.Element.define('examples.CustomTextElement',
                 textAnchor: 'middle',
                 refX: '50%',
                 refY: '50%',
+                magnet: true,
             }
         }
     }, {

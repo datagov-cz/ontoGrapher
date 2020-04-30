@@ -1,9 +1,10 @@
 import React from 'react';
-import {Diagrams, graph, ProjectSettings} from "../../config/Variables";
+import {Diagrams, ProjectSettings} from "../../config/Variables";
 import {Button, Form, Modal, OverlayTrigger, Tooltip} from "react-bootstrap";
 import * as LocaleMain from "../../locale/LocaleMain.json";
 import * as LocaleMenu from "../../locale/LocaleMenu.json";
 import {changeDiagrams, loadDiagram, saveDiagram} from "../../function/FunctionDiagram";
+import {graph} from "../../graph/graph";
 
 interface Props {
     diagram: number;
@@ -62,13 +63,6 @@ export default class DiagramItem extends React.Component<Props, State> {
             this.forceUpdate();
         }
     }
-
-    // componentDidUpdate(prevProps: { selectedLink: any; }) {
-    //     if (prevProps.selectedLink !== ProjectSettings.selectedModel) {
-    //         this.setClassName();
-    //         this.forceUpdate();
-    //     }
-    // }
 
     setClassName() {
         this.setState({name: this.props.diagram === ProjectSettings.selectedDiagram ? "stereotypeElementItem diagram selected" : "stereotypeElementItem diagram"});

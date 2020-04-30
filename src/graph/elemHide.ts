@@ -1,7 +1,6 @@
 import * as joint from "jointjs";
-import {graph} from "./graph";
-import {ProjectElements, ProjectLinks, ProjectSettings} from "../config/Variables";
 
+// @ts-ignore
 joint.elementTools.HideButton = joint.elementTools.Button.extend({
     options: {
         markup: [{
@@ -26,20 +25,5 @@ joint.elementTools.HideButton = joint.elementTools.Button.extend({
                 }
             }
         ],
-        action: (evt) => {
-            let id = evt.currentTarget.getAttribute("model-id");
-            for (let cell of graph.getCells()) {
-                if (cell.id === id) {
-                    for (let link of graph.getConnectedLinks(cell)) {
-                        ProjectLinks[link.id].vertices = link.vertices();
-                    }
-                    ProjectElements[id].position = cell.position();
-                    graph.removeCells(cell);
-                    ProjectElements[id].hidden[ProjectSettings.selectedDiagram] = true;
-                    break;
-                }
-            }
-            this.props.addCell();
-        }
     }
 });

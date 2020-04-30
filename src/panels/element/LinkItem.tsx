@@ -6,7 +6,7 @@ interface Props {
     linkType: string;
     handleChangeSelectedLink: Function;
     selectedLink: string;
-    category: string;
+    scheme: string;
     definition?: string;
 }
 
@@ -57,7 +57,7 @@ export class LinkItem extends React.Component<Props, State> {
                          onClick={this.alertPanel}
                     >
                         <span className={"label"}>{this.props.label}</span><span
-                        className={"category"}>{this.props.category}</span>
+                        className={"category"}>{this.props.scheme}</span>
                     </div>
                 </OverlayTrigger>
             );
@@ -67,7 +67,7 @@ export class LinkItem extends React.Component<Props, State> {
                      onClick={this.alertPanel}
                 >
                     <span className={"label"}>{this.props.label}</span><span
-                    className={"category"}>{this.props.category}</span>
+                    className={"category"}>{this.props.scheme}</span>
                 </div>
             );
         }

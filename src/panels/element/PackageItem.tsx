@@ -42,9 +42,9 @@ export default class PackageItem extends React.Component<Props, State> {
                 <div draggable
                      onDragStart={(event) => {
                          event.dataTransfer.setData("newClass", JSON.stringify({
-                             type: "package",
-                             elem: this.props.id,
-                             package: false
+                             type: "existing",
+                             id: this.props.id,
+                             iri: ProjectElements[this.props.id].iri
                          }));
                      }}
                      onMouseOver={() => {

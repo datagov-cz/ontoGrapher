@@ -3,7 +3,7 @@ import {Button, Form, Modal, Tab, Tabs} from "react-bootstrap";
 import * as LocaleMenu from "../../../locale/LocaleMenu.json";
 import * as Locale from "../../../locale/LocaleMain.json";
 import {parsePrefix} from "../../../function/FunctionEditVars";
-import {ProjectSettings} from "../../../config/Variables";
+import {ProjectSettings, Structures, structuresShort} from "../../../config/Variables";
 import {exportGlossary, exportModel} from "../../../function/FunctionExport";
 
 interface Props {
@@ -19,27 +19,13 @@ interface State {
     knowledgeStructure: string;
 }
 
-var structures: { [key: string]: string } = {
-    "z-sgov-pojem:základní-struktura": parsePrefix("z-sgov-pojem", "základní-struktura"),
-    "z-sgov-pojem:legislativní-struktura": parsePrefix("z-sgov-pojem", "legislativní-struktura"),
-    "z-sgov-pojem:agendová-struktura": parsePrefix("z-sgov-pojem", "agendová-struktura"),
-    "z-sgov-pojem:datová-struktura": parsePrefix("z-sgov-pojem", "datová-struktura")
-};
-
-var structuresShort: { [key: string]: string } = {
-    "z-sgov-pojem:základní-struktura": "základní",
-    "z-sgov-pojem:legislativní-struktura": "legislativní",
-    "z-sgov-pojem:agendová-struktura": "agendová",
-    "z-sgov-pojem:datová-struktura": "datová"
-};
-
 export default class FileExportModal extends React.Component<Props, State> {
     constructor(props: Props) {
         super(props);
         this.state = {
             exportModelString: "",
             exportGlossaryString: "",
-            knowledgeStructure: Object.keys(structures)[0],
+            knowledgeStructure: Object.keys(Structures)[0],
             iri: "https://slovník.gov.cz/",
             type: parsePrefix("z-sgov-pojem", "model")
         };
@@ -86,7 +72,7 @@ export default class FileExportModal extends React.Component<Props, State> {
                                           ProjectSettings.knowledgeStructure = event.currentTarget.value;
                                           this.handleExport(event.currentTarget.value);
                                       }}>
-                            {Object.keys(structures).map((key, i) => <option key={i} value={key}>{key}</option>)}
+                            {Object.keys(Structures).map((key, i) => <option key={i} value={key}>{key}</option>)}
                         </Form.Control>
                     </Form.Group>
                 </Form>
