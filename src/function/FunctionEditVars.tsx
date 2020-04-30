@@ -45,7 +45,6 @@ export function initProjectSettings() {
     ProjectSettings.name = initLanguageObject(Locale.untitledProject);
     ProjectSettings.description = initLanguageObject("");
     ProjectSettings.selectedDiagram = 0;
-    ProjectSettings.status = "";
 }
 
 export function initLanguageObject(defaultString: string) {

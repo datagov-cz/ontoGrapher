@@ -167,7 +167,7 @@ export default class PackageFolder extends React.Component<Props, State> {
                     <OverlayTrigger placement="bottom" overlay={tooltipA}><button className={"buttonlink"}
                                                                                   onClick={(event) => {
                                                                                       event.stopPropagation();
-                                                                                      this.props.node.children.push(new PackageNode(LocaleMain.untitledPackage, this.props.node));
+                                                                                      this.props.node.children.push(new PackageNode(this.props.node));
                                                                                       this.props.node.open = true;
                                                                                       this.setState({open: true});
                                                                                       this.props.update();

@@ -14,6 +14,10 @@ import {
     unHighlightAll,
     unHighlightCell
 } from "../function/FunctionGraph";
+import {HideButton} from "../graph/elemHide";
+import {ElemInfoButton} from "../graph/elemInfo";
+import {LinkInfoButton} from "../graph/linkInfo";
+import {RemoveButton} from "../graph/linkRemove";
 
 interface DiagramCanvasProps {
     projectLanguage: string;
@@ -87,7 +91,7 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps> {
 
         this.paper.on({
             'element:mouseenter': (elementView) => {
-                let tool = ProjectElements[elementView.model.id].active ? new joint.elementTools.HideButton({
+                let tool = ProjectElements[elementView.model.id].active ? new HideButton({
                     useModelGeometry: false,
                     x: '100%',
                     y: '0%',
@@ -113,7 +117,7 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps> {
                     y: '0%',
                 });
                 elementView.addTools(new joint.dia.ToolsView({
-                    tools: [new joint.elementTools.InfoButton({
+                    tools: [new ElemInfoButton({
                         useModelGeometry: false,
                         y: '0%',
                         x: '0%',
@@ -128,7 +132,7 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps> {
                 }));
             },
             'link:mouseenter': function (linkView) {
-                var infoButton = new joint.linkTools.InfoButton({
+                var infoButton = LinkInfoButton({
                     action: (evt: { currentTarget: { getAttribute: (arg0: string) => any; }; }) => {
                         let id = evt.currentTarget.getAttribute("model-id");
                         this.props.prepareDetails(id);
@@ -138,7 +142,7 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps> {
                 });
                 var verticesTool = new joint.linkTools.Vertices();
                 var segmentsTool = new joint.linkTools.Segments();
-                var removeButton = new joint.linkTools.RemoveButton();
+                var removeButton = new RemoveButton();
                 var toolsView = new joint.dia.ToolsView({
                     tools: [verticesTool, segmentsTool, removeButton, infoButton]
                 });

@@ -1,7 +1,7 @@
 import * as joint from "jointjs";
 
 // @ts-ignore
-joint.elementTools.HideButton = joint.elementTools.Button.extend({
+export var HideButton = joint.elementTools.Button.extend({
     options: {
         markup: [{
             tagName: 'circle',

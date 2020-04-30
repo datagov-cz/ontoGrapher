@@ -137,7 +137,7 @@ export async function getContext(
         }
         //put into packages
         Object.assign(VocabularyElements, vocabularies[vocab].terms);
-        let pkg = new PackageNode(vocabularies[vocab].names["cs"], PackageRoot, false, vocab);
+        let pkg = new PackageNode(PackageRoot, false, vocab);
         for (let elem in vocabularies[vocab].terms) {
             let id = new graphElement().id;
             if (typeof id === "string") {

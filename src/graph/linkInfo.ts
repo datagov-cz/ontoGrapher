@@ -1,7 +1,7 @@
 import * as joint from "jointjs";
 
 // @ts-ignore
-joint.linkTools.InfoButton = joint.linkTools.Button.extend({
+export var LinkInfoButton = joint.linkTools.Button.extend({
     name: 'info-button',
     options: {
         markup: [{

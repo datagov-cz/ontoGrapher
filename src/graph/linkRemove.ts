@@ -1,7 +1,7 @@
 import * as joint from "jointjs";
 import {ProjectElements, ProjectLinks, Schemes, VocabularyElements} from "../config/Variables";
 // @ts-ignore
-joint.linkTools.RemoveButton = joint.linkTools.Remove.extend({
+export var RemoveButton = joint.linkTools.Remove.extend({
     action: ((evt: any, view: { model: { id: any; getSourceCell: () => { (): any; new(): any; id: any; }; remove: () => void; }; }) => {
         let id = view.model.id;
         let sid = view.model.getSourceCell().id;

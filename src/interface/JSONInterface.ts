@@ -1,13 +1,13 @@
 import * as Locale from "./../locale/LocaleMain.json";
-import {Links, ProjectSettings, Schemes, Stereotypes, VocabularyElements} from "../config/Variables";
+import {Links, Schemes, Stereotypes, VocabularyElements} from "../config/Variables";
 import {fetchConcepts} from "./SPARQLInterface";
 import {createValues} from "../function/FunctionCreateVars";
-import {initLanguageObject} from "../function/FunctionEditVars";
+import {addDomainOfIRIs, initLanguageObject} from "../function/FunctionEditVars";
+import {checkLabels} from "../function/FunctionGetVars";
 
 export async function getVocabulariesFromRemoteJSON(pathToJSON: string, callback: Function) {
     const isURL = require('is-url');
     if (isURL(pathToJSON)) {
-        ProjectSettings.status = Locale.loading;
         await fetch(pathToJSON).then(response => response.json()).then(
             async json => {
                 for (const key of Object.keys(json)) {
@@ -34,7 +34,7 @@ export async function getVocabulariesFromRemoteJSON(pathToJSON: string, callback
                             undefined
                         );
                     } else if (data.type === "model") {
-                        let model = await fetchConcepts(
+                        await fetchConcepts(
                             data.endpoint,
                             data.sourceIRI,
                             VocabularyElements,
@@ -42,6 +42,8 @@ export async function getVocabulariesFromRemoteJSON(pathToJSON: string, callback
                         )
                     }
                     Schemes[data.sourceIRI].labels = initLanguageObject(key);
+                    addDomainOfIRIs();
+                    checkLabels();
                 }
             }
         );

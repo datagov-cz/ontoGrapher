@@ -3,23 +3,14 @@ import MenuPanel from "../panels/MenuPanel";
 import ElementPanel from "../panels/ElementPanel";
 import DiagramCanvas from "./DiagramCanvas";
 import * as Locale from "../locale/LocaleMain.json";
-import {
-    Languages,
-    Links,
-    PackageRoot,
-    ProjectElements,
-    ProjectSettings,
-    Stereotypes,
-    VocabularyElements
-} from "../config/Variables";
+import {Languages, Links, PackageRoot, ProjectElements, ProjectSettings} from "../config/Variables";
 import DetailPanel from "../panels/DetailPanel";
 import {getVocabulariesFromRemoteJSON} from "../interface/JSONInterface";
-import {addDomainOfIRIs, initLanguageObject, initVars} from "../function/FunctionEditVars";
+import {initLanguageObject, initVars} from "../function/FunctionEditVars";
 import {getContext} from "../interface/ContextInterface";
 import {graph} from "../graph/graph";
 import {loadProject, newProject} from "../function/FunctionProject";
 import {nameGraphElement} from "../function/FunctionGraph";
-import {checkLabels} from "../function/FunctionGetVars";
 
 interface DiagramAppProps {
     readOnly?: boolean;
@@ -31,6 +22,7 @@ interface DiagramAppState {
     detailPanelHidden: boolean;
     projectLanguage: string;
     loading: boolean;
+    status: string;
 }
 
 require("../scss/style.scss");
@@ -51,13 +43,12 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 
         initVars();
 
-        ProjectSettings.status = "";
-
         this.state = ({
             projectLanguage: ProjectSettings.selectedLanguage,
             selectedLink: ProjectSettings.selectedLink,
             detailPanelHidden: false,
-            loading: true
+            loading: true,
+            status: Locale.loading
         });
         console.log(this.state);
         document.title = Locale.ontoGrapher;
@@ -101,8 +92,7 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
     loadVocabularies(contextIRI: string, contextEndpoint: string, reload: boolean = false) {
         if (reload) {
             this.newProject();
-            this.setState({loading: true});
-            ProjectSettings.status = Locale.loading;
+            this.setState({loading: true, status: Locale.loading});
         }
         getVocabulariesFromRemoteJSON("https://raw.githubusercontent.com/opendata-mvcr/ontoGrapher/jointjs/src/config/Vocabularies.json", () => {
         }).then(() => {
@@ -111,20 +101,17 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
                 contextIRI,
                 contextEndpoint,
                 "application/json",
-                () => {
+                (result) => {
+
                 }
             ).then(() => {
                 ProjectSettings.selectedPackage = PackageRoot.children[0];
                 PackageRoot.labels = initLanguageObject(Locale.root);
                 this.setState({loading: false});
-                addDomainOfIRIs();
                 document.title = ProjectSettings.name[this.state.projectLanguage] + " | " + Locale.ontoGrapher;
-                ProjectSettings.status = ProjectSettings.status === Locale.loadingError ? Locale.loadingError : "";
-                console.log(Stereotypes, Links, VocabularyElements);
                 this.handleChangeLanguage(Object.keys(Languages)[0]);
-                checkLabels();
-                console.log(Links);
                 this.forceUpdate();
+                console.log(PackageRoot);
                 this.elementPanel.current?.update();
             })
         });

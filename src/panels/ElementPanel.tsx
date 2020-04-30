@@ -18,7 +18,6 @@ import DiagramItem from "./element/DiagramItem";
 import PackageFolder from "./element/PackageFolder";
 import {PackageNode} from "../datatypes/PackageNode";
 import PackageItem from "./element/PackageItem";
-import ModelFolder from "./element/ModelFolder";
 import {createNewScheme} from "../function/FunctionCreateVars";
 import {getLabelOrBlank} from "../function/FunctionGetVars";
 
@@ -58,22 +57,15 @@ export default class ElementPanel extends React.Component<Props, State> {
 
     private stereotypes: string[];
     private links: string[];
-    private models: { [key: string]: any };
-    private readonly modelFolders: boolean[];
-    private readonly modelRoot: boolean;
 
     constructor(props: Props) {
         super(props);
-
         this.state = {
             filter: [],
             search: ""
         };
         this.links = Object.keys(Links);
         this.stereotypes = Object.keys(Stereotypes);
-        this.modelFolders = [];
-        this.modelRoot = true;
-        this.models = {};
         this.handleChangeSelect = this.handleChangeSelect.bind(this);
         this.handleChangeSearch = this.handleChangeSearch.bind(this);
         this.search = this.search.bind(this);
@@ -136,25 +128,33 @@ export default class ElementPanel extends React.Component<Props, State> {
     update() {
         this.stereotypes = Object.keys(Stereotypes);
         this.links = Object.keys(Links);
-        this.models = {};
         this.forceUpdate();
     }
 
     getFoldersDFS(arr: JSX.Element[], node: PackageNode, depth: number) {
         if (node !== PackageRoot) {
-            arr.push(<PackageFolder key={node.scheme} projectLanguage={this.props.projectLanguage}
-                                    name={node.labels[this.props.projectLanguage]} node={node} depth={depth}
-                                    update={() => {
-                                        this.forceUpdate();
-                                    }}>
-                {node.elements.map((id) => <PackageItem key={id}
-                                                        label={getLabelOrBlank(VocabularyElements[ProjectElements[id].iri], this.props.projectLanguage)}
-                                                        depth={depth} id={id} update={() => {
+            arr.push(<PackageFolder
+                key={node.scheme}
+                projectLanguage={this.props.projectLanguage}
+
+                name={node.labels[this.props.projectLanguage]} node={node} depth={depth}
+                update={() => {
                     this.forceUpdate();
-                }}/>)}
+                }}>
+                {node.elements.map((id) => {
+                        let name = getLabelOrBlank(VocabularyElements[ProjectElements[id].iri], this.props.projectLanguage);
+                        if (name.startsWith(this.state.search)) {
+                            return (<PackageItem key={id}
+                                                 label={name}
+                                                 depth={depth} id={id} update={() => {
+                                this.forceUpdate();
+                            }}/>)
+                        } else return "";
+
+                    }
+                )}
             </PackageFolder>);
         } else {
-
             node.elements.forEach((id) => {
                 arr.push(<PackageItem
                     label={getLabelOrBlank(ProjectElements[id], this.props.projectLanguage)}
@@ -175,29 +175,6 @@ export default class ElementPanel extends React.Component<Props, State> {
     getFolders() {
         let result: JSX.Element[] = [];
         this.getFoldersDFS(result, PackageRoot, 0);
-        return result;
-    }
-
-    getModelFolders() {
-        let result: JSX.Element[] = [];
-        if (this.modelRoot) {
-            Object.keys(this.models).forEach((key, i) => {
-                let contents = this.models[key].map((iri: string) => <ElementItem
-                    key={iri}
-                    iri={iri}
-                    label={VocabularyElements[iri].labels[this.props.projectLanguage]}
-                />);
-                result.push(<ModelFolder category={Schemes[key].labels[this.props.projectLanguage]} key={key} depth={0}
-                                         update={() => {
-                                             this.forceUpdate();
-                                         }} open={() => {
-                    this.modelFolders[i] = !this.modelFolders[i];
-                    this.forceUpdate();
-                }}>
-                    {contents}
-                </ModelFolder>)
-            });
-        }
         return result;
     }
 
@@ -240,13 +217,13 @@ export default class ElementPanel extends React.Component<Props, State> {
                     <Tab eventKey={2} title={tooltipR}>
                         <div className="elementList">
                             {this.links.map((link) => <LinkItem
-                                key={link}
-                                selectedLink={this.props.selectedLink}
-                                handleChangeSelectedLink={this.handleChangeSelectedLink}
-                                linkType={link}
-                                scheme={Schemes[Links[link].inScheme].labels[this.props.projectLanguage]}
-                                definition={Links[link].definitions[this.props.projectLanguage]}
-                                label={Links[link].labels[this.props.projectLanguage]}
+                                    key={link}
+                                    selectedLink={this.props.selectedLink}
+                                    handleChangeSelectedLink={this.handleChangeSelectedLink}
+                                    linkType={link}
+                                    scheme={Schemes[Links[link].inScheme].labels[this.props.projectLanguage]}
+                                    definition={Links[link].definitions[this.props.projectLanguage]}
+                                    label={Links[link].labels[this.props.projectLanguage]}
                                 />
                             )}
                         </div>
@@ -254,12 +231,11 @@ export default class ElementPanel extends React.Component<Props, State> {
                     <Tab eventKey={3} title={tooltipPM}>
                         <button className={"margins"} onClick={() => {
                             let scheme = createNewScheme();
-                            PackageRoot.children.push(new PackageNode(LocaleMain.untitledPackage, PackageRoot, true, scheme));
+                            PackageRoot.children.push(new PackageNode(PackageRoot, true, scheme));
                             this.forceUpdate();
                         }
                         }>{LocaleMain.addNewPackage}</button>
                         <div className="elementLinkList">
-                            {this.getModelFolders()}
                             {this.getFolders()}
                         </div>
                     </Tab>

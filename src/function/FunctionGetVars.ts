@@ -34,9 +34,9 @@ export function isElemReadOnlyByIRI(iri: string): boolean {
 
 export function checkLabels() {
     for (let link in Links) {
-        if (Links[link].labels[Object.keys(Languages)[0]]) {
-            let label = Links[link].labels[Object.keys(Languages)[0]].lastIndexOf('/');
-            Links[link].labels[Object.keys(Languages)[0]] = Links[link].labels[Object.keys(Languages)[0]].substring(label + 1);
+        if (!(Links[link].labels[Object.keys(Languages)[0]])) {
+            let label = link.lastIndexOf('/');
+            Links[link].labels[Object.keys(Languages)[0]] = link.substring(label + 1);
         }
     }
 }

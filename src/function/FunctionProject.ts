@@ -63,7 +63,6 @@ export function savePackages() {
         }
         trace.shift();
         result.push({
-            labels: p.labels,
             trace: trace,
             elements: p.elements,
             root: p === PackageRoot,
@@ -78,7 +77,7 @@ export function savePackages() {
 }
 
 
-export function loadPackages(list: { trace: number[], elements: string[], name: string, root: boolean, scheme: string }[]) {
+export function loadPackages(list: { trace: number[], elements: string[], root: boolean, scheme: string }[]) {
     for (let pkg of list) {
         if (pkg.root) {
             PackageRoot.elements = pkg.elements;
@@ -87,7 +86,7 @@ export function loadPackages(list: { trace: number[], elements: string[], name: 
             for (let i = 0; i < pkg.trace.length; i++) {
                 iter = iter.children[pkg.trace[i]];
             }
-            let newpkg = new PackageNode(pkg.name, iter, false);
+            let newpkg = new PackageNode(iter, false);
             newpkg.scheme = pkg.scheme;
             newpkg.elements = pkg.elements;
             iter.children.push(newpkg);

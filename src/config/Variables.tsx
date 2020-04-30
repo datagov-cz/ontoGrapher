@@ -92,7 +92,7 @@ export var structuresShort: { [key: string]: string } = {
     "z-sgov-pojem:datová-struktura": "datová"
 };
 
-export var PackageRoot: PackageNode = new PackageNode("Root", undefined, true, "");
+export var PackageRoot: PackageNode = new PackageNode(undefined, true, "");
 
 export var VocabularyElements: {
     [key: string]:
@@ -135,8 +135,7 @@ export var ProjectSettings: {
     selectedPackage: PackageNode,
     knowledgeStructure: string,
     selectedLanguage: string,
-    selectedLink: string,
-    status: string
+    selectedLink: string
 } = {
     name: {},
     description: {},
@@ -144,8 +143,7 @@ export var ProjectSettings: {
     selectedPackage: PackageRoot,
     knowledgeStructure: Object.keys(Structures)[0],
     selectedLanguage: Object.keys(Languages)[0],
-    selectedLink: Object.keys(Links)[0],
-    status: ""
+    selectedLink: Object.keys(Links)[0]
 };
 export var AttributeTypePool: { [key: string]: { name: string, array: boolean, type?: string } } = {
     "http://www.w3.org/2001/XMLSchema#string": {name: "String", array: false},
