@@ -23,6 +23,10 @@ interface State {
 }
 
 export default class DetailPanel extends React.Component<Props, State> {
+
+    private readonly detailElem: React.RefObject<DetailElem>;
+    private readonly linkElem: React.RefObject<DetailLink>;
+
     constructor(props: Props) {
         super(props);
         this.state = {
@@ -30,6 +34,8 @@ export default class DetailPanel extends React.Component<Props, State> {
             hidden: true,
             type: "",
         };
+        this.detailElem = React.createRef();
+        this.linkElem = React.createRef();
         this.hide = this.hide.bind(this);
         this.prepareDetails = this.prepareDetails.bind(this);
     }
@@ -45,12 +51,14 @@ export default class DetailPanel extends React.Component<Props, State> {
                 id: id,
                 type: "elem"
             });
+            this.detailElem.current?.prepareDetails();
         } else if (graph.getCell(id).isLink()) {
             this.setState({
                 id: id,
                 type: "link",
                 hidden: false
             });
+            this.linkElem.current?.prepareDetails();
         }
     }
 
@@ -63,10 +71,10 @@ export default class DetailPanel extends React.Component<Props, State> {
         if (!this.state.hidden) {
             if (this.state.type === "elem") {
                 return (<DetailElem headers={headers} id={this.state.id} projectLanguage={this.props.projectLanguage}
-                                    save={this.save}/>);
+                                    save={this.save} ref={this.detailElem}/>);
             } else if (this.state.type === "link") {
                 return (<DetailLink projectLanguage={this.props.projectLanguage} headers={headers} id={this.state.id}
-                                    save={this.save}/>);
+                                    save={this.save} ref={this.linkElem}/>);
             }
         } else {
             return (<div/>);

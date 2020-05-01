@@ -3,7 +3,7 @@ import {Button, Form, Modal, Tab, Tabs} from "react-bootstrap";
 import * as LocaleMenu from "../../../locale/LocaleMenu.json";
 import * as Locale from "../../../locale/LocaleMain.json";
 import {parsePrefix} from "../../../function/FunctionEditVars";
-import {ProjectSettings, Structures, structuresShort} from "../../../config/Variables";
+import {ProjectSettings, Structures, StructuresShort} from "../../../config/Variables";
 import {exportGlossary, exportModel} from "../../../function/FunctionExport";
 
 interface Props {
@@ -40,7 +40,7 @@ export default class FileExportModal extends React.Component<Props, State> {
     }
 
     exportM(ks: string) {
-        exportModel(this.state.iri, this.state.type, ks, structuresShort[ks], (str: string) => {
+        exportModel(this.state.iri, this.state.type, ks, StructuresShort[ks], (str: string) => {
             this.setState({exportModelString: str});
             //keep this .log
             console.log(str);
@@ -48,7 +48,7 @@ export default class FileExportModal extends React.Component<Props, State> {
     }
 
     exportG(ks: string) {
-        exportGlossary(this.state.iri, this.state.type, ks, structuresShort[ks], (str: string) => {
+        exportGlossary(this.state.iri, this.state.type, ks, StructuresShort[ks], (str: string) => {
             this.setState({exportGlossaryString: str});
             //keep this .log
             console.log(str);

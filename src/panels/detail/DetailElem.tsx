@@ -1,7 +1,7 @@
 import * as LocaleMain from "../../locale/LocaleMain.json";
 import React from "react";
 import {ResizableBox} from "react-resizable";
-import {VocabularyElements} from "../../config/Variables";
+import {ProjectElements, VocabularyElements} from "../../config/Variables";
 import {getLabelOrBlank, isElemReadOnlyByID} from "../../function/FunctionGetVars";
 import {Button, Tabs} from "react-bootstrap";
 import ElemDescription from "./tabs/ElemDescription";
@@ -21,7 +21,6 @@ interface State {
     iri: string,
     inputConnections: string[];
     inputDiagrams: number[];
-    id: string;
     changes: boolean;
 }
 
@@ -33,24 +32,39 @@ export default class DetailElem extends React.Component<Props, State> {
 
     constructor(props: Props) {
         super(props);
-        this.descriptionTab = React.createRef();
-        this.attributesTab = React.createRef();
-        this.propertiesTab = React.createRef();
-        this.state = {
-            iri: "",
-            inputConnections: [],
-            inputDiagrams: [],
-            changes: false,
-            id: ""
-        }
-    }
+		this.descriptionTab = React.createRef();
+		this.attributesTab = React.createRef();
+		this.propertiesTab = React.createRef();
+		this.state = {
+			iri: Object.keys(VocabularyElements)[0],
+			inputConnections: [],
+			inputDiagrams: [],
+			changes: false
+		}
+	}
 
-    save() {
-        this.setState({changes: false});
-        this.props.save();
-    }
+	prepareDetails() {
+		this.setState({
+			iri: ProjectElements[this.props.id].iri,
+			inputConnections: ProjectElements[this.props.id].connections,
+			inputDiagrams: ProjectElements[this.props.id].diagrams,
+			changes: false
+		});
+		this.descriptionTab.current?.prepareDetails();
+		this.attributesTab.current?.prepareDetails();
+		this.propertiesTab.current?.prepareDetails();
+		this.forceUpdate();
+	}
 
-    render() {
+	save() {
+		this.props.save();
+		this.descriptionTab.current?.save();
+		this.attributesTab.current?.save();
+		this.propertiesTab.current?.save();
+		this.setState({changes: false});
+	}
+
+	render() {
         let eventKey = 1;
         return (<ResizableBox
             width={300}
@@ -60,7 +74,7 @@ export default class DetailElem extends React.Component<Props, State> {
             resizeHandles={['nw']}
             className={"details"}>
             <div>
-                <h3>{getLabelOrBlank(VocabularyElements[this.state.iri], this.props.projectLanguage)}</h3>
+				<h3>{getLabelOrBlank(VocabularyElements[ProjectElements[this.props.id].iri].labels, this.props.projectLanguage)}</h3>
                 {this.state.changes ?
                     <p className={"bordered"}>
                         {LocaleMain.saveChanges}

@@ -3,14 +3,14 @@ import {ResizableBox} from "react-resizable";
 import {Form, InputGroup, OverlayTrigger, Tab, Tabs, Tooltip} from "react-bootstrap";
 import * as LocaleMain from "../locale/LocaleMain.json";
 import {
-    Diagrams,
-    Links,
-    PackageRoot,
-    ProjectElements,
-    ProjectSettings,
-    Schemes,
-    Stereotypes,
-    VocabularyElements
+	Diagrams,
+	Links,
+	PackageRoot,
+	ProjectElements,
+	ProjectSettings,
+	Schemes,
+	Stereotypes,
+	VocabularyElements
 } from "../config/Variables";
 import ElementItem from "./element/ElementItem";
 import {LinkItem} from "./element/LinkItem";
@@ -20,16 +20,29 @@ import {PackageNode} from "../datatypes/PackageNode";
 import PackageItem from "./element/PackageItem";
 import {createNewScheme} from "../function/FunctionCreateVars";
 import {getLabelOrBlank} from "../function/FunctionGetVars";
+import ModalEditPackage from "./modal/ModalEditPackage";
+import ModalRemovePackage from "./modal/ModalRemovePackage";
+import ModalRemoveItem from "./modal/ModalRemoveItem";
+import ModalRenameDiagram from "./modal/ModalRenameDiagram";
+import ModalRemoveDiagram from "./modal/ModalRemoveDiagram";
 
 interface Props {
-    projectLanguage: string;
-    handleChangeSelectedLink: Function;
-    selectedLink: string;
+	projectLanguage: string;
+	handleChangeSelectedLink: Function;
+	selectedLink: string;
 }
 
 interface State {
-    filter: string[];
-    search: string;
+	filter: string[];
+	search: string;
+	modalEditPackage: boolean;
+	modalRemoveDiagram: boolean;
+	modalRemoveItem: boolean;
+	modalRemovePackage: boolean;
+	modalRenameDiagram: boolean;
+	selectedID: string;
+	selectedDiagram: number;
+	selectedNode: PackageNode;
 }
 
 const tooltipS = (
@@ -61,9 +74,17 @@ export default class ElementPanel extends React.Component<Props, State> {
     constructor(props: Props) {
         super(props);
         this.state = {
-            filter: [],
-            search: ""
-        };
+			filter: [],
+			search: "",
+			modalEditPackage: false,
+			modalRemoveDiagram: false,
+			modalRemoveItem: false,
+			modalRemovePackage: false,
+			modalRenameDiagram: false,
+			selectedID: "",
+			selectedDiagram: 0,
+			selectedNode: PackageRoot
+		};
         this.links = Object.keys(Links);
         this.stereotypes = Object.keys(Stereotypes);
         this.handleChangeSelect = this.handleChangeSelect.bind(this);
@@ -134,22 +155,42 @@ export default class ElementPanel extends React.Component<Props, State> {
     getFoldersDFS(arr: JSX.Element[], node: PackageNode, depth: number) {
         if (node !== PackageRoot) {
             arr.push(<PackageFolder
-                key={node.scheme}
-                projectLanguage={this.props.projectLanguage}
-
-                name={node.labels[this.props.projectLanguage]} node={node} depth={depth}
-                update={() => {
-                    this.forceUpdate();
-                }}>
-                {node.elements.map((id) => {
-                        let name = getLabelOrBlank(VocabularyElements[ProjectElements[id].iri], this.props.projectLanguage);
-                        if (name.startsWith(this.state.search)) {
-                            return (<PackageItem key={id}
-                                                 label={name}
-                                                 depth={depth} id={id} update={() => {
-                                this.forceUpdate();
-                            }}/>)
-                        } else return "";
+				key={node.scheme}
+				projectLanguage={this.props.projectLanguage}
+				node={node}
+				depth={depth}
+				update={() => {
+					this.forceUpdate();
+				}}
+				openEditPackage={() => {
+					this.setState({
+						selectedNode: node,
+						modalEditPackage: true
+					})
+				}}
+				openRemovePackage={() => {
+					this.setState({
+						selectedNode: node,
+						modalRemovePackage: true
+					})
+				}}
+				readOnly={node.scheme ? Schemes[node.scheme].readOnly : false}
+			>
+				{node.elements.map((id) => {
+					let name = getLabelOrBlank(VocabularyElements[ProjectElements[id].iri].labels, this.props.projectLanguage);
+					if (name.startsWith(this.state.search)) {
+						return (
+							<PackageItem
+								key={id}
+								label={name}
+								depth={depth}
+								id={id}
+								update={() => {
+									this.forceUpdate();
+								}}
+							/>
+						)
+					} else return "";
 
                     }
                 )}
@@ -157,9 +198,9 @@ export default class ElementPanel extends React.Component<Props, State> {
         } else {
             node.elements.forEach((id) => {
                 arr.push(<PackageItem
-                    label={getLabelOrBlank(ProjectElements[id], this.props.projectLanguage)}
-                    depth={depth} id={id}
-                    update={() => {
+					label={getLabelOrBlank(VocabularyElements[ProjectElements[id].iri].labels, this.props.projectLanguage)}
+					depth={depth} id={id}
+					update={() => {
                         this.forceUpdate();
                     }}/>)
             })
@@ -187,19 +228,18 @@ export default class ElementPanel extends React.Component<Props, State> {
                 handleSize={[8, 8]}
                 resizeHandles={['ne']}
             >
-
                 <InputGroup>
-                    <InputGroup.Prepend>
-                        <InputGroup.Text id="inputGroupPrepend"><span role="img"
-                                                                      aria-label={LocaleMain.searchStereotypes}>🔎</span></InputGroup.Text>
-                    </InputGroup.Prepend>
-                    <Form.Control
-                        type="text"
-                        placeholder={LocaleMain.searchStereotypes}
-                        aria-describedby="inputGroupPrepend"
-                        value={this.state.search}
-                        onChange={this.handleChangeSearch}
-                    />
+					<InputGroup.Prepend>
+						<InputGroup.Text id="inputGroupPrepend">
+							<span role="img" aria-label={LocaleMain.searchStereotypes}>🔎</span></InputGroup.Text>
+					</InputGroup.Prepend>
+					<Form.Control
+						type="text"
+						placeholder={LocaleMain.searchStereotypes}
+						aria-describedby="inputGroupPrepend"
+						value={this.state.search}
+						onChange={this.handleChangeSearch}
+					/>
                 </InputGroup>
                 <Tabs id="stereotypePanelTabs">
                     <Tab eventKey={1} title={tooltipS}>
@@ -231,8 +271,8 @@ export default class ElementPanel extends React.Component<Props, State> {
                     <Tab eventKey={3} title={tooltipPM}>
                         <button className={"margins"} onClick={() => {
                             let scheme = createNewScheme();
-                            PackageRoot.children.push(new PackageNode(PackageRoot, true, scheme));
-                            this.forceUpdate();
+							new PackageNode(Schemes[scheme].labels, PackageRoot, true, scheme);
+							this.forceUpdate();
                         }
                         }>{LocaleMain.addNewPackage}</button>
                         <div className="elementLinkList">
@@ -250,18 +290,87 @@ export default class ElementPanel extends React.Component<Props, State> {
                         }>{LocaleMain.addDiagram}</button>
                         <div className="elementLinkList">
                             {Diagrams.map((model, i) => <DiagramItem
-                                    key={i}
-                                    diagram={i}
-                                    selectedDiagram={ProjectSettings.selectedDiagram}
-                                    update={() => {
-                                        this.forceUpdate();
-                                    }}
-                                />
-                            )}
-                        </div>
-                    </Tab>
-                </Tabs>
-            </ResizableBox>
+									key={i}
+									diagram={i}
+									selectedDiagram={ProjectSettings.selectedDiagram}
+									update={() => {
+										this.forceUpdate();
+									}}
+									openRemoveDiagram={() => {
+										this.setState({
+											selectedDiagram: i,
+											modalRemoveDiagram: true
+										})
+									}}
+									openRenameDiagram={() => {
+										this.setState({
+											selectedDiagram: i,
+											modalRenameDiagram: true
+										})
+									}}
+								/>
+							)}
+						</div>
+					</Tab>
+				</Tabs>
+
+				<ModalEditPackage
+					modal={this.state.modalEditPackage}
+					node={this.state.selectedNode}
+					close={() => {
+						this.setState({modalEditPackage: false});
+					}}
+					projectLanguage={this.props.projectLanguage}
+					update={() => {
+						this.forceUpdate();
+					}}
+				/>
+
+				<ModalRemovePackage
+					modal={this.state.modalRemovePackage}
+					node={this.state.selectedNode}
+					close={() => {
+						this.setState({modalRemovePackage: false});
+					}}
+					update={() => {
+						this.forceUpdate();
+					}}
+				/>
+
+				<ModalRemoveItem
+					modal={this.state.modalRemoveItem}
+					id={this.state.selectedID}
+					close={() => {
+						this.setState({modalRemoveItem: false});
+					}}
+					update={() => {
+						this.forceUpdate();
+					}}
+				/>
+
+				<ModalRenameDiagram
+					modal={this.state.modalRenameDiagram}
+					diagram={this.state.selectedDiagram}
+					close={() => {
+						this.setState({modalRenameDiagram: false});
+					}}
+					update={() => {
+						this.forceUpdate();
+					}}
+				/>
+
+				<ModalRemoveDiagram
+					modal={this.state.modalRemoveDiagram}
+					diagram={this.state.selectedDiagram}
+					close={() => {
+						this.setState({modalRemoveDiagram: false});
+					}}
+					update={() => {
+						this.forceUpdate();
+					}}
+				/>
+
+			</ResizableBox>
         );
     }
 }

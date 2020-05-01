@@ -1,4 +1,5 @@
 import {Languages, Links, ProjectElements, Schemes, Stereotypes, VocabularyElements} from "../config/Variables";
+import {initLanguageObject} from "./FunctionEditVars";
 
 export function getVocabElementByElementID(id: string): { [key: string]: any } {
     return VocabularyElements[ProjectElements[id].iri];
@@ -16,8 +17,8 @@ export function isLinkElem(iri: string): boolean {
     return iri in Links;
 }
 
-export function getLabelOrBlank(elem: any, language: string): string {
-    return elem.labels.length > 0 ? elem.labels[language] : "<blank>";
+export function getLabelOrBlank(labels: { [key: string]: string }, language: string): string {
+    return labels[language] && labels[language].length > 0 ? labels[language] : "<blank>";
 }
 
 export function getNameOrBlank(name: string) {
@@ -36,7 +37,7 @@ export function checkLabels() {
     for (let link in Links) {
         if (!(Links[link].labels[Object.keys(Languages)[0]])) {
             let label = link.lastIndexOf('/');
-            Links[link].labels[Object.keys(Languages)[0]] = link.substring(label + 1);
+            Links[link].labels = initLanguageObject(link.substring(label + 1));
         }
     }
 }

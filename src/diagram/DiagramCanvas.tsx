@@ -2,8 +2,8 @@
 import React from 'react';
 import * as joint from 'jointjs';
 import {graphElement} from "../graph/graphElement";
-import {Links, ProjectElements, ProjectLinks, ProjectSettings} from "../config/Variables";
-import {addClass, addLink} from "../function/FunctionCreateVars";
+import {Links, ProjectElements, ProjectLinks, ProjectSettings, VocabularyElements} from "../config/Variables";
+import {addClass, addLink, addVocabularyElement, createNewElemIRI} from "../function/FunctionCreateVars";
 import {graph} from "../graph/graph";
 import {
     getNewLabel,
@@ -18,6 +18,7 @@ import {HideButton} from "../graph/elemHide";
 import {ElemInfoButton} from "../graph/elemInfo";
 import {LinkInfoButton} from "../graph/linkInfo";
 import {RemoveButton} from "../graph/linkRemove";
+import {initLanguageObject} from "../function/FunctionEditVars";
 
 interface DiagramCanvasProps {
     projectLanguage: string;
@@ -131,20 +132,21 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps> {
                     }), tool]
                 }));
             },
-            'link:mouseenter': function (linkView) {
-                var infoButton = LinkInfoButton({
-                    action: (evt: { currentTarget: { getAttribute: (arg0: string) => any; }; }) => {
-                        let id = evt.currentTarget.getAttribute("model-id");
-                        this.props.prepareDetails(id);
-                        unHighlightAll();
-                        highlightCell(id);
-                    }
-                });
-                var verticesTool = new joint.linkTools.Vertices();
-                var segmentsTool = new joint.linkTools.Segments();
-                var removeButton = new RemoveButton();
-                var toolsView = new joint.dia.ToolsView({
-                    tools: [verticesTool, segmentsTool, removeButton, infoButton]
+            'link:mouseenter': (linkView) => {
+                let verticesTool = new joint.linkTools.Vertices();
+                let segmentsTool = new joint.linkTools.Segments();
+                let removeButton = new RemoveButton();
+                let toolsView = new joint.dia.ToolsView({
+                    tools: [verticesTool, segmentsTool, removeButton,
+                        new LinkInfoButton({
+                            action: (evt) => {
+                                let id = evt.currentTarget.getAttribute("model-id");
+                                this.props.prepareDetails(id);
+                                unHighlightAll();
+                                highlightCell(id);
+                            }
+                        })
+                    ]
                 });
                 linkView.addTools(toolsView);
             },
@@ -157,8 +159,8 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps> {
                 this.drag = {x: x, y: y}
             },
             'blank:pointermove': function (evt, x, y) {
-                var data = evt.data;
-                var cell = data.cell;
+                const data = evt.data;
+                const cell = data.cell;
                 if (cell !== undefined) {
                     if (cell.isLink()) {
                         cell.target({x: x, y: y});
@@ -219,17 +221,19 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps> {
                 let cls = new graphElement();
                 let label = getNewLabel(data.iri, ProjectSettings.selectedLanguage);
                 if (data.type === "new") {
-                    cls.set('position', this.paper?.clientToLocalPoint({x: event.clientX, y: event.clientY}));
                     if (typeof cls.id === "string") {
-                        addClass(cls.id, [data.elem], this.props.projectLanguage, ProjectSettings.selectedPackage.scheme, ProjectSettings.selectedPackage);
+                        let iri = createNewElemIRI(initLanguageObject(""), VocabularyElements);
+                        addClass(cls.id, iri, this.props.projectLanguage, ProjectSettings.selectedPackage.scheme, ProjectSettings.selectedPackage);
+                        addVocabularyElement(cls.id, iri, data.iri);
                     }
                 } else if (data.type === "existing") {
                     cls = new graphElement({id: data.id});
                     label = nameGraphElement(cls, ProjectSettings.selectedLanguage);
-                    restoreHiddenElem(data.elem, cls);
+                    restoreHiddenElem(data.id, cls);
                     restoreDomainOfConns();
                 }
 
+                cls.set('position', this.paper?.clientToLocalPoint({x: event.clientX, y: event.clientY}));
                 cls.attr({label: {text: label}});
                 cls.addTo(graph);
                 let bbox = this.paper?.findViewByModel(cls).getBBox();

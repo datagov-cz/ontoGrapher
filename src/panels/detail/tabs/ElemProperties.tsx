@@ -5,7 +5,7 @@ import TableList from "../../../components/TableList";
 // @ts-ignore
 import {RIEInput} from "riek";
 import {AttributeObject} from "../../../datatypes/AttributeObject";
-import {AttributeTypePool} from "../../../config/Variables";
+import {AttributeTypePool, ProjectElements} from "../../../config/Variables";
 import {Tab} from 'react-bootstrap';
 
 interface Props {
@@ -25,6 +25,16 @@ export default class ElemProperties extends React.Component<Props, State> {
         attrs[pos].name = event.textarea;
         this.setState({inputProperties: attrs});
         this.props.changes();
+    }
+
+    prepareDetails() {
+        this.setState({
+            inputProperties: ProjectElements[this.props.id].properties
+        })
+    }
+
+    save() {
+        ProjectElements[this.props.id].properties = this.state.inputProperties;
     }
 
     render() {

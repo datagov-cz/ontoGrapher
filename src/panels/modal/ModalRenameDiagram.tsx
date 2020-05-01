@@ -1,19 +1,54 @@
 import React from 'react';
+import {Button, Form, Modal} from "react-bootstrap";
+import * as LocaleMenu from "../../locale/LocaleMenu.json";
+import * as LocaleMain from "../../locale/LocaleMain.json";
+import {Diagrams} from "../../config/Variables";
 
 interface Props {
-
+    modal: boolean;
+    diagram: number;
+    close: Function;
+    update: Function;
 }
 
 interface State {
-
+    inputEdit: string;
 }
 
 export default class ModalRenameDiagram extends React.Component<Props, State> {
     constructor(props: Props) {
         super(props);
+        this.state = {
+            inputEdit: ""
+        }
     }
 
     render() {
-        return (<div></div>);
+        return (
+            <Modal centered show={this.props.modal} onShow={() => {
+                this.setState({inputEdit: Diagrams[this.props.diagram].name})
+            }}>
+                <Modal.Header>
+                    <Modal.Title>{LocaleMenu.modalEditDiagramTitle}</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <Form.Control onChange={(event: { currentTarget: { value: any; }; }) => {
+                        this.setState({inputEdit: event.currentTarget.value})
+                    }} type="text" value={this.state.inputEdit}
+                                  placeholder={LocaleMain.modalEditDiagramPlaceholder}
+                                  required/>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button onClick={() => {
+                        this.props.close();
+                    }} variant="secondary">{LocaleMenu.cancel}</Button>
+                    <Button onClick={() => {
+                        Diagrams[this.props.diagram].name = this.state.inputEdit;
+                        this.props.update();
+                        this.props.close();
+                    }}>{LocaleMenu.confirm}</Button>
+                </Modal.Footer>
+            </Modal>
+        );
     }
 }

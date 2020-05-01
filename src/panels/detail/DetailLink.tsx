@@ -1,5 +1,5 @@
 import React from 'react';
-import {CardinalityPool, Languages, Links, ProjectLinks, Schemes, VocabularyElements} from "../../config/Variables";
+import {CardinalityPool, Languages, Links, ProjectLinks, Schemes} from "../../config/Variables";
 import {Button, Form} from "react-bootstrap";
 import TableList from "../../components/TableList";
 import * as LocaleMain from "../../locale/LocaleMain.json";
@@ -29,13 +29,21 @@ export default class DetailLink extends React.Component<Props, State> {
     constructor(props: Props) {
         super(props);
         this.state = {
-            iri: "",
+            iri: Object.keys(Links)[0],
             sourceCardinality: "0",
             targetCardinality: "0",
             changes: false
         }
     }
 
+    prepareDetails() {
+        this.setState({
+            iri: ProjectLinks[this.props.id].iri,
+            sourceCardinality: CardinalityPool.indexOf(ProjectLinks[this.props.id].sourceCardinality).toString(10),
+            targetCardinality: CardinalityPool.indexOf(ProjectLinks[this.props.id].targetCardinality).toString(10),
+            changes: false
+        });
+    }
 
     save() {
         ProjectLinks[this.props.id].sourceCardinality = CardinalityPool[parseInt(this.state.sourceCardinality, 10)];
@@ -137,10 +145,8 @@ export default class DetailLink extends React.Component<Props, State> {
                         <td>
                             <span>{LocaleMain.linkType}</span>
                         </td>
-                        <IRIlabel label={this.state.iri in Links ?
-                            Links[this.state.iri].labels[this.props.projectLanguage] :
-                            VocabularyElements[this.state.iri].labels[this.props.projectLanguage]
-                        } iri={this.state.iri}/>
+                        <IRIlabel label={getLinkOrVocabElem(this.state.iri).labels[this.props.projectLanguage]}
+                                  iri={this.state.iri}/>
                     </tr>
                 </TableList>
                 <h5>{<IRILink label={this.props.headers.labels[this.props.projectLanguage]}
@@ -149,7 +155,7 @@ export default class DetailLink extends React.Component<Props, State> {
                     {
                         Object.keys(getLinkOrVocabElem(this.state.iri).labels).map(lang => (
                             <tr>
-                                <td>{VocabularyElements[this.state.iri].labels[lang]}</td>
+                                <td>{getLinkOrVocabElem(this.state.iri).labels[lang]}</td>
                                 <td>{Languages[lang]}</td>
                             </tr>
                         ))

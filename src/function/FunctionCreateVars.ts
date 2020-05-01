@@ -1,16 +1,19 @@
 import {
     CardinalityPool,
+    PackageRoot,
     ProjectElements,
     ProjectLinks,
     ProjectSettings,
     PropertyPool,
     Schemes,
-    structuresShort
+    StructuresShort,
+    VocabularyElements
 } from "../config/Variables";
 import * as LocaleMain from "../locale/LocaleMain.json";
 import {AttributeObject} from "../datatypes/AttributeObject";
 import {initLanguageObject} from "./FunctionEditVars";
 import {PackageNode} from "../datatypes/PackageNode";
+import {graphElement} from "../graph/graphElement";
 
 export function createValues(values: {[key:string]: string[]}, prefixes: {[key:string]: string}){
     let result: string[] = [];
@@ -24,7 +27,7 @@ export function createValues(values: {[key:string]: string[]}, prefixes: {[key:s
 }
 
 export function createNewScheme(): string {
-    let result = "https://slovník.gov.cz/" + structuresShort[ProjectSettings.knowledgeStructure] + "/" + LocaleMain.untitled;
+    let result = "https://slovník.gov.cz/" + StructuresShort[ProjectSettings.knowledgeStructure] + "/" + LocaleMain.untitled;
     if (result in Schemes) {
         let count = 1;
         while ((result + "-" + count.toString(10)) in Schemes) {
@@ -37,6 +40,24 @@ export function createNewScheme(): string {
     return result;
 }
 
+export function createNewElemIRI(labels: { [key: string]: string }, target: { [key: string]: any }): string {
+    let name = LocaleMain.untitled;
+    for (let lang in labels) {
+        if (labels[lang] !== "") name = labels[lang];
+        break;
+    }
+    let result = "https://slovník.gov.cz/" + StructuresShort[ProjectSettings.knowledgeStructure] + "/pojem/" + name;
+    result = result.trim().replace(/\s/g, '-');
+    let count = 1;
+    if (result in target) {
+        while ((name + "-" + count.toString(10)) in target) {
+            count++;
+        }
+        name += "-" + count.toString(10);
+    }
+    return result;
+}
+
 export function initProperties(scheme: string): AttributeObject[] {
     let result: AttributeObject[] = [];
     if (PropertyPool[scheme]) {
@@ -45,6 +66,46 @@ export function initProperties(scheme: string): AttributeObject[] {
         })
     }
     return result;
+}
+
+export function addElemsToPackage(scheme: string) {
+    let pkg = new PackageNode(Schemes[scheme].labels, PackageRoot, false, scheme);
+    for (let iri in VocabularyElements) {
+        if (VocabularyElements[iri].inScheme === scheme) {
+            let elem = new graphElement();
+            if (typeof elem.id === "string") {
+                addClass(elem.id, iri, pkg, false);
+                pkg.elements.push(elem.id);
+            }
+        }
+    }
+}
+
+export function getDomainOf(iriElem: string): string[] {
+    let result = [];
+    for (let iri in VocabularyElements) {
+        if (VocabularyElements[iri].domain) {
+            if (VocabularyElements[iri].domain === iriElem) {
+                result.push(iri);
+            }
+        }
+    }
+    return result;
+}
+
+export function addVocabularyElement(id: string, iri: string, type: string) {
+    if (ProjectSettings.selectedPackage.scheme) {
+        VocabularyElements[iri] = {
+            labels: initLanguageObject(""),
+            definitions: initLanguageObject(""),
+            inScheme: ProjectSettings.selectedPackage.scheme,
+            domain: undefined,
+            range: undefined,
+            types: [type],
+            domainOf: getDomainOf(iri),
+        }
+    }
+
 }
 
 export function addClass(

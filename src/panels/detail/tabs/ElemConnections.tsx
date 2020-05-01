@@ -26,7 +26,7 @@ export default class ElemConnections extends React.Component<Props> {
                                 <IRIlabel
                                     label={Links[ProjectLinks[conn].iri].labels[this.props.projectLanguage]}
                                     iri={ProjectLinks[conn].iri}/>
-                                <td>{getLabelOrBlank(VocabularyElements[ProjectLinks[conn].target], this.props.projectLanguage)}</td>
+                                <td>{getLabelOrBlank(VocabularyElements[ProjectLinks[conn].target].labels, this.props.projectLanguage)}</td>
                                 <td>{ProjectLinks[conn].diagram}</td>
                             </tr>);
                         }
@@ -37,7 +37,7 @@ export default class ElemConnections extends React.Component<Props> {
                                 return (<tr>
                                     <IRIlabel label={VocabularyElements[conn].labels[this.props.projectLanguage]}
                                               iri={conn}/>
-                                    <td>{getLabelOrBlank(VocabularyElements[range], this.props.projectLanguage)}</td>
+                                    <td>{getLabelOrBlank(VocabularyElements[range].labels, this.props.projectLanguage)}</td>
                                     <td>{LocaleMenu.fromModel}</td>
                                 </tr>);
                             } else return ""

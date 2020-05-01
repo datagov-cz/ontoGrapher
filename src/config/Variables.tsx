@@ -1,21 +1,10 @@
 import * as Locale from "../locale/LocaleMain.json";
 import {Cardinality} from "../datatypes/Cardinality";
 import {PackageNode} from "../datatypes/PackageNode";
-import {parsePrefix} from "../function/FunctionEditVars";
+import {initLanguageObject, parsePrefix} from "../function/FunctionEditVars";
 import {AttributeObject} from "../datatypes/AttributeObject";
 
-//TODO: create default package on new project call
-//TODO: separate modals from items
-//TODO: retry button for fetch
-//TODO: redo/scrap addDomainOfIRIs
-//TODO: test saving, loading
-//TODO: &format=json missing
-//TODO: load info in detailLink
-//TODO: model loading in elementPanel
-//TODO: key of PackageFolder
-//TODO: export fixing
-
-// language code : language labels
+// language code : language label
 export var Languages: { [key: string]: string } = {};
 
 export var ProjectElements: {
@@ -85,14 +74,14 @@ export var Structures: { [key: string]: string } = {
     "z-sgov-pojem:datová-struktura": parsePrefix("z-sgov-pojem", "datová-struktura")
 };
 
-export var structuresShort: { [key: string]: string } = {
+export var StructuresShort: { [key: string]: string } = {
     "z-sgov-pojem:základní-struktura": "základní",
     "z-sgov-pojem:legislativní-struktura": "legislativní",
     "z-sgov-pojem:agendová-struktura": "agendová",
     "z-sgov-pojem:datová-struktura": "datová"
 };
 
-export var PackageRoot: PackageNode = new PackageNode(undefined, true, "");
+export var PackageRoot: PackageNode = new PackageNode(initLanguageObject("Root"), undefined, true, "");
 
 export var VocabularyElements: {
     [key: string]:

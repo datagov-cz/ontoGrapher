@@ -21,7 +21,7 @@ export default class LabelTable extends React.Component<Props> {
                         <span>
                             <RIEInput
                                 className={"rieinput"}
-                                value={getLabelOrBlank(this.props, lang)}
+                                value={getLabelOrBlank(this.props.labels, lang)}
                                 change={(event: { textarea: string }) => {
                                     if (this.props.onEdit) this.props.onEdit(event.textarea, lang);
                                 }}
@@ -36,7 +36,7 @@ export default class LabelTable extends React.Component<Props> {
                         </span>
                         :
                         <td>
-                            {getLabelOrBlank(this.props, lang)}
+                            {getLabelOrBlank(this.props.labels, lang)}
                         </td>
                     }
                     <td>Languages[lang]</td>

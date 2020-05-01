@@ -27,6 +27,10 @@ export default class ElemAttributes extends React.Component<Props, State> {
         });
     }
 
+    save() {
+        ProjectElements[this.props.id].attributes = this.state.inputAttributes;
+    }
+
     handleChangeNameAttribute(event: { textarea: string }, pos: number) {
         let attrs = this.state.inputAttributes;
         attrs[pos].name = event.textarea;

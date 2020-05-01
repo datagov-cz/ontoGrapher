@@ -5,7 +5,7 @@ import IRILink from "../../../components/IRILink";
 import {getStereotypeOrVocabElem} from "../../../function/FunctionGetVars";
 import * as LocaleMain from "../../../locale/LocaleMain.json";
 import * as LocaleMenu from "../../../locale/LocaleMenu.json";
-import {Stereotypes} from "../../../config/Variables";
+import {ProjectElements, Schemes, Stereotypes, VocabularyElements} from "../../../config/Variables";
 import {getName} from "../../../function/FunctionEditVars";
 import DescriptionTabs from "../components/DescriptionTabs";
 import LabelTable from "../components/LabelTable";
@@ -22,12 +22,39 @@ interface Props {
 interface State {
     inputTypes: string[];
     inputLabels: { [key: string]: string };
-    inputDescriptions: { [key: string]: string };
+    inputDefinitions: { [key: string]: string };
     inputSchemes: { [key: string]: string };
     formNewStereotype: string;
 }
 
 export default class ElemDescription extends React.Component<Props, State> {
+    constructor(props: Props) {
+        super(props);
+
+        this.state = {
+            inputTypes: VocabularyElements[ProjectElements[this.props.id].iri].types,
+            inputLabels: VocabularyElements[ProjectElements[this.props.id].iri].labels,
+            inputDefinitions: VocabularyElements[ProjectElements[this.props.id].iri].definitions,
+            inputSchemes: Schemes[VocabularyElements[ProjectElements[this.props.id].iri].inScheme].labels,
+            formNewStereotype: Object.keys(Stereotypes)[0]
+        }
+    }
+
+    prepareDetails() {
+        this.setState({
+            inputTypes: VocabularyElements[ProjectElements[this.props.id].iri].types,
+            inputLabels: VocabularyElements[ProjectElements[this.props.id].iri].labels,
+            inputDefinitions: VocabularyElements[ProjectElements[this.props.id].iri].definitions,
+            inputSchemes: Schemes[VocabularyElements[ProjectElements[this.props.id].iri].inScheme].labels,
+            formNewStereotype: Object.keys(Stereotypes)[0]
+        });
+    }
+
+    save() {
+        VocabularyElements[ProjectElements[this.props.id].iri].types = this.state.inputTypes;
+        VocabularyElements[ProjectElements[this.props.id].iri].labels = this.state.inputLabels;
+        VocabularyElements[ProjectElements[this.props.id].iri].definitions = this.state.inputDefinitions;
+    }
 
     render() {
         return (
@@ -88,10 +115,10 @@ export default class ElemDescription extends React.Component<Props, State> {
                 <h5>{<IRILink label={this.props.headers.inScheme[this.props.projectLanguage]}
                               iri={"http://www.w3.org/2004/02/skos/core#inScheme"}/>}</h5>
                 <LabelTable labels={this.state.inputSchemes} readOnly={this.props.readOnly}/>
-                {Object.keys(this.state.inputDescriptions).length > 0 ?
+                {Object.keys(this.state.inputDefinitions).length > 0 ?
                     <h5>{<IRILink label={this.props.headers.definition[this.props.projectLanguage]}
                                   iri={"http://www.w3.org/2004/02/skos/core#definition"}/>}</h5> : ""}
-                <DescriptionTabs descriptions={this.state.inputDescriptions} readOnly={this.props.readOnly}/>
+                <DescriptionTabs descriptions={this.state.inputDefinitions} readOnly={this.props.readOnly}/>
             </Tab>
         );
     }

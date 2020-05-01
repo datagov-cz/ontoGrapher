@@ -51,8 +51,8 @@ export async function getContext(
     contextIRI: string,
     contextEndpoint: string,
     acceptType: string,
-    callback: (message: string) => any) {
-    callback(Locale.fetchingVocabularies);
+    callback?: (message: string) => any) {
+    if (callback) callback(Locale.loadingTerms);
     //get vocabularies
     let vocabularyQ = [
         "PREFIX owl: <http://www.w3.org/2002/07/owl#>",
@@ -88,9 +88,8 @@ export async function getContext(
         ProjectSettings.name[result.label["xml:lang"]] = result.label.value;
     });
     //load terms
-    callback(Locale.loadingTerms);
     for (let vocab in vocabularies) {
-        if (!(vocab in Schemes)) getScheme(vocab, contextEndpoint, vocabularies[vocab].readOnly,function () {
+        if (!(vocab in Schemes)) await getScheme(vocab, contextEndpoint, vocabularies[vocab].readOnly, function () {
         });
         let termQ = [
             "PREFIX skos: <http://www.w3.org/2004/02/skos/core#>",
@@ -137,13 +136,13 @@ export async function getContext(
         }
         //put into packages
         Object.assign(VocabularyElements, vocabularies[vocab].terms);
-        let pkg = new PackageNode(PackageRoot, false, vocab);
+        let pkg = new PackageNode(Schemes[vocab].labels, PackageRoot, false, vocab);
         for (let elem in vocabularies[vocab].terms) {
             let id = new graphElement().id;
             if (typeof id === "string") {
                 addClass(id, elem, pkg, false);
+                pkg.elements.push(id);
             }
         }
-        PackageRoot.children.push(pkg);
     }
 }

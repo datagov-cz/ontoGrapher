@@ -3,7 +3,15 @@ import MenuPanel from "../panels/MenuPanel";
 import ElementPanel from "../panels/ElementPanel";
 import DiagramCanvas from "./DiagramCanvas";
 import * as Locale from "../locale/LocaleMain.json";
-import {Languages, Links, PackageRoot, ProjectElements, ProjectSettings} from "../config/Variables";
+import {
+    Languages,
+    Links,
+    PackageRoot,
+    ProjectElements,
+    ProjectLinks,
+    ProjectSettings,
+    Schemes
+} from "../config/Variables";
 import DetailPanel from "../panels/DetailPanel";
 import {getVocabulariesFromRemoteJSON} from "../interface/JSONInterface";
 import {initLanguageObject, initVars} from "../function/FunctionEditVars";
@@ -11,6 +19,8 @@ import {getContext} from "../interface/ContextInterface";
 import {graph} from "../graph/graph";
 import {loadProject, newProject} from "../function/FunctionProject";
 import {nameGraphElement} from "../function/FunctionGraph";
+import {PackageNode} from "../datatypes/PackageNode";
+import {createNewScheme} from "../function/FunctionCreateVars";
 
 interface DiagramAppProps {
     readOnly?: boolean;
@@ -50,7 +60,6 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
             loading: true,
             status: Locale.loading
         });
-        console.log(this.state);
         document.title = Locale.ontoGrapher;
         this.handleChangeSelectedLink = this.handleChangeSelectedLink.bind(this);
         this.handleChangeLanguage = this.handleChangeLanguage.bind(this);
@@ -66,6 +75,8 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
         graph.getCells().forEach((cell) => {
             if (ProjectElements[cell.id]) {
                 nameGraphElement(cell, languageCode);
+            } else if (ProjectLinks[cell.id]) {
+
             }
         });
     }
@@ -101,20 +112,27 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
                 contextIRI,
                 contextEndpoint,
                 "application/json",
-                (result) => {
-
+                () => {
                 }
             ).then(() => {
-                ProjectSettings.selectedPackage = PackageRoot.children[0];
-                PackageRoot.labels = initLanguageObject(Locale.root);
+                this.selectDefaultPackage();
                 this.setState({loading: false});
                 document.title = ProjectSettings.name[this.state.projectLanguage] + " | " + Locale.ontoGrapher;
                 this.handleChangeLanguage(Object.keys(Languages)[0]);
                 this.forceUpdate();
-                console.log(PackageRoot);
                 this.elementPanel.current?.update();
             })
         });
+    }
+
+    selectDefaultPackage() {
+        for (let pkg of PackageRoot.children) {
+            if (pkg.scheme && !Schemes[pkg.scheme].readOnly) {
+                ProjectSettings.selectedPackage = pkg;
+                return;
+            }
+        }
+        ProjectSettings.selectedPackage = new PackageNode(initLanguageObject(Locale.untitledPackage), PackageRoot, false, createNewScheme());
     }
 
     componentDidMount(): void {
