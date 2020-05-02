@@ -7,14 +7,13 @@ import * as LocaleMenu from "../../../locale/LocaleMenu.json";
 
 interface Props {
     diagrams: number[];
-    eventKey: number;
 }
 
 export default class ElemDiagrams extends React.Component<Props> {
 
     render() {
         return (
-            <Tab eventKey={this.props.eventKey} title={LocaleMain.diagram}>
+            <Tab title={LocaleMain.diagram} eventKey={"detail-tab-diagrams"}>
                 <TableList headings={[LocaleMenu.diagram]}>
                     {this.props.diagrams.map((conn) =>
                         (<tr>

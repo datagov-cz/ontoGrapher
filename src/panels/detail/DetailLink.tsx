@@ -14,11 +14,11 @@ import {getLinkOrVocabElem} from "../../function/FunctionGetVars";
 interface Props {
     projectLanguage: string;
     headers: { [key: string]: { [key: string]: string } }
-    id: string;
     save: Function;
 }
 
 interface State {
+    id: string,
     iri: string,
     sourceCardinality: string;
     targetCardinality: string;
@@ -29,6 +29,7 @@ export default class DetailLink extends React.Component<Props, State> {
     constructor(props: Props) {
         super(props);
         this.state = {
+            id: "",
             iri: Object.keys(Links)[0],
             sourceCardinality: "0",
             targetCardinality: "0",
@@ -36,22 +37,23 @@ export default class DetailLink extends React.Component<Props, State> {
         }
     }
 
-    prepareDetails() {
+    prepareDetails(id: string) {
         this.setState({
-            iri: ProjectLinks[this.props.id].iri,
-            sourceCardinality: CardinalityPool.indexOf(ProjectLinks[this.props.id].sourceCardinality).toString(10),
-            targetCardinality: CardinalityPool.indexOf(ProjectLinks[this.props.id].targetCardinality).toString(10),
+            id: id,
+            iri: ProjectLinks[id].iri,
+            sourceCardinality: CardinalityPool.indexOf(ProjectLinks[id].sourceCardinality).toString(10),
+            targetCardinality: CardinalityPool.indexOf(ProjectLinks[id].targetCardinality).toString(10),
             changes: false
         });
     }
 
     save() {
-        ProjectLinks[this.props.id].sourceCardinality = CardinalityPool[parseInt(this.state.sourceCardinality, 10)];
-        ProjectLinks[this.props.id].targetCardinality = CardinalityPool[parseInt(this.state.targetCardinality, 10)];
-        ProjectLinks[this.props.id].iri = this.state.iri;
+        ProjectLinks[this.state.id].sourceCardinality = CardinalityPool[parseInt(this.state.sourceCardinality, 10)];
+        ProjectLinks[this.state.id].targetCardinality = CardinalityPool[parseInt(this.state.targetCardinality, 10)];
+        ProjectLinks[this.state.id].iri = this.state.iri;
         let links = graph.getLinks();
         for (let link of links) {
-            if (link.id === this.props.id) {
+            if (link.id === this.state.id) {
                 switch (link.labels.length) {
                     case 1:
                         link.removeLabel(0);
@@ -66,15 +68,15 @@ export default class DetailLink extends React.Component<Props, State> {
                         link.removeLabel(0);
                         break;
                 }
-                if (ProjectLinks[this.props.id].sourceCardinality.getString() !== LocaleMain.none) {
+                if (ProjectLinks[this.state.id].sourceCardinality.getString() !== LocaleMain.none) {
                     link.appendLabel({
-                        attrs: {text: {text: ProjectLinks[this.props.id].sourceCardinality.getString()}},
+                        attrs: {text: {text: ProjectLinks[this.state.id].sourceCardinality.getString()}},
                         position: {distance: 20}
                     });
                 }
-                if (ProjectLinks[this.props.id].targetCardinality.getString() !== LocaleMain.none) {
+                if (ProjectLinks[this.state.id].targetCardinality.getString() !== LocaleMain.none) {
                     link.appendLabel({
-                        attrs: {text: {text: ProjectLinks[this.props.id].targetCardinality.getString()}},
+                        attrs: {text: {text: ProjectLinks[this.state.id].targetCardinality.getString()}},
                         position: {distance: -20}
                     });
                 }

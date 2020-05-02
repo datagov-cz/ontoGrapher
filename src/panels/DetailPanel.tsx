@@ -46,19 +46,17 @@ export default class DetailPanel extends React.Component<Props, State> {
 
     prepareDetails(id: string) {
         if (graph.getCell(id).isElement()) {
+            this.detailElem.current?.prepareDetails(id);
             this.setState({
                 hidden: false,
-                id: id,
                 type: "elem"
             });
-            this.detailElem.current?.prepareDetails();
         } else if (graph.getCell(id).isLink()) {
+            this.linkElem.current?.prepareDetails(id);
             this.setState({
-                id: id,
                 type: "link",
                 hidden: false
             });
-            this.linkElem.current?.prepareDetails();
         }
     }
 
@@ -70,10 +68,10 @@ export default class DetailPanel extends React.Component<Props, State> {
     render() {
         if (!this.state.hidden) {
             if (this.state.type === "elem") {
-                return (<DetailElem headers={headers} id={this.state.id} projectLanguage={this.props.projectLanguage}
+                return (<DetailElem headers={headers} projectLanguage={this.props.projectLanguage}
                                     save={this.save} ref={this.detailElem}/>);
             } else if (this.state.type === "link") {
-                return (<DetailLink projectLanguage={this.props.projectLanguage} headers={headers} id={this.state.id}
+                return (<DetailLink projectLanguage={this.props.projectLanguage} headers={headers}
                                     save={this.save} ref={this.linkElem}/>);
             }
         } else {

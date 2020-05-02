@@ -9,60 +9,75 @@ import TableList from "../../../components/TableList";
 import {RIEInput} from "riek";
 
 interface Props {
-    eventKey: number;
     readOnly: boolean;
     changes: Function;
-    id: string;
+    elemID: string;
 }
 
 interface State {
     inputAttributes: AttributeObject[];
+    changes: boolean;
 }
 
 export default class ElemAttributes extends React.Component<Props, State> {
+    constructor(props: Props) {
+        super(props);
+        this.state = {
+            changes: false,
+            inputAttributes: []
+        }
+    }
 
     prepareDetails() {
         this.setState({
-            inputAttributes: ProjectElements[this.props.id].attributes
+            inputAttributes: ProjectElements[this.props.elemID].attributes
         });
     }
 
     save() {
-        ProjectElements[this.props.id].attributes = this.state.inputAttributes;
+        ProjectElements[this.props.elemID].attributes = this.state.inputAttributes;
     }
 
     handleChangeNameAttribute(event: { textarea: string }, pos: number) {
         let attrs = this.state.inputAttributes;
         attrs[pos].name = event.textarea;
-        this.setState({inputAttributes: attrs});
-        this.props.changes();
+        this.setState({
+            inputAttributes: attrs,
+            changes: true,
+        });
     }
 
     createAttribute() {
         let attr = new AttributeObject("", Object.keys(AttributeTypePool)[0]);
         let attrs = this.state.inputAttributes;
         attrs.push(attr);
-        this.setState({inputAttributes: attrs});
-        this.props.changes();
+        this.setState({
+            inputAttributes: attrs,
+            changes: true,
+        })
     }
 
     handleChangeAttributeType(event: React.FormEvent<HTMLInputElement>, i: number) {
         let attrs = this.state.inputAttributes;
         attrs[i].type = event.currentTarget.value;
-        this.setState({inputAttributes: attrs});
-        this.props.changes();
+        this.setState({
+            inputAttributes: attrs,
+            changes: true,
+        })
     }
 
     deleteAttribute(i: number) {
         let attrs = this.state.inputAttributes;
         attrs.splice(i, 1);
-        this.setState({inputAttributes: attrs});
-        this.props.changes();
+        this.setState({
+            inputAttributes: attrs,
+            changes: true,
+        })
     }
 
     render() {
         return (
-            <Tab eventKey={this.props.eventKey} title={LocaleMain.detailPanelAttributes}>
+            <Tab eventKey={LocaleMain.detailPanelAttributes} title={LocaleMain.detailPanelAttributes}>
                 <TableList headings={[LocaleMenu.title, LocaleMenu.attributeType]}>
                     {this.state.inputAttributes.map((attr, i) =>
                         this.props.readOnly ? <tr key={i}>

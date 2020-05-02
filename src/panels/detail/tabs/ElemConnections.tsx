@@ -11,24 +11,23 @@ interface Props {
     projectLanguage: string;
     connections: string[];
     iri: string;
-    eventKey: number;
 }
 
 export default class ElemConnections extends React.Component<Props> {
 
     render() {
         return (
-            <Tab eventKey={this.props.eventKey} title={LocaleMain.connections}>
+            <Tab eventKey={LocaleMain.connections} title={LocaleMain.connections}>
                 <TableList
                     headings={[LocaleMenu.connectionVia, LocaleMenu.connectionTo, LocaleMenu.diagram]}>
                     {this.props.connections.map((conn) => {
-                            return (<tr>
-                                <IRIlabel
-                                    label={Links[ProjectLinks[conn].iri].labels[this.props.projectLanguage]}
-                                    iri={ProjectLinks[conn].iri}/>
-                                <td>{getLabelOrBlank(VocabularyElements[ProjectLinks[conn].target].labels, this.props.projectLanguage)}</td>
-                                <td>{ProjectLinks[conn].diagram}</td>
-                            </tr>);
+                        return (<tr>
+                            <IRIlabel
+                                label={Links[ProjectLinks[conn].iri].labels[this.props.projectLanguage]}
+                                iri={ProjectLinks[conn].iri}/>
+                            <td>{getLabelOrBlank(VocabularyElements[ProjectLinks[conn].target].labels, this.props.projectLanguage)}</td>
+                            <td>{ProjectLinks[conn].diagram}</td>
+                        </tr>);
                         }
                     )}
                     {this.props.iri in VocabularyElements ? VocabularyElements[this.props.iri].domainOf.map((conn: string) => {

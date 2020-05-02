@@ -19,13 +19,15 @@ export function getName(element: string, language: string): string {
 }
 
 export function getStereotypeList(iris: string[], language: string): string[] {
-    return iris.map(iri => {
+    let result: string[] = [];
+    iris.forEach(iri => {
         if (iri in Stereotypes) {
-            return Stereotypes[iri].labels[language];
-        } else {
-            return VocabularyElements[iri].labels[language];
+            result.push(Stereotypes[iri].labels[language]);
+        } else if (iri in VocabularyElements) {
+            result.push(VocabularyElements[iri].labels[language]);
         }
     });
+    return result;
 }
 
 

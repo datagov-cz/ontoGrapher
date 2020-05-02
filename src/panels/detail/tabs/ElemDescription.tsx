@@ -11,12 +11,11 @@ import DescriptionTabs from "../components/DescriptionTabs";
 import LabelTable from "../components/LabelTable";
 
 interface Props {
-    eventKey: number;
     changes: Function;
     projectLanguage: string;
     headers: { [key: string]: { [key: string]: string } };
     readOnly: boolean;
-    id: string;
+    elemID: string;
 }
 
 interface State {
@@ -32,33 +31,33 @@ export default class ElemDescription extends React.Component<Props, State> {
         super(props);
 
         this.state = {
-            inputTypes: VocabularyElements[ProjectElements[this.props.id].iri].types,
-            inputLabels: VocabularyElements[ProjectElements[this.props.id].iri].labels,
-            inputDefinitions: VocabularyElements[ProjectElements[this.props.id].iri].definitions,
-            inputSchemes: Schemes[VocabularyElements[ProjectElements[this.props.id].iri].inScheme].labels,
+            inputTypes: VocabularyElements[ProjectElements[this.props.elemID].iri].types,
+            inputLabels: VocabularyElements[ProjectElements[this.props.elemID].iri].labels,
+            inputDefinitions: VocabularyElements[ProjectElements[this.props.elemID].iri].definitions,
+            inputSchemes: Schemes[VocabularyElements[ProjectElements[this.props.elemID].iri].inScheme].labels,
             formNewStereotype: Object.keys(Stereotypes)[0]
         }
     }
 
     prepareDetails() {
         this.setState({
-            inputTypes: VocabularyElements[ProjectElements[this.props.id].iri].types,
-            inputLabels: VocabularyElements[ProjectElements[this.props.id].iri].labels,
-            inputDefinitions: VocabularyElements[ProjectElements[this.props.id].iri].definitions,
-            inputSchemes: Schemes[VocabularyElements[ProjectElements[this.props.id].iri].inScheme].labels,
+            inputTypes: VocabularyElements[ProjectElements[this.props.elemID].iri].types,
+            inputLabels: VocabularyElements[ProjectElements[this.props.elemID].iri].labels,
+            inputDefinitions: VocabularyElements[ProjectElements[this.props.elemID].iri].definitions,
+            inputSchemes: Schemes[VocabularyElements[ProjectElements[this.props.elemID].iri].inScheme].labels,
             formNewStereotype: Object.keys(Stereotypes)[0]
         });
     }
 
     save() {
-        VocabularyElements[ProjectElements[this.props.id].iri].types = this.state.inputTypes;
-        VocabularyElements[ProjectElements[this.props.id].iri].labels = this.state.inputLabels;
-        VocabularyElements[ProjectElements[this.props.id].iri].definitions = this.state.inputDefinitions;
+        VocabularyElements[ProjectElements[this.props.elemID].iri].types = this.state.inputTypes;
+        VocabularyElements[ProjectElements[this.props.elemID].iri].labels = this.state.inputLabels;
+        VocabularyElements[ProjectElements[this.props.elemID].iri].definitions = this.state.inputDefinitions;
     }
 
     render() {
         return (
-            <Tab eventKey={this.props.eventKey} title={LocaleMain.description}>
+            <Tab title={LocaleMain.description} eventKey={LocaleMain.description}>
                 <h5>{this.props.headers.stereotype[this.props.projectLanguage]}</h5>
                 <TableList>
                     {this.state.inputTypes.map(iri =>

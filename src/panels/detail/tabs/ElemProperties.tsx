@@ -9,9 +9,8 @@ import {AttributeTypePool, ProjectElements} from "../../../config/Variables";
 import {Tab} from 'react-bootstrap';
 
 interface Props {
-    eventKey: number;
     changes: Function;
-    id: string;
+    elemID: string;
 }
 
 interface State {
@@ -29,17 +28,17 @@ export default class ElemProperties extends React.Component<Props, State> {
 
     prepareDetails() {
         this.setState({
-            inputProperties: ProjectElements[this.props.id].properties
+            inputProperties: ProjectElements[this.props.elemID].properties
         })
     }
 
     save() {
-        ProjectElements[this.props.id].properties = this.state.inputProperties;
+        ProjectElements[this.props.elemID].properties = this.state.inputProperties;
     }
 
     render() {
         return (
-            <Tab eventKey={this.props.eventKey} title={LocaleMain.properties}>
+            <Tab eventKey={LocaleMain.properties} title={LocaleMain.properties}>
                 <TableList headings={[LocaleMenu.title, LocaleMenu.attributeType, LocaleMenu.value]}>
                     {this.state.inputProperties.map((prop, i) => (<tr key={i}>
                         <td>
