@@ -37,7 +37,7 @@ export default class DetailPanel extends React.Component<Props, State> {
         this.detailElem = React.createRef();
         this.linkElem = React.createRef();
         this.hide = this.hide.bind(this);
-        this.prepareDetails = this.prepareDetails.bind(this);
+        this.save = this.save.bind(this);
     }
 
     hide() {
@@ -46,22 +46,24 @@ export default class DetailPanel extends React.Component<Props, State> {
 
     prepareDetails(id: string) {
         if (graph.getCell(id).isElement()) {
-            this.detailElem.current?.prepareDetails(id);
             this.setState({
-                hidden: false,
-                type: "elem"
+                id: id,
+                type: "elem",
+                hidden: false
             });
+            this.detailElem.current?.prepareDetails(id);
         } else if (graph.getCell(id).isLink()) {
-            this.linkElem.current?.prepareDetails(id);
             this.setState({
+                id: id,
                 type: "link",
                 hidden: false
             });
+            this.linkElem.current?.prepareDetails(id);
         }
     }
 
     save() {
-        this.props.resizeElem(this.state.id);
+        if (graph.getCell(this.state.id).isElement()) this.props.resizeElem(this.state.id);
         this.props.update();
     }
 

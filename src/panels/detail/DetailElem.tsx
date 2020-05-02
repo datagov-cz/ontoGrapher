@@ -23,6 +23,8 @@ import IRIlabel from "../../components/IRIlabel";
 import {AttributeObject} from "../../datatypes/AttributeObject";
 // @ts-ignore
 import {RIEInput} from "riek";
+import {nameGraphElement} from "../../function/FunctionGraph";
+import {graph} from "../../graph/graph";
 
 interface Props {
 	projectLanguage: string;
@@ -80,6 +82,7 @@ export default class DetailElem extends React.Component<Props, State> {
 			inputDefinitions: VocabularyElements[ProjectElements[id].iri].definitions,
 			inputSchemes: Schemes[VocabularyElements[ProjectElements[id].iri].inScheme].labels,
 			formNewStereotype: Object.keys(Stereotypes)[0],
+			readOnly: Schemes[VocabularyElements[ProjectElements[id].iri].inScheme].readOnly,
 			changes: false
 		});
 	}
@@ -90,18 +93,19 @@ export default class DetailElem extends React.Component<Props, State> {
 		VocabularyElements[ProjectElements[this.state.id].iri].definitions = this.state.inputDefinitions;
 		ProjectElements[this.state.id].attributes = this.state.inputAttributes;
 		ProjectElements[this.state.id].properties = this.state.inputProperties;
+		nameGraphElement(graph.getCell(this.state.id), this.props.projectLanguage);
 		this.setState({changes: false});
 		this.props.save();
 	}
 
 	render() {
-        return (<ResizableBox
-            width={300}
-            height={1000}
-            axis={"x"}
-            handleSize={[8, 8]}
-            resizeHandles={['nw']}
-            className={"details"}>
+		return this.state.id !== "" && (<ResizableBox
+			width={300}
+			height={1000}
+			axis={"x"}
+			handleSize={[8, 8]}
+			resizeHandles={['nw']}
+			className={"details"}>
 			<div>
 				<h3>{this.state.id ? getLabelOrBlank(VocabularyElements[ProjectElements[this.state.id].iri].labels, this.props.projectLanguage) : ""}</h3>
 				{this.state.changes ?
@@ -135,7 +139,7 @@ export default class DetailElem extends React.Component<Props, State> {
 									</td>
 								</tr>
 							)}
-							{this.state.readOnly ? <tr>
+							{(!this.state.readOnly) ? <tr>
 								<td>
 									<Form inline>
 										<Form.Control size="sm" as="select" value={this.state.formNewStereotype}
@@ -165,7 +169,13 @@ export default class DetailElem extends React.Component<Props, State> {
 
 						<h5>{<IRILink label={this.props.headers.labels[this.props.projectLanguage]}
 									  iri={"http://www.w3.org/2004/02/skos/core#prefLabel"}/>}</h5>
-						<LabelTable labels={this.state.inputLabels} readOnly={this.state.readOnly}/>
+						<LabelTable labels={this.state.inputLabels} readOnly={this.state.readOnly} onEdit={
+							(textarea: string, language: string) => {
+								let res = this.state.inputLabels;
+								res[language] = textarea;
+								this.setState({inputLabels: res, changes: true});
+							}
+						}/>
 						<h5>{<IRILink label={this.props.headers.inScheme[this.props.projectLanguage]}
 									  iri={"http://www.w3.org/2004/02/skos/core#inScheme"}/>}</h5>
 						<LabelTable labels={this.state.inputSchemes} readOnly={this.state.readOnly}/>

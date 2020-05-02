@@ -4,10 +4,12 @@ import TableList from "../../../components/TableList";
 import {RIEInput} from "riek";
 import {getLabelOrBlank} from "../../../function/FunctionGetVars";
 import * as LocaleMenu from "../../../locale/LocaleMenu.json";
+import {Languages} from "../../../config/Variables";
 
 interface Props {
     labels: { [key: string]: string };
     readOnly: boolean;
+    iri?: string;
     onEdit?: Function;
 }
 
@@ -17,7 +19,7 @@ export default class LabelTable extends React.Component<Props> {
         return (<TableList>
             {Object.keys(this.props.labels).map(lang =>
                 <tr>
-                    {this.props.readOnly && this.props.onEdit ?
+                    {(!this.props.readOnly) && this.props.onEdit ?
                         <span>
                             <RIEInput
                                 className={"rieinput"}
@@ -39,7 +41,7 @@ export default class LabelTable extends React.Component<Props> {
                             {getLabelOrBlank(this.props.labels, lang)}
                         </td>
                     }
-                    <td>Languages[lang]</td>
+                    <td>{Languages[lang]}</td>
                 </tr>
             )}
         </TableList>);

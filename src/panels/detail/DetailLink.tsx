@@ -50,7 +50,6 @@ export default class DetailLink extends React.Component<Props, State> {
     save() {
         ProjectLinks[this.state.id].sourceCardinality = CardinalityPool[parseInt(this.state.sourceCardinality, 10)];
         ProjectLinks[this.state.id].targetCardinality = CardinalityPool[parseInt(this.state.targetCardinality, 10)];
-        ProjectLinks[this.state.id].iri = this.state.iri;
         let links = graph.getLinks();
         for (let link of links) {
             if (link.id === this.state.id) {
@@ -86,11 +85,12 @@ export default class DetailLink extends React.Component<Props, State> {
                 });
             }
         }
+        this.setState({changes: false});
         this.props.save();
     }
 
     render() {
-        return (<ResizableBox
+        return this.state.id !== "" && (<ResizableBox
             width={300}
             height={1000}
             axis={"x"}
