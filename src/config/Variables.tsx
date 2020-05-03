@@ -64,6 +64,8 @@ export var Prefixes: { [key: string]: string } = {
     owl: "http://www.w3.org/2002/07/owl#",
     rdf: "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
     rdfs: "http://www.w3.org/2000/01/rdf-schema#",
+    og: "http://onto.fel.cvut.cz/ontologies",
+    "d-sgov-pracovní-prostor-pojem": "https://slovník.gov.cz/datový/pracovní-prostor/pojem/",
     "z-sgov-pojem": "https://slovník.gov.cz/základní/pojem/"
 };
 
@@ -124,7 +126,11 @@ export var ProjectSettings: {
     selectedPackage: PackageNode,
     knowledgeStructure: string,
     selectedLanguage: string,
-    selectedLink: string
+    selectedLink: string,
+    contextIRI: string,
+    contextEndpoint: string,
+    status: string
+    lastUpdate: { [key: string]: any }
 } = {
     name: {},
     description: {},
@@ -132,7 +138,11 @@ export var ProjectSettings: {
     selectedPackage: PackageRoot,
     knowledgeStructure: Object.keys(Structures)[0],
     selectedLanguage: Object.keys(Languages)[0],
-    selectedLink: Object.keys(Links)[0]
+    selectedLink: Object.keys(Links)[0],
+    contextIRI: "",
+    contextEndpoint: "",
+    status: "",
+    lastUpdate: {}
 };
 export var AttributeTypePool: { [key: string]: { name: string, array: boolean, type?: string } } = {
     "http://www.w3.org/2001/XMLSchema#string": {name: "String", array: false},

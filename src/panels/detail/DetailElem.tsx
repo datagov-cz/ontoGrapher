@@ -7,6 +7,7 @@ import {
 	Links,
 	ProjectElements,
 	ProjectLinks,
+	ProjectSettings,
 	Schemes,
 	Stereotypes,
 	VocabularyElements
@@ -25,6 +26,7 @@ import {AttributeObject} from "../../datatypes/AttributeObject";
 import {RIEInput} from "riek";
 import {nameGraphElement} from "../../function/FunctionGraph";
 import {graph} from "../../graph/graph";
+import {updateProjectElement} from "../../interface/TransactionInterface";
 
 interface Props {
 	projectLanguage: string;
@@ -88,14 +90,30 @@ export default class DetailElem extends React.Component<Props, State> {
 	}
 
 	save() {
-		VocabularyElements[ProjectElements[this.state.id].iri].types = this.state.inputTypes;
-		VocabularyElements[ProjectElements[this.state.id].iri].labels = this.state.inputLabels;
-		VocabularyElements[ProjectElements[this.state.id].iri].definitions = this.state.inputDefinitions;
-		ProjectElements[this.state.id].attributes = this.state.inputAttributes;
-		ProjectElements[this.state.id].properties = this.state.inputProperties;
-		nameGraphElement(graph.getCell(this.state.id), this.props.projectLanguage);
-		this.setState({changes: false});
-		this.props.save();
+		ProjectSettings.status = LocaleMain.updating;
+		updateProjectElement(
+			ProjectSettings.contextIRI,
+			ProjectSettings.contextEndpoint,
+			this.state.inputTypes,
+			this.state.inputLabels,
+			this.state.inputDefinitions,
+			this.state.id).then(result => {
+			if (result.response === 204) {
+				VocabularyElements[ProjectElements[this.state.id].iri].types = this.state.inputTypes;
+				VocabularyElements[ProjectElements[this.state.id].iri].labels = this.state.inputLabels;
+				VocabularyElements[ProjectElements[this.state.id].iri].definitions = this.state.inputDefinitions;
+				ProjectElements[this.state.id].attributes = this.state.inputAttributes;
+				ProjectElements[this.state.id].properties = this.state.inputProperties;
+				nameGraphElement(graph.getCell(this.state.id), this.props.projectLanguage);
+				this.props.save();
+				this.setState({changes: false});
+			} else {
+				ProjectSettings.status = LocaleMain.errorUpdating;
+				ProjectSettings.lastUpdate = result.result;
+			}
+		})
+
+		ProjectSettings.status = "";
 	}
 
 	render() {

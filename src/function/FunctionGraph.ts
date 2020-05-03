@@ -1,7 +1,7 @@
 import {Links, ProjectElements, ProjectLinks, ProjectSettings, VocabularyElements} from "../config/Variables";
 import {getName, getStereotypeList} from "./FunctionEditVars";
 import {graph} from "../graph/graph";
-import {getVocabElementByElementID} from "./FunctionGetVars";
+import {getLinkOrVocabElem, getVocabElementByElementID} from "./FunctionGetVars";
 import * as joint from "jointjs";
 import * as LocaleMain from "../locale/LocaleMain.json";
 import {addLink} from "./FunctionCreateVars";
@@ -10,6 +10,13 @@ export function nameGraphElement(cell: joint.dia.Cell, languageCode: string) {
     if (typeof cell.id === "string") {
         let vocabElem = getVocabElementByElementID(cell.id);
         cell.prop('attrs/label/text', getStereotypeList(vocabElem.types, languageCode).map((str) => "«" + str.toLowerCase() + "»\n").join("") + vocabElem.labels[languageCode]);
+    }
+}
+
+//TODO: finish
+export function nameGraphLink(cell: joint.dia.Link, languageCode: string) {
+    if (typeof cell.id === "string") {
+        let vocabElem = getLinkOrVocabElem(ProjectLinks[cell.id].iri);
     }
 }
 

@@ -1,10 +1,11 @@
 import React from 'react';
-import {Form, Nav, Navbar, Spinner} from "react-bootstrap";
+import {Form, Nav, Navbar} from "react-bootstrap";
 import * as Locale from '../locale/LocaleMain.json';
 import {Languages, ProjectSettings} from "../config/Variables";
 import MenuPanelFile from "./menu/MenuPanelFile";
 import MenuPanelHelp from "./menu/MenuPanelHelp";
 import MenuPanelAbout from "./menu/MenuPanelAbout";
+import InterfaceNotification from "../components/InterfaceNotification";
 
 interface MenuPanelProps {
     readOnly?: boolean;
@@ -15,6 +16,9 @@ interface MenuPanelProps {
     loadContext: Function;
     update: Function;
     loading: boolean;
+    status: string;
+    loadingError: boolean;
+    retry: Function;
 }
 
 interface MenuPanelState {
@@ -52,7 +56,9 @@ export default class MenuPanel extends React.Component<MenuPanelProps, MenuPanel
                 }
             </Nav>
             <Navbar.Text className="mr-sm-2">
-                {this.props.loading ? <Spinner animation="border" size="sm"/> : ""}&nbsp;
+                <InterfaceNotification active={this.props.loading} message={this.props.status}
+                                       error={this.props.loadingError} retry={this.props.retry}/>
+                &nbsp;
                 {ProjectSettings.name[this.props.projectLanguage] === "" ? "<untitled>" : ProjectSettings.name[this.props.projectLanguage]}
             </Navbar.Text>
             <Form inline>

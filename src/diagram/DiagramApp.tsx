@@ -18,7 +18,7 @@ import {initLanguageObject, initVars} from "../function/FunctionEditVars";
 import {getContext} from "../interface/ContextInterface";
 import {graph} from "../graph/graph";
 import {loadProject, newProject} from "../function/FunctionProject";
-import {nameGraphElement} from "../function/FunctionGraph";
+import {nameGraphElement, nameGraphLink} from "../function/FunctionGraph";
 import {PackageNode} from "../datatypes/PackageNode";
 import {createNewScheme} from "../function/FunctionCreateVars";
 
@@ -72,13 +72,16 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 		this.setState({projectLanguage: languageCode});
 		ProjectSettings.selectedLanguage = languageCode;
 		document.title = ProjectSettings.name[languageCode] + " | " + Locale.ontoGrapher;
-		graph.getCells().forEach((cell) => {
+		graph.getElements().forEach((cell) => {
 			if (ProjectElements[cell.id]) {
 				nameGraphElement(cell, languageCode);
-			} else if (ProjectLinks[cell.id]) {
-
 			}
 		});
+		graph.getLinks().forEach((cell) => {
+			if (ProjectLinks[cell.id]) {
+				nameGraphLink(cell, languageCode);
+			}
+		})
 	}
 
 	newProject() {
@@ -88,6 +91,10 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 			selectedLink: Object.keys(Links)[0]
 		});
 		this.elementPanel.current?.update();
+	}
+
+	handleChangeLoadingStatus(loading: boolean, status: string) {
+
 	}
 
 	loadProject(loadString: string) {
@@ -116,6 +123,8 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 				this.selectDefaultPackage();
 				this.setState({loading: false});
 				document.title = ProjectSettings.name[this.state.projectLanguage] + " | " + Locale.ontoGrapher;
+				ProjectSettings.contextEndpoint = contextEndpoint;
+				ProjectSettings.contextIRI = contextIRI;
 				this.handleChangeLanguage(Object.keys(Languages)[0]);
 				this.forceUpdate();
 				this.elementPanel.current?.update();
@@ -137,7 +146,7 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 		if (this.props.loadDefaultVocabularies) {
 			this.loadVocabularies(
 				"http://example.org/pracovni-prostor/metadatový-kontext-123"
-				, "https://onto.fel.cvut.cz:7200/repositories/kodi-pracovni-prostor-sample");
+				, "http://localhost:7200/repositories/kodi-pracovni-prostor-sample");
 		}
 	}
 
@@ -152,6 +161,7 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 				ref={this.menuPanel}
 				loading={this.state.loading}
 				newProject={this.newProject}
+				status={this.state.status}
 				projectLanguage={this.state.projectLanguage}
 				loadProject={this.loadProject}
 				loadContext={this.loadVocabularies}
