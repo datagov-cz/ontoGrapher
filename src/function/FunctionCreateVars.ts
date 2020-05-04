@@ -36,17 +36,17 @@ export function createNewScheme(): string {
         result += "-" + count.toString(10);
     }
     result = result.trim().replace(/\s/g, '-');
-    Schemes[result] = {labels: initLanguageObject(""), readOnly: false}
+    Schemes[result] = {labels: initLanguageObject(""), readOnly: false, graph: result}
     return result;
 }
 
-export function createNewElemIRI(labels: { [key: string]: string }, target: { [key: string]: any }): string {
+export function createNewElemIRI(labels: { [key: string]: string }, target: { [key: string]: any }, url?: string): string {
     let name = LocaleMain.untitled;
     for (let lang in labels) {
         if (labels[lang] !== "") name = labels[lang];
         break;
     }
-    let result = "https://slovník.gov.cz/" + StructuresShort[ProjectSettings.knowledgeStructure] + "/pojem/" + name;
+    let result = url ? url + name : "https://slovník.gov.cz/" + StructuresShort[ProjectSettings.knowledgeStructure] + "/pojem/" + name;
     result = result.trim().replace(/\s/g, '-');
     let count = 1;
     if (result in target) {

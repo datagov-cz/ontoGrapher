@@ -4,6 +4,10 @@ import {PackageNode} from "../datatypes/PackageNode";
 import {initLanguageObject, parsePrefix} from "../function/FunctionEditVars";
 import {AttributeObject} from "../datatypes/AttributeObject";
 
+//settings saving
+//projelems saving
+//saving triggers
+
 // language code : language label
 export var Languages: { [key: string]: string } = {};
 
@@ -34,7 +38,7 @@ export var ProjectElements: {
 
 export var ProjectLinks: {
     [key: string]: {
-        //iri pointing to VocabularyElements
+        //iri pointing to VocabularyElements/Links
         iri: string,
         //source ProjectElements id
         source: string,
@@ -55,6 +59,7 @@ export var Schemes: {
     [key: string]: {
         labels: { [key: string]: string },
         readOnly: boolean,
+        graph: string,
     }
 } = {};
 
@@ -64,7 +69,8 @@ export var Prefixes: { [key: string]: string } = {
     owl: "http://www.w3.org/2002/07/owl#",
     rdf: "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
     rdfs: "http://www.w3.org/2000/01/rdf-schema#",
-    og: "http://onto.fel.cvut.cz/ontologies",
+    og: "http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/",
+    ogpkg: "http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/package/",
     "d-sgov-pracovní-prostor-pojem": "https://slovník.gov.cz/datový/pracovní-prostor/pojem/",
     "z-sgov-pojem": "https://slovník.gov.cz/základní/pojem/"
 };
@@ -129,7 +135,6 @@ export var ProjectSettings: {
     selectedLink: string,
     contextIRI: string,
     contextEndpoint: string,
-    status: string
     lastUpdate: { [key: string]: any }
 } = {
     name: {},
@@ -141,7 +146,6 @@ export var ProjectSettings: {
     selectedLink: Object.keys(Links)[0],
     contextIRI: "",
     contextEndpoint: "",
-    status: "",
     lastUpdate: {}
 };
 export var AttributeTypePool: { [key: string]: { name: string, array: boolean, type?: string } } = {

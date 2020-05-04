@@ -5,6 +5,7 @@ import {Languages} from "../../../config/Variables";
 interface Props {
     descriptions: { [key: string]: string };
     readOnly: boolean;
+    onEdit?: Function;
 }
 
 export default class DescriptionTabs extends React.Component<Props> {
@@ -18,6 +19,9 @@ export default class DescriptionTabs extends React.Component<Props> {
                         rows={3}
                         disabled={this.props.readOnly}
                         value={this.props.descriptions[lang]}
+                        onChange={(event) => {
+                            if (this.props.onEdit) this.props.onEdit(event, lang)
+                        }}
                     />
                 </Tab>
             )}

@@ -22,6 +22,7 @@
   "loadingTerms": "Loading terms...",
   "loading": "Loading...",
   "loadingError": "Loading error.",
+  "pleaseReload": "Error: connection unsuccessful. Please reload to try again.",
   "finished": "All done!",
   "setAsDefault": "Set as default",
   "linkType": "Type",

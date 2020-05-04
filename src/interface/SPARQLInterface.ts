@@ -62,9 +62,11 @@ export async function fetchConcepts(
 
 export async function getScheme(iri: string, endpoint: string, readOnly: boolean, callback?: Function) {
     let query = [
-        "SELECT DISTINCT ?term ?termLabel ",
+        "SELECT DISTINCT ?term ?termLabel ?graph",
         "WHERE {",
+        "GRAPH ?graph {",
         "<" + iri + "> rdfs:label ?termLabel",
+        "}",
         "}"
     ].join(" ");
     let q = endpoint + "?query=" + encodeURIComponent(query);
@@ -72,8 +74,9 @@ export async function getScheme(iri: string, endpoint: string, readOnly: boolean
         return response.json();
     }).then(data => {
         for (let result of data.results.bindings) {
-            if (!(iri in Schemes)) Schemes[iri] = {labels: {}, readOnly: readOnly}
+            if (!(iri in Schemes)) Schemes[iri] = {labels: {}, readOnly: readOnly, graph: ""}
             if (result.termLabel !== undefined) Schemes[iri].labels[result.termLabel['xml:lang']] = result.termLabel.value;
+            if (result.graph !== undefined) Schemes[iri].graph = result.graph.value;
         }
         if (callback) callback(true);
     }).catch(() => {

@@ -21,6 +21,7 @@ import {loadProject, newProject} from "../function/FunctionProject";
 import {nameGraphElement, nameGraphLink} from "../function/FunctionGraph";
 import {PackageNode} from "../datatypes/PackageNode";
 import {createNewScheme} from "../function/FunctionCreateVars";
+import {processTransaction} from "../interface/TransactionInterface";
 
 interface DiagramAppProps {
 	readOnly?: boolean;
@@ -33,6 +34,7 @@ interface DiagramAppState {
 	projectLanguage: string;
 	loading: boolean;
 	status: string;
+	error: boolean;
 }
 
 require("../scss/style.scss");
@@ -58,7 +60,8 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 			selectedLink: ProjectSettings.selectedLink,
 			detailPanelHidden: false,
 			loading: true,
-			status: Locale.loading
+			status: Locale.loading,
+			error: false
 		});
 		document.title = Locale.ontoGrapher;
 		this.handleChangeSelectedLink = this.handleChangeSelectedLink.bind(this);
@@ -66,6 +69,16 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 		this.newProject = this.newProject.bind(this);
 		this.loadProject = this.loadProject.bind(this);
 		this.loadVocabularies = this.loadVocabularies.bind(this);
+		this.handleChangeLoadingStatus = this.handleChangeLoadingStatus.bind(this);
+		this.retry = this.retry.bind(this);
+	}
+
+	componentDidMount(): void {
+		if (this.props.loadDefaultVocabularies) {
+			this.loadVocabularies(
+				"http://example.org/pracovni-prostor/metadatový-kontext-123"
+				, "http://localhost:7200/repositories/kodi-pracovni-prostor-sample");
+		}
 	}
 
 	handleChangeLanguage(languageCode: string) {
@@ -93,8 +106,12 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 		this.elementPanel.current?.update();
 	}
 
-	handleChangeLoadingStatus(loading: boolean, status: string) {
-
+	handleChangeLoadingStatus(loading: boolean, status: string, error: boolean) {
+		this.setState({
+			loading: loading,
+			status: status,
+			error: error,
+		})
 	}
 
 	loadProject(loadString: string) {
@@ -118,16 +135,24 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 			getContext(
 				contextIRI,
 				contextEndpoint,
-				"application/json"
+				"application/json",
+				(message: string) => {
+					if (message === Locale.loadingError) {
+						this.handleChangeLoadingStatus(false, Locale.pleaseReload, false)
+					}
+				}
 			).then(() => {
-				this.selectDefaultPackage();
-				this.setState({loading: false});
-				document.title = ProjectSettings.name[this.state.projectLanguage] + " | " + Locale.ontoGrapher;
-				ProjectSettings.contextEndpoint = contextEndpoint;
-				ProjectSettings.contextIRI = contextIRI;
-				this.handleChangeLanguage(Object.keys(Languages)[0]);
-				this.forceUpdate();
-				this.elementPanel.current?.update();
+				if (!this.state.error) {
+					this.selectDefaultPackage();
+					this.setState({loading: false});
+					document.title = ProjectSettings.name[this.state.projectLanguage] + " | " + Locale.ontoGrapher;
+					ProjectSettings.contextEndpoint = contextEndpoint;
+					ProjectSettings.contextIRI = contextIRI;
+					this.handleChangeLanguage(Object.keys(Languages)[0]);
+					this.handleChangeLoadingStatus(false, "", false);
+					this.forceUpdate();
+					this.elementPanel.current?.update();
+				}
 			})
 		});
 	}
@@ -142,17 +167,20 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 		ProjectSettings.selectedPackage = new PackageNode(initLanguageObject(Locale.untitledPackage), PackageRoot, false, createNewScheme());
 	}
 
-	componentDidMount(): void {
-		if (this.props.loadDefaultVocabularies) {
-			this.loadVocabularies(
-				"http://example.org/pracovni-prostor/metadatový-kontext-123"
-				, "http://localhost:7200/repositories/kodi-pracovni-prostor-sample");
-		}
-	}
-
 	handleChangeSelectedLink(linkType: string) {
 		this.setState({selectedLink: linkType});
 		ProjectSettings.selectedLink = linkType;
+	}
+
+	retry() {
+		this.handleChangeLoadingStatus(true, Locale.updating, false)
+		processTransaction(ProjectSettings.contextEndpoint, ProjectSettings.lastUpdate).then((result) => {
+			if (result) {
+				this.handleChangeLoadingStatus(false, "", false);
+			} else {
+				this.handleChangeLoadingStatus(false, "", true);
+			}
+		})
 	}
 
 	render() {
@@ -169,6 +197,8 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 				update={() => {
 					this.elementPanel.current?.update();
 				}}
+				loadingError={this.state.error}
+				retry={this.retry}
 			/>
 			<ElementPanel
 				ref={this.elementPanel}
@@ -185,6 +215,7 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 				update={() => {
 					this.elementPanel.current?.forceUpdate();
 				}}
+				handleChangeLoadingStatus={this.handleChangeLoadingStatus}
 			/>
 			<DiagramCanvas
 				ref={this.canvas}

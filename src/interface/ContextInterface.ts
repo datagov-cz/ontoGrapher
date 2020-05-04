@@ -78,9 +78,11 @@ export async function getContext(
         .then((response) => response.json())
         .then((data) => {
             return data.results.bindings;
+        }).catch(() => {
+            if (callback) callback(Locale.loadingError)
         });
     let vocabularies: { [key: string]: { names: { [key: string]: string }, readOnly: boolean, terms: any } } = {};
-    responseInit.forEach((result: { [key: string]: any }) => {
+    if (responseInit) responseInit.forEach((result: { [key: string]: any }) => {
         if (!(result.import.value in vocabularies)) {
             vocabularies[result.import.value] = {readOnly: result.readOnly.value === "true", names: {}, terms: {}};
         }

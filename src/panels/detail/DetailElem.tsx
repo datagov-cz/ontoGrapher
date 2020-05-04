@@ -27,11 +27,13 @@ import {RIEInput} from "riek";
 import {nameGraphElement} from "../../function/FunctionGraph";
 import {graph} from "../../graph/graph";
 import {updateProjectElement} from "../../interface/TransactionInterface";
+import {createNewElemIRI} from "../../function/FunctionCreateVars";
 
 interface Props {
 	projectLanguage: string;
 	headers: { [key: string]: { [key: string]: string } }
 	save: Function;
+	handleChangeLoadingStatus: Function;
 }
 
 interface State {
@@ -75,45 +77,56 @@ export default class DetailElem extends React.Component<Props, State> {
 		this.setState({
 			id: id,
 			iri: ProjectElements[id].iri,
-			inputConnections: ProjectElements[id].connections,
-			inputDiagrams: ProjectElements[id].diagrams,
-			inputProperties: ProjectElements[id].properties,
-			inputAttributes: ProjectElements[id].attributes,
-			inputTypes: VocabularyElements[ProjectElements[id].iri].types,
-			inputLabels: VocabularyElements[ProjectElements[id].iri].labels,
-			inputDefinitions: VocabularyElements[ProjectElements[id].iri].definitions,
-			inputSchemes: Schemes[VocabularyElements[ProjectElements[id].iri].inScheme].labels,
+			inputConnections: JSON.parse(JSON.stringify(ProjectElements[id].connections)),
+			inputDiagrams: JSON.parse(JSON.stringify(ProjectElements[id].diagrams)),
+			inputProperties: JSON.parse(JSON.stringify(ProjectElements[id].properties)),
+			inputAttributes: JSON.parse(JSON.stringify(ProjectElements[id].attributes)),
+			inputTypes: JSON.parse(JSON.stringify(VocabularyElements[ProjectElements[id].iri].types)),
+			inputLabels: JSON.parse(JSON.stringify(VocabularyElements[ProjectElements[id].iri].labels)),
+			inputDefinitions: JSON.parse(JSON.stringify(VocabularyElements[ProjectElements[id].iri].definitions)),
+			inputSchemes: JSON.parse(JSON.stringify(Schemes[VocabularyElements[ProjectElements[id].iri].inScheme].labels)),
 			formNewStereotype: Object.keys(Stereotypes)[0],
 			readOnly: Schemes[VocabularyElements[ProjectElements[id].iri].inScheme].readOnly,
 			changes: false
 		});
 	}
 
-	save() {
-		ProjectSettings.status = LocaleMain.updating;
-		updateProjectElement(
+	async save() {
+		this.props.handleChangeLoadingStatus(true, LocaleMain.updating, false);
+		let oldIRI = ProjectElements[this.state.id].iri;
+		if (ProjectElements[this.state.id].untitled) {
+			let scheme = Schemes[VocabularyElements[ProjectElements[this.state.id].iri].inScheme].graph;
+			scheme = scheme.substring(0, scheme.lastIndexOf("/") + 1) + "pojem/";
+			let iri = createNewElemIRI(this.state.inputLabels, VocabularyElements, scheme);
+			VocabularyElements[iri] = VocabularyElements[ProjectElements[this.state.id].iri];
+			ProjectElements[this.state.id].iri = iri;
+		}
+		const result = await updateProjectElement(
 			ProjectSettings.contextIRI,
 			ProjectSettings.contextEndpoint,
 			this.state.inputTypes,
 			this.state.inputLabels,
 			this.state.inputDefinitions,
-			this.state.id).then(result => {
-			if (result.response === 204) {
-				VocabularyElements[ProjectElements[this.state.id].iri].types = this.state.inputTypes;
-				VocabularyElements[ProjectElements[this.state.id].iri].labels = this.state.inputLabels;
-				VocabularyElements[ProjectElements[this.state.id].iri].definitions = this.state.inputDefinitions;
-				ProjectElements[this.state.id].attributes = this.state.inputAttributes;
-				ProjectElements[this.state.id].properties = this.state.inputProperties;
-				nameGraphElement(graph.getCell(this.state.id), this.props.projectLanguage);
-				this.props.save();
-				this.setState({changes: false});
-			} else {
-				ProjectSettings.status = LocaleMain.errorUpdating;
-				ProjectSettings.lastUpdate = result.result;
+			this.state.inputAttributes,
+			this.state.inputProperties,
+			this.state.id);
+		if (result) {
+			VocabularyElements[ProjectElements[this.state.id].iri].types = this.state.inputTypes;
+			VocabularyElements[ProjectElements[this.state.id].iri].labels = this.state.inputLabels;
+			VocabularyElements[ProjectElements[this.state.id].iri].definitions = this.state.inputDefinitions;
+			ProjectElements[this.state.id].attributes = this.state.inputAttributes;
+			ProjectElements[this.state.id].properties = this.state.inputProperties;
+			nameGraphElement(graph.getCell(this.state.id), this.props.projectLanguage);
+			this.props.save();
+			this.setState({changes: false});
+			ProjectElements[this.state.id].untitled = false;
+			this.props.handleChangeLoadingStatus(false, "", false);
+			if (ProjectElements[this.state.id].iri !== oldIRI) {
+				delete VocabularyElements[oldIRI];
 			}
-		})
-
-		ProjectSettings.status = "";
+		} else {
+			this.props.handleChangeLoadingStatus(false, "", true);
+		}
 	}
 
 	render() {
@@ -126,13 +139,13 @@ export default class DetailElem extends React.Component<Props, State> {
 			className={"details"}>
 			<div>
 				<h3>{this.state.id ? getLabelOrBlank(VocabularyElements[ProjectElements[this.state.id].iri].labels, this.props.projectLanguage) : ""}</h3>
-				{this.state.changes ?
-					<p className={"bordered"}>
-						{LocaleMain.saveChanges}
-						<br/><br/>
-						<Button onClick={() => {
-							this.save();
-						}}>{LocaleMain.menuPanelSave}</Button></p> : <p/>}
+				{/*{this.state.changes ?*/}
+				{/*	<p className={"bordered"}>*/}
+				{/*		{LocaleMain.saveChanges}*/}
+				{/*		<br/><br/>*/}
+				{/*		<Button onClick={() => {*/}
+				{/*			this.save();*/}
+				{/*		}}>{LocaleMain.menuPanelSave}</Button></p> : <p/>}*/}
 				<Tabs id={"detail-tabs"}>
 					<Tab title={LocaleMain.description} eventKey={LocaleMain.description}>
 						<h5>{this.props.headers.stereotype[this.props.projectLanguage]}</h5>
@@ -152,6 +165,7 @@ export default class DetailElem extends React.Component<Props, State> {
 													inputTypes: result,
 													changes: true,
 												})
+												this.save();
 											}}>
 												{LocaleMenu.deleteProjectName}</button>}
 									</td>
@@ -177,6 +191,7 @@ export default class DetailElem extends React.Component<Props, State> {
 													formNewStereotype: Object.keys(Stereotypes)[0],
 													changes: true,
 												})
+												this.save();
 											}
 
 										}}>{LocaleMain.add}</Button>
@@ -192,6 +207,7 @@ export default class DetailElem extends React.Component<Props, State> {
 								let res = this.state.inputLabels;
 								res[language] = textarea;
 								this.setState({inputLabels: res, changes: true});
+								this.save();
 							}
 						}/>
 						<h5>{<IRILink label={this.props.headers.inScheme[this.props.projectLanguage]}
@@ -200,7 +216,16 @@ export default class DetailElem extends React.Component<Props, State> {
 						{Object.keys(this.state.inputDefinitions).length > 0 ?
 							<h5>{<IRILink label={this.props.headers.definition[this.props.projectLanguage]}
 										  iri={"http://www.w3.org/2004/02/skos/core#definition"}/>}</h5> : ""}
-						<DescriptionTabs descriptions={this.state.inputDefinitions} readOnly={this.state.readOnly}/>
+						<DescriptionTabs
+							descriptions={this.state.inputDefinitions}
+							readOnly={this.state.readOnly}
+							onEdit={(event: React.FormEvent<HTMLInputElement>, language: string) => {
+								let res = this.state.inputLabels;
+								res[language] = event.currentTarget.value;
+								this.setState({inputLabels: res, changes: true});
+								this.save();
+							}}
+						/>
 					</Tab>
 					<Tab eventKey={"connections"} title={LocaleMain.connections}>
 						<TableList
@@ -210,8 +235,8 @@ export default class DetailElem extends React.Component<Props, State> {
 									<IRIlabel
 										label={Links[ProjectLinks[conn].iri].labels[this.props.projectLanguage]}
 										iri={ProjectLinks[conn].iri}/>
-									<td>{getLabelOrBlank(VocabularyElements[ProjectLinks[conn].target].labels, this.props.projectLanguage)}</td>
-									<td>{ProjectLinks[conn].diagram}</td>
+									<td>{getLabelOrBlank(VocabularyElements[ProjectElements[ProjectLinks[conn].target].iri].labels, this.props.projectLanguage)}</td>
+									<td>{Diagrams[ProjectLinks[conn].diagram].name}</td>
 								</tr>
 							)}
 							{this.state.iri in VocabularyElements ? VocabularyElements[this.state.iri].domainOf.map((conn: string) => {
@@ -250,12 +275,14 @@ export default class DetailElem extends React.Component<Props, State> {
 											value={attr.name.length > 0 ? attr.name : "<blank>"}
 											change={(event: { textarea: string }) => {
 												this.handleChangeNameAttribute(event, i);
+												this.save();
 											}}
 											propName="textarea"
 										/>
 										&nbsp;
 										<button className={"buttonlink"} onClick={() => {
 											this.deleteAttribute(i);
+											this.save();
 										}}>
 											{LocaleMenu.delete}</button>
 									</td>
@@ -264,6 +291,7 @@ export default class DetailElem extends React.Component<Props, State> {
 											<Form.Control as="select" value={attr.type}
 														  onChange={(event: React.FormEvent<HTMLInputElement>) => {
 															  this.handleChangeAttributeType(event, i);
+															  this.save();
 														  }}>
 												{Object.keys(AttributeTypePool).map((attrtype) => <option
 													value={attrtype}>{AttributeTypePool[attrtype].name}</option>)}
@@ -275,6 +303,7 @@ export default class DetailElem extends React.Component<Props, State> {
 						</TableList>
 						<button className={"buttonlink"} onClick={() => {
 							this.createAttribute();
+							this.save();
 						}}>
 							{LocaleMenu.createAttribute}</button>
 					</Tab>
@@ -293,6 +322,7 @@ export default class DetailElem extends React.Component<Props, State> {
 										value={prop.name.length > 0 ? prop.name : "<blank>"}
 										change={(event: { textarea: string }) => {
 											this.handleChangeNameProperty(event, i);
+											this.save();
 										}}
 										propName="textarea"
 									/>

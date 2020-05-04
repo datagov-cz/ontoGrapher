@@ -11,9 +11,10 @@ const headers: { [key: string]: { [key: string]: string } } = {
 }
 
 interface Props {
-    projectLanguage: string;
-    resizeElem: Function;
-    update: Function;
+	projectLanguage: string;
+	resizeElem: Function;
+	update: Function;
+	handleChangeLoadingStatus: Function;
 }
 
 interface State {
@@ -70,8 +71,9 @@ export default class DetailPanel extends React.Component<Props, State> {
     render() {
         if (!this.state.hidden) {
             if (this.state.type === "elem") {
-                return (<DetailElem headers={headers} projectLanguage={this.props.projectLanguage}
-                                    save={this.save} ref={this.detailElem}/>);
+				return (<DetailElem headers={headers} projectLanguage={this.props.projectLanguage}
+									save={this.save} ref={this.detailElem}
+									handleChangeLoadingStatus={this.props.handleChangeLoadingStatus}/>);
             } else if (this.state.type === "link") {
                 return (<DetailLink projectLanguage={this.props.projectLanguage} headers={headers}
                                     save={this.save} ref={this.linkElem}/>);
