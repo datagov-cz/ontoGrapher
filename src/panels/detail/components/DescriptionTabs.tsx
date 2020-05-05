@@ -6,6 +6,7 @@ interface Props {
     descriptions: { [key: string]: string };
     readOnly: boolean;
     onEdit?: Function;
+    onFocusOut?: Function;
 }
 
 export default class DescriptionTabs extends React.Component<Props> {
@@ -21,6 +22,9 @@ export default class DescriptionTabs extends React.Component<Props> {
                         value={this.props.descriptions[lang]}
                         onChange={(event) => {
                             if (this.props.onEdit) this.props.onEdit(event, lang)
+                        }}
+                        onBlur={() => {
+                            if (this.props.onFocusOut) this.props.onFocusOut()
                         }}
                     />
                 </Tab>

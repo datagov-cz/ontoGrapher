@@ -143,7 +143,6 @@ export async function getContext(
             let id = new graphElement().id;
             if (typeof id === "string") {
                 addClass(id, elem, pkg, false);
-                pkg.elements.push(id);
             }
         }
     }

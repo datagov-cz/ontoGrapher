@@ -50,8 +50,10 @@ export function addProperties(iri: string, attrs: { name: string, iri: string, t
 export function createNewElemIRI(labels: { [key: string]: string }, target: { [key: string]: any }, url?: string): string {
     let name = LocaleMain.untitled;
     for (let lang in labels) {
-        if (labels[lang] !== "") name = labels[lang];
-        break;
+        if (labels[lang] !== "") {
+            name = labels[lang];
+            break;
+        }
     }
     let result = url ? url + name : "https://slovník.gov.cz/" + StructuresShort[ProjectSettings.knowledgeStructure] + "/pojem/" + name;
     result = result.trim().replace(/\s/g, '-');
@@ -82,7 +84,6 @@ export function addElemsToPackage(scheme: string) {
             let elem = new graphElement();
             if (typeof elem.id === "string") {
                 addClass(elem.id, iri, pkg, false);
-                pkg.elements.push(elem.id);
             }
         }
     }

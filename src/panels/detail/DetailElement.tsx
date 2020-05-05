@@ -28,6 +28,7 @@ import {nameGraphElement} from "../../function/FunctionGraph";
 import {graph} from "../../graph/graph";
 import {updateProjectElement} from "../../interface/TransactionInterface";
 import {createNewElemIRI} from "../../function/FunctionCreateVars";
+import * as _ from "lodash";
 
 interface Props {
 	projectLanguage: string;
@@ -81,7 +82,7 @@ export default class DetailElement extends React.Component<Props, State> {
 			inputDiagrams: JSON.parse(JSON.stringify(ProjectElements[id].diagrams)),
 			inputProperties: JSON.parse(JSON.stringify(ProjectElements[id].properties)),
 			inputAttributes: JSON.parse(JSON.stringify(ProjectElements[id].attributes)),
-			inputTypes: JSON.parse(JSON.stringify(VocabularyElements[ProjectElements[id].iri].types)),
+			inputTypes: _.cloneDeep(VocabularyElements[ProjectElements[id].iri].types),
 			inputLabels: JSON.parse(JSON.stringify(VocabularyElements[ProjectElements[id].iri].labels)),
 			inputDefinitions: JSON.parse(JSON.stringify(VocabularyElements[ProjectElements[id].iri].definitions)),
 			inputSchemes: JSON.parse(JSON.stringify(Schemes[VocabularyElements[ProjectElements[id].iri].inScheme].labels)),
@@ -129,6 +130,12 @@ export default class DetailElement extends React.Component<Props, State> {
 		}
 	}
 
+	componentDidUpdate(prevProps: Readonly<Props>, prevState: Readonly<State>, snapshot?: any) {
+		if (prevState !== this.state && this.state.changes) {
+			this.save();
+		}
+	}
+
 	render() {
 		return this.state.id !== "" && (<ResizableBox
 			width={300}
@@ -152,13 +159,12 @@ export default class DetailElement extends React.Component<Props, State> {
 										&nbsp;
 										{this.state.inputTypes.length === 1 && !(this.state.readOnly) ? "" :
 											<button className={"buttonlink"} onClick={() => {
-												let result = this.state.inputTypes;
+												let result = _.cloneDeep(this.state.inputTypes);
 												result.splice(result.indexOf(iri), 1);
 												this.setState({
 													inputTypes: result,
 													changes: true,
 												})
-												this.save();
 											}}>
 												{LocaleMenu.deleteProjectName}</button>}
 									</td>
@@ -184,7 +190,6 @@ export default class DetailElement extends React.Component<Props, State> {
 													formNewStereotype: Object.keys(Stereotypes)[0],
 													changes: true,
 												})
-												this.save();
 											}
 
 										}}>{LocaleMain.add}</Button>
@@ -200,7 +205,6 @@ export default class DetailElement extends React.Component<Props, State> {
 								let res = this.state.inputLabels;
 								res[language] = textarea;
 								this.setState({inputLabels: res, changes: true});
-								this.save();
 							}
 						}/>
 						<h5>{<IRILink label={this.props.headers.inScheme[this.props.projectLanguage]}
@@ -213,10 +217,12 @@ export default class DetailElement extends React.Component<Props, State> {
 							descriptions={this.state.inputDefinitions}
 							readOnly={this.state.readOnly}
 							onEdit={(event: React.FormEvent<HTMLInputElement>, language: string) => {
-								let res = this.state.inputLabels;
+								let res = this.state.inputDefinitions;
 								res[language] = event.currentTarget.value;
-								this.setState({inputLabels: res, changes: true});
-								this.save();
+								this.setState({inputDefinitions: res, changes: true});
+							}}
+							onFocusOut={() => {
+								this.setState({changes: true});
 							}}
 						/>
 					</Tab>
@@ -268,14 +274,12 @@ export default class DetailElement extends React.Component<Props, State> {
 											value={attr.name.length > 0 ? attr.name : "<blank>"}
 											change={(event: { textarea: string }) => {
 												this.handleChangeNameAttribute(event, i);
-												this.save();
 											}}
 											propName="textarea"
 										/>
 										&nbsp;
 										<button className={"buttonlink"} onClick={() => {
 											this.deleteAttribute(i);
-											this.save();
 										}}>
 											{LocaleMenu.delete}</button>
 									</td>
@@ -284,7 +288,6 @@ export default class DetailElement extends React.Component<Props, State> {
 											<Form.Control as="select" value={attr.type}
 														  onChange={(event: React.FormEvent<HTMLInputElement>) => {
 															  this.handleChangeAttributeType(event, i);
-															  this.save();
 														  }}>
 												{Object.keys(AttributeTypePool).map((attrtype) => <option
 													value={attrtype}>{AttributeTypePool[attrtype].name}</option>)}
@@ -296,7 +299,6 @@ export default class DetailElement extends React.Component<Props, State> {
 						</TableList>
 						<button className={"buttonlink"} onClick={() => {
 							this.createAttribute();
-							this.save();
 						}}>
 							{LocaleMenu.createAttribute}</button>
 					</Tab>
@@ -315,7 +317,6 @@ export default class DetailElement extends React.Component<Props, State> {
 										value={prop.value.length > 0 ? prop.value : "<blank>"}
 										change={(event: { textarea: string }) => {
 											this.handleChangeNameProperty(event, i);
-											this.save();
 										}}
 										propName="textarea"
 									/>

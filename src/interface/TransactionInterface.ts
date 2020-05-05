@@ -13,7 +13,7 @@ import {AttributeObject} from "../datatypes/AttributeObject";
 export async function updateProjectElement(
 	contextIRI: string,
 	contextEndpoint: string,
-	types: string[],
+	newTypes: string[],
 	labels: { [key: string]: string },
 	definitions: { [key: string]: string },
 	attributes: AttributeObject[],
@@ -22,6 +22,7 @@ export async function updateProjectElement(
 
 	let iri = ProjectElements[id].iri;
 	let scheme = VocabularyElements[iri].inScheme;
+	let delTypes = VocabularyElements[iri].types;
 
 	let addDefinitions: { "@value": string, "@language": string }[] = [];
 	let addLabels: { "@value": string, "@language": string }[] = [];
@@ -33,71 +34,68 @@ export async function updateProjectElement(
 		if (definitions[lang] !== "") addDefinitions.push({"@value": definitions[lang], "@language": lang});
 	})
 
-	console.log(attributes);
 	let addLD = {
 		"@context": Prefixes,
 		"@id": Schemes[scheme].graph,
 		"@graph": [
 			{
 				"@id": iri,
-				"@type": types,
+				"@type": newTypes,
 				"skos:prefLabel": addLabels,
 				"skos:definition": addDefinitions,
 				"skos:inScheme": scheme
 			},
-			{
-				"@id": iri + "/diagram",
-				"@type": "og:element",
-				"og:id": id,
-				"og:untitled": ProjectElements[id].untitled,
-				"og:attribute": iri + "/attribute",
-				"og:property": iri + "/property",
-				"og:active": ProjectElements[id].active,
-			},
-			...ProjectElements[id].diagrams.map(diag => {
-				return {
-					"@id": iri + "/diagram-" + diag,
-					"@type": "og:elementDiagram",
-					"og:position-x": ProjectElements[id].position[diag].x,
-					"og:position-y": ProjectElements[id].position[diag].y,
-					"og:hidden": ProjectElements[id].hidden[diag]
-				}
-			}),
-			{
-				"@id": iri + "/attribute",
-				"@type": "rdf:Bag",
-				...attributes.map((attr, i) => {
-					return {
-						["rdf:_" + (i + 1)]: {
-							"og:attribute-name": attr.name,
-							"og:attribute-type": attr.type
-						}
-					}
-				}),
-			},
-			{
-				"@id": iri + "/property",
-				"@type": "rdf:Bag",
-				...properties.map((attr, i) => {
-					return {
-						["rdf:_" + (i + 1)]: {
-							"og:attribute-name": attr.name,
-							"og:attribute-type": attr.type
-						}
-					}
-				}),
-			},
+			// {
+			// 	"@id": iri + "/diagram",
+			// 	"@type": "og:element",
+			// 	"og:id": id,
+			// 	"og:untitled": ProjectElements[id].untitled,
+			// 	"og:attribute": iri + "/attribute",
+			// 	"og:property": iri + "/property",
+			// 	"og:active": ProjectElements[id].active,
+			// },
+			// ...ProjectElements[id].diagrams.map(diag => {
+			// 	return {
+			// 		"@id": iri + "/diagram-" + diag,
+			// 		"@type": "og:elementDiagram",
+			// 		"og:position-x": ProjectElements[id].position[diag].x,
+			// 		"og:position-y": ProjectElements[id].position[diag].y,
+			// 		"og:hidden": ProjectElements[id].hidden[diag]
+			// 	}
+			// }),
+			// {
+			// 	"@id": iri + "/attribute",
+			// 	"@type": "rdf:Bag",
+			// 	...attributes.map((attr, i) => {
+			// 		return {
+			// 			["rdf:_" + (i + 1)]: {
+			// 				"og:attribute-name": attr.name,
+			// 				"og:attribute-type": attr.type
+			// 			}
+			// 		}
+			// 	}),
+			// },
+			// {
+			// 	"@id": iri + "/property",
+			// 	"@type": "rdf:Bag",
+			// 	...properties.map((attr, i) => {
+			// 		return {
+			// 			["rdf:_" + (i + 1)]: {
+			// 				"og:attribute-name": attr.name,
+			// 				"og:attribute-type": attr.type
+			// 			}
+			// 		}
+			// 	}),
+			// },
 		]
 	}
-
-	console.log(JSON.stringify(addLD));
 
 	let deleteLD = {
 		"@context": Prefixes,
 		"@graph": [
 			{
 				"@id": iri,
-				"@type": VocabularyElements[iri].types,
+				"@type": delTypes,
 				"skos:prefLabel": Object.keys(VocabularyElements[iri].labels).map(lang => {
 					return {
 						"@value": VocabularyElements[iri].labels[lang],
@@ -114,7 +112,7 @@ export async function updateProjectElement(
 			}
 		]
 	}
-
+	console.log(newTypes, VocabularyElements[iri]);
 	return await processTransaction(contextEndpoint, {"add": addLD, "delete": deleteLD});
 }
 
