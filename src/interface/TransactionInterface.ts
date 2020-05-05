@@ -43,7 +43,7 @@ export async function updateProjectElement(
 				"@type": types,
 				"skos:prefLabel": addLabels,
 				"skos:definition": addDefinitions,
-				"rdfs:isDefinedBy": scheme
+				"skos:inScheme": scheme
 			},
 			{
 				"@id": iri + "/diagram",
@@ -110,7 +110,7 @@ export async function updateProjectElement(
 						"@language": lang
 					}
 				}),
-				"rdfs:isDefinedBy": scheme
+				"skos:inScheme": scheme
 			}
 		]
 	}
@@ -227,10 +227,10 @@ export async function updateProjectSettings(contextIRI: string, contextEndpoint:
 	await processTransaction(contextEndpoint, {"add": contextLD, "delete": contextLD});
 
 	let packages: { [key: string]: any } = {};
-	let packageIRI: string[] = [];
+	//let packageIRI: string[] = [];
 	savePackages().forEach(pkg => {
 		let iri = createNewElemIRI(pkg.labels, packages, ogContext + "/package/");
-		packageIRI.push(iri);
+		//packageIRI.push(iri);
 		packages[iri] = {
 			"@id": iri,
 			"skos:prefLabel": Object.keys(pkg.labels).map((lang: string) => {

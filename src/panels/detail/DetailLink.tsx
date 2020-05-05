@@ -80,7 +80,7 @@ export default class DetailLink extends React.Component<Props, State> {
                     });
                 }
                 link.appendLabel({
-                    attrs: {text: {text: Links[this.state.iri].labels[this.props.projectLanguage]}},
+                    attrs: {text: {text: getLinkOrVocabElem(this.state.iri).labels[this.props.projectLanguage]}},
                     position: {distance: 0.5}
                 });
             }

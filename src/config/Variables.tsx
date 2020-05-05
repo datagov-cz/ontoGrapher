@@ -148,6 +148,7 @@ export var ProjectSettings: {
     contextEndpoint: "",
     lastUpdate: {}
 };
+
 export var AttributeTypePool: { [key: string]: { name: string, array: boolean, type?: string } } = {
     "http://www.w3.org/2001/XMLSchema#string": {name: "String", array: false},
     "http://www.w3.org/2001/XMLSchema#int": {name: "Integer", array: false},

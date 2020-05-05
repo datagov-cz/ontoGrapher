@@ -13,10 +13,26 @@ export function nameGraphElement(cell: joint.dia.Cell, languageCode: string) {
     }
 }
 
-//TODO: finish
 export function nameGraphLink(cell: joint.dia.Link, languageCode: string) {
     if (typeof cell.id === "string") {
-        let vocabElem = getLinkOrVocabElem(ProjectLinks[cell.id].iri);
+        let label = getLinkOrVocabElem(ProjectLinks[cell.id].iri).labels[languageCode];
+        if (label) {
+            let labels = cell.labels()
+            labels.forEach((linkLabel, i) => {
+                if (!linkLabel.attrs?.text?.text?.match(/^\d|\*/)) {
+                    cell.label(i, {
+                        attrs: {
+                            text: {
+                                text: label
+                            }
+                        },
+                        position: {
+                            distance: 0.5
+                        }
+                    });
+                }
+            })
+        }
     }
 }
 

@@ -2,7 +2,14 @@
 import React from 'react';
 import * as joint from 'jointjs';
 import {graphElement} from "../graph/graphElement";
-import {Links, ProjectElements, ProjectLinks, ProjectSettings, VocabularyElements} from "../config/Variables";
+import {
+    Links,
+    ProjectElements,
+    ProjectLinks,
+    ProjectSettings,
+    Stereotypes,
+    VocabularyElements
+} from "../config/Variables";
 import {addClass, addLink, addVocabularyElement, createNewElemIRI} from "../function/FunctionCreateVars";
 import {graph} from "../graph/graph";
 import {
@@ -223,8 +230,8 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps> {
                 if (data.type === "new") {
                     if (typeof cls.id === "string") {
                         let iri = createNewElemIRI(initLanguageObject(""), VocabularyElements);
-                        addClass(cls.id, iri, this.props.projectLanguage, ProjectSettings.selectedPackage.scheme, ProjectSettings.selectedPackage);
                         addVocabularyElement(cls.id, iri, data.iri);
+                        addClass(cls.id, iri, ProjectSettings.selectedPackage, true, Stereotypes[data.iri].inScheme);
                     }
                 } else if (data.type === "existing") {
                     cls = new graphElement({id: data.id});

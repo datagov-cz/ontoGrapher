@@ -1,7 +1,7 @@
 import React from 'react';
 import DetailLink from "./detail/DetailLink";
 import {graph} from "../graph/graph";
-import DetailElem from "./detail/DetailElem";
+import DetailElement from "./detail/DetailElement";
 
 const headers: { [key: string]: { [key: string]: string } } = {
     labels: {"cs": "Název", "en": "Label"},
@@ -25,7 +25,7 @@ interface State {
 
 export default class DetailPanel extends React.Component<Props, State> {
 
-    private readonly detailElem: React.RefObject<DetailElem>;
+    private readonly detailElem: React.RefObject<DetailElement>;
     private readonly linkElem: React.RefObject<DetailLink>;
 
     constructor(props: Props) {
@@ -71,9 +71,9 @@ export default class DetailPanel extends React.Component<Props, State> {
     render() {
         if (!this.state.hidden) {
             if (this.state.type === "elem") {
-				return (<DetailElem headers={headers} projectLanguage={this.props.projectLanguage}
-									save={this.save} ref={this.detailElem}
-									handleChangeLoadingStatus={this.props.handleChangeLoadingStatus}/>);
+                return (<DetailElement headers={headers} projectLanguage={this.props.projectLanguage}
+                                       save={this.save} ref={this.detailElem}
+                                       handleChangeLoadingStatus={this.props.handleChangeLoadingStatus}/>);
             } else if (this.state.type === "link") {
                 return (<DetailLink projectLanguage={this.props.projectLanguage} headers={headers}
                                     save={this.save} ref={this.linkElem}/>);

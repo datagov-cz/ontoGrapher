@@ -40,6 +40,13 @@ export function createNewScheme(): string {
     return result;
 }
 
+export function addProperties(iri: string, attrs: { name: string, iri: string, type: string | string[] }[]) {
+    if (!(iri in PropertyPool)) PropertyPool[iri] = [];
+    attrs.forEach(attr => {
+        PropertyPool[iri].push(new AttributeObject(attr.name, Array.isArray(attr.type) ? attr.type[0] : attr.type, Array.isArray(attr.type), attr.iri));
+    });
+}
+
 export function createNewElemIRI(labels: { [key: string]: string }, target: { [key: string]: any }, url?: string): string {
     let name = LocaleMain.untitled;
     for (let lang in labels) {
@@ -50,10 +57,10 @@ export function createNewElemIRI(labels: { [key: string]: string }, target: { [k
     result = result.trim().replace(/\s/g, '-');
     let count = 1;
     if (result in target) {
-        while ((name + "-" + count.toString(10)) in target) {
+        while ((result + "-" + count.toString(10)) in target) {
             count++;
         }
-        name += "-" + count.toString(10);
+        result += "-" + count.toString(10);
     }
     return result;
 }
@@ -112,19 +119,21 @@ export function addClass(
     id: string,
     iri: string,
     pkg: PackageNode,
-    untitled: boolean = true) {
+    untitled: boolean = true,
+    property?: string) {
     ProjectElements[id] = {
         iri: iri,
         connections: [],
         untitled: untitled,
         attributes: [],
         diagrams: [ProjectSettings.selectedDiagram],
-        properties: initProperties(iri),
+        properties: property ? initProperties(property) : [],
         hidden: {[ProjectSettings.selectedDiagram]: false},
         position: {[ProjectSettings.selectedDiagram]: {x: 0, y: 0}},
         package: pkg,
         active: true
     }
+    pkg.elements.push(id);
 }
 
 export function addLink(id: string, iri: string, source: string, target: string) {

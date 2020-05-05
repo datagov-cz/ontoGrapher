@@ -52,10 +52,10 @@ interface State {
 	changes: boolean;
 }
 
-export default class DetailElem extends React.Component<Props, State> {
+export default class DetailElement extends React.Component<Props, State> {
 
-    constructor(props: Props) {
-        super(props);
+	constructor(props: Props) {
+		super(props);
 		this.state = {
 			id: "",
 			iri: Object.keys(VocabularyElements)[0],
@@ -139,13 +139,6 @@ export default class DetailElem extends React.Component<Props, State> {
 			className={"details"}>
 			<div>
 				<h3>{this.state.id ? getLabelOrBlank(VocabularyElements[ProjectElements[this.state.id].iri].labels, this.props.projectLanguage) : ""}</h3>
-				{/*{this.state.changes ?*/}
-				{/*	<p className={"bordered"}>*/}
-				{/*		{LocaleMain.saveChanges}*/}
-				{/*		<br/><br/>*/}
-				{/*		<Button onClick={() => {*/}
-				{/*			this.save();*/}
-				{/*		}}>{LocaleMain.menuPanelSave}</Button></p> : <p/>}*/}
 				<Tabs id={"detail-tabs"}>
 					<Tab title={LocaleMain.description} eventKey={LocaleMain.description}>
 						<h5>{this.props.headers.stereotype[this.props.projectLanguage]}</h5>
@@ -311,15 +304,15 @@ export default class DetailElem extends React.Component<Props, State> {
 						<TableList headings={[LocaleMenu.title, LocaleMenu.attributeType, LocaleMenu.value]}>
 							{this.state.inputProperties.map((prop, i) => (<tr key={i}>
 								<td>
-									{AttributeTypePool[prop.type].name}
+									{prop.name}
 								</td>
 								<td>
-									{AttributeTypePool[prop.type].array ? "[" + AttributeTypePool[prop.type].type + "]" : AttributeTypePool[prop.type].type}
+									{prop.array ? "[" + prop.type + "]" : prop.type}
 								</td>
 								<td>
 									<RIEInput
 										className={"rieinput"}
-										value={prop.name.length > 0 ? prop.name : "<blank>"}
+										value={prop.value.length > 0 ? prop.value : "<blank>"}
 										change={(event: { textarea: string }) => {
 											this.handleChangeNameProperty(event, i);
 											this.save();
@@ -374,7 +367,7 @@ export default class DetailElem extends React.Component<Props, State> {
 
 	handleChangeNameProperty(event: { textarea: string }, pos: number) {
 		let attrs = this.state.inputProperties;
-		attrs[pos].name = event.textarea;
+		attrs[pos].value = event.textarea;
 		this.setState({
 			inputProperties: attrs,
 			changes: true,

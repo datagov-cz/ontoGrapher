@@ -17,10 +17,10 @@ export default class LabelTable extends React.Component<Props> {
 
     render() {
         return (<TableList>
-            {Object.keys(this.props.labels).map(lang =>
-                <tr>
+            {Object.keys(this.props.labels).map((lang, i) =>
+                <tr key={i}>
                     {(!this.props.readOnly) && this.props.onEdit ?
-                        <span>
+                        <td>
                             <RIEInput
                                 className={"rieinput"}
                                 value={getLabelOrBlank(this.props.labels, lang)}
@@ -34,8 +34,8 @@ export default class LabelTable extends React.Component<Props> {
                                     onClick={() => {
                                         if (this.props.onEdit) this.props.onEdit("", lang);
                                     }}>
-                            {LocaleMenu.deleteProjectName}</button>
-                        </span>
+                                {LocaleMenu.deleteProjectName}</button>
+                        </td>
                         :
                         <td>
                             {getLabelOrBlank(this.props.labels, lang)}

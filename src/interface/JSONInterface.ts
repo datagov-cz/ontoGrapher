@@ -1,7 +1,7 @@
 import * as Locale from "./../locale/LocaleMain.json";
 import {Links, Schemes, Stereotypes, VocabularyElements} from "../config/Variables";
 import {fetchConcepts, getScheme} from "./SPARQLInterface";
-import {addElemsToPackage, createValues} from "../function/FunctionCreateVars";
+import {addElemsToPackage, addProperties, createValues} from "../function/FunctionCreateVars";
 import {addDomainOfIRIs, initLanguageObject} from "../function/FunctionEditVars";
 import {checkLabels} from "../function/FunctionGetVars";
 
@@ -44,6 +44,7 @@ export async function getVocabulariesFromRemoteJSON(pathToJSON: string, callback
                         )
                         addElemsToPackage(data.sourceIRI);
                     }
+                    addProperties(data.sourceIRI, data.attributes);
                     addDomainOfIRIs();
                     checkLabels();
                 }
