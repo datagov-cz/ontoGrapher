@@ -46,6 +46,7 @@ export async function getVocabulariesFromRemoteJSON(pathToJSON: string, callback
                             addElemsToPackage(data.sourceIRI);
                         })
                     }
+                    //TODO: are these used only here? If so, move them here
                     addProperties(data.sourceIRI, data.attributes);
                     addDomainOfIRIs();
                     checkLabels();
