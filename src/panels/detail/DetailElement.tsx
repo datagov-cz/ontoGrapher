@@ -210,6 +210,7 @@ export default class DetailElement extends React.Component<Props, State> {
 						<h5>{<IRILink label={this.props.headers.inScheme[this.props.projectLanguage]}
 									  iri={"http://www.w3.org/2004/02/skos/core#inScheme"}/>}</h5>
 						<LabelTable labels={this.state.inputSchemes} readOnly={this.state.readOnly}/>
+						//TODO: Allow for creation of definitions/labels even if they weren't loaded from store
 						{Object.keys(this.state.inputDefinitions).length > 0 ?
 							<h5>{<IRILink label={this.props.headers.definition[this.props.projectLanguage]}
 										  iri={"http://www.w3.org/2004/02/skos/core#definition"}/>}</h5> : ""}
