@@ -43,10 +43,9 @@ export default class PackageFolder extends React.Component<Props, State> {
         }
     }
 
-    //TODO: fix error with movePackageItem
     movePackageItem(parse: any) {
-        let id = parse.elem;
-        let oldpkg = ProjectElements[id].package;
+        let id = parse.id;
+		let oldpkg = ProjectElements[id].package;
         oldpkg.elements.splice(oldpkg.elements.indexOf(id), 1);
         ProjectElements[id].package = this.props.node;
         if (this.props.node.scheme) VocabularyElements[ProjectElements[id].iri].inScheme = this.props.node.scheme;

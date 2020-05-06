@@ -83,7 +83,7 @@ export function addElemsToPackage(scheme: string) {
         if (VocabularyElements[iri].inScheme === scheme) {
             let elem = new graphElement();
             if (typeof elem.id === "string") {
-                addClass(elem.id, iri, pkg, false);
+                addClass(elem.id, iri, pkg, false, false);
             }
         }
     }
@@ -117,11 +117,11 @@ export function addVocabularyElement(id: string, iri: string, type: string) {
 }
 
 export function addClass(
-    //TODO: Models show hide elemTool instead of remove
     id: string,
     iri: string,
     pkg: PackageNode,
     untitled: boolean = true,
+    active: boolean = true,
     property?: string) {
     ProjectElements[id] = {
         iri: iri,
@@ -133,7 +133,7 @@ export function addClass(
         hidden: {[ProjectSettings.selectedDiagram]: false},
         position: {[ProjectSettings.selectedDiagram]: {x: 0, y: 0}},
         package: pkg,
-        active: true
+        active: active
     }
     pkg.elements.push(id);
 }

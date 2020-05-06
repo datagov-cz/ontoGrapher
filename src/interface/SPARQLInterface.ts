@@ -1,4 +1,5 @@
 import {Schemes} from "../config/Variables";
+import {initLanguageObject} from "../function/FunctionEditVars";
 
 export async function fetchConcepts(
     endpoint: string,
@@ -16,7 +17,8 @@ export async function fetchConcepts(
             labels: { [key: string]: string },
             definitions: { [key: string]: string },
             types: string[],
-            inScheme: string
+            inScheme: string,
+            domainOf: []
         }
     } = {};
 
@@ -43,10 +45,11 @@ export async function fetchConcepts(
             if (!(row.term.value in result)) {
                 await fetchConcepts(endpoint, source, sendTo, readOnly, callback, row.term.value, requiredTypes, requiredValues);
                 result[row.term.value] = {
-                    labels: {},
-                    definitions: {},
+                    labels: initLanguageObject(""),
+                    definitions: initLanguageObject(""),
                     types: [],
-                    inScheme: source
+                    inScheme: source,
+                    domainOf: []
                 }
             }
             if (row.termType && !(result[row.term.value].types.includes(row.termType.value))) result[row.term.value].types.push(row.termType.value);

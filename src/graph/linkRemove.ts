@@ -19,4 +19,3 @@ export var RemoveButton = joint.linkTools.Remove.extend({
         view.model.remove();
     })
 });
-//TODO: obsolete - remove when safe

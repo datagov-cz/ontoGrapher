@@ -4,6 +4,7 @@ import {ResizableBox} from "react-resizable";
 import {
 	AttributeTypePool,
 	Diagrams,
+	Languages,
 	Links,
 	ProjectElements,
 	ProjectLinks,
@@ -158,7 +159,6 @@ export default class DetailElement extends React.Component<Props, State> {
 												label={getStereotypeOrVocabElem(iri).labels[this.props.projectLanguage]}
 												iri={iri}/>
 											&nbsp;
-											{/*TODO: cross still showing on read-only elems*/}
 											{(this.state.inputTypes.length === 1 || (this.state.readOnly)) ? "" :
 												<button className={"buttonlink"} onClick={() => {
 													let result = _.cloneDeep(this.state.inputTypes);
@@ -210,12 +210,11 @@ export default class DetailElement extends React.Component<Props, State> {
 								this.setState({inputLabels: res, changes: true});
 							}
 						}/>
-						{/* TODO: put IRILabels in table*/}
 						<h5>{<IRILink label={this.props.headers.inScheme[this.props.projectLanguage]}
 									  iri={"http://www.w3.org/2004/02/skos/core#inScheme"}/>}</h5>
-						<LabelTable labels={this.state.inputSchemes} readOnly={this.state.readOnly}/>
-						{/*TODO: Allow for creation of definitions/labels even if they weren't loaded from store*/}
-						{Object.keys(this.state.inputDefinitions).length > 0 ?
+						<LabelTable labels={this.state.inputSchemes} readOnly={this.state.readOnly}
+									iri={VocabularyElements[this.state.iri].inScheme}/>
+						{Object.keys(Languages).length > 0 ?
 							<h5>{<IRILink label={this.props.headers.definition[this.props.projectLanguage]}
 										  iri={"http://www.w3.org/2004/02/skos/core#definition"}/>}</h5> : ""}
 						<DescriptionTabs
@@ -234,8 +233,7 @@ export default class DetailElement extends React.Component<Props, State> {
 					<Tab eventKey={"connections"} title={LocaleMain.connections}>
 						<TableList
 							headings={[LocaleMenu.connectionVia, LocaleMenu.connectionTo, LocaleMenu.diagram]}>
-							{/*TODO: read-only models crash this*/}
-							{this.state.inputConnections ? this.state.inputConnections.map((conn) =>
+							{this.state.inputConnections.map((conn) =>
 								<tr>
 									<IRIlabel
 										label={Links[ProjectLinks[conn].iri].labels[this.props.projectLanguage]}
@@ -243,7 +241,7 @@ export default class DetailElement extends React.Component<Props, State> {
 									<td>{getLabelOrBlank(VocabularyElements[ProjectElements[ProjectLinks[conn].target].iri].labels, this.props.projectLanguage)}</td>
 									<td>{Diagrams[ProjectLinks[conn].diagram].name}</td>
 								</tr>
-							) : ""}
+							)}
 							{this.state.iri in VocabularyElements ? VocabularyElements[this.state.iri].domainOf.map((conn: string) => {
 								let range = VocabularyElements[conn].range;
 								if (range) {

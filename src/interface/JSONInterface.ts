@@ -1,5 +1,5 @@
 import * as Locale from "./../locale/LocaleMain.json";
-import {Links, Schemes, Stereotypes, VocabularyElements} from "../config/Variables";
+import {Links, ProjectElements, Schemes, Stereotypes, VocabularyElements} from "../config/Variables";
 import {fetchConcepts, getScheme} from "./SPARQLInterface";
 import {addElemsToPackage, addProperties, createValues} from "../function/FunctionCreateVars";
 import {addDomainOfIRIs, initLanguageObject} from "../function/FunctionEditVars";
@@ -36,7 +36,6 @@ export async function getVocabulariesFromRemoteJSON(pathToJSON: string, callback
                             undefined
                         );
                     } else if (data.type === "model") {
-                        //TODO: these elems crash the detailPanel
                         await fetchConcepts(
                             data.endpoint,
                             data.sourceIRI,
@@ -45,8 +44,8 @@ export async function getVocabulariesFromRemoteJSON(pathToJSON: string, callback
                         ).then(() => {
                             addElemsToPackage(data.sourceIRI);
                         })
+                        console.log(ProjectElements)
                     }
-                    //TODO: are these used only here? If so, move them here
                     addProperties(data.sourceIRI, data.attributes);
                     addDomainOfIRIs();
                     checkLabels();

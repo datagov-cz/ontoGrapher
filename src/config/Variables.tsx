@@ -4,10 +4,6 @@ import {PackageNode} from "../datatypes/PackageNode";
 import {initLanguageObject, parsePrefix} from "../function/FunctionEditVars";
 import {AttributeObject} from "../datatypes/AttributeObject";
 
-//settings saving
-//projelems saving
-//saving triggers
-
 // language code : language label
 export var Languages: { [key: string]: string } = {};
 

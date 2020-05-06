@@ -241,6 +241,42 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps> {
                 }
             },
         });
+
+        joint.elementTools.RemoveButton = joint.elementTools.Remove.extend({
+            options: {
+                markup: [{
+                    tagName: 'circle',
+                    selector: 'button',
+                    attributes: {
+                        'r': 10,
+                        'fill': '#ff1d00',
+                        'cursor': 'pointer'
+                    }
+                },
+                    {
+                        tagName: 'path',
+                        selector: 'icon',
+                        attributes: {
+                            'transform': 'scale(2)',
+                            'd': 'M -3 -3 3 3 M -3 3 3 -3',
+                            'fill': 'none',
+                            'stroke': '#fff',
+                            'stroke-width': 1,
+                            'pointer-events': 'none'
+                        }
+                    }
+                ],
+                action: (evt) => {
+                    let id = evt.currentTarget.getAttribute("model-id");
+                    let links = graph.getConnectedLinks(graph.getCell(id));
+                    for (let link of links) {
+                        delete ProjectLinks[link.id];
+                    }
+                    graph.getCell(id).remove();
+
+                }
+            }
+        });
     }
 
     render() {

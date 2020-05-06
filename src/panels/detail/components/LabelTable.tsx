@@ -5,6 +5,7 @@ import {RIEInput} from "riek";
 import {getLabelOrBlank} from "../../../function/FunctionGetVars";
 import * as LocaleMenu from "../../../locale/LocaleMenu.json";
 import {Languages} from "../../../config/Variables";
+import IRILink from "../../../components/IRILink";
 
 interface Props {
     labels: { [key: string]: string };
@@ -38,7 +39,8 @@ export default class LabelTable extends React.Component<Props> {
                         </td>
                         :
                         <td>
-                            {getLabelOrBlank(this.props.labels, lang)}
+                            {this.props.iri ? <IRILink label={getLabelOrBlank(this.props.labels, lang)}
+                                                       iri={this.props.iri}/> : getLabelOrBlank(this.props.labels, lang)}
                         </td>
                     }
                     <td>{Languages[lang]}</td>

@@ -1,9 +1,10 @@
 import {PackageRoot, ProjectSettings, Schemes, Stereotypes, VocabularyElements} from "../config/Variables";
-import {graphElement} from "../graph/graphElement";
+import {graphElement} from '../graph/graphElement';
 import {getScheme} from "./SPARQLInterface";
 import {PackageNode} from "../datatypes/PackageNode";
 import * as Locale from "../locale/LocaleMain.json";
 import {addClass} from "../function/FunctionCreateVars";
+import {initLanguageObject} from "../function/FunctionEditVars";
 
 export async function testContext(contextIRI: string, contextEndpoint: string) {
     let vocabularyQ = [
@@ -117,8 +118,8 @@ export async function getContext(
             if (!(result.term.value in vocabularies[vocab].terms)) {
                 vocabularies[vocab].terms[result.term.value] = {};
                 vocabularies[vocab].terms[result.term.value].types = [];
-                vocabularies[vocab].terms[result.term.value].labels = {};
-                vocabularies[vocab].terms[result.term.value].definitions = {};
+                vocabularies[vocab].terms[result.term.value].labels = initLanguageObject("");
+                vocabularies[vocab].terms[result.term.value].definitions = initLanguageObject("");
                 vocabularies[vocab].terms[result.term.value].inScheme = vocab;
                 vocabularies[vocab].terms[result.term.value].domainOf = [];
             }
@@ -142,7 +143,7 @@ export async function getContext(
         for (let elem in vocabularies[vocab].terms) {
             let id = new graphElement().id;
             if (typeof id === "string") {
-                addClass(id, elem, pkg, false);
+                addClass(id, elem, pkg, false, !vocabularies[vocab].readOnly);
             }
         }
     }
