@@ -117,6 +117,7 @@ export function addVocabularyElement(id: string, iri: string, type: string) {
 }
 
 export function addClass(
+    //TODO: Models show hide elemTool instead of remove
     id: string,
     iri: string,
     pkg: PackageNode,

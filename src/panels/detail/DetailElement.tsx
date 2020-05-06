@@ -150,26 +150,29 @@ export default class DetailElement extends React.Component<Props, State> {
 					<Tab title={LocaleMain.description} eventKey={LocaleMain.description}>
 						<h5>{this.props.headers.stereotype[this.props.projectLanguage]}</h5>
 						<TableList>
-							{this.state.inputTypes.map(iri =>
-								<tr key={iri}>
-									<td>
-										<IRILink
-											label={getStereotypeOrVocabElem(iri).labels[this.props.projectLanguage]}
-											iri={iri}/>
-										&nbsp;
-										{this.state.inputTypes.length === 1 && !(this.state.readOnly) ? "" :
-											<button className={"buttonlink"} onClick={() => {
-												let result = _.cloneDeep(this.state.inputTypes);
-												result.splice(result.indexOf(iri), 1);
-												this.setState({
-													inputTypes: result,
-													changes: true,
-												})
-											}}>
-												{LocaleMenu.deleteProjectName}</button>}
-									</td>
-								</tr>
-							)}
+							{this.state.inputTypes.map(iri => {
+								if (getStereotypeOrVocabElem(iri)) {
+									return (<tr key={iri}>
+										<td>
+											<IRILink
+												label={getStereotypeOrVocabElem(iri).labels[this.props.projectLanguage]}
+												iri={iri}/>
+											&nbsp;
+											{/*TODO: cross still showing on read-only elems*/}
+											{(this.state.inputTypes.length === 1 || (this.state.readOnly)) ? "" :
+												<button className={"buttonlink"} onClick={() => {
+													let result = _.cloneDeep(this.state.inputTypes);
+													result.splice(result.indexOf(iri), 1);
+													this.setState({
+														inputTypes: result,
+														changes: true,
+													})
+												}}>
+													{LocaleMenu.deleteProjectName}</button>}
+										</td>
+									</tr>)
+								}
+							})}
 							{(!this.state.readOnly) ? <tr>
 								<td>
 									<Form inline>
@@ -181,7 +184,7 @@ export default class DetailElement extends React.Component<Props, State> {
 												<option key={stereotype}
 														value={stereotype}>{getName(stereotype, this.props.projectLanguage)}</option>))}
 										</Form.Control>
-										<Button size="sm" onClick={() => {
+										{<Button size="sm" onClick={() => {
 											let result = this.state.inputTypes;
 											if (!(this.state.inputTypes.includes(this.state.formNewStereotype))) {
 												result.push(this.state.formNewStereotype);
@@ -192,7 +195,7 @@ export default class DetailElement extends React.Component<Props, State> {
 												})
 											}
 
-										}}>{LocaleMain.add}</Button>
+										}}>{LocaleMain.add}</Button>}
 									</Form>
 								</td>
 							</tr> : ""}
@@ -207,10 +210,11 @@ export default class DetailElement extends React.Component<Props, State> {
 								this.setState({inputLabels: res, changes: true});
 							}
 						}/>
+						{/* TODO: put IRILabels in table*/}
 						<h5>{<IRILink label={this.props.headers.inScheme[this.props.projectLanguage]}
 									  iri={"http://www.w3.org/2004/02/skos/core#inScheme"}/>}</h5>
 						<LabelTable labels={this.state.inputSchemes} readOnly={this.state.readOnly}/>
-						//TODO: Allow for creation of definitions/labels even if they weren't loaded from store
+						{/*TODO: Allow for creation of definitions/labels even if they weren't loaded from store*/}
 						{Object.keys(this.state.inputDefinitions).length > 0 ?
 							<h5>{<IRILink label={this.props.headers.definition[this.props.projectLanguage]}
 										  iri={"http://www.w3.org/2004/02/skos/core#definition"}/>}</h5> : ""}
@@ -230,7 +234,8 @@ export default class DetailElement extends React.Component<Props, State> {
 					<Tab eventKey={"connections"} title={LocaleMain.connections}>
 						<TableList
 							headings={[LocaleMenu.connectionVia, LocaleMenu.connectionTo, LocaleMenu.diagram]}>
-							{this.state.inputConnections.map((conn) =>
+							{/*TODO: read-only models crash this*/}
+							{this.state.inputConnections ? this.state.inputConnections.map((conn) =>
 								<tr>
 									<IRIlabel
 										label={Links[ProjectLinks[conn].iri].labels[this.props.projectLanguage]}
@@ -238,17 +243,17 @@ export default class DetailElement extends React.Component<Props, State> {
 									<td>{getLabelOrBlank(VocabularyElements[ProjectElements[ProjectLinks[conn].target].iri].labels, this.props.projectLanguage)}</td>
 									<td>{Diagrams[ProjectLinks[conn].diagram].name}</td>
 								</tr>
-							)}
+							) : ""}
 							{this.state.iri in VocabularyElements ? VocabularyElements[this.state.iri].domainOf.map((conn: string) => {
-									let range = VocabularyElements[conn].range;
-									if (range) {
-										return (<tr>
-											<IRIlabel label={VocabularyElements[conn].labels[this.props.projectLanguage]}
-													  iri={conn}/>
-											<td>{getLabelOrBlank(VocabularyElements[range].labels, this.props.projectLanguage)}</td>
-											<td>{LocaleMenu.fromModel}</td>
-										</tr>);
-									} else return ""
+								let range = VocabularyElements[conn].range;
+								if (range) {
+									return (<tr>
+										<IRIlabel label={VocabularyElements[conn].labels[this.props.projectLanguage]}
+												  iri={conn}/>
+										<td>{getLabelOrBlank(VocabularyElements[range].labels, this.props.projectLanguage)}</td>
+										<td>{LocaleMenu.fromModel}</td>
+									</tr>);
+								} else return ""
 								}
 							) : ""}
 						</TableList>

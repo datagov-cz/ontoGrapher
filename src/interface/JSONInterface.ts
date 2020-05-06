@@ -36,13 +36,15 @@ export async function getVocabulariesFromRemoteJSON(pathToJSON: string, callback
                             undefined
                         );
                     } else if (data.type === "model") {
+                        //TODO: these elems crash the detailPanel
                         await fetchConcepts(
                             data.endpoint,
                             data.sourceIRI,
                             VocabularyElements,
                             true
-                        )
-                        addElemsToPackage(data.sourceIRI);
+                        ).then(() => {
+                            addElemsToPackage(data.sourceIRI);
+                        })
                     }
                     addProperties(data.sourceIRI, data.attributes);
                     addDomainOfIRIs();

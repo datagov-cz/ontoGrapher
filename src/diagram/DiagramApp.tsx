@@ -74,6 +74,7 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 	}
 
 	componentDidMount(): void {
+		console.log(ProjectSettings);
 		if (this.props.loadDefaultVocabularies) {
 			this.loadVocabularies(
 				"http://example.org/pracovni-prostor/metadatový-kontext-123"
