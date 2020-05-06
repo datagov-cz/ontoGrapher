@@ -43,6 +43,7 @@ export default class PackageFolder extends React.Component<Props, State> {
         }
     }
 
+    //TODO: fix error with movePackageItem
     movePackageItem(parse: any) {
         let id = parse.elem;
         let oldpkg = ProjectElements[id].package;

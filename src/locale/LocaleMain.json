@@ -2,7 +2,7 @@
   "untitledProject": "Untitled project",
   "updating": "Saving...",
   "retry": "Retry?",
-  "errorUpdating": "Error: connection unsuccessful.",
+  "errorUpdating": "Error: update unsuccessful.",
   "createPackage": "Create new package",
   "untitledPackage": "Untitled Package",
   "addNewPackage": "Create new package >",

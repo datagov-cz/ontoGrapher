@@ -172,11 +172,13 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 		ProjectSettings.selectedLink = linkType;
 	}
 
+	//TODO: refactor to avoid having a massive retry function with many dependencies - each retry process is different
 	retry() {
 		this.handleChangeLoadingStatus(true, Locale.updating, false)
 		processTransaction(ProjectSettings.contextEndpoint, ProjectSettings.lastUpdate).then((result) => {
 			if (result) {
 				this.handleChangeLoadingStatus(false, "", false);
+				this.detailPanel.current?.prepareDetails(ProjectSettings.lastUpdate.id);
 			} else {
 				this.handleChangeLoadingStatus(false, "", true);
 			}
@@ -230,6 +232,7 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 				updateElementPanel={() => {
 					this.elementPanel.current?.forceUpdate();
 				}}
+				handleChangeLoadingStatus={this.handleChangeLoadingStatus}
 			/>
 		</div>);
 	}

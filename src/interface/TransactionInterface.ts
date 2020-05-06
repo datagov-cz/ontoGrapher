@@ -14,10 +14,10 @@ export async function updateProjectElement(
 	contextIRI: string,
 	contextEndpoint: string,
 	newTypes: string[],
-	labels: { [key: string]: string },
-	definitions: { [key: string]: string },
-	attributes: AttributeObject[],
-	properties: AttributeObject[],
+	newLabels: { [key: string]: string },
+	newDefinitions: { [key: string]: string },
+	newAttributes: AttributeObject[],
+	newProperties: AttributeObject[],
 	id: string): Promise<boolean> {
 
 	let iri = ProjectElements[id].iri;
@@ -27,11 +27,11 @@ export async function updateProjectElement(
 	let addDefinitions: { "@value": string, "@language": string }[] = [];
 	let addLabels: { "@value": string, "@language": string }[] = [];
 
-	Object.keys(labels).forEach((lang) => {
-		if (labels[lang] !== "") addLabels.push({"@value": labels[lang], "@language": lang});
+	Object.keys(newLabels).forEach((lang) => {
+		if (newLabels[lang] !== "") addLabels.push({"@value": newLabels[lang], "@language": lang});
 	})
-	Object.keys(definitions).forEach((lang) => {
-		if (definitions[lang] !== "") addDefinitions.push({"@value": definitions[lang], "@language": lang});
+	Object.keys(newDefinitions).forEach((lang) => {
+		if (newDefinitions[lang] !== "") addDefinitions.push({"@value": newDefinitions[lang], "@language": lang});
 	})
 
 	let addLD = {
@@ -113,17 +113,23 @@ export async function updateProjectElement(
 		]
 	}
 	console.log(newTypes, VocabularyElements[iri]);
-	return await processTransaction(contextEndpoint, {"add": addLD, "delete": deleteLD});
+	return await processTransaction(contextEndpoint, {"add": addLD, "delete": deleteLD, id: id});
 }
 
 export async function updateConnections(contextEndpoint: string, id: string, del: string[]) {
 	let iri = ProjectElements[id].iri;
 	let scheme = VocabularyElements[iri].inScheme;
 	let connections: { [key: string]: string } = {};
+	let delConnections: { [key: string]: string } = {};
 	let connectionContext: { [key: string]: any } = {};
 	ProjectElements[id].connections.forEach((linkID) => {
 		connections[ProjectLinks[linkID].iri] = ProjectElements[ProjectLinks[linkID].target].iri
 		connectionContext[ProjectLinks[linkID].iri] = {"@type": "@id"}
+	})
+
+	del.forEach((linkID) => {
+		connectionContext[ProjectLinks[linkID].iri] = {"@type": "@id"}
+		delConnections[ProjectLinks[linkID].iri] = ProjectElements[ProjectLinks[linkID].target].iri
 	})
 
 	let deleteLD = {
@@ -132,9 +138,7 @@ export async function updateConnections(contextEndpoint: string, id: string, del
 		"@graph": [
 			{
 				"@id": iri,
-				...del.map(conn => {
-					return {[ProjectLinks[conn].iri]: ProjectElements[ProjectLinks[conn].target].iri}
-				})
+				...delConnections
 			}
 		]
 	}
@@ -150,7 +154,9 @@ export async function updateConnections(contextEndpoint: string, id: string, del
 		]
 	};
 
-	return await processTransaction(contextEndpoint, {"add": addLD, "delete": deleteLD});
+	console.log(connections, delConnections);
+
+	return await processTransaction(contextEndpoint, {"add": addLD, "delete": deleteLD, id: id});
 }
 
 export async function processTransaction(contextEndpoint: string, transactions: { [key: string]: any }): Promise<boolean> {

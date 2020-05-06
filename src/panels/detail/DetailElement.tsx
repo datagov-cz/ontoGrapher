@@ -186,7 +186,7 @@ export default class DetailElement extends React.Component<Props, State> {
 											if (!(this.state.inputTypes.includes(this.state.formNewStereotype))) {
 												result.push(this.state.formNewStereotype);
 												this.setState({
-													inputTypes: result,
+													inputTypes: _.cloneDeep(result),
 													formNewStereotype: Object.keys(Stereotypes)[0],
 													changes: true,
 												})
@@ -202,7 +202,7 @@ export default class DetailElement extends React.Component<Props, State> {
 									  iri={"http://www.w3.org/2004/02/skos/core#prefLabel"}/>}</h5>
 						<LabelTable labels={this.state.inputLabels} readOnly={this.state.readOnly} onEdit={
 							(textarea: string, language: string) => {
-								let res = this.state.inputLabels;
+								let res = _.cloneDeep(this.state.inputLabels);
 								res[language] = textarea;
 								this.setState({inputLabels: res, changes: true});
 							}
@@ -219,7 +219,7 @@ export default class DetailElement extends React.Component<Props, State> {
 							onEdit={(event: React.FormEvent<HTMLInputElement>, language: string) => {
 								let res = this.state.inputDefinitions;
 								res[language] = event.currentTarget.value;
-								this.setState({inputDefinitions: res, changes: true});
+								this.setState({inputDefinitions: res});
 							}}
 							onFocusOut={() => {
 								this.setState({changes: true});

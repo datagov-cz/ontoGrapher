@@ -7,6 +7,7 @@ import {
     ProjectElements,
     ProjectLinks,
     ProjectSettings,
+    Schemes,
     Stereotypes,
     VocabularyElements
 } from "../config/Variables";
@@ -24,8 +25,9 @@ import {
 import {HideButton} from "../graph/elemHide";
 import {ElemInfoButton} from "../graph/elemInfo";
 import {LinkInfoButton} from "../graph/linkInfo";
-import {RemoveButton} from "../graph/linkRemove";
 import {initLanguageObject} from "../function/FunctionEditVars";
+import {updateConnections} from "../interface/TransactionInterface";
+import * as LocaleMain from "../locale/LocaleMain.json";
 
 interface DiagramCanvasProps {
     projectLanguage: string;
@@ -33,6 +35,7 @@ interface DiagramCanvasProps {
     prepareDetails: Function;
     hideDetails: Function;
     updateElementPanel: Function;
+    handleChangeLoadingStatus: Function;
 }
 
 export default class DiagramCanvas extends React.Component<DiagramCanvasProps> {
@@ -62,7 +65,7 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps> {
             }
         }
         cell.resize(bbox.width, bbox.height);
-        cell.position(bbox.x, bbox.y);
+        //cell.position(bbox.x, bbox.y);
         unHighlightCell(cell.id);
         highlightCell(cell.id);
         for (let link of links) {
@@ -142,7 +145,30 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps> {
             'link:mouseenter': (linkView) => {
                 let verticesTool = new joint.linkTools.Vertices();
                 let segmentsTool = new joint.linkTools.Segments();
-                let removeButton = new RemoveButton();
+                let removeButton = new joint.linkTools.Remove({
+                    action: ((evt: any, view: { model: { id: any; getSourceCell: () => { (): any; new(): any; id: any; }; remove: () => void; }; }) => {
+                        this.props.handleChangeLoadingStatus(true, LocaleMain.updating, false);
+                        let id = view.model.id;
+                        let sid = view.model.getSourceCell().id;
+                        if (ProjectElements[sid].connections.includes(id)) ProjectElements[sid].connections.splice(ProjectElements[sid].connections.indexOf(id), 1);
+                        updateConnections(ProjectSettings.contextEndpoint, sid, [id]).then(result => {
+                            if (result) {
+                                let vocabElem = VocabularyElements[ProjectLinks[id].iri];
+                                if (vocabElem && vocabElem.domain) {
+                                    let domainOf = VocabularyElements[vocabElem.domain].domainOf;
+                                    if (domainOf && (Schemes[VocabularyElements[vocabElem.domain].inScheme].readOnly)) {
+                                        domainOf.splice(domainOf.indexOf(ProjectLinks[id].iri), 1);
+                                    }
+                                }
+                                delete ProjectLinks[id];
+                                view.model.remove();
+                                this.props.handleChangeLoadingStatus(false, "", false);
+                            } else {
+                                this.props.handleChangeLoadingStatus(false, "", true);
+                            }
+                        });
+                    })
+                })
                 let toolsView = new joint.dia.ToolsView({
                     tools: [verticesTool, segmentsTool, removeButton,
                         new LinkInfoButton({
@@ -198,6 +224,15 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps> {
                             if (typeof link.id === "string") {
                                 ProjectElements[sid].connections.push(link.id);
                                 addLink(link.id, this.props.selectedLink, sid, tid);
+                                //TODO: updateConnections should dictate whether the link is added/deleted at all (currently precedes real action)
+                                this.props.handleChangeLoadingStatus(true, LocaleMain.updating, false);
+                                updateConnections(ProjectSettings.contextEndpoint, sid, []).then(result => {
+                                    if (result) {
+                                        this.props.handleChangeLoadingStatus(false, "", false);
+                                    } else {
+                                        this.handleChangeLoadingStatus(false, "", true);
+                                    }
+                                });
                             }
                             link.appendLabel({attrs: {text: {text: Links[this.props.selectedLink].labels[this.props.projectLanguage]}}});
                         }

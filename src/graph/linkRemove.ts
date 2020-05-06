@@ -1,5 +1,6 @@
 import * as joint from "jointjs";
-import {ProjectElements, ProjectLinks, Schemes, VocabularyElements} from "../config/Variables";
+import {ProjectElements, ProjectLinks, ProjectSettings, Schemes, VocabularyElements} from "../config/Variables";
+import {updateConnections} from "../interface/TransactionInterface";
 // @ts-ignore
 export var RemoveButton = joint.linkTools.Remove.extend({
     action: ((evt: any, view: { model: { id: any; getSourceCell: () => { (): any; new(): any; id: any; }; remove: () => void; }; }) => {
@@ -13,7 +14,9 @@ export var RemoveButton = joint.linkTools.Remove.extend({
                 domainOf.splice(domainOf.indexOf(ProjectLinks[id].iri), 1);
             }
         }
+        updateConnections(ProjectSettings.contextEndpoint, sid, [id]);
         delete ProjectLinks[id];
         view.model.remove();
     })
 });
+//TODO: obsolete - remove when safe
