@@ -104,7 +104,6 @@ export default class DetailElement extends React.Component<Props, State> {
 			ProjectElements[this.state.id].iri = iri;
 		}
 		const result = await updateProjectElement(
-			ProjectSettings.contextIRI,
 			ProjectSettings.contextEndpoint,
 			this.state.inputTypes,
 			this.state.inputLabels,
@@ -151,28 +150,26 @@ export default class DetailElement extends React.Component<Props, State> {
 					<Tab title={LocaleMain.description} eventKey={LocaleMain.description}>
 						<h5>{this.props.headers.stereotype[this.props.projectLanguage]}</h5>
 						<TableList>
-							{this.state.inputTypes.map(iri => {
-								if (getStereotypeOrVocabElem(iri)) {
-									return (<tr key={iri}>
-										<td>
-											<IRILink
-												label={getStereotypeOrVocabElem(iri).labels[this.props.projectLanguage]}
-												iri={iri}/>
-											&nbsp;
-											{(this.state.inputTypes.length === 1 || (this.state.readOnly)) ? "" :
-												<button className={"buttonlink"} onClick={() => {
-													let result = _.cloneDeep(this.state.inputTypes);
-													result.splice(result.indexOf(iri), 1);
-													this.setState({
-														inputTypes: result,
-														changes: true,
-													})
-												}}>
-													{LocaleMenu.deleteProjectName}</button>}
-										</td>
-									</tr>)
-								}
-							})}
+							{this.state.inputTypes.map(iri =>
+								(<tr key={iri}>
+									<td>
+										<IRILink
+											label={getStereotypeOrVocabElem(iri).labels[this.props.projectLanguage]}
+											iri={iri}/>
+										&nbsp;
+										{(this.state.inputTypes.length === 1 || (this.state.readOnly)) ? "" :
+											<button className={"buttonlink"} onClick={() => {
+												let result = _.cloneDeep(this.state.inputTypes);
+												result.splice(result.indexOf(iri), 1);
+												this.setState({
+													inputTypes: result,
+													changes: true,
+												})
+											}}>
+												{LocaleMenu.deleteProjectName}</button>}
+									</td>
+								</tr>)
+							)}
 							{(!this.state.readOnly) ? <tr>
 								<td>
 									<Form inline>

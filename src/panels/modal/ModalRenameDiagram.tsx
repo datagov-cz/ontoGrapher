@@ -2,13 +2,15 @@ import React from 'react';
 import {Button, Form, Modal} from "react-bootstrap";
 import * as LocaleMenu from "../../locale/LocaleMenu.json";
 import * as LocaleMain from "../../locale/LocaleMain.json";
-import {Diagrams} from "../../config/Variables";
+import {Diagrams, ProjectSettings} from "../../config/Variables";
+import {updateProjectSettings} from "../../interface/TransactionInterface";
 
 interface Props {
     modal: boolean;
     diagram: number;
     close: Function;
     update: Function;
+    handleChangeLoadingStatus: Function;
 }
 
 interface State {
@@ -44,6 +46,13 @@ export default class ModalRenameDiagram extends React.Component<Props, State> {
                     }} variant="secondary">{LocaleMenu.cancel}</Button>
                     <Button onClick={() => {
                         Diagrams[this.props.diagram].name = this.state.inputEdit;
+                        updateProjectSettings(ProjectSettings.contextIRI, ProjectSettings.contextEndpoint).then(result => {
+                            if (result) {
+                                this.props.handleChangeLoadingStatus(false, "", false);
+                            } else {
+                                this.props.handleChangeLoadingStatus(false, "", true);
+                            }
+                        })
                         this.props.update();
                         this.props.close();
                     }}>{LocaleMenu.confirm}</Button>

@@ -9,6 +9,7 @@ import {
 } from "../config/Variables";
 import * as Locale from "../locale/LocaleMain.json";
 import {graph} from "../graph/graph";
+import {updateDeleteProjectElement} from "../interface/TransactionInterface";
 
 export function getName(element: string, language: string): string {
     if (element in Stereotypes) {
@@ -83,5 +84,6 @@ export function deletePackageItem(id: string) {
         graph.removeCells([graph.getCell(id)]);
     }
     ProjectElements[id].active = false;
+    updateDeleteProjectElement(ProjectSettings.contextEndpoint, id);
 }
 

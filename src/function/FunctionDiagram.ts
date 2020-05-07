@@ -1,11 +1,22 @@
-import {Diagrams, ProjectSettings} from "../config/Variables";
+import {Diagrams, ProjectElements, ProjectSettings} from "../config/Variables";
 import * as joint from "jointjs";
 import {graphElement} from "../graph/graphElement";
 import {graph} from "../graph/graph";
+import * as LocaleMain from "../locale/LocaleMain.json";
 
 export function changeDiagrams(diagram: any) {
     ProjectSettings.selectedDiagram = diagram;
-    graph.fromJSON(Diagrams[diagram].json);
+    if (Diagrams[diagram].json !== "") {
+        graph.fromJSON(Diagrams[diagram].json);
+    } else graph.clear();
+}
+
+export function addDiagram() {
+    Diagrams.push({name: LocaleMain.untitled, json: {}});
+    for (let key of Object.keys(ProjectElements)) {
+        ProjectElements[key].hidden[Diagrams.length - 1] = false;
+        ProjectElements[key].position[Diagrams.length - 1] = {x: 0, y: 0};
+    }
 }
 
 export function saveDiagram() {

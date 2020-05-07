@@ -1,7 +1,7 @@
 import * as Locale from "./../locale/LocaleMain.json";
-import {Links, ProjectElements, Schemes, Stereotypes, VocabularyElements} from "../config/Variables";
+import {Links, Schemes, Stereotypes} from "../config/Variables";
 import {fetchConcepts, getScheme} from "./SPARQLInterface";
-import {addElemsToPackage, addProperties, createValues} from "../function/FunctionCreateVars";
+import {addProperties, createValues} from "../function/FunctionCreateVars";
 import {addDomainOfIRIs, initLanguageObject} from "../function/FunctionEditVars";
 import {checkLabels} from "../function/FunctionGetVars";
 
@@ -12,9 +12,9 @@ export async function getVocabulariesFromRemoteJSON(pathToJSON: string, callback
             async json => {
                 for (const key of Object.keys(json)) {
                     let data = json[key];
-                    await getScheme(data.sourceIRI, data.endpoint, data.type === "model");
-                    Schemes[data.sourceIRI].labels = initLanguageObject(key);
                     if (data.type === "stereotype") {
+                        await getScheme(data.sourceIRI, data.endpoint, data.type === "model");
+                        Schemes[data.sourceIRI].labels = initLanguageObject(key);
                         await fetchConcepts(
                             data.endpoint,
                             data.sourceIRI,
@@ -35,23 +35,16 @@ export async function getVocabulariesFromRemoteJSON(pathToJSON: string, callback
                             [data.relationshipIRI],
                             undefined
                         );
-                    } else if (data.type === "model") {
-                        await fetchConcepts(
-                            data.endpoint,
-                            data.sourceIRI,
-                            VocabularyElements,
-                            true
-                        ).then(() => {
-                            addElemsToPackage(data.sourceIRI);
-                        })
-                        console.log(ProjectElements)
+                        addProperties(data.sourceIRI, data.attributes);
+                        addDomainOfIRIs();
+                        checkLabels();
                     }
-                    addProperties(data.sourceIRI, data.attributes);
-                    addDomainOfIRIs();
-                    checkLabels();
                 }
             }
-        );
+        ).catch(() => {
+            callback(false);
+            throw new Error(Locale.vocabularyNotFound)
+        });
     } else {
         callback(false);
         throw new Error(Locale.vocabularyNotFound)

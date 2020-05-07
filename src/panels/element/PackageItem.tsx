@@ -8,6 +8,7 @@ interface Props {
 	id: string;
 	depth: number;
 	update: Function;
+	openRemoveItem: Function;
 }
 
 interface State {
@@ -64,8 +65,9 @@ export default class PackageItem extends React.Component<Props, State> {
 									enabled: false
 								}
 							}
-						}} placement="bottom" overlay={tooltipD}><button className={"buttonlink"} onClick={() => {
-							this.setState({modalRemove: true})
+						}} placement="bottom" overlay={tooltipD}><button className={"buttonlink"} onClick={(event) => {
+							event.stopPropagation();
+							this.props.openRemoveItem();
 						}}><span role="img" aria-label={""}>❌</span></button></OverlayTrigger>
                     </span>
 

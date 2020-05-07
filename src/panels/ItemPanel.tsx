@@ -25,11 +25,14 @@ import ModalRemovePackage from "./modal/ModalRemovePackage";
 import ModalRemoveItem from "./modal/ModalRemoveItem";
 import ModalRenameDiagram from "./modal/ModalRenameDiagram";
 import ModalRemoveDiagram from "./modal/ModalRemoveDiagram";
+import {addDiagram} from "../function/FunctionDiagram";
+import {updateProjectSettings} from "../interface/TransactionInterface";
 
 interface Props {
 	projectLanguage: string;
 	handleChangeSelectedLink: Function;
 	selectedLink: string;
+	handleChangeLoadingStatus: Function;
 }
 
 interface State {
@@ -66,14 +69,14 @@ const tooltipD = (
     </OverlayTrigger>
 );
 
-export default class ElementPanel extends React.Component<Props, State> {
+export default class ItemPanel extends React.Component<Props, State> {
 
-    private stereotypes: string[];
-    private links: string[];
+	private stereotypes: string[];
+	private links: string[];
 
-    constructor(props: Props) {
-        super(props);
-        this.state = {
+	constructor(props: Props) {
+		super(props);
+		this.state = {
 			filter: [],
 			search: "",
 			modalEditPackage: false,
@@ -188,6 +191,12 @@ export default class ElementPanel extends React.Component<Props, State> {
 								update={() => {
 									this.forceUpdate();
 								}}
+								openRemoveItem={() => {
+									this.setState({
+										selectedID: id,
+										modalRemoveItem: true
+									})
+								}}
 							/>
 						)
 					} else return "";
@@ -200,9 +209,15 @@ export default class ElementPanel extends React.Component<Props, State> {
                 arr.push(<PackageItem
 					label={getLabelOrBlank(VocabularyElements[ProjectElements[id].iri].labels, this.props.projectLanguage)}
 					depth={depth} id={id}
+					openRemoveItem={() => {
+						this.setState({
+							selectedID: id,
+							modalRemoveItem: true
+						})
+					}}
 					update={() => {
-                        this.forceUpdate();
-                    }}/>)
+						this.forceUpdate();
+					}}/>)
             })
 
         }
@@ -281,12 +296,17 @@ export default class ElementPanel extends React.Component<Props, State> {
                     </Tab>
                     <Tab eventKey={4} title={tooltipD}>
                         <button className={"margins"} onClick={() => {
-                            Diagrams.push({name: LocaleMain.untitled, json: {}});
-                            for (let key of Object.keys(ProjectElements)) {
-                                ProjectElements[key].hidden[Diagrams.length - 1] = false;
-                            }
-                            this.forceUpdate();
-                        }
+							this.props.handleChangeLoadingStatus(true, LocaleMain.updating, false);
+							addDiagram();
+							updateProjectSettings(ProjectSettings.contextIRI, ProjectSettings.contextEndpoint).then(result => {
+								if (result) {
+									this.props.handleChangeLoadingStatus(false, "", false);
+								} else {
+									this.props.handleChangeLoadingStatus(false, "", true);
+								}
+							})
+							this.forceUpdate();
+						}
                         }>{LocaleMain.addDiagram}</button>
                         <div className="elementLinkList">
                             {Diagrams.map((model, i) => <DiagramItem
@@ -308,6 +328,7 @@ export default class ElementPanel extends React.Component<Props, State> {
 											modalRenameDiagram: true
 										})
 									}}
+									handleChangeLoadingStatus={this.props.handleChangeLoadingStatus}
 								/>
 							)}
 						</div>
@@ -357,6 +378,7 @@ export default class ElementPanel extends React.Component<Props, State> {
 					update={() => {
 						this.forceUpdate();
 					}}
+					handleChangeLoadingStatus={this.props.handleChangeLoadingStatus}
 				/>
 
 				<ModalRemoveDiagram
@@ -368,6 +390,7 @@ export default class ElementPanel extends React.Component<Props, State> {
 					update={() => {
 						this.forceUpdate();
 					}}
+					handleChangeLoadingStatus={this.props.handleChangeLoadingStatus}
 				/>
 
 			</ResizableBox>

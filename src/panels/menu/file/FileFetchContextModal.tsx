@@ -2,6 +2,7 @@ import React from 'react';
 import {Button, Form, Modal} from "react-bootstrap";
 import * as LocaleMenu from "../../../locale/LocaleMenu.json";
 import {testContext} from "../../../interface/ContextInterface";
+import {ProjectSettings} from "../../../config/Variables";
 
 interface Props {
     modal: boolean;
@@ -19,8 +20,8 @@ export default class FileFetchContextModal extends React.Component<Props, State>
     constructor(props: Props) {
         super(props);
         this.state = {
-            contextIRI: "http://example.org/pracovni-prostor/metadatový-kontext-123",
-            contextEndpoint: "https://onto.fel.cvut.cz:7200/repositories/kodi-pracovni-prostor-sample",
+            contextIRI: ProjectSettings.contextIRI,
+            contextEndpoint: ProjectSettings.contextEndpoint,
             output: ""
         }
     }

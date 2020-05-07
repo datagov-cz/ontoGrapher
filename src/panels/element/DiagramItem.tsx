@@ -4,6 +4,7 @@ import {OverlayTrigger, Tooltip} from "react-bootstrap";
 import * as LocaleMain from "../../locale/LocaleMain.json";
 import {loadDiagram, saveDiagram} from "../../function/FunctionDiagram";
 import {graph} from "../../graph/graph";
+import {updateProjectSettings} from "../../interface/TransactionInterface";
 
 interface Props {
 	diagram: number;
@@ -11,6 +12,7 @@ interface Props {
 	selectedDiagram: number;
 	openRenameDiagram: Function;
 	openRemoveDiagram: Function;
+	handleChangeLoadingStatus: Function;
 }
 
 interface State {
@@ -41,10 +43,16 @@ export default class DiagramItem extends React.Component<Props, State> {
 			} else {
 				loadDiagram(load);
 			}
+			updateProjectSettings(ProjectSettings.contextIRI, ProjectSettings.contextEndpoint).then(result => {
+				if (result) {
+					this.props.handleChangeLoadingStatus(false, "", false);
+				} else {
+					this.props.handleChangeLoadingStatus(false, "", true);
+				}
+			})
 			ProjectSettings.selectedDiagram = this.props.diagram;
 			this.setClassName();
 			this.props.update();
-
 		}
 	}
 

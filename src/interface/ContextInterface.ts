@@ -1,10 +1,10 @@
 import {PackageRoot, ProjectSettings, Schemes, Stereotypes, VocabularyElements} from "../config/Variables";
 import {graphElement} from '../graph/graphElement';
-import {getScheme} from "./SPARQLInterface";
+import {fetchConcepts, getScheme} from "./SPARQLInterface";
 import {PackageNode} from "../datatypes/PackageNode";
 import * as Locale from "../locale/LocaleMain.json";
-import {addClass} from "../function/FunctionCreateVars";
-import {initLanguageObject} from "../function/FunctionEditVars";
+import {addClass, addElemsToPackage} from "../function/FunctionCreateVars";
+import {initLanguageObject, parsePrefix} from "../function/FunctionEditVars";
 
 export async function testContext(contextIRI: string, contextEndpoint: string) {
     let vocabularyQ = [
@@ -59,7 +59,7 @@ export async function getContext(
         "PREFIX owl: <http://www.w3.org/2002/07/owl#>",
         "PREFIX skos: <http://www.w3.org/2004/02/skos/core#>",
         "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>",
-        "select ?vocab (bound(?ro) as ?readOnly) ?labelVocab ?label ?vocabIRI ?import",
+        "select ?vocab (bound(?ro) as ?readOnly) ?labelVocab ?label ?vocabIRI ?import ?importType",
         "where {",
         "BIND(<" + contextIRI + "> as ?contextIRI) .",
         "?contextIRI rdfs:label ?label;",
@@ -68,13 +68,13 @@ export async function getContext(
         "VALUES ?vocabType { <https://slovník.gov.cz/datový/pracovní-prostor/pojem/slovníkový-kontext> <https://slovník.gov.cz/datový/pracovní-prostor/pojem/slovníkový-kontext-pouze-pro-čtení> }",
         "?vocab <https://slovník.gov.cz/datový/pracovní-prostor/pojem/obsahuje-slovník> ?vocabIRI .",
         "?vocabIRI owl:imports ?import .",
-        "?import a skos:ConceptScheme .",
+        "?import a ?importType .",
         "?import rdfs:label ?labelVocab.",
         "OPTIONAL{ ?vocab a  ?ro . FILTER(?ro = <https://slovník.gov.cz/datový/pracovní-prostor/pojem/slovníkový-kontext-pouze-pro-čtení>) .  }",
         "}",
     ].join(" ");
     let vocabularyQurl = contextEndpoint + "?query=" + encodeURIComponent(vocabularyQ);
-    let responseInit: {}[] = await fetch(vocabularyQurl,
+    let responseInit: { [key: string]: any }[] = await fetch(vocabularyQurl,
         {headers: {'Accept': acceptType}})
         .then((response) => response.json())
         .then((data) => {
@@ -83,13 +83,20 @@ export async function getContext(
             if (callback) callback(Locale.loadingError)
         });
     let vocabularies: { [key: string]: { names: { [key: string]: string }, readOnly: boolean, terms: any } } = {};
-    if (responseInit) responseInit.forEach((result: { [key: string]: any }) => {
-        if (!(result.import.value in vocabularies)) {
-            vocabularies[result.import.value] = {readOnly: result.readOnly.value === "true", names: {}, terms: {}};
+    let vsgov = "https://slovník.gov.cz/veřejný-sektor/glosář";
+    if (responseInit) for (const result of responseInit) {
+        if (result.importType.value === parsePrefix("skos", "ConceptScheme")) {
+            if (!(result.import.value in vocabularies)) {
+                vocabularies[result.import.value] = {readOnly: result.readOnly.value === "true", names: {}, terms: {}};
+            }
+            vocabularies[result.import.value].names[result.labelVocab["xml:lang"]] = result.labelVocab.value;
+            ProjectSettings.name[result.label["xml:lang"]] = result.label.value;
+        } else if (result.importType.value === parsePrefix("v-sgov-pojem", "glosář") && !(vsgov in Schemes)) {
+            await getScheme(vsgov, "https://slovník.gov.cz/sparql", true);
+            await fetchConcepts("https://slovník.gov.cz/sparql", vsgov, VocabularyElements, true);
+            addElemsToPackage(vsgov);
         }
-        vocabularies[result.import.value].names[result.labelVocab["xml:lang"]] = result.labelVocab.value;
-        ProjectSettings.name[result.label["xml:lang"]] = result.label.value;
-    });
+    }
     //load terms
     for (let vocab in vocabularies) {
         if (!(vocab in Schemes)) await getScheme(vocab, contextEndpoint, vocabularies[vocab].readOnly, function () {

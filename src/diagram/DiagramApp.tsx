@@ -1,6 +1,6 @@
 import React from 'react';
 import MenuPanel from "../panels/MenuPanel";
-import ElementPanel from "../panels/ElementPanel";
+import ItemPanel from "../panels/ItemPanel";
 import DiagramCanvas from "./DiagramCanvas";
 import * as Locale from "../locale/LocaleMain.json";
 import {
@@ -21,7 +21,7 @@ import {loadProject, newProject} from "../function/FunctionProject";
 import {nameGraphElement, nameGraphLink} from "../function/FunctionGraph";
 import {PackageNode} from "../datatypes/PackageNode";
 import {createNewScheme} from "../function/FunctionCreateVars";
-import {processTransaction} from "../interface/TransactionInterface";
+import {updateProjectSettings} from "../interface/TransactionInterface";
 
 interface DiagramAppProps {
 	readOnly?: boolean;
@@ -41,7 +41,7 @@ require("../scss/style.scss");
 
 export default class DiagramApp extends React.Component<DiagramAppProps, DiagramAppState> {
 	private readonly canvas: React.RefObject<DiagramCanvas>;
-	private readonly elementPanel: React.RefObject<ElementPanel>;
+	private readonly elementPanel: React.RefObject<ItemPanel>;
 	private readonly detailPanel: React.RefObject<DetailPanel>;
 	private readonly menuPanel: React.RefObject<MenuPanel>;
 
@@ -70,11 +70,9 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 		this.loadProject = this.loadProject.bind(this);
 		this.loadVocabularies = this.loadVocabularies.bind(this);
 		this.handleChangeLoadingStatus = this.handleChangeLoadingStatus.bind(this);
-		this.retry = this.retry.bind(this);
 	}
 
 	componentDidMount(): void {
-		console.log(ProjectSettings);
 		if (this.props.loadDefaultVocabularies) {
 			this.loadVocabularies(
 				"http://example.org/pracovni-prostor/metadatový-kontext-123"
@@ -148,11 +146,18 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 					this.setState({loading: false});
 					document.title = ProjectSettings.name[this.state.projectLanguage] + " | " + Locale.ontoGrapher;
 					ProjectSettings.contextEndpoint = contextEndpoint;
-					ProjectSettings.contextIRI = contextIRI;
+					ProjectSettings.contextIRI = contextIRI
 					this.handleChangeLanguage(Object.keys(Languages)[0]);
-					this.handleChangeLoadingStatus(false, "", false);
 					this.forceUpdate();
 					this.elementPanel.current?.update();
+					updateProjectSettings(contextIRI, contextEndpoint).then(result => {
+						if (!result) {
+							this.handleChangeLoadingStatus(false, "", true);
+						} else {
+							this.handleChangeLoadingStatus(false, "", false);
+						}
+					})
+					//getElementsConfig(contextEndpoint);
 				}
 			})
 		});
@@ -173,19 +178,6 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 		ProjectSettings.selectedLink = linkType;
 	}
 
-	//TODO: refactor to avoid having a massive retry function with many dependencies - each retry process is different
-	retry() {
-		this.handleChangeLoadingStatus(true, Locale.updating, false)
-		processTransaction(ProjectSettings.contextEndpoint, ProjectSettings.lastUpdate).then((result) => {
-			if (result) {
-				this.handleChangeLoadingStatus(false, "", false);
-				this.detailPanel.current?.prepareDetails(ProjectSettings.lastUpdate.id);
-			} else {
-				this.handleChangeLoadingStatus(false, "", true);
-			}
-		})
-	}
-
 	render() {
 		return (<div className={"app"}>
 			<MenuPanel
@@ -201,13 +193,13 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 					this.elementPanel.current?.update();
 				}}
 				loadingError={this.state.error}
-				retry={this.retry}
 			/>
-			<ElementPanel
+			<ItemPanel
 				ref={this.elementPanel}
 				projectLanguage={this.state.projectLanguage}
 				handleChangeSelectedLink={this.handleChangeSelectedLink}
 				selectedLink={this.state.selectedLink}
+				handleChangeLoadingStatus={this.handleChangeLoadingStatus}
 			/>
 			<DetailPanel
 				ref={this.detailPanel}

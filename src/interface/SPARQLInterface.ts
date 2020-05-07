@@ -1,4 +1,4 @@
-import {Schemes} from "../config/Variables";
+import {Schemes, VocabularyElements} from "../config/Variables";
 import {initLanguageObject} from "../function/FunctionEditVars";
 
 export async function fetchConcepts(
@@ -85,4 +85,24 @@ export async function getScheme(iri: string, endpoint: string, readOnly: boolean
     }).catch(() => {
         if (callback) callback(false);
     });
+}
+
+export async function getElementsConfig(endpoint: string, callback?: Function) {
+    let editableSchemes = Object.keys(Schemes).filter((scheme) => !Schemes[scheme].readOnly);
+    for (let iri in VocabularyElements) {
+        if (editableSchemes.includes(VocabularyElements[iri].inScheme)) {
+            let query = "select ?p ?o where {<" + iri + "> ?p ?o .}";
+            let q = endpoint + "?query=" + encodeURIComponent(query);
+            await fetch(q, {headers: {'Accept': 'application/json'}}).then(response => {
+                return response.json();
+            }).then(data => {
+                for (let result of data.results.bindings) {
+
+                }
+                if (callback) callback(true);
+            }).catch(() => {
+                if (callback) callback(false);
+            });
+        }
+    }
 }

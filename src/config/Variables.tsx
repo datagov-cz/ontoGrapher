@@ -68,7 +68,8 @@ export var Prefixes: { [key: string]: string } = {
     og: "http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/",
     ogpkg: "http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/package/",
     "d-sgov-pracovní-prostor-pojem": "https://slovník.gov.cz/datový/pracovní-prostor/pojem/",
-    "z-sgov-pojem": "https://slovník.gov.cz/základní/pojem/"
+    "z-sgov-pojem": "https://slovník.gov.cz/základní/pojem/",
+    "v-sgov-pojem": "https://slovník.gov.cz/veřejný-sektor/pojem/"
 };
 
 export var Structures: { [key: string]: string } = {
@@ -118,7 +119,7 @@ export var Stereotypes: {
 } = {};
 
 export var Diagrams: { name: string, json: any }[] = [
-    {name: "Untitled", json: ""}
+    {name: "Untitled", json: {}}
 ];
 
 export var ProjectSettings: {

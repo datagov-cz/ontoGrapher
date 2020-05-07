@@ -64,7 +64,7 @@ export function unHighlightAll() {
 
 export function restoreHiddenElem(id: string, cls: joint.dia.Element) {
     if (ProjectElements[id].position) {
-        if (ProjectElements[id].position[ProjectSettings.selectedDiagram]) {
+        if (ProjectElements[id].position[ProjectSettings.selectedDiagram] && ProjectElements[id].position[ProjectSettings.selectedDiagram].x !== 0 && ProjectElements[id].position[ProjectSettings.selectedDiagram].y !== 0) {
             cls.position(ProjectElements[id].position[ProjectSettings.selectedDiagram].x, ProjectElements[id].position[ProjectSettings.selectedDiagram].y);
         }
     }
@@ -104,7 +104,7 @@ export function getNewLabel(iri: string, language: string) {
     return "«" + getName(iri, language).toLowerCase() + "»\n" + LocaleMain.untitled + " " + getName(iri, language);
 }
 
-export function restoreDomainOfConns() {
+export function restoreDomainOfConnections() {
     for (let iri in VocabularyElements) {
         if (VocabularyElements[iri].domain && VocabularyElements[iri].range) {
             let domain = VocabularyElements[iri].domain;

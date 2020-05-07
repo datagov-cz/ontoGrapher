@@ -22,7 +22,7 @@ export function getLabelOrBlank(labels: { [key: string]: string }, language: str
 }
 
 export function getNameOrBlank(name: string) {
-    return name.length > 0 ? name : "<blank>";
+    return name ? name : "<blank>";
 }
 
 export function isElemReadOnlyByID(id: string): boolean {

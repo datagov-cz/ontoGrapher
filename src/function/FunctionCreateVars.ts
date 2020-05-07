@@ -15,9 +15,24 @@ import {initLanguageObject} from "./FunctionEditVars";
 import {PackageNode} from "../datatypes/PackageNode";
 import {graphElement} from "../graph/graphElement";
 
-export function createValues(values: {[key:string]: string[]}, prefixes: {[key:string]: string}){
+//TODO: put all functions into 'namespaces'
+export var FunctionCreateVars = {
+    createValues: function (values: { [key: string]: string[] }, prefixes: { [key: string]: string }) {
+        let result: string[] = [];
+        for (let key in values) {
+            let prefix = prefixes[key];
+            for (let val of values[key]) {
+                result.push(prefix + val);
+            }
+        }
+        return result;
+    },
+
+};
+
+export function createValues(values: { [key: string]: string[] }, prefixes: { [key: string]: string }) {
     let result: string[] = [];
-    for (let key in values){
+    for (let key in values) {
         let prefix = prefixes[key];
         for (let val of values[key]) {
             result.push(prefix + val);

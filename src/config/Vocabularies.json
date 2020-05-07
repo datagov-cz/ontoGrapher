@@ -38,17 +38,5 @@
         ]
       }
     ]
-  },
-  "V-SGoV": {
-    "type": "model",
-    "endpoint": "https://slovník.gov.cz/sparql",
-    "sourceIRI": "https://slovník.gov.cz/veřejný-sektor/glosář",
-    "classIRI": [
-      "http://www.w3.org/2002/07/owl#Class"
-    ],
-    "relationshipIRI": [
-      "https://slovník.gov.cz/základní/pojem/typ-vztahu"
-    ],
-    "attributes": []
   }
 }

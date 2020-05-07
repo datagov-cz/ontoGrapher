@@ -17,7 +17,7 @@ import {
     getNewLabel,
     highlightCell,
     nameGraphElement,
-    restoreDomainOfConns,
+    restoreDomainOfConnections,
     restoreHiddenElem,
     unHighlightAll,
     unHighlightCell
@@ -26,7 +26,7 @@ import {HideButton} from "../graph/elemHide";
 import {ElemInfoButton} from "../graph/elemInfo";
 import {LinkInfoButton} from "../graph/linkInfo";
 import {initLanguageObject} from "../function/FunctionEditVars";
-import {updateConnections} from "../interface/TransactionInterface";
+import {updateConnections, updateProjectElement} from "../interface/TransactionInterface";
 import * as LocaleMain from "../locale/LocaleMain.json";
 
 interface DiagramCanvasProps {
@@ -303,21 +303,29 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps> {
                         let iri = createNewElemIRI(initLanguageObject(""), VocabularyElements);
                         addVocabularyElement(cls.id, iri, data.iri);
                         addClass(cls.id, iri, ProjectSettings.selectedPackage, true, Stereotypes[data.iri].inScheme);
+                        updateProjectElement(
+                            ProjectSettings.contextEndpoint,
+                            [data.iri],
+                            initLanguageObject(""),
+                            initLanguageObject(""),
+                            [],
+                            [],
+                            cls.id);
                     }
                 } else if (data.type === "existing") {
                     cls = new graphElement({id: data.id});
                     label = nameGraphElement(cls, ProjectSettings.selectedLanguage);
-                    restoreHiddenElem(data.id, cls);
-                    restoreDomainOfConns();
                 }
-
                 cls.set('position', this.paper?.clientToLocalPoint({x: event.clientX, y: event.clientY}));
                 cls.attr({label: {text: label}});
                 cls.addTo(graph);
                 let bbox = this.paper?.findViewByModel(cls).getBBox();
                 cls.resize(bbox.width, bbox.height);
-
                 this.props.updateElementPanel();
+                if (data.type === "existing") {
+                    restoreHiddenElem(data.id, cls);
+                    restoreDomainOfConnections();
+                }
             }}
         />);
 
