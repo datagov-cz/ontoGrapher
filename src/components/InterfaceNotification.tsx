@@ -6,18 +6,18 @@ interface Props {
 	active: boolean;
 	message: string;
 	error: boolean;
+	retry: Function;
 }
 
-interface State {
-
-}
-
-export default class InterfaceNotification extends React.Component<Props, State> {
+export default class InterfaceNotification extends React.Component<Props> {
 
 	render() {
 		if (this.props.error) {
 			return (<span>
-				{Locale.errorUpdating}
+				{Locale.errorUpdating}&nbsp;
+				<button className={"buttonlink"} onClick={() => {
+					this.props.retry();
+				}}>{Locale.retry}</button>
 			</span>);
 		} else {
 			return (<span>

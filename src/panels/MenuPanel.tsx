@@ -8,16 +8,17 @@ import MenuPanelAbout from "./menu/MenuPanelAbout";
 import InterfaceNotification from "../components/InterfaceNotification";
 
 interface MenuPanelProps {
-    readOnly?: boolean;
-    projectLanguage: string;
-    handleChangeLanguage: any;
-    newProject: Function;
-    loadProject: Function;
-    loadContext: Function;
-    update: Function;
-    loading: boolean;
-    status: string;
-    loadingError: boolean;
+	readOnly?: boolean;
+	projectLanguage: string;
+	handleChangeLanguage: any;
+	newProject: Function;
+	loadProject: Function;
+	loadContext: Function;
+	update: Function;
+	loading: boolean;
+	status: string;
+	loadingError: boolean;
+	retry: Function;
 }
 
 interface MenuPanelState {
@@ -55,8 +56,8 @@ export default class MenuPanel extends React.Component<MenuPanelProps, MenuPanel
                 }
             </Nav>
             <Navbar.Text className="mr-sm-2">
-                <InterfaceNotification active={this.props.loading} message={this.props.status}
-									   error={this.props.loadingError}/>
+				<InterfaceNotification active={this.props.loading} message={this.props.status}
+									   error={this.props.loadingError} retry={this.props.retry}/>
                 &nbsp;
                 {ProjectSettings.name[this.props.projectLanguage] === "" ? "<untitled>" : ProjectSettings.name[this.props.projectLanguage]}
             </Navbar.Text>

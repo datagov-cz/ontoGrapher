@@ -27,7 +27,7 @@ import {AttributeObject} from "../../datatypes/AttributeObject";
 import {RIEInput} from "riek";
 import {nameGraphElement} from "../../function/FunctionGraph";
 import {graph} from "../../graph/graph";
-import {updateProjectElement} from "../../interface/TransactionInterface";
+import {updateProjectElement, updateProjectLink} from "../../interface/TransactionInterface";
 import {createNewElemIRI} from "../../function/FunctionCreateVars";
 import * as _ from "lodash";
 
@@ -36,6 +36,7 @@ interface Props {
 	headers: { [key: string]: { [key: string]: string } }
 	save: Function;
 	handleChangeLoadingStatus: Function;
+	retry: boolean;
 }
 
 interface State {
@@ -103,35 +104,44 @@ export default class DetailElement extends React.Component<Props, State> {
 			VocabularyElements[iri] = VocabularyElements[ProjectElements[this.state.id].iri];
 			ProjectElements[this.state.id].iri = iri;
 		}
-		const result = await updateProjectElement(
+		updateProjectElement(
 			ProjectSettings.contextEndpoint,
+			this.constructor.name,
 			this.state.inputTypes,
 			this.state.inputLabels,
 			this.state.inputDefinitions,
 			this.state.inputAttributes,
 			this.state.inputProperties,
-			this.state.id);
-		if (result) {
-			VocabularyElements[ProjectElements[this.state.id].iri].types = this.state.inputTypes;
-			VocabularyElements[ProjectElements[this.state.id].iri].labels = this.state.inputLabels;
-			VocabularyElements[ProjectElements[this.state.id].iri].definitions = this.state.inputDefinitions;
-			ProjectElements[this.state.id].attributes = this.state.inputAttributes;
-			ProjectElements[this.state.id].properties = this.state.inputProperties;
-			nameGraphElement(graph.getCell(this.state.id), this.props.projectLanguage);
-			this.props.save();
-			this.setState({changes: false});
-			ProjectElements[this.state.id].untitled = false;
-			this.props.handleChangeLoadingStatus(false, "", false);
-			if (ProjectElements[this.state.id].iri !== oldIRI) {
-				delete VocabularyElements[oldIRI];
+			this.state.id).then(async result => {
+			if (result) {
+				VocabularyElements[ProjectElements[this.state.id].iri].types = this.state.inputTypes;
+				VocabularyElements[ProjectElements[this.state.id].iri].labels = this.state.inputLabels;
+				VocabularyElements[ProjectElements[this.state.id].iri].definitions = this.state.inputDefinitions;
+				ProjectElements[this.state.id].attributes = this.state.inputAttributes;
+				ProjectElements[this.state.id].properties = this.state.inputProperties;
+				nameGraphElement(graph.getCell(this.state.id), this.props.projectLanguage);
+				this.props.save();
+				this.setState({changes: false});
+				ProjectElements[this.state.id].untitled = false;
+				this.props.handleChangeLoadingStatus(false, "", false);
+				for (let conn in ProjectElements[this.state.id].connections) {
+					await updateProjectLink(ProjectSettings.contextEndpoint, conn).then(res => {
+						if (!res) {
+							this.props.handleChangeLoadingStatus(false, "", true);
+						}
+					});
+				}
+				if (ProjectElements[this.state.id].iri !== oldIRI) {
+					delete VocabularyElements[oldIRI];
+				}
+			} else {
+				this.props.handleChangeLoadingStatus(false, "", true);
 			}
-		} else {
-			this.props.handleChangeLoadingStatus(false, "", true);
-		}
+		});
 	}
 
 	componentDidUpdate(prevProps: Readonly<Props>, prevState: Readonly<State>, snapshot?: any) {
-		if (prevState !== this.state && this.state.changes) {
+		if (prevState !== this.state && (this.state.changes || (this.props.retry && ProjectSettings.lastUpdate.source === this.constructor.name))) {
 			this.save();
 		}
 	}

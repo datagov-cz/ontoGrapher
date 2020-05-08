@@ -36,6 +36,7 @@ interface DiagramCanvasProps {
     hideDetails: Function;
     updateElementPanel: Function;
     handleChangeLoadingStatus: Function;
+    retry: boolean;
 }
 
 export default class DiagramCanvas extends React.Component<DiagramCanvasProps> {
@@ -50,6 +51,16 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps> {
         this.magnet = false;
         this.componentDidMount = this.componentDidMount.bind(this);
         this.drag = undefined;
+    }
+
+    componentDidUpdate(prevProps: Readonly<DiagramCanvasProps>, prevState: Readonly<{}>, snapshot?: any) {
+        if (prevState !== this.state && (this.props.retry && ProjectSettings.lastUpdate.source === this.constructor.name)) {
+            if (ProjectSettings.lastUpdate.sid && ProjectSettings.lastUpdate.tid && ProjectSettings.lastUpdate.linkID) {
+                this.updateConnections(ProjectSettings.lastUpdate.sid, ProjectSettings.lastUpdate.tid, ProjectSettings.lastUpdate.linkID);
+            } else if (ProjectSettings.lastUpdate.sid && ProjectSettings.lastUpdate.id) {
+                this.deleteConnections(ProjectSettings.lastUpdate.sid, ProjectSettings.lastUpdate.id);
+            }
+        }
     }
 
     resizeElem(id: string) {
@@ -75,6 +86,39 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps> {
                 link.target({id: id});
             }
         }
+    }
+
+    updateConnections(sid: string, tid: string, linkID: string) {
+        this.props.handleChangeLoadingStatus(true, LocaleMain.updating, false);
+        updateConnections(ProjectSettings.contextEndpoint, sid, []).then(result => {
+            if (result) {
+                ProjectElements[sid].connections.push(linkID);
+                addLink(linkID, this.props.selectedLink, sid, tid);
+                this.props.handleChangeLoadingStatus(false, "", false);
+            } else {
+                this.handleChangeLoadingStatus(false, "", true);
+            }
+        });
+    }
+
+    deleteConnections(sid: string, id: string) {
+        updateConnections(ProjectSettings.contextEndpoint, sid, [id]).then(result => {
+            if (result) {
+                if (ProjectElements[sid].connections.includes(id)) ProjectElements[sid].connections.splice(ProjectElements[sid].connections.indexOf(id), 1);
+                let vocabElem = VocabularyElements[ProjectLinks[id].iri];
+                if (vocabElem && vocabElem.domain) {
+                    let domainOf = VocabularyElements[vocabElem.domain].domainOf;
+                    if (domainOf && (Schemes[VocabularyElements[vocabElem.domain].inScheme].readOnly)) {
+                        domainOf.splice(domainOf.indexOf(ProjectLinks[id].iri), 1);
+                    }
+                }
+                delete ProjectLinks[id];
+                view.model.remove();
+                this.props.handleChangeLoadingStatus(false, "", false);
+            } else {
+                this.props.handleChangeLoadingStatus(false, "", true);
+            }
+        });
     }
 
     componentDidMount(): void {
@@ -150,23 +194,7 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps> {
                         this.props.handleChangeLoadingStatus(true, LocaleMain.updating, false);
                         let id = view.model.id;
                         let sid = view.model.getSourceCell().id;
-                        if (ProjectElements[sid].connections.includes(id)) ProjectElements[sid].connections.splice(ProjectElements[sid].connections.indexOf(id), 1);
-                        updateConnections(ProjectSettings.contextEndpoint, sid, [id]).then(result => {
-                            if (result) {
-                                let vocabElem = VocabularyElements[ProjectLinks[id].iri];
-                                if (vocabElem && vocabElem.domain) {
-                                    let domainOf = VocabularyElements[vocabElem.domain].domainOf;
-                                    if (domainOf && (Schemes[VocabularyElements[vocabElem.domain].inScheme].readOnly)) {
-                                        domainOf.splice(domainOf.indexOf(ProjectLinks[id].iri), 1);
-                                    }
-                                }
-                                delete ProjectLinks[id];
-                                view.model.remove();
-                                this.props.handleChangeLoadingStatus(false, "", false);
-                            } else {
-                                this.props.handleChangeLoadingStatus(false, "", true);
-                            }
-                        });
+                        this.deleteConnections(sid, id);
                     })
                 })
                 let toolsView = new joint.dia.ToolsView({
@@ -222,17 +250,7 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps> {
                                 ])
                             }
                             if (typeof link.id === "string") {
-                                ProjectElements[sid].connections.push(link.id);
-                                addLink(link.id, this.props.selectedLink, sid, tid);
-                                //TODO: updateConnections should dictate whether the link is added/deleted at all (currently precedes real action)
-                                this.props.handleChangeLoadingStatus(true, LocaleMain.updating, false);
-                                updateConnections(ProjectSettings.contextEndpoint, sid, []).then(result => {
-                                    if (result) {
-                                        this.props.handleChangeLoadingStatus(false, "", false);
-                                    } else {
-                                        this.handleChangeLoadingStatus(false, "", true);
-                                    }
-                                });
+                                this.updateConnections(sid, tid, link.id);
                             }
                             link.appendLabel({attrs: {text: {text: Links[this.props.selectedLink].labels[this.props.projectLanguage]}}});
                         }

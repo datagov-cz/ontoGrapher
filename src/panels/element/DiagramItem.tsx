@@ -13,6 +13,7 @@ interface Props {
 	openRenameDiagram: Function;
 	openRemoveDiagram: Function;
 	handleChangeLoadingStatus: Function;
+	retry: boolean;
 }
 
 interface State {
@@ -34,6 +35,17 @@ export default class DiagramItem extends React.Component<Props, State> {
 		this.alertPanel = this.alertPanel.bind(this);
 	}
 
+
+	save() {
+		updateProjectSettings(ProjectSettings.contextIRI, ProjectSettings.contextEndpoint).then(result => {
+			if (result) {
+				this.props.handleChangeLoadingStatus(false, "", false);
+			} else {
+				this.props.handleChangeLoadingStatus(false, "", true);
+			}
+		})
+	}
+
 	alertPanel() {
 		if (this.props.diagram !== ProjectSettings.selectedDiagram) {
 			Diagrams[ProjectSettings.selectedDiagram].json = saveDiagram();
@@ -43,13 +55,7 @@ export default class DiagramItem extends React.Component<Props, State> {
 			} else {
 				loadDiagram(load);
 			}
-			updateProjectSettings(ProjectSettings.contextIRI, ProjectSettings.contextEndpoint).then(result => {
-				if (result) {
-					this.props.handleChangeLoadingStatus(false, "", false);
-				} else {
-					this.props.handleChangeLoadingStatus(false, "", true);
-				}
-			})
+			this.save();
 			ProjectSettings.selectedDiagram = this.props.diagram;
 			this.setClassName();
 			this.props.update();
@@ -60,10 +66,13 @@ export default class DiagramItem extends React.Component<Props, State> {
 		this.setClassName();
 	}
 
-	componentDidUpdate(prevProps: { selectedDiagram: any }) {
+	componentDidUpdate(prevProps: Readonly<Props>, prevState: Readonly<{}>, snapshot?: any) {
 		if (prevProps.selectedDiagram !== this.props.selectedDiagram) {
 			this.setClassName();
 			this.forceUpdate();
+		}
+		if (prevState !== this.state && ((this.props.retry && ProjectSettings.lastUpdate.source === this.constructor.name))) {
+			this.save();
 		}
 	}
 

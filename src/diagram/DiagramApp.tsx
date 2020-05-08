@@ -35,6 +35,7 @@ interface DiagramAppState {
 	loading: boolean;
 	status: string;
 	error: boolean;
+	retry: boolean;
 }
 
 require("../scss/style.scss");
@@ -61,7 +62,8 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 			detailPanelHidden: false,
 			loading: true,
 			status: Locale.loading,
-			error: false
+			error: false,
+			retry: false,
 		});
 		document.title = Locale.ontoGrapher;
 		this.handleChangeSelectedLink = this.handleChangeSelectedLink.bind(this);
@@ -157,7 +159,6 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 							this.handleChangeLoadingStatus(false, "", false);
 						}
 					})
-					//getElementsConfig(contextEndpoint);
 				}
 			})
 		});
@@ -178,6 +179,10 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 		ProjectSettings.selectedLink = linkType;
 	}
 
+	handleChangeRetry(retry: boolean) {
+		this.setState({retry: retry});
+	}
+
 	render() {
 		return (<div className={"app"}>
 			<MenuPanel
@@ -193,6 +198,9 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 					this.elementPanel.current?.update();
 				}}
 				loadingError={this.state.error}
+				retry={() => {
+					this.setState({retry: true})
+				}}
 			/>
 			<ItemPanel
 				ref={this.elementPanel}
@@ -211,6 +219,7 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 					this.elementPanel.current?.forceUpdate();
 				}}
 				handleChangeLoadingStatus={this.handleChangeLoadingStatus}
+				retry={this.state.retry}
 			/>
 			<DiagramCanvas
 				ref={this.canvas}

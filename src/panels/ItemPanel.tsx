@@ -33,6 +33,7 @@ interface Props {
 	handleChangeSelectedLink: Function;
 	selectedLink: string;
 	handleChangeLoadingStatus: Function;
+	retry: boolean;
 }
 
 interface State {
@@ -88,23 +89,29 @@ export default class ItemPanel extends React.Component<Props, State> {
 			selectedDiagram: 0,
 			selectedNode: PackageRoot
 		};
-        this.links = Object.keys(Links);
-        this.stereotypes = Object.keys(Stereotypes);
-        this.handleChangeSelect = this.handleChangeSelect.bind(this);
-        this.handleChangeSearch = this.handleChangeSearch.bind(this);
-        this.search = this.search.bind(this);
-        this.handleChangeSelectedLink = this.handleChangeSelectedLink.bind(this);
-    }
+		this.links = Object.keys(Links);
+		this.stereotypes = Object.keys(Stereotypes);
+		this.handleChangeSelect = this.handleChangeSelect.bind(this);
+		this.handleChangeSearch = this.handleChangeSearch.bind(this);
+		this.search = this.search.bind(this);
+		this.handleChangeSelectedLink = this.handleChangeSelectedLink.bind(this);
+	}
 
-    handleChangeSelectedLink(linkType: string) {
-        this.props.handleChangeSelectedLink(linkType);
-    }
+	componentDidUpdate(prevProps: Readonly<Props>, prevState: Readonly<{}>, snapshot?: any) {
+		if (prevState !== this.state && ((this.props.retry && ProjectSettings.lastUpdate.source === this.constructor.name))) {
+			this.save();
+		}
+	}
 
-    search(search: string, filter: string[]) {
-        let result1 = [];
-        for (let stereotype in Stereotypes) {
-            if ((filter.includes(Stereotypes[stereotype].inScheme) || filter.length === 0)
-                && (
+	handleChangeSelectedLink(linkType: string) {
+		this.props.handleChangeSelectedLink(linkType);
+	}
+
+	search(search: string, filter: string[]) {
+		let result1 = [];
+		for (let stereotype in Stereotypes) {
+			if ((filter.includes(Stereotypes[stereotype].inScheme) || filter.length === 0)
+				&& (
                     Stereotypes[stereotype].labels[this.props.projectLanguage].startsWith(search)
                 )) {
                 result1.push(stereotype);
@@ -224,25 +231,35 @@ export default class ItemPanel extends React.Component<Props, State> {
         if (node.open) {
             for (let subnode of node.children) {
                 this.getFoldersDFS(arr, subnode, depth + 1);
-            }
-        }
-    }
+			}
+		}
+	}
 
-    getFolders() {
-        let result: JSX.Element[] = [];
-        this.getFoldersDFS(result, PackageRoot, 0);
-        return result;
-    }
+	getFolders() {
+		let result: JSX.Element[] = [];
+		this.getFoldersDFS(result, PackageRoot, 0);
+		return result;
+	}
 
-    render() {
-        return (<ResizableBox
-                className={"elements"}
-                width={300}
-                height={1000}
-                axis={"x"}
-                handleSize={[8, 8]}
-                resizeHandles={['ne']}
-            >
+	save() {
+		updateProjectSettings(ProjectSettings.contextIRI, ProjectSettings.contextEndpoint).then(result => {
+			if (result) {
+				this.props.handleChangeLoadingStatus(false, "", false);
+			} else {
+				this.props.handleChangeLoadingStatus(false, "", true);
+			}
+		})
+	}
+
+	render() {
+		return (<ResizableBox
+				className={"elements"}
+				width={300}
+				height={1000}
+				axis={"x"}
+				handleSize={[8, 8]}
+				resizeHandles={['ne']}
+			>
                 <InputGroup>
 					<InputGroup.Prepend>
 						<InputGroup.Text id="inputGroupPrepend">
@@ -298,28 +315,23 @@ export default class ItemPanel extends React.Component<Props, State> {
                         <button className={"margins"} onClick={() => {
 							this.props.handleChangeLoadingStatus(true, LocaleMain.updating, false);
 							addDiagram();
-							updateProjectSettings(ProjectSettings.contextIRI, ProjectSettings.contextEndpoint).then(result => {
-								if (result) {
-									this.props.handleChangeLoadingStatus(false, "", false);
-								} else {
-									this.props.handleChangeLoadingStatus(false, "", true);
-								}
-							})
+							this.save();
 							this.forceUpdate();
 						}
                         }>{LocaleMain.addDiagram}</button>
                         <div className="elementLinkList">
                             {Diagrams.map((model, i) => <DiagramItem
-									key={i}
-									diagram={i}
-									selectedDiagram={ProjectSettings.selectedDiagram}
-									update={() => {
-										this.forceUpdate();
-									}}
-									openRemoveDiagram={() => {
-										this.setState({
-											selectedDiagram: i,
-											modalRemoveDiagram: true
+								retry={this.props.retry}
+								key={i}
+								diagram={i}
+								selectedDiagram={ProjectSettings.selectedDiagram}
+								update={() => {
+									this.forceUpdate();
+								}}
+								openRemoveDiagram={() => {
+									this.setState({
+										selectedDiagram: i,
+										modalRemoveDiagram: true
 										})
 									}}
 									openRenameDiagram={() => {
@@ -367,6 +379,8 @@ export default class ItemPanel extends React.Component<Props, State> {
 					update={() => {
 						this.forceUpdate();
 					}}
+					retry={this.props.retry}
+					handleChangeLoadingStatus={this.props.handleChangeLoadingStatus}
 				/>
 
 				<ModalRenameDiagram
@@ -379,6 +393,7 @@ export default class ItemPanel extends React.Component<Props, State> {
 						this.forceUpdate();
 					}}
 					handleChangeLoadingStatus={this.props.handleChangeLoadingStatus}
+					retry={this.props.retry}
 				/>
 
 				<ModalRemoveDiagram
@@ -391,6 +406,7 @@ export default class ItemPanel extends React.Component<Props, State> {
 						this.forceUpdate();
 					}}
 					handleChangeLoadingStatus={this.props.handleChangeLoadingStatus}
+					retry={this.props.retry}
 				/>
 
 			</ResizableBox>

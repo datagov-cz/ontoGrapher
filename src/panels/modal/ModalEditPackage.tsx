@@ -2,15 +2,7 @@ import React from 'react';
 import {Button, Modal} from "react-bootstrap";
 import * as LocaleMenu from "../../locale/LocaleMenu.json";
 import TableList from "../../components/TableList";
-import {
-    Languages,
-    PackageRoot,
-    ProjectElements,
-    ProjectSettings,
-    Schemes,
-    StructuresShort,
-    VocabularyElements
-} from "../../config/Variables";
+import {Languages, PackageRoot, ProjectSettings, Schemes} from "../../config/Variables";
 import * as LocaleMain from "../../locale/LocaleMain.json";
 import {PackageNode} from "../../datatypes/PackageNode";
 // @ts-ignore
@@ -38,6 +30,12 @@ export default class ModalEditPackage extends React.Component<Props, State> {
         }
     }
 
+    componentDidUpdate(prevProps: Readonly<Props>, prevState: Readonly<State>, snapshot?: any) {
+        if (prevProps !== this.props) {
+            this.setState({inputEdit: this.props.node.labels});
+        }
+    }
+
     getFolder() {
         let result: JSX.Element[] = [];
         this.getFoldersDFS(result, PackageRoot, 0);
@@ -48,8 +46,8 @@ export default class ModalEditPackage extends React.Component<Props, State> {
         if (node === this.props.node.parent) {
             return (<span className={"italic"}>{"-".repeat(depth) + node.labels[this.props.projectLanguage]}</span>)
         } else if (node === this.props.node) {
-            return (<span>{"-".repeat(depth) + node.labels[this.props.projectLanguage]}</span>)
-        } else if (node === PackageRoot) {
+            return (<span>{".".repeat(depth) + node.labels[this.props.projectLanguage]}</span>)
+        } else if (!node.parent) {
             return (<span>{LocaleMain.root}</span>)
         } else {
             return (<button className="buttonlink" onClick={() => {
@@ -145,32 +143,32 @@ export default class ModalEditPackage extends React.Component<Props, State> {
                     <Button onClick={() => {
                         this.props.node.labels = this.state.inputEdit;
                         if (this.props.node.scheme) {
-                            let newkey = "";
-                            for (let lang in this.state.inputEdit) {
-                                if (this.state.inputEdit[lang].length > 0) {
-                                    newkey = this.state.inputEdit[lang];
-                                    break;
-                                }
-                            }
-                            if (newkey === "") newkey = LocaleMain.untitled;
-                            newkey = "https://slovník.gov.cz/" + StructuresShort[ProjectSettings.knowledgeStructure] + "/" + newkey;
-                            if (newkey in Schemes) {
-                                let count = 1;
-                                while ((newkey + "-" + count.toString(10)) in Schemes) {
-                                    count++;
-                                }
-                                newkey += "-" + count.toString(10);
-                            }
-                            for (let id in ProjectElements) {
-                                if (VocabularyElements[ProjectElements[id].iri].inScheme === this.props.node.scheme) {
-                                    VocabularyElements[ProjectElements[id].iri].inScheme = newkey;
-                                }
-                            }
-                            if (newkey !== this.props.node.scheme) {
-                                Schemes[newkey] = Schemes[this.props.node.scheme];
-                                delete Schemes[this.props.node.scheme];
-                            }
-                            this.props.node.scheme = newkey;
+                            // let newkey = "";
+                            // for (let lang in this.state.inputEdit) {
+                            //     if (this.state.inputEdit[lang].length > 0) {
+                            //         newkey = this.state.inputEdit[lang];
+                            //         break;
+                            //     }
+                            // }
+                            // if (newkey === "") newkey = LocaleMain.untitled;
+                            // newkey = "https://slovník.gov.cz/" + StructuresShort[ProjectSettings.knowledgeStructure] + "/" + newkey;
+                            // if (newkey in Schemes) {
+                            //     let count = 1;
+                            //     while ((newkey + "-" + count.toString(10)) in Schemes) {
+                            //         count++;
+                            //     }
+                            //     newkey += "-" + count.toString(10);
+                            // }
+                            // for (let id in ProjectElements) {
+                            //     if (VocabularyElements[ProjectElements[id].iri].inScheme === this.props.node.scheme) {
+                            //         VocabularyElements[ProjectElements[id].iri].inScheme = newkey;
+                            //     }
+                            // }
+                            // if (newkey !== this.props.node.scheme) {
+                            //     Schemes[newkey] = Schemes[this.props.node.scheme];
+                            //     delete Schemes[this.props.node.scheme];
+                            // }
+                            // this.props.node.scheme = newkey;
                             Schemes[this.props.node.scheme].labels = this.state.inputEdit;
                         }
                         this.props.close();

@@ -87,7 +87,28 @@ export async function getScheme(iri: string, endpoint: string, readOnly: boolean
     });
 }
 
+//TODO: implement loading og things
 export async function getElementsConfig(endpoint: string, callback?: Function) {
+    let editableSchemes = Object.keys(Schemes).filter((scheme) => !Schemes[scheme].readOnly);
+    for (let iri in VocabularyElements) {
+        if (editableSchemes.includes(VocabularyElements[iri].inScheme)) {
+            let query = "select ?p ?o where {<" + iri + "> ?p ?o .}";
+            let q = endpoint + "?query=" + encodeURIComponent(query);
+            await fetch(q, {headers: {'Accept': 'application/json'}}).then(response => {
+                return response.json();
+            }).then(data => {
+                for (let result of data.results.bindings) {
+
+                }
+                if (callback) callback(true);
+            }).catch(() => {
+                if (callback) callback(false);
+            });
+        }
+    }
+}
+
+export async function getLinksConfig(endpoint: string, callback?: Function) {
     let editableSchemes = Object.keys(Schemes).filter((scheme) => !Schemes[scheme].readOnly);
     for (let iri in VocabularyElements) {
         if (editableSchemes.includes(VocabularyElements[iri].inScheme)) {

@@ -11,6 +11,7 @@ interface Props {
     close: Function;
     update: Function;
     handleChangeLoadingStatus: Function;
+    retry: boolean;
 }
 
 interface State {
@@ -23,6 +24,23 @@ export default class ModalRenameDiagram extends React.Component<Props, State> {
         this.state = {
             inputEdit: ""
         }
+    }
+
+    componentDidUpdate(prevProps: Readonly<Props>, prevState: Readonly<{}>, snapshot?: any) {
+        if (prevState !== this.state && ((this.props.retry && ProjectSettings.lastUpdate.source === this.constructor.name))) {
+            this.save();
+        }
+    }
+
+    save() {
+        Diagrams[this.props.diagram].name = this.state.inputEdit;
+        updateProjectSettings(ProjectSettings.contextIRI, ProjectSettings.contextEndpoint).then(result => {
+            if (result) {
+                this.props.handleChangeLoadingStatus(false, "", false);
+            } else {
+                this.props.handleChangeLoadingStatus(false, "", true);
+            }
+        })
     }
 
     render() {
@@ -45,14 +63,7 @@ export default class ModalRenameDiagram extends React.Component<Props, State> {
                         this.props.close();
                     }} variant="secondary">{LocaleMenu.cancel}</Button>
                     <Button onClick={() => {
-                        Diagrams[this.props.diagram].name = this.state.inputEdit;
-                        updateProjectSettings(ProjectSettings.contextIRI, ProjectSettings.contextEndpoint).then(result => {
-                            if (result) {
-                                this.props.handleChangeLoadingStatus(false, "", false);
-                            } else {
-                                this.props.handleChangeLoadingStatus(false, "", true);
-                            }
-                        })
+                        this.save();
                         this.props.update();
                         this.props.close();
                     }}>{LocaleMenu.confirm}</Button>

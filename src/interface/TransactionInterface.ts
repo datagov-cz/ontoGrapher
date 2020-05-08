@@ -8,21 +8,17 @@ import {
 	VocabularyElements
 } from "../config/Variables";
 import {AttributeObject} from "../datatypes/AttributeObject";
-
-//TODO: implement loading og things
-//TODO: implement retry function
-//TODO: package modal not showing labels properly
-//TODO: implement saving links
+import * as Locale from "../locale/LocaleMain.json";
 
 export async function updateProjectElement(
 	contextEndpoint: string,
+	source: string,
 	newTypes: string[],
 	newLabels: { [key: string]: string },
 	newDefinitions: { [key: string]: string },
 	newAttributes: AttributeObject[],
 	newProperties: AttributeObject[],
 	id: string): Promise<boolean> {
-
 	let iri = ProjectElements[id].iri;
 	let scheme = VocabularyElements[iri].inScheme;
 	let delTypes = VocabularyElements[iri].types;
@@ -118,12 +114,82 @@ export async function updateProjectElement(
 			}),
 		]
 	}
-	return await processTransaction(contextEndpoint, {"add": addLD, "delete": deleteLD, id: id});
+	return await processTransaction(contextEndpoint, {"add": addLD, "delete": deleteLD, "source": source});
 }
 
-export async function updateDeleteProjectElement(contextEndpoint: string, id: string) {
+export async function updateProjectLink(contextEndpoint: string, id: string) {
+	let ogContext = "http://onto.fel.cvut.cz/ontologies/application/ontoGrapher";
+	let linkIRI = ogContext + "-" + id;
+	let cardinalities: { [key: string]: string } = {};
+	if (ProjectLinks[id].sourceCardinality.getString() !== Locale.none) {
+		cardinalities["og:sourceCardinality1"] = ProjectLinks[id].sourceCardinality.getFirstCardinality();
+		cardinalities["og:sourceCardinality2"] = ProjectLinks[id].sourceCardinality.getSecondCardinality();
+	}
+	if (ProjectLinks[id].targetCardinality.getString() !== Locale.none) {
+		cardinalities["og:targetCardinality1"] = ProjectLinks[id].targetCardinality.getFirstCardinality();
+		cardinalities["og:targetCardinality2"] = ProjectLinks[id].targetCardinality.getSecondCardinality();
+	}
+	let addLD = {
+		"@context": Prefixes,
+		"@id": ogContext,
+		"@graph": [{
+			"@id": linkIRI,
+			"og:source": ProjectLinks[id].source,
+			"og:target": ProjectLinks[id].target,
+			"og:diagram": ProjectLinks[id].diagram,
+			...ProjectLinks[id].vertices.map((vert, i) => {
+				return {"og:vertex": linkIRI + "/vertex-" + (i + 1)}
+			}),
+			...cardinalities
+		},
+			...ProjectLinks[id].vertices.map((vert, i) => {
+				return {
+					"@id": linkIRI + "/vertex-" + (i + 1),
+					"og:position-x": vert.x,
+					"og:position-y": vert.y
+				}
+			}),
+		]
+	}
+
+	let del = await processGetTransaction(contextEndpoint, {subject: linkIRI});
+	if (del) {
+		let deleteLD = JSON.parse(del);
+		let list = deleteLD[0]["@graph"][0]["og:vertex"];
+		if (list) {
+			for (const vert of list) {
+				let val = vert["@id"];
+				let vertex = await processGetTransaction(contextEndpoint, {subject: val});
+				if (vertex) await processTransaction(contextEndpoint, {"delete": JSON.parse(vertex)});
+			}
+		}
+		await processTransaction(contextEndpoint, {"delete": deleteLD});
+	}
+
+	// let deleteLD = {
+	// 	"@context": Prefixes,
+	// 	"@id": ogContext,
+	// 	"@graph":[{
+	// 		"@id": linkIRI,
+	// 		"og:source": oldLink.source,
+	// 		"og:target": oldLink.target,
+	// 		"og:diagram": oldLink.diagram,
+	// 		...oldLink.vertices.map((vert: joint.dia.Link.Vertex, i:number) => {return {"og:vertex": linkIRI+"/vertex-"+(i+1)}}),
+	// 		...cardinalities
+	// 	},
+	// 		...oldLink.vertices.map((vert: joint.dia.Link.Vertex, i:number) => {return {
+	// 			"@id": linkIRI+"/vertex-"+(i+1),
+	// 			"og:position-x": vert.x,
+	// 			"og:position-y": vert.y
+	// 		}}),
+	// 	]
+	// }
+
+	return await processTransaction(contextEndpoint, {"add": addLD});
+}
+
+export async function updateDeleteProjectElement(contextEndpoint: string, id: string, source: string) {
 	let iri = ProjectElements[id].iri;
-	let scheme = VocabularyElements[iri].inScheme;
 	let subjectLD = await processGetTransaction(contextEndpoint, {subject: iri});
 	let predicateLD = await processGetTransaction(contextEndpoint, {predicate: iri});
 	let objectLD = await processGetTransaction(contextEndpoint, {object: iri});
@@ -131,9 +197,9 @@ export async function updateDeleteProjectElement(contextEndpoint: string, id: st
 		subjectLD = JSON.parse(subjectLD);
 		predicateLD = JSON.parse(predicateLD);
 		objectLD = JSON.parse(objectLD);
-		return await processTransaction(contextEndpoint, {"delete": subjectLD, id: id}) &&
-			await processTransaction(contextEndpoint, {"delete": predicateLD, id: id}) &&
-			await processTransaction(contextEndpoint, {"delete": objectLD, id: id});
+		return await processTransaction(contextEndpoint, {"delete": subjectLD, id: id, source: source}) &&
+			await processTransaction(contextEndpoint, {"delete": predicateLD, id: id, source: source}) &&
+			await processTransaction(contextEndpoint, {"delete": objectLD, id: id, source: source});
 	} else return false;
 
 }
@@ -213,11 +279,7 @@ export async function processGetTransaction(contextEndpoint: string, request: { 
 
 export async function processTransaction(contextEndpoint: string, transactions: { [key: string]: any }): Promise<boolean> {
 	ProjectSettings.lastUpdate = transactions;
-
-	let result = false;
-
 	const transactionID = await getTransactionID(contextEndpoint);
-
 
 	if (transactionID) {
 		let resultAdd, resultDelete, resultCommit;

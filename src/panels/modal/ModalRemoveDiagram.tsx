@@ -11,9 +11,31 @@ interface Props {
 	close: Function;
 	update: Function;
 	handleChangeLoadingStatus: Function;
+	retry: boolean;
 }
 
 export default class ModalRemoveDiagram extends React.Component<Props> {
+
+	componentDidUpdate(prevProps: Readonly<Props>, prevState: Readonly<{}>, snapshot?: any) {
+		if (prevState !== this.state && ((this.props.retry && ProjectSettings.lastUpdate.source === this.constructor.name))) {
+			this.save();
+		}
+	}
+
+	save() {
+		this.props.handleChangeLoadingStatus(true, "", false);
+		delete Diagrams[this.props.diagram];
+		if (ProjectSettings.selectedDiagram === this.props.diagram) {
+			changeDiagrams(Object.keys(Diagrams)[0]);
+		}
+		updateProjectSettings(ProjectSettings.contextIRI, ProjectSettings.contextEndpoint).then(result => {
+			if (result) {
+				this.props.handleChangeLoadingStatus(false, "", false);
+			} else {
+				this.props.handleChangeLoadingStatus(false, "", true);
+			}
+		})
+	}
 
 	render() {
 		return (
@@ -29,18 +51,7 @@ export default class ModalRemoveDiagram extends React.Component<Props> {
 						this.setState({modalRemove: false});
 					}} variant="secondary">{LocaleMenu.cancel}</Button>
 					<Button onClick={() => {
-						this.props.handleChangeLoadingStatus(true, "", false);
-						delete Diagrams[this.props.diagram];
-						if (ProjectSettings.selectedDiagram === this.props.diagram) {
-							changeDiagrams(Object.keys(Diagrams)[0]);
-						}
-						updateProjectSettings(ProjectSettings.contextIRI, ProjectSettings.contextEndpoint).then(result => {
-							if (result) {
-								this.props.handleChangeLoadingStatus(false, "", false);
-							} else {
-								this.props.handleChangeLoadingStatus(false, "", true);
-							}
-						})
+						this.save();
 						this.props.update();
 						this.props.close();
 					}}>{LocaleMenu.confirm}</Button>
