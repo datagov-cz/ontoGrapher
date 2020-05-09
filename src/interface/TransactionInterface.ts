@@ -275,9 +275,9 @@ export async function processGetTransaction(contextEndpoint: string, request: { 
 
 	if (transactionID) {
 		let transactionUrl = transactionID + "?action=GET" +
-			(request.subject ? "&subj=" + "<" + (request.subject) + ">" : "") +
-			(request.predicate ? "&pred=" + "<" + (request.predicate) + ">" : "") +
-			(request.object ? "&obj=" + "<" + (request.object) + ">" : "");
+			(request.subject ? "&subj=<" + (request.subject) + ">" : "") +
+			(request.predicate ? "&pred=<" + (request.predicate) + ">" : "") +
+			(request.object ? "&obj=<" + (request.object) + ">" : "");
 		return await fetch(transactionUrl, {
 			headers: {'Accept': "application/ld+json"},
 			method: "PUT"

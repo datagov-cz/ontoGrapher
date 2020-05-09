@@ -26,7 +26,7 @@ export default class ModalRemoveDiagram extends React.Component<Props> {
 		this.props.handleChangeLoadingStatus(true, "", false);
 		delete Diagrams[this.props.diagram];
 		if (ProjectSettings.selectedDiagram === this.props.diagram) {
-			changeDiagrams(Object.keys(Diagrams)[0]);
+			changeDiagrams(0);
 		}
 		updateProjectSettings(ProjectSettings.contextIRI, ProjectSettings.contextEndpoint).then(result => {
 			if (result) {

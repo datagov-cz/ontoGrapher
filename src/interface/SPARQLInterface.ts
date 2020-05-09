@@ -130,7 +130,7 @@ export async function getElementsConfig(endpoint: string, callback?: Function) {
             let query = [
                 "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
                 "select ?id ?untitled ?active ?attribute ?property ?diagram where {",
-                "BIND(<" + (iri + "/diagram") + "> as ?iri) .",
+                "BIND(<" + iri + "/diagram> as ?iri) .",
                 "?iri og:id ?id .",
                 "?iri og:active ?active .",
                 "?iri og:untitled ?untitled .",
