@@ -374,5 +374,4 @@ export async function updateProjectSettings(contextIRI: string, contextEndpoint:
 		await processTransaction(contextEndpoint, {"add": ogContextLD, "delete": ogContextLD});
 }
 
-
 //TODO: check contexts of jsonLDs
