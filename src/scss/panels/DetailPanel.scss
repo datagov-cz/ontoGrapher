@@ -1,18 +1,20 @@
-.details{
+.details {
   overflow: auto;
   word-wrap: break-word;
   background-color: white;
-  float:right;
+  float: right;
   padding: 5px 10px;
   //position: absolute;
   //right: 0;
   //top: 56px;
   height: calc(100vh - 56px) !important;
   max-width: 600px;
-  .detailTitle{
+
+  .detailTitle {
     margin: 10px 20px;
   }
-  .bordered{
+
+  .bordered {
     margin: auto;
     margin-bottom: 10px;
     padding: 2px;

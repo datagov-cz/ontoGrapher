@@ -2,16 +2,16 @@ import React from 'react';
 import {Button, Modal} from "react-bootstrap";
 import * as LocaleMenu from "../../../locale/LocaleMenu.json";
 
-interface Props{
+interface Props {
     modal: boolean;
     newProject: Function;
     close: Function;
 }
 
-export default class FileNewModal extends React.Component<Props, any>{
+export default class FileNewModal extends React.Component<Props, any> {
 
-    render(){
-        return(<Modal centered show={this.props.modal}>
+    render() {
+        return (<Modal centered show={this.props.modal}>
             <Modal.Header>
                 <Modal.Title>{LocaleMenu.fileNewModalTitle}</Modal.Title>
             </Modal.Header>
@@ -19,8 +19,12 @@ export default class FileNewModal extends React.Component<Props, any>{
                 <p>{LocaleMenu.fileNewModalDescription}</p>
             </Modal.Body>
             <Modal.Footer>
-                <Button onClick={() => {this.props.close();}} variant="secondary">{LocaleMenu.cancel}</Button>
-                <Button onClick={() => {this.props.newProject();}}>{LocaleMenu.confirm}</Button>
+                <Button onClick={() => {
+                    this.props.close();
+                }} variant="secondary">{LocaleMenu.cancel}</Button>
+                <Button onClick={() => {
+                    this.props.newProject();
+                }}>{LocaleMenu.confirm}</Button>
             </Modal.Footer>
         </Modal>);
     }

@@ -1,6 +1,6 @@
 import React from 'react';
 import {Nav} from 'react-bootstrap';
-import AboutModal from "./AboutModal";
+import AboutModal from "./misc/AboutModal";
 
 interface Props {
 

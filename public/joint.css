@@ -13,7 +13,7 @@ Important note: Presentation attributes have a lower precedence over CSS style r
 */
 
 
-/* .viewport is a <g> node wrapping all diagram elements in the paper */
+/* .viewport is a <g> node wrapping all diagram element in the paper */
 .joint-viewport {
    -webkit-user-select: none;
    -moz-user-select: none;
@@ -53,8 +53,8 @@ path:not([d]) {
 /*
 
 Elements have CSS classes named by their types. E.g. type: basic.Rect has a CSS class "element basic Rect".
-This makes it possible to easilly style elements in CSS and have generic CSS rules applying to
-the whole group of elements. Each plugin can provide its own stylesheet.
+This makes it possible to easilly style element in CSS and have generic CSS rules applying to
+the whole group of element. Each plugin can provide its own stylesheet.
 
 */
 
@@ -101,7 +101,7 @@ very thin.
 
 /*
 
-Vertex markers are `<circle>` elements that appear at connection vertex positions.
+Vertex markers are `<circle>` element that appear at connection vertex positions.
 
 */
 
@@ -160,7 +160,7 @@ Do not show marker vertices at all:  .marker-vertices { display: none; }
 Do not allow adding new vertices: .connection-wrap { pointer-events: none; }
 */
 
-/* foreignObject inside the elements (i.e joint.shapes.basic.TextBlock) */
+/* foreignObject inside the element (i.e joint.shapes.basic.TextBlock) */
 .joint-element .fobj {
     overflow: hidden;
 }

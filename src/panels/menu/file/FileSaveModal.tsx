@@ -2,18 +2,28 @@ import React from 'react';
 import {Button, Form, Modal} from "react-bootstrap";
 import * as LocaleMenu from "../../../locale/LocaleMenu.json";
 import * as Locale from "../../../locale/LocaleMain.json";
+import {saveProject} from "../../../function/FunctionProject";
 
-interface Props{
+interface Props {
     modal: boolean;
-    saveProject: Function;
-    saveString: string;
     close: Function;
 }
 
-export default class FileSaveModal extends React.Component<Props, any>{
+interface State{
+    saveString: string;
+}
 
-    render(){
-        return(<Modal centered show={this.props.modal}>
+export default class FileSaveModal extends React.Component<Props, State> {
+    constructor(props: Props) {
+        super(props);
+        this.state = {
+            saveString: ""
+        }
+    }
+    render() {
+        return (<Modal centered show={this.props.modal} onShow={()=>{
+            this.setState({saveString: JSON.stringify(saveProject())})
+        }}>
             <Modal.Header>
                 <Modal.Title>{Locale.menuModalSaveHeading}</Modal.Title>
             </Modal.Header>
@@ -23,11 +33,13 @@ export default class FileSaveModal extends React.Component<Props, any>{
                     style={{height: 150, resize: "none"}}
                     as={"textarea"}
                     disabled
-                    value={this.props.saveString}
+                    value={this.state.saveString}
                 />
             </Modal.Body>
             <Modal.Footer>
-                <Button onClick={() => {this.props.close();}} variant="secondary">{LocaleMenu.cancel}</Button>
+                <Button onClick={() => {
+                    this.props.close();
+                }} variant="secondary">{LocaleMenu.cancel}</Button>
             </Modal.Footer>
         </Modal>);
     }

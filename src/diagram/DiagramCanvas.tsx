@@ -1,17 +1,32 @@
 // @ts-nocheck
 import React from 'react';
 import * as joint from 'jointjs';
-import {graphElement} from "../graph/GraphElement";
+import {graphElement} from "../graph/graphElement";
 import {
-    graph,
     Links,
-    ModelElements,
     ProjectElements,
     ProjectLinks,
     ProjectSettings,
+    Schemes,
+    Stereotypes,
     VocabularyElements
-} from "../var/Variables";
-import {addClass, addLink, addModel, getModelName, getName, getStereotypeList, vocabOrModal} from "../misc/Helper";
+} from "../config/Variables";
+import {addClass, addLink, addVocabularyElement, createNewElemIRI} from "../function/FunctionCreateVars";
+import {graph} from "../graph/graph";
+import {
+    getNewLabel,
+    highlightCell,
+    nameGraphElement,
+    restoreDomainOfConnections,
+    restoreHiddenElem,
+    unHighlightAll,
+    unHighlightCell
+} from "../function/FunctionGraph";
+import {HideButton} from "../graph/elemHide";
+import {ElemInfoButton} from "../graph/elemInfo";
+import {LinkInfoButton} from "../graph/linkInfo";
+import {initLanguageObject} from "../function/FunctionEditVars";
+import {updateConnections, updateProjectElement} from "../interface/TransactionInterface";
 import * as LocaleMain from "../locale/LocaleMain.json";
 
 interface DiagramCanvasProps {
@@ -19,20 +34,16 @@ interface DiagramCanvasProps {
     selectedLink: string;
     prepareDetails: Function;
     hideDetails: Function;
-    addCell: Function;
-    hide: Function;
+    updateElementPanel: Function;
+    handleChangeLoadingStatus: Function;
+    retry: boolean;
 }
 
-interface DiagramPropsState {
-
-}
-
-export default class DiagramCanvas extends React.Component<DiagramCanvasProps, DiagramPropsState>{
+export default class DiagramCanvas extends React.Component<DiagramCanvasProps> {
     private readonly canvasRef: React.RefObject<HTMLDivElement>;
     private paper: joint.dia.Paper | undefined;
-    private highlight: string;
     private magnet: boolean;
-    private drag: {x: any, y: any} | undefined;
+    private drag: { x: any, y: any } | undefined;
 
     constructor(props: DiagramCanvasProps) {
         super(props);
@@ -42,26 +53,34 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps, D
         this.drag = undefined;
     }
 
-    resizeElem(id: string){
+    componentDidUpdate(prevProps: Readonly<DiagramCanvasProps>, prevState: Readonly<{}>, snapshot?: any) {
+        if (prevState !== this.state && (this.props.retry && ProjectSettings.lastUpdate.source === this.constructor.name)) {
+            if (ProjectSettings.lastUpdate.sid && ProjectSettings.lastUpdate.tid && ProjectSettings.lastUpdate.linkID) {
+                this.updateConnections(ProjectSettings.lastUpdate.sid, ProjectSettings.lastUpdate.tid, ProjectSettings.lastUpdate.linkID);
+            } else if (ProjectSettings.lastUpdate.sid && ProjectSettings.lastUpdate.id) {
+                this.deleteConnections(ProjectSettings.lastUpdate.sid, ProjectSettings.lastUpdate.id);
+            }
+        }
+    }
+
+    resizeElem(id: string) {
         let view = this.paper?.findViewByModel(id);
         let bbox = view.getBBox();
         let cell = graph.getCell(id);
         let links = graph.getConnectedLinks(cell);
-        for (let link of links){
-            if(link.getSourceCell().id === id){
+        for (let link of links) {
+            if (link.getSourceCell().id === id) {
                 link.source({x: bbox.x, y: bbox.y});
             } else {
                 link.target({x: bbox.x, y: bbox.y});
             }
         }
         cell.resize(bbox.width, bbox.height);
-        cell.position(bbox.x, bbox.y);
-        // view.unhighlight();
-        // view.highlight();
-        this.unHighlightCell(cell.id);
-        this.highlightCell(cell.id);
-        for (let link of links){
-            if(link.getSourceCell() === null){
+        //cell.position(bbox.x, bbox.y);
+        unHighlightCell(cell.id);
+        highlightCell(cell.id);
+        for (let link of links) {
+            if (link.getSourceCell() === null) {
                 link.source({id: id});
             } else {
                 link.target({id: id});
@@ -69,22 +88,37 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps, D
         }
     }
 
-    highlightCell(id: string){
-        let cell = graph.getCell(id);
-        if (cell.isLink()){
-            cell.attr({line:{stroke:'#0000FF'}});
-        } else {
-            cell.attr({body:{stroke:'#0000FF'}});
-        }
+    updateConnections(sid: string, tid: string, linkID: string) {
+        this.props.handleChangeLoadingStatus(true, LocaleMain.updating, false);
+        updateConnections(ProjectSettings.contextEndpoint, sid, []).then(result => {
+            if (result) {
+                ProjectElements[sid].connections.push(linkID);
+                addLink(linkID, this.props.selectedLink, sid, tid);
+                this.props.handleChangeLoadingStatus(false, "", false);
+            } else {
+                this.handleChangeLoadingStatus(false, "", true);
+            }
+        });
     }
 
-    unHighlightCell(id: string){
-        let cell = graph.getCell(id);
-        if (cell.isLink()){
-            cell.attr({line:{stroke:'#000000'}});
-        } else {
-            cell.attr({body:{stroke:'#000000'}});
-        }
+    deleteConnections(sid: string, id: string) {
+        updateConnections(ProjectSettings.contextEndpoint, sid, [id]).then(result => {
+            if (result) {
+                if (ProjectElements[sid].connections.includes(id)) ProjectElements[sid].connections.splice(ProjectElements[sid].connections.indexOf(id), 1);
+                let vocabElem = VocabularyElements[ProjectLinks[id].iri];
+                if (vocabElem && vocabElem.domain) {
+                    let domainOf = VocabularyElements[vocabElem.domain].domainOf;
+                    if (domainOf && (Schemes[VocabularyElements[vocabElem.domain].inScheme].readOnly)) {
+                        domainOf.splice(domainOf.indexOf(ProjectLinks[id].iri), 1);
+                    }
+                }
+                delete ProjectLinks[id];
+                view.model.remove();
+                this.props.handleChangeLoadingStatus(false, "", false);
+            } else {
+                this.props.handleChangeLoadingStatus(false, "", true);
+            }
+        });
     }
 
     componentDidMount(): void {
@@ -104,114 +138,121 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps, D
             async: false,
             sorting: joint.dia.Paper.sorting.APPROX,
             connectionStrategy: joint.connectionStrategies.pinAbsolute,
-            defaultConnectionPoint: { name: 'boundary', args: { selector: 'border' }},
+            defaultConnectionPoint: {name: 'boundary', args: {selector: 'border'}},
             defaultLink: () => {
-                let link = new joint.shapes.standard.Link();
-                return link;
+                return new joint.shapes.standard.Link();
             }
         });
 
         this.paper.on({
-            'element:mouseenter': (elementView)=> {
-                // let bbox = elementView.getBBox();
-                // let model = elementView.model;
-                // model.resize(bbox.width, bbox.height);
-                let tool = ProjectElements[elementView.model.id].active ? new joint.elementTools.HideButton({
+            'element:mouseenter': (elementView) => {
+                let tool = ProjectElements[elementView.model.id].active ? new HideButton({
                     useModelGeometry: false,
                     x: '100%',
                     y: '0%',
+                    action: (evt: { currentTarget: { getAttribute: (arg0: string) => any; }; }) => {
+                        let id = evt.currentTarget.getAttribute("model-id");
+                        for (let cell of graph.getCells()) {
+                            if (cell.id === id) {
+                                for (let link of graph.getConnectedLinks(cell)) {
+                                    ProjectLinks[link.id].vertices = link.vertices();
+                                }
+                                // @ts-ignore
+                                ProjectElements[id].position[ProjectSettings.selectedDiagram] = cell.position();
+                                cell.remove();
+                                ProjectElements[id].hidden[ProjectSettings.selectedDiagram] = true;
+                                break;
+                            }
+                        }
+                        this.props.updateElementPanel();
+                    }
                 }) : new joint.elementTools.RemoveButton({
                     useModelGeometry: false,
                     x: '100%',
                     y: '0%',
                 });
-                let tools = [new joint.elementTools.InfoButton({
-                    useModelGeometry: false,
-                    y: '0%',
-                    x: '0%',
-                    offset: {
-                        x: 5
-                    }
-                }), tool];
                 elementView.addTools(new joint.dia.ToolsView({
-                    tools: tools
+                    tools: [new ElemInfoButton({
+                        useModelGeometry: false,
+                        y: '0%',
+                        x: '0%',
+                        offset: {x: 5},
+                        action: (evt: { currentTarget: { getAttribute: (arg0: string) => any; }; }) => {
+                            let id = evt.currentTarget.getAttribute("model-id");
+                            this.props.prepareDetails(id);
+                            unHighlightAll();
+                            highlightCell(id);
+                        }
+                    }), tool]
                 }));
             },
-            'link:mouseenter': function(linkView) {
-                var infoButton = new joint.linkTools.InfoButton();
-                var verticesTool = new joint.linkTools.Vertices();
-                var segmentsTool = new joint.linkTools.Segments();
-                var removeButton = new joint.linkTools.Remove({
-                    action: ((evt, view) =>  {
+            'link:mouseenter': (linkView) => {
+                let verticesTool = new joint.linkTools.Vertices();
+                let segmentsTool = new joint.linkTools.Segments();
+                let removeButton = new joint.linkTools.Remove({
+                    action: ((evt: any, view: { model: { id: any; getSourceCell: () => { (): any; new(): any; id: any; }; remove: () => void; }; }) => {
+                        this.props.handleChangeLoadingStatus(true, LocaleMain.updating, false);
                         let id = view.model.id;
                         let sid = view.model.getSourceCell().id;
-                        if (ProjectElements[sid].connections.includes(id)) ProjectElements[sid].connections.splice(ProjectElements[sid].connections.indexOf(id),1);
-                        if (vocabOrModal(ProjectLinks[id].iri)){
-                            let domainOf = vocabOrModal(vocabOrModal(ProjectLinks[id].iri).domain).domainOf;
-                            if (domainOf && (vocabOrModal(ProjectLinks[id].iri).domain in VocabularyElements)){
-                                domainOf.splice(domainOf.indexOf(ProjectLinks[id].iri),1);
-                            }
-                        }
-                        //let tid = view.model.getTargetCell().id;
-                        delete ProjectLinks[id];
-                        view.model.remove();
+                        this.deleteConnections(sid, id);
                     })
-                });
-                var toolsView = new joint.dia.ToolsView({
-                    tools: [verticesTool,segmentsTool,removeButton,infoButton]
+                })
+                let toolsView = new joint.dia.ToolsView({
+                    tools: [verticesTool, segmentsTool, removeButton,
+                        new LinkInfoButton({
+                            action: (evt) => {
+                                let id = evt.currentTarget.getAttribute("model-id");
+                                this.props.prepareDetails(id);
+                                unHighlightAll();
+                                highlightCell(id);
+                            }
+                        })
+                    ]
                 });
                 linkView.addTools(toolsView);
             },
-            'cell:mouseleave': function(cellView) {
+            'cell:mouseleave': function (cellView) {
                 cellView.removeTools();
             },
             'blank:pointerdown': (evt, x, y) => {
                 this.props.hideDetails();
-                for (let cell of graph.getCells()){
-                    this.unHighlightCell(cell.id);
-                   // this.paper?.findViewByModel(cell).unhighlight();
-                }
+                unHighlightAll();
                 this.drag = {x: x, y: y}
             },
-            'blank:pointermove': function(evt, x, y) {
-                var data = evt.data;
-                var cell = data.cell;
-                if (cell !== undefined){
+            'blank:pointermove': function (evt, x, y) {
+                const data = evt.data;
+                const cell = data.cell;
+                if (cell !== undefined) {
                     if (cell.isLink()) {
-                        cell.target({ x: x, y: y });
+                        cell.target({x: x, y: y});
                     }
                 }
             },
-            'blank:pointerup' : ()=>{
+            'blank:pointerup': () => {
                 this.drag = undefined;
             },
-            'link:pointerup' : (linkView, evt, x, y)=>{
+            'link:pointerup': (linkView) => {
                 let id = linkView.model.id;
-                for (let link of graph.getLinks()){
-                    if (link.id === id){
+                for (let link of graph.getLinks()) {
+                    if (link.id === id) {
                         let sid = link.getSourceElement()?.id;
                         let tid = link.getTargetElement()?.id;
-                        if (sid && tid){
+                        if (sid && tid) {
                             link.source({id: sid});
                             link.target({id: tid});
-                            if (sid === tid){
+                            if (sid === tid) {
                                 let coords = link.getSourcePoint();
                                 let bbox = this.paper?.findViewByModel(sid).getBBox();
                                 link.vertices([
-                                    new joint.g.Point(coords.x, coords.y+100),
-                                    new joint.g.Point(coords.x+(bbox?.width/2)+50, coords.y+100),
-                                    new joint.g.Point(coords.x+(bbox?.width/2)+50, coords.y),
+                                    new joint.g.Point(coords.x, coords.y + 100),
+                                    new joint.g.Point(coords.x + (bbox?.width / 2) + 50, coords.y + 100),
+                                    new joint.g.Point(coords.x + (bbox?.width / 2) + 50, coords.y),
                                 ])
                             }
-                            ProjectElements[sid].connections.push(link.id);
-                            addLink(link.id, this.props.selectedLink, sid, tid);
-                            link.appendLabel({
-                                attrs: {
-                                    text: {
-                                        text: Links[this.props.selectedLink].labels[this.props.projectLanguage]
-                                    }
-                                }
-                            });
+                            if (typeof link.id === "string") {
+                                this.updateConnections(sid, tid, link.id);
+                            }
+                            link.appendLabel({attrs: {text: {text: Links[this.props.selectedLink].labels[this.props.projectLanguage]}}});
                         }
                         break;
                     }
@@ -220,7 +261,7 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps, D
         });
 
         joint.elementTools.RemoveButton = joint.elementTools.Remove.extend({
-            options:{
+            options: {
                 markup: [{
                     tagName: 'circle',
                     selector: 'button',
@@ -246,7 +287,7 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps, D
                 action: (evt) => {
                     let id = evt.currentTarget.getAttribute("model-id");
                     let links = graph.getConnectedLinks(graph.getCell(id));
-                    for (let link of links){
+                    for (let link of links) {
                         delete ProjectLinks[link.id];
                     }
                     graph.getCell(id).remove();
@@ -254,125 +295,8 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps, D
                 }
             }
         });
-
-
-        joint.elementTools.HideButton = joint.elementTools.Button.extend({
-            options:{
-                markup: [{
-                    tagName: 'circle',
-                    selector: 'button',
-                    attributes: {
-                        'r': 10,
-                        'fill': '#fff8e1',
-                        'cursor': 'pointer'
-                    }
-                },
-                    {
-                        tagName: 'path',
-                        selector: 'icon',
-                        attributes: {
-                            'd': 'M8.137 15.147c-.71-.857-1.146-1.947-1.146-3.147 0-2.76 2.241-5 5-5 1.201 0 2.291.435 3.148 1.145l1.897-1.897c-1.441-.738-3.122-1.248-5.035-1.248-6.115 0-10.025 5.355-10.842 6.584.529.834 2.379 3.527 5.113 5.428l1.865-1.865zm6.294-6.294c-.673-.53-1.515-.853-2.44-.853-2.207 0-4 1.792-4 4 0 .923.324 1.765.854 2.439l5.586-5.586zm7.56-6.146l-19.292 19.293-.708-.707 3.548-3.548c-2.298-1.612-4.234-3.885-5.548-6.169 2.418-4.103 6.943-7.576 12.01-7.576 2.065 0 4.021.566 5.782 1.501l3.501-3.501.707.707zm-2.465 3.879l-.734.734c2.236 1.619 3.628 3.604 4.061 4.274-.739 1.303-4.546 7.406-10.852 7.406-1.425 0-2.749-.368-3.951-.938l-.748.748c1.475.742 3.057 1.19 4.699 1.19 5.274 0 9.758-4.006 11.999-8.436-1.087-1.891-2.63-3.637-4.474-4.978zm-3.535 5.414c0-.554-.113-1.082-.317-1.562l.734-.734c.361.69.583 1.464.583 2.296 0 2.759-2.24 5-5 5-.832 0-1.604-.223-2.295-.583l.734-.735c.48.204 1.007.318 1.561.318 2.208 0 4-1.792 4-4z',
-                            'fill': '#FFF',
-                            'transform': 'scale(0.7) translate(-12 -12)',
-                            'stroke': '#000000',
-                            'stroke-width': 1,
-                            'pointer-events': 'none'
-                        }
-                    }
-                ],
-                action: (evt) => {
-                    let id = evt.currentTarget.getAttribute("model-id");
-                    for (let cell of graph.getCells()){
-                        if (cell.id === id){
-                            for (let link of graph.getConnectedLinks(cell)){
-                                ProjectLinks[link.id].vertices = link.vertices();
-                            }
-                            ProjectElements[id].position = cell.position();
-                            graph.removeCells(cell);
-                            ProjectElements[id].hidden[ProjectSettings.selectedDiagram] = true;
-                            break;
-                        }
-                    }
-                    this.props.addCell();
-                }
-            }
-        });
-
-        joint.linkTools.InfoButton = joint.linkTools.Button.extend({
-            name: 'info-button',
-            options: {
-                markup: [{
-                    tagName: 'circle',
-                    selector: 'button',
-                    attributes: {
-                        'r': 7,
-                        'fill': '#001DFF',
-                        'cursor': 'pointer'
-                    }
-                }, {
-                    tagName: 'path',
-                    selector: 'icon',
-                    attributes: {
-                        'd': 'M -2 4 2 4 M 0 3 0 0 M -2 -1 1 -1 M -1 -4 1 -4',
-                        'fill': 'none',
-                        'stroke': '#FFFFFF',
-                        'stroke-width': 2,
-                        'pointer-events': 'none'
-                    }
-                }],
-                distance: 40,
-                offset: 0,
-                action: (evt) => {
-                    let id = evt.currentTarget.getAttribute("model-id");
-                    this.props.prepareDetails(id);
-                    for (let cell of graph.getCells()){
-                        this.unHighlightCell(cell.id);
-                        //this.paper?.findViewByModel(cell).unhighlight();
-                    }
-                    this.highlight = id;
-                    this.highlightCell(id);
-                }
-            }
-        });
-
-        joint.elementTools.InfoButton = joint.elementTools.Button.extend({
-            name: 'info-button',
-            options: {
-                markup: [{
-                    tagName: 'circle',
-                    selector: 'button',
-                    attributes: {
-                        'r': 10,
-                        'fill': '#001DFF',
-                        'cursor': 'pointer'
-                    }
-                }, {
-                    tagName: 'path',
-                    selector: 'icon',
-                    attributes: {
-                        'd': 'M -2 4 2 4 M 0 3 0 0 M -2 -1 1 -1 M -1 -4 1 -4',
-                        'fill': 'none',
-                        'stroke': '#FFFFFF',
-                        'transform': 'scale(1.5)',
-                        'stroke-width': 2,
-                        'pointer-events': 'none'
-                    }
-                }],
-                distance: 60,
-                offset: 0,
-                action: (evt) => {
-                    let id = evt.currentTarget.getAttribute("model-id");
-                    this.props.prepareDetails(id);
-                    for (let cell of graph.getCells()){
-                        this.unHighlightCell(cell.id);
-                        //this.paper?.findViewByModel(cell).unhighlight();
-                    }
-                    this.highlight = id;
-                    this.highlightCell(id);
-                }
-            }
-        });
     }
+
     render() {
         return (<div
             className={"canvas"}
@@ -381,141 +305,54 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps, D
             onDragOver={(event) => {
                 event.preventDefault();
             }}
-            onMouseMove={(event)=>{
-                if (this.drag){
+            onMouseMove={(event) => {
+                if (this.drag) {
                     this.paper?.translate(event.nativeEvent.offsetX - this.drag.x, event.nativeEvent.offsetY - this.drag.y);
                 }
             }
             }
             onDrop={(event) => {
+                // create - get name - insert - (new: add to data) - (existing: restore)
                 const data = JSON.parse(event.dataTransfer.getData("newClass"));
-                let name = "";
-                if (data.type === "stereotype" && !data.package){
-                    name = getModelName(data.elem, this.props.projectLanguage);
-                    //name = "«"+ getModelName(data.elem, this.props.projectLanguage).toLowerCase() +"»" + "\n" + name;
-                } else if (data.type === "package"){
-                    name = ProjectElements[data.elem].names[this.props.projectLanguage];
-                    name = getStereotypeList(ProjectElements[data.elem].iri, this.props.projectLanguage).map((str)=>"«"+str.toLowerCase()+"»\n").join("") + name;
-                } else {
-                    name = LocaleMain.untitled + " " + getName(data.elem, this.props.projectLanguage);
-                    name = "«"+ getName(data.elem, this.props.projectLanguage).toLowerCase() +"»\n" + name;
-                }
                 let cls = new graphElement();
-                if (data.package) {
-                    addClass(cls.id, [data.elem], this.props.projectLanguage, ProjectSettings.selectedPackage.scheme, ProjectSettings.selectedPackage);
-                } else if (data.type === "stereotype" && !data.package){
-                    addModel(cls.id, data.elem, this.props.projectLanguage, name);
-                    ProjectElements[cls.id].active = false;
-                }
-                if (data.type === "package"){
-                    cls = graphElement.create(data.elem);
-                    ProjectElements[data.elem].hidden[ProjectSettings.selectedDiagram] = false;
-                }
-                cls.set('position',this.paper.clientToLocalPoint({x: event.clientX, y: event.clientY}));
-                cls.attr({
-                    label:{
-                        text: name,
-                        magnet: true,
+                let label = getNewLabel(data.iri, ProjectSettings.selectedLanguage);
+                if (data.type === "new") {
+                    if (typeof cls.id === "string") {
+                        let iri = createNewElemIRI(initLanguageObject(""), VocabularyElements);
+                        addVocabularyElement(cls.id, iri, data.iri);
+                        addClass(cls.id, iri, ProjectSettings.selectedPackage, true, Stereotypes[data.iri].inScheme);
+                        updateProjectElement(
+                            ProjectSettings.contextEndpoint,
+                            this.constructor.name,
+                            [data.iri],
+                            initLanguageObject(""),
+                            initLanguageObject(""),
+                            [],
+                            [],
+                            cls.id);
                     }
-                });
+                } else if (data.type === "existing") {
+                    cls = new graphElement({id: data.id});
+                    label = nameGraphElement(cls, ProjectSettings.selectedLanguage);
+                }
+                cls.set('position', this.paper?.clientToLocalPoint({x: event.clientX, y: event.clientY}));
+                cls.attr({label: {text: label}});
                 cls.addTo(graph);
                 let bbox = this.paper?.findViewByModel(cls).getBBox();
                 cls.resize(bbox.width, bbox.height);
-
-                this.props.addCell();
-                if (data.type === "package"){
-                    let id = data.elem;
-                    if (ProjectElements.position) cls.position(ProjectElements[id].position.x,ProjectElements[id].position.y);
-                    if (!(ProjectElements[id].diagrams.includes(ProjectSettings.selectedDiagram))){
-                        ProjectElements[id].diagrams.push(ProjectSettings.selectedDiagram)
-                    }
-                    for (let link in ProjectLinks){
-                        if ((ProjectLinks[link].source === id || ProjectLinks[link].target === id) && (graph.getCell(ProjectLinks[link].source) && graph.getCell(ProjectLinks[link].target))){
-                            let lnk = new joint.shapes.standard.Link({id: link});
-                            if (ProjectLinks[link].sourceCardinality.getString() !== LocaleMain.none) {
-                                lnk.appendLabel({attrs: {text: {text: ProjectLinks[link].sourceCardinality.getString()}}, position: {distance: 20}});
-                            }
-                            if (ProjectLinks[link].targetCardinality.getString() !== LocaleMain.none) {
-                                lnk.appendLabel({attrs: {text: {text: ProjectLinks[link].targetCardinality.getString()}},position: {distance: -20}});
-                            }
-                            lnk.appendLabel({attrs: {text: {text: Links[ProjectLinks[link].iri].labels[this.props.projectLanguage]}},position: {distance: 0.5}});
-                            lnk.source({id: ProjectLinks[link].source});
-                            lnk.target({id: ProjectLinks[link].target});
-                            lnk.vertices(ProjectLinks[link].vertices);
-                            lnk.addTo(graph);
-                        }
-                    }
-                }
-                for (let iri in ModelElements){
-                    if (ModelElements[iri].domain && ModelElements[iri].range){
-                        let domain = ModelElements[iri].domain;
-                        let range = ModelElements[iri].range;
-                        let domainCell = undefined;
-                        let rangeCell = undefined;
-                        for (let cell of graph.getElements()){
-                            if (ProjectElements[cell.id].iri === domain || ProjectElements[cell.id].iriVocab === domain){
-                                domainCell = cell.id;
-                            }
-                            if (ProjectElements[cell.id].iri === range || ProjectElements[cell.id].iriVocab === range){
-                                rangeCell = cell.id;
-                            }
-                        }
-                        if (domainCell && rangeCell){
-                            let link = new joint.shapes.standard.Link();
-                            link.source({id: domainCell});
-                            link.target({id: rangeCell});
-                            link.appendLabel({attrs: {text: {text: ModelElements[iri].labels[this.props.projectLanguage]}},position: {distance: 0.5}});
-                            let insert = true;
-                            for (let lnk in ProjectLinks) {
-                                if (ProjectLinks[lnk].source === domainCell &&
-                                    ProjectLinks[lnk].target === rangeCell &&
-                                    ProjectLinks[lnk].iri === iri) {
-                                    insert = false;
-                                    break;
-                                }
-                            }
-                            if (insert) {
-                                link.addTo(graph);
-                                addLink(link.id, iri, domainCell, rangeCell);
-                            }
-                        }
-                    }
-                }
-
-                for (let iri in VocabularyElements){
-                    if (VocabularyElements[iri].domain && VocabularyElements[iri].range){
-                        let domain = VocabularyElements[iri].domain;
-                        let range = VocabularyElements[iri].range;
-                        let domainCell = undefined;
-                        let rangeCell = undefined;
-                        for (let cell of graph.getElements()){
-                            if (ProjectElements[cell.id].iri === domain || ProjectElements[cell.id].iriVocab === domain){
-                                domainCell = cell.id;
-                            }
-                            if (ProjectElements[cell.id].iri === range || ProjectElements[cell.id].iriVocab === range){
-                                rangeCell = cell.id;
-                            }
-                        }
-                        if (domainCell && rangeCell){
-                            let link = new joint.shapes.standard.Link();
-                            link.source({id: domainCell});
-                            link.target({id: rangeCell});
-                            link.appendLabel({attrs: {text: {text: VocabularyElements[iri].labels[this.props.projectLanguage]}},position: {distance: 0.5}});
-                            let insert = true;
-                            for (let lnk in ProjectLinks) {
-                                if (ProjectLinks[lnk].source === domainCell &&
-                                    ProjectLinks[lnk].target === rangeCell &&
-                                    ProjectLinks[lnk].iri === iri) {
-                                    insert = false;
-                                    break;
-                                }
-                            }
-                            if (insert) {
-                                link.addTo(graph);
-                                addLink(link.id, iri, domainCell, rangeCell);
-                            }
-                        }
-                    }
+                this.props.updateElementPanel();
+                if (data.type === "existing") {
+                    restoreHiddenElem(data.id, cls);
+                    restoreDomainOfConnections();
+                    updateProjectElement(
+                        ProjectSettings.contextEndpoint,
+                        this.constructor.name,
+                        [data.iri],
+                        initLanguageObject(""),
+                        initLanguageObject(""),
+                        [],
+                        [],
+                        cls.id);
                 }
             }}
         />);

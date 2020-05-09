@@ -1,359 +1,244 @@
 import React from 'react';
 import MenuPanel from "../panels/MenuPanel";
-import ElementPanel from "../panels/ElementPanel";
+import ItemPanel from "../panels/ItemPanel";
 import DiagramCanvas from "./DiagramCanvas";
 import * as Locale from "../locale/LocaleMain.json";
-import * as VariableLoader from "../var/VariableLoader";
 import {
-    AttributeTypePool,
-    CardinalityPool,
-    Diagrams,
-    graph,
-    Languages,
-    Links,
-    ModelElements,
-    PackageRoot,
-    ProjectElements,
-    ProjectLinks,
-    ProjectSettings,
-    PropertyPool,
-    StereotypeCategories,
-    Stereotypes
-} from "../var/Variables";
+	Languages,
+	Links,
+	PackageRoot,
+	ProjectElements,
+	ProjectLinks,
+	ProjectSettings,
+	Schemes
+} from "../config/Variables";
 import DetailPanel from "../panels/DetailPanel";
-import {getVocabulariesFromJSONSource} from "../interface/JSONInterface";
-import * as SemanticWebInterface from "../interface/SemanticWebInterface";
-import {Defaults} from "../config/Defaults";
-import {addDomainOfIRIs, getModelName, getStereotypeList, loadDiagram, saveDiagram} from "../misc/Helper";
-import {PackageNode} from "../components/PackageNode";
+import {getVocabulariesFromRemoteJSON} from "../interface/JSONInterface";
+import {initLanguageObject, initVars} from "../function/FunctionEditVars";
 import {getContext} from "../interface/ContextInterface";
-import {initLanguageObject} from "../var/VariableLoader";
+import {graph} from "../graph/graph";
+import {loadProject, newProject} from "../function/FunctionProject";
+import {nameGraphElement, nameGraphLink} from "../function/FunctionGraph";
+import {PackageNode} from "../datatypes/PackageNode";
+import {createNewScheme, setupDiagrams} from "../function/FunctionCreateVars";
+import {updateProjectSettings} from "../interface/TransactionInterface";
+import {getElementsConfig, getLinksConfig} from "../interface/SPARQLInterface";
 
-interface DiagramAppProps{
-    readonly?: boolean;
-    loadClasses?: string;
-    loadClassesName?: string;
-    classIRI?: string;
-    loadLanguage?: string;
-    loadRelationshipsName?: string;
-    loadRelationships?: string;
-    relationshipIRI?: string;
-    loadDefaultVocabularies?: boolean;
+interface DiagramAppProps {
+	readOnly?: boolean;
+	loadDefaultVocabularies?: boolean;
 }
 
-interface DiagramAppState{
-    // projectName: {[key:string]: string};
-    // projectDescription: {[key:string]: string};
-    projectLanguage: string;
-    saveString: string;
-    exportString: string;
-    selectedLink: string;
-    detailPanelHidden: boolean;
-    loading: boolean;
-    //theme: "light" | "dark";
+interface DiagramAppState {
+	selectedLink: string;
+	detailPanelHidden: boolean;
+	projectLanguage: string;
+	loading: boolean;
+	status: string;
+	error: boolean;
+	retry: boolean;
 }
 
 require("../scss/style.scss");
 
-export default class DiagramApp extends React.Component<DiagramAppProps, DiagramAppState>{
-    private readonly canvas: React.RefObject<DiagramCanvas>;
-    private readonly elementPanel: React.RefObject<ElementPanel>;
-    private readonly detailPanel: React.RefObject<DetailPanel>;
-    private readonly menuPanel: React.RefObject<MenuPanel>;
+export default class DiagramApp extends React.Component<DiagramAppProps, DiagramAppState> {
+	private readonly canvas: React.RefObject<DiagramCanvas>;
+	private readonly elementPanel: React.RefObject<ItemPanel>;
+	private readonly detailPanel: React.RefObject<DetailPanel>;
+	private readonly menuPanel: React.RefObject<MenuPanel>;
 
-    constructor(props: DiagramAppProps) {
-        super(props);
+	constructor(props: DiagramAppProps) {
+		super(props);
 
-        this.canvas = React.createRef();
-        this.elementPanel = React.createRef();
-        this.detailPanel = React.createRef();
-        this.menuPanel = React.createRef();
+		this.canvas = React.createRef();
+		this.elementPanel = React.createRef();
+		this.detailPanel = React.createRef();
+		this.menuPanel = React.createRef();
 
-        VariableLoader.initVars();
+		initVars();
 
-        ProjectSettings.name = initLanguageObject("Fetching...");
+		this.state = ({
+			projectLanguage: ProjectSettings.selectedLanguage,
+			selectedLink: ProjectSettings.selectedLink,
+			detailPanelHidden: false,
+			loading: true,
+			status: Locale.loading,
+			error: false,
+			retry: false,
+		});
+		document.title = Locale.ontoGrapher;
+		this.handleChangeSelectedLink = this.handleChangeSelectedLink.bind(this);
+		this.handleChangeLanguage = this.handleChangeLanguage.bind(this);
+		this.newProject = this.newProject.bind(this);
+		this.loadProject = this.loadProject.bind(this);
+		this.loadVocabularies = this.loadVocabularies.bind(this);
+		this.handleChangeLoadingStatus = this.handleChangeLoadingStatus.bind(this);
+	}
 
-        this.state = ({
-            // projectName: VariableLoader.initLanguageObject(Locale.untitledProject),
-            // projectDescription: VariableLoader.initLanguageObject(""),
-            //theme: "light",
-            exportString: "",
-            projectLanguage: Object.keys(Languages)[0],
-            selectedLink: Object.keys(Links)[0],
-            saveString: "",
-            detailPanelHidden: false,
-            loading: true
-        });
+	componentDidMount(): void {
+		if (this.props.loadDefaultVocabularies) {
+			this.loadVocabularies(
+				"http://example.org/pracovni-prostor/metadatový-kontext-123"
+				, "http://localhost:7200/repositories/kodi-pracovni-prostor-validace");
+		}
+	}
 
+	handleChangeLanguage(languageCode: string) {
+		this.setState({projectLanguage: languageCode});
+		ProjectSettings.selectedLanguage = languageCode;
+		document.title = ProjectSettings.name[languageCode] + " | " + Locale.ontoGrapher;
+		graph.getElements().forEach((cell) => {
+			if (ProjectElements[cell.id]) {
+				nameGraphElement(cell, languageCode);
+			}
+		});
+		graph.getLinks().forEach((cell) => {
+			if (ProjectLinks[cell.id]) {
+				nameGraphLink(cell, languageCode);
+			}
+		})
+	}
 
-        document.title = ProjectSettings.name[this.state.projectLanguage] + " | " + Locale.ontoGrapher;
-        this.handleChangeSelectedLink = this.handleChangeSelectedLink.bind(this);
-        this.handleChangeLanguage = this.handleChangeLanguage.bind(this);
-        this.newProject = this.newProject.bind(this);
-        //this.saveOGsettings = this.saveOGsettings.bind(this);
-        this.loadProject = this.loadProject.bind(this);
-        this.saveProject = this.saveProject.bind(this);
-        //this.saveProjectSettings = this.saveProjectSettings.bind(this);
-        //this.handleChangeSelectedModel = this.handleChangeSelectedModel.bind(this);
-        this.prepareDetails = this.prepareDetails.bind(this);
-        this.loadVocabularies = this.loadVocabularies.bind(this);
-    }
+	newProject() {
+		newProject();
+		this.setState({
+			projectLanguage: Object.keys(Languages)[0],
+			selectedLink: Object.keys(Links)[0]
+		});
+		this.elementPanel.current?.update();
+	}
 
-    loadVocabularies(contextIRI: string, contextEndpoint: string, reload: boolean = false){
-        if (reload){
-            this.newProject();
-            this.setState({loading: true});
-        }
-        getVocabulariesFromJSONSource(Defaults.defaultVocabularies, (result: boolean)=>{
-        }).then(()=>{
-            this.handleChangeSelectedLink(Object.keys(Links)[0]);
-            getContext(
-                contextIRI,
-                contextEndpoint,
-                "application/json",
-                (message) => {}
-            ).then(()=>{
-                this.forceUpdate();
-                this.elementPanel.current?.update();
-                ProjectSettings.selectedPackage = PackageRoot.children[0];
-                PackageRoot.name = initLanguageObject(Locale.root);
-                this.setState({loading: false});
-                addDomainOfIRIs();
-                document.title = ProjectSettings.name[this.state.projectLanguage] + " | " + Locale.ontoGrapher;
-            })
-        });
-    }
+	handleChangeLoadingStatus(loading: boolean, status: string, error: boolean) {
+		this.setState({
+			loading: loading,
+			status: status,
+			error: error,
+		})
+		if (error) this.setState({retry: false});
+	}
 
-    componentDidMount(): void {
-        if (typeof this.props.loadClasses === "string"){
-            SemanticWebInterface.fetchClasses(this.props.loadClassesName, this.props.loadClasses, this.props.classIRI, true, this.props.loadLanguage, ()=>{
-                this.forceUpdate();
-            });
-        }
-        if (typeof this.props.loadRelationships === "string"){
-            SemanticWebInterface.fetchRelationships(this.props.loadRelationshipsName, this.props.loadRelationships, this.props.relationshipIRI, true, this.props.loadLanguage, ()=>{
-                this.forceUpdate();
-            });
-        }
-        if (this.props.loadDefaultVocabularies){
-            this.loadVocabularies(
-                "http://example.org/pracovni-prostor/metadatový-kontext-123"
-                ,"https://onto.fel.cvut.cz:7200/repositories/kodi-pracovni-prostor-sample");
-        }
+	loadProject(loadString: string) {
+		this.newProject();
+		loadProject(loadString);
+		this.setState({
+			selectedLink: ProjectSettings.selectedLink,
+			projectLanguage: ProjectSettings.selectedLanguage
+		});
+		this.elementPanel.current?.update();
+	}
 
+	loadVocabularies(contextIRI: string, contextEndpoint: string, reload: boolean = false) {
+		if (reload) {
+			this.newProject();
+			this.setState({loading: true, status: Locale.loading});
+		}
+		getVocabulariesFromRemoteJSON("https://raw.githubusercontent.com/opendata-mvcr/ontoGrapher/jointjs/src/config/Vocabularies.json", () => {
+		}).then(() => {
+			this.handleChangeSelectedLink(Object.keys(Links)[0]);
+			getContext(
+				contextIRI,
+				contextEndpoint,
+				"application/json",
+				(message: string) => {
+					if (message === Locale.loadingError) {
+						this.handleChangeLoadingStatus(false, Locale.pleaseReload, false)
+					}
+				}
+			).then(() => {
+				if (!this.state.error) {
+					this.selectDefaultPackage();
+					this.setState({loading: false});
+					document.title = ProjectSettings.name[this.state.projectLanguage] + " | " + Locale.ontoGrapher;
+					ProjectSettings.contextEndpoint = contextEndpoint;
+					ProjectSettings.contextIRI = contextIRI
+					this.handleChangeLanguage(Object.keys(Languages)[0]);
+					getElementsConfig(ProjectSettings.contextEndpoint);
+					getLinksConfig(ProjectSettings.ontographerContext);
+					setupDiagrams();
+					this.forceUpdate();
+					this.elementPanel.current?.update();
+					updateProjectSettings(contextIRI, contextEndpoint).then(result => {
+						if (!result) {
+							this.handleChangeLoadingStatus(false, "", true);
+						} else {
+							this.handleChangeLoadingStatus(false, "", false);
+						}
+					})
+				}
+			})
+		});
+	}
 
-    }
+	selectDefaultPackage() {
+		for (let pkg of PackageRoot.children) {
+			if (pkg.scheme && !Schemes[pkg.scheme].readOnly) {
+				ProjectSettings.selectedPackage = pkg;
+				return;
+			}
+		}
+		ProjectSettings.selectedPackage = new PackageNode(initLanguageObject(Locale.untitledPackage), PackageRoot, false, createNewScheme());
+	}
 
-    prepareDetails(id: string){
-        this.detailPanel.current?.prepareDetails(id);
-    }
+	handleChangeSelectedLink(linkType: string) {
+		this.setState({selectedLink: linkType});
+		ProjectSettings.selectedLink = linkType;
+	}
 
-    handleChangeLanguage(languageCode: string){
-        this.setState({projectLanguage: languageCode});
-        document.title = ProjectSettings.name[languageCode] + " | " + Locale.ontoGrapher;
-        graph.getCells().forEach((cell) =>{
-            if (ProjectElements[cell.id]){
-
-                if (ProjectElements[cell.id].active) {
-                    cell.prop('attrs/label/text', getStereotypeList(ProjectElements[cell.id].iri, languageCode).map((str)=>"«"+str.toLowerCase()+"»\n").join("") + ProjectElements[cell.id].names[languageCode]);
-                } else {
-                    cell.prop('attrs/label/text', getModelName(ProjectElements[cell.id].iri, languageCode));
-                }
-            }
-        });
-    }
-
-    newProject(){
-        graph.clear();
-        VariableLoader.initProjectSettings();
-        this.setState({projectLanguage: Object.keys(Languages)[0],
-            selectedLink: Object.keys(Links)[0],
-            saveString: ""});
-        Diagrams.length = 0;
-        Diagrams.push({name: Locale.untitled, json: ""});
-        StereotypeCategories.length = 0;
-        Object.keys(ProjectElements).forEach(el => delete ProjectElements[el]);
-        Object.keys(ProjectLinks).forEach(el => delete ProjectLinks[el]);
-        PackageRoot.elements = [];
-        PackageRoot.children = [];
-        this.elementPanel.current?.update();
-    }
-
-    loadProject(loadString: string){
-        let save = JSON.parse(loadString);
-        this.newProject();
-        this.setState({
-            selectedLink: save.selectedLink,
-            projectLanguage: save.projectLanguage
-        });
-        for (let key in save.projectElements){
-            ProjectElements[key] = save.projectElements[key];
-        }
-        for (let key in save.projectLinks){
-            ProjectLinks[key] = save.projectLinks[key];
-        }
-        Diagrams.length = 0;
-        save.diagrams.forEach((diagram: { [key: string]: any; })=>{Diagrams.push(diagram)});
-        ProjectSettings.name = save.projectSettings.name;
-        ProjectSettings.description = save.projectSettings.description;
-        ProjectSettings.selectedDiagram = 0;
-        this.elementPanel.current?.update();
-        this.loadPackages(save.packageRoot);
-        loadDiagram(Diagrams[ProjectSettings.selectedDiagram].json);
-        this.saveProject();
-    }
-
-    loadPackages(list: {trace: number[], elements: string[], name: string, root: boolean, scheme: string}[]){
-        for (let pkg of list){
-            if (pkg.root){
-                PackageRoot.elements = pkg.elements;
-                for (let elem of pkg.elements){
-                    ProjectElements[elem].package = PackageRoot;
-                }
-            } else {
-                let iter = PackageRoot;
-                for (let i = 0; i < pkg.trace.length; i++){
-                    iter = iter.children[pkg.trace[i]];
-                }
-                let newpkg = new PackageNode(pkg.name, iter, false);
-                newpkg.scheme = pkg.scheme;
-                newpkg.elements = pkg.elements;
-                iter.children.push(newpkg);
-                for (let elem of pkg.elements){
-                    ProjectElements[elem].package = newpkg;
-                }
-            }
-        }
-    }
-
-    savePackages(){
-        let result = [];
-        let q = [];
-        q.push(PackageRoot);
-        q.push(undefined);
-        while(q.length > 0){
-            let p = q.shift();
-            if (p === undefined){
-                q.push(undefined);
-                if (q[0] === undefined) break;
-                else continue;
-            }
-            let trace: number[] = [];
-            let iter = p;
-            while (iter !== PackageRoot) {
-                let parent = iter.parent;
-                if (parent) {
-                    trace.unshift(parent.children.indexOf(iter));
-                    iter = parent;
-                } else break;
-            }
-            trace.shift();
-            result.push({
-                name: p.name,
-                trace: trace,
-                elements: p.elements,
-                root: p === PackageRoot,
-                scheme: p.scheme
-            });
-
-            for (let sp of p.children){
-                q.push(sp);
-            }
-        }
-        return result;
-    }
-
-    saveProject(){
-        Diagrams[ProjectSettings.selectedDiagram].json = saveDiagram();
-        let projElem = ProjectElements;
-        for (let key of Object.keys(projElem)){
-            projElem[key].package = undefined;
-        }
-        let save = {
-            projectElements: projElem,
-            projectLinks: ProjectLinks,
-            projectSettings: {name: ProjectSettings.name, description: ProjectSettings.description},
-            selectedLink: this.state.selectedLink,
-            projectLanguage: this.state.projectLanguage,
-            diagrams: Diagrams,
-            packageRoot: this.savePackages(),
-            //loaded things
-            stereotypes: Stereotypes,
-            stereotypeCategories: StereotypeCategories,
-            modelElements: ModelElements,
-            links: Links,
-            languages: Languages,
-            properties: PropertyPool,
-            attributes: AttributeTypePool,
-            cardinalities: CardinalityPool
-        };
-        //keep this .log
-        console.log(save);
-        this.setState({saveString: (JSON.stringify(save))});
-    }
-    //
-    //
-    // saveProjectSettings(save: {[key:string]: string}){
-    //     // this.setState({
-    //     //     projectName: save.projectName
-    //     // });
-    // }
-
-
-
-    handleChangeSelectedLink(linkType: string) {
-        this.setState({selectedLink: linkType});
-    }
-
-    // saveOGsettings(input: any){
-    //     this.setState({
-    //         theme: input.theme
-    //     })
-    // }
-
-    hide(id:string, diagram: number){
-        ProjectElements[id].hidden[diagram] = true;
-    }
-
-    render(){
-        return(<div className={"app"}>
-            <MenuPanel
-                ref={this.menuPanel}
-                loading={this.state.loading}
-                newProject={this.newProject}
-                projectLanguage={this.state.projectLanguage}
-                saveProject={this.saveProject}
-                loadProject={this.loadProject}
-                loadContext={this.loadVocabularies}
-                //saveProjectSettings={this.saveProjectSettings}
-                saveString={this.state.saveString}
-                //theme={this.state.theme}
-                handleChangeLanguage={this.handleChangeLanguage}
-                update={()=>{this.elementPanel.current?.update();}}
-                //saveOGSettings={this.saveOGsettings}
-            />
-            <ElementPanel
-                ref={this.elementPanel}
-                projectLanguage={this.state.projectLanguage}
-                handleChangeSelectedLink={this.handleChangeSelectedLink}
-                selectedLink={this.state.selectedLink}
-
-            />
-            <DetailPanel
-                ref={this.detailPanel}
-                projectLanguage={this.state.projectLanguage}
-                resizeElem={(id: string)=>{this.canvas.current?.resizeElem(id)}}
-                update={()=>{this.elementPanel.current?.forceUpdate()}}
-            />
-            <DiagramCanvas
-                hide={this.hide}
-                ref={this.canvas}
-                selectedLink={this.state.selectedLink}
-                projectLanguage={this.state.projectLanguage}
-                prepareDetails={this.prepareDetails}
-                hideDetails={() => {this.detailPanel.current?.hide();}}
-                addCell={() => {this.elementPanel.current?.forceUpdate();}}
-            />
-        </div>);
-  }
+	render() {
+		return (<div className={"app"}>
+			<MenuPanel
+				ref={this.menuPanel}
+				loading={this.state.loading}
+				newProject={this.newProject}
+				status={this.state.status}
+				projectLanguage={this.state.projectLanguage}
+				loadProject={this.loadProject}
+				loadContext={this.loadVocabularies}
+				handleChangeLanguage={this.handleChangeLanguage}
+				update={() => {
+					this.elementPanel.current?.update();
+				}}
+				loadingError={this.state.error}
+				retry={() => {
+					this.setState({retry: true})
+				}}
+			/>
+			<ItemPanel
+				ref={this.elementPanel}
+				projectLanguage={this.state.projectLanguage}
+				handleChangeSelectedLink={this.handleChangeSelectedLink}
+				selectedLink={this.state.selectedLink}
+				handleChangeLoadingStatus={this.handleChangeLoadingStatus}
+				retry={this.state.retry}
+			/>
+			<DetailPanel
+				ref={this.detailPanel}
+				projectLanguage={this.state.projectLanguage}
+				resizeElem={(id: string) => {
+					this.canvas.current?.resizeElem(id);
+				}}
+				update={() => {
+					this.elementPanel.current?.forceUpdate();
+				}}
+				handleChangeLoadingStatus={this.handleChangeLoadingStatus}
+				retry={this.state.retry}
+			/>
+			<DiagramCanvas
+				ref={this.canvas}
+				selectedLink={this.state.selectedLink}
+				projectLanguage={this.state.projectLanguage}
+				prepareDetails={(id: string) => {
+					this.detailPanel.current?.prepareDetails(id);
+				}}
+				hideDetails={() => {
+					this.detailPanel.current?.hide();
+				}}
+				updateElementPanel={() => {
+					this.elementPanel.current?.forceUpdate();
+				}}
+				handleChangeLoadingStatus={this.handleChangeLoadingStatus}
+				retry={this.state.retry}
+			/>
+		</div>);
+	}
 }

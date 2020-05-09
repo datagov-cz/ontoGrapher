@@ -1,27 +1,50 @@
 import * as Locale from "./../locale/LocaleMain.json";
-import {getElementsAsModel, getLinks, getStereotypes} from "./SPARQLInterface";
-import {loading, ProjectSettings} from "../var/Variables";
-import {initLanguageObject} from "../var/VariableLoader";
+import {Links, Schemes, Stereotypes} from "../config/Variables";
+import {fetchConcepts, getScheme} from "./SPARQLInterface";
+import {addProperties, createValues} from "../function/FunctionCreateVars";
+import {addDomainOfIRIs, initLanguageObject} from "../function/FunctionEditVars";
+import {checkLabels} from "../function/FunctionGetVars";
 
-export async function getVocabulariesFromJSONSource(pathToJSON: string, callback: Function) {
+export async function getVocabulariesFromRemoteJSON(pathToJSON: string, callback: Function) {
     const isURL = require('is-url');
     if (isURL(pathToJSON)) {
-        ProjectSettings.name = initLanguageObject("Loading...");
         await fetch(pathToJSON).then(response => response.json()).then(
             async json => {
                 for (const key of Object.keys(json)) {
-                    let type = json[key]["type"];
-                    if (type === "stereotype"){
-                        loading.load++;
-                        await getStereotypes(key, json[key], callback);
-                        await getLinks(key, json[key], callback);
-                    } else if (type === "model"){
-                        loading.load++;
-                        await getElementsAsModel(key, json[key], callback);
+                    let data = json[key];
+                    if (data.type === "stereotype") {
+                        await getScheme(data.sourceIRI, data.endpoint, data.type === "model");
+                        Schemes[data.sourceIRI].labels = initLanguageObject(key);
+                        await fetchConcepts(
+                            data.endpoint,
+                            data.sourceIRI,
+                            Stereotypes,
+                            false,
+                            undefined,
+                            undefined,
+                            [data.classIRI],
+                            data.values ? createValues(data.values, data.prefixes) : undefined
+                        );
+                        await fetchConcepts(
+                            data.endpoint,
+                            data.sourceIRI,
+                            Links,
+                            false,
+                            undefined,
+                            undefined,
+                            [data.relationshipIRI],
+                            undefined
+                        );
+                        addProperties(data.sourceIRI, data.attributes);
+                        addDomainOfIRIs();
+                        checkLabels();
                     }
                 }
             }
-        );
+        ).catch(() => {
+            callback(false);
+            throw new Error(Locale.vocabularyNotFound)
+        });
     } else {
         callback(false);
         throw new Error(Locale.vocabularyNotFound)

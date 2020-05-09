@@ -1,5 +1,8 @@
 {
   "untitledProject": "Untitled project",
+  "updating": "Saving...",
+  "retry": "Retry?",
+  "errorUpdating": "Error: update unsuccessful.",
   "createPackage": "Create new package",
   "untitledPackage": "Untitled Package",
   "addNewPackage": "Create new package >",
@@ -17,6 +20,9 @@
   "linkTypeExplainer": "Type of the relationship",
   "fetchingVocabularies": "Fetching vocabularies...",
   "loadingTerms": "Loading terms...",
+  "loading": "Loading...",
+  "loadingError": "Loading error.",
+  "pleaseReload": "Error: connection unsuccessful. Please reload to try again.",
   "finished": "All done!",
   "setAsDefault": "Set as default",
   "linkType": "Type",
