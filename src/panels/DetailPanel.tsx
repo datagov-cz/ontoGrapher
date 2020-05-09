@@ -78,8 +78,11 @@ export default class DetailPanel extends React.Component<Props, State> {
                                        retry={this.props.retry}
                 />);
             } else if (this.state.type === "link") {
-                return (<DetailLink projectLanguage={this.props.projectLanguage} headers={headers}
-                                    save={this.save} ref={this.linkElem}/>);
+                return (<DetailLink
+
+                    handleChangeLoadingStatus={this.props.handleChangeLoadingStatus}
+                    projectLanguage={this.props.projectLanguage} headers={headers}
+                    save={this.save} ref={this.linkElem} retry={this.props.retry}/>);
             }
         } else {
             return (<div/>);

@@ -20,7 +20,29 @@ export default class AboutModal extends React.Component<Props, State> {
             </Modal.Header>
             <Modal.Body>
                 <Tabs id={"changelog"}>
-                    <Tab title={"April"} eventKey={1}>
+                    <Tab title={"May"}>
+                        <h6>9.5.</h6>
+                        <ul>
+                            <li>Refactoring</li>
+                            <li>Save button removed in detail panel - saving is now automatic</li>
+                            <li><b>Saving to context:</b></li>
+                            <li>Saving happens on:</li>
+                            <ul>
+                                <li>Adding/deleting package items</li>
+                                <li>Adding/deleting relationships</li>
+                                <li>Component startup (for initialization)</li>
+                                <li>Detail panel editing</li>
+                            </ul>
+                            <li>There is saving of:</li>
+                            <ul>
+                                <li>Object data (labels, descriptions...)</li>
+                                <li>ontoGrapher-specific data (positions, vertices...)</li>
+                                <li>Configuration (in special ontoGrapher context)</li>
+                            </ul>
+                            <li>Loading of aforementioned data on component start</li>
+                        </ul>
+                    </Tab>
+                    <Tab title={"April"} eventKey={2}>
                         <h6>28.4.</h6>
                         <ul>
                             <li>Changed detail panel header names</li>
@@ -97,7 +119,7 @@ export default class AboutModal extends React.Component<Props, State> {
                             <li>Added tooltips for stereotypes and relationships</li>
                         </ul>
                     </Tab>
-                    <Tab title={"March"} eventKey={2}><h6>31.3.</h6>
+                    <Tab title={"March"} eventKey={3}><h6>31.3.</h6>
                         <ul>
                             <li>Fixed element buttons placement issues when renaming an element with links attached</li>
                             <li>Fixed package panel not updating when renaming element prefLabels</li>

@@ -323,6 +323,7 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps> {
                         addClass(cls.id, iri, ProjectSettings.selectedPackage, true, Stereotypes[data.iri].inScheme);
                         updateProjectElement(
                             ProjectSettings.contextEndpoint,
+                            this.constructor.name,
                             [data.iri],
                             initLanguageObject(""),
                             initLanguageObject(""),
@@ -343,6 +344,15 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps> {
                 if (data.type === "existing") {
                     restoreHiddenElem(data.id, cls);
                     restoreDomainOfConnections();
+                    updateProjectElement(
+                        ProjectSettings.contextEndpoint,
+                        this.constructor.name,
+                        [data.iri],
+                        initLanguageObject(""),
+                        initLanguageObject(""),
+                        [],
+                        [],
+                        cls.id);
                 }
             }}
         />);

@@ -132,6 +132,7 @@ export var ProjectSettings: {
     selectedLink: string,
     contextIRI: string,
     contextEndpoint: string,
+    ontographerContext: string,
     lastUpdate: { [key: string]: any }
 } = {
     name: {},
@@ -143,6 +144,7 @@ export var ProjectSettings: {
     selectedLink: Object.keys(Links)[0],
     contextIRI: "",
     contextEndpoint: "",
+    ontographerContext: "http://onto.fel.cvut.cz/ontologies/application/ontoGrapher",
     lastUpdate: {}
 };
 

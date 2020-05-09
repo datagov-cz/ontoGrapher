@@ -20,8 +20,9 @@ import {graph} from "../graph/graph";
 import {loadProject, newProject} from "../function/FunctionProject";
 import {nameGraphElement, nameGraphLink} from "../function/FunctionGraph";
 import {PackageNode} from "../datatypes/PackageNode";
-import {createNewScheme} from "../function/FunctionCreateVars";
+import {createNewScheme, setupDiagrams} from "../function/FunctionCreateVars";
 import {updateProjectSettings} from "../interface/TransactionInterface";
+import {getElementsConfig, getLinksConfig} from "../interface/SPARQLInterface";
 
 interface DiagramAppProps {
 	readOnly?: boolean;
@@ -113,6 +114,7 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 			status: status,
 			error: error,
 		})
+		if (error) this.setState({retry: false});
 	}
 
 	loadProject(loadString: string) {
@@ -150,6 +152,9 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 					ProjectSettings.contextEndpoint = contextEndpoint;
 					ProjectSettings.contextIRI = contextIRI
 					this.handleChangeLanguage(Object.keys(Languages)[0]);
+					getElementsConfig(ProjectSettings.contextEndpoint);
+					getLinksConfig(ProjectSettings.ontographerContext);
+					setupDiagrams();
 					this.forceUpdate();
 					this.elementPanel.current?.update();
 					updateProjectSettings(contextIRI, contextEndpoint).then(result => {
@@ -179,10 +184,6 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 		ProjectSettings.selectedLink = linkType;
 	}
 
-	handleChangeRetry(retry: boolean) {
-		this.setState({retry: retry});
-	}
-
 	render() {
 		return (<div className={"app"}>
 			<MenuPanel
@@ -208,6 +209,7 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 				handleChangeSelectedLink={this.handleChangeSelectedLink}
 				selectedLink={this.state.selectedLink}
 				handleChangeLoadingStatus={this.handleChangeLoadingStatus}
+				retry={this.state.retry}
 			/>
 			<DetailPanel
 				ref={this.detailPanel}
@@ -235,6 +237,7 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 					this.elementPanel.current?.forceUpdate();
 				}}
 				handleChangeLoadingStatus={this.handleChangeLoadingStatus}
+				retry={this.state.retry}
 			/>
 		</div>);
 	}

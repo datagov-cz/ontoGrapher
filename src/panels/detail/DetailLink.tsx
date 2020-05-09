@@ -1,5 +1,5 @@
 import React from 'react';
-import {CardinalityPool, Languages, Links, ProjectLinks, Schemes} from "../../config/Variables";
+import {CardinalityPool, Languages, Links, ProjectLinks, ProjectSettings, Schemes} from "../../config/Variables";
 import {Button, Form} from "react-bootstrap";
 import TableList from "../../components/TableList";
 import * as LocaleMain from "../../locale/LocaleMain.json";
@@ -10,11 +10,14 @@ import {ResizableBox} from "react-resizable";
 import {graph} from "../../graph/graph";
 import DescriptionTabs from "./components/DescriptionTabs";
 import {getLinkOrVocabElem} from "../../function/FunctionGetVars";
+import {updateProjectLink} from "../../interface/TransactionInterface";
 
 interface Props {
     projectLanguage: string;
     headers: { [key: string]: { [key: string]: string } }
     save: Function;
+    retry: boolean;
+    handleChangeLoadingStatus: Function;
 }
 
 interface State {
@@ -37,6 +40,12 @@ export default class DetailLink extends React.Component<Props, State> {
         }
     }
 
+    componentDidUpdate(prevProps: Readonly<Props>, prevState: Readonly<State>, snapshot?: any) {
+        if (prevState !== this.state && (this.state.changes || (this.props.retry && ProjectSettings.lastUpdate.source === this.constructor.name))) {
+            this.save();
+        }
+    }
+
     prepareDetails(id: string) {
         this.setState({
             id: id,
@@ -48,45 +57,53 @@ export default class DetailLink extends React.Component<Props, State> {
     }
 
     save() {
-        ProjectLinks[this.state.id].sourceCardinality = CardinalityPool[parseInt(this.state.sourceCardinality, 10)];
-        ProjectLinks[this.state.id].targetCardinality = CardinalityPool[parseInt(this.state.targetCardinality, 10)];
-        let links = graph.getLinks();
-        for (let link of links) {
-            if (link.id === this.state.id) {
-                switch (link.labels.length) {
-                    case 1:
-                        link.removeLabel(0);
-                        break;
-                    case 2:
-                        link.removeLabel(0);
-                        link.removeLabel(0);
-                        break;
-                    case 3:
-                        link.removeLabel(0);
-                        link.removeLabel(0);
-                        link.removeLabel(0);
-                        break;
+        this.props.handleChangeLoadingStatus(true, LocaleMain.updating, false);
+        updateProjectLink(ProjectSettings.ontographerContext, this.state.id).then((result) => {
+            if (result) {
+                ProjectLinks[this.state.id].sourceCardinality = CardinalityPool[parseInt(this.state.sourceCardinality, 10)];
+                ProjectLinks[this.state.id].targetCardinality = CardinalityPool[parseInt(this.state.targetCardinality, 10)];
+                let links = graph.getLinks();
+                for (let link of links) {
+                    if (link.id === this.state.id) {
+                        switch (link.labels.length) {
+                            case 1:
+                                link.removeLabel(0);
+                                break;
+                            case 2:
+                                link.removeLabel(0);
+                                link.removeLabel(0);
+                                break;
+                            case 3:
+                                link.removeLabel(0);
+                                link.removeLabel(0);
+                                link.removeLabel(0);
+                                break;
+                        }
+                        if (ProjectLinks[this.state.id].sourceCardinality.getString() !== LocaleMain.none) {
+                            link.appendLabel({
+                                attrs: {text: {text: ProjectLinks[this.state.id].sourceCardinality.getString()}},
+                                position: {distance: 20}
+                            });
+                        }
+                        if (ProjectLinks[this.state.id].targetCardinality.getString() !== LocaleMain.none) {
+                            link.appendLabel({
+                                attrs: {text: {text: ProjectLinks[this.state.id].targetCardinality.getString()}},
+                                position: {distance: -20}
+                            });
+                        }
+                        link.appendLabel({
+                            attrs: {text: {text: getLinkOrVocabElem(this.state.iri).labels[this.props.projectLanguage]}},
+                            position: {distance: 0.5}
+                        });
+                    }
                 }
-                if (ProjectLinks[this.state.id].sourceCardinality.getString() !== LocaleMain.none) {
-                    link.appendLabel({
-                        attrs: {text: {text: ProjectLinks[this.state.id].sourceCardinality.getString()}},
-                        position: {distance: 20}
-                    });
-                }
-                if (ProjectLinks[this.state.id].targetCardinality.getString() !== LocaleMain.none) {
-                    link.appendLabel({
-                        attrs: {text: {text: ProjectLinks[this.state.id].targetCardinality.getString()}},
-                        position: {distance: -20}
-                    });
-                }
-                link.appendLabel({
-                    attrs: {text: {text: getLinkOrVocabElem(this.state.iri).labels[this.props.projectLanguage]}},
-                    position: {distance: 0.5}
-                });
+                this.setState({changes: false});
+                this.props.save();
+                this.props.handleChangeLoadingStatus(false, "", true);
+            } else {
+                this.props.handleChangeLoadingStatus(false, "", true);
             }
-        }
-        this.setState({changes: false});
-        this.props.save();
+        })
     }
 
     render() {

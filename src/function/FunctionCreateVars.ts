@@ -1,5 +1,6 @@
 import {
     CardinalityPool,
+    Diagrams,
     PackageRoot,
     ProjectElements,
     ProjectLinks,
@@ -14,6 +15,23 @@ import {AttributeObject} from "../datatypes/AttributeObject";
 import {initLanguageObject} from "./FunctionEditVars";
 import {PackageNode} from "../datatypes/PackageNode";
 import {graphElement} from "../graph/graphElement";
+import {getSettings} from "../interface/SPARQLInterface";
+import {nameGraphElement, restoreDomainOfConnections, restoreHiddenElem} from "./FunctionGraph";
+import {changeDiagrams} from "./FunctionDiagram";
+
+export function setupDiagrams() {
+    getSettings(ProjectSettings.ontographerContext);
+    for (let i = 0; i < Diagrams.length; i++) {
+        changeDiagrams(i);
+        for (let id in ProjectElements) {
+            let cls = new graphElement({id: id});
+            cls.position(ProjectElements[id].position[i].x, ProjectElements[id].position[i].y);
+            nameGraphElement(cls, ProjectSettings.selectedLanguage);
+            restoreHiddenElem(id, cls);
+        }
+        restoreDomainOfConnections();
+    }
+}
 
 export function createValues(values: { [key: string]: string[] }, prefixes: { [key: string]: string }) {
     let result: string[] = [];

@@ -29,6 +29,7 @@ export async function updateProjectElement(
 	Object.keys(newLabels).forEach((lang) => {
 		if (newLabels[lang] !== "") addLabels.push({"@value": newLabels[lang], "@language": lang});
 	})
+
 	Object.keys(newDefinitions).forEach((lang) => {
 		if (newDefinitions[lang] !== "") addDefinitions.push({"@value": newDefinitions[lang], "@language": lang});
 	})
@@ -58,6 +59,7 @@ export async function updateProjectElement(
 				return {
 					"@id": iri + "/diagram-" + (diag + 1),
 					"@type": "og:elementDiagram",
+					"og:index": diag,
 					"og:position-x": ProjectElements[id].position[diag].x,
 					"og:position-y": ProjectElements[id].position[diag].y,
 					"og:hidden": ProjectElements[id].hidden[diag]
@@ -134,8 +136,13 @@ export async function updateProjectLink(contextEndpoint: string, id: string) {
 		"@id": ogContext,
 		"@graph": [{
 			"@id": linkIRI,
-			"og:source": ProjectLinks[id].source,
-			"og:target": ProjectLinks[id].target,
+			"@type": "og:link",
+			"og:id": id,
+			"og:iri": ProjectLinks[id].iri,
+			"og:source-id": ProjectLinks[id].source,
+			"og:target-id": ProjectLinks[id].target,
+			"og:source": ProjectElements[ProjectLinks[id].source].iri,
+			"og:target": ProjectElements[ProjectLinks[id].target].iri,
 			"og:diagram": ProjectLinks[id].diagram,
 			...ProjectLinks[id].vertices.map((vert, i) => {
 				return {"og:vertex": linkIRI + "/vertex-" + (i + 1)}
@@ -145,6 +152,7 @@ export async function updateProjectLink(contextEndpoint: string, id: string) {
 			...ProjectLinks[id].vertices.map((vert, i) => {
 				return {
 					"@id": linkIRI + "/vertex-" + (i + 1),
+					"og:index": i,
 					"og:position-x": vert.x,
 					"og:position-y": vert.y
 				}
@@ -351,6 +359,13 @@ export async function updateProjectSettings(contextIRI: string, contextEndpoint:
 					"og:diagram": ProjectLinks[id].diagram,
 					"og:vertex": ProjectLinks[id].vertices.map((vertex, i) => (linkIRI + "/vertex-" + i))
 				}
+			}),
+			...(Diagrams).map((diag, i) => {
+				return {
+					"@id": ogContext + "/diagram-" + (i + 1),
+					"og:index": i,
+					"og:name": diag.name,
+				}
 			})
 		]
 	}
@@ -358,3 +373,6 @@ export async function updateProjectSettings(contextIRI: string, contextEndpoint:
 	return await processTransaction(contextEndpoint, {"add": contextLD, "delete": contextLD}) &&
 		await processTransaction(contextEndpoint, {"add": ogContextLD, "delete": ogContextLD});
 }
+
+
+//TODO: check contexts of jsonLDs

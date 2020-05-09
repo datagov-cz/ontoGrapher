@@ -4,7 +4,7 @@ import {graphElement} from "../graph/graphElement";
 import {graph} from "../graph/graph";
 import * as LocaleMain from "../locale/LocaleMain.json";
 
-export function changeDiagrams(diagram: any) {
+export function changeDiagrams(diagram: number) {
     ProjectSettings.selectedDiagram = diagram;
     if (Diagrams[diagram].json !== "") {
         graph.fromJSON(Diagrams[diagram].json);
