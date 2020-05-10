@@ -78,7 +78,7 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 		if (this.props.loadDefaultVocabularies) {
 			this.loadVocabularies(
 				"http://example.org/pracovni-prostor/metadatový-kontext-123"
-				, "http://localhost:7200/repositories/kodi-pracovni-prostor-validace");
+				, "https://onto.fel.cvut.cz:7200//repositories/kodi-pracovni-prostor-validace");
 		}
 	}
 
