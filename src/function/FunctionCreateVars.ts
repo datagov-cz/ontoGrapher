@@ -18,19 +18,31 @@ import {graphElement} from "../graph/graphElement";
 import {getSettings} from "../interface/SPARQLInterface";
 import {nameGraphElement, restoreDomainOfConnections, restoreHiddenElem} from "./FunctionGraph";
 import {changeDiagrams} from "./FunctionDiagram";
+import {graph} from "../graph/graph";
 
-export function setupDiagrams() {
-    getSettings(ProjectSettings.ontographerContext);
-    for (let i = 0; i < Diagrams.length; i++) {
-        changeDiagrams(i);
-        for (let id in ProjectElements) {
-            let cls = new graphElement({id: id});
-            cls.position(ProjectElements[id].position[i].x, ProjectElements[id].position[i].y);
-            nameGraphElement(cls, ProjectSettings.selectedLanguage);
-            restoreHiddenElem(id, cls);
+export async function setupDiagrams(): Promise<boolean> {
+    return await getSettings(ProjectSettings.contextEndpoint).then(() => {
+        for (let i = 0; i < Diagrams.length; i++) {
+            changeDiagrams(i);
+            for (let id in ProjectElements) {
+                if (ProjectElements[id].hidden[i] === false && ProjectElements[id].position[i]) {
+                    let position = ProjectElements[id].position[i];
+                    if (position.x !== 0 && position.y !== 0) {
+                        let cls = new graphElement({id: id});
+                        cls.position(ProjectElements[id].position[i].x, ProjectElements[id].position[i].y);
+                        cls.addTo(graph);
+                        nameGraphElement(cls, ProjectSettings.selectedLanguage);
+                        restoreHiddenElem(id, cls);
+                    }
+                }
+            }
+            restoreDomainOfConnections();
         }
-        restoreDomainOfConnections();
-    }
+        changeDiagrams(0);
+        return true;
+    }).catch(() => {
+        return false;
+    });
 }
 
 export function createValues(values: { [key: string]: string[] }, prefixes: { [key: string]: string }) {

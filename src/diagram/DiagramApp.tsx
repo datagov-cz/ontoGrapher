@@ -21,7 +21,6 @@ import {loadProject, newProject} from "../function/FunctionProject";
 import {nameGraphElement, nameGraphLink} from "../function/FunctionGraph";
 import {PackageNode} from "../datatypes/PackageNode";
 import {createNewScheme, setupDiagrams} from "../function/FunctionCreateVars";
-import {updateProjectSettings} from "../interface/TransactionInterface";
 import {getElementsConfig, getLinksConfig} from "../interface/SPARQLInterface";
 
 interface DiagramAppProps {
@@ -147,23 +146,21 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 			).then(() => {
 				if (!this.state.error) {
 					this.selectDefaultPackage();
-					this.setState({loading: false});
 					document.title = ProjectSettings.name[this.state.projectLanguage] + " | " + Locale.ontoGrapher;
 					ProjectSettings.contextEndpoint = contextEndpoint;
 					ProjectSettings.contextIRI = contextIRI
 					this.handleChangeLanguage(Object.keys(Languages)[0]);
-					getElementsConfig(ProjectSettings.contextEndpoint);
-					getLinksConfig(ProjectSettings.ontographerContext);
-					setupDiagrams();
-					this.forceUpdate();
-					this.elementPanel.current?.update();
-					updateProjectSettings(contextIRI, contextEndpoint).then(result => {
-						if (!result) {
-							this.handleChangeLoadingStatus(false, "", true);
-						} else {
-							this.handleChangeLoadingStatus(false, "", false);
-						}
-					})
+					getElementsConfig(ProjectSettings.contextEndpoint).then(() => {
+						getLinksConfig(ProjectSettings.contextEndpoint).then(() => {
+							setupDiagrams().then((result) => {
+								if (result) {
+									this.forceUpdate();
+									this.elementPanel.current?.update();
+									this.handleChangeLoadingStatus(false, "", false);
+								}
+							});
+						});
+					});
 				}
 			})
 		});

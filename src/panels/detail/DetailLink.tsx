@@ -1,6 +1,6 @@
 import React from 'react';
 import {CardinalityPool, Languages, Links, ProjectLinks, ProjectSettings, Schemes} from "../../config/Variables";
-import {Button, Form} from "react-bootstrap";
+import {Form} from "react-bootstrap";
 import TableList from "../../components/TableList";
 import * as LocaleMain from "../../locale/LocaleMain.json";
 import * as LocaleMenu from "../../locale/LocaleMenu.json";
@@ -47,21 +47,33 @@ export default class DetailLink extends React.Component<Props, State> {
     }
 
     prepareDetails(id: string) {
+        let sourceCard = ProjectLinks[id].sourceCardinality;
+        let targetCard = ProjectLinks[id].targetCardinality;
+        this.setState({
+            sourceCardinality: "0",
+            targetCardinality: "0"
+        });
+        CardinalityPool.forEach((card, i) => {
+            if (sourceCard.getString() === card.getString()) {
+                this.setState({sourceCardinality: i.toString(10)});
+            }
+            if (targetCard.getString() === card.getString()) {
+                this.setState({targetCardinality: i.toString(10)});
+            }
+        })
         this.setState({
             id: id,
             iri: ProjectLinks[id].iri,
-            sourceCardinality: CardinalityPool.indexOf(ProjectLinks[id].sourceCardinality).toString(10),
-            targetCardinality: CardinalityPool.indexOf(ProjectLinks[id].targetCardinality).toString(10),
             changes: false
         });
     }
 
     save() {
         this.props.handleChangeLoadingStatus(true, LocaleMain.updating, false);
-        updateProjectLink(ProjectSettings.ontographerContext, this.state.id).then((result) => {
+        ProjectLinks[this.state.id].sourceCardinality = CardinalityPool[parseInt(this.state.sourceCardinality, 10)];
+        ProjectLinks[this.state.id].targetCardinality = CardinalityPool[parseInt(this.state.targetCardinality, 10)];
+        updateProjectLink(ProjectSettings.contextEndpoint, this.state.id, this.constructor.name).then((result) => {
             if (result) {
-                ProjectLinks[this.state.id].sourceCardinality = CardinalityPool[parseInt(this.state.sourceCardinality, 10)];
-                ProjectLinks[this.state.id].targetCardinality = CardinalityPool[parseInt(this.state.targetCardinality, 10)];
                 let links = graph.getLinks();
                 for (let link of links) {
                     if (link.id === this.state.id) {
@@ -99,7 +111,7 @@ export default class DetailLink extends React.Component<Props, State> {
                 }
                 this.setState({changes: false});
                 this.props.save();
-                this.props.handleChangeLoadingStatus(false, "", true);
+                this.props.handleChangeLoadingStatus(false, "", false);
             } else {
                 this.props.handleChangeLoadingStatus(false, "", true);
             }
@@ -116,10 +128,6 @@ export default class DetailLink extends React.Component<Props, State> {
             className={"details"}>
             <div>
                 <h3>{getLinkOrVocabElem(this.state.iri).labels[this.props.projectLanguage]}</h3>
-                {this.state.changes ?
-                    <p className={"bordered"}>{LocaleMain.saveChanges}<br/><br/><Button onClick={() => {
-                        this.save();
-                    }}>{LocaleMain.menuPanelSave}</Button></p> : <p/>}
                 <TableList headings={[LocaleMenu.linkInfo, ""]}>
                     <tr>
                         <td>
@@ -198,7 +206,7 @@ export default class DetailLink extends React.Component<Props, State> {
                         <h5>{<IRILink label={this.props.headers.definition[this.props.projectLanguage]}
                                       iri={"http://www.w3.org/2004/02/skos/core#definition"}/>}</h5>
                         <DescriptionTabs descriptions={getLinkOrVocabElem(this.state.iri).definitions}
-                                         readOnly={false}/>
+                                         readOnly={true}/>
                     </div> : ""}
             </div>
         </ResizableBox>);

@@ -2,15 +2,7 @@
 import React from 'react';
 import * as joint from 'jointjs';
 import {graphElement} from "../graph/graphElement";
-import {
-    Links,
-    ProjectElements,
-    ProjectLinks,
-    ProjectSettings,
-    Schemes,
-    Stereotypes,
-    VocabularyElements
-} from "../config/Variables";
+import {Links, ProjectElements, ProjectLinks, ProjectSettings, Schemes, VocabularyElements} from "../config/Variables";
 import {addClass, addLink, addVocabularyElement, createNewElemIRI} from "../function/FunctionCreateVars";
 import {graph} from "../graph/graph";
 import {
@@ -26,7 +18,12 @@ import {HideButton} from "../graph/elemHide";
 import {ElemInfoButton} from "../graph/elemInfo";
 import {LinkInfoButton} from "../graph/linkInfo";
 import {initLanguageObject} from "../function/FunctionEditVars";
-import {updateConnections, updateProjectElement} from "../interface/TransactionInterface";
+import {
+    updateConnections,
+    updateDeleteProjectElement,
+    updateProjectElement,
+    updateProjectLink
+} from "../interface/TransactionInterface";
 import * as LocaleMain from "../locale/LocaleMain.json";
 
 interface DiagramCanvasProps {
@@ -75,8 +72,6 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps> {
                 link.target({x: bbox.x, y: bbox.y});
             }
         }
-        cell.resize(bbox.width, bbox.height);
-        //cell.position(bbox.x, bbox.y);
         unHighlightCell(cell.id);
         highlightCell(cell.id);
         for (let link of links) {
@@ -90,21 +85,27 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps> {
 
     updateConnections(sid: string, tid: string, linkID: string) {
         this.props.handleChangeLoadingStatus(true, LocaleMain.updating, false);
-        updateConnections(ProjectSettings.contextEndpoint, sid, []).then(result => {
+        addLink(linkID, this.props.selectedLink, sid, tid);
+        ProjectElements[sid].connections.push(linkID);
+        updateConnections(ProjectSettings.contextEndpoint, sid, [], this.constructor.name).then(result => {
             if (result) {
-                ProjectElements[sid].connections.push(linkID);
-                addLink(linkID, this.props.selectedLink, sid, tid);
-                this.props.handleChangeLoadingStatus(false, "", false);
+                updateProjectLink(ProjectSettings.contextEndpoint, linkID, this.constructor.name).then(result => {
+                    if (result) {
+                        this.props.handleChangeLoadingStatus(false, "", false);
+                    } else {
+                        this.props.handleChangeLoadingStatus(false, "", true);
+                    }
+                });
             } else {
-                this.handleChangeLoadingStatus(false, "", true);
+                this.props.handleChangeLoadingStatus(false, "", true);
             }
         });
     }
 
     deleteConnections(sid: string, id: string) {
-        updateConnections(ProjectSettings.contextEndpoint, sid, [id]).then(result => {
+        if (ProjectElements[sid].connections.includes(id)) ProjectElements[sid].connections.splice(ProjectElements[sid].connections.indexOf(id), 1);
+        updateConnections(ProjectSettings.contextEndpoint, sid, [id], this.constructor.name).then(result => {
             if (result) {
-                if (ProjectElements[sid].connections.includes(id)) ProjectElements[sid].connections.splice(ProjectElements[sid].connections.indexOf(id), 1);
                 let vocabElem = VocabularyElements[ProjectLinks[id].iri];
                 if (vocabElem && vocabElem.domain) {
                     let domainOf = VocabularyElements[vocabElem.domain].domainOf;
@@ -113,8 +114,14 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps> {
                     }
                 }
                 delete ProjectLinks[id];
-                view.model.remove();
-                this.props.handleChangeLoadingStatus(false, "", false);
+                graph.getCell(id).remove();
+                updateDeleteProjectElement(ProjectSettings.contextEndpoint, ProjectSettings.ontographerContext + "-" + id, this.constructor.name).then(result => {
+                    if (result) {
+                        this.props.handleChangeLoadingStatus(false, "", false);
+                    } else {
+                        this.props.handleChangeLoadingStatus(false, "", true);
+                    }
+                })
             } else {
                 this.props.handleChangeLoadingStatus(false, "", true);
             }
@@ -320,7 +327,7 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps> {
                     if (typeof cls.id === "string") {
                         let iri = createNewElemIRI(initLanguageObject(""), VocabularyElements);
                         addVocabularyElement(cls.id, iri, data.iri);
-                        addClass(cls.id, iri, ProjectSettings.selectedPackage, true, Stereotypes[data.iri].inScheme);
+                        addClass(cls.id, iri, ProjectSettings.selectedPackage, true, true);
                         updateProjectElement(
                             ProjectSettings.contextEndpoint,
                             this.constructor.name,
@@ -340,6 +347,8 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps> {
                 cls.addTo(graph);
                 let bbox = this.paper?.findViewByModel(cls).getBBox();
                 cls.resize(bbox.width, bbox.height);
+                ProjectElements[cls.id].hidden[ProjectSettings.selectedDiagram] = false;
+                ProjectElements[cls.id].position[ProjectSettings.selectedDiagram] = cls.position();
                 this.props.updateElementPanel();
                 if (data.type === "existing") {
                     restoreHiddenElem(data.id, cls);
@@ -347,11 +356,11 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps> {
                     updateProjectElement(
                         ProjectSettings.contextEndpoint,
                         this.constructor.name,
-                        [data.iri],
-                        initLanguageObject(""),
-                        initLanguageObject(""),
-                        [],
-                        [],
+                        VocabularyElements[ProjectElements[cls.id].iri].types,
+                        VocabularyElements[ProjectElements[cls.id].iri].labels,
+                        VocabularyElements[ProjectElements[cls.id].iri].definitions,
+                        ProjectElements[cls.id].attributes,
+                        ProjectElements[cls.id].properties,
                         cls.id);
                 }
             }}

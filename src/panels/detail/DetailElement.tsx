@@ -27,7 +27,12 @@ import {AttributeObject} from "../../datatypes/AttributeObject";
 import {RIEInput} from "riek";
 import {nameGraphElement} from "../../function/FunctionGraph";
 import {graph} from "../../graph/graph";
-import {updateProjectElement, updateProjectLink} from "../../interface/TransactionInterface";
+import {
+	processGetTransaction,
+	processTransaction,
+	updateProjectElement,
+	updateProjectLink
+} from "../../interface/TransactionInterface";
 import {createNewElemIRI} from "../../function/FunctionCreateVars";
 import * as _ from "lodash";
 
@@ -122,18 +127,22 @@ export default class DetailElement extends React.Component<Props, State> {
 				nameGraphElement(graph.getCell(this.state.id), this.props.projectLanguage);
 				this.props.save();
 				this.setState({changes: false});
-				ProjectElements[this.state.id].untitled = false;
 				this.props.handleChangeLoadingStatus(false, "", false);
-				for (let conn in ProjectElements[this.state.id].connections) {
-					await updateProjectLink(ProjectSettings.contextEndpoint, conn).then(res => {
+				for (let conn of ProjectElements[this.state.id].connections) {
+					await updateProjectLink(ProjectSettings.contextEndpoint, conn, this.constructor.name).then(res => {
 						if (!res) {
 							this.props.handleChangeLoadingStatus(false, "", true);
 						}
 					});
 				}
 				if (ProjectElements[this.state.id].iri !== oldIRI) {
+					let delString = await processGetTransaction(ProjectSettings.contextEndpoint, {subject: oldIRI});
+					if (delString) {
+						await processTransaction(ProjectSettings.contextEndpoint, {"delete": JSON.parse(delString)});
+					}
 					delete VocabularyElements[oldIRI];
 				}
+				ProjectElements[this.state.id].untitled = false;
 			} else {
 				this.props.handleChangeLoadingStatus(false, "", true);
 			}
@@ -160,26 +169,29 @@ export default class DetailElement extends React.Component<Props, State> {
 					<Tab title={LocaleMain.description} eventKey={LocaleMain.description}>
 						<h5>{this.props.headers.stereotype[this.props.projectLanguage]}</h5>
 						<TableList>
-							{this.state.inputTypes.map(iri =>
-								(<tr key={iri}>
-									<td>
-										<IRILink
-											label={getStereotypeOrVocabElem(iri).labels[this.props.projectLanguage]}
-											iri={iri}/>
-										&nbsp;
-										{(this.state.inputTypes.length === 1 || (this.state.readOnly)) ? "" :
-											<button className={"buttonlink"} onClick={() => {
-												let result = _.cloneDeep(this.state.inputTypes);
-												result.splice(result.indexOf(iri), 1);
-												this.setState({
-													inputTypes: result,
-													changes: true,
-												})
-											}}>
-												{LocaleMenu.deleteProjectName}</button>}
-									</td>
-								</tr>)
-							)}
+							{this.state.inputTypes.map(iri => {
+								if (getStereotypeOrVocabElem(iri)) {
+									return (<tr key={iri}>
+										<td>
+											<IRILink
+												label={getLabelOrBlank(getStereotypeOrVocabElem(iri).labels, this.props.projectLanguage)}
+												iri={iri}/>
+											&nbsp;
+											{(this.state.inputTypes.length === 1 || (this.state.readOnly)) ? "" :
+												<button className={"buttonlink"} onClick={() => {
+													let result = _.cloneDeep(this.state.inputTypes);
+													result.splice(result.indexOf(iri), 1);
+													this.setState({
+														inputTypes: result,
+														changes: true,
+													})
+												}}>
+													{LocaleMenu.deleteProjectName}</button>}
+										</td>
+									</tr>)
+								} else return ""
+
+							})}
 							{(!this.state.readOnly) ? <tr>
 								<td>
 									<Form inline>
@@ -240,14 +252,17 @@ export default class DetailElement extends React.Component<Props, State> {
 					<Tab eventKey={"connections"} title={LocaleMain.connections}>
 						<TableList
 							headings={[LocaleMenu.connectionVia, LocaleMenu.connectionTo, LocaleMenu.diagram]}>
-							{this.state.inputConnections.map((conn) =>
-								<tr>
-									<IRIlabel
-										label={Links[ProjectLinks[conn].iri].labels[this.props.projectLanguage]}
-										iri={ProjectLinks[conn].iri}/>
-									<td>{getLabelOrBlank(VocabularyElements[ProjectElements[ProjectLinks[conn].target].iri].labels, this.props.projectLanguage)}</td>
-									<td>{Diagrams[ProjectLinks[conn].diagram].name}</td>
-								</tr>
+							{this.state.inputConnections.map((conn) => {
+									if (ProjectLinks[conn]) {
+										return (<tr>
+											<IRIlabel
+												label={Links[ProjectLinks[conn].iri].labels[this.props.projectLanguage]}
+												iri={ProjectLinks[conn].iri}/>
+											<td>{getLabelOrBlank(VocabularyElements[ProjectElements[ProjectLinks[conn].target].iri].labels, this.props.projectLanguage)}</td>
+											<td>{Diagrams[ProjectLinks[conn].diagram].name}</td>
+										</tr>)
+									} else return ""
+								}
 							)}
 							{this.state.iri in VocabularyElements ? VocabularyElements[this.state.iri].domainOf.map((conn: string) => {
 								let range = VocabularyElements[conn].range;
@@ -308,10 +323,10 @@ export default class DetailElement extends React.Component<Props, State> {
 								</tr>
 							)}
 						</TableList>
-						<button className={"buttonlink"} onClick={() => {
+						{!this.state.readOnly && <button className={"buttonlink"} onClick={() => {
 							this.createAttribute();
 						}}>
-							{LocaleMenu.createAttribute}</button>
+							{LocaleMenu.createAttribute}</button>}
 					</Tab>
 					<Tab eventKey={LocaleMain.properties} title={LocaleMain.properties}>
 						<TableList headings={[LocaleMenu.title, LocaleMenu.attributeType, LocaleMenu.value]}>

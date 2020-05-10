@@ -99,12 +99,10 @@ export async function getScheme(iri: string, endpoint: string, readOnly: boolean
 }
 
 export async function getElementsConfig(endpoint: string, callback?: Function) {
-    let editableSchemes = Object.keys(Schemes).filter((scheme) => !Schemes[scheme].readOnly);
     for (let iri in VocabularyElements) {
-        if (editableSchemes.includes(VocabularyElements[iri].inScheme)) {
             let element: {
                 id: "",
-                untitled: false,
+                untitled: boolean,
                 attributeIRI: string[],
                 propertyIRI: string[],
                 diagramIRI: number[],
@@ -134,8 +132,8 @@ export async function getElementsConfig(endpoint: string, callback?: Function) {
                 "?iri og:id ?id .",
                 "?iri og:active ?active .",
                 "?iri og:untitled ?untitled .",
-                "?iri og:attribute ?attribute .",
-                "?iri og:property ?property .",
+                "OPTIONAL {?iri og:attribute ?attribute . }",
+                "OPTIONAL {?iri og:property ?property . }",
                 "?iri og:diagram ?diagram .",
                 "}"
             ].join(" ");
@@ -145,8 +143,8 @@ export async function getElementsConfig(endpoint: string, callback?: Function) {
             }).then(data => {
                 for (let result of data.results.bindings) {
                     if (result.id) element.id = result.id.value;
-                    if (result.active) element.active = result.active.value;
-                    if (result.untitled) element.untitled = result.untitled.value;
+                    if (result.active) element.active = result.active.value === "true";
+                    if (result.untitled) element.untitled = result.untitled.value === "true";
                     if (result.attribute) element.attributeIRI.push(result.attribute.value);
                     if (result.property) element.propertyIRI.push(result.property.value);
                     if (result.diagram) element.diagramIRI.push(result.diagram.value);
@@ -155,7 +153,7 @@ export async function getElementsConfig(endpoint: string, callback?: Function) {
                 if (callback) callback(false);
             });
             if (element.diagramIRI.length > 0) {
-                for (let diag in element.diagramIRI) {
+                for (let diag of element.diagramIRI) {
                     let query = [
                         "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
                         "select ?positionX ?positionY ?hidden ?index where {",
@@ -172,10 +170,12 @@ export async function getElementsConfig(endpoint: string, callback?: Function) {
                     }).then(data => {
                         for (let result of data.results.bindings) {
                             if (result.index) {
-                                let index = result.index.value;
-                                if (result.positionX) element.diagramPosition[index].x = result.positionX.value;
-                                if (result.positionY) element.diagramPosition[index].y = result.positionY.value;
-                                if (result.hidden) element.hidden[index] = result.hidden.value;
+                                let index = parseInt(result.index.value);
+                                element.diagramPosition[index] = {
+                                    x: parseInt(result.positionX.value),
+                                    y: parseInt(result.positionY.value)
+                                };
+                                element.hidden[index] = result.hidden.value === "true";
                             }
                         }
                     }).catch(() => {
@@ -184,7 +184,7 @@ export async function getElementsConfig(endpoint: string, callback?: Function) {
                 }
             }
             if (element.attributeIRI.length > 0) {
-                for (let attr in element.attributeIRI) {
+                for (let attr of element.attributeIRI) {
                     let query = [
                         "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
                         "select ?attrname ?attrtype where {",
@@ -208,7 +208,7 @@ export async function getElementsConfig(endpoint: string, callback?: Function) {
                 }
             }
             if (element.propertyIRI.length > 0) {
-                for (let attr in element.propertyIRI) {
+                for (let attr of element.propertyIRI) {
                     let query = [
                         "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
                         "select ?attrname ?attrtype where {",
@@ -239,10 +239,11 @@ export async function getElementsConfig(endpoint: string, callback?: Function) {
                     ProjectElements[id].hidden = element.hidden;
                     ProjectElements[id].diagrams = element.diagrams;
                     ProjectElements[id].active = element.active;
+                    ProjectElements[id].position = element.diagramPosition;
                     break;
                 }
             }
-        }
+
     }
     if (callback) callback(true);
 }
@@ -250,11 +251,11 @@ export async function getElementsConfig(endpoint: string, callback?: Function) {
 export async function getSettings(endpoint: string, callback?: Function) {
     let query = [
         "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
-        "select ?diagram where {",
-        "BIND(<" + ProjectSettings.ontographerContext + "> as ?ogContext.",
-        "?ogContext og:diagram ?diagram",
-        "?diagram og:index ?index",
-        "?diagram og:name ?name",
+        "select ?diagram ?index ?name where {",
+        "BIND(<" + ProjectSettings.ontographerContext + "> as ?ogContext).",
+        "?ogContext og:diagram ?diagram .",
+        "?diagram og:index ?index .",
+        "?diagram og:name ?name .",
         "}"
     ].join(" ");
     let q = endpoint + "?query=" + encodeURIComponent(query);
@@ -262,10 +263,10 @@ export async function getSettings(endpoint: string, callback?: Function) {
         return response.json();
     }).then(data => {
         for (let result of data.results.bindings) {
-            if (!(result.index.value in Diagrams)) {
-                Diagrams[result.index.value] = {name: Locale.untitled, json: {}}
+            if (!(parseInt(result.index.value) in Diagrams)) {
+                Diagrams[parseInt(result.index.value)] = {name: Locale.untitled, json: {}}
             }
-            Diagrams[result.index.value].name = result.name.value;
+            Diagrams[parseInt(result.index.value)].name = result.name.value;
         }
     }).catch(() => {
         if (callback) callback(false);
@@ -275,23 +276,22 @@ export async function getSettings(endpoint: string, callback?: Function) {
 export async function getLinksConfig(endpoint: string, callback?: Function) {
     let query = [
         "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
-        "select ?id ?iri ?sourceID ?targetID ?source ?target ?sourceCard1 ?sourceCard2 ?targetCard1 ?targetCard2 ?diagram ?vertex {",
+        "select ?id ?iri ?sourceID ?targetID ?source ?target ?sourceCard1 ?sourceCard2 ?targetCard1 ?targetCard2 ?diagram ?vertex where {",
         "?link a og:link .",
         "?link og:id ?id .",
-        "?link og:iri ?iri",
+        "?link og:iri ?iri .",
         "?link og:source-id ?sourceID .",
         "?link og:target-id ?targetID .",
         "?link og:source ?source .",
         "?link og:target ?target .",
         "?link og:diagram ?diagram .",
-        "?link og:vertex ?vertex .",
+        "OPTIONAL {?link og:vertex ?vertex .}",
         "OPTIONAL {?link og:sourceCardinality1 ?sourceCard1 .}",
         "OPTIONAL {?link og:sourceCardinality2 ?sourceCard2 .}",
         "OPTIONAL {?link og:targetCardinality1 ?targetCard1 .}",
         "OPTIONAL {?link og:sourceCardinality2 ?targetCard2 .}",
         "}"
     ].join(" ");
-
     let q = endpoint + "?query=" + encodeURIComponent(query);
     let links: {
         [key: string]: {
@@ -320,7 +320,7 @@ export async function getLinksConfig(endpoint: string, callback?: Function) {
                     target: result.target.value,
                     targetID: result.targetID.value,
                     sourceID: result.sourceID.value,
-                    diagram: result.diagram.value,
+                    diagram: parseInt(result.diagram.value),
                     vertexIRI: [],
                     vertexes: {},
                 }
@@ -353,7 +353,10 @@ export async function getLinksConfig(endpoint: string, callback?: Function) {
                     return response.json();
                 }).then(data => {
                     for (let result of data.results.bindings) {
-                        links[link].vertexes[result.index.value] = {x: result.posX.value, y: result.posY.value};
+                        links[link].vertexes[parseInt(result.index.value)] = {
+                            x: parseInt(result.posX.value),
+                            y: parseInt(result.posY.value)
+                        };
                     }
                 }).catch(() => {
                     if (callback) callback(false);
@@ -371,25 +374,34 @@ export async function getLinksConfig(endpoint: string, callback?: Function) {
 
         Object.keys(links[link].vertexes).forEach((vertex, i) => convert.push(links[link].vertexes[i]))
 
-        let sourceCard = new Cardinality(Locale.none, Locale.none);
-        sourceCard.setFirstCardinality(links[link].sourceCardinality1!)
-        sourceCard.setSecondCardinality(links[link].sourceCardinality2!)
-        let targetCard = new Cardinality(Locale.none, Locale.none);
-        targetCard.setFirstCardinality(links[link].targetCardinality1!)
-        targetCard.setSecondCardinality(links[link].targetCardinality2!);
-
-        ProjectLinks[link] = {
-            iri: links[link].iri,
-            source: links[link].sourceID,
-            target: links[link].targetID,
-            sourceCardinality: sourceCard,
-            targetCardinality: targetCard,
-            vertices: convert,
-            diagram: links[link].diagram
-        }
-        if (sourceID) {
-            if (!ProjectElements[sourceID].connections.includes(link)) {
-                ProjectElements[sourceID].connections.push(link);
+        if (targetID && sourceID) {
+            let sourceCard = new Cardinality(Locale.none, Locale.none);
+            let targetCard = new Cardinality(Locale.none, Locale.none);
+            if (links[link].sourceCardinality1 && links[link].sourceCardinality2) {
+                // @ts-ignore
+                sourceCard.setFirstCardinality(links[link].sourceCardinality1 ? links[link].sourceCardinality1 : Locale.none)
+                // @ts-ignore
+                sourceCard.setSecondCardinality(links[link].sourceCardinality2 ? links[link].sourceCardinality2 : Locale.none)
+            }
+            if (links[link].targetCardinality1 && links[link].targetCardinality2) {
+                // @ts-ignore
+                sourceCard.setFirstCardinality(links[link].targetCardinality1 ? links[link].targetCardinality1 : Locale.none)
+                // @ts-ignore
+                sourceCard.setSecondCardinality(links[link].targetCardinality2 ? links[link].targetCardinality2 : Locale.none)
+            }
+            ProjectLinks[link] = {
+                iri: links[link].iri,
+                source: sourceID,
+                target: targetID,
+                sourceCardinality: sourceCard,
+                targetCardinality: targetCard,
+                vertices: convert,
+                diagram: links[link].diagram
+            }
+            if (sourceID) {
+                if (!ProjectElements[sourceID].connections.includes(link)) {
+                    ProjectElements[sourceID].connections.push(link);
+                }
             }
         }
     }

@@ -34,7 +34,7 @@ export default class ModalRenameDiagram extends React.Component<Props, State> {
 
     save() {
         Diagrams[this.props.diagram].name = this.state.inputEdit;
-        updateProjectSettings(ProjectSettings.contextIRI, ProjectSettings.contextEndpoint).then(result => {
+        updateProjectSettings(ProjectSettings.contextIRI, ProjectSettings.contextEndpoint, this.constructor.name).then(result => {
             if (result) {
                 this.props.handleChangeLoadingStatus(false, "", false);
             } else {

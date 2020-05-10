@@ -1,5 +1,6 @@
 import {
 	Diagrams,
+	Links,
 	Prefixes,
 	ProjectElements,
 	ProjectLinks,
@@ -35,7 +36,13 @@ export async function updateProjectElement(
 	})
 
 	let addLD = {
-		"@context": Prefixes,
+		"@context": {
+			...Prefixes,
+			"skos:inScheme": {"@type": "@id"},
+			"og:diagram": {"@type": "@id"},
+			"og:attribute": {"@type": "@id"},
+			"og:property": {"@type": "@id"}
+		},
 		"@id": Schemes[scheme].graph,
 		"@graph": [
 			{
@@ -85,7 +92,13 @@ export async function updateProjectElement(
 	}
 
 	let deleteLD = {
-		"@context": Prefixes,
+		"@context": {
+			...Prefixes,
+			"skos:inScheme": {"@type": "@id"},
+			"og:diagram": {"@type": "@id"},
+			"og:attribute": {"@type": "@id"},
+			"og:property": {"@type": "@id"}
+		},
 		"@id": Schemes[scheme].graph,
 		"@graph": [
 			{
@@ -104,35 +117,56 @@ export async function updateProjectElement(
 					}
 				}),
 				"skos:inScheme": scheme,
-			},
-			...ProjectElements[id].attributes.map((attr, i) => {
-				return {"@id": iri + "/attribute-" + (i + 1)}
-			}),
-			...ProjectElements[id].properties.map((attr, i) => {
-				return {"@id": iri + "/attribute-" + (i + 1)}
-			}),
-			...ProjectElements[id].diagrams.map(diag => {
-				return {"@id": iri + "/diagram-" + (diag + 1)}
-			}),
+			}
 		]
 	}
+	let delString = await processGetTransaction(contextEndpoint, {subject: iri + "/diagram"});
+	if (delString) {
+		await processTransaction(contextEndpoint, {"delete": JSON.parse(delString)});
+	}
+	for (const attr of ProjectElements[id].attributes) {
+		let i = ProjectElements[id].attributes.indexOf(attr);
+		let delString = await processGetTransaction(contextEndpoint, {subject: iri + "/attribute-" + (i + 1)});
+		if (delString) {
+			await processTransaction(contextEndpoint, {"delete": JSON.parse(delString)});
+		}
+	}
+	for (const attr of ProjectElements[id].properties) {
+		let i = ProjectElements[id].properties.indexOf(attr);
+		let delString = await processGetTransaction(contextEndpoint, {subject: iri + "/property-" + (i + 1)});
+		if (delString) {
+			await processTransaction(contextEndpoint, {"delete": JSON.parse(delString)});
+		}
+	}
+	for (const diag of ProjectElements[id].diagrams) {
+		let delString = await processGetTransaction(contextEndpoint, {subject: iri + "/diagram-" + (diag + 1)});
+		if (delString) {
+			await processTransaction(contextEndpoint, {"delete": JSON.parse(delString)});
+		}
+	}
+
 	return await processTransaction(contextEndpoint, {"add": addLD, "delete": deleteLD, "source": source});
 }
 
-export async function updateProjectLink(contextEndpoint: string, id: string) {
+export async function updateProjectLink(contextEndpoint: string, id: string, source: string) {
 	let ogContext = "http://onto.fel.cvut.cz/ontologies/application/ontoGrapher";
 	let linkIRI = ogContext + "-" + id;
 	let cardinalities: { [key: string]: string } = {};
-	if (ProjectLinks[id].sourceCardinality.getString() !== Locale.none) {
+	if (ProjectLinks[id].sourceCardinality && ProjectLinks[id].sourceCardinality.getString() !== Locale.none) {
 		cardinalities["og:sourceCardinality1"] = ProjectLinks[id].sourceCardinality.getFirstCardinality();
 		cardinalities["og:sourceCardinality2"] = ProjectLinks[id].sourceCardinality.getSecondCardinality();
 	}
-	if (ProjectLinks[id].targetCardinality.getString() !== Locale.none) {
+	if (ProjectLinks[id].targetCardinality && ProjectLinks[id].targetCardinality.getString() !== Locale.none) {
 		cardinalities["og:targetCardinality1"] = ProjectLinks[id].targetCardinality.getFirstCardinality();
 		cardinalities["og:targetCardinality2"] = ProjectLinks[id].targetCardinality.getSecondCardinality();
 	}
 	let addLD = {
-		"@context": Prefixes,
+		"@context": {
+			...Prefixes,
+			"og:iri": {"@type": "@id"},
+			"og:source": {"@type": "@id"},
+			"og:target": {"@type": "@id"},
+		},
 		"@id": ogContext,
 		"@graph": [{
 			"@id": linkIRI,
@@ -163,41 +197,13 @@ export async function updateProjectLink(contextEndpoint: string, id: string) {
 	let del = await processGetTransaction(contextEndpoint, {subject: linkIRI});
 	if (del) {
 		let deleteLD = JSON.parse(del);
-		let list = deleteLD[0]["@graph"][0]["og:vertex"];
-		if (list) {
-			for (const vert of list) {
-				let val = vert["@id"];
-				let vertex = await processGetTransaction(contextEndpoint, {subject: val});
-				if (vertex) await processTransaction(contextEndpoint, {"delete": JSON.parse(vertex)});
-			}
-		}
-		await processTransaction(contextEndpoint, {"delete": deleteLD});
+		await processTransaction(contextEndpoint, {"delete": deleteLD, "source": source});
 	}
 
-	// let deleteLD = {
-	// 	"@context": Prefixes,
-	// 	"@id": ogContext,
-	// 	"@graph":[{
-	// 		"@id": linkIRI,
-	// 		"og:source": oldLink.source,
-	// 		"og:target": oldLink.target,
-	// 		"og:diagram": oldLink.diagram,
-	// 		...oldLink.vertices.map((vert: joint.dia.Link.Vertex, i:number) => {return {"og:vertex": linkIRI+"/vertex-"+(i+1)}}),
-	// 		...cardinalities
-	// 	},
-	// 		...oldLink.vertices.map((vert: joint.dia.Link.Vertex, i:number) => {return {
-	// 			"@id": linkIRI+"/vertex-"+(i+1),
-	// 			"og:position-x": vert.x,
-	// 			"og:position-y": vert.y
-	// 		}}),
-	// 	]
-	// }
-
-	return await processTransaction(contextEndpoint, {"add": addLD});
+	return await processTransaction(contextEndpoint, {"add": addLD, "source": source});
 }
 
-export async function updateDeleteProjectElement(contextEndpoint: string, id: string, source: string) {
-	let iri = ProjectElements[id].iri;
+export async function updateDeleteProjectElement(contextEndpoint: string, iri: string, source: string) {
 	let subjectLD = await processGetTransaction(contextEndpoint, {subject: iri});
 	let predicateLD = await processGetTransaction(contextEndpoint, {predicate: iri});
 	let objectLD = await processGetTransaction(contextEndpoint, {object: iri});
@@ -205,19 +211,20 @@ export async function updateDeleteProjectElement(contextEndpoint: string, id: st
 		subjectLD = JSON.parse(subjectLD);
 		predicateLD = JSON.parse(predicateLD);
 		objectLD = JSON.parse(objectLD);
-		return await processTransaction(contextEndpoint, {"delete": subjectLD, id: id, source: source}) &&
-			await processTransaction(contextEndpoint, {"delete": predicateLD, id: id, source: source}) &&
-			await processTransaction(contextEndpoint, {"delete": objectLD, id: id, source: source});
+		return await processTransaction(contextEndpoint, {"delete": subjectLD, source: source}) &&
+			await processTransaction(contextEndpoint, {"delete": predicateLD, source: source}) &&
+			await processTransaction(contextEndpoint, {"delete": objectLD, source: source});
 	} else return false;
 
 }
 
-export async function updateConnections(contextEndpoint: string, id: string, del: string[]) {
+export async function updateConnections(contextEndpoint: string, id: string, del: string[], source: string) {
 	let iri = ProjectElements[id].iri;
 	let scheme = VocabularyElements[iri].inScheme;
 	let connections: { [key: string]: string } = {};
 	let delConnections: { [key: string]: string } = {};
 	let connectionContext: { [key: string]: any } = {};
+	let linkContext: { [key: string]: any } = {};
 
 	ProjectElements[id].connections.forEach((linkID) => {
 		connections[ProjectLinks[linkID].iri] = ProjectElements[ProjectLinks[linkID].target].iri
@@ -229,8 +236,12 @@ export async function updateConnections(contextEndpoint: string, id: string, del
 		delConnections[ProjectLinks[linkID].iri] = ProjectElements[ProjectLinks[linkID].target].iri
 	})
 
+	Object.keys(Links).forEach(link => {
+		linkContext[link] = {"@type": "@id"};
+	})
+
 	let deleteLD = {
-		"@context": {...Prefixes, ...connectionContext},
+		"@context": {...Prefixes, ...connectionContext, ...linkContext},
 		"@id": Schemes[scheme].graph,
 		"@graph": [
 			{
@@ -251,7 +262,12 @@ export async function updateConnections(contextEndpoint: string, id: string, del
 		]
 	};
 
-	return await processTransaction(contextEndpoint, {"add": addLD, "delete": deleteLD, id: id});
+	if (del.length > 0) return await processTransaction(contextEndpoint, {
+		"add": addLD,
+		"delete": deleteLD,
+		"source": source
+	});
+	else return await processTransaction(contextEndpoint, {"add": addLD, "source": source});
 }
 
 export async function getTransactionID(contextEndpoint: string) {
@@ -291,6 +307,7 @@ export async function processTransaction(contextEndpoint: string, transactions: 
 
 	if (transactionID) {
 		let resultAdd, resultDelete, resultCommit;
+
 		if (transactions.delete) {
 			resultDelete = await fetch(transactionID + "?action=DELETE", {
 				headers: {
@@ -300,6 +317,7 @@ export async function processTransaction(contextEndpoint: string, transactions: 
 				body: JSON.stringify(transactions.delete)
 			}).then(response => response.status)
 		}
+
 		if (transactions.add) {
 			resultAdd = await fetch(transactionID + "?action=ADD", {
 				headers: {
@@ -321,11 +339,15 @@ export async function processTransaction(contextEndpoint: string, transactions: 
 	} else return false;
 }
 
-export async function updateProjectSettings(contextIRI: string, contextEndpoint: string) {
+export async function updateProjectSettings(contextIRI: string, contextEndpoint: string, source: string) {
 	let ogContext = "http://onto.fel.cvut.cz/ontologies/application/ontoGrapher"
 
 	let contextLD = {
-		"@context": {...Prefixes},
+		"@context": {
+			...Prefixes,
+			"d-sgov-pracovní-prostor-pojem:aplikační-kontext": {"@type": "@id"},
+			"d-sgov-pracovní-prostor-pojem:odkazuje-na-kontext": {"@type": "@id"}
+		},
 		"@id": contextIRI,
 		"@graph": [{
 			"@id": contextIRI,
@@ -337,7 +359,11 @@ export async function updateProjectSettings(contextIRI: string, contextEndpoint:
 	}
 
 	let ogContextLD = {
-		"@context": {...Prefixes},
+		"@context": {
+			...Prefixes,
+			"og:diagram": {"@type": "@id"},
+			"d-sgov-pracovní-prostor-pojem:aplikační-kontext": {"@type": "@id"}
+		},
 		"@id": ogContext,
 		"@graph": [{
 			"@id": ogContext,
@@ -370,8 +396,19 @@ export async function updateProjectSettings(contextIRI: string, contextEndpoint:
 		]
 	}
 
-	return await processTransaction(contextEndpoint, {"add": contextLD, "delete": contextLD}) &&
-		await processTransaction(contextEndpoint, {"add": ogContextLD, "delete": ogContextLD});
-}
+	let delString = await processGetTransaction(ProjectSettings.contextEndpoint, {subject: ogContext});
+	if (delString) {
+		await processTransaction(ProjectSettings.contextEndpoint, {"delete": JSON.parse(delString), "source": source});
+	}
 
-//TODO: check contexts of jsonLDs
+	for (const diag of Diagrams) {
+		let i = Diagrams.indexOf(diag);
+		let delString = await processGetTransaction(contextEndpoint, {subject: ogContext + "/diagram-" + (i + 1)});
+		if (delString) {
+			await processTransaction(contextEndpoint, {"delete": JSON.parse(delString)});
+		}
+	}
+
+	return await processTransaction(contextEndpoint, {"add": contextLD, "delete": contextLD, "source": source}) &&
+		await processTransaction(contextEndpoint, {"add": ogContextLD, "delete": ogContextLD, "source": source});
+}

@@ -107,7 +107,7 @@ export default class ModalEditPackage extends React.Component<Props, State> {
                 <Modal.Body>
                     <h5>{LocaleMenu.namePackageTitle}</h5>
                     <TableList>
-                        {Object.keys(Languages).map((language, i) => (
+                        {Object.keys(this.state.inputEdit).map((language, i) => (
                             <tr key={i}>
                                 <td>
                                     <RIEInput

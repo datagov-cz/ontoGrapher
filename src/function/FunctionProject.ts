@@ -9,6 +9,7 @@ import {
     ProjectLinks,
     ProjectSettings,
     PropertyPool,
+    Schemes,
     Stereotypes,
     VocabularyElements
 } from "../config/Variables";
@@ -99,9 +100,12 @@ export function newProject() {
     initProjectSettings();
     Diagrams.length = 0;
     Diagrams.push({name: Locale.untitled, json: ""});
+    Object.keys(Stereotypes).forEach(el => delete Stereotypes[el]);
+    Object.keys(Links).forEach(el => delete Links[el]);
     Object.keys(VocabularyElements).forEach(el => delete VocabularyElements[el]);
     Object.keys(ProjectElements).forEach(el => delete ProjectElements[el]);
     Object.keys(ProjectLinks).forEach(el => delete ProjectLinks[el]);
+    Object.keys(Schemes).forEach(el => delete Schemes[el]);
     PackageRoot.elements = [];
     PackageRoot.children = [];
 }

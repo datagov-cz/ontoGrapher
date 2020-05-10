@@ -5,9 +5,10 @@ import {graph} from "../graph/graph";
 import * as LocaleMain from "../locale/LocaleMain.json";
 
 export function changeDiagrams(diagram: number) {
+    Diagrams[ProjectSettings.selectedDiagram].json = saveDiagram();
     ProjectSettings.selectedDiagram = diagram;
-    if (Diagrams[diagram].json !== "") {
-        graph.fromJSON(Diagrams[diagram].json);
+    if (Object.keys(Diagrams[diagram].json).length > 0) {
+        loadDiagram(Diagrams[diagram].json);
     } else graph.clear();
 }
 
@@ -62,7 +63,6 @@ export function loadDiagram(load: {
     for (let elem of load.elements) {
         // @ts-ignore
         let cls = graphElement.create(elem.id).prop({
-            //size: {width: 180, height: 50},
             position: elem.pos,
             attrs: {label: {text: elem.label, magnet: true}}
         });
