@@ -69,6 +69,10 @@ export default class DetailPanel extends React.Component<Props, State> {
         this.props.update();
     }
 
+    retry() {
+        this.detailElem.current?.save();
+    }
+
     render() {
         if (!this.state.hidden) {
             if (this.state.type === "elem") {

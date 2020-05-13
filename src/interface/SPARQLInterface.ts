@@ -289,7 +289,7 @@ export async function getLinksConfig(endpoint: string, callback?: Function) {
         "OPTIONAL {?link og:sourceCardinality1 ?sourceCard1 .}",
         "OPTIONAL {?link og:sourceCardinality2 ?sourceCard2 .}",
         "OPTIONAL {?link og:targetCardinality1 ?targetCard1 .}",
-        "OPTIONAL {?link og:sourceCardinality2 ?targetCard2 .}",
+        "OPTIONAL {?link og:targetCardinality2 ?targetCard2 .}",
         "}"
     ].join(" ");
     let q = endpoint + "?query=" + encodeURIComponent(query);
@@ -385,9 +385,9 @@ export async function getLinksConfig(endpoint: string, callback?: Function) {
             }
             if (links[link].targetCardinality1 && links[link].targetCardinality2) {
                 // @ts-ignore
-                sourceCard.setFirstCardinality(links[link].targetCardinality1 ? links[link].targetCardinality1 : Locale.none)
+                targetCard.setFirstCardinality(links[link].targetCardinality1 ? links[link].targetCardinality1 : Locale.none)
                 // @ts-ignore
-                sourceCard.setSecondCardinality(links[link].targetCardinality2 ? links[link].targetCardinality2 : Locale.none)
+                targetCard.setSecondCardinality(links[link].targetCardinality2 ? links[link].targetCardinality2 : Locale.none)
             }
             ProjectLinks[link] = {
                 iri: links[link].iri,

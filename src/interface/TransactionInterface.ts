@@ -10,6 +10,7 @@ import {
 } from "../config/Variables";
 import {AttributeObject} from "../datatypes/AttributeObject";
 import * as Locale from "../locale/LocaleMain.json";
+import DetailElement from "../panels/detail/DetailElement";
 
 export async function updateProjectElement(
 	contextEndpoint: string,
@@ -34,6 +35,8 @@ export async function updateProjectElement(
 	Object.keys(newDefinitions).forEach((lang) => {
 		if (newDefinitions[lang] !== "") addDefinitions.push({"@value": newDefinitions[lang], "@language": lang});
 	})
+
+	ProjectSettings.lastSource = "DetailElement";
 
 	let addLD = {
 		"@context": {
@@ -120,16 +123,21 @@ export async function updateProjectElement(
 			}
 		]
 	}
-	let delString = await processGetTransaction(contextEndpoint, {subject: iri + "/diagram"});
-	if (delString) {
-		await processTransaction(contextEndpoint, {"delete": JSON.parse(delString)});
+	try {
+		let delString = await processGetTransaction(contextEndpoint, {subject: iri + "/diagram"});
+		if (delString) {
+			await processTransaction(contextEndpoint, {"delete": JSON.parse(delString)});
+		} else return false;
+	} catch (e) {
+		return false;
 	}
+
 	for (const attr of ProjectElements[id].attributes) {
 		let i = ProjectElements[id].attributes.indexOf(attr);
 		let delString = await processGetTransaction(contextEndpoint, {subject: iri + "/attribute-" + (i + 1)});
 		if (delString) {
 			await processTransaction(contextEndpoint, {"delete": JSON.parse(delString)});
-		}
+		} else return false;
 	}
 	for (const attr of ProjectElements[id].properties) {
 		let i = ProjectElements[id].properties.indexOf(attr);
@@ -270,18 +278,18 @@ export async function updateConnections(contextEndpoint: string, id: string, del
 	else return await processTransaction(contextEndpoint, {"add": addLD, "source": source});
 }
 
-export async function getTransactionID(contextEndpoint: string) {
-	return new Promise(async (resolve, reject) => {
+export function getTransactionID(contextEndpoint: string) {
+	return new Promise((resolve, reject) => {
 		let transactionUrl = contextEndpoint + "/transactions";
-		await fetch(transactionUrl, {
+		fetch(transactionUrl, {
 			headers: {
 				'Content-Type': 'application/json'
 			},
 			method: "POST"
 		}).then(response => response.headers).then(
 			headers => resolve(headers.get("location"))
-		).catch(() => {
-			reject();
+		).catch((error) => {
+			reject(error);
 		});
 	})
 }
@@ -297,8 +305,10 @@ export async function processGetTransaction(contextEndpoint: string, request: { 
 		return await fetch(transactionUrl, {
 			headers: {'Accept': "application/ld+json"},
 			method: "PUT"
-		}).then(response => response.text());
-	}
+		}).then(response => response.text()).catch(() => {
+			return null;
+		});
+	} else return null;
 }
 
 export async function processTransaction(contextEndpoint: string, transactions: { [key: string]: any }): Promise<boolean> {

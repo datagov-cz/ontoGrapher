@@ -133,7 +133,8 @@ export var ProjectSettings: {
     contextIRI: string,
     contextEndpoint: string,
     ontographerContext: string,
-    lastUpdate: { [key: string]: any }
+    lastUpdate: { [key: string]: any },
+    lastSource: string,
 } = {
     name: {},
     description: {},
@@ -145,7 +146,8 @@ export var ProjectSettings: {
     contextIRI: "",
     contextEndpoint: "",
     ontographerContext: "http://onto.fel.cvut.cz/ontologies/application/ontoGrapher",
-    lastUpdate: {}
+    lastUpdate: {},
+    lastSource: ""
 };
 
 export var AttributeTypePool: { [key: string]: { name: string, array: boolean, type?: string } } = {

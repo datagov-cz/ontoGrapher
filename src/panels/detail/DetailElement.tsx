@@ -99,7 +99,7 @@ export default class DetailElement extends React.Component<Props, State> {
 		});
 	}
 
-	async save() {
+	save() {
 		this.props.handleChangeLoadingStatus(true, LocaleMain.updating, false);
 		let oldIRI = ProjectElements[this.state.id].iri;
 		if (ProjectElements[this.state.id].untitled) {
@@ -143,6 +143,7 @@ export default class DetailElement extends React.Component<Props, State> {
 					delete VocabularyElements[oldIRI];
 				}
 				ProjectElements[this.state.id].untitled = false;
+				this.prepareDetails(this.state.id);
 			} else {
 				this.props.handleChangeLoadingStatus(false, "", true);
 			}
@@ -150,7 +151,7 @@ export default class DetailElement extends React.Component<Props, State> {
 	}
 
 	componentDidUpdate(prevProps: Readonly<Props>, prevState: Readonly<State>, snapshot?: any) {
-		if (prevState !== this.state && (this.state.changes || (this.props.retry && ProjectSettings.lastUpdate.source === this.constructor.name))) {
+		if ((prevState !== this.state && this.state.changes)) {
 			this.save();
 		}
 	}
