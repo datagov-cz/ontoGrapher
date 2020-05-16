@@ -111,7 +111,7 @@ export default class DetailElement extends React.Component<Props, State> {
 		}
 		updateProjectElement(
 			ProjectSettings.contextEndpoint,
-			this.constructor.name,
+			DetailElement.name,
 			this.state.inputTypes,
 			this.state.inputLabels,
 			this.state.inputDefinitions,
@@ -129,7 +129,7 @@ export default class DetailElement extends React.Component<Props, State> {
 				this.setState({changes: false});
 				this.props.handleChangeLoadingStatus(false, "", false);
 				for (let conn of ProjectElements[this.state.id].connections) {
-					await updateProjectLink(ProjectSettings.contextEndpoint, conn, this.constructor.name).then(res => {
+					await updateProjectLink(ProjectSettings.contextEndpoint, conn, DetailElement.name).then(res => {
 						if (!res) {
 							this.props.handleChangeLoadingStatus(false, "", true);
 						}
@@ -152,6 +152,8 @@ export default class DetailElement extends React.Component<Props, State> {
 
 	componentDidUpdate(prevProps: Readonly<Props>, prevState: Readonly<State>, snapshot?: any) {
 		if ((prevState !== this.state && this.state.changes)) {
+			this.save();
+		} else if ((prevProps !== this.props && this.props.retry && ProjectSettings.lastSource === DetailElement.name)) {
 			this.save();
 		}
 	}

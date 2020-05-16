@@ -10,7 +10,6 @@ import {
 } from "../config/Variables";
 import {AttributeObject} from "../datatypes/AttributeObject";
 import * as Locale from "../locale/LocaleMain.json";
-import DetailElement from "../panels/detail/DetailElement";
 
 export async function updateProjectElement(
 	contextEndpoint: string,
@@ -36,7 +35,7 @@ export async function updateProjectElement(
 		if (newDefinitions[lang] !== "") addDefinitions.push({"@value": newDefinitions[lang], "@language": lang});
 	})
 
-	ProjectSettings.lastSource = "DetailElement";
+	ProjectSettings.lastSource = source;
 
 	let addLD = {
 		"@context": {
@@ -44,7 +43,8 @@ export async function updateProjectElement(
 			"skos:inScheme": {"@type": "@id"},
 			"og:diagram": {"@type": "@id"},
 			"og:attribute": {"@type": "@id"},
-			"og:property": {"@type": "@id"}
+			"og:property": {"@type": "@id"},
+			"og:iri": {"@type": "@id"}
 		},
 		"@id": Schemes[scheme].graph,
 		"@graph": [
@@ -59,6 +59,7 @@ export async function updateProjectElement(
 				"@id": iri + "/diagram",
 				"@type": "og:element",
 				"og:id": id,
+				"og:iri": iri,
 				"og:untitled": ProjectElements[id].untitled,
 				"og:attribute": newAttributes.map((attr, i) => (iri + "/attribute-" + (i + 1))),
 				"og:property": newProperties.map((attr, i) => (iri + "/property-" + (i + 1))),
@@ -134,24 +135,39 @@ export async function updateProjectElement(
 
 	for (const attr of ProjectElements[id].attributes) {
 		let i = ProjectElements[id].attributes.indexOf(attr);
-		let delString = await processGetTransaction(contextEndpoint, {subject: iri + "/attribute-" + (i + 1)});
-		if (delString) {
-			await processTransaction(contextEndpoint, {"delete": JSON.parse(delString)});
+		let delString = await processGetTransaction(contextEndpoint, {subject: iri + "/attribute-" + (i + 1)}).catch(() => false);
+		if (typeof delString === "string") {
+			await processTransaction(contextEndpoint, {"delete": JSON.parse(delString)}).catch(() => false);
 		} else return false;
 	}
 	for (const attr of ProjectElements[id].properties) {
 		let i = ProjectElements[id].properties.indexOf(attr);
-		let delString = await processGetTransaction(contextEndpoint, {subject: iri + "/property-" + (i + 1)});
-		if (delString) {
-			await processTransaction(contextEndpoint, {"delete": JSON.parse(delString)});
+		let delString = await processGetTransaction(contextEndpoint, {subject: iri + "/property-" + (i + 1)}).catch(() => false);
+		if (typeof delString === "string") {
+			await processTransaction(contextEndpoint, {"delete": JSON.parse(delString)}).catch(() => false);
 		}
 	}
 	for (const diag of ProjectElements[id].diagrams) {
-		let delString = await processGetTransaction(contextEndpoint, {subject: iri + "/diagram-" + (diag + 1)});
-		if (delString) {
-			await processTransaction(contextEndpoint, {"delete": JSON.parse(delString)});
+		let delString = await processGetTransaction(contextEndpoint, {subject: iri + "/diagram-" + (diag + 1)}).catch(() => false);
+		if (typeof delString === "string") {
+			await processTransaction(contextEndpoint, {"delete": JSON.parse(delString)}).catch(() => false);
 		}
 	}
+
+	// let diagramLD = {
+	// 	"@context": {
+	// 		...Prefixes,
+	// 		"og:element": {"@type": "@id"},
+	// 	},
+	// 	"@id": ProjectSettings.ontographerContext,
+	// 	"@graph": [
+	// 		{
+	// 			"@id": iri + "/diagram",
+	// 			"@type": "og:element"
+	// 		}
+	// 	]
+	// }
+	// await processTransaction(contextEndpoint, {"add": diagramLD}).catch(()=> false);
 
 	return await processTransaction(contextEndpoint, {"add": addLD, "delete": deleteLD, "source": source});
 }
@@ -168,6 +184,8 @@ export async function updateProjectLink(contextEndpoint: string, id: string, sou
 		cardinalities["og:targetCardinality1"] = ProjectLinks[id].targetCardinality.getFirstCardinality();
 		cardinalities["og:targetCardinality2"] = ProjectLinks[id].targetCardinality.getSecondCardinality();
 	}
+
+	ProjectSettings.lastSource = source;
 	let addLD = {
 		"@context": {
 			...Prefixes,
@@ -202,20 +220,21 @@ export async function updateProjectLink(contextEndpoint: string, id: string, sou
 		]
 	}
 
-	let del = await processGetTransaction(contextEndpoint, {subject: linkIRI});
-	if (del) {
+	let del = await processGetTransaction(contextEndpoint, {subject: linkIRI}).catch(() => false);
+	if (typeof del === "string") {
 		let deleteLD = JSON.parse(del);
-		await processTransaction(contextEndpoint, {"delete": deleteLD, "source": source});
+		await processTransaction(contextEndpoint, {"delete": deleteLD, "source": source}).catch(() => false);
 	}
 
-	return await processTransaction(contextEndpoint, {"add": addLD, "source": source});
+	return await processTransaction(contextEndpoint, {"add": addLD, "source": source}).catch(() => false);
 }
 
 export async function updateDeleteProjectElement(contextEndpoint: string, iri: string, source: string) {
-	let subjectLD = await processGetTransaction(contextEndpoint, {subject: iri});
-	let predicateLD = await processGetTransaction(contextEndpoint, {predicate: iri});
-	let objectLD = await processGetTransaction(contextEndpoint, {object: iri});
-	if (subjectLD && predicateLD && objectLD) {
+	ProjectSettings.lastSource = source;
+	let subjectLD = await processGetTransaction(contextEndpoint, {subject: iri}).catch(() => false);
+	let predicateLD = await processGetTransaction(contextEndpoint, {predicate: iri}).catch(() => false);
+	let objectLD = await processGetTransaction(contextEndpoint, {object: iri}).catch(() => false);
+	if (typeof subjectLD === "string" && typeof predicateLD === "string" && typeof objectLD === "string") {
 		subjectLD = JSON.parse(subjectLD);
 		predicateLD = JSON.parse(predicateLD);
 		objectLD = JSON.parse(objectLD);
@@ -233,6 +252,7 @@ export async function updateConnections(contextEndpoint: string, id: string, del
 	let delConnections: { [key: string]: string } = {};
 	let connectionContext: { [key: string]: any } = {};
 	let linkContext: { [key: string]: any } = {};
+	ProjectSettings.lastSource = source;
 
 	ProjectElements[id].connections.forEach((linkID) => {
 		connections[ProjectLinks[linkID].iri] = ProjectElements[ProjectLinks[linkID].target].iri
@@ -350,6 +370,7 @@ export async function processTransaction(contextEndpoint: string, transactions: 
 }
 
 export async function updateProjectSettings(contextIRI: string, contextEndpoint: string, source: string) {
+	ProjectSettings.lastSource = source;
 	let ogContext = "http://onto.fel.cvut.cz/ontologies/application/ontoGrapher"
 
 	let contextLD = {
@@ -406,16 +427,19 @@ export async function updateProjectSettings(contextIRI: string, contextEndpoint:
 		]
 	}
 
-	let delString = await processGetTransaction(ProjectSettings.contextEndpoint, {subject: ogContext});
-	if (delString) {
-		await processTransaction(ProjectSettings.contextEndpoint, {"delete": JSON.parse(delString), "source": source});
+	let delString = await processGetTransaction(ProjectSettings.contextEndpoint, {subject: ogContext}).catch(() => false);
+	if (typeof delString === "string") {
+		await processTransaction(ProjectSettings.contextEndpoint, {
+			"delete": JSON.parse(delString),
+			"source": source
+		}).catch(() => false);
 	}
 
 	for (const diag of Diagrams) {
 		let i = Diagrams.indexOf(diag);
-		let delString = await processGetTransaction(contextEndpoint, {subject: ogContext + "/diagram-" + (i + 1)});
-		if (delString) {
-			await processTransaction(contextEndpoint, {"delete": JSON.parse(delString)});
+		let delString = await processGetTransaction(contextEndpoint, {subject: ogContext + "/diagram-" + (i + 1)}).catch(() => false);
+		if (typeof delString === "string") {
+			await processTransaction(contextEndpoint, {"delete": JSON.parse(delString)}).catch(() => false);
 		}
 	}
 

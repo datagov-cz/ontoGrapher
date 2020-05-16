@@ -22,7 +22,7 @@ interface State {
 export default class ModalRemoveItem extends React.Component<Props, State> {
 
     save() {
-        updateDeleteProjectElement(ProjectSettings.contextEndpoint, ProjectElements[this.props.id].iri, this.constructor.name).then(result => {
+        updateDeleteProjectElement(ProjectSettings.contextEndpoint, ProjectElements[this.props.id].iri, ModalRemoveItem.name).then(result => {
             this.props.handleChangeLoadingStatus(true, LocaleMain.updating, false);
             if (result) {
                 deletePackageItem(this.props.id);
@@ -34,7 +34,7 @@ export default class ModalRemoveItem extends React.Component<Props, State> {
     }
 
     componentDidUpdate(prevProps: Readonly<Props>, prevState: Readonly<State>, snapshot?: any) {
-        if (prevState !== this.state && (this.props.retry && ProjectSettings.lastUpdate.source === this.constructor.name)) {
+        if (prevProps !== this.props && (this.props.retry && ProjectSettings.lastUpdate.source === ModalRemoveItem.name)) {
             this.save();
         }
     }

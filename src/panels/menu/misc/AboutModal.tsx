@@ -21,6 +21,12 @@ export default class AboutModal extends React.Component<Props, State> {
             <Modal.Body>
                 <Tabs id={"changelog"}>
                     <Tab title={"May"} eventKey={3}>
+                        <h6>16.5.</h6>
+                        <ul>
+                            <li>Tweaked loading code for more efficiency</li>
+                            <li>Link IRIs can be changed in their detail panel</li>
+                            <li>OWL Restriction loading & saving</li>
+                        </ul>
                         <h6>9.5.</h6>
                         <ul>
                             <li>Fixed a bug where fetching context would duplicate certain glossaries</li>

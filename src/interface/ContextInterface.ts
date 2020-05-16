@@ -1,10 +1,10 @@
-import {PackageRoot, ProjectSettings, Schemes, Stereotypes, VocabularyElements} from "../config/Variables";
+import {PackageRoot, ProjectSettings, Schemes, VocabularyElements} from "../config/Variables";
 import {graphElement} from '../graph/graphElement';
 import {fetchConcepts, getScheme} from "./SPARQLInterface";
 import {PackageNode} from "../datatypes/PackageNode";
 import * as Locale from "../locale/LocaleMain.json";
 import {addClass, addElemsToPackage} from "../function/FunctionCreateVars";
-import {initLanguageObject, parsePrefix} from "../function/FunctionEditVars";
+import {parsePrefix} from "../function/FunctionEditVars";
 
 export async function testContext(contextIRI: string, contextEndpoint: string) {
     let vocabularyQ = [
@@ -101,49 +101,7 @@ export async function getContext(
     for (let vocab in vocabularies) {
         if (!(vocab in Schemes)) await getScheme(vocab, contextEndpoint, vocabularies[vocab].readOnly, function () {
         });
-        let termQ = [
-            "PREFIX skos: <http://www.w3.org/2004/02/skos/core#>",
-            "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>",
-            "SELECT DISTINCT ?term ?termType ?skosLabel ?skosDefinition ?domain ?range",
-            "WHERE {",
-            "?term skos:inScheme <" + vocab + ">.",
-            "?term a ?termType.",
-            "OPTIONAL {?term skos:prefLabel ?skosLabel.}",
-            "OPTIONAL {?term skos:definition ?skosDefinition.}",
-            "OPTIONAL {?term rdfs:range ?range.}",
-            "OPTIONAL {?term rdfs:domain ?domain.}",
-            "}"
-        ].join(" ");
-        let termsQuery = contextEndpoint + "?query=" + encodeURIComponent(termQ);
-        let termsResult = await fetch(termsQuery,
-            {headers: {'Accept': acceptType}})
-            .then((response) => response.json())
-            .then((data) => {
-                return data.results.bindings;
-            });
-        for (let result of termsResult) {
-            if (!(result.term.value in vocabularies[vocab].terms)) {
-                vocabularies[vocab].terms[result.term.value] = {};
-                vocabularies[vocab].terms[result.term.value].types = [];
-                vocabularies[vocab].terms[result.term.value].labels = initLanguageObject("");
-                vocabularies[vocab].terms[result.term.value].definitions = initLanguageObject("");
-                vocabularies[vocab].terms[result.term.value].inScheme = vocab;
-                vocabularies[vocab].terms[result.term.value].domainOf = [];
-            }
-            if (result.skosLabel !== undefined) {
-                vocabularies[vocab].terms[result.term.value].labels[result.skosLabel['xml:lang']] = result.skosLabel.value;
-            }
-            if (result.skosDefinition !== undefined) {
-                vocabularies[vocab].terms[result.term.value].definitions[result.skosDefinition['xml:lang']] = result.skosDefinition.value;
-            }
-            if (result.termType !== undefined && result.termType.value in Stereotypes && !(vocabularies[vocab].terms[result.term.value].types.includes(result.termType.value))) {
-                vocabularies[vocab].terms[result.term.value].types.push(result.termType.value);
-            }
-            if (result.domain !== undefined) {
-                vocabularies[vocab].terms[result.term.value].domain = result.domain.value;
-            }
-            if (result.range !== undefined) vocabularies[vocab].terms[result.term.value].range = result.range.value;
-        }
+        await fetchConcepts(contextEndpoint, vocab, vocabularies[vocab].terms, vocabularies[vocab].readOnly);
         //put into packages
         Object.assign(VocabularyElements, vocabularies[vocab].terms);
         let pkg = new PackageNode(Schemes[vocab].labels, PackageRoot, false, vocab);

@@ -113,7 +113,7 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 			status: status,
 			error: error,
 		})
-		if (error) this.setState({retry: false});
+		if (error || !loading) this.setState({retry: false});
 	}
 
 	loadProject(loadString: string) {
@@ -198,7 +198,6 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 				loadingError={this.state.error}
 				retry={() => {
 					this.setState({retry: true});
-					this.detailPanel.current?.retry();
 				}}
 			/>
 			<ItemPanel

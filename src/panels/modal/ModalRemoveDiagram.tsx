@@ -17,7 +17,7 @@ interface Props {
 export default class ModalRemoveDiagram extends React.Component<Props> {
 
 	componentDidUpdate(prevProps: Readonly<Props>, prevState: Readonly<{}>, snapshot?: any) {
-		if (prevState !== this.state && ((this.props.retry && ProjectSettings.lastUpdate.source === this.constructor.name))) {
+		if (prevProps !== this.props && ((this.props.retry && ProjectSettings.lastSource === ModalRemoveDiagram.name))) {
 			this.save();
 		}
 	}
@@ -28,7 +28,7 @@ export default class ModalRemoveDiagram extends React.Component<Props> {
 		if (ProjectSettings.selectedDiagram === this.props.diagram) {
 			changeDiagrams(0);
 		}
-		updateProjectSettings(ProjectSettings.contextIRI, ProjectSettings.contextEndpoint, this.constructor.name).then(result => {
+		updateProjectSettings(ProjectSettings.contextIRI, ProjectSettings.contextEndpoint, ModalRemoveDiagram.name).then(result => {
 			if (result) {
 				this.props.handleChangeLoadingStatus(false, "", false);
 			} else {

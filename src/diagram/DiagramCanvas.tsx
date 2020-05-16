@@ -41,6 +41,7 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps> {
     private paper: joint.dia.Paper | undefined;
     private magnet: boolean;
     private drag: { x: any, y: any } | undefined;
+    private lastUpdate: { sid?: string, tid?: string, id?: string }
 
     constructor(props: DiagramCanvasProps) {
         super(props);
@@ -48,14 +49,15 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps> {
         this.magnet = false;
         this.componentDidMount = this.componentDidMount.bind(this);
         this.drag = undefined;
+        this.lastUpdate = {};
     }
 
     componentDidUpdate(prevProps: Readonly<DiagramCanvasProps>, prevState: Readonly<{}>, snapshot?: any) {
-        if (prevState !== this.state && (this.props.retry && ProjectSettings.lastUpdate.source === this.constructor.name)) {
-            if (ProjectSettings.lastUpdate.sid && ProjectSettings.lastUpdate.tid && ProjectSettings.lastUpdate.linkID) {
-                this.updateConnections(ProjectSettings.lastUpdate.sid, ProjectSettings.lastUpdate.tid, ProjectSettings.lastUpdate.linkID);
-            } else if (ProjectSettings.lastUpdate.sid && ProjectSettings.lastUpdate.id) {
-                this.deleteConnections(ProjectSettings.lastUpdate.sid, ProjectSettings.lastUpdate.id);
+        if (prevProps !== this.props && (this.props.retry && ProjectSettings.lastSource === DiagramCanvas.name)) {
+            if (this.lastUpdate.sid && this.lastUpdate.tid && this.lastUpdate.linkID) {
+                this.updateConnections(this.lastUpdate.sid, this.lastUpdate.tid, this.lastUpdate.id);
+            } else if (this.lastUpdate.sid && this.lastUpdate.id && (!this.lastUpdate.tid)) {
+                this.deleteConnections(this.lastUpdate.sid, this.lastUpdate.id);
             }
         }
     }
@@ -84,12 +86,13 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps> {
     }
 
     updateConnections(sid: string, tid: string, linkID: string) {
+        this.lastUpdate = {sid: sid, tid: tid, id: linkID};
         this.props.handleChangeLoadingStatus(true, LocaleMain.updating, false);
         addLink(linkID, this.props.selectedLink, sid, tid);
         ProjectElements[sid].connections.push(linkID);
-        updateConnections(ProjectSettings.contextEndpoint, sid, [], this.constructor.name).then(result => {
+        updateConnections(ProjectSettings.contextEndpoint, sid, [], DiagramCanvas.name).then(result => {
             if (result) {
-                updateProjectLink(ProjectSettings.contextEndpoint, linkID, this.constructor.name).then(result => {
+                updateProjectLink(ProjectSettings.contextEndpoint, linkID, DiagramCanvas.name).then(result => {
                     if (result) {
                         this.props.handleChangeLoadingStatus(false, "", false);
                     } else {
@@ -103,8 +106,9 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps> {
     }
 
     deleteConnections(sid: string, id: string) {
+        this.lastUpdate = {sid: sid, id: id, tid: undefined};
         if (ProjectElements[sid].connections.includes(id)) ProjectElements[sid].connections.splice(ProjectElements[sid].connections.indexOf(id), 1);
-        updateConnections(ProjectSettings.contextEndpoint, sid, [id], this.constructor.name).then(result => {
+        updateConnections(ProjectSettings.contextEndpoint, sid, [id], DiagramCanvas.name).then(result => {
             if (result) {
                 let vocabElem = VocabularyElements[ProjectLinks[id].iri];
                 if (vocabElem && vocabElem.domain) {
@@ -115,7 +119,7 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps> {
                 }
                 delete ProjectLinks[id];
                 graph.getCell(id).remove();
-                updateDeleteProjectElement(ProjectSettings.contextEndpoint, ProjectSettings.ontographerContext + "-" + id, this.constructor.name).then(result => {
+                updateDeleteProjectElement(ProjectSettings.contextEndpoint, ProjectSettings.ontographerContext + "-" + id, DiagramCanvas.name).then(result => {
                     if (result) {
                         this.props.handleChangeLoadingStatus(false, "", false);
                     } else {
@@ -330,7 +334,7 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps> {
                         addClass(cls.id, iri, ProjectSettings.selectedPackage, true, true);
                         updateProjectElement(
                             ProjectSettings.contextEndpoint,
-                            this.constructor.name,
+                            DiagramCanvas,
                             [data.iri],
                             initLanguageObject(""),
                             initLanguageObject(""),
@@ -355,7 +359,7 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps> {
                     restoreDomainOfConnections();
                     updateProjectElement(
                         ProjectSettings.contextEndpoint,
-                        this.constructor.name,
+                        DiagramCanvas,
                         VocabularyElements[ProjectElements[cls.id].iri].types,
                         VocabularyElements[ProjectElements[cls.id].iri].labels,
                         VocabularyElements[ProjectElements[cls.id].iri].definitions,

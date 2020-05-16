@@ -1,11 +1,4 @@
-import {
-    Diagrams,
-    ProjectElements,
-    ProjectLinks,
-    ProjectSettings,
-    Schemes,
-    VocabularyElements
-} from "../config/Variables";
+import {Diagrams, ProjectElements, ProjectLinks, ProjectSettings, Schemes} from "../config/Variables";
 import {initLanguageObject} from "../function/FunctionEditVars";
 import {AttributeObject} from "../datatypes/AttributeObject";
 import * as joint from "jointjs";
@@ -31,13 +24,15 @@ export async function fetchConcepts(
             types: string[],
             inScheme: string,
             domainOf: []
+            domain?: string,
+            range?: string,
         }
     } = {};
 
     let query = [
         "PREFIX skos: <http://www.w3.org/2004/02/skos/core#>",
         "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>",
-        "SELECT DISTINCT ?term ?termLabel ?termType ?termDefinition",
+        "SELECT DISTINCT ?term ?termLabel ?termType ?termDefinition ?termDomain ?termRange ?restriction",
         "WHERE {",
         !subclassOf ? "?term skos:inScheme <" + source + ">." : "",
         "?term a ?termType.",
@@ -46,6 +41,10 @@ export async function fetchConcepts(
         requiredValues ? "VALUES ?term {<" + requiredValues.join("> <") + ">}" : "",
         "OPTIONAL {?term skos:prefLabel ?termLabel.}",
         "OPTIONAL {?term skos:definition ?termDefinition.}",
+        "OPTIONAL {?term rdfs:domain ?termDomain.}",
+        "OPTIONAL {?term rdfs:range ?termRange.}",
+        "OPTIONAL {?term rdfs:subClassOf ?restriction. ",
+        "?restriction a owl:Restriction .}",
         "FILTER (?term NOT IN (<https://slovník.gov.cz/základní/pojem/vztah>))",
         "}"
     ].join(" ");
@@ -67,12 +66,39 @@ export async function fetchConcepts(
             if (row.termType && !(result[row.term.value].types.includes(row.termType.value))) result[row.term.value].types.push(row.termType.value);
             if (row.termLabel) result[row.term.value].labels[row.termLabel['xml:lang']] = row.termLabel.value;
             if (row.termDefinition) result[row.term.value].definitions[row.termDefinition['xml:lang']] = row.termDefinition.value;
+            if (row.termDomain) result[row.term.value].domain = row.termDomain.value;
+            if (row.termRange) result[row.term.value].range = row.termRange.value;
+            if (row.restriction) await getRestriction(endpoint, row.term.value, row.restriction.value);
         }
         Object.assign(sendTo, result);
         if (callback) callback(true);
     }).catch(() => {
         if (callback) callback(false);
     });
+}
+
+export async function getRestriction(endpoint: string, iri: string, restriction: string, callback?: Function) {
+    let query = [
+        "PREFIX owl: <http://www.w3.org/2002/07/owl#>",
+        "select ?onProperty ?restriction ?target where {",
+        "?s a owl:Restriction.",
+        "?s owl:onProperty ?onProperty.",
+        "?s ?restriction ?target.",
+        "filter (?restriction not in (owl:onProperty, rdf:type))",
+        "}",
+    ].join(" ");
+    let q = endpoint + "?query=" + encodeURIComponent(query);
+    await fetch(q, {headers: {"Accept": "application/json"}}).then(
+        response => response.json()
+    ).then(async data => {
+        for (let row of data.results.bindings) {
+
+        }
+        if (callback) callback(true);
+    }).catch(() => {
+        if (callback) callback(false);
+    });
+
 }
 
 export async function getScheme(iri: string, endpoint: string, readOnly: boolean, callback?: Function) {
@@ -99,151 +125,157 @@ export async function getScheme(iri: string, endpoint: string, readOnly: boolean
 }
 
 export async function getElementsConfig(endpoint: string, callback?: Function) {
-    for (let iri in VocabularyElements) {
-            let element: {
-                id: "",
-                untitled: boolean,
-                attributeIRI: string[],
-                propertyIRI: string[],
-                diagramIRI: number[],
-                active: boolean,
-                diagramPosition: { [key: number]: { x: number, y: number } },
-                hidden: { [key: number]: boolean },
-                attributes: AttributeObject[],
-                properties: AttributeObject[],
-                diagrams: number[]
-            } = {
-                id: "",
-                untitled: false,
-                attributeIRI: [],
-                propertyIRI: [],
-                diagramIRI: [],
-                diagrams: [],
-                active: true,
-                diagramPosition: {},
-                hidden: {},
-                attributes: [],
-                properties: [],
-            }
-            let query = [
-                "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
-                "select ?id ?untitled ?active ?attribute ?property ?diagram where {",
-                "BIND(<" + iri + "/diagram> as ?iri) .",
-                "?iri og:id ?id .",
-                "?iri og:active ?active .",
-                "?iri og:untitled ?untitled .",
-                "OPTIONAL {?iri og:attribute ?attribute . }",
-                "OPTIONAL {?iri og:property ?property . }",
-                "?iri og:diagram ?diagram .",
-                "}"
-            ].join(" ");
+    let elements: {
+        [key: string]: {
+            id: "",
+            untitled: boolean,
+            attributeIRI: string[],
+            propertyIRI: string[],
+            diagramIRI: number[],
+            active: boolean,
+            diagramPosition: { [key: number]: { x: number, y: number } },
+            hidden: { [key: number]: boolean },
+            attributes: AttributeObject[],
+            properties: AttributeObject[],
+            diagrams: number[]
+        }
+    } = {}
+    let query = [
+        "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
+        "select ?id ?iri ?untitled ?active ?attribute ?property ?diagram where {",
+        "?elem a og:element .",
+        "?elem og:iri ?iri .",
+        "?elem og:id ?id .",
+        "?elem og:active ?active .",
+        "?elem og:untitled ?untitled .",
+        "OPTIONAL {?elem og:attribute ?attribute . }",
+        "OPTIONAL {?elem og:property ?property . }",
+        "?elem og:diagram ?diagram .",
+        "}"
+    ].join(" ");
             let q = endpoint + "?query=" + encodeURIComponent(query);
             await fetch(q, {headers: {'Accept': 'application/json'}}).then(response => {
                 return response.json();
             }).then(data => {
                 for (let result of data.results.bindings) {
-                    if (result.id) element.id = result.id.value;
-                    if (result.active) element.active = result.active.value === "true";
-                    if (result.untitled) element.untitled = result.untitled.value === "true";
-                    if (result.attribute) element.attributeIRI.push(result.attribute.value);
-                    if (result.property) element.propertyIRI.push(result.property.value);
-                    if (result.diagram) element.diagramIRI.push(result.diagram.value);
+                    let iri = result.iri.value;
+                    if (!(iri in elements)) {
+                        elements[iri] = {
+                            id: "",
+                            untitled: false,
+                            attributeIRI: [],
+                            propertyIRI: [],
+                            diagramIRI: [],
+                            diagrams: [],
+                            active: true,
+                            diagramPosition: {},
+                            hidden: {},
+                            attributes: [],
+                            properties: [],
+                        }
+                    }
+                    elements[iri].id = result.id.value;
+                    elements[iri].active = result.active.value === "true";
+                    elements[iri].untitled = result.untitled.value === "true";
+                    elements[iri].attributeIRI.push(result.attribute.value);
+                    elements[iri].propertyIRI.push(result.property.value);
+                    elements[iri].diagramIRI.push(result.diagram.value);
                 }
             }).catch(() => {
                 if (callback) callback(false);
             });
-            if (element.diagramIRI.length > 0) {
-                for (let diag of element.diagramIRI) {
-                    let query = [
-                        "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
-                        "select ?positionX ?positionY ?hidden ?index where {",
-                        "BIND(<" + diag + "> as ?iri) .",
-                        "?iri og:position-y ?positionY .",
-                        "?iri og:position-x ?positionX .",
-                        "?iri og:index ?index .",
-                        "?iri og:hidden ?hidden .",
-                        "}"
-                    ].join(" ");
-                    let q = endpoint + "?query=" + encodeURIComponent(query);
-                    await fetch(q, {headers: {'Accept': 'application/json'}}).then(response => {
-                        return response.json();
-                    }).then(data => {
-                        for (let result of data.results.bindings) {
-                            if (result.index) {
-                                let index = parseInt(result.index.value);
-                                element.diagramPosition[index] = {
-                                    x: parseInt(result.positionX.value),
-                                    y: parseInt(result.positionY.value)
-                                };
-                                element.hidden[index] = result.hidden.value === "true";
-                            }
+    for (let iri in elements) {
+        if (elements[iri].diagramIRI.length > 0) {
+            for (let diag of elements[iri].diagramIRI) {
+                let query = [
+                    "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
+                    "select ?positionX ?positionY ?hidden ?index where {",
+                    "BIND(<" + diag + "> as ?iri) .",
+                    "?iri og:position-y ?positionY .",
+                    "?iri og:position-x ?positionX .",
+                    "?iri og:index ?index .",
+                    "?iri og:hidden ?hidden .",
+                    "}"
+                ].join(" ");
+                let q = endpoint + "?query=" + encodeURIComponent(query);
+                await fetch(q, {headers: {'Accept': 'application/json'}}).then(response => {
+                    return response.json();
+                }).then(data => {
+                    for (let result of data.results.bindings) {
+                        if (result.index) {
+                            let index = parseInt(result.index.value);
+                            elements[iri].diagramPosition[index] = {
+                                x: parseInt(result.positionX.value),
+                                y: parseInt(result.positionY.value)
+                            };
+                            elements[iri].hidden[index] = result.hidden.value === "true";
                         }
-                    }).catch(() => {
-                        if (callback) callback(false);
-                    });
-                }
+                    }
+                }).catch(() => {
+                    if (callback) callback(false);
+                });
             }
-            if (element.attributeIRI.length > 0) {
-                for (let attr of element.attributeIRI) {
-                    let query = [
-                        "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
-                        "select ?attrname ?attrtype where {",
-                        "BIND(<" + attr + "> as ?iri) .",
-                        "?iri og:attribute-name ?attrname .",
-                        "?iri og:attribute-type ?attrtype .",
-                        "}"
-                    ].join(" ");
-                    let q = endpoint + "?query=" + encodeURIComponent(query);
-                    await fetch(q, {headers: {'Accept': 'application/json'}}).then(response => {
-                        return response.json();
-                    }).then(data => {
-                        for (let result of data.results.bindings) {
-                            if (result.attrname && result.attrtype) {
-                                element.attributes.push(new AttributeObject(result.attrname.value, result.attrtype.value));
-                            }
+        }
+        if (elements[iri].attributeIRI.length > 0) {
+            for (let attr of elements[iri].attributeIRI) {
+                let query = [
+                    "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
+                    "select ?attrname ?attrtype where {",
+                    "BIND(<" + attr + "> as ?iri) .",
+                    "?iri og:attribute-name ?attrname .",
+                    "?iri og:attribute-type ?attrtype .",
+                    "}"
+                ].join(" ");
+                let q = endpoint + "?query=" + encodeURIComponent(query);
+                await fetch(q, {headers: {'Accept': 'application/json'}}).then(response => {
+                    return response.json();
+                }).then(data => {
+                    for (let result of data.results.bindings) {
+                        if (result.attrname && result.attrtype) {
+                            elements[iri].attributes.push(new AttributeObject(result.attrname.value, result.attrtype.value));
                         }
-                    }).catch(() => {
-                        if (callback) callback(false);
-                    });
-                }
+                    }
+                }).catch(() => {
+                    if (callback) callback(false);
+                });
             }
-            if (element.propertyIRI.length > 0) {
-                for (let attr of element.propertyIRI) {
-                    let query = [
-                        "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
-                        "select ?attrname ?attrtype where {",
-                        "BIND(<" + attr + "> as ?iri) .",
-                        "?iri og:attribute-name ?attrname .",
-                        "?iri og:attribute-type ?attrtype .",
-                        "}"
-                    ].join(" ");
-                    let q = endpoint + "?query=" + encodeURIComponent(query);
-                    await fetch(q, {headers: {'Accept': 'application/json'}}).then(response => {
-                        return response.json();
-                    }).then(data => {
-                        for (let result of data.results.bindings) {
-                            if (result.attrname && result.attrtype) {
-                                element.properties.push(new AttributeObject(result.attrname.value, result.attrtype.value));
-                            }
+        }
+        if (elements[iri].propertyIRI.length > 0) {
+            for (let attr of elements[iri].propertyIRI) {
+                let query = [
+                    "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
+                    "select ?attrname ?attrtype where {",
+                    "BIND(<" + attr + "> as ?iri) .",
+                    "?iri og:attribute-name ?attrname .",
+                    "?iri og:attribute-type ?attrtype .",
+                    "}"
+                ].join(" ");
+                let q = endpoint + "?query=" + encodeURIComponent(query);
+                await fetch(q, {headers: {'Accept': 'application/json'}}).then(response => {
+                    return response.json();
+                }).then(data => {
+                    for (let result of data.results.bindings) {
+                        if (result.attrname && result.attrtype) {
+                            elements[iri].properties.push(new AttributeObject(result.attrname.value, result.attrtype.value));
                         }
-                    }).catch(() => {
-                        if (callback) callback(false);
-                    });
-                }
+                    }
+                }).catch(() => {
+                    if (callback) callback(false);
+                });
             }
-            for (let id in ProjectElements) {
-                if (ProjectElements[id].iri === iri) {
-                    ProjectElements[id].untitled = element.untitled;
-                    ProjectElements[id].properties = element.properties;
-                    ProjectElements[id].attributes = element.attributes;
-                    ProjectElements[id].hidden = element.hidden;
-                    ProjectElements[id].diagrams = element.diagrams;
-                    ProjectElements[id].active = element.active;
-                    ProjectElements[id].position = element.diagramPosition;
-                    break;
-                }
-            }
-
+        }
+    }
+    for (let id in ProjectElements) {
+        if (ProjectElements[id].iri in elements) {
+            ProjectElements[id].untitled = elements[ProjectElements[id].iri].untitled;
+            ProjectElements[id].properties = elements[ProjectElements[id].iri].properties;
+            ProjectElements[id].attributes = elements[ProjectElements[id].iri].attributes;
+            ProjectElements[id].hidden = elements[ProjectElements[id].iri].hidden;
+            ProjectElements[id].diagrams = elements[ProjectElements[id].iri].diagrams;
+            ProjectElements[id].active = elements[ProjectElements[id].iri].active;
+            ProjectElements[id].position = elements[ProjectElements[id].iri].diagramPosition;
+            break;
+        }
     }
     if (callback) callback(true);
 }

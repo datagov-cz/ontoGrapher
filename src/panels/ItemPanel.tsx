@@ -98,7 +98,7 @@ export default class ItemPanel extends React.Component<Props, State> {
 	}
 
 	componentDidUpdate(prevProps: Readonly<Props>, prevState: Readonly<{}>, snapshot?: any) {
-		if (prevState !== this.state && ((this.props.retry && ProjectSettings.lastUpdate.source === this.constructor.name))) {
+		if (prevProps !== this.props && ((this.props.retry && ProjectSettings.lastSource === ItemPanel.name))) {
 			this.save();
 		}
 	}
@@ -242,7 +242,7 @@ export default class ItemPanel extends React.Component<Props, State> {
 	}
 
 	save() {
-		updateProjectSettings(ProjectSettings.contextIRI, ProjectSettings.contextEndpoint, this.constructor.name).then(result => {
+		updateProjectSettings(ProjectSettings.contextIRI, ProjectSettings.contextEndpoint, ItemPanel.name).then(result => {
 			if (result) {
 				this.props.handleChangeLoadingStatus(false, "", false);
 			} else {

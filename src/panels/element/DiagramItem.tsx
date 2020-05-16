@@ -37,7 +37,7 @@ export default class DiagramItem extends React.Component<Props, State> {
 
 
 	save() {
-		updateProjectSettings(ProjectSettings.contextIRI, ProjectSettings.contextEndpoint, this.constructor.name).then(result => {
+		updateProjectSettings(ProjectSettings.contextIRI, ProjectSettings.contextEndpoint, DiagramItem.name).then(result => {
 			if (result) {
 				this.props.handleChangeLoadingStatus(false, "", false);
 			} else {
@@ -71,7 +71,7 @@ export default class DiagramItem extends React.Component<Props, State> {
 			this.setClassName();
 			this.forceUpdate();
 		}
-		if (prevState !== this.state && ((this.props.retry && ProjectSettings.lastUpdate.source === this.constructor.name))) {
+		if (prevProps !== this.props && ((this.props.retry && ProjectSettings.lastSource === DiagramItem.name))) {
 			this.save();
 		}
 	}
