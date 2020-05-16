@@ -124,14 +124,11 @@ export async function updateProjectElement(
 			}
 		]
 	}
-	try {
-		let delString = await processGetTransaction(contextEndpoint, {subject: iri + "/diagram"});
-		if (delString) {
-			await processTransaction(contextEndpoint, {"delete": JSON.parse(delString)});
-		} else return false;
-	} catch (e) {
-		return false;
-	}
+
+	let delString = await processGetTransaction(contextEndpoint, {subject: iri + "/diagram"}).catch(() => false);
+	if (typeof delString === "string") {
+		await processTransaction(contextEndpoint, {"delete": JSON.parse(delString)}).catch(() => false);
+	} else return false;
 
 	for (const attr of ProjectElements[id].attributes) {
 		let i = ProjectElements[id].attributes.indexOf(attr);

@@ -74,7 +74,8 @@ export default class DetailLink extends React.Component<Props, State> {
         this.props.handleChangeLoadingStatus(true, LocaleMain.updating, false);
         ProjectLinks[this.state.id].sourceCardinality = CardinalityPool[parseInt(this.state.sourceCardinality, 10)];
         ProjectLinks[this.state.id].targetCardinality = CardinalityPool[parseInt(this.state.targetCardinality, 10)];
-        updateProjectLink(ProjectSettings.contextEndpoint, this.state.id, this.constructor.name).then((result) => {
+        ProjectLinks[this.state.id].iri = this.state.iri;
+        updateProjectLink(ProjectSettings.contextEndpoint, this.state.id, DetailLink.name).then((result) => {
             if (result) {
                 let links = graph.getLinks();
                 for (let link of links) {
@@ -172,7 +173,16 @@ export default class DetailLink extends React.Component<Props, State> {
                     </tr>
                     <tr>
                         <td>
-                            <span>{LocaleMain.linkType}</span>
+                            <Form.Control as="select" value={this.state.iri} onChange={(event) => {
+                                this.setState({
+                                    iri: event.currentTarget.value,
+                                    changes: true
+                                })
+                            }}>
+                                {Object.keys(Languages).map((languageCode) => (
+                                    <option key={languageCode}
+                                            value={languageCode}>{Languages[languageCode]}</option>))}
+                            </Form.Control>
                         </td>
                         <IRIlabel label={getLinkOrVocabElem(this.state.iri).labels[this.props.projectLanguage]}
                                   iri={this.state.iri}/>
