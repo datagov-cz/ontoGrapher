@@ -192,6 +192,9 @@ export default class DetailLink extends React.Component<Props, State> {
                     </tr>
                     <tr>
                         <td>
+                            <span>{LocaleMain.linkType}</span>
+                        </td>
+                        <td>
                             <Form.Control as="select" value={this.state.iri} onChange={(event) => {
                                 this.setState({
                                     iri: event.currentTarget.value,
@@ -201,8 +204,6 @@ export default class DetailLink extends React.Component<Props, State> {
                                 {this.prepareLinkOptions()}
                             </Form.Control>
                         </td>
-                        <IRIlabel label={getLinkOrVocabElem(this.state.iri).labels[this.props.projectLanguage]}
-                                  iri={this.state.iri}/>
                     </tr>
                 </TableList>
                 <h5>{<IRILink label={this.props.headers.labels[this.props.projectLanguage]}
