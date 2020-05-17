@@ -27,6 +27,8 @@ import {initRestrictions} from "../function/FunctionRestriction";
 interface DiagramAppProps {
 	readOnly?: boolean;
 	loadDefaultVocabularies?: boolean;
+	contextIRI?: string,
+	contextEndpoint?: string
 }
 
 interface DiagramAppState {
@@ -76,10 +78,8 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 	}
 
 	componentDidMount(): void {
-		if (this.props.loadDefaultVocabularies) {
-			this.loadVocabularies(
-				"http://example.org/pracovni-prostor/metadatový-kontext-123"
-				, "http://localhost:7200/repositories/kodi-pracovni-prostor-validace");
+		if (this.props.contextIRI && this.props.contextEndpoint) {
+			this.loadVocabularies(this.props.contextIRI, this.props.contextEndpoint);
 		}
 	}
 
