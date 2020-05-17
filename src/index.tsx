@@ -5,7 +5,7 @@ import * as serviceWorker from './serviceWorker';
 
 ReactDOM.render(<DiagramApp
 	contextIRI={"http://example.org/pracovni-prostor/metadatový-kontext-123"}
-	contextEndpoint={"http://localhost:7200/repositories/kodi-pracovni-prostor-validace"}
+	contextEndpoint={"https://onto.fel.cvut.cz:7200/repositories/kodi-pracovni-prostor-validace"}
 />, document.getElementById('root'));
 
 // If you want your app to work offline and load faster, you can change
