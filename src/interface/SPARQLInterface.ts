@@ -5,6 +5,7 @@ import * as joint from "jointjs";
 import {Cardinality} from "../datatypes/Cardinality";
 
 import * as Locale from "../locale/LocaleMain.json";
+import {createRestriction} from "../function/FunctionRestriction";
 
 export async function fetchConcepts(
     endpoint: string,
@@ -26,6 +27,7 @@ export async function fetchConcepts(
             domainOf: []
             domain?: string,
             range?: string,
+            restrictions: [],
         }
     } = {};
 
@@ -51,16 +53,17 @@ export async function fetchConcepts(
     let q = endpoint + "?query=" + encodeURIComponent(query);
     await fetch(q, {headers: {"Accept": "application/json"}}).then(
         response => response.json()
-    ).then(async data => {
-        for (let row of data.results.bindings){
+    ).then(data => {
+        for (let row of data.results.bindings) {
             if (!(row.term.value in result)) {
-                await fetchConcepts(endpoint, source, sendTo, readOnly, callback, row.term.value, requiredTypes, requiredValues);
+                fetchConcepts(endpoint, source, sendTo, readOnly, callback, row.term.value, requiredTypes, requiredValues);
                 result[row.term.value] = {
                     labels: initLanguageObject(""),
                     definitions: initLanguageObject(""),
                     types: [],
                     inScheme: source,
-                    domainOf: []
+                    domainOf: [],
+                    restrictions: []
                 }
             }
             if (row.termType && !(result[row.term.value].types.includes(row.termType.value))) result[row.term.value].types.push(row.termType.value);
@@ -68,7 +71,7 @@ export async function fetchConcepts(
             if (row.termDefinition) result[row.term.value].definitions[row.termDefinition['xml:lang']] = row.termDefinition.value;
             if (row.termDomain) result[row.term.value].domain = row.termDomain.value;
             if (row.termRange) result[row.term.value].range = row.termRange.value;
-            if (row.restriction) await getRestriction(endpoint, row.term.value, row.restriction.value);
+            if (row.restriction) getRestriction(endpoint, row.term.value, row.restriction.value);
         }
         Object.assign(sendTo, result);
         if (callback) callback(true);
@@ -81,9 +84,9 @@ export async function getRestriction(endpoint: string, iri: string, restriction:
     let query = [
         "PREFIX owl: <http://www.w3.org/2002/07/owl#>",
         "select ?onProperty ?restriction ?target where {",
-        "?s a owl:Restriction.",
-        "?s owl:onProperty ?onProperty.",
-        "?s ?restriction ?target.",
+        "<" + restriction + "> a owl:Restriction.",
+        "<" + restriction + "> owl:onProperty ?onProperty.",
+        "<" + restriction + "> ?restriction ?target.",
         "filter (?restriction not in (owl:onProperty, rdf:type))",
         "}",
     ].join(" ");
@@ -92,7 +95,7 @@ export async function getRestriction(endpoint: string, iri: string, restriction:
         response => response.json()
     ).then(async data => {
         for (let row of data.results.bindings) {
-
+            createRestriction(iri, row.restriction.value, row.onProperty.value, row.target);
         }
         if (callback) callback(true);
     }).catch(() => {
@@ -124,7 +127,7 @@ export async function getScheme(iri: string, endpoint: string, readOnly: boolean
     });
 }
 
-export async function getElementsConfig(endpoint: string, callback?: Function) {
+export async function getElementsConfig(endpoint: string, callback?: Function): Promise<boolean> {
     let elements: {
         [key: string]: {
             id: "",
@@ -153,37 +156,37 @@ export async function getElementsConfig(endpoint: string, callback?: Function) {
         "?elem og:diagram ?diagram .",
         "}"
     ].join(" ");
-            let q = endpoint + "?query=" + encodeURIComponent(query);
-            await fetch(q, {headers: {'Accept': 'application/json'}}).then(response => {
-                return response.json();
-            }).then(data => {
-                for (let result of data.results.bindings) {
-                    let iri = result.iri.value;
-                    if (!(iri in elements)) {
-                        elements[iri] = {
-                            id: "",
-                            untitled: false,
-                            attributeIRI: [],
-                            propertyIRI: [],
-                            diagramIRI: [],
-                            diagrams: [],
-                            active: true,
-                            diagramPosition: {},
-                            hidden: {},
-                            attributes: [],
-                            properties: [],
-                        }
-                    }
-                    elements[iri].id = result.id.value;
-                    elements[iri].active = result.active.value === "true";
-                    elements[iri].untitled = result.untitled.value === "true";
-                    elements[iri].attributeIRI.push(result.attribute.value);
-                    elements[iri].propertyIRI.push(result.property.value);
-                    elements[iri].diagramIRI.push(result.diagram.value);
+    let q = endpoint + "?query=" + encodeURIComponent(query);
+    await fetch(q, {headers: {'Accept': 'application/json'}}).then(response => {
+        return response.json();
+    }).then(data => {
+        for (let result of data.results.bindings) {
+            let iri = result.iri.value;
+            if (!(iri in elements)) {
+                elements[iri] = {
+                    id: "",
+                    untitled: false,
+                    attributeIRI: [],
+                    propertyIRI: [],
+                    diagramIRI: [],
+                    diagrams: [],
+                    active: true,
+                    diagramPosition: {},
+                    hidden: {},
+                    attributes: [],
+                    properties: [],
                 }
-            }).catch(() => {
-                if (callback) callback(false);
-            });
+            }
+            elements[iri].id = result.id.value;
+            elements[iri].active = result.active.value === "true";
+            elements[iri].untitled = result.untitled.value === "true";
+            elements[iri].diagramIRI.push(result.diagram.value);
+            if (result.attribute) elements[iri].attributeIRI.push(result.attribute.value);
+            if (result.property) elements[iri].propertyIRI.push(result.property.value);
+        }
+    }).catch(() => {
+        if (callback) callback(false);
+    });
     for (let iri in elements) {
         if (elements[iri].diagramIRI.length > 0) {
             for (let diag of elements[iri].diagramIRI) {
@@ -204,6 +207,7 @@ export async function getElementsConfig(endpoint: string, callback?: Function) {
                     for (let result of data.results.bindings) {
                         if (result.index) {
                             let index = parseInt(result.index.value);
+                            elements[iri].diagrams.push(index);
                             elements[iri].diagramPosition[index] = {
                                 x: parseInt(result.positionX.value),
                                 y: parseInt(result.positionY.value)
@@ -274,13 +278,13 @@ export async function getElementsConfig(endpoint: string, callback?: Function) {
             ProjectElements[id].diagrams = elements[ProjectElements[id].iri].diagrams;
             ProjectElements[id].active = elements[ProjectElements[id].iri].active;
             ProjectElements[id].position = elements[ProjectElements[id].iri].diagramPosition;
-            break;
         }
     }
     if (callback) callback(true);
+    return true;
 }
 
-export async function getSettings(endpoint: string, callback?: Function) {
+export async function getSettings(endpoint: string, callback?: Function): Promise<boolean> {
     let query = [
         "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
         "select ?diagram ?index ?name where {",
@@ -302,10 +306,12 @@ export async function getSettings(endpoint: string, callback?: Function) {
         }
     }).catch(() => {
         if (callback) callback(false);
+        return false;
     });
+    return true;
 }
 
-export async function getLinksConfig(endpoint: string, callback?: Function) {
+export async function getLinksConfig(endpoint: string, callback?: Function): Promise<boolean> {
     let query = [
         "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
         "select ?id ?iri ?sourceID ?targetID ?source ?target ?sourceCard1 ?sourceCard2 ?targetCard1 ?targetCard2 ?diagram ?vertex where {",
@@ -439,4 +445,5 @@ export async function getLinksConfig(endpoint: string, callback?: Function) {
     }
 
     if (callback) callback(true);
+    return true;
 }

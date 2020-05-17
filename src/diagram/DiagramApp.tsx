@@ -22,6 +22,7 @@ import {nameGraphElement, nameGraphLink} from "../function/FunctionGraph";
 import {PackageNode} from "../datatypes/PackageNode";
 import {createNewScheme, setupDiagrams} from "../function/FunctionCreateVars";
 import {getElementsConfig, getLinksConfig} from "../interface/SPARQLInterface";
+import {initRestrictions} from "../function/FunctionRestriction";
 
 interface DiagramAppProps {
 	readOnly?: boolean;
@@ -131,7 +132,7 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 			this.newProject();
 			this.setState({loading: true, status: Locale.loading});
 		}
-		getVocabulariesFromRemoteJSON("https://raw.githubusercontent.com/opendata-mvcr/ontoGrapher/jointjs/src/config/Vocabularies.json", () => {
+		getVocabulariesFromRemoteJSON("https://raw.githubusercontent.com/opendata-mvcr/ontoGrapher/master/src/config/Vocabularies.json", () => {
 		}).then(() => {
 			this.handleChangeSelectedLink(Object.keys(Links)[0]);
 			getContext(
@@ -150,9 +151,10 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 					ProjectSettings.contextEndpoint = contextEndpoint;
 					ProjectSettings.contextIRI = contextIRI
 					this.handleChangeLanguage(Object.keys(Languages)[0]);
-					getElementsConfig(ProjectSettings.contextEndpoint).then(() => {
-						getLinksConfig(ProjectSettings.contextEndpoint).then(() => {
-							setupDiagrams().then((result) => {
+					initRestrictions();
+					getElementsConfig(ProjectSettings.contextEndpoint).then((result) => {
+						if (result) getLinksConfig(ProjectSettings.contextEndpoint).then((result) => {
+							if (result) setupDiagrams().then((result) => {
 								if (result) {
 									this.forceUpdate();
 									this.elementPanel.current?.update();

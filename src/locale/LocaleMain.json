@@ -12,6 +12,7 @@
   "modalEditPackagePlaceholder": "Package name",
   "modalEditDiagramPlaceholder": "Diagram name",
   "ontoGrapher": "ontoGrapher",
+  "errorMissingRestriction": "Restriction not found",
   "modalEditDiagramTitle": "Rename diagram",
   "sourceCardinalityExplainer": "The end from which the relationship begins",
   "targetCardinalityExplainer": "The end to which the relationship ends",

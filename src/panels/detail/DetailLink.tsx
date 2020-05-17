@@ -1,5 +1,13 @@
 import React from 'react';
-import {CardinalityPool, Languages, Links, ProjectLinks, ProjectSettings, Schemes} from "../../config/Variables";
+import {
+    CardinalityPool,
+    Languages,
+    Links,
+    ProjectLinks,
+    ProjectSettings,
+    Schemes,
+    VocabularyElements
+} from "../../config/Variables";
 import {Form} from "react-bootstrap";
 import TableList from "../../components/TableList";
 import * as LocaleMain from "../../locale/LocaleMain.json";
@@ -9,7 +17,7 @@ import IRILink from "../../components/IRILink";
 import {ResizableBox} from "react-resizable";
 import {graph} from "../../graph/graph";
 import DescriptionTabs from "./components/DescriptionTabs";
-import {getLinkOrVocabElem} from "../../function/FunctionGetVars";
+import {getLabelOrBlank, getLinkOrVocabElem} from "../../function/FunctionGetVars";
 import {updateProjectLink} from "../../interface/TransactionInterface";
 
 interface Props {
@@ -46,6 +54,17 @@ export default class DetailLink extends React.Component<Props, State> {
         } else if (prevProps !== this.props && (this.props.retry && ProjectSettings.lastSource === DetailLink.name)) {
             this.save();
         }
+    }
+
+    prepareLinkOptions() {
+        let result: JSX.Element[] = [];
+        for (let iri in VocabularyElements) {
+            if (VocabularyElements[iri].domain && VocabularyElements[iri].range) {
+                result.push(<option
+                    value={iri}>{getLabelOrBlank(VocabularyElements[iri].labels, this.props.projectLanguage)}</option>)
+            }
+        }
+        return result;
     }
 
     prepareDetails(id: string) {
@@ -179,9 +198,7 @@ export default class DetailLink extends React.Component<Props, State> {
                                     changes: true
                                 })
                             }}>
-                                {Object.keys(Languages).map((languageCode) => (
-                                    <option key={languageCode}
-                                            value={languageCode}>{Languages[languageCode]}</option>))}
+                                {this.prepareLinkOptions()}
                             </Form.Control>
                         </td>
                         <IRIlabel label={getLinkOrVocabElem(this.state.iri).labels[this.props.projectLanguage]}
@@ -206,8 +223,8 @@ export default class DetailLink extends React.Component<Props, State> {
                     {Object.keys(Schemes[getLinkOrVocabElem(this.state.iri).inScheme].labels).map(lang => (
                         <tr>
                             <IRIlabel
-                                label={Schemes[Links[this.state.iri].inScheme].labels[lang]}
-                                iri={Links[this.state.iri].inScheme}/>
+                                label={Schemes[getLinkOrVocabElem(this.state.iri).inScheme].labels[lang]}
+                                iri={getLinkOrVocabElem(this.state.iri).inScheme}/>
                             <td>{Languages[lang]}</td>
                         </tr>
                     ))}

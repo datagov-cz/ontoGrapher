@@ -10,6 +10,9 @@ import {
 } from "../config/Variables";
 import {AttributeObject} from "../datatypes/AttributeObject";
 import * as Locale from "../locale/LocaleMain.json";
+import {getRestrictionsAsJSON} from "../function/FunctionRestriction";
+import {parsePrefix} from "../function/FunctionEditVars";
+import {Restrictions} from "../config/Restrictions";
 
 export async function updateProjectElement(
 	contextEndpoint: string,
@@ -23,7 +26,7 @@ export async function updateProjectElement(
 	let iri = ProjectElements[id].iri;
 	let scheme = VocabularyElements[iri].inScheme;
 	let delTypes = VocabularyElements[iri].types;
-
+	let addRestrictions: { [key: string]: any } = {};
 	let addDefinitions: { "@value": string, "@language": string }[] = [];
 	let addLabels: { "@value": string, "@language": string }[] = [];
 
@@ -35,6 +38,10 @@ export async function updateProjectElement(
 		if (newDefinitions[lang] !== "") addDefinitions.push({"@value": newDefinitions[lang], "@language": lang});
 	})
 
+	Object.keys(Restrictions).forEach((restriction) => {
+		addRestrictions[restriction] = {"@type": "@id"};
+	})
+
 	ProjectSettings.lastSource = source;
 
 	let addLD = {
@@ -44,7 +51,9 @@ export async function updateProjectElement(
 			"og:diagram": {"@type": "@id"},
 			"og:attribute": {"@type": "@id"},
 			"og:property": {"@type": "@id"},
-			"og:iri": {"@type": "@id"}
+			"og:iri": {"@type": "@id"},
+			"http://www.w3.org/2002/07/owl#onProperty": {"@type": "@id"},
+			...addRestrictions
 		},
 		"@id": Schemes[scheme].graph,
 		"@graph": [
@@ -53,7 +62,8 @@ export async function updateProjectElement(
 				"@type": newTypes,
 				"skos:prefLabel": addLabels,
 				"skos:definition": addDefinitions,
-				"skos:inScheme": scheme
+				"skos:inScheme": scheme,
+				"rdfs:subClassOf": getRestrictionsAsJSON(iri)
 			},
 			{
 				"@id": iri + "/diagram",
@@ -101,7 +111,9 @@ export async function updateProjectElement(
 			"skos:inScheme": {"@type": "@id"},
 			"og:diagram": {"@type": "@id"},
 			"og:attribute": {"@type": "@id"},
-			"og:property": {"@type": "@id"}
+			"og:property": {"@type": "@id"},
+			"og:iri": {"@type": "@id"},
+			"owl:onProperty": {"@type": "@id"}
 		},
 		"@id": Schemes[scheme].graph,
 		"@graph": [
@@ -124,6 +136,14 @@ export async function updateProjectElement(
 			}
 		]
 	}
+
+	let delRestrictions = await processGetTransaction(contextEndpoint, {
+		subject: iri,
+		predicate: encodeURIComponent(parsePrefix("rdfs", "subClassOf"))
+	}).catch(() => false);
+	if (typeof delRestrictions === "string") {
+		await processTransaction(contextEndpoint, {"delete": JSON.parse(delRestrictions)}).catch(() => false);
+	} else return false;
 
 	let delString = await processGetTransaction(contextEndpoint, {subject: iri + "/diagram"}).catch(() => false);
 	if (typeof delString === "string") {
@@ -150,21 +170,6 @@ export async function updateProjectElement(
 			await processTransaction(contextEndpoint, {"delete": JSON.parse(delString)}).catch(() => false);
 		}
 	}
-
-	// let diagramLD = {
-	// 	"@context": {
-	// 		...Prefixes,
-	// 		"og:element": {"@type": "@id"},
-	// 	},
-	// 	"@id": ProjectSettings.ontographerContext,
-	// 	"@graph": [
-	// 		{
-	// 			"@id": iri + "/diagram",
-	// 			"@type": "og:element"
-	// 		}
-	// 	]
-	// }
-	// await processTransaction(contextEndpoint, {"add": diagramLD}).catch(()=> false);
 
 	return await processTransaction(contextEndpoint, {"add": addLD, "delete": deleteLD, "source": source});
 }

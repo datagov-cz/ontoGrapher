@@ -57,7 +57,7 @@ export function initLanguageObject(defaultString: string) {
     return result;
 }
 
-export function parsePrefix(prefix: string, name: string) {
+export function parsePrefix(prefix: string, name: string): string {
     return Prefixes[prefix] + name;
 }
 
