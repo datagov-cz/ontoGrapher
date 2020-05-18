@@ -14,9 +14,9 @@ import {
     unHighlightAll,
     unHighlightCell
 } from "../function/FunctionGraph";
-import {HideButton} from "../graph/elemHide";
-import {ElemInfoButton} from "../graph/elemInfo";
-import {LinkInfoButton} from "../graph/linkInfo";
+import {HideButton} from "../graph/elementTool/elemHide";
+import {ElemInfoButton} from "../graph/elementTool/elemInfo";
+import {LinkInfoButton} from "../graph/linkTool/linkInfo";
 import {initLanguageObject} from "../function/FunctionEditVars";
 import {
     updateConnections,

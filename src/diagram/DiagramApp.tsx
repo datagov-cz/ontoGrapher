@@ -149,7 +149,7 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 					this.selectDefaultPackage();
 					document.title = ProjectSettings.name[this.state.projectLanguage] + " | " + Locale.ontoGrapher;
 					ProjectSettings.contextEndpoint = contextEndpoint;
-					ProjectSettings.contextIRI = contextIRI
+					ProjectSettings.contextIRI = contextIRI;
 					this.handleChangeLanguage(Object.keys(Languages)[0]);
 					initRestrictions();
 					getElementsConfig(ProjectSettings.contextEndpoint).then((result) => {
