@@ -134,8 +134,9 @@ export function restoreDomainOfConnections() {
                 let insert = true;
                 for (let lnk in ProjectLinks) {
                     if (ProjectLinks[lnk].source === domainCell &&
-                        ProjectLinks[lnk].target === rangeCell &&
-                        ProjectLinks[lnk].iri === iri) {
+                        ProjectLinks[lnk].target === rangeCell
+                        //&& ProjectLinks[lnk].iri === iri
+                    ) {
                         insert = false;
                         break;
                     }

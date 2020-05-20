@@ -16,7 +16,7 @@ import {initLanguageObject} from "./FunctionEditVars";
 import {PackageNode} from "../datatypes/PackageNode";
 import {graphElement} from "../graph/graphElement";
 import {getSettings} from "../interface/SPARQLInterface";
-import {nameGraphElement, restoreDomainOfConnections, restoreHiddenElem} from "./FunctionGraph";
+import {nameGraphElement, restoreHiddenElem} from "./FunctionGraph";
 import {changeDiagrams} from "./FunctionDiagram";
 import {graph} from "../graph/graph";
 
@@ -36,7 +36,7 @@ export async function setupDiagrams(): Promise<boolean> {
                     }
                 }
             }
-            restoreDomainOfConnections();
+            //restoreDomainOfConnections();
         }
         changeDiagrams(0);
         return true;
