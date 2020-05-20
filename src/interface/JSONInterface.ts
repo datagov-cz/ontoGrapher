@@ -41,9 +41,9 @@ export async function getVocabulariesFromRemoteJSON(pathToJSON: string, callback
                     }
                 }
             }
-        ).catch(() => {
+        ).catch((error) => {
+            console.log(error);
             callback(false);
-            throw new Error(Locale.vocabularyNotFound)
         });
     } else {
         callback(false);
