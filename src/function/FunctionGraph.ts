@@ -1,4 +1,4 @@
-import {Links, ProjectElements, ProjectLinks, ProjectSettings, VocabularyElements} from "../config/Variables";
+import {ProjectElements, ProjectLinks, ProjectSettings, VocabularyElements} from "../config/Variables";
 import {getName, getStereotypeList} from "./FunctionEditVars";
 import {graph} from "../graph/graph";
 import {getLinkOrVocabElem, getVocabElementByElementID} from "./FunctionGetVars";
@@ -87,7 +87,7 @@ export function restoreHiddenElem(id: string, cls: joint.dia.Element) {
                 });
             }
             lnk.appendLabel({
-                attrs: {text: {text: Links[ProjectLinks[link].iri].labels[ProjectSettings.selectedLanguage]}},
+                attrs: {text: {text: getLinkOrVocabElem(ProjectLinks[link].iri).labels[ProjectSettings.selectedLanguage]}},
                 position: {distance: 0.5}
             });
             lnk.source({id: ProjectLinks[link].source});
@@ -134,8 +134,9 @@ export function restoreDomainOfConnections() {
                 let insert = true;
                 for (let lnk in ProjectLinks) {
                     if (ProjectLinks[lnk].source === domainCell &&
-                        ProjectLinks[lnk].target === rangeCell &&
-                        ProjectLinks[lnk].iri === iri) {
+                        ProjectLinks[lnk].target === rangeCell
+                        //&& ProjectLinks[lnk].iri === iri
+                    ) {
                         insert = false;
                         break;
                     }
