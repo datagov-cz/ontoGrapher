@@ -6,16 +6,19 @@ export var Restrictions: {
 	[key: string]: {
 		init: (iri: string, restriction: RestrictionObject) => void;
 		check: (id: string) => boolean,
+		save: (restriction: RestrictionObject, target?: string) => void,
 	}
 } = {};
 
 // source -[mvp1]-> target
 // source -[mvp2]-> target2
-// target d - r target2
+// target d -[source]- r target2
 
-Restrictions[parsePrefix("owl", "someValuesFrom")] = {
+let mvp1IRI = "https://slovník.gov.cz/základní/pojem/má-vztažený-prvek-1";
+let mvp2IRI = "https://slovník.gov.cz/základní/pojem/má-vztažený-prvek-2";
+
+Restrictions["http://www.w3.org/2002/07/owl#someValuesFrom"] = {
 	init: (iri, restriction) => {
-		let mvp2IRI = "https://slovník.gov.cz/základní/pojem/má-vztažený-prvek-2";
 		if (restriction.onProperty === mvp2IRI) {
 			for (let rest of VocabularyElements[iri].restrictions) {
 				if (rest.onProperty === mvp2IRI && rest.restriction === parsePrefix("owl", "allValuesFrom")) {
@@ -24,7 +27,6 @@ Restrictions[parsePrefix("owl", "someValuesFrom")] = {
 				}
 			}
 		}
-		let mvp1IRI = "https://slovník.gov.cz/základní/pojem/má-vztažený-prvek-1";
 		if (restriction.onProperty === mvp1IRI) {
 			for (let rest of VocabularyElements[iri].restrictions) {
 				if (rest.onProperty === mvp1IRI && rest.restriction === parsePrefix("owl", "allValuesFrom")) {
@@ -37,10 +39,13 @@ Restrictions[parsePrefix("owl", "someValuesFrom")] = {
 			}
 		}
 	},
-	check: () => true
+	check: () => true,
+	save: (restriction, target) => {
+		if (target && (restriction.onProperty === mvp1IRI || restriction.onProperty === mvp2IRI)) restriction.target = target;
+	}
 }
 
-Restrictions[parsePrefix("owl", "allValuesFrom")] = {
+Restrictions["http://www.w3.org/2002/07/owl#allValuesFrom"] = {
 	init: (iri, restriction) => {
 		let mvp2IRI = "https://slovník.gov.cz/základní/pojem/má-vztažený-prvek-2";
 		if (restriction.onProperty === mvp2IRI) {
@@ -64,5 +69,8 @@ Restrictions[parsePrefix("owl", "allValuesFrom")] = {
 			}
 		}
 	},
-	check: () => true
+	check: () => true,
+	save: (restriction, target) => {
+		if (target && (restriction.onProperty === mvp1IRI || restriction.onProperty === mvp2IRI)) restriction.target = target;
+	}
 }

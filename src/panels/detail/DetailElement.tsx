@@ -5,7 +5,6 @@ import {
 	AttributeTypePool,
 	Diagrams,
 	Languages,
-	Links,
 	ProjectElements,
 	ProjectLinks,
 	ProjectSettings,
@@ -13,7 +12,7 @@ import {
 	Stereotypes,
 	VocabularyElements
 } from "../../config/Variables";
-import {getLabelOrBlank, getStereotypeOrVocabElem} from "../../function/FunctionGetVars";
+import {getLabelOrBlank, getLinkOrVocabElem, getStereotypeOrVocabElem} from "../../function/FunctionGetVars";
 import {Button, Form, Tab, Tabs} from "react-bootstrap";
 import TableList from "../../components/TableList";
 import * as LocaleMenu from "../../locale/LocaleMenu.json";
@@ -259,7 +258,7 @@ export default class DetailElement extends React.Component<Props, State> {
 									if (ProjectLinks[conn]) {
 										return (<tr>
 											<IRIlabel
-												label={Links[ProjectLinks[conn].iri].labels[this.props.projectLanguage]}
+												label={getLinkOrVocabElem(ProjectLinks[conn].iri).labels[this.props.projectLanguage]}
 												iri={ProjectLinks[conn].iri}/>
 											<td>{getLabelOrBlank(VocabularyElements[ProjectElements[ProjectLinks[conn].target].iri].labels, this.props.projectLanguage)}</td>
 											<td>{Diagrams[ProjectLinks[conn].diagram].name}</td>

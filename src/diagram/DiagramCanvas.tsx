@@ -9,7 +9,6 @@ import {
     getNewLabel,
     highlightCell,
     nameGraphElement,
-    restoreDomainOfConnections,
     restoreHiddenElem,
     unHighlightAll,
     unHighlightCell
@@ -172,6 +171,16 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps> {
                                 ProjectElements[id].position[ProjectSettings.selectedDiagram] = cell.position();
                                 cell.remove();
                                 ProjectElements[id].hidden[ProjectSettings.selectedDiagram] = true;
+                                let iri = ProjectElements[id].iri;
+                                updateProjectElement(
+                                    ProjectSettings.contextEndpoint,
+                                    DiagramCanvas.name,
+                                    VocabularyElements[iri].types,
+                                    VocabularyElements[iri].labels,
+                                    VocabularyElements[iri].definitions,
+                                    ProjectElements[id].attributes,
+                                    ProjectElements[id].properties,
+                                    id);
                                 break;
                             }
                         }
@@ -181,6 +190,29 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps> {
                     useModelGeometry: false,
                     x: '100%',
                     y: '0%',
+                    action: (evt: { currentTarget: { getAttribute: (arg0: string) => any; }; }) => {
+                        let id = evt.currentTarget.getAttribute("model-id");
+                        for (let cell of graph.getCells()) {
+                            if (cell.id === id) {
+                                ProjectElements[id].diagrams.splice(ProjectElements[id].diagrams.indexOf(ProjectSettings.selectedDiagram), 1)
+                                ProjectElements[id].position[ProjectSettings.selectedDiagram] = cell.position();
+                                cell.remove();
+                                ProjectElements[id].hidden[ProjectSettings.selectedDiagram] = true;
+                                let iri = ProjectElements[id].iri;
+                                updateProjectElement(
+                                    ProjectSettings.contextEndpoint,
+                                    DiagramCanvas.name,
+                                    VocabularyElements[iri].types,
+                                    VocabularyElements[iri].labels,
+                                    VocabularyElements[iri].definitions,
+                                    ProjectElements[id].attributes,
+                                    ProjectElements[id].properties,
+                                    id);
+                                break;
+                            }
+                        }
+                        this.props.updateElementPanel();
+                    }
                 });
                 elementView.addTools(new joint.dia.ToolsView({
                     tools: [new ElemInfoButton({
@@ -356,7 +388,6 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps> {
                 this.props.updateElementPanel();
                 if (data.type === "existing") {
                     restoreHiddenElem(data.id, cls);
-                    restoreDomainOfConnections();
                     updateProjectElement(
                         ProjectSettings.contextEndpoint,
                         DiagramCanvas,

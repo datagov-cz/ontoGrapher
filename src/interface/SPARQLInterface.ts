@@ -106,10 +106,13 @@ export async function getRestriction(endpoint: string, iri: string, restriction:
 
 export async function getScheme(iri: string, endpoint: string, readOnly: boolean, callback?: Function) {
     let query = [
-        "SELECT DISTINCT ?term ?termLabel ?graph",
+        "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>",
+        "PREFIX dct: <http://purl.org/dc/terms/>",
+        "SELECT DISTINCT ?termLabel ?termTitle ?graph",
         "WHERE {",
         "GRAPH ?graph {",
-        "<" + iri + "> rdfs:label ?termLabel .",
+        "OPTIONAL { <" + iri + "> dct:title ?termTitle . }",
+        "OPTIONAL { <" + iri + "> rdfs:label ?termLabel . }",
         "}",
         "}"
     ].join(" ");
@@ -119,8 +122,9 @@ export async function getScheme(iri: string, endpoint: string, readOnly: boolean
     }).then(data => {
         for (let result of data.results.bindings) {
             if (!(iri in Schemes)) Schemes[iri] = {labels: {}, readOnly: readOnly, graph: ""}
-            if (result.termLabel !== undefined) Schemes[iri].labels[result.termLabel['xml:lang']] = result.termLabel.value;
-            if (result.graph !== undefined) Schemes[iri].graph = result.graph.value;
+            if (result.termLabel) Schemes[iri].labels[result.termLabel['xml:lang']] = result.termLabel.value;
+            if (result.termTitle) Schemes[iri].labels[result.termTitle['xml:lang']] = result.termTitle.value;
+            if (result.graph) Schemes[iri].graph = result.graph.value;
         }
     }).catch(() => {
         if (callback) callback(false);
@@ -304,6 +308,7 @@ export async function getSettings(endpoint: string, callback?: Function): Promis
             }
             Diagrams[parseInt(result.index.value)].name = result.name.value;
         }
+        if (data.results.bindings.length > 0) ProjectSettings.initialized = true;
     }).catch(() => {
         if (callback) callback(false);
         return false;

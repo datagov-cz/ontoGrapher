@@ -1,5 +1,5 @@
 import {Restrictions} from "../config/Restrictions";
-import {VocabularyElements} from "../config/Variables";
+import {ProjectElements, ProjectLinks, VocabularyElements} from "../config/Variables";
 import {RestrictionObject} from "../datatypes/RestrictionObject";
 import {parsePrefix} from "./FunctionEditVars";
 
@@ -28,6 +28,15 @@ export function initRestrictions() {
 export function getRestrictionsAsJSON(iri: string) {
 	let result: {}[] = [];
 	for (let restriction of VocabularyElements[iri].restrictions) {
+		// let domain: string = "";
+		// let range: string = "";
+		for (let id in ProjectLinks) {
+			if (ProjectLinks[id].iri === iri && ProjectElements[ProjectLinks[id].source].iri
+			) {
+				restriction.saveRestriction(ProjectElements[ProjectLinks[id].source].iri);
+				break;
+			}
+		}
 		let i = VocabularyElements[iri].restrictions.indexOf(restriction);
 		result.push({
 			"@id": iri + "/restriction-" + (i + 1),

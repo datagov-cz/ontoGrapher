@@ -9,6 +9,9 @@ import {
 } from "../config/Variables";
 import * as Locale from "../locale/LocaleMain.json";
 import {graph} from "../graph/graph";
+import {addLink} from "./FunctionCreateVars";
+import * as joint from "jointjs";
+import {updateProjectLink} from "../interface/TransactionInterface";
 
 export function getName(element: string, language: string): string {
     if (element in Stereotypes) {
@@ -65,11 +68,33 @@ export function addDomainOfIRIs() {
     for (let iri in VocabularyElements) {
         let domain = VocabularyElements[iri].domain;
         if (domain && VocabularyElements[domain]) {
-            if (!(VocabularyElements[domain].domainOf.includes(iri))) {
-                VocabularyElements[domain].domainOf.push(iri);
+            for (let id in ProjectElements) {
+                let flag = true;
+                let range = undefined;
+                if (ProjectElements[id].iri === domain) {
+                    for (let conn of ProjectElements[id].connections) {
+                        if (ProjectLinks[conn].iri === iri) {
+                            flag = false;
+                            break;
+                        }
+                    }
+                    for (let targetID in ProjectElements) {
+                        if (ProjectElements[targetID].iri === VocabularyElements[iri].range) {
+                            range = targetID;
+                        }
+                    }
+                    if (flag && range) {
+                        let link = new joint.dia.Link();
+                        if (typeof link.id === "string") {
+                            addLink(link.id, iri, id, range);
+                            updateProjectLink(ProjectSettings.contextEndpoint, link.id, "FunctionEditVars");
+                        }
+                    }
+                }
             }
         }
     }
+    console.log(ProjectLinks);
 }
 
 export function deletePackageItem(id: string) {
