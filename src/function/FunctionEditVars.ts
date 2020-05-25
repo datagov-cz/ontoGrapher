@@ -94,7 +94,6 @@ export function addDomainOfIRIs() {
             }
         }
     }
-    console.log(ProjectLinks);
 }
 
 export function deletePackageItem(id: string) {

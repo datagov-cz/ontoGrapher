@@ -347,7 +347,6 @@ export async function processTransaction(contextEndpoint: string, transactions: 
 
 	if (transactionID) {
 		let resultAdd, resultDelete, resultCommit;
-
 		if (transactions.delete) {
 			resultDelete = await fetch(transactionID + "?action=DELETE", {
 				headers: {
@@ -355,7 +354,7 @@ export async function processTransaction(contextEndpoint: string, transactions: 
 				},
 				method: "PUT",
 				body: JSON.stringify(transactions.delete)
-			}).then(response => response.status)
+			}).then(response => response.ok)
 		}
 
 		if (transactions.add) {
@@ -365,7 +364,7 @@ export async function processTransaction(contextEndpoint: string, transactions: 
 				},
 				method: "PUT",
 				body: JSON.stringify(transactions.add)
-			}).then(response => response.status)
+			}).then(response => response.ok)
 		}
 
 		resultCommit = await fetch(transactionID + "?action=COMMIT", {
@@ -373,9 +372,9 @@ export async function processTransaction(contextEndpoint: string, transactions: 
 				'Content-Type': 'application/json'
 			},
 			method: "PUT"
-		}).then(response => response.status)
+		}).then(response => response.ok)
 
-		return ((resultAdd ? resultAdd === 200 : true) && (resultDelete ? resultDelete === 200 : true) && resultCommit === 200);
+		return ((resultAdd ? resultAdd : true) && (resultDelete ? resultDelete : true) && resultCommit);
 	} else return false;
 }
 
