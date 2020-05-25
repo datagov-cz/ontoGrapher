@@ -2,7 +2,7 @@ import * as Locale from "./../locale/LocaleMain.json";
 import {Links, Schemes, Stereotypes} from "../config/Variables";
 import {fetchConcepts, getScheme} from "./SPARQLInterface";
 import {addProperties, createValues} from "../function/FunctionCreateVars";
-import {addDomainOfIRIs, initLanguageObject} from "../function/FunctionEditVars";
+import {initLanguageObject} from "../function/FunctionEditVars";
 import {checkLabels} from "../function/FunctionGetVars";
 
 export async function getVocabulariesFromRemoteJSON(pathToJSON: string, callback: Function) {
@@ -36,7 +36,6 @@ export async function getVocabulariesFromRemoteJSON(pathToJSON: string, callback
                             undefined
                         );
                         addProperties(data.sourceIRI, data.attributes);
-                        addDomainOfIRIs();
                         checkLabels();
                     }
                 }

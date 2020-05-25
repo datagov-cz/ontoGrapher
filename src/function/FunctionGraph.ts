@@ -1,10 +1,9 @@
-import {ProjectElements, ProjectLinks, ProjectSettings, VocabularyElements} from "../config/Variables";
+import {ProjectElements, ProjectLinks, ProjectSettings} from "../config/Variables";
 import {getName, getStereotypeList} from "./FunctionEditVars";
 import {graph} from "../graph/graph";
 import {getLinkOrVocabElem, getVocabElementByElementID} from "./FunctionGetVars";
 import * as joint from "jointjs";
 import * as LocaleMain from "../locale/LocaleMain.json";
-import {addLink} from "./FunctionCreateVars";
 
 export function nameGraphElement(cell: joint.dia.Cell, languageCode: string) {
     if (typeof cell.id === "string") {
@@ -104,50 +103,56 @@ export function getNewLabel(iri: string, language: string) {
     return "«" + getName(iri, language).toLowerCase() + "»\n" + LocaleMain.untitled + " " + getName(iri, language);
 }
 
-export function restoreDomainOfConnections() {
-    for (let iri in VocabularyElements) {
-        if (VocabularyElements[iri].domain && VocabularyElements[iri].range) {
-            let domain = VocabularyElements[iri].domain;
-            let range = VocabularyElements[iri].range;
-            let domainCell = "";
-            let rangeCell = "";
-            for (let cell of graph.getElements()) {
-                if (ProjectElements[cell.id].iri === domain) {
-                    if (typeof cell.id === "string") {
-                        domainCell = cell.id;
-                    }
-                }
-                if (ProjectElements[cell.id].iri === range) {
-                    if (typeof cell.id === "string") {
-                        rangeCell = cell.id;
-                    }
-                }
-            }
-            if (domainCell && rangeCell) {
-                let link = new joint.shapes.standard.Link();
-                link.source({id: domainCell});
-                link.target({id: rangeCell});
-                link.appendLabel({
-                    attrs: {text: {text: VocabularyElements[iri].labels[ProjectSettings.selectedLanguage]}},
-                    position: {distance: 0.5}
-                });
-                let insert = true;
-                for (let lnk in ProjectLinks) {
-                    if (ProjectLinks[lnk].source === domainCell &&
-                        ProjectLinks[lnk].target === rangeCell
-                        //&& ProjectLinks[lnk].iri === iri
-                    ) {
-                        insert = false;
-                        break;
-                    }
-                }
-                if (insert) {
-                    link.addTo(graph);
-                    if (typeof link.id === "string") {
-                        addLink(link.id, iri, domainCell, rangeCell);
-                    }
-                }
-            }
-        }
-    }
-}
+// export function restoreDomainOfConnections() {
+//     for (let iri in VocabularyElements) {
+//         if (VocabularyElements[iri].domain && VocabularyElements[iri].range) {
+//             let domain = VocabularyElements[iri].domain;
+//             let range = VocabularyElements[iri].range;
+//             let domainCell = "";
+//             let rangeCell = "";
+//             for (let cell of graph.getElements()) {
+//                 if (ProjectElements[cell.id].iri === domain) {
+//                     if (typeof cell.id === "string") {
+//                         domainCell = cell.id;
+//                     }
+//                 }
+//                 if (ProjectElements[cell.id].iri === range) {
+//                     if (typeof cell.id === "string") {
+//                         rangeCell = cell.id;
+//                     }
+//                 }
+//             }
+//             if (domainCell && rangeCell) {
+//                 let link = new joint.shapes.standard.Link();
+//                 link.source({id: domainCell});
+//                 link.target({id: rangeCell});
+//                 link.appendLabel({
+//                     attrs: {text: {text: VocabularyElements[iri].labels[ProjectSettings.selectedLanguage]}},
+//                     position: {distance: 0.5}
+//                 });
+//                 let insert = true;
+//                 let sourceIRI = ProjectElements[domainCell].iri;
+//                 for (let lnk in ProjectLinks) {
+//                     if (
+//                         ProjectLinks[lnk].source === domainCell &&
+//                         ProjectLinks[lnk].target === rangeCell
+//                         && ProjectLinks[lnk].iri === iri
+//                         && (VocabularyElements[sourceIRI].domainOf.includes(iri))
+//                     ) {
+//                         insert = false;
+//                         break;
+//                     }
+//                 }
+//                 if (insert) {
+//                     link.addTo(graph);
+//                     VocabularyElements[sourceIRI].domainOf.splice(VocabularyElements[sourceIRI].domainOf.indexOf(iri),1);
+//                     if (typeof link.id === "string") {
+//                         addLink(link.id, iri, domainCell, rangeCell);
+//                         ProjectElements[domainCell].connections.push(link.id);
+//                     }
+//                     console.log(VocabularyElements[sourceIRI].domainOf);
+//                 }
+//             }
+//         }
+//     }
+// }

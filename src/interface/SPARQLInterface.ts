@@ -308,6 +308,7 @@ export async function getSettings(endpoint: string, callback?: Function): Promis
             }
             Diagrams[parseInt(result.index.value)].name = result.name.value;
         }
+        if (data.results.bindings.length > 0) ProjectSettings.initialized = true;
     }).catch(() => {
         if (callback) callback(false);
         return false;

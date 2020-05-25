@@ -12,7 +12,7 @@ import {
 } from "../config/Variables";
 import * as LocaleMain from "../locale/LocaleMain.json";
 import {AttributeObject} from "../datatypes/AttributeObject";
-import {initLanguageObject} from "./FunctionEditVars";
+import {addDomainOfIRIs, initLanguageObject} from "./FunctionEditVars";
 import {PackageNode} from "../datatypes/PackageNode";
 import {graphElement} from "../graph/graphElement";
 import {getSettings} from "../interface/SPARQLInterface";
@@ -21,26 +21,29 @@ import {changeDiagrams} from "./FunctionDiagram";
 import {graph} from "../graph/graph";
 
 export async function setupDiagrams(): Promise<boolean> {
-    return await getSettings(ProjectSettings.contextEndpoint).then(() => {
-        for (let i = 0; i < Diagrams.length; i++) {
-            changeDiagrams(i);
-            for (let id in ProjectElements) {
-                if (ProjectElements[id].hidden[i] === false && ProjectElements[id].position[i]) {
-                    let position = ProjectElements[id].position[i];
-                    if (position.x !== 0 && position.y !== 0) {
-                        let cls = new graphElement({id: id});
-                        cls.position(ProjectElements[id].position[i].x, ProjectElements[id].position[i].y);
-                        cls.addTo(graph);
-                        nameGraphElement(cls, ProjectSettings.selectedLanguage);
-                        restoreHiddenElem(id, cls);
+    return await getSettings(ProjectSettings.contextEndpoint).then((result) => {
+        if (result) {
+            if (!ProjectSettings.initialized) addDomainOfIRIs();
+            for (let i = 0; i < Diagrams.length; i++) {
+                changeDiagrams(i);
+                for (let id in ProjectElements) {
+                    if (ProjectElements[id].hidden[i] === false && ProjectElements[id].position[i]) {
+                        let position = ProjectElements[id].position[i];
+                        if (position.x !== 0 && position.y !== 0) {
+                            let cls = new graphElement({id: id});
+                            cls.position(ProjectElements[id].position[i].x, ProjectElements[id].position[i].y);
+                            cls.addTo(graph);
+                            nameGraphElement(cls, ProjectSettings.selectedLanguage);
+                            restoreHiddenElem(id, cls);
+                        }
                     }
                 }
             }
-            //restoreDomainOfConnections();
-        }
-        changeDiagrams(0);
-        return true;
-    }).catch(() => {
+            changeDiagrams(0);
+            return true;
+        } else return false;
+    }).catch((error) => {
+        console.log(error);
         return false;
     });
 }

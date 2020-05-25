@@ -18,4 +18,8 @@ export class RestrictionObject {
 	initRestriction(iri: string) {
 		Restrictions[this.restriction].init(iri, this);
 	}
+
+	saveRestriction(iriTarget: string) {
+		Restrictions[this.restriction].save(this, iriTarget);
+	}
 }

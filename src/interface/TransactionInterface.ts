@@ -150,6 +150,14 @@ export async function updateProjectElement(
 		await processTransaction(contextEndpoint, {"delete": JSON.parse(delString)}).catch(() => false);
 	} else return false;
 
+	for (const restr of VocabularyElements[iri].restrictions) {
+		let i = VocabularyElements[iri].restrictions.indexOf(restr);
+		let delString = await processGetTransaction(contextEndpoint, {subject: iri + "/restriction-" + (i + 1)}).catch(() => false);
+		if (typeof delString === "string") {
+			await processTransaction(contextEndpoint, {"delete": JSON.parse(delString)}).catch(() => false);
+		} else return false;
+	}
+
 	for (const attr of ProjectElements[id].attributes) {
 		let i = ProjectElements[id].attributes.indexOf(attr);
 		let delString = await processGetTransaction(contextEndpoint, {subject: iri + "/attribute-" + (i + 1)}).catch(() => false);
@@ -405,20 +413,9 @@ export async function updateProjectSettings(contextIRI: string, contextEndpoint:
 			"og:selectedDiagram": ProjectSettings.selectedDiagram,
 			"og:selectedLink": ProjectSettings.selectedLink,
 			"og:selectedLanguage": ProjectSettings.selectedLanguage,
-			"og:diagram": Diagrams.map((diag, i) => ogContext + "/diagram-" + (i + 1))
+			"og:diagram": Diagrams.map((diag, i) => ogContext + "/diagram-" + (i + 1)),
+			"og:initialized": true
 		},
-			...Object.keys(ProjectLinks).map((id, i) => {
-				let linkIRI = ProjectLinks[id].iri + "-" + i;
-				return {
-					"@id": linkIRI,
-					"@type": "og:link",
-					"og:id": id,
-					"og:source": ProjectElements[ProjectLinks[id].source].iri,
-					"og:target": ProjectElements[ProjectLinks[id].target].iri,
-					"og:diagram": ProjectLinks[id].diagram,
-					"og:vertex": ProjectLinks[id].vertices.map((vertex, i) => (linkIRI + "/vertex-" + i))
-				}
-			}),
 			...(Diagrams).map((diag, i) => {
 				return {
 					"@id": ogContext + "/diagram-" + (i + 1),

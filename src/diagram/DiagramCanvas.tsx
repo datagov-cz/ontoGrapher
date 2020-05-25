@@ -9,7 +9,6 @@ import {
     getNewLabel,
     highlightCell,
     nameGraphElement,
-    restoreDomainOfConnections,
     restoreHiddenElem,
     unHighlightAll,
     unHighlightCell
@@ -389,7 +388,6 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps> {
                 this.props.updateElementPanel();
                 if (data.type === "existing") {
                     restoreHiddenElem(data.id, cls);
-                    restoreDomainOfConnections();
                     updateProjectElement(
                         ProjectSettings.contextEndpoint,
                         DiagramCanvas,

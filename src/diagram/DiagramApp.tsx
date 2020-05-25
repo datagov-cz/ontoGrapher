@@ -4,13 +4,13 @@ import ItemPanel from "../panels/ItemPanel";
 import DiagramCanvas from "./DiagramCanvas";
 import * as Locale from "../locale/LocaleMain.json";
 import {
-	Languages,
-	Links,
-	PackageRoot,
-	ProjectElements,
-	ProjectLinks,
-	ProjectSettings,
-	Schemes
+    Languages,
+    Links,
+    PackageRoot,
+    ProjectElements,
+    ProjectLinks,
+    ProjectSettings,
+    Schemes
 } from "../config/Variables";
 import DetailPanel from "../panels/DetailPanel";
 import {getVocabulariesFromRemoteJSON} from "../interface/JSONInterface";
@@ -23,6 +23,7 @@ import {PackageNode} from "../datatypes/PackageNode";
 import {createNewScheme, setupDiagrams} from "../function/FunctionCreateVars";
 import {getElementsConfig, getLinksConfig} from "../interface/SPARQLInterface";
 import {initRestrictions} from "../function/FunctionRestriction";
+import {updateProjectSettings} from "../interface/TransactionInterface";
 
 interface DiagramAppProps {
 	readOnly?: boolean;
@@ -134,38 +135,34 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 		}
 		getVocabulariesFromRemoteJSON("https://raw.githubusercontent.com/opendata-mvcr/ontoGrapher/master/src/config/Vocabularies.json", () => {
 		}).then(() => {
-			this.handleChangeSelectedLink(Object.keys(Links)[0]);
-			getContext(
-				contextIRI,
-				contextEndpoint,
-				"application/json",
-				(message: string) => {
-					if (message === Locale.loadingError) {
-						this.handleChangeLoadingStatus(false, Locale.pleaseReload, false)
-					}
-				}
-			).then(() => {
-				if (!this.state.error) {
-					this.selectDefaultPackage();
-					document.title = ProjectSettings.name[this.state.projectLanguage] + " | " + Locale.ontoGrapher;
-					ProjectSettings.contextEndpoint = contextEndpoint;
-					ProjectSettings.contextIRI = contextIRI
-					this.handleChangeLanguage(Object.keys(Languages)[0]);
-					initRestrictions();
-					getElementsConfig(ProjectSettings.contextEndpoint).then((result) => {
-						if (result) getLinksConfig(ProjectSettings.contextEndpoint).then((result) => {
-							if (result) setupDiagrams().then((result) => {
-								if (result) {
-									this.forceUpdate();
-									this.elementPanel.current?.update();
-									this.handleChangeLoadingStatus(false, "", false);
-								}
-							});
-						});
-					});
-				}
-			})
-		});
+            this.handleChangeSelectedLink(Object.keys(Links)[0]);
+            getContext(
+                contextIRI,
+                contextEndpoint,
+                "application/json",
+                (message: string) => {
+                    if (message === Locale.loadingError) {
+                        this.handleChangeLoadingStatus(false, Locale.pleaseReload, false)
+                    }
+                }
+            ).then(async () => {
+                if (!this.state.error) {
+                    this.selectDefaultPackage();
+                    document.title = ProjectSettings.name[this.state.projectLanguage] + " | " + Locale.ontoGrapher;
+                    ProjectSettings.contextEndpoint = contextEndpoint;
+                    ProjectSettings.contextIRI = contextIRI
+                    this.handleChangeLanguage(Object.keys(Languages)[0]);
+                    initRestrictions();
+                    await getElementsConfig(ProjectSettings.contextEndpoint)
+                    await getLinksConfig(ProjectSettings.contextEndpoint)
+                    await setupDiagrams();
+                    await updateProjectSettings(contextIRI, contextEndpoint, DiagramApp.name);
+                    this.forceUpdate();
+                    this.elementPanel.current?.update();
+                    this.handleChangeLoadingStatus(false, "", false);
+                }
+            })
+        });
 	}
 
 	selectDefaultPackage() {
