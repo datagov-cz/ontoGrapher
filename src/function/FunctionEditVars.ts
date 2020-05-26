@@ -1,5 +1,6 @@
 import {
     Languages,
+    PackageRoot,
     Prefixes,
     ProjectElements,
     ProjectLinks,
@@ -9,7 +10,8 @@ import {
 } from "../config/Variables";
 import * as Locale from "../locale/LocaleMain.json";
 import {graph} from "../graph/graph";
-import {addLink} from "./FunctionCreateVars";
+import {graphElement} from "../graph/graphElement";
+import {addClass, addLink} from "./FunctionCreateVars";
 import * as joint from "jointjs";
 import {updateProjectLink} from "../interface/TransactionInterface";
 
@@ -84,10 +86,16 @@ export function addDomainOfIRIs() {
                         }
                     }
                     if (flag && range) {
-                        let link = new joint.dia.Link();
-                        if (typeof link.id === "string") {
-                            addLink(link.id, iri, id, range);
-                            updateProjectLink(ProjectSettings.contextEndpoint, link.id, "FunctionEditVars");
+                        let linkDomain = new joint.dia.Link();
+                        let linkRange = new joint.dia.Link();
+                        let relationship = new graphElement();
+                        if (typeof relationship.id === "string" && typeof linkDomain.id === "string" && typeof linkRange.id === "string") {
+                            addClass(relationship.id, iri,
+                                PackageRoot.children.find(pkg => pkg.scheme === VocabularyElements[iri].inScheme) || ProjectSettings.selectedPackage, false);
+                            addLink(linkDomain.id, parsePrefix("z-sgov-pojem", "má-vztažený-prvek-1"), relationship.id, id);
+                            addLink(linkRange.id, parsePrefix("z-sgov-pojem", "má-vztažený-prvek-2"), relationship.id, range);
+                            updateProjectLink(ProjectSettings.contextEndpoint, linkDomain.id, "FunctionEditVars");
+                            updateProjectLink(ProjectSettings.contextEndpoint, linkRange.id, "FunctionEditVars");
                         }
                     }
                 }

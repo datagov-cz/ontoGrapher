@@ -4,6 +4,7 @@ import {graph} from "../graph/graph";
 import {getLinkOrVocabElem, getVocabElementByElementID} from "./FunctionGetVars";
 import * as joint from "jointjs";
 import * as LocaleMain from "../locale/LocaleMain.json";
+import {graphElement} from "../graph/graphElement";
 
 export function nameGraphElement(cell: joint.dia.Cell, languageCode: string) {
     if (typeof cell.id === "string") {
@@ -95,6 +96,44 @@ export function restoreHiddenElem(id: string, cls: joint.dia.Element) {
                 lnk.vertices(ProjectLinks[link].vertices);
             }
             lnk.addTo(graph);
+        } else if (ProjectLinks[link].target === id && graph.getCell(ProjectLinks[link].target)) {
+            let relID = ProjectLinks[link].source;
+            for (let targetLink in ProjectLinks) {
+                if (ProjectLinks[targetLink].source === relID && ProjectLinks[targetLink].target !== id && graph.getCell(ProjectLinks[targetLink].target)) {
+                    debugger;
+                    let domainLink = new joint.shapes.standard.Link({id: link});
+                    let rangeLink = new joint.shapes.standard.Link({id: targetLink});
+                    let relationship = new graphElement({id: relID});
+                    let sourcepos = graph.getCell(ProjectLinks[link].target).get('position');
+                    let targetpos = graph.getCell(ProjectLinks[targetLink].target).get('position');
+                    let posx = ((sourcepos.x + targetpos.x) / 2);
+                    let posy = ((sourcepos.y + targetpos.y) / 2);
+                    nameGraphElement(relationship, ProjectSettings.selectedLanguage);
+                    relationship.position(posx, posy);
+                    domainLink.source({id: relID});
+                    domainLink.target({id: ProjectLinks[link].target});
+                    if (ProjectLinks[link] && ProjectLinks[link].vertices) {
+                        domainLink.vertices(ProjectLinks[link].vertices);
+                    }
+                    rangeLink.source({id: relID});
+                    rangeLink.target({id: ProjectLinks[targetLink].target});
+                    if (ProjectLinks[targetLink] && ProjectLinks[targetLink].vertices) {
+                        rangeLink.vertices(ProjectLinks[targetLink].vertices);
+                    }
+                    domainLink.appendLabel({
+                        attrs: {text: {text: getLinkOrVocabElem(ProjectLinks[link].iri).labels[ProjectSettings.selectedLanguage]}},
+                        position: {distance: 0.5}
+                    });
+                    rangeLink.appendLabel({
+                        attrs: {text: {text: getLinkOrVocabElem(ProjectLinks[targetLink].iri).labels[ProjectSettings.selectedLanguage]}},
+                        position: {distance: 0.5}
+                    });
+                    relationship.addTo(graph);
+                    domainLink.addTo(graph);
+                    rangeLink.addTo(graph);
+                    break;
+                }
+            }
         }
     }
 }

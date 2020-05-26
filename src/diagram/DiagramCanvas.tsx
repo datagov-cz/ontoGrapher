@@ -167,7 +167,6 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps> {
                                 for (let link of graph.getConnectedLinks(cell)) {
                                     ProjectLinks[link.id].vertices = link.vertices();
                                 }
-                                // @ts-ignore
                                 ProjectElements[id].position[ProjectSettings.selectedDiagram] = cell.position();
                                 cell.remove();
                                 ProjectElements[id].hidden[ProjectSettings.selectedDiagram] = true;

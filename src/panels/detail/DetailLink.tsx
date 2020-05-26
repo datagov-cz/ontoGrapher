@@ -1,13 +1,5 @@
 import React from 'react';
-import {
-    CardinalityPool,
-    Languages,
-    Links,
-    ProjectLinks,
-    ProjectSettings,
-    Schemes,
-    VocabularyElements
-} from "../../config/Variables";
+import {CardinalityPool, Languages, Links, ProjectLinks, ProjectSettings, Schemes} from "../../config/Variables";
 import {Form} from "react-bootstrap";
 import TableList from "../../components/TableList";
 import * as LocaleMain from "../../locale/LocaleMain.json";
@@ -58,11 +50,14 @@ export default class DetailLink extends React.Component<Props, State> {
 
     prepareLinkOptions() {
         let result: JSX.Element[] = [];
-        for (let iri in VocabularyElements) {
-            if (VocabularyElements[iri].domain && VocabularyElements[iri].range) {
-                result.push(<option
-                    value={iri}>{getLabelOrBlank(VocabularyElements[iri].labels, this.props.projectLanguage)}</option>)
-            }
+        // for (let iri in VocabularyElements) {
+        //     if (VocabularyElements[iri].domain && VocabularyElements[iri].range) {
+        //         result.push(<option
+        //             value={iri}>{getLabelOrBlank(VocabularyElements[iri].labels, this.props.projectLanguage)}</option>)
+        //     }
+        // }
+        for (let iri in Links) {
+            result.push(<option value={iri}>{getLabelOrBlank(Links[iri].labels, this.props.projectLanguage)}</option>)
         }
         return result;
     }
