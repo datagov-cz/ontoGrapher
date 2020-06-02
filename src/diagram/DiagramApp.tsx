@@ -4,19 +4,19 @@ import ItemPanel from "../panels/ItemPanel";
 import DiagramCanvas from "./DiagramCanvas";
 import * as Locale from "../locale/LocaleMain.json";
 import {
-    Languages,
-    Links,
-    PackageRoot,
-    ProjectElements,
-    ProjectLinks,
-    ProjectSettings,
-    Schemes
+	Languages,
+	Links,
+	PackageRoot,
+	ProjectElements,
+	ProjectLinks,
+	ProjectSettings,
+	Schemes
 } from "../config/Variables";
 import DetailPanel from "../panels/DetailPanel";
 import {getVocabulariesFromRemoteJSON} from "../interface/JSONInterface";
 import {initLanguageObject, initVars} from "../function/FunctionEditVars";
 import {getContext} from "../interface/ContextInterface";
-import {graph} from "../graph/graph";
+import {graph} from "../graph/Graph";
 import {loadProject, newProject} from "../function/FunctionProject";
 import {nameGraphElement, nameGraphLink} from "../function/FunctionGraph";
 import {PackageNode} from "../datatypes/PackageNode";

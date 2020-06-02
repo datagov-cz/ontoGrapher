@@ -7,7 +7,7 @@ import * as LocaleMenu from "../../locale/LocaleMenu.json";
 import IRIlabel from "../../components/IRIlabel";
 import IRILink from "../../components/IRILink";
 import {ResizableBox} from "react-resizable";
-import {graph} from "../../graph/graph";
+import {graph} from "../../graph/Graph";
 import DescriptionTabs from "./components/DescriptionTabs";
 import {getLabelOrBlank, getLinkOrVocabElem} from "../../function/FunctionGetVars";
 import {updateProjectLink} from "../../interface/TransactionInterface";

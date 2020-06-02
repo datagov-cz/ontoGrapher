@@ -1,6 +1,5 @@
 import {
 	Diagrams,
-	Links,
 	Prefixes,
 	ProjectElements,
 	ProjectLinks,
@@ -13,6 +12,7 @@ import * as Locale from "../locale/LocaleMain.json";
 import {getRestrictionsAsJSON} from "../function/FunctionRestriction";
 import {parsePrefix} from "../function/FunctionEditVars";
 import {Restrictions} from "../config/Restrictions";
+import {LinkConfig} from "../config/LinkConfig";
 
 export async function updateProjectElement(
 	contextEndpoint: string,
@@ -214,6 +214,7 @@ export async function updateProjectLink(contextEndpoint: string, id: string, sou
 			"og:source": ProjectElements[ProjectLinks[id].source].iri,
 			"og:target": ProjectElements[ProjectLinks[id].target].iri,
 			"og:diagram": ProjectLinks[id].diagram,
+			"og:type": ProjectLinks[id].type,
 			...ProjectLinks[id].vertices.map((vert, i) => {
 				return {"og:vertex": linkIRI + "/vertex-" + (i + 1)}
 			}),
@@ -255,57 +256,20 @@ export async function updateDeleteProjectElement(contextEndpoint: string, iri: s
 
 }
 
+//id: link ID
 export async function updateConnections(contextEndpoint: string, id: string, del: string[], source: string) {
-	let iri = ProjectElements[id].iri;
-	let scheme = VocabularyElements[iri].inScheme;
-	let connections: { [key: string]: string } = {};
-	let delConnections: { [key: string]: string } = {};
-	let connectionContext: { [key: string]: any } = {};
-	let linkContext: { [key: string]: any } = {};
 	ProjectSettings.lastSource = source;
 
-	ProjectElements[id].connections.forEach((linkID) => {
-		connections[ProjectLinks[linkID].iri] = ProjectElements[ProjectLinks[linkID].target].iri
-		connectionContext[ProjectLinks[linkID].iri] = {"@type": "@id"}
-	})
+	console.log(ProjectLinks);
 
-	del.forEach((linkID) => {
-		connectionContext[ProjectLinks[linkID].iri] = {"@type": "@id"}
-		delConnections[ProjectLinks[linkID].iri] = ProjectElements[ProjectLinks[linkID].target].iri
-	})
-
-	Object.keys(Links).forEach(link => {
-		linkContext[link] = {"@type": "@id"};
-	})
-
-	let deleteLD = {
-		"@context": {...Prefixes, ...connectionContext, ...linkContext},
-		"@id": Schemes[scheme].graph,
-		"@graph": [
-			{
-				"@id": iri,
-				...delConnections
-			}
-		]
-	}
-
-	let addLD = {
-		"@context": {...Prefixes, ...connectionContext},
-		"@id": Schemes[scheme].graph,
-		"@graph": [
-			{
-				"@id": iri,
-				...connections
-			}
-		]
-	};
+	let addLD = LinkConfig[ProjectLinks[id].type].add(id);
+	let deleteLD = LinkConfig[ProjectLinks[id].type].delete(id, del);
 
 	if (del.length > 0) return await processTransaction(contextEndpoint, {
 		"add": addLD,
-		"delete": deleteLD,
-		"source": source
+		"delete": deleteLD
 	});
-	else return await processTransaction(contextEndpoint, {"add": addLD, "source": source});
+	else return await processTransaction(contextEndpoint, {"add": addLD});
 }
 
 export function getTransactionID(contextEndpoint: string) {

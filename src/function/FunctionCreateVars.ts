@@ -14,11 +14,11 @@ import * as LocaleMain from "../locale/LocaleMain.json";
 import {AttributeObject} from "../datatypes/AttributeObject";
 import {addDomainOfIRIs, initLanguageObject} from "./FunctionEditVars";
 import {PackageNode} from "../datatypes/PackageNode";
-import {graphElement} from "../graph/graphElement";
+import {graphElement} from "../graph/GraphElement";
 import {getSettings} from "../interface/SPARQLInterface";
 import {nameGraphElement, restoreHiddenElem} from "./FunctionGraph";
 import {changeDiagrams} from "./FunctionDiagram";
-import {graph} from "../graph/graph";
+import {graph} from "../graph/Graph";
 
 export async function setupDiagrams(): Promise<boolean> {
     return await getSettings(ProjectSettings.contextEndpoint).then((result) => {
@@ -172,7 +172,7 @@ export function addClass(
     pkg.elements.push(id);
 }
 
-export function addLink(id: string, iri: string, source: string, target: string) {
+export function addLink(id: string, iri: string, source: string, target: string, type: string) {
     ProjectLinks[id] = {
         iri: iri,
         source: source,
@@ -180,6 +180,7 @@ export function addLink(id: string, iri: string, source: string, target: string)
         sourceCardinality: CardinalityPool[0],
         targetCardinality: CardinalityPool[0],
         diagram: ProjectSettings.selectedDiagram,
-        vertices: []
+        vertices: [],
+        type: type
     }
 }

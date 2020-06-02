@@ -1,5 +1,5 @@
 import {PackageRoot, ProjectSettings, Schemes, VocabularyElements} from "../config/Variables";
-import {graphElement} from '../graph/graphElement';
+import {graphElement} from '../graph/GraphElement';
 import {fetchConcepts, getScheme} from "./SPARQLInterface";
 import {PackageNode} from "../datatypes/PackageNode";
 import * as Locale from "../locale/LocaleMain.json";

@@ -1,6 +1,6 @@
 import React from 'react';
 import DetailLink from "./detail/DetailLink";
-import {graph} from "../graph/graph";
+import {graph} from "../graph/Graph";
 import DetailElement from "./detail/DetailElement";
 
 const headers: { [key: string]: { [key: string]: string } } = {

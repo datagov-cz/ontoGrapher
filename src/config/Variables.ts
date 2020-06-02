@@ -49,6 +49,8 @@ export var ProjectLinks: {
         diagram: number,
         //vertices
         vertices: joint.dia.Link.Vertex[];
+        //type - dictates saving/loading behaviour
+        type: string;
     }
 } = {};
 
@@ -107,9 +109,9 @@ export var Links: {
         labels: { [key: string]: string },
         definitions: { [key: string]: string },
         inScheme: string,
+        type: string,
     }
 } = {};
-
 
 export var Stereotypes: {
     [key: string]: {

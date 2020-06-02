@@ -28,6 +28,7 @@ export async function fetchConcepts(
             domain?: string,
             range?: string,
             restrictions: [],
+            type: string,
         }
     } = {};
 
@@ -63,7 +64,8 @@ export async function fetchConcepts(
                     types: [],
                     inScheme: source,
                     domainOf: [],
-                    restrictions: []
+                    restrictions: [],
+                    type: "default"
                 }
             }
             if (row.termType && !(result[row.term.value].types.includes(row.termType.value))) result[row.term.value].types.push(row.termType.value);
@@ -319,7 +321,7 @@ export async function getSettings(endpoint: string, callback?: Function): Promis
 export async function getLinksConfig(endpoint: string, callback?: Function): Promise<boolean> {
     let query = [
         "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
-        "select ?id ?iri ?sourceID ?targetID ?source ?target ?sourceCard1 ?sourceCard2 ?targetCard1 ?targetCard2 ?diagram ?vertex where {",
+        "select ?id ?iri ?sourceID ?targetID ?source ?target ?sourceCard1 ?sourceCard2 ?targetCard1 ?targetCard2 ?diagram ?vertex ?type where {",
         "?link a og:link .",
         "?link og:id ?id .",
         "?link og:iri ?iri .",
@@ -328,6 +330,7 @@ export async function getLinksConfig(endpoint: string, callback?: Function): Pro
         "?link og:source ?source .",
         "?link og:target ?target .",
         "?link og:diagram ?diagram .",
+        "?link og:type ?type",
         "OPTIONAL {?link og:vertex ?vertex .}",
         "OPTIONAL {?link og:sourceCardinality1 ?sourceCard1 .}",
         "OPTIONAL {?link og:sourceCardinality2 ?sourceCard2 .}",
@@ -350,6 +353,7 @@ export async function getLinksConfig(endpoint: string, callback?: Function): Pro
             sourceCardinality2?: string,
             targetCardinality1?: string,
             targetCardinality2?: string,
+            type: string,
         }
     } = {};
     await fetch(q, {headers: {'Accept': 'application/json'}}).then(response => {
@@ -366,6 +370,7 @@ export async function getLinksConfig(endpoint: string, callback?: Function): Pro
                     diagram: parseInt(result.diagram.value),
                     vertexIRI: [],
                     vertexes: {},
+                    type: result.type.value
                 }
             }
             if (result.vertex) links[result.id.value].vertexIRI.push(result.vertex.value);
@@ -439,7 +444,8 @@ export async function getLinksConfig(endpoint: string, callback?: Function): Pro
                 sourceCardinality: sourceCard,
                 targetCardinality: targetCard,
                 vertices: convert,
-                diagram: links[link].diagram
+                diagram: links[link].diagram,
+                type: links[link].type
             }
             if (sourceID) {
                 if (!ProjectElements[sourceID].connections.includes(link)) {
