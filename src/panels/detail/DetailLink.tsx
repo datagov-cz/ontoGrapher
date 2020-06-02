@@ -50,12 +50,6 @@ export default class DetailLink extends React.Component<Props, State> {
 
     prepareLinkOptions() {
         let result: JSX.Element[] = [];
-        // for (let iri in VocabularyElements) {
-        //     if (VocabularyElements[iri].domain && VocabularyElements[iri].range) {
-        //         result.push(<option
-        //             value={iri}>{getLabelOrBlank(VocabularyElements[iri].labels, this.props.projectLanguage)}</option>)
-        //     }
-        // }
         for (let iri in Links) {
             result.push(<option value={iri}>{getLabelOrBlank(Links[iri].labels, this.props.projectLanguage)}</option>)
         }
@@ -120,7 +114,7 @@ export default class DetailLink extends React.Component<Props, State> {
                                 position: {distance: -20}
                             });
                         }
-                        link.appendLabel({
+                        if (ProjectLinks[this.state.id].type === "default") link.appendLabel({
                             attrs: {text: {text: getLinkOrVocabElem(this.state.iri).labels[this.props.projectLanguage]}},
                             position: {distance: 0.5}
                         });

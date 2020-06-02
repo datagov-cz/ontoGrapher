@@ -84,7 +84,7 @@ export function restoreHiddenElem(id: string, cls: joint.dia.Element) {
     }
     for (let link in ProjectLinks) {
         if ((ProjectLinks[link].source === id || ProjectLinks[link].target === id) && (graph.getCell(ProjectLinks[link].source) && graph.getCell(ProjectLinks[link].target))) {
-            let lnk = getNewLink(link);
+            let lnk = getNewLink(ProjectLinks[link].type, link);
             if (ProjectLinks[link].type === "default") {
                 if (ProjectLinks[link].sourceCardinality.getString() !== LocaleMain.none) {
                     lnk.appendLabel({
@@ -113,8 +113,8 @@ export function restoreHiddenElem(id: string, cls: joint.dia.Element) {
             let relID = ProjectLinks[link].source;
             for (let targetLink in ProjectLinks) {
                 if (ProjectLinks[targetLink].source === relID && ProjectLinks[targetLink].target !== id && graph.getCell(ProjectLinks[targetLink].target)) {
-                    let domainLink = getNewLink(link);
-                    let rangeLink = getNewLink(targetLink);
+                    let domainLink = getNewLink(ProjectLinks[link].type, link);
+                    let rangeLink = getNewLink(ProjectLinks[targetLink].type, targetLink);
                     let relationship = new graphElement({id: relID});
                     let sourcepos = graph.getCell(ProjectLinks[link].target).get('position');
                     let targetpos = graph.getCell(ProjectLinks[targetLink].target).get('position');

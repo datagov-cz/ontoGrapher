@@ -108,7 +108,7 @@ export var LinkConfig: {
 				delConnections.push(ProjectElements[ProjectLinks[linkID].target].iri);
 			})
 
-			let deleteLD = {
+			return {
 				"@context": {...Prefixes, "rdfs:subClassOf": {"@type": "@id"}},
 				"@id": Schemes[scheme].graph,
 				"@graph": [
@@ -117,9 +117,7 @@ export var LinkConfig: {
 						"rdfs:subClassOf": delConnections,
 					}
 				]
-			}
-			console.log(deleteLD, JSON.stringify(deleteLD));
-			return deleteLD;
+			};
 		}
 	}
 };

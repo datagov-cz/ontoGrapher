@@ -72,7 +72,7 @@ export function loadDiagram(load: {
         cls.addTo(graph);
     }
     for (let link of load.links) {
-        let lnk = getNewLink(link.id);
+        let lnk = getNewLink(link.type, link.id);
         lnk.source({id: link.source});
         lnk.target({id: link.target});
         lnk.labels(link.labels);

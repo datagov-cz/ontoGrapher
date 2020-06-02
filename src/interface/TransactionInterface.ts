@@ -260,8 +260,6 @@ export async function updateDeleteProjectElement(contextEndpoint: string, iri: s
 export async function updateConnections(contextEndpoint: string, id: string, del: string[], source: string) {
 	ProjectSettings.lastSource = source;
 
-	console.log(ProjectLinks);
-
 	let addLD = LinkConfig[ProjectLinks[id].type].add(id);
 	let deleteLD = LinkConfig[ProjectLinks[id].type].delete(id, del);
 

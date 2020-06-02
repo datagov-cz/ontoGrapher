@@ -20,6 +20,18 @@ export default class AboutModal extends React.Component<Props, State> {
             </Modal.Header>
             <Modal.Body>
                 <Tabs id={"changelog"}>
+                    <Tab title={"June"} eventKey={4}>
+                        <h6>2.6.</h6>
+                        <ul>
+                            <li>Changed representation to FULL OWL (only basic Zs-GoV relationships are shown as links;
+                                others are represented as Relators)
+                            </li>
+                            <li>Implemented Generalization link (found in "➡" tab), with different (UML consistent)
+                                design
+                            </li>
+                            <li>Generalization is represented as rdfs:subClassOf in the database</li>
+                        </ul>
+                    </Tab>
                     <Tab title={"May"} eventKey={3}>
                         <h6>16.5.</h6>
                         <ul>

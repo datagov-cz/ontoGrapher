@@ -284,17 +284,18 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps> {
                         }
                     })
                 })
+                let infoButton = new LinkInfoButton({
+                    action: (evt: { currentTarget: { getAttribute: (arg0: string) => any; }; }) => {
+                        let id = evt.currentTarget.getAttribute("model-id");
+                        this.props.prepareDetails(id);
+                        unHighlightAll();
+                        highlightCell(id);
+                    }
+                })
+                let tools = [verticesTool, segmentsTool, removeButton]
+                if (ProjectLinks[linkView.model.id].type === "default") tools.push(infoButton);
                 let toolsView = new joint.dia.ToolsView({
-                    tools: [verticesTool, segmentsTool, removeButton,
-                        new LinkInfoButton({
-                            action: (evt: { currentTarget: { getAttribute: (arg0: string) => any; }; }) => {
-                                let id = evt.currentTarget.getAttribute("model-id");
-                                this.props.prepareDetails(id);
-                                unHighlightAll();
-                                highlightCell(id);
-                            }
-                        })
-                    ]
+                    tools: tools
                 });
                 linkView.addTools(toolsView);
             },
