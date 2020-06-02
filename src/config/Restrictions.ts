@@ -10,10 +10,6 @@ export var Restrictions: {
 	}
 } = {};
 
-// rel -[mvp1]-> target
-// rel -[mvp2]-> target2
-// target d -[rel]- r target2
-
 let mvp1IRI = "https://slovník.gov.cz/základní/pojem/má-vztažený-prvek-1";
 let mvp2IRI = "https://slovník.gov.cz/základní/pojem/má-vztažený-prvek-2";
 
