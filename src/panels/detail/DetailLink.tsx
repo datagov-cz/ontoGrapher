@@ -51,7 +51,9 @@ export default class DetailLink extends React.Component<Props, State> {
     prepareLinkOptions() {
         let result: JSX.Element[] = [];
         for (let iri in Links) {
-            result.push(<option value={iri}>{getLabelOrBlank(Links[iri].labels, this.props.projectLanguage)}</option>)
+            if (Links[iri].type === "default")
+                result.push(<option
+                    value={iri}>{getLabelOrBlank(Links[iri].labels, this.props.projectLanguage)}</option>)
         }
         return result;
     }
