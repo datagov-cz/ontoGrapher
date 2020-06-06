@@ -31,7 +31,7 @@ export default class FileFetchContextModal extends React.Component<Props, State>
             return "Workspace not found with error:\n" + response.error;
         } else {
             let construct = "Workspace found\nwith label(s) ";
-            construct += response.labels.join("/") + "\nwith found imports: " + response.imports.length + "\n";
+            construct += response.labels.join("/") + "\nwith found contexts: " + response.imports.length + "\n";
             construct += response.imports.join("\n");
             return construct;
         }
