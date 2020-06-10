@@ -25,7 +25,7 @@ import {AttributeObject} from "../../datatypes/AttributeObject";
 // @ts-ignore
 import {RIEInput} from "riek";
 import {nameGraphElement} from "../../function/FunctionGraph";
-import {graph} from "../../graph/graph";
+import {graph} from "../../graph/Graph";
 import {
 	processGetTransaction,
 	processTransaction,

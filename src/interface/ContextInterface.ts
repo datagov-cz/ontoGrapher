@@ -1,5 +1,5 @@
 import {PackageRoot, ProjectSettings, Schemes, VocabularyElements} from "../config/Variables";
-import {graphElement} from '../graph/graphElement';
+import {graphElement} from '../graph/GraphElement';
 import {fetchConcepts, getScheme} from "./SPARQLInterface";
 import {PackageNode} from "../datatypes/PackageNode";
 import * as Locale from "../locale/LocaleMain.json";
@@ -11,19 +11,17 @@ export async function testContext(contextIRI: string, contextEndpoint: string) {
         "PREFIX ex: <http://example.org/>",
         "PREFIX owl: <http://www.w3.org/2002/07/owl#>",
         "PREFIX skos: <http://www.w3.org/2004/02/skos/core#>",
-        "select ?vocab ?label ?vocabIRI where {",
+        "select ?vocab ?label where {",
         "BIND(<" + contextIRI + "> as ?contextIRI) .",
-        "?contextIRI rdfs:label ?label;",
-        "<https://slovník.gov.cz/datový/pracovní-prostor/pojem/odkazuje-na-kontext> ?vocab.",
-        "?vocab a ?vocabType.",
+        "OPTIONAL {?contextIRI rdfs:label ?label.}",
+        "?contextIRI <https://slovník.gov.cz/datový/pracovní-prostor/pojem/odkazuje-na-kontext> ?vocab.",
+        "?vocab a ?vocabType .",
         "VALUES ?vocabType {",
         "<https://slovník.gov.cz/datový/pracovní-prostor/pojem/slovníkový-kontext>",
+        "<https://slovník.gov.cz/datový/pracovní-prostor/pojem/slovníkovy-kontext>",
         "<https://slovník.gov.cz/datový/pracovní-prostor/pojem/slovníkový-kontext-pouze-pro-čtení>",
         "}",
-        "?vocab <https://slovník.gov.cz/datový/pracovní-prostor/pojem/obsahuje-slovník> ?vocabIRI .",
-        "?vocabIRI owl:imports ?import .",
-        "?import a skos:ConceptScheme .",
-        "}",
+        "}"
     ].join(" ");
     //keep this .log
     console.log(vocabularyQ);
@@ -42,7 +40,7 @@ export async function testContext(contextIRI: string, contextEndpoint: string) {
     else {
         response.forEach((res: { [key: string]: any }) => {
             if (!(result.labels.includes(res.label.value))) result.labels.push(res.label.value);
-            if (!(result.imports.includes(res.vocabIRI.value))) result.imports.push(res.vocabIRI.value);
+            if (!(result.imports.includes(res.vocab.value))) result.imports.push(res.vocab.value);
         });
         return result;
     }
@@ -65,7 +63,7 @@ export async function getContext(
         "?contextIRI rdfs:label ?label;",
         "<https://slovník.gov.cz/datový/pracovní-prostor/pojem/odkazuje-na-kontext> ?vocab.",
         "?vocab a ?vocabType .",
-        "VALUES ?vocabType { <https://slovník.gov.cz/datový/pracovní-prostor/pojem/slovníkový-kontext> <https://slovník.gov.cz/datový/pracovní-prostor/pojem/slovníkový-kontext-pouze-pro-čtení> }",
+        "VALUES ?vocabType { <https://slovník.gov.cz/datový/pracovní-prostor/pojem/slovníkový-kontext> <https://slovník.gov.cz/datový/pracovní-prostor/pojem/slovníkovy-kontext> <https://slovník.gov.cz/datový/pracovní-prostor/pojem/slovníkový-kontext-pouze-pro-čtení> }",
         "?vocab <https://slovník.gov.cz/datový/pracovní-prostor/pojem/obsahuje-slovník> ?vocabIRI .",
         "?vocabIRI owl:imports ?import .",
         "?import a ?importType .",

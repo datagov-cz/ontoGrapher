@@ -1,13 +1,5 @@
 import React from 'react';
-import {
-    CardinalityPool,
-    Languages,
-    Links,
-    ProjectLinks,
-    ProjectSettings,
-    Schemes,
-    VocabularyElements
-} from "../../config/Variables";
+import {CardinalityPool, Languages, Links, ProjectLinks, ProjectSettings, Schemes} from "../../config/Variables";
 import {Form} from "react-bootstrap";
 import TableList from "../../components/TableList";
 import * as LocaleMain from "../../locale/LocaleMain.json";
@@ -15,7 +7,7 @@ import * as LocaleMenu from "../../locale/LocaleMenu.json";
 import IRIlabel from "../../components/IRIlabel";
 import IRILink from "../../components/IRILink";
 import {ResizableBox} from "react-resizable";
-import {graph} from "../../graph/graph";
+import {graph} from "../../graph/Graph";
 import DescriptionTabs from "./components/DescriptionTabs";
 import {getLabelOrBlank, getLinkOrVocabElem} from "../../function/FunctionGetVars";
 import {updateProjectLink} from "../../interface/TransactionInterface";
@@ -58,11 +50,10 @@ export default class DetailLink extends React.Component<Props, State> {
 
     prepareLinkOptions() {
         let result: JSX.Element[] = [];
-        for (let iri in VocabularyElements) {
-            if (VocabularyElements[iri].domain && VocabularyElements[iri].range) {
+        for (let iri in Links) {
+            if (Links[iri].type === "default")
                 result.push(<option
-                    value={iri}>{getLabelOrBlank(VocabularyElements[iri].labels, this.props.projectLanguage)}</option>)
-            }
+                    value={iri}>{getLabelOrBlank(Links[iri].labels, this.props.projectLanguage)}</option>)
         }
         return result;
     }
@@ -125,7 +116,7 @@ export default class DetailLink extends React.Component<Props, State> {
                                 position: {distance: -20}
                             });
                         }
-                        link.appendLabel({
+                        if (ProjectLinks[this.state.id].type === "default") link.appendLabel({
                             attrs: {text: {text: getLinkOrVocabElem(this.state.iri).labels[this.props.projectLanguage]}},
                             position: {distance: 0.5}
                         });

@@ -1,17 +1,22 @@
 import {
     Languages,
+    Links,
+    PackageRoot,
     Prefixes,
     ProjectElements,
     ProjectLinks,
     ProjectSettings,
+    Schemes,
     Stereotypes,
     VocabularyElements
 } from "../config/Variables";
 import * as Locale from "../locale/LocaleMain.json";
-import {graph} from "../graph/graph";
-import {addLink} from "./FunctionCreateVars";
-import * as joint from "jointjs";
+import {graph} from "../graph/Graph";
+import {graphElement} from "../graph/GraphElement";
+import {addClass, addLink} from "./FunctionCreateVars";
 import {updateProjectLink} from "../interface/TransactionInterface";
+import {LinkConfig} from "../config/LinkConfig";
+import {getNewLink} from "./FunctionGraph";
 
 export function getName(element: string, language: string): string {
     if (element in Stereotypes) {
@@ -37,12 +42,34 @@ export function getStereotypeList(iris: string[], language: string): string[] {
 export function initVars() {
     loadLanguages();
     initProjectSettings();
+    loadUML();
+}
+
+export function loadUML() {
+    let scheme = ProjectSettings.ontographerContext + "/uml";
+
+    Schemes[scheme] = {
+        labels: initLanguageObject("UML"),
+        readOnly: false,
+        graph: ProjectSettings.ontographerContext
+    }
+
+    for (let type in LinkConfig) {
+        if (type !== "default") {
+            Links[scheme + "/" + type] = {
+                labels: LinkConfig[type].labels,
+                definitions: initLanguageObject(""),
+                inScheme: scheme,
+                type: type
+            }
+        }
+    }
 }
 
 export function loadLanguages() {
     const json = require('../config/Languages.json');
     for (let code in json) {
-        Languages[code] = json[code];
+        if (json.hasOwnProperty(code)) Languages[code] = json[code];
     }
 }
 
@@ -84,10 +111,16 @@ export function addDomainOfIRIs() {
                         }
                     }
                     if (flag && range) {
-                        let link = new joint.dia.Link();
-                        if (typeof link.id === "string") {
-                            addLink(link.id, iri, id, range);
-                            updateProjectLink(ProjectSettings.contextEndpoint, link.id, "FunctionEditVars");
+                        let linkDomain = getNewLink();
+                        let linkRange = getNewLink();
+                        let relationship = new graphElement();
+                        if (typeof relationship.id === "string" && typeof linkDomain.id === "string" && typeof linkRange.id === "string") {
+                            addClass(relationship.id, iri,
+                                PackageRoot.children.find(pkg => pkg.scheme === VocabularyElements[iri].inScheme) || ProjectSettings.selectedPackage, false);
+                            addLink(linkDomain.id, parsePrefix("z-sgov-pojem", "má-vztažený-prvek-1"), relationship.id, id, "default");
+                            addLink(linkRange.id, parsePrefix("z-sgov-pojem", "má-vztažený-prvek-2"), relationship.id, range, "default");
+                            updateProjectLink(ProjectSettings.contextEndpoint, linkDomain.id, "FunctionEditVars");
+                            updateProjectLink(ProjectSettings.contextEndpoint, linkRange.id, "FunctionEditVars");
                         }
                     }
                 }

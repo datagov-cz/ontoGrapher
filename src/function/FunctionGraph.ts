@@ -1,9 +1,11 @@
-import {ProjectElements, ProjectLinks, ProjectSettings} from "../config/Variables";
+import {Links, ProjectElements, ProjectLinks, ProjectSettings} from "../config/Variables";
 import {getName, getStereotypeList} from "./FunctionEditVars";
-import {graph} from "../graph/graph";
+import {graph} from "../graph/Graph";
 import {getLinkOrVocabElem, getVocabElementByElementID} from "./FunctionGetVars";
 import * as joint from "jointjs";
 import * as LocaleMain from "../locale/LocaleMain.json";
+import {graphElement} from "../graph/GraphElement";
+import {LinkConfig} from "../config/LinkConfig";
 
 export function nameGraphElement(cell: joint.dia.Cell, languageCode: string) {
     if (typeof cell.id === "string") {
@@ -12,8 +14,18 @@ export function nameGraphElement(cell: joint.dia.Cell, languageCode: string) {
     }
 }
 
+export function getNewLink(type?: string, id?: string): joint.dia.Link {
+    let link = new joint.shapes.standard.Link({id: id});
+    if (type && type in LinkConfig) {
+        link = LinkConfig[type].newLink(id);
+    } else if (Links[ProjectSettings.selectedLink] && Links[ProjectSettings.selectedLink].type in LinkConfig) {
+        link = LinkConfig[Links[ProjectSettings.selectedLink].type].newLink(id);
+    }
+    return link;
+}
+
 export function nameGraphLink(cell: joint.dia.Link, languageCode: string) {
-    if (typeof cell.id === "string") {
+    if (typeof cell.id === "string" && ProjectLinks[cell.id].type === "default") {
         let label = getLinkOrVocabElem(ProjectLinks[cell.id].iri).labels[languageCode];
         if (label) {
             let labels = cell.labels()
@@ -72,29 +84,68 @@ export function restoreHiddenElem(id: string, cls: joint.dia.Element) {
     }
     for (let link in ProjectLinks) {
         if ((ProjectLinks[link].source === id || ProjectLinks[link].target === id) && (graph.getCell(ProjectLinks[link].source) && graph.getCell(ProjectLinks[link].target))) {
-            let lnk = new joint.shapes.standard.Link({id: link});
-            if (ProjectLinks[link].sourceCardinality.getString() !== LocaleMain.none) {
+            let lnk = getNewLink(ProjectLinks[link].type, link);
+            if (ProjectLinks[link].type === "default") {
+                if (ProjectLinks[link].sourceCardinality.getString() !== LocaleMain.none) {
+                    lnk.appendLabel({
+                        attrs: {text: {text: ProjectLinks[link].sourceCardinality.getString()}},
+                        position: {distance: 20}
+                    });
+                }
+                if (ProjectLinks[link].targetCardinality.getString() !== LocaleMain.none) {
+                    lnk.appendLabel({
+                        attrs: {text: {text: ProjectLinks[link].targetCardinality.getString()}},
+                        position: {distance: -20}
+                    });
+                }
                 lnk.appendLabel({
-                    attrs: {text: {text: ProjectLinks[link].sourceCardinality.getString()}},
-                    position: {distance: 20}
+                    attrs: {text: {text: getLinkOrVocabElem(ProjectLinks[link].iri).labels[ProjectSettings.selectedLanguage]}},
+                    position: {distance: 0.5}
                 });
             }
-            if (ProjectLinks[link].targetCardinality.getString() !== LocaleMain.none) {
-                lnk.appendLabel({
-                    attrs: {text: {text: ProjectLinks[link].targetCardinality.getString()}},
-                    position: {distance: -20}
-                });
-            }
-            lnk.appendLabel({
-                attrs: {text: {text: getLinkOrVocabElem(ProjectLinks[link].iri).labels[ProjectSettings.selectedLanguage]}},
-                position: {distance: 0.5}
-            });
             lnk.source({id: ProjectLinks[link].source});
             lnk.target({id: ProjectLinks[link].target});
             if (ProjectLinks[link] && ProjectLinks[link].vertices) {
                 lnk.vertices(ProjectLinks[link].vertices);
             }
             lnk.addTo(graph);
+        } else if (ProjectLinks[link].target === id && graph.getCell(ProjectLinks[link].target)) {
+            let relID = ProjectLinks[link].source;
+            for (let targetLink in ProjectLinks) {
+                if (ProjectLinks[targetLink].source === relID && ProjectLinks[targetLink].target !== id && graph.getCell(ProjectLinks[targetLink].target)) {
+                    let domainLink = getNewLink(ProjectLinks[link].type, link);
+                    let rangeLink = getNewLink(ProjectLinks[targetLink].type, targetLink);
+                    let relationship = new graphElement({id: relID});
+                    let sourcepos = graph.getCell(ProjectLinks[link].target).get('position');
+                    let targetpos = graph.getCell(ProjectLinks[targetLink].target).get('position');
+                    let posx = ((sourcepos.x + targetpos.x) / 2);
+                    let posy = ((sourcepos.y + targetpos.y) / 2);
+                    nameGraphElement(relationship, ProjectSettings.selectedLanguage);
+                    relationship.position(posx, posy);
+                    domainLink.source({id: relID});
+                    domainLink.target({id: ProjectLinks[link].target});
+                    if (ProjectLinks[link] && ProjectLinks[link].vertices) {
+                        domainLink.vertices(ProjectLinks[link].vertices);
+                    }
+                    rangeLink.source({id: relID});
+                    rangeLink.target({id: ProjectLinks[targetLink].target});
+                    if (ProjectLinks[targetLink] && ProjectLinks[targetLink].vertices) {
+                        rangeLink.vertices(ProjectLinks[targetLink].vertices);
+                    }
+                    domainLink.appendLabel({
+                        attrs: {text: {text: getLinkOrVocabElem(ProjectLinks[link].iri).labels[ProjectSettings.selectedLanguage]}},
+                        position: {distance: 0.5}
+                    });
+                    rangeLink.appendLabel({
+                        attrs: {text: {text: getLinkOrVocabElem(ProjectLinks[targetLink].iri).labels[ProjectSettings.selectedLanguage]}},
+                        position: {distance: 0.5}
+                    });
+                    relationship.addTo(graph);
+                    domainLink.addTo(graph);
+                    rangeLink.addTo(graph);
+                    break;
+                }
+            }
         }
     }
 }
@@ -102,57 +153,3 @@ export function restoreHiddenElem(id: string, cls: joint.dia.Element) {
 export function getNewLabel(iri: string, language: string) {
     return "«" + getName(iri, language).toLowerCase() + "»\n" + LocaleMain.untitled + " " + getName(iri, language);
 }
-
-// export function restoreDomainOfConnections() {
-//     for (let iri in VocabularyElements) {
-//         if (VocabularyElements[iri].domain && VocabularyElements[iri].range) {
-//             let domain = VocabularyElements[iri].domain;
-//             let range = VocabularyElements[iri].range;
-//             let domainCell = "";
-//             let rangeCell = "";
-//             for (let cell of graph.getElements()) {
-//                 if (ProjectElements[cell.id].iri === domain) {
-//                     if (typeof cell.id === "string") {
-//                         domainCell = cell.id;
-//                     }
-//                 }
-//                 if (ProjectElements[cell.id].iri === range) {
-//                     if (typeof cell.id === "string") {
-//                         rangeCell = cell.id;
-//                     }
-//                 }
-//             }
-//             if (domainCell && rangeCell) {
-//                 let link = new joint.shapes.standard.Link();
-//                 link.source({id: domainCell});
-//                 link.target({id: rangeCell});
-//                 link.appendLabel({
-//                     attrs: {text: {text: VocabularyElements[iri].labels[ProjectSettings.selectedLanguage]}},
-//                     position: {distance: 0.5}
-//                 });
-//                 let insert = true;
-//                 let sourceIRI = ProjectElements[domainCell].iri;
-//                 for (let lnk in ProjectLinks) {
-//                     if (
-//                         ProjectLinks[lnk].source === domainCell &&
-//                         ProjectLinks[lnk].target === rangeCell
-//                         && ProjectLinks[lnk].iri === iri
-//                         && (VocabularyElements[sourceIRI].domainOf.includes(iri))
-//                     ) {
-//                         insert = false;
-//                         break;
-//                     }
-//                 }
-//                 if (insert) {
-//                     link.addTo(graph);
-//                     VocabularyElements[sourceIRI].domainOf.splice(VocabularyElements[sourceIRI].domainOf.indexOf(iri),1);
-//                     if (typeof link.id === "string") {
-//                         addLink(link.id, iri, domainCell, rangeCell);
-//                         ProjectElements[domainCell].connections.push(link.id);
-//                     }
-//                     console.log(VocabularyElements[sourceIRI].domainOf);
-//                 }
-//             }
-//         }
-//     }
-// }

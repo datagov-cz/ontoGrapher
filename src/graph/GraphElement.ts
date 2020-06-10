@@ -1,12 +1,11 @@
 import * as joint from "jointjs";
 
-export var graphElement = joint.dia.Element.define('examples.CustomTextElement', {
+export var graphElement = joint.dia.Element.define('custom.graphElement', {
         attrs: {
             body: {
                 ref: 'label',
                 refX: '-15%',
                 refY: '-30%',
-                // width:  100,
                 refWidth: '133%',
                 refHeight: '100%',
                 refHeight2: 20,

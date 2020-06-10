@@ -3,7 +3,7 @@ import {Diagrams, ProjectSettings} from "../../config/Variables";
 import {OverlayTrigger, Tooltip} from "react-bootstrap";
 import * as LocaleMain from "../../locale/LocaleMain.json";
 import {loadDiagram, saveDiagram} from "../../function/FunctionDiagram";
-import {graph} from "../../graph/graph";
+import {graph} from "../../graph/Graph";
 import {updateProjectSettings} from "../../interface/TransactionInterface";
 
 interface Props {

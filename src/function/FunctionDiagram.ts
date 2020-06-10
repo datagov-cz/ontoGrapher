@@ -1,8 +1,9 @@
-import {Diagrams, ProjectElements, ProjectSettings} from "../config/Variables";
+import {Diagrams, ProjectElements, ProjectLinks, ProjectSettings} from "../config/Variables";
 import * as joint from "jointjs";
-import {graphElement} from "../graph/graphElement";
-import {graph} from "../graph/graph";
+import {graphElement} from "../graph/GraphElement";
+import {graph} from "../graph/Graph";
 import * as LocaleMain from "../locale/LocaleMain.json";
+import {getNewLink} from "./FunctionGraph";
 
 export function changeDiagrams(diagram: number) {
     Diagrams[ProjectSettings.selectedDiagram].json = saveDiagram();
@@ -40,7 +41,8 @@ export function saveDiagram() {
             source: link.getSourceCell()?.id,
             target: link.getTargetCell()?.id,
             vertices: link.vertices(),
-            labels: link.labels()
+            labels: link.labels(),
+            type: ProjectLinks[link.id].type
         });
     }
     return {elements: elements, links: links}
@@ -57,6 +59,7 @@ export function loadDiagram(load: {
         labels: any;
         target: string;
         source: string;
+        type: string;
     }[]
 }) {
     graph.clear();
@@ -69,7 +72,7 @@ export function loadDiagram(load: {
         cls.addTo(graph);
     }
     for (let link of load.links) {
-        let lnk = new joint.shapes.standard.Link({id: link.id});
+        let lnk = getNewLink(link.type, link.id);
         lnk.source({id: link.source});
         lnk.target({id: link.target});
         lnk.labels(link.labels);

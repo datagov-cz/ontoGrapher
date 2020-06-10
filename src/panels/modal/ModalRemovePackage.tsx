@@ -3,7 +3,7 @@ import {Button, Modal} from "react-bootstrap";
 import * as LocaleMenu from "../../locale/LocaleMenu.json";
 import {ProjectElements} from "../../config/Variables";
 import {PackageNode} from "../../datatypes/PackageNode";
-import {graph} from "../../graph/graph";
+import {graph} from "../../graph/Graph";
 
 interface Props {
     modal: boolean;

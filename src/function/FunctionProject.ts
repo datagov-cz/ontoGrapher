@@ -15,7 +15,7 @@ import {
 } from "../config/Variables";
 import {loadDiagram, saveDiagram} from "./FunctionDiagram";
 import {PackageNode} from "../datatypes/PackageNode";
-import {graph} from "../graph/graph";
+import {graph} from "../graph/Graph";
 import {initProjectSettings} from "./FunctionEditVars";
 import * as Locale from "../locale/LocaleMain.json";
 
