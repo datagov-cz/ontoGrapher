@@ -14,6 +14,7 @@ export async function fetchConcepts(
     readOnly: boolean,
     graph?: string,
     callback?: Function,
+    getSubProperties?: boolean,
     subPropertyOf?: string,
     requiredTypes?: string[],
     requiredValues?: string[]) {
@@ -48,7 +49,6 @@ export async function fetchConcepts(
         "OPTIONAL {?term skos:definition ?termDefinition.}",
         "OPTIONAL {?term rdfs:domain ?termDomain.}",
         "OPTIONAL {?term rdfs:range ?termRange.}",
-        "OPTIONAL {?term rdfs:subPropertyOf }",
         "OPTIONAL {?term rdfs:subClassOf ?restriction. ",
         "?restriction a owl:Restriction .}",
         "}",
@@ -60,7 +60,7 @@ export async function fetchConcepts(
     ).then(data => {
         for (let row of data.results.bindings) {
             if (!(row.term.value in result)) {
-                fetchConcepts(endpoint, source, sendTo, readOnly, graph, callback, row.term.value, requiredTypes, requiredValues);
+                if (getSubProperties) fetchConcepts(endpoint, source, sendTo, readOnly, graph, callback, getSubProperties, row.term.value, requiredTypes, requiredValues);
                 result[row.term.value] = {
                     labels: initLanguageObject(""),
                     definitions: initLanguageObject(""),

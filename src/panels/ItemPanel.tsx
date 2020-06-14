@@ -289,30 +289,30 @@ export default class ItemPanel extends React.Component<Props, State> {
                     <Tab eventKey={2} title={tooltipR}>
                         <div className="elementList">
                             {this.links.map((link) => <LinkItem
-                                    key={link}
-                                    selectedLink={this.props.selectedLink}
-                                    handleChangeSelectedLink={this.handleChangeSelectedLink}
-                                    linkType={link}
-                                    scheme={Schemes[Links[link].inScheme].labels[this.props.projectLanguage]}
-                                    definition={Links[link].definitions[this.props.projectLanguage]}
-                                    label={Links[link].labels[this.props.projectLanguage]}
-                                />
-                            )}
-                        </div>
-                    </Tab>
-                    <Tab eventKey={3} title={tooltipPM}>
-                        <button className={"margins"} onClick={() => {
-                            let scheme = createNewScheme();
+									key={link}
+									selectedLink={this.props.selectedLink}
+									handleChangeSelectedLink={this.handleChangeSelectedLink}
+									linkType={link}
+									scheme={Schemes[Links[link].inScheme].labels[this.props.projectLanguage]}
+									definition={Links[link].definitions[this.props.projectLanguage]}
+									label={Links[link].labels[this.props.projectLanguage]}
+								/>
+							)}
+						</div>
+					</Tab>
+					<Tab eventKey={3} title={tooltipPM}>
+						{!ProjectSettings.contextIRI && <button className={"margins"} onClick={() => {
+							let scheme = createNewScheme();
 							new PackageNode(Schemes[scheme].labels, PackageRoot, true, scheme);
 							this.forceUpdate();
-                        }
-                        }>{LocaleMain.addNewPackage}</button>
-                        <div className="elementLinkList">
-                            {this.getFolders()}
-                        </div>
-                    </Tab>
-                    <Tab eventKey={4} title={tooltipD}>
-                        <button className={"margins"} onClick={() => {
+						}
+						}>{LocaleMain.addNewPackage}</button>}
+						<div className="elementLinkList">
+							{this.getFolders()}
+						</div>
+					</Tab>
+					<Tab eventKey={4} title={tooltipD}>
+						<button className={"margins"} onClick={() => {
 							this.props.handleChangeLoadingStatus(true, LocaleMain.updating, false);
 							addDiagram();
 							this.save();
