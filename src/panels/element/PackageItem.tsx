@@ -59,16 +59,12 @@ export default class PackageItem extends React.Component<Props, State> {
 				{(ProjectElements[this.props.id].hidden[ProjectSettings.selectedDiagram] ? hiddenSVG : <span/>)}
 				<span className={"packageOptions right"}
 					  style={{display: this.state.hover ? "inline-block" : "none"}}>
-                        <OverlayTrigger popperConfig={{
-							modifiers: {
-								preventOverflow: {
-									enabled: false
-								}
-							}
-						}} placement="bottom" overlay={tooltipD}><button className={"buttonlink"} onClick={(event) => {
-							event.stopPropagation();
-							this.props.openRemoveItem();
-						}}><span role="img" aria-label={""}>❌</span></button></OverlayTrigger>
+                        <OverlayTrigger placement="bottom" overlay={tooltipD}><button className={"buttonlink"}
+																					  onClick={(event) => {
+																						  event.stopPropagation();
+																						  this.props.openRemoveItem();
+																					  }}><span role="img"
+																							   aria-label={""}>❌</span></button></OverlayTrigger>
                     </span>
 
 			</div>

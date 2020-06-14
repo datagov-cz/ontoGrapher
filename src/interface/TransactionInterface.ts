@@ -52,6 +52,7 @@ export async function updateProjectElement(
 			"og:attribute": {"@type": "@id"},
 			"og:property": {"@type": "@id"},
 			"og:iri": {"@type": "@id"},
+			"og:context": {"@type": "@id"},
 			"http://www.w3.org/2002/07/owl#onProperty": {"@type": "@id"},
 			...addRestrictions
 		},
@@ -68,6 +69,7 @@ export async function updateProjectElement(
 			{
 				"@id": iri + "/diagram",
 				"@type": "og:element",
+				"og:context": ProjectSettings.contextIRI,
 				"og:id": id,
 				"og:iri": iri,
 				"og:untitled": ProjectElements[id].untitled,
@@ -202,12 +204,14 @@ export async function updateProjectLink(contextEndpoint: string, id: string, sou
 			"og:iri": {"@type": "@id"},
 			"og:source": {"@type": "@id"},
 			"og:target": {"@type": "@id"},
+			"og:context": {"@type": "@id"},
 		},
 		"@id": ogContext,
 		"@graph": [{
 			"@id": linkIRI,
 			"@type": "og:link",
 			"og:id": id,
+			"og:context": ProjectSettings.contextIRI,
 			"og:iri": ProjectLinks[id].iri,
 			"og:source-id": ProjectLinks[id].source,
 			"og:target-id": ProjectLinks[id].target,

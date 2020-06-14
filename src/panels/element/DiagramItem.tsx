@@ -96,13 +96,6 @@ export default class DiagramItem extends React.Component<Props, State> {
 				<span className={"packageOptions right"}
 					  style={{display: this.state.hover ? "inline-block" : "none"}}>
                                <OverlayTrigger overlay={tooltipE}
-											   popperConfig={{
-												   modifiers: {
-													   preventOverflow: {
-														   enabled: false
-													   }
-												   }
-											   }}
 											   placement={"bottom"}
 							   >
                                     <button className={"buttonlink"} onClick={() => {
@@ -110,13 +103,6 @@ export default class DiagramItem extends React.Component<Props, State> {
 									}}><span role="img" aria-label={""}>✏</span></button>
                                 </OverlayTrigger>
                                 <OverlayTrigger
-									popperConfig={{
-										modifiers: {
-											preventOverflow: {
-												enabled: false
-											}
-										}
-									}}
 									placement={"bottom"}
 									overlay={
 										(<Tooltip id={"tltip"}>{LocaleMain.del}</Tooltip>)

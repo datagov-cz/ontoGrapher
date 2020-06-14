@@ -241,7 +241,7 @@ export default class DetailElement extends React.Component<Props, State> {
 						<DescriptionTabs
 							descriptions={this.state.inputDefinitions}
 							readOnly={this.state.readOnly}
-							onEdit={(event: React.FormEvent<HTMLInputElement>, language: string) => {
+							onEdit={(event: React.ChangeEvent<HTMLSelectElement>, language: string) => {
 								let res = this.state.inputDefinitions;
 								res[language] = event.currentTarget.value;
 								this.setState({inputDefinitions: res});
@@ -314,7 +314,7 @@ export default class DetailElement extends React.Component<Props, State> {
 									<td>
 										<Form inline>
 											<Form.Control as="select" value={attr.type}
-														  onChange={(event: React.FormEvent<HTMLInputElement>) => {
+														  onChange={(event: React.ChangeEvent<HTMLSelectElement>) => {
 															  this.handleChangeAttributeType(event, i);
 														  }}>
 												{Object.keys(AttributeTypePool).map((attrtype) => <option
@@ -376,7 +376,7 @@ export default class DetailElement extends React.Component<Props, State> {
 		})
 	}
 
-	handleChangeAttributeType(event: React.FormEvent<HTMLInputElement>, i: number) {
+	handleChangeAttributeType(event: React.ChangeEvent<HTMLSelectElement>, i: number) {
 		let attrs = this.state.inputAttributes;
 		attrs[i].type = event.currentTarget.value;
 		this.setState({

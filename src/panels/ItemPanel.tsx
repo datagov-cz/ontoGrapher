@@ -142,11 +142,11 @@ export default class ItemPanel extends React.Component<Props, State> {
         this.forceUpdate();
     }
 
-    handleChangeSearch(event: React.FormEvent<HTMLInputElement>) {
-        this.setState({search: event.currentTarget.value});
-        this.search(event.currentTarget.value, this.state.filter);
-        this.forceUpdate();
-    }
+    handleChangeSearch(event: React.ChangeEvent<HTMLSelectElement>) {
+		this.setState({search: event.currentTarget.value});
+		this.search(event.currentTarget.value, this.state.filter);
+		this.forceUpdate();
+	}
 
     getNameStereotype(element: string) {
         return Stereotypes[element].labels[this.props.projectLanguage];

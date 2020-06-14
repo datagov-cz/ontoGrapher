@@ -47,13 +47,8 @@ export class LinkItem extends React.Component<Props, State> {
     render() {
         if (this.props.definition) {
             return (
-                <OverlayTrigger popperConfig={{
-                    modifiers: {
-                        preventOverflow: {
-                            enabled: false
-                        }
-                    }
-                }} placement="right" overlay={<Tooltip id={this.props.linkType}>{this.props.definition}</Tooltip>}>
+                <OverlayTrigger
+                    placement="right" overlay={<Tooltip id={this.props.linkType}>{this.props.definition}</Tooltip>}>
                     <div className={this.state.name}
                          onClick={this.alertPanel}
                     >

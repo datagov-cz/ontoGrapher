@@ -30,9 +30,9 @@ export default class MenuPanel extends React.Component<MenuPanelProps, MenuPanel
         this.handleChangeLanguage = this.handleChangeLanguage.bind(this);
     }
 
-    handleChangeLanguage(event: React.FormEvent<HTMLInputElement>) {
-        this.props.handleChangeLanguage(event.currentTarget.value);
-    }
+    handleChangeLanguage(event: React.ChangeEvent<HTMLSelectElement>) {
+		this.props.handleChangeLanguage(event.currentTarget.value);
+	}
 
     render() {
         return (<Navbar className={"menuPanel"} variant="light" bg="light">
