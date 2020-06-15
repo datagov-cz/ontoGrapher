@@ -364,27 +364,36 @@ export async function updateProjectSettings(contextIRI: string, contextEndpoint:
 		}]
 	}
 
+	let contextInstance = ProjectSettings.contextIRI.substring(ProjectSettings.contextIRI.lastIndexOf("/"));
+
 	let ogContextLD = {
 		"@context": {
 			...Prefixes,
 			"og:diagram": {"@type": "@id"},
-			"d-sgov-pracovní-prostor-pojem:aplikační-kontext": {"@type": "@id"}
+			"d-sgov-pracovní-prostor-pojem:aplikační-kontext": {"@type": "@id"},
+			"og:context": {"@type": "@id"}
 		},
 		"@id": ogContext,
-		"@graph": [{
-			"@id": ogContext,
-			"@type": "d-sgov-pracovní-prostor-pojem:aplikační-kontext",
-			"d-sgov-pracovní-prostor-pojem:aplikační-kontext": contextIRI,
-			"og:selectedDiagram": ProjectSettings.selectedDiagram,
-			"og:selectedLink": ProjectSettings.selectedLink,
-			"og:selectedLanguage": ProjectSettings.selectedLanguage,
-			"og:diagram": Diagrams.map((diag, i) => ogContext + "/diagram-" + (i + 1)),
-			"og:initialized": true
-		},
+		"@graph": [
+			{
+				"@id": ogContext,
+				"@type": "d-sgov-pracovní-prostor-pojem:aplikační-kontext",
+				"d-sgov-pracovní-prostor-pojem:aplikační-kontext": contextIRI,
+			},
+			{
+				"@id": ogContext + contextInstance,
+				"og:context": contextIRI,
+				"og:selectedDiagram": ProjectSettings.selectedDiagram,
+				"og:selectedLink": ProjectSettings.selectedLink,
+				"og:selectedLanguage": ProjectSettings.selectedLanguage,
+				"og:diagram": Diagrams.map((diag, i) => ogContext + "/diagram-" + (i + 1)),
+				"og:initialized": true
+			},
 			...(Diagrams).map((diag, i) => {
 				return {
-					"@id": ogContext + "/diagram-" + (i + 1),
+					"@id": ogContext + contextInstance + "/diagram-" + (i + 1),
 					"og:index": i,
+					"og:context": contextIRI,
 					"og:name": diag.name,
 				}
 			})

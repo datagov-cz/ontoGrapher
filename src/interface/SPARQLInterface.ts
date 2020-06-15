@@ -294,17 +294,18 @@ export async function getElementsConfig(contextIRI: string, contextEndpoint: str
     return true;
 }
 
-export async function getSettings(endpoint: string, callback?: Function): Promise<boolean> {
+export async function getSettings(contextIRI: string, contextEndpoint: string, callback?: Function): Promise<boolean> {
     let query = [
         "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
         "select ?diagram ?index ?name where {",
         "BIND(<" + ProjectSettings.ontographerContext + "> as ?ogContext).",
         "?ogContext og:diagram ?diagram .",
+        "?diagram og:context <" + contextIRI + "> .",
         "?diagram og:index ?index .",
         "?diagram og:name ?name .",
         "}"
     ].join(" ");
-    let q = endpoint + "?query=" + encodeURIComponent(query);
+    let q = contextEndpoint + "?query=" + encodeURIComponent(query);
     await fetch(q, {headers: {'Accept': 'application/json'}}).then(response => {
         return response.json();
     }).then(data => {

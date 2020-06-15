@@ -71,8 +71,10 @@ export async function getContext(
 		"<https://slovník.gov.cz/datový/pracovní-prostor/pojem/slovníkový-kontext> ",
 		"<https://slovník.gov.cz/datový/pracovní-prostor/pojem/slovníkový-kontext-pouze-pro-čtení> ",
 		"}",
+		"graph ?vocab {",
 		"?vocabIRI a <http://onto.fel.cvut.cz/ontologies/slovník/agendový/popis-dat/pojem/glosář> .",
 		"?vocabIRI dcterms:title ?vocabLabel .",
+		"}",
 		"OPTIONAL{ ?vocab a  ?ro . FILTER(?ro = <https://slovník.gov.cz/datový/pracovní-prostor/pojem/slovníkový-kontext-pouze-pro-čtení>) .  } ",
 		"}",
 	].join(" ");
