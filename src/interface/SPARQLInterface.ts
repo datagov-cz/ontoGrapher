@@ -76,7 +76,7 @@ export async function fetchConcepts(
             if (row.termDefinition) result[row.term.value].definitions[row.termDefinition['xml:lang']] = row.termDefinition.value;
             if (row.termDomain) result[row.term.value].domain = row.termDomain.value;
             if (row.termRange) result[row.term.value].range = row.termRange.value;
-            if (row.restriction) getRestriction(endpoint, row.term.value, row.restriction.value);
+            if (row.restriction && row.restriction.type !== "bnode") getRestriction(endpoint, row.term.value, row.restriction.value);
         }
         Object.assign(sendTo, result);
         if (callback) callback(true);
