@@ -88,6 +88,7 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 		} else if (this.props.contextIRI && this.props.contextEndpoint) {
 			this.loadVocabularies(this.props.contextIRI, this.props.contextEndpoint);
 		} else {
+			this.newProject();
 			getVocabulariesFromRemoteJSON("https://raw.githubusercontent.com/opendata-mvcr/ontoGrapher/latest/src/config/Vocabularies.json").then((result) => {
 				if (result) {
 					this.forceUpdate();
