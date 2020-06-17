@@ -386,7 +386,7 @@ export async function updateProjectSettings(contextIRI: string, contextEndpoint:
 				"og:selectedDiagram": ProjectSettings.selectedDiagram,
 				"og:selectedLink": ProjectSettings.selectedLink,
 				"og:selectedLanguage": ProjectSettings.selectedLanguage,
-				"og:diagram": Diagrams.map((diag, i) => ogContext + "/diagram-" + (i + 1)),
+				"og:diagram": Diagrams.map((diag, i) => ogContext + contextInstance + "/diagram-" + (i + 1)),
 				"og:initialized": true
 			},
 			...(Diagrams).map((diag, i) => {

@@ -298,8 +298,6 @@ export async function getSettings(contextIRI: string, contextEndpoint: string, c
     let query = [
         "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
         "select ?diagram ?index ?name where {",
-        "BIND(<" + ProjectSettings.ontographerContext + "> as ?ogContext).",
-        "?ogContext og:diagram ?diagram .",
         "?diagram og:context <" + contextIRI + "> .",
         "?diagram og:index ?index .",
         "?diagram og:name ?name .",
