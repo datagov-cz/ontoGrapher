@@ -4,8 +4,6 @@ import DiagramApp from './diagram/DiagramApp';
 import * as serviceWorker from './serviceWorker';
 
 ReactDOM.render(<DiagramApp
-	contextIRI={"http://example.org/pracovni-prostor/metadatový-kontext-123"}
-	contextEndpoint={"https://graphdb.onto.fel.cvut.cz/repositories/kodi-pracovni-prostor-validace"}
 />, document.getElementById('root'));
 
 // If you want your app to work offline and load faster, you can change

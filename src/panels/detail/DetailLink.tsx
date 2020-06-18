@@ -148,7 +148,7 @@ export default class DetailLink extends React.Component<Props, State> {
                         </td>
                         <td>
                             <Form.Control as="select" value={this.state.sourceCardinality}
-                                          onChange={(event: React.FormEvent<HTMLInputElement>) => {
+                                          onChange={(event: React.ChangeEvent<HTMLSelectElement>) => {
                                               this.setState({
                                                   sourceCardinality: event.currentTarget.value,
                                                   changes: true
@@ -168,7 +168,7 @@ export default class DetailLink extends React.Component<Props, State> {
                         </td>
                         <td>
                             <Form.Control as="select" value={this.state.targetCardinality}
-                                          onChange={(event: React.FormEvent<HTMLInputElement>) => {
+                                          onChange={(event: React.ChangeEvent<HTMLSelectElement>) => {
                                               this.setState({
                                                   targetCardinality: event.currentTarget.value,
                                                   changes: true

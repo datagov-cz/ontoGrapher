@@ -14,13 +14,6 @@ export default class ElementItem extends React.Component<Props> {
     render() {
         return (this.props.definition ?
                 <OverlayTrigger
-                    popperConfig={{
-                        modifiers: {
-                            preventOverflow: {
-                                enabled: false
-                            }
-                        }
-                    }}
                     placement="right"
                     overlay={<Tooltip id={this.props.iri}>{this.props.definition}</Tooltip>}>
                     <div draggable

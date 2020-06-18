@@ -21,6 +21,11 @@ export default class AboutModal extends React.Component<Props, State> {
             <Modal.Body>
                 <Tabs id={"changelog"}>
                     <Tab title={"June"} eventKey={4}>
+                        <h6>16.6.</h6>
+                        <ul>
+                            <li>Mission-control workspaces support</li>
+                            <li>Loading from URL parameters support</li>
+                        </ul>
                         <h6>2.6.</h6>
                         <ul>
                             <li>Changed representation to FULL OWL (only basic Zs-GoV relationships are shown as links;

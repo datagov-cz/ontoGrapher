@@ -12,8 +12,10 @@ export async function fetchConcepts(
     source: string,
     sendTo: { [key: string]: any },
     readOnly: boolean,
+    graph?: string,
     callback?: Function,
-    subclassOf?: string,
+    getSubProperties?: boolean,
+    subPropertyOf?: string,
     requiredTypes?: string[],
     requiredValues?: string[]) {
     if (!(source in Schemes)) await getScheme(source, endpoint, readOnly, callback);
@@ -37,9 +39,10 @@ export async function fetchConcepts(
         "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>",
         "SELECT DISTINCT ?term ?termLabel ?termType ?termDefinition ?termDomain ?termRange ?restriction",
         "WHERE {",
-        !subclassOf ? "?term skos:inScheme <" + source + ">." : "",
+        graph ? "GRAPH <" + graph + "> {" : "",
+        !subPropertyOf ? "?term skos:inScheme <" + source + ">." : "",
         "?term a ?termType.",
-        subclassOf ? "?term rdfs:subPropertyOf <" + subclassOf + ">." : "",
+        subPropertyOf ? "?term rdfs:subPropertyOf <" + subPropertyOf + ">." : "",
         requiredTypes ? "VALUES ?termType {<" + requiredTypes.join("> <") + ">}" : "",
         requiredValues ? "VALUES ?term {<" + requiredValues.join("> <") + ">}" : "",
         "OPTIONAL {?term skos:prefLabel ?termLabel.}",
@@ -48,8 +51,8 @@ export async function fetchConcepts(
         "OPTIONAL {?term rdfs:range ?termRange.}",
         "OPTIONAL {?term rdfs:subClassOf ?restriction. ",
         "?restriction a owl:Restriction .}",
-        "FILTER (?term NOT IN (<https://slovník.gov.cz/základní/pojem/vztah>))",
-        "}"
+        "}",
+        graph ? "}" : "",
     ].join(" ");
     let q = endpoint + "?query=" + encodeURIComponent(query);
     await fetch(q, {headers: {"Accept": "application/json"}}).then(
@@ -57,7 +60,7 @@ export async function fetchConcepts(
     ).then(data => {
         for (let row of data.results.bindings) {
             if (!(row.term.value in result)) {
-                fetchConcepts(endpoint, source, sendTo, readOnly, callback, row.term.value, requiredTypes, requiredValues);
+                if (getSubProperties) fetchConcepts(endpoint, source, sendTo, readOnly, graph, callback, getSubProperties, row.term.value, requiredTypes, requiredValues);
                 result[row.term.value] = {
                     labels: initLanguageObject(""),
                     definitions: initLanguageObject(""),
@@ -73,7 +76,7 @@ export async function fetchConcepts(
             if (row.termDefinition) result[row.term.value].definitions[row.termDefinition['xml:lang']] = row.termDefinition.value;
             if (row.termDomain) result[row.term.value].domain = row.termDomain.value;
             if (row.termRange) result[row.term.value].range = row.termRange.value;
-            if (row.restriction) getRestriction(endpoint, row.term.value, row.restriction.value);
+            if (row.restriction && row.restriction.type !== "bnode") getRestriction(endpoint, row.term.value, row.restriction.value);
         }
         Object.assign(sendTo, result);
         if (callback) callback(true);
@@ -133,7 +136,7 @@ export async function getScheme(iri: string, endpoint: string, readOnly: boolean
     });
 }
 
-export async function getElementsConfig(endpoint: string, callback?: Function): Promise<boolean> {
+export async function getElementsConfig(contextIRI: string, contextEndpoint: string, callback?: Function): Promise<boolean> {
     let elements: {
         [key: string]: {
             id: "",
@@ -153,6 +156,7 @@ export async function getElementsConfig(endpoint: string, callback?: Function): 
         "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
         "select ?id ?iri ?untitled ?active ?attribute ?property ?diagram where {",
         "?elem a og:element .",
+        "?elem og:context <" + contextIRI + ">.",
         "?elem og:iri ?iri .",
         "?elem og:id ?id .",
         "?elem og:active ?active .",
@@ -162,7 +166,7 @@ export async function getElementsConfig(endpoint: string, callback?: Function): 
         "?elem og:diagram ?diagram .",
         "}"
     ].join(" ");
-    let q = endpoint + "?query=" + encodeURIComponent(query);
+    let q = contextEndpoint + "?query=" + encodeURIComponent(query);
     await fetch(q, {headers: {'Accept': 'application/json'}}).then(response => {
         return response.json();
     }).then(data => {
@@ -206,7 +210,7 @@ export async function getElementsConfig(endpoint: string, callback?: Function): 
                     "?iri og:hidden ?hidden .",
                     "}"
                 ].join(" ");
-                let q = endpoint + "?query=" + encodeURIComponent(query);
+                let q = contextEndpoint + "?query=" + encodeURIComponent(query);
                 await fetch(q, {headers: {'Accept': 'application/json'}}).then(response => {
                     return response.json();
                 }).then(data => {
@@ -236,7 +240,7 @@ export async function getElementsConfig(endpoint: string, callback?: Function): 
                     "?iri og:attribute-type ?attrtype .",
                     "}"
                 ].join(" ");
-                let q = endpoint + "?query=" + encodeURIComponent(query);
+                let q = contextEndpoint + "?query=" + encodeURIComponent(query);
                 await fetch(q, {headers: {'Accept': 'application/json'}}).then(response => {
                     return response.json();
                 }).then(data => {
@@ -260,7 +264,7 @@ export async function getElementsConfig(endpoint: string, callback?: Function): 
                     "?iri og:attribute-type ?attrtype .",
                     "}"
                 ].join(" ");
-                let q = endpoint + "?query=" + encodeURIComponent(query);
+                let q = contextEndpoint + "?query=" + encodeURIComponent(query);
                 await fetch(q, {headers: {'Accept': 'application/json'}}).then(response => {
                     return response.json();
                 }).then(data => {
@@ -290,17 +294,16 @@ export async function getElementsConfig(endpoint: string, callback?: Function): 
     return true;
 }
 
-export async function getSettings(endpoint: string, callback?: Function): Promise<boolean> {
+export async function getSettings(contextIRI: string, contextEndpoint: string, callback?: Function): Promise<boolean> {
     let query = [
         "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
         "select ?diagram ?index ?name where {",
-        "BIND(<" + ProjectSettings.ontographerContext + "> as ?ogContext).",
-        "?ogContext og:diagram ?diagram .",
+        "?diagram og:context <" + contextIRI + "> .",
         "?diagram og:index ?index .",
         "?diagram og:name ?name .",
         "}"
     ].join(" ");
-    let q = endpoint + "?query=" + encodeURIComponent(query);
+    let q = contextEndpoint + "?query=" + encodeURIComponent(query);
     await fetch(q, {headers: {'Accept': 'application/json'}}).then(response => {
         return response.json();
     }).then(data => {
@@ -318,13 +321,14 @@ export async function getSettings(endpoint: string, callback?: Function): Promis
     return true;
 }
 
-export async function getLinksConfig(endpoint: string, callback?: Function): Promise<boolean> {
+export async function getLinksConfig(contextIRI: string, contextEndpoint: string, callback?: Function): Promise<boolean> {
     let query = [
         "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
         "select ?id ?iri ?sourceID ?targetID ?source ?target ?sourceCard1 ?sourceCard2 ?targetCard1 ?targetCard2 ?diagram ?vertex ?type where {",
         "?link a og:link .",
         "?link og:id ?id .",
         "?link og:iri ?iri .",
+        "?ling og:context <" + contextIRI + ">.",
         "?link og:source-id ?sourceID .",
         "?link og:target-id ?targetID .",
         "?link og:source ?source .",
@@ -338,7 +342,7 @@ export async function getLinksConfig(endpoint: string, callback?: Function): Pro
         "OPTIONAL {?link og:targetCardinality2 ?targetCard2 .}",
         "}"
     ].join(" ");
-    let q = endpoint + "?query=" + encodeURIComponent(query);
+    let q = contextEndpoint + "?query=" + encodeURIComponent(query);
     let links: {
         [key: string]: {
             iri: string,
@@ -396,7 +400,7 @@ export async function getLinksConfig(endpoint: string, callback?: Function): Pro
                     "?iri og:position-y ?posY .",
                     "}"
                 ].join(" ");
-                let q = endpoint + "?query=" + encodeURIComponent(query);
+                let q = contextEndpoint + "?query=" + encodeURIComponent(query);
                 await fetch(q, {headers: {'Accept': 'application/json'}}).then(response => {
                     return response.json();
                 }).then(data => {

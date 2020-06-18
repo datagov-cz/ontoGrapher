@@ -18,7 +18,19 @@
         "role",
         "fáze",
         "mixin-rolí",
-        "mixin-fází"
+        "mixin-fází",
+        "má-vztažený-prvek",
+        "je-vlastností",
+        "je-ve-vztahu",
+        "má-vlastnost",
+        "má-vztažený-prvek-1",
+        "má-vztažený-prvek-2",
+        "je-vykonána",
+        "má-koncový-stav",
+        "má-počáteční-stav",
+        "má-prostorové-učení",
+        "má-účastníka",
+        "má-časové-určení"
       ]
     },
     "prefixes": {

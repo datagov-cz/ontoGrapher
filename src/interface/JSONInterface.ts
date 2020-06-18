@@ -5,7 +5,7 @@ import {addProperties, createValues} from "../function/FunctionCreateVars";
 import {initLanguageObject} from "../function/FunctionEditVars";
 import {checkLabels} from "../function/FunctionGetVars";
 
-export async function getVocabulariesFromRemoteJSON(pathToJSON: string, callback: Function) {
+export async function getVocabulariesFromRemoteJSON(pathToJSON: string): Promise<boolean> {
     const isURL = require('is-url');
     if (isURL(pathToJSON)) {
         await fetch(pathToJSON).then(response => response.json()).then(
@@ -22,6 +22,8 @@ export async function getVocabulariesFromRemoteJSON(pathToJSON: string, callback
                             false,
                             undefined,
                             undefined,
+                            false,
+                            undefined,
                             [data.classIRI],
                             data.values ? createValues(data.values, data.prefixes) : undefined
                         );
@@ -32,9 +34,12 @@ export async function getVocabulariesFromRemoteJSON(pathToJSON: string, callback
                             false,
                             undefined,
                             undefined,
+                            false,
+                            undefined,
                             [data.relationshipIRI],
-                            undefined
+                            data.values ? createValues(data.values, data.prefixes) : undefined
                         );
+
                         addProperties(data.sourceIRI, data.attributes);
                         checkLabels();
                     }
@@ -42,10 +47,10 @@ export async function getVocabulariesFromRemoteJSON(pathToJSON: string, callback
             }
         ).catch((error) => {
             console.log(error);
-            callback(false);
+            return false;
         });
+        return true;
     } else {
-        callback(false);
         throw new Error(Locale.vocabularyNotFound)
     }
 }

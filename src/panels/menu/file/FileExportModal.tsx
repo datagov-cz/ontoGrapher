@@ -67,7 +67,7 @@ export default class FileExportModal extends React.Component<Props, State> {
                     <Form.Group controlId="knowledgeStructure">
                         <Form.Label>{Locale.knowledgeStructure}</Form.Label>
                         <Form.Control as="select" value={this.state.knowledgeStructure}
-                                      onChange={(event: React.FormEvent<HTMLInputElement>) => {
+                                      onChange={(event: React.ChangeEvent<HTMLSelectElement>) => {
                                           this.setState({knowledgeStructure: event.currentTarget.value});
                                           ProjectSettings.knowledgeStructure = event.currentTarget.value;
                                           this.handleExport(event.currentTarget.value);

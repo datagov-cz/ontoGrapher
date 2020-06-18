@@ -1,5 +1,4 @@
 .elements {
-  //overflow: visible;
   word-wrap: break-word;
   background-color: white;
   float: left;
@@ -41,13 +40,6 @@
     }
   }
 
-  .elementDescription {
-    //position: absolute;
-    //background-color: #e9eaeb;
-    //bottom: 100px;
-    //width: 100%;
-  }
-
   .elementList {
     height: calc(100vh - 175px) !important;
     overflow: auto;
@@ -55,7 +47,8 @@
 
   .elementLinkList {
     height: calc(100vh - 164px) !important;
-    overflow: auto;
+    overflow-y: auto;
+    overflow-x: hidden;
   }
 
   .margins {
@@ -72,13 +65,15 @@
   }
 
   .packageFolder {
+    display: inline-block;
     font-size: 14px;
     user-select: none;
-    margin: 3px;
+    margin: 1px;
     padding: 5px 10px;
     border-style: solid;
     border-width: 2px;
     border-color: rgba(0, 0, 0, 0.30);
+    min-width: 100%;
     border-left-width: 4px;
 
     &:hover {
@@ -94,11 +89,6 @@
   .defaultPackage {
     background-color: rgba(198, 200, 250, 0.5) !important;
   }
-
-  //.hidden{
-  //  border-style: dashed;
-  //  border-color: rgba(0,0,0,0.10);
-  //}
 }
 
 

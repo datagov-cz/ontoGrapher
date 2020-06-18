@@ -79,8 +79,23 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 	}
 
 	componentDidMount(): void {
-		if (this.props.contextIRI && this.props.contextEndpoint) {
+		const isURL = require('is-url');
+		let urlParams = new URLSearchParams(window.location.search);
+		let contextIRI = urlParams.get('workspace');
+		if (contextIRI && isURL(contextIRI)) {
+			contextIRI = decodeURIComponent(contextIRI);
+			this.loadVocabularies(contextIRI, "https://graphdb.onto.fel.cvut.cz/repositories/kodi-uloziste-dev");
+		} else if (this.props.contextIRI && this.props.contextEndpoint) {
 			this.loadVocabularies(this.props.contextIRI, this.props.contextEndpoint);
+		} else {
+			this.newProject();
+			getVocabulariesFromRemoteJSON("https://raw.githubusercontent.com/opendata-mvcr/ontoGrapher/latest/src/config/Vocabularies.json").then((result) => {
+				if (result) {
+					this.forceUpdate();
+					this.elementPanel.current?.update();
+					this.handleChangeLoadingStatus(false, "", false);
+				} else this.handleChangeLoadingStatus(false, Locale.pleaseReload, false)
+			})
 		}
 	}
 
@@ -129,38 +144,35 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 	}
 
 	loadVocabularies(contextIRI: string, contextEndpoint: string, reload: boolean = false) {
-		if (reload) {
-			this.newProject();
-			this.setState({loading: true, status: Locale.loading});
-		}
-		getVocabulariesFromRemoteJSON("https://raw.githubusercontent.com/opendata-mvcr/ontoGrapher/master/src/config/Vocabularies.json", () => {
-		}).then(() => {
-            this.handleChangeSelectedLink(Object.keys(Links)[0]);
-            getContext(
-                contextIRI,
-                contextEndpoint,
-                "application/json",
-                (message: string) => {
-                    if (message === Locale.loadingError) {
-                        this.handleChangeLoadingStatus(false, Locale.pleaseReload, false)
-                    }
-                }
+		this.setState({loading: true, status: Locale.loading});
+		if (reload) this.newProject();
+		getVocabulariesFromRemoteJSON("https://raw.githubusercontent.com/opendata-mvcr/ontoGrapher/latest/src/config/Vocabularies.json").then(() => {
+			this.handleChangeSelectedLink(Object.keys(Links)[0]);
+			getContext(
+				contextIRI,
+				contextEndpoint,
+				"application/json",
+				(message: string) => {
+					if (message === Locale.loadingError) {
+						this.handleChangeLoadingStatus(false, Locale.pleaseReload, false)
+					}
+				}
             ).then(async () => {
                 if (!this.state.error) {
-                    this.selectDefaultPackage();
-                    document.title = ProjectSettings.name[this.state.projectLanguage] + " | " + Locale.ontoGrapher;
-                    ProjectSettings.contextEndpoint = contextEndpoint;
-                    ProjectSettings.contextIRI = contextIRI
-                    this.handleChangeLanguage(Object.keys(Languages)[0]);
-                    initRestrictions();
-                    await getElementsConfig(ProjectSettings.contextEndpoint)
-                    await getLinksConfig(ProjectSettings.contextEndpoint)
-                    await setupDiagrams();
-                    await updateProjectSettings(contextIRI, contextEndpoint, DiagramApp.name);
-                    this.forceUpdate();
-                    this.elementPanel.current?.update();
-                    this.handleChangeLoadingStatus(false, "", false);
-                }
+					this.selectDefaultPackage();
+					document.title = ProjectSettings.name[this.state.projectLanguage] + " | " + Locale.ontoGrapher;
+					ProjectSettings.contextEndpoint = contextEndpoint;
+					ProjectSettings.contextIRI = contextIRI
+					this.handleChangeLanguage(Object.keys(Languages)[0]);
+					initRestrictions();
+					await getElementsConfig(ProjectSettings.contextIRI, ProjectSettings.contextEndpoint)
+					await getLinksConfig(ProjectSettings.contextIRI, ProjectSettings.contextEndpoint)
+					await setupDiagrams();
+					await updateProjectSettings(contextIRI, contextEndpoint, DiagramApp.name);
+					this.forceUpdate();
+					this.elementPanel.current?.update();
+					this.handleChangeLoadingStatus(false, "", false);
+				}
             })
         });
 	}

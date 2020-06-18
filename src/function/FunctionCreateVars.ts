@@ -21,7 +21,7 @@ import {changeDiagrams} from "./FunctionDiagram";
 import {graph} from "../graph/Graph";
 
 export async function setupDiagrams(): Promise<boolean> {
-    return await getSettings(ProjectSettings.contextEndpoint).then((result) => {
+    return await getSettings(ProjectSettings.contextIRI, ProjectSettings.contextEndpoint).then((result) => {
         if (result) {
             if (!ProjectSettings.initialized) addDomainOfIRIs();
             for (let i = 0; i < Diagrams.length; i++) {
