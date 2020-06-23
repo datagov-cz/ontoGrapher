@@ -267,15 +267,15 @@ export default class DetailElement extends React.Component<Props, State> {
 								}
 							)}
 							{this.state.iri in VocabularyElements ? VocabularyElements[this.state.iri].domainOf.map((conn: string) => {
-								let range = VocabularyElements[conn].range;
-								if (range) {
-									return (<tr>
-										<IRIlabel label={VocabularyElements[conn].labels[this.props.projectLanguage]}
-												  iri={conn}/>
-										<td>{getLabelOrBlank(VocabularyElements[range].labels, this.props.projectLanguage)}</td>
-										<td>{LocaleMenu.fromModel}</td>
-									</tr>);
-								} else return ""
+									let range = VocabularyElements[conn].range;
+									if (range && VocabularyElements[range]) {
+										return (<tr>
+											<IRIlabel label={VocabularyElements[conn].labels[this.props.projectLanguage]}
+													  iri={conn}/>
+											<td>{getLabelOrBlank(VocabularyElements[range].labels, this.props.projectLanguage)}</td>
+											<td>{LocaleMenu.fromModel}</td>
+										</tr>);
+									} else return ""
 								}
 							) : ""}
 						</TableList>

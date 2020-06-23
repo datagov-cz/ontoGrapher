@@ -3,17 +3,17 @@ import {ProjectElements, ProjectLinks, VocabularyElements} from "../config/Varia
 import {RestrictionObject} from "../datatypes/RestrictionObject";
 import {parsePrefix} from "./FunctionEditVars";
 
-export function createRestriction(iri: string, restriction: string, onProperty: string, target: { type: string, value: string }) {
+export function createRestriction(obj: { [key: string]: any }, iri: string, restriction: string, onProperty: string, target: { type: string, value: string }) {
 	if (target.type !== "bnode" && (restriction in Restrictions)) {
 		let newRestriction = new RestrictionObject(restriction, onProperty, target.value);
-		for (let rest of VocabularyElements[iri].restrictions) {
+		for (let rest of obj[iri].restrictions) {
 			if (rest.target === newRestriction.target
 				&& rest.restriction === newRestriction.restriction
 				&& rest.onProperty === newRestriction.onProperty) {
 				return;
 			}
 		}
-		VocabularyElements[iri].restrictions.push(newRestriction);
+		obj[iri].restrictions.push(newRestriction);
 	}
 }
 
@@ -29,8 +29,7 @@ export function getRestrictionsAsJSON(iri: string) {
 	let result: {}[] = [];
 	for (let restriction of VocabularyElements[iri].restrictions) {
 		for (let id in ProjectLinks) {
-			if (ProjectLinks[id].iri === iri && ProjectElements[ProjectLinks[id].source].iri
-			) {
+			if (ProjectLinks[id].iri === iri && ProjectElements[ProjectLinks[id].source].iri) {
 				restriction.saveRestriction(ProjectElements[ProjectLinks[id].source].iri);
 				break;
 			}

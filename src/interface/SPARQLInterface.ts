@@ -37,7 +37,7 @@ export async function fetchConcepts(
     let query = [
         "PREFIX skos: <http://www.w3.org/2004/02/skos/core#>",
         "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>",
-        "SELECT DISTINCT ?term ?termLabel ?termType ?termDefinition ?termDomain ?termRange ?restriction",
+        "SELECT DISTINCT ?term ?termLabel ?termType ?termDefinition ?termDomain ?termRange ?restriction ?restrictionPred ?onProperty ?target",
         "WHERE {",
         graph ? "GRAPH <" + graph + "> {" : "",
         !subPropertyOf ? "?term skos:inScheme <" + source + ">." : "",
@@ -50,7 +50,10 @@ export async function fetchConcepts(
         "OPTIONAL {?term rdfs:domain ?termDomain.}",
         "OPTIONAL {?term rdfs:range ?termRange.}",
         "OPTIONAL {?term rdfs:subClassOf ?restriction. ",
-        "?restriction a owl:Restriction .}",
+        "?restriction a owl:Restriction .",
+        "?restriction owl:onProperty ?onProperty.",
+        "?restriction ?restrictionPred ?target.",
+        "filter (?restrictionPred not in (owl:onProperty, rdf:type))}",
         "}",
         graph ? "}" : "",
     ].join(" ");
@@ -76,37 +79,13 @@ export async function fetchConcepts(
             if (row.termDefinition) result[row.term.value].definitions[row.termDefinition['xml:lang']] = row.termDefinition.value;
             if (row.termDomain) result[row.term.value].domain = row.termDomain.value;
             if (row.termRange) result[row.term.value].range = row.termRange.value;
-            if (row.restriction) getRestriction(endpoint, row.term.value, row.restriction.value);
+            if (row.restriction) createRestriction(result, row.term.value, row.restrictionPred.value, row.onProperty.value, row.target);
         }
         Object.assign(sendTo, result);
         if (callback) callback(true);
     }).catch(() => {
         if (callback) callback(false);
     });
-}
-
-export async function getRestriction(endpoint: string, iri: string, restriction: string, callback?: Function) {
-    let query = [
-        "PREFIX owl: <http://www.w3.org/2002/07/owl#>",
-        "select ?onProperty ?restriction ?target where {",
-        "<" + restriction + "> a owl:Restriction.",
-        "<" + restriction + "> owl:onProperty ?onProperty.",
-        "<" + restriction + "> ?restriction ?target.",
-        "filter (?restriction not in (owl:onProperty, rdf:type))",
-        "}",
-    ].join(" ");
-    let q = endpoint + "?query=" + encodeURIComponent(query);
-    await fetch(q, {headers: {"Accept": "application/json"}}).then(
-        response => response.json()
-    ).then(async data => {
-        for (let row of data.results.bindings) {
-            createRestriction(iri, row.restriction.value, row.onProperty.value, row.target);
-        }
-        if (callback) callback(true);
-    }).catch(() => {
-        if (callback) callback(false);
-    });
-
 }
 
 export async function getScheme(iri: string, endpoint: string, readOnly: boolean, callback?: Function) {
@@ -299,10 +278,11 @@ export async function getSettings(contextIRI: string, contextEndpoint: string, c
         "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
         "select ?diagram ?index ?name where {",
         "BIND(<" + ProjectSettings.ontographerContext + "> as ?ogContext).",
-        "?ogContext og:diagram ?diagram .",
+        "graph ?ogContext {",
         "?diagram og:context <" + contextIRI + "> .",
         "?diagram og:index ?index .",
         "?diagram og:name ?name .",
+        "}",
         "}"
     ].join(" ");
     let q = contextEndpoint + "?query=" + encodeURIComponent(query);
@@ -314,8 +294,8 @@ export async function getSettings(contextIRI: string, contextEndpoint: string, c
                 Diagrams[parseInt(result.index.value)] = {name: Locale.untitled, json: {}}
             }
             Diagrams[parseInt(result.index.value)].name = result.name.value;
+            ProjectSettings.initialized = true;
         }
-        if (data.results.bindings.length > 0) ProjectSettings.initialized = true;
     }).catch(() => {
         if (callback) callback(false);
         return false;
