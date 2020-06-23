@@ -20,7 +20,7 @@ import {nameGraphElement, restoreHiddenElem} from "./FunctionGraph";
 import {changeDiagrams} from "./FunctionDiagram";
 import {graph} from "../graph/Graph";
 
-export async function setupDiagrams(): Promise<boolean> {
+export async function setupDiagrams(diagram: number = 0): Promise<boolean> {
     return await getSettings(ProjectSettings.contextIRI, ProjectSettings.contextEndpoint).then((result) => {
         if (result) {
             if (!ProjectSettings.initialized) addDomainOfIRIs();
@@ -39,7 +39,7 @@ export async function setupDiagrams(): Promise<boolean> {
                     }
                 }
             }
-            changeDiagrams(0);
+            changeDiagrams(diagram);
             return true;
         } else return false;
     }).catch((error) => {

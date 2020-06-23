@@ -84,7 +84,11 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 		let contextIRI = urlParams.get('workspace');
 		if (contextIRI && isURL(contextIRI)) {
 			contextIRI = decodeURIComponent(contextIRI);
-			this.loadVocabularies(contextIRI, "https://graphdb.onto.fel.cvut.cz/repositories/kodi-uloziste-dev");
+			let diagram = contextIRI.substring(contextIRI.lastIndexOf("/"));
+			let match = diagram.match(/(\d+)/);
+			let diagramNumber;
+			if (match) diagramNumber = parseInt(match[0], 10);
+			this.loadVocabularies(contextIRI, "https://graphdb.onto.fel.cvut.cz/repositories/kodi-uloziste-dev", false, diagramNumber ? diagramNumber : 0);
 		} else if (this.props.contextIRI && this.props.contextEndpoint) {
 			this.loadVocabularies(this.props.contextIRI, this.props.contextEndpoint);
 		} else {
@@ -143,7 +147,7 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 		this.elementPanel.current?.update();
 	}
 
-	loadVocabularies(contextIRI: string, contextEndpoint: string, reload: boolean = false) {
+	loadVocabularies(contextIRI: string, contextEndpoint: string, reload: boolean = false, diagram: number = 0) {
 		this.setState({loading: true, status: Locale.loading});
 		if (reload) this.newProject();
 		getVocabulariesFromRemoteJSON("https://raw.githubusercontent.com/opendata-mvcr/ontoGrapher/latest/src/config/Vocabularies.json").then(() => {
@@ -167,7 +171,7 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 					initRestrictions();
 					await getElementsConfig(ProjectSettings.contextIRI, ProjectSettings.contextEndpoint)
 					await getLinksConfig(ProjectSettings.contextIRI, ProjectSettings.contextEndpoint)
-					await setupDiagrams();
+					await setupDiagrams(diagram);
 					await updateProjectSettings(contextIRI, contextEndpoint, DiagramApp.name);
 					this.forceUpdate();
 					this.elementPanel.current?.update();
