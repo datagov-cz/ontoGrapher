@@ -419,3 +419,15 @@ export async function updateProjectSettings(contextIRI: string, contextEndpoint:
 	return await processTransaction(contextEndpoint, {"add": contextLD, "delete": contextLD, "source": source}) &&
 		await processTransaction(contextEndpoint, {"add": ogContextLD, "delete": ogContextLD, "source": source});
 }
+
+export async function resetData(contextEndpoint: string) {
+	for (let iri in VocabularyElements) {
+		for (const restr of VocabularyElements[iri].restrictions) {
+			let i = VocabularyElements[iri].restrictions.indexOf(restr);
+			let delString = await processGetTransaction(contextEndpoint, {subject: iri + "/restriction-" + (i + 1)}).catch(() => false);
+			if (typeof delString === "string") {
+				await processTransaction(contextEndpoint, {"delete": JSON.parse(delString)}).catch(() => false);
+			} else return false;
+		}
+	}
+}
