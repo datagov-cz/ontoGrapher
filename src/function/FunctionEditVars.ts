@@ -14,6 +14,7 @@ import {graph} from "../graph/Graph";
 import {addLink} from "./FunctionCreateVars";
 import {LinkConfig} from "../config/LinkConfig";
 import {getNewLink} from "./FunctionGraph";
+import {updateProjectLink} from "../interface/TransactionInterface";
 
 export function getName(element: string, language: string): string {
     if (element in Stereotypes) {
@@ -100,12 +101,14 @@ export function addRelationships() {
                 let linkDomain = getNewLink();
                 if (typeof linkDomain.id === "string") {
                     addLink(linkDomain.id, parsePrefix("z-sgov-pojem", "má-vztažený-prvek-1"), id, domainID);
+                    updateProjectLink(ProjectSettings.contextEndpoint, linkDomain.id, "FunctionEditVars");
                 }
             }
             if (rangeID && !(ProjectElements[id].connections.find(conn => ProjectElements[ProjectLinks[conn].target].iri === range))) {
                 let linkRange = getNewLink();
                 if (typeof linkRange.id === "string") {
-                    addLink(linkRange.id, parsePrefix("z-sgov-pojem", "má-vztažený-prvek-1"), id, rangeID);
+                    addLink(linkRange.id, parsePrefix("z-sgov-pojem", "má-vztažený-prvek-2"), id, rangeID);
+                    updateProjectLink(ProjectSettings.contextEndpoint, linkRange.id, "FunctionEditVars");
                 }
             }
         }
