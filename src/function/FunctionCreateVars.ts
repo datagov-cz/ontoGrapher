@@ -12,7 +12,7 @@ import {
 } from "../config/Variables";
 import * as LocaleMain from "../locale/LocaleMain.json";
 import {AttributeObject} from "../datatypes/AttributeObject";
-import {addDomainOfIRIs, initLanguageObject} from "./FunctionEditVars";
+import {addRelationships, initLanguageObject} from "./FunctionEditVars";
 import {PackageNode} from "../datatypes/PackageNode";
 import {graphElement} from "../graph/GraphElement";
 import {getSettings} from "../interface/SPARQLInterface";
@@ -23,7 +23,7 @@ import {graph} from "../graph/Graph";
 export async function setupDiagrams(diagram: number = 0): Promise<boolean> {
     return await getSettings(ProjectSettings.contextIRI, ProjectSettings.contextEndpoint).then((result) => {
         if (result) {
-            if (!ProjectSettings.initialized) addDomainOfIRIs();
+            if (!ProjectSettings.initialized) addRelationships();
             for (let i = 0; i < Diagrams.length; i++) {
                 changeDiagrams(i);
                 for (let id in ProjectElements) {
@@ -172,7 +172,7 @@ export function addClass(
     pkg.elements.push(id);
 }
 
-export function addLink(id: string, iri: string, source: string, target: string, type: string) {
+export function addLink(id: string, iri: string, source: string, target: string, type: string = "default") {
     ProjectLinks[id] = {
         iri: iri,
         source: source,

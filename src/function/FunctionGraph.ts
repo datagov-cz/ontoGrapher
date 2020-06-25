@@ -1,12 +1,11 @@
-import {Links, ProjectElements, ProjectLinks, ProjectSettings, VocabularyElements} from "../config/Variables";
-import {getName, getStereotypeList, parsePrefix} from "./FunctionEditVars";
+import {Links, ProjectElements, ProjectLinks, ProjectSettings} from "../config/Variables";
+import {getName, getStereotypeList} from "./FunctionEditVars";
 import {graph} from "../graph/Graph";
 import {getLinkOrVocabElem, getVocabElementByElementID} from "./FunctionGetVars";
 import * as joint from "jointjs";
 import * as LocaleMain from "../locale/LocaleMain.json";
 import {graphElement} from "../graph/GraphElement";
 import {LinkConfig} from "../config/LinkConfig";
-import {addLink} from "./FunctionCreateVars";
 
 export function nameGraphElement(cell: joint.dia.Cell, languageCode: string) {
     if (typeof cell.id === "string") {
@@ -146,43 +145,6 @@ export function restoreHiddenElem(id: string, cls: joint.dia.Element) {
                     rangeLink.addTo(graph);
                     break;
                 }
-            }
-        } else if (VocabularyElements[ProjectElements[id].iri].domain && VocabularyElements[ProjectElements[id].iri].range) {
-            let domain = VocabularyElements[ProjectElements[id].iri].domain;
-            let range = VocabularyElements[ProjectElements[id].iri].range;
-            let targetDomain = graph.getElements().find(element => ProjectElements[element.id].iri === domain);
-            let targetRange = graph.getElements().find(element => ProjectElements[element.id].iri === range);
-            if (domain
-                && !(Object.keys(ProjectLinks).find(linkID => ProjectElements[ProjectLinks[linkID].target].iri === domain))
-                && targetDomain) {
-                console.log(VocabularyElements);
-                let link = getNewLink("default");
-                link.source({id: id});
-                link.target({id: targetDomain.id})
-                link.appendLabel({
-                    attrs: {text: {text: getLinkOrVocabElem(parsePrefix("z-sgov-pojem", "má-vztažený-prvek-1")).labels[ProjectSettings.selectedLanguage]}},
-                    position: {distance: 0.5}
-                });
-                if (typeof link.id === "string" && typeof targetDomain.id === "string") {
-                    addLink(link.id, parsePrefix("z-sgov-pojem", "má-vztažený-prvek-1"), id, targetDomain.id, "default");
-                    ProjectElements[id].connections.push(link.id);
-                }
-                link.addTo(graph);
-            } else if (range
-                && !(Object.keys(ProjectLinks).find(linkID => ProjectElements[ProjectLinks[linkID].target].iri === range))
-                && targetRange) {
-                let link = getNewLink("default");
-                link.source({id: id});
-                link.target({id: targetRange.id})
-                link.appendLabel({
-                    attrs: {text: {text: getLinkOrVocabElem(parsePrefix("z-sgov-pojem", "má-vztažený-prvek-2")).labels[ProjectSettings.selectedLanguage]}},
-                    position: {distance: 0.5}
-                });
-                if (typeof link.id === "string" && typeof targetRange.id === "string") {
-                    addLink(link.id, parsePrefix("z-sgov-pojem", "má-vztažený-prvek-2"), id, targetRange.id, "default");
-                    ProjectElements[id].connections.push(link.id);
-                }
-                link.addTo(graph);
             }
         }
     }

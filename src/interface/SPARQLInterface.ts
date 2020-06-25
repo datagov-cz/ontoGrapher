@@ -1,4 +1,4 @@
-import {Diagrams, ProjectElements, ProjectLinks, ProjectSettings, Schemes} from "../config/Variables";
+import {Diagrams, Links, ProjectElements, ProjectLinks, ProjectSettings, Schemes} from "../config/Variables";
 import {initLanguageObject} from "../function/FunctionEditVars";
 import {AttributeObject} from "../datatypes/AttributeObject";
 import * as joint from "jointjs";
@@ -79,7 +79,7 @@ export async function fetchConcepts(
             if (row.termDefinition) result[row.term.value].definitions[row.termDefinition['xml:lang']] = row.termDefinition.value;
             if (row.termDomain) result[row.term.value].domain = row.termDomain.value;
             if (row.termRange) result[row.term.value].range = row.termRange.value;
-            if (row.restriction) createRestriction(result, row.term.value, row.restrictionPred.value, row.onProperty.value, row.target);
+            if (row.restriction && Object.keys(Links).includes(row.onProperty.value)) createRestriction(result, row.term.value, row.restrictionPred.value, row.onProperty.value, row.target);
         }
         Object.assign(sendTo, result);
         if (callback) callback(true);
@@ -294,8 +294,8 @@ export async function getSettings(contextIRI: string, contextEndpoint: string, c
                 Diagrams[parseInt(result.index.value)] = {name: Locale.untitled, json: {}}
             }
             Diagrams[parseInt(result.index.value)].name = result.name.value;
-            ProjectSettings.initialized = true;
         }
+        if (data.results.bindings.length > 0) ProjectSettings.initialized = true;
     }).catch(() => {
         if (callback) callback(false);
         return false;
