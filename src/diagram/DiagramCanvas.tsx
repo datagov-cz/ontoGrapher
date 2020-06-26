@@ -293,7 +293,7 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps> {
                     }
                 })
                 let tools = [verticesTool, segmentsTool, removeButton]
-                if (ProjectLinks[linkView.model.id].type === "default") tools.push(infoButton);
+                if (ProjectLinks[linkView.model.id] && ProjectLinks[linkView.model.id].type === "default") tools.push(infoButton);
                 let toolsView = new joint.dia.ToolsView({
                     tools: tools
                 });

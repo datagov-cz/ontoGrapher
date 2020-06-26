@@ -17,7 +17,7 @@ Restrictions["http://www.w3.org/2002/07/owl#someValuesFrom"] = {
 	init: (iri, restriction) => {
 		if (restriction.onProperty === mvp2IRI) {
 			for (let rest of VocabularyElements[iri].restrictions) {
-				if (rest.onProperty === mvp2IRI && rest.restriction === parsePrefix("owl", "allValuesFrom")) {
+				if (rest.onProperty === mvp2IRI && rest.restriction === parsePrefix("owl", "allValuesFrom") && rest.target === restriction.target) {
 					VocabularyElements[iri].range = restriction.target;
 					break;
 				}
@@ -25,7 +25,7 @@ Restrictions["http://www.w3.org/2002/07/owl#someValuesFrom"] = {
 		}
 		if (restriction.onProperty === mvp1IRI) {
 			for (let rest of VocabularyElements[iri].restrictions) {
-				if (rest.onProperty === mvp1IRI && rest.restriction === parsePrefix("owl", "allValuesFrom")) {
+				if (rest.onProperty === mvp1IRI && rest.restriction === parsePrefix("owl", "allValuesFrom") && rest.target === restriction.target) {
 					VocabularyElements[iri].domain = restriction.target;
 					if (VocabularyElements[restriction.target]) {
 						VocabularyElements[restriction.target].domainOf.push(iri);
@@ -46,7 +46,7 @@ Restrictions["http://www.w3.org/2002/07/owl#allValuesFrom"] = {
 		let mvp2IRI = "https://slovník.gov.cz/základní/pojem/má-vztažený-prvek-2";
 		if (restriction.onProperty === mvp2IRI) {
 			for (let rest of VocabularyElements[iri].restrictions) {
-				if (rest.onProperty === mvp2IRI && rest.restriction === parsePrefix("owl", "someValuesFrom")) {
+				if (rest.onProperty === mvp2IRI && rest.restriction === parsePrefix("owl", "someValuesFrom") && rest.target === restriction.target) {
 					VocabularyElements[iri].range = restriction.target;
 					break;
 				}
@@ -55,7 +55,7 @@ Restrictions["http://www.w3.org/2002/07/owl#allValuesFrom"] = {
 		let mvp1IRI = "https://slovník.gov.cz/základní/pojem/má-vztažený-prvek-1";
 		if (restriction.onProperty === mvp1IRI) {
 			for (let rest of VocabularyElements[iri].restrictions) {
-				if (rest.onProperty === mvp1IRI && rest.restriction === parsePrefix("owl", "someValuesFrom")) {
+				if (rest.onProperty === mvp1IRI && rest.restriction === parsePrefix("owl", "someValuesFrom") && rest.target === restriction.target) {
 					VocabularyElements[iri].domain = restriction.target;
 					if (VocabularyElements[restriction.target]) {
 						VocabularyElements[restriction.target].domainOf.push(iri);

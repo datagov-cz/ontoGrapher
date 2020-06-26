@@ -1,7 +1,6 @@
 import {
     Languages,
     Links,
-    PackageRoot,
     Prefixes,
     ProjectElements,
     ProjectLinks,
@@ -12,11 +11,10 @@ import {
 } from "../config/Variables";
 import * as Locale from "../locale/LocaleMain.json";
 import {graph} from "../graph/Graph";
-import {graphElement} from "../graph/GraphElement";
-import {addClass, addLink} from "./FunctionCreateVars";
-import {updateProjectLink} from "../interface/TransactionInterface";
+import {addLink} from "./FunctionCreateVars";
 import {LinkConfig} from "../config/LinkConfig";
 import {getNewLink} from "./FunctionGraph";
+import {updateProjectLink} from "../interface/TransactionInterface";
 
 export function getName(element: string, language: string): string {
     if (element in Stereotypes) {
@@ -31,9 +29,10 @@ export function getStereotypeList(iris: string[], language: string): string[] {
     iris.forEach(iri => {
         if (iri in Stereotypes) {
             result.push(Stereotypes[iri].labels[language]);
-        } else if (iri in VocabularyElements) {
-            result.push(VocabularyElements[iri].labels[language]);
         }
+        // else if (iri in VocabularyElements) {
+        //     result.push(VocabularyElements[iri].labels[language]);
+        // }
     });
     return result;
 }
@@ -91,38 +90,28 @@ export function parsePrefix(prefix: string, name: string): string {
     return Prefixes[prefix] + name;
 }
 
-export function addDomainOfIRIs() {
+export function addRelationships() {
     for (let iri in VocabularyElements) {
+        let id = Object.keys(ProjectElements).find(element => ProjectElements[element].iri === iri);
         let domain = VocabularyElements[iri].domain;
-        if (domain && VocabularyElements[domain]) {
-            for (let id in ProjectElements) {
-                let flag = true;
-                let range = undefined;
-                if (ProjectElements[id].iri === domain) {
-                    for (let conn of ProjectElements[id].connections) {
-                        if (ProjectLinks[conn].iri === iri) {
-                            flag = false;
-                            break;
-                        }
-                    }
-                    for (let targetID in ProjectElements) {
-                        if (ProjectElements[targetID].iri === VocabularyElements[iri].range) {
-                            range = targetID;
-                        }
-                    }
-                    if (flag && range) {
-                        let linkDomain = getNewLink();
-                        let linkRange = getNewLink();
-                        let relationship = new graphElement();
-                        if (typeof relationship.id === "string" && typeof linkDomain.id === "string" && typeof linkRange.id === "string") {
-                            addClass(relationship.id, iri,
-                                PackageRoot.children.find(pkg => pkg.scheme === VocabularyElements[iri].inScheme) || ProjectSettings.selectedPackage, false);
-                            addLink(linkDomain.id, parsePrefix("z-sgov-pojem", "má-vztažený-prvek-1"), relationship.id, id, "default");
-                            addLink(linkRange.id, parsePrefix("z-sgov-pojem", "má-vztažený-prvek-2"), relationship.id, range, "default");
-                            updateProjectLink(ProjectSettings.contextEndpoint, linkDomain.id, "FunctionEditVars");
-                            updateProjectLink(ProjectSettings.contextEndpoint, linkRange.id, "FunctionEditVars");
-                        }
-                    }
+        let range = VocabularyElements[iri].range;
+        if (id && ((domain && VocabularyElements[domain]) || (range && VocabularyElements[range]))) {
+            let domainID = Object.keys(ProjectElements).find(element => ProjectElements[element].iri === domain);
+            let rangeID = Object.keys(ProjectElements).find(element => ProjectElements[element].iri === range);
+            if (domainID && !(ProjectElements[id].connections.find(conn => ProjectElements[ProjectLinks[conn].target].iri === domain))) {
+                let linkDomain = getNewLink();
+                if (typeof linkDomain.id === "string") {
+                    addLink(linkDomain.id, parsePrefix("z-sgov-pojem", "má-vztažený-prvek-1"), id, domainID);
+                    ProjectElements[id].connections.push(linkDomain.id);
+                    updateProjectLink(ProjectSettings.contextEndpoint, linkDomain.id, "FunctionEditVars");
+                }
+            }
+            if (rangeID && !(ProjectElements[id].connections.find(conn => ProjectElements[ProjectLinks[conn].target].iri === range))) {
+                let linkRange = getNewLink();
+                if (typeof linkRange.id === "string") {
+                    addLink(linkRange.id, parsePrefix("z-sgov-pojem", "má-vztažený-prvek-2"), id, rangeID);
+                    ProjectElements[id].connections.push(linkRange.id);
+                    updateProjectLink(ProjectSettings.contextEndpoint, linkRange.id, "FunctionEditVars");
                 }
             }
         }

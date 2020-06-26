@@ -186,7 +186,7 @@ export default class ItemPanel extends React.Component<Props, State> {
 				}}
 				readOnly={node.scheme ? Schemes[node.scheme].readOnly : false}
 			>
-				{node.elements.map((id) => {
+				{node.elements.sort((a, b) => ProjectElements[a].iri.localeCompare(ProjectElements[b].iri)).map((id) => {
 					let name = getLabelOrBlank(VocabularyElements[ProjectElements[id].iri].labels, this.props.projectLanguage);
 					if (name.startsWith(this.state.search)) {
 						return (
@@ -276,19 +276,19 @@ export default class ItemPanel extends React.Component<Props, State> {
                 <Tabs id="stereotypePanelTabs">
                     <Tab eventKey={1} title={tooltipS}>
                         <div className={"elementList"}>
-                            {this.stereotypes.map((element) => (
-                                <ElementItem
-                                    key={element}
-                                    iri={element}
-                                    definition={Stereotypes[element].definitions[this.props.projectLanguage]}
-                                    label={Stereotypes[element].labels[this.props.projectLanguage]}
-                                    scheme={Schemes[Stereotypes[element].inScheme].labels[this.props.projectLanguage]}
-                                />))}
+							{this.stereotypes.sort().map((element) => (
+								<ElementItem
+									key={element}
+									iri={element}
+									definition={Stereotypes[element].definitions[this.props.projectLanguage]}
+									label={Stereotypes[element].labels[this.props.projectLanguage]}
+									scheme={Schemes[Stereotypes[element].inScheme].labels[this.props.projectLanguage]}
+								/>))}
                         </div>
                     </Tab>
                     <Tab eventKey={2} title={tooltipR}>
                         <div className="elementList">
-                            {this.links.map((link) => <LinkItem
+							{this.links.sort().map((link) => <LinkItem
 									key={link}
 									selectedLink={this.props.selectedLink}
 									handleChangeSelectedLink={this.handleChangeSelectedLink}

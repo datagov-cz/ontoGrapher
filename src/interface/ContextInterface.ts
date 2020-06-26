@@ -87,18 +87,22 @@ export async function getContext(
 		}).catch(() => {
 			if (callback) callback(Locale.loadingError)
 		});
-	let vocabularies: { [key: string]: { names: { [key: string]: string }, readOnly: boolean, terms: any } } = {};
+	let vocabularies: { [key: string]: { names: { [key: string]: string }, readOnly: boolean, terms: any, graph: string } } = {};
 	if (responseInit) for (const result of responseInit) {
 		if (!(result.vocabIRI.value in vocabularies)) {
-			vocabularies[result.vocabIRI.value] = {readOnly: result.readOnly.value === "true", names: {}, terms: {}};
+			vocabularies[result.vocabIRI.value] = {
+				readOnly: result.readOnly.value === "true",
+				names: {},
+				terms: {},
+				graph: result.vocab.value
+			};
 		}
 		vocabularies[result.vocabIRI.value].names[result.vocabLabel["xml:lang"]] = result.vocabLabel.value;
 		ProjectSettings.name[result.label["xml:lang"]] = result.label.value;
 	}
 	//load terms
 	for (let vocab in vocabularies) {
-		if (!(vocab in Schemes)) await getScheme(vocab, contextEndpoint, vocabularies[vocab].readOnly, function () {
-		});
+		if (!(vocab in Schemes)) await getScheme(vocab, contextEndpoint, vocabularies[vocab].readOnly);
 		await fetchConcepts(contextEndpoint, vocab, vocabularies[vocab].terms, vocabularies[vocab].readOnly);
 		//put into packages
 		Object.assign(VocabularyElements, vocabularies[vocab].terms);
