@@ -101,6 +101,7 @@ export function addRelationships() {
                 let linkDomain = getNewLink();
                 if (typeof linkDomain.id === "string") {
                     addLink(linkDomain.id, parsePrefix("z-sgov-pojem", "má-vztažený-prvek-1"), id, domainID);
+                    ProjectElements[id].connections.push(linkDomain.id);
                     updateProjectLink(ProjectSettings.contextEndpoint, linkDomain.id, "FunctionEditVars");
                 }
             }
@@ -108,6 +109,7 @@ export function addRelationships() {
                 let linkRange = getNewLink();
                 if (typeof linkRange.id === "string") {
                     addLink(linkRange.id, parsePrefix("z-sgov-pojem", "má-vztažený-prvek-2"), id, rangeID);
+                    ProjectElements[id].connections.push(linkRange.id);
                     updateProjectLink(ProjectSettings.contextEndpoint, linkRange.id, "FunctionEditVars");
                 }
             }
