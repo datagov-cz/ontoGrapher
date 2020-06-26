@@ -29,9 +29,10 @@ export function getStereotypeList(iris: string[], language: string): string[] {
     iris.forEach(iri => {
         if (iri in Stereotypes) {
             result.push(Stereotypes[iri].labels[language]);
-        } else if (iri in VocabularyElements) {
-            result.push(VocabularyElements[iri].labels[language]);
         }
+        // else if (iri in VocabularyElements) {
+        //     result.push(VocabularyElements[iri].labels[language]);
+        // }
     });
     return result;
 }
