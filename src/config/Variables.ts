@@ -99,7 +99,7 @@ export var VocabularyElements: {
             domain: string | undefined,
             range: string | undefined,
             types: string[],
-            domainOf: string[],
+            subClassOf: string[],
             restrictions: RestrictionObject[]
         }
 } = {};
