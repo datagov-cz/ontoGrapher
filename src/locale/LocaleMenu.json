@@ -15,6 +15,7 @@
   "movePackageTitle": "Move package",
   "namePackageTitle": "Name",
   "package": "Package",
+  "validate": "Validate",
   "iri": "IRI",
   "contextIRI": "Context IRI",
   "stereotype": "Stereotype",

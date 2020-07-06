@@ -41,6 +41,7 @@ interface Props {
 	save: Function;
 	handleChangeLoadingStatus: Function;
 	retry: boolean;
+	handleWidth: Function;
 }
 
 interface State {
@@ -164,6 +165,7 @@ export default class DetailElement extends React.Component<Props, State> {
 			axis={"x"}
 			handleSize={[8, 8]}
 			resizeHandles={['nw']}
+			onResize={(e, d) => this.props.handleWidth(d.size.width)}
 			className={"details"}>
 			<div>
 				<h3>{this.state.id ? getLabelOrBlank(VocabularyElements[ProjectElements[this.state.id].iri].labels, this.props.projectLanguage) : ""}</h3>
