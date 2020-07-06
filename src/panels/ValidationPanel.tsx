@@ -29,7 +29,7 @@ export default class ValidationPanel extends React.Component<Props, State> {
 		this.state = {
 			results: [],
 			width: this.getWidth(),
-			conforms: true,
+			conforms: false,
 			loading: false,
 			error: false,
 		}
@@ -45,10 +45,13 @@ export default class ValidationPanel extends React.Component<Props, State> {
 		let width = window.innerWidth;
 		width -= this.props.widthLeft;
 		width -= this.props.widthRight;
+		let elem = document.querySelector(".validation") as HTMLElement;
+		if (elem) elem.style.left = this.props.widthLeft + "px";
 		return width;
 	}
 
 	async validate() {
+		debugger;
 		this.setState({loading: true, error: false});
 		let results = await validateWorkspace(ProjectSettings.contextIRI);
 		if (results !== {}) {
@@ -89,23 +92,29 @@ export default class ValidationPanel extends React.Component<Props, State> {
 							  handleSize={[8, 8]}
 							  resizeHandles={['ne']}
 		>
+			<div className={"top"}>
+				<h4>{LocaleMain.validation}</h4>
+				<span className="right">
+				<Button onClick={() => {
+					this.validate()
+				}}>{LocaleMain.validationReload}</Button>
+				<Button variant={"secondary"} onClick={() => this.props.close()}>{LocaleMain.close}</Button>
+					</span>
+			</div>
 			{this.state.conforms && <div className={"centered"}>{"✅" + LocaleMain.conforms}</div>}
 			{this.state.loading && <div className={"centered"}><Spinner animation={"border"}/></div>}
-			{(!this.state.loading && !this.state.conforms) && <TableList
+			{(!this.state.loading && !this.state.conforms) &&
+            <div style={{overflow: "auto", height: "inherit"}}><TableList
                 headings={[LocaleMain.validationNumber, LocaleMain.validationSeverity, LocaleMain.validationName, LocaleMain.validationError]}>
 				{this.state.results.map((result, i) => <tr>
 					<td>
 						<button className={"buttonlink"} onClick={() => this.focus(result.focusNode)}>{i + 1}</button>
 					</td>
-					<td>{result.severity}</td>
+					<td>{result.severity.substring(result.severity.lastIndexOf("#") + 1)}</td>
 					<td>{result.focusNode in VocabularyElements ? VocabularyElements[result.focusNode].labels[this.props.projectLanguage] : result.focusNode}</td>
-					<td>{result.message}</td>
+					<td>{result.message.substring(0, result.message.lastIndexOf("@"))}</td>
 				</tr>)}
-            </TableList>}
-			<Button onClick={() => {
-				this.validate()
-			}}>{LocaleMain.validationReload}</Button>
-			<Button variant={"secondary"} onClick={() => this.props.close()}>{LocaleMain.close}</Button>
+            </TableList></div>}
 		</ResizableBox>);
 	}
 }

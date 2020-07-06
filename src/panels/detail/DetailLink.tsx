@@ -139,7 +139,7 @@ export default class DetailLink extends React.Component<Props, State> {
             axis={"x"}
             handleSize={[8, 8]}
             resizeHandles={['nw']}
-            onResize={(e, d) => this.props.handleWidth(d.size.width)}
+            onResizeStop={(e, d) => this.props.handleWidth(d.size.width)}
             className={"details"}>
             <div>
                 <h3>{getLinkOrVocabElem(this.state.iri).labels[this.props.projectLanguage]}</h3>

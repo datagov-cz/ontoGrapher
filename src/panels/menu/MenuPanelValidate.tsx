@@ -11,12 +11,9 @@ interface State {
 }
 
 export default class MenuPanelValidate extends React.Component<Props, State> {
-	constructor(props: Props) {
-		super(props);
-	}
 
 	render() {
-		return (<div className={"inert"}><Nav.Link onClick={() => this.props.validate}>
+		return (<div className={"inert"}><Nav.Link onClick={() => this.props.validate()}>
 			{LocaleMenu.validate}
 		</Nav.Link>
 		</div>);

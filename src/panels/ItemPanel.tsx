@@ -260,7 +260,7 @@ export default class ItemPanel extends React.Component<Props, State> {
 				axis={"x"}
 				handleSize={[8, 8]}
 				resizeHandles={['ne']}
-				onResize={(e, d) => this.props.handleWidth(d.size.width)}
+				onResizeStop={(e, d) => this.props.handleWidth(d.size.width)}
 			>
 				<InputGroup>
 					<InputGroup.Prepend>

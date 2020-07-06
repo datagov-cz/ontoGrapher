@@ -19,6 +19,7 @@
   "conforms": "Workspace conforms according to SGoV server",
   "validationError": "Message",
   "validationReload": "Refresh",
+  "validation": "Validation",
   "modalEditDiagramTitle": "Rename diagram",
   "sourceCardinalityExplainer": "The end from which the relationship begins",
   "targetCardinalityExplainer": "The end to which the relationship ends",

@@ -52,7 +52,7 @@ export default class MenuPanel extends React.Component<MenuPanelProps, MenuPanel
 							}}
 							loadContext={this.props.loadContext}
 						/>
-						<MenuPanelValidate validate={this.props.validate}/>
+						<MenuPanelValidate validate={() => this.props.validate()}/>
 						<MenuPanelHelp/>
 						<MenuPanelAbout/>
 					</div>
