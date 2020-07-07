@@ -21,6 +21,10 @@ export default class AboutModal extends React.Component<Props, State> {
             <Modal.Body>
                 <Tabs id={"changelog"}>
                     <Tab title={"July"} eventKey={5}>
+                        <h6>7.6.</h6>
+                        <ul>
+                            <li>New concept IRIs are now correctly created</li>
+                        </ul>
                         <h6>5.6.</h6>
                         <ul>
                             <li>rdfs:subClassOf loading support</li>

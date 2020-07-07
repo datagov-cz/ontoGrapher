@@ -103,7 +103,7 @@ export default class DetailElement extends React.Component<Props, State> {
 		this.props.handleChangeLoadingStatus(true, LocaleMain.updating, false);
 		let oldIRI = ProjectElements[this.state.id].iri;
 		if (ProjectElements[this.state.id].untitled) {
-			let scheme = Schemes[VocabularyElements[ProjectElements[this.state.id].iri].inScheme].graph;
+			let scheme = VocabularyElements[ProjectElements[this.state.id].iri].inScheme;
 			scheme = scheme.substring(0, scheme.lastIndexOf("/") + 1) + "pojem/";
 			let iri = createNewElemIRI(this.state.inputLabels, VocabularyElements, scheme);
 			VocabularyElements[iri] = VocabularyElements[ProjectElements[this.state.id].iri];

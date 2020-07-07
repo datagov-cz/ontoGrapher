@@ -180,7 +180,6 @@ export async function updateProjectElement(
 			await processTransaction(contextEndpoint, {"delete": JSON.parse(delString)}).catch(() => false);
 		}
 	}
-
 	return await processTransaction(contextEndpoint, {"add": addLD, "delete": deleteLD, "source": source});
 }
 
