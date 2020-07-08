@@ -1,7 +1,7 @@
 import React from 'react';
 import * as joint from 'jointjs';
 import {graphElement} from "../graph/GraphElement";
-import {Links, ProjectElements, ProjectLinks, ProjectSettings, Schemes, VocabularyElements} from "../config/Variables";
+import {Links, ProjectElements, ProjectLinks, ProjectSettings, VocabularyElements} from "../config/Variables";
 import {addClass, addLink, addVocabularyElement, createNewElemIRI} from "../function/FunctionCreateVars";
 import {graph} from "../graph/Graph";
 import {
@@ -116,13 +116,6 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps> {
         if (ProjectElements[sid].connections.includes(id)) ProjectElements[sid].connections.splice(ProjectElements[sid].connections.indexOf(id), 1);
         updateConnections(ProjectSettings.contextEndpoint, id, [id], DiagramCanvas.name).then(result => {
             if (result) {
-                let vocabElem = VocabularyElements[ProjectLinks[id].iri];
-                if (vocabElem && vocabElem.domain) {
-                    let domainOf = VocabularyElements[vocabElem.domain].domainOf;
-                    if (domainOf && (Schemes[VocabularyElements[vocabElem.domain].inScheme].readOnly)) {
-                        domainOf.splice(domainOf.indexOf(ProjectLinks[id].iri), 1);
-                    }
-                }
                 delete ProjectLinks[id];
                 graph.getCell(id).remove();
                 updateDeleteProjectElement(ProjectSettings.contextEndpoint, ProjectSettings.ontographerContext + "-" + id, DiagramCanvas.name).then(result => {

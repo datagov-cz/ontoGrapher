@@ -18,12 +18,13 @@ import {initLanguageObject, initVars} from "../function/FunctionEditVars";
 import {getContext} from "../interface/ContextInterface";
 import {graph} from "../graph/Graph";
 import {loadProject, newProject} from "../function/FunctionProject";
-import {nameGraphElement, nameGraphLink} from "../function/FunctionGraph";
+import {nameGraphElement, nameGraphLink, unHighlightAll} from "../function/FunctionGraph";
 import {PackageNode} from "../datatypes/PackageNode";
 import {createNewScheme, setupDiagrams} from "../function/FunctionCreateVars";
 import {getElementsConfig, getLinksConfig} from "../interface/SPARQLInterface";
 import {initRestrictions} from "../function/FunctionRestriction";
 import {updateProjectSettings} from "../interface/TransactionInterface";
+import ValidationPanel from "../panels/ValidationPanel";
 
 interface DiagramAppProps {
 	readOnly?: boolean;
@@ -40,6 +41,9 @@ interface DiagramAppState {
 	status: string;
 	error: boolean;
 	retry: boolean;
+	widthLeft: number;
+	widthRight: number;
+	validation: boolean;
 }
 
 require("../scss/style.scss");
@@ -68,6 +72,9 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 			status: Locale.loading,
 			error: false,
 			retry: false,
+			widthLeft: 300,
+			widthRight: 0,
+			validation: false,
 		});
 		document.title = Locale.ontoGrapher;
 		this.handleChangeSelectedLink = this.handleChangeSelectedLink.bind(this);
@@ -76,6 +83,7 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 		this.loadProject = this.loadProject.bind(this);
 		this.loadVocabularies = this.loadVocabularies.bind(this);
 		this.handleChangeLoadingStatus = this.handleChangeLoadingStatus.bind(this);
+		this.validate = this.validate.bind(this);
 	}
 
 	componentDidMount(): void {
@@ -196,6 +204,10 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 		ProjectSettings.selectedLink = linkType;
 	}
 
+	validate() {
+		this.setState({validation: true});
+	}
+
 	render() {
 		return (<div className={"app"}>
 			<MenuPanel
@@ -214,9 +226,13 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 				retry={() => {
 					this.setState({retry: true});
 				}}
+				validate={this.validate}
 			/>
 			<ItemPanel
 				ref={this.elementPanel}
+				handleWidth={(width: number) => {
+					this.setState({widthLeft: width})
+				}}
 				projectLanguage={this.state.projectLanguage}
 				handleChangeSelectedLink={this.handleChangeSelectedLink}
 				selectedLink={this.state.selectedLink}
@@ -234,7 +250,19 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 				}}
 				handleChangeLoadingStatus={this.handleChangeLoadingStatus}
 				retry={this.state.retry}
+				handleWidth={(width: number) => {
+					this.setState({widthRight: width})
+				}}
 			/>
+			{this.state.validation && <ValidationPanel
+                widthLeft={this.state.widthLeft}
+                widthRight={this.state.widthRight}
+                close={() => {
+					this.setState({validation: false});
+					unHighlightAll();
+				}}
+                projectLanguage={this.state.projectLanguage}
+            />}
 			<DiagramCanvas
 				ref={this.canvas}
 				selectedLink={this.state.selectedLink}

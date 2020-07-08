@@ -26,9 +26,9 @@ export async function fetchConcepts(
             definitions: { [key: string]: string },
             types: string[],
             inScheme: string,
-            domainOf: []
             domain?: string,
             range?: string,
+            subClassOf: string[],
             restrictions: [],
             type: string,
         }
@@ -37,7 +37,7 @@ export async function fetchConcepts(
     let query = [
         "PREFIX skos: <http://www.w3.org/2004/02/skos/core#>",
         "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>",
-        "SELECT DISTINCT ?term ?termLabel ?termType ?termDefinition ?termDomain ?termRange ?restriction ?restrictionPred ?onProperty ?target",
+        "SELECT DISTINCT ?term ?termLabel ?termType ?termDefinition ?termDomain ?termRange ?restriction ?restrictionPred ?onProperty ?target ?subClassOf",
         "WHERE {",
         graph ? "GRAPH <" + graph + "> {" : "",
         !subPropertyOf ? "?term skos:inScheme <" + source + ">." : "",
@@ -49,6 +49,7 @@ export async function fetchConcepts(
         "OPTIONAL {?term skos:definition ?termDefinition.}",
         "OPTIONAL {?term rdfs:domain ?termDomain.}",
         "OPTIONAL {?term rdfs:range ?termRange.}",
+        "OPTIONAL {?term rdfs:subClassOf ?subClassOf. }",
         "OPTIONAL {?term rdfs:subClassOf ?restriction. ",
         "?restriction a owl:Restriction .",
         "?restriction owl:onProperty ?onProperty.",
@@ -69,7 +70,7 @@ export async function fetchConcepts(
                     definitions: initLanguageObject(""),
                     types: [],
                     inScheme: source,
-                    domainOf: [],
+                    subClassOf: [],
                     restrictions: [],
                     type: "default"
                 }
@@ -79,6 +80,7 @@ export async function fetchConcepts(
             if (row.termDefinition) result[row.term.value].definitions[row.termDefinition['xml:lang']] = row.termDefinition.value;
             if (row.termDomain) result[row.term.value].domain = row.termDomain.value;
             if (row.termRange) result[row.term.value].range = row.termRange.value;
+            if (row.subClassOf && !(result[row.term.value].subClassOf.includes(row.subClassOf.value))) result[row.term.value].subClassOf.push(row.subClassOf.value);
             if (row.restriction && Object.keys(Links).includes(row.onProperty.value)) createRestriction(result, row.term.value, row.restrictionPred.value, row.onProperty.value, row.target);
         }
         Object.assign(sendTo, result);

@@ -16,6 +16,7 @@ interface Props {
     update: Function;
     handleChangeLoadingStatus: Function;
     retry: boolean;
+    handleWidth: Function;
 }
 
 interface State {
@@ -80,10 +81,11 @@ export default class DetailPanel extends React.Component<Props, State> {
                                        save={this.save} ref={this.detailElem}
                                        handleChangeLoadingStatus={this.props.handleChangeLoadingStatus}
                                        retry={this.props.retry}
+                                       handleWidth={this.props.handleWidth}
                 />);
             } else if (this.state.type === "link") {
                 return (<DetailLink
-
+                    handleWidth={this.props.handleWidth}
                     handleChangeLoadingStatus={this.props.handleChangeLoadingStatus}
                     projectLanguage={this.props.projectLanguage} headers={headers}
                     save={this.save} ref={this.linkElem} retry={this.props.retry}/>);

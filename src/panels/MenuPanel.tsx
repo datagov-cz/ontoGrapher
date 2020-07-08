@@ -6,6 +6,7 @@ import MenuPanelFile from "./menu/MenuPanelFile";
 import MenuPanelHelp from "./menu/MenuPanelHelp";
 import MenuPanelAbout from "./menu/MenuPanelAbout";
 import InterfaceNotification from "../components/InterfaceNotification";
+import MenuPanelValidate from "./menu/MenuPanelValidate";
 
 interface MenuPanelProps {
 	readOnly?: boolean;
@@ -19,6 +20,7 @@ interface MenuPanelProps {
 	status: string;
 	loadingError: boolean;
 	retry: Function;
+	validate: Function;
 }
 
 interface MenuPanelState {
@@ -39,20 +41,21 @@ export default class MenuPanel extends React.Component<MenuPanelProps, MenuPanel
             <Navbar.Brand>{Locale.ontoGrapher}</Navbar.Brand>
             <Nav className="mr-auto">
                 {this.props.readOnly ?
-                    <div/>
-                    :
-                    <div className={"inert"}>
-                        <MenuPanelFile
-                            newProject={this.props.newProject}
-                            loadProject={this.props.loadProject}
-                            update={() => {
-                                this.forceUpdate();
-                            }}
-                            loadContext={this.props.loadContext}
-                        />
-                        <MenuPanelHelp/>
-                        <MenuPanelAbout/>
-                    </div>
+					<div/>
+					:
+					<div className={"inert"}>
+						<MenuPanelFile
+							newProject={this.props.newProject}
+							loadProject={this.props.loadProject}
+							update={() => {
+								this.forceUpdate();
+							}}
+							loadContext={this.props.loadContext}
+						/>
+						<MenuPanelValidate validate={() => this.props.validate()}/>
+						<MenuPanelHelp/>
+						<MenuPanelAbout/>
+					</div>
                 }
             </Nav>
             <Navbar.Text className="mr-sm-2">

@@ -30,9 +30,6 @@ export function getStereotypeList(iris: string[], language: string): string[] {
         if (iri in Stereotypes) {
             result.push(Stereotypes[iri].labels[language]);
         }
-        // else if (iri in VocabularyElements) {
-        //     result.push(VocabularyElements[iri].labels[language]);
-        // }
     });
     return result;
 }
@@ -112,6 +109,21 @@ export function addRelationships() {
                     addLink(linkRange.id, parsePrefix("z-sgov-pojem", "má-vztažený-prvek-2"), id, rangeID);
                     ProjectElements[id].connections.push(linkRange.id);
                     updateProjectLink(ProjectSettings.contextEndpoint, linkRange.id, "FunctionEditVars");
+                }
+            }
+        }
+
+        for (let subClassOf of VocabularyElements[iri].subClassOf) {
+            if (Object.keys(VocabularyElements).find(element => element === subClassOf)) {
+                let domainID = Object.keys(ProjectElements).find(element => ProjectElements[element].iri === iri);
+                let rangeID = Object.keys(ProjectElements).find(element => ProjectElements[element].iri === subClassOf);
+                if (domainID && rangeID && !(ProjectElements[domainID].connections.find(conn => ProjectElements[ProjectLinks[conn].target].iri === subClassOf))) {
+                    let linkGeneralization = getNewLink("generalization");
+                    if (typeof linkGeneralization.id === "string") {
+                        addLink(linkGeneralization.id, ProjectSettings.ontographerContext + "/uml/generalization", domainID, rangeID, "generalization");
+                        ProjectElements[domainID].connections.push(linkGeneralization.id);
+                        updateProjectLink(ProjectSettings.contextEndpoint, linkGeneralization.id, "FunctionEditVars");
+                    }
                 }
             }
         }

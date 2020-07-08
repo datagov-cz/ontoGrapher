@@ -41,6 +41,7 @@ interface Props {
 	save: Function;
 	handleChangeLoadingStatus: Function;
 	retry: boolean;
+	handleWidth: Function;
 }
 
 interface State {
@@ -102,7 +103,7 @@ export default class DetailElement extends React.Component<Props, State> {
 		this.props.handleChangeLoadingStatus(true, LocaleMain.updating, false);
 		let oldIRI = ProjectElements[this.state.id].iri;
 		if (ProjectElements[this.state.id].untitled) {
-			let scheme = Schemes[VocabularyElements[ProjectElements[this.state.id].iri].inScheme].graph;
+			let scheme = VocabularyElements[ProjectElements[this.state.id].iri].inScheme;
 			scheme = scheme.substring(0, scheme.lastIndexOf("/") + 1) + "pojem/";
 			let iri = createNewElemIRI(this.state.inputLabels, VocabularyElements, scheme);
 			VocabularyElements[iri] = VocabularyElements[ProjectElements[this.state.id].iri];
@@ -164,9 +165,12 @@ export default class DetailElement extends React.Component<Props, State> {
 			axis={"x"}
 			handleSize={[8, 8]}
 			resizeHandles={['nw']}
+			onResizeStop={(e, d) => this.props.handleWidth(d.size.width)}
 			className={"details"}>
 			<div>
-				<h3>{this.state.id ? getLabelOrBlank(VocabularyElements[ProjectElements[this.state.id].iri].labels, this.props.projectLanguage) : ""}</h3>
+				<h3><IRILink
+					label={this.state.id ? getLabelOrBlank(VocabularyElements[ProjectElements[this.state.id].iri].labels, this.props.projectLanguage) : ""}
+					iri={ProjectElements[this.state.id].iri}/></h3>
 				<Tabs id={"detail-tabs"}>
 					<Tab title={LocaleMain.description} eventKey={LocaleMain.description}>
 						<h5>{this.props.headers.stereotype[this.props.projectLanguage]}</h5>

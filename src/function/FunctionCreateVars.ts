@@ -143,7 +143,7 @@ export function addVocabularyElement(id: string, iri: string, type: string) {
             domain: undefined,
             range: undefined,
             types: [type],
-            domainOf: getDomainOf(iri),
+            subClassOf: [],
             restrictions: []
         }
     }

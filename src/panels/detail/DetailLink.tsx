@@ -18,6 +18,7 @@ interface Props {
     save: Function;
     retry: boolean;
     handleChangeLoadingStatus: Function;
+    handleWidth: Function;
 }
 
 interface State {
@@ -138,9 +139,11 @@ export default class DetailLink extends React.Component<Props, State> {
             axis={"x"}
             handleSize={[8, 8]}
             resizeHandles={['nw']}
+            onResizeStop={(e, d) => this.props.handleWidth(d.size.width)}
             className={"details"}>
             <div>
-                <h3>{getLinkOrVocabElem(this.state.iri).labels[this.props.projectLanguage]}</h3>
+                <h3><IRILink label={getLinkOrVocabElem(this.state.iri).labels[this.props.projectLanguage]}
+                             iri={this.state.iri}/></h3>
                 <TableList headings={[LocaleMenu.linkInfo, ""]}>
                     <tr>
                         <td>
