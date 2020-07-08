@@ -142,7 +142,8 @@ export default class DetailLink extends React.Component<Props, State> {
             onResizeStop={(e, d) => this.props.handleWidth(d.size.width)}
             className={"details"}>
             <div>
-                <h3>{getLinkOrVocabElem(this.state.iri).labels[this.props.projectLanguage]}</h3>
+                <h3><IRILink label={getLinkOrVocabElem(this.state.iri).labels[this.props.projectLanguage]}
+                             iri={this.state.iri}/></h3>
                 <TableList headings={[LocaleMenu.linkInfo, ""]}>
                     <tr>
                         <td>

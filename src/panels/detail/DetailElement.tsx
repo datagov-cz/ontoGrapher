@@ -168,7 +168,9 @@ export default class DetailElement extends React.Component<Props, State> {
 			onResizeStop={(e, d) => this.props.handleWidth(d.size.width)}
 			className={"details"}>
 			<div>
-				<h3>{this.state.id ? getLabelOrBlank(VocabularyElements[ProjectElements[this.state.id].iri].labels, this.props.projectLanguage) : ""}</h3>
+				<h3><IRILink
+					label={this.state.id ? getLabelOrBlank(VocabularyElements[ProjectElements[this.state.id].iri].labels, this.props.projectLanguage) : ""}
+					iri={ProjectElements[this.state.id].iri}/></h3>
 				<Tabs id={"detail-tabs"}>
 					<Tab title={LocaleMain.description} eventKey={LocaleMain.description}>
 						<h5>{this.props.headers.stereotype[this.props.projectLanguage]}</h5>

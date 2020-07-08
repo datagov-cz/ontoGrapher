@@ -24,6 +24,7 @@ export default class AboutModal extends React.Component<Props, State> {
                         <h6>7.6.</h6>
                         <ul>
                             <li>New concept IRIs are now correctly created</li>
+                            <li>Detail panel header is now a link pointing to IRI of selected element</li>
                         </ul>
                         <h6>5.6.</h6>
                         <ul>
