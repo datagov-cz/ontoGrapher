@@ -5,7 +5,7 @@ import {graph} from "../graph/Graph";
 import * as LocaleMain from "../locale/LocaleMain.json";
 import {getNewLink} from "./FunctionGraph";
 
-export function changeDiagrams(diagram: number) {
+export function changeDiagrams(diagram: number = 0) {
     Diagrams[ProjectSettings.selectedDiagram].json = saveDiagram();
     ProjectSettings.selectedDiagram = diagram;
     if (Object.keys(Diagrams[diagram].json).length > 0) {
