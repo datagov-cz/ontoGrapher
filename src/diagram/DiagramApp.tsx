@@ -269,9 +269,11 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 				projectLanguage={this.state.projectLanguage}
 				prepareDetails={(id: string) => {
 					this.detailPanel.current?.prepareDetails(id);
+					this.setState({widthRight: 300});
 				}}
 				hideDetails={() => {
 					this.detailPanel.current?.hide();
+					this.setState({widthRight: 0});
 				}}
 				updateElementPanel={() => {
 					this.elementPanel.current?.forceUpdate();

@@ -302,6 +302,7 @@ export async function getSettings(contextIRI: string, contextEndpoint: string, c
         if (callback) callback(false);
         return false;
     });
+    debugger;
     return true;
 }
 
