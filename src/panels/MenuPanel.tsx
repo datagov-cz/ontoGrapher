@@ -1,12 +1,11 @@
 import React from 'react';
-import {Form, Nav, Navbar} from "react-bootstrap";
-import * as Locale from '../locale/LocaleMain.json';
+import {Form} from "react-bootstrap";
 import {Languages, ProjectSettings} from "../config/Variables";
-import MenuPanelFile from "./menu/MenuPanelFile";
 import MenuPanelHelp from "./menu/MenuPanelHelp";
 import MenuPanelAbout from "./menu/MenuPanelAbout";
 import InterfaceNotification from "../components/InterfaceNotification";
 import MenuPanelValidate from "./menu/MenuPanelValidate";
+import MenuPanelFetch from "./menu/MenuPanelFetch";
 
 interface MenuPanelProps {
 	readOnly?: boolean;
@@ -37,40 +36,67 @@ export default class MenuPanel extends React.Component<MenuPanelProps, MenuPanel
 	}
 
     render() {
-        return (<Navbar className={"menuPanel"} variant="light" bg="light">
-            <Navbar.Brand>{Locale.ontoGrapher}</Navbar.Brand>
-            <Nav className="mr-auto">
-                {this.props.readOnly ?
-					<div/>
-					:
-					<div className={"inert"}>
-						<MenuPanelFile
-							newProject={this.props.newProject}
-							loadProject={this.props.loadProject}
-							update={() => {
-								this.forceUpdate();
-							}}
-							loadContext={this.props.loadContext}
-						/>
-						<MenuPanelValidate validate={() => this.props.validate()}/>
+		return (
+			<nav className={"menuPanel"}>
+				<div className={"upper"}>
+					<h5>{ProjectSettings.name[this.props.projectLanguage] === "" ? "<untitled>" : ProjectSettings.name[this.props.projectLanguage]}</h5>
+					<InterfaceNotification active={this.props.loading} message={this.props.status}
+										   error={this.props.loadingError} retry={this.props.retry}/>
+					<div className={"right"}>
+						<Form inline>
+							<Form.Control as="select" value={this.props.projectLanguage}
+										  onChange={this.handleChangeLanguage}>
+								{Object.keys(Languages).map((languageCode) => (
+									<option key={languageCode}
+											value={languageCode}>{Languages[languageCode]}</option>))}
+							</Form.Control>
+						</Form>
+					</div>
+				</div>
+				<div className={"lower"}>
+					<MenuPanelFetch loadContext={this.props.loadContext}/>
+					<MenuPanelValidate validate={() => this.props.validate()}/>
+					<div className={"right"}>
 						<MenuPanelHelp/>
 						<MenuPanelAbout/>
 					</div>
-                }
-            </Nav>
-            <Navbar.Text className="mr-sm-2">
-				<InterfaceNotification active={this.props.loading} message={this.props.status}
-									   error={this.props.loadingError} retry={this.props.retry}/>
-                &nbsp;
-                {ProjectSettings.name[this.props.projectLanguage] === "" ? "<untitled>" : ProjectSettings.name[this.props.projectLanguage]}
-            </Navbar.Text>
-            <Form inline>
-                <Form.Control as="select" value={this.props.projectLanguage} onChange={this.handleChangeLanguage}>
-                    {Object.keys(Languages).map((languageCode) => (
-                        <option key={languageCode} value={languageCode}>{Languages[languageCode]}</option>))}
-                </Form.Control>
-            </Form>
-
-        </Navbar>);
-    }
+				</div>
+			</nav>
+			// 	<Navbar className={"menuPanel"} variant="light" bg="light">
+			//     {/*<Navbar.Brand>{Locale.ontoGrapher}</Navbar.Brand>*/}
+			//     <Nav className="mr-auto">
+			//         {this.props.readOnly ?
+			// 			<div/>
+			// 			:
+			// 			<div className={"inert"}>
+			// 				<MenuPanelFile
+			// 					newProject={this.props.newProject}
+			// 					loadProject={this.props.loadProject}
+			// 					update={() => {
+			// 						this.forceUpdate();
+			// 					}}
+			// 					loadContext={this.props.loadContext}
+			// 				/>
+			// 				<MenuPanelValidate validate={() => this.props.validate()}/>
+			// 			</div>
+			//         }
+			//     </Nav>
+			//     <Navbar.Text className="mr-sm-2">
+			// 		<InterfaceNotification active={this.props.loading} message={this.props.status}
+			// 							   error={this.props.loadingError} retry={this.props.retry}/>
+			//         &nbsp;
+			//         {ProjectSettings.name[this.props.projectLanguage] === "" ? "<untitled>" : ProjectSettings.name[this.props.projectLanguage]}
+			//     </Navbar.Text>
+			//     <Form inline>
+			//         <Form.Control as="select" value={this.props.projectLanguage} onChange={this.handleChangeLanguage}>
+			//             {Object.keys(Languages).map((languageCode) => (
+			//                 <option key={languageCode} value={languageCode}>{Languages[languageCode]}</option>))}
+			//         </Form.Control>
+			//     </Form>
+			// 	<MenuPanelHelp/>
+			// 	<MenuPanelAbout/>
+			//
+			// </Navbar>
+		);
+	}
 }

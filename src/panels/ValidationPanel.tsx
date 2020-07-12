@@ -53,7 +53,7 @@ export default class ValidationPanel extends React.Component<Props, State> {
 
 	async validate() {
 		this.setState({loading: true, error: false});
-		let results = await validateWorkspace(ProjectSettings.contextIRI);
+		let results = await validateWorkspace(ProjectSettings.contextIRI, ProjectSettings.selectedLanguage);
 		if (results !== {}) {
 			this.setState({
 				conforms: results.conforms,
