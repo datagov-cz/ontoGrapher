@@ -314,32 +314,32 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps> {
             },
             'link:pointerup': (linkView) => {
                 let id = linkView.model.id;
-                for (let link of graph.getLinks()) {
-                    if (link.id === id) {
-                        let sid = link.getSourceElement()?.id;
-                        let tid = link.getTargetElement()?.id;
-                        if (sid && tid) {
-                            link.source({id: sid});
-                            link.target({id: tid});
-                            if (sid === tid) {
-                                let coords = link.getSourcePoint();
-                                let bbox = this.paper?.findViewByModel(sid).getBBox();
-                                if (bbox) {
-                                    link.vertices([
-                                        new joint.g.Point(coords.x, coords.y + 100),
-                                        new joint.g.Point(coords.x + (bbox.width / 2) + 50, coords.y + 100),
-                                        new joint.g.Point(coords.x + (bbox.width / 2) + 50, coords.y),
-                                    ])
-                                }
+                let link = graph.getLinks().find(link => link.id === id);
+                if (link) {
+                    let s = link.getSourceElement();
+                    let t = link.getTargetElement();
+                    if (s && t) {
+                        let sid = s.id;
+                        let tid = t.id;
+                        link.source({id: sid});
+                        link.target({id: tid});
+                        if (sid === tid && (!graph.getConnectedLinks(s).find(link => ProjectLinks[link.id].iri === ProjectSettings.selectedLink))) {
+                            let coords = link.getSourcePoint();
+                            let bbox = this.paper?.findViewByModel(sid).getBBox();
+                            if (bbox) {
+                                link.vertices([
+                                    new joint.g.Point(coords.x, coords.y + 100),
+                                    new joint.g.Point(coords.x + (bbox.width / 2) + 50, coords.y + 100),
+                                    new joint.g.Point(coords.x + (bbox.width / 2) + 50, coords.y),
+                                ])
                             }
-                            let type: string = Links[ProjectSettings.selectedLink].type in LinkConfig ? Links[ProjectSettings.selectedLink].type : "default";
-                            if (typeof link.id === "string" && typeof sid === "string" && typeof tid === "string") {
-                                this.updateConnections(sid, tid, link.id, type);
-                            }
-                            if (type === "default") link.appendLabel({attrs: {text: {text: Links[this.props.selectedLink].labels[this.props.projectLanguage]}}});
                         }
-                        break;
-                    }
+                        let type: string = Links[ProjectSettings.selectedLink].type in LinkConfig ? Links[ProjectSettings.selectedLink].type : "default";
+                        if (typeof link.id === "string" && typeof sid === "string" && typeof tid === "string") {
+                            this.updateConnections(sid, tid, link.id, type);
+                        }
+                        if (type === "default") link.appendLabel({attrs: {text: {text: Links[this.props.selectedLink].labels[this.props.projectLanguage]}}});
+                    } else link.remove();
                 }
             },
         });
