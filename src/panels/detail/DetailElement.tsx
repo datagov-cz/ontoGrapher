@@ -24,7 +24,7 @@ import IRIlabel from "../../components/IRIlabel";
 import {AttributeObject} from "../../datatypes/AttributeObject";
 // @ts-ignore
 import {RIEInput} from "riek";
-import {nameGraphElement} from "../../function/FunctionGraph";
+import {nameGraphElement, unHighlightAll} from "../../function/FunctionGraph";
 import {graph} from "../../graph/Graph";
 import {
 	processGetTransaction,
@@ -171,6 +171,10 @@ export default class DetailElement extends React.Component<Props, State> {
 			}}
 			className={"details"}>
 			<div>
+				<button className={"buttonlink close"} onClick={() => {
+					unHighlightAll();
+					this.setState({id: ""});
+				}}><span role="img" aria-label={""}>❌</span></button>
 				<h3><IRILink
 					label={this.state.id ? getLabelOrBlank(VocabularyElements[ProjectElements[this.state.id].iri].labels, this.props.projectLanguage) : ""}
 					iri={ProjectElements[this.state.id].iri}/></h3>

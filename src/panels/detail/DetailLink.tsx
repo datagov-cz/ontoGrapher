@@ -11,6 +11,7 @@ import {graph} from "../../graph/Graph";
 import DescriptionTabs from "./components/DescriptionTabs";
 import {getLabelOrBlank, getLinkOrVocabElem} from "../../function/FunctionGetVars";
 import {updateProjectLink} from "../../interface/TransactionInterface";
+import {unHighlightAll} from "../../function/FunctionGraph";
 
 interface Props {
     projectLanguage: string;
@@ -145,6 +146,10 @@ export default class DetailLink extends React.Component<Props, State> {
             }}
             className={"details"}>
             <div>
+                <button className={"buttonlink close"} onClick={() => {
+                    unHighlightAll();
+                    this.setState({id: ""});
+                }}><span role="img" aria-label={""}>❌</span></button>
                 <h3><IRILink label={getLinkOrVocabElem(this.state.iri).labels[this.props.projectLanguage]}
                              iri={this.state.iri}/></h3>
                 <TableList headings={[LocaleMenu.linkInfo, ""]}>

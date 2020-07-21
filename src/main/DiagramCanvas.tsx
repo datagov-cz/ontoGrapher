@@ -14,7 +14,7 @@ import {
     unHighlightCell
 } from "../function/FunctionGraph";
 import {HideButton} from "../graph/elementTool/ElemHide";
-import {ElemInfoButton} from "../graph/elementTool/ElemInfo";
+import {ElemCreateLink} from "../graph/elementTool/ElemCreateLink";
 import {LinkInfoButton} from "../graph/linkTool/LinkInfo";
 import {initLanguageObject} from "../function/FunctionEditVars";
 import {
@@ -25,8 +25,9 @@ import {
 } from "../interface/TransactionInterface";
 import * as LocaleMain from "../locale/LocaleMain.json";
 import {LinkConfig} from "../config/LinkConfig";
+import NewLinkDiagram from "./NewLinkDiagram";
 
-interface DiagramCanvasProps {
+interface Props {
     projectLanguage: string;
     selectedLink: string;
     prepareDetails: Function;
@@ -36,23 +37,40 @@ interface DiagramCanvasProps {
     retry: boolean;
 }
 
-export default class DiagramCanvas extends React.Component<DiagramCanvasProps> {
+interface State {
+    modalAddElem: boolean;
+    modalAddLink: boolean;
+}
+
+export default class DiagramCanvas extends React.Component<Props, State> {
     private readonly canvasRef: React.RefObject<HTMLDivElement>;
     private paper: joint.dia.Paper | undefined;
     private magnet: boolean;
     private drag: { x: any, y: any } | undefined;
     private lastUpdate: { sid?: string, tid?: string, id?: string, type?: string }
+    private newLink: boolean;
+    private sid: string | undefined;
+    private tid: string | undefined;
 
-    constructor(props: DiagramCanvasProps) {
+    constructor(props: Props) {
         super(props);
+        this.state = {
+            modalAddElem: false,
+            modalAddLink: false
+        }
         this.canvasRef = React.createRef();
         this.magnet = false;
         this.componentDidMount = this.componentDidMount.bind(this);
         this.drag = undefined;
         this.lastUpdate = {};
+        this.newLink = false;
+        this.sid = undefined;
+        this.tid = undefined;
+        this.createNewConcept = this.createNewConcept.bind(this);
+        this.createNewLink = this.createNewLink.bind(this);
     }
 
-    componentDidUpdate(prevProps: Readonly<DiagramCanvasProps>, prevState: Readonly<{}>, snapshot?: any) {
+    componentDidUpdate(prevProps: Readonly<Props>, prevState: Readonly<{}>, snapshot?: any) {
         if (prevProps !== this.props && (this.props.retry && ProjectSettings.lastSource === DiagramCanvas.name)) {
             if (this.lastUpdate.sid && this.lastUpdate.tid && this.lastUpdate.id && this.lastUpdate.type) {
                 this.updateConnections(this.lastUpdate.sid, this.lastUpdate.tid, this.lastUpdate.id, this.lastUpdate.type);
@@ -60,6 +78,82 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps> {
                 this.deleteConnections(this.lastUpdate.sid, this.lastUpdate.id);
             }
         }
+    }
+
+    createNewConcept(event: { clientX: any; clientY: any; }) {
+        let cls = new graphElement();
+        let label = "<blank>";
+        cls.attr({label: {text: label}});
+        if (typeof cls.id === "string") {
+            let iri = createNewElemIRI(initLanguageObject(""), VocabularyElements);
+            addVocabularyElement(cls.id, iri);
+            addClass(cls.id, iri, ProjectSettings.selectedPackage, true, true);
+            updateProjectElement(
+                ProjectSettings.contextEndpoint,
+                DiagramCanvas.name,
+                [],
+                initLanguageObject(""),
+                initLanguageObject(""),
+                [],
+                [],
+                cls.id);
+        }
+        cls.set('position', this.paper?.clientToLocalPoint({x: event.clientX, y: event.clientY}));
+        cls.addTo(graph);
+        let bbox = this.paper?.findViewByModel(cls).getBBox();
+        if (bbox) cls.resize(bbox.width, bbox.height);
+        ProjectElements[cls.id].hidden[ProjectSettings.selectedDiagram] = false;
+        ProjectElements[cls.id].position[ProjectSettings.selectedDiagram] = cls.position();
+        this.paper?.update();
+        this.props.updateElementPanel();
+    }
+
+    createNewLink(id: string) {
+        this.newLink = true;
+        this.sid = id;
+        graph.getElements().forEach(element => {
+            if (element.id !== id) this.paper?.findViewByModel(element).highlight()
+        });
+    }
+
+    saveNewLink(iri: string, sid: string, tid: string) {
+        let link = getNewLink(Links[iri].type);
+        debugger;
+        link.source({id: sid});
+        link.target({id: tid});
+        link.addTo(graph);
+        if (link) {
+            let s = link.getSourceElement();
+            let t = link.getTargetElement();
+            if (s && t) {
+                let sid = s.id;
+                let tid = t.id;
+                link.source({id: sid});
+                link.target({id: tid});
+                if (sid === tid && (!graph.getConnectedLinks(s).find(link => ProjectLinks[link.id].iri === ProjectSettings.selectedLink))) {
+                    let coords = link.getSourcePoint();
+                    let bbox = this.paper?.findViewByModel(sid).getBBox();
+                    if (bbox) {
+                        link.vertices([
+                            new joint.g.Point(coords.x, coords.y + 100),
+                            new joint.g.Point(coords.x + (bbox.width / 2) + 50, coords.y + 100),
+                            new joint.g.Point(coords.x + (bbox.width / 2) + 50, coords.y),
+                        ])
+                    }
+                }
+                let type: string = Links[ProjectSettings.selectedLink].type in LinkConfig ? Links[iri].type : "default";
+                if (typeof link.id === "string" && typeof sid === "string" && typeof tid === "string") {
+                    this.updateConnections(sid, tid, link.id, type);
+                }
+                if (type === "default") link.appendLabel({attrs: {text: {text: Links[iri].labels[this.props.projectLanguage]}}});
+            } else link.remove();
+        }
+        this.sid = undefined;
+        this.tid = undefined;
+        this.newLink = false;
+        graph.getElements().forEach(element => {
+            this.paper?.findViewByModel(element).unhighlight()
+        });
     }
 
     resizeElem(id: string) {
@@ -191,6 +285,20 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps> {
         });
 
         this.paper.on({
+            'cell:pointerclick': (cellView) => {
+                if (!this.newLink) {
+                    let id = cellView.model.id;
+                    this.props.prepareDetails(id);
+                    unHighlightAll();
+                    highlightCell(id);
+                }
+            },
+            'element:pointerclick': (cellView) => {
+                if (this.newLink) {
+                    this.tid = cellView.model.id;
+                    this.setState({modalAddLink: true});
+                }
+            },
             'element:mouseenter': (elementView) => {
                 let tool = ProjectElements[elementView.model.id].active ? new HideButton({
                     useModelGeometry: false,
@@ -250,18 +358,16 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps> {
                     }
                 });
                 elementView.addTools(new joint.dia.ToolsView({
-                    tools: [new ElemInfoButton({
-                        useModelGeometry: false,
-                        y: '0%',
-                        x: '0%',
-                        offset: {x: 5},
-                        action: (evt: { currentTarget: { getAttribute: (arg0: string) => any; }; }) => {
-                            let id = evt.currentTarget.getAttribute("model-id");
-                            this.props.prepareDetails(id);
-                            unHighlightAll();
-                            highlightCell(id);
-                        }
-                    }), tool]
+                    tools: [
+                        new ElemCreateLink({
+                            useModelGeometry: false,
+                            y: '0%',
+                            x: '0%',
+                            action: (evt: { currentTarget: { getAttribute: (arg0: string) => any; }; }) => {
+                                if (graph.getElements().length > 1) this.createNewLink(evt.currentTarget.getAttribute("model-id"));
+                            }
+                        }),
+                        tool]
                 }));
             },
             'link:mouseenter': (linkView) => {
@@ -298,7 +404,11 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps> {
             'blank:pointerdown': (evt, x, y) => {
                 this.props.hideDetails();
                 unHighlightAll();
-                this.drag = {x: x, y: y}
+                this.drag = {x: x, y: y};
+                this.newLink = false;
+                graph.getElements().forEach(element => {
+                    this.paper?.findViewByModel(element).unhighlight()
+                });
             },
             'blank:pointermove': function (evt, x, y) {
                 const data = evt.data;
@@ -312,61 +422,65 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps> {
             'blank:pointerup': () => {
                 this.drag = undefined;
             },
-            'link:pointerup': (linkView) => {
-                let id = linkView.model.id;
-                let link = graph.getLinks().find(link => link.id === id);
-                if (link) {
-                    let s = link.getSourceElement();
-                    let t = link.getTargetElement();
-                    if (s && t) {
-                        let sid = s.id;
-                        let tid = t.id;
-                        link.source({id: sid});
-                        link.target({id: tid});
-                        if (sid === tid && (!graph.getConnectedLinks(s).find(link => ProjectLinks[link.id].iri === ProjectSettings.selectedLink))) {
-                            let coords = link.getSourcePoint();
-                            let bbox = this.paper?.findViewByModel(sid).getBBox();
-                            if (bbox) {
-                                link.vertices([
-                                    new joint.g.Point(coords.x, coords.y + 100),
-                                    new joint.g.Point(coords.x + (bbox.width / 2) + 50, coords.y + 100),
-                                    new joint.g.Point(coords.x + (bbox.width / 2) + 50, coords.y),
-                                ])
-                            }
-                        }
-                        let type: string = Links[ProjectSettings.selectedLink].type in LinkConfig ? Links[ProjectSettings.selectedLink].type : "default";
-                        if (typeof link.id === "string" && typeof sid === "string" && typeof tid === "string") {
-                            this.updateConnections(sid, tid, link.id, type);
-                        }
-                        if (type === "default") link.appendLabel({attrs: {text: {text: Links[this.props.selectedLink].labels[this.props.projectLanguage]}}});
-                    } else link.remove();
-                }
-            },
+            'blank:pointerclick': (evt) => {
+                this.createNewConcept(evt);
+            }
+            // 'link:pointerup': (linkView) => {
+            //     let id = linkView.model.id;
+            //     let link = graph.getLinks().find(link => link.id === id);
+            //     if (link) {
+            //         let s = link.getSourceElement();
+            //         let t = link.getTargetElement();
+            //         if (s && t) {
+            //             let sid = s.id;
+            //             let tid = t.id;
+            //             link.source({id: sid});
+            //             link.target({id: tid});
+            //             if (sid === tid && (!graph.getConnectedLinks(s).find(link => ProjectLinks[link.id].iri === ProjectSettings.selectedLink))) {
+            //                 let coords = link.getSourcePoint();
+            //                 let bbox = this.paper?.findViewByModel(sid).getBBox();
+            //                 if (bbox) {
+            //                     link.vertices([
+            //                         new joint.g.Point(coords.x, coords.y + 100),
+            //                         new joint.g.Point(coords.x + (bbox.width / 2) + 50, coords.y + 100),
+            //                         new joint.g.Point(coords.x + (bbox.width / 2) + 50, coords.y),
+            //                     ])
+            //                 }
+            //             }
+            //             let type: string = Links[ProjectSettings.selectedLink].type in LinkConfig ? Links[ProjectSettings.selectedLink].type : "default";
+            //             if (typeof link.id === "string" && typeof sid === "string" && typeof tid === "string") {
+            //                 this.updateConnections(sid, tid, link.id, type);
+            //             }
+            //             if (type === "default") link.appendLabel({attrs: {text: {text: Links[this.props.selectedLink].labels[this.props.projectLanguage]}}});
+            //         } else link.remove();
+            //     }
+            // },
         });
     }
 
     render() {
-        return (<div
-            className={"canvas"}
-            id={"canvas"}
-            ref={this.canvasRef}
-            onDragOver={(event) => {
-                event.preventDefault();
-            }}
-            onMouseMove={(event) => {
-                if (this.drag) {
-                    this.paper?.translate(event.nativeEvent.offsetX - this.drag.x, event.nativeEvent.offsetY - this.drag.y);
+        return (<div>
+            <div
+                className={"canvas"}
+                id={"canvas"}
+                ref={this.canvasRef}
+                onDragOver={(event) => {
+                    event.preventDefault();
+                }}
+                onMouseMove={(event) => {
+                    if (this.drag) {
+                        this.paper?.translate(event.nativeEvent.offsetX - this.drag.x, event.nativeEvent.offsetY - this.drag.y);
+                    }
                 }
-            }
-            }
-            onDrop={(event) => {
-                // create - get name - insert - (new: add to data) - (existing: restore)
-                const data = JSON.parse(event.dataTransfer.getData("newClass"));
-                let cls = new graphElement();
-                let label = getNewLabel(data.iri, ProjectSettings.selectedLanguage);
-                cls.attr({label: {text: label}});
-                if (data.type === "new") {
-                    if (typeof cls.id === "string") {
+                }
+                onDrop={(event) => {
+                    // create - get name - insert - (new: add to data) - (existing: restore)
+                    const data = JSON.parse(event.dataTransfer.getData("newClass"));
+                    let cls = new graphElement();
+                    let label = getNewLabel(data.iri, ProjectSettings.selectedLanguage);
+                    cls.attr({label: {text: label}});
+                    if (data.type === "new") {
+                        if (typeof cls.id === "string") {
                         let iri = createNewElemIRI(initLanguageObject(""), VocabularyElements);
                         addVocabularyElement(cls.id, iri, data.iri);
                         addClass(cls.id, iri, ProjectSettings.selectedPackage, true, true);
@@ -405,8 +519,17 @@ export default class DiagramCanvas extends React.Component<DiagramCanvasProps> {
                             cls.id);
                     }
                 }
-            }}
-        />);
+                }}
+            />
+            {/*<NewElemDiagram/>*/}
+            <NewLinkDiagram
+                projectLanguage={this.props.projectLanguage}
+                modal={this.state.modalAddLink}
+                close={(selectedLink: string) => {
+                    this.setState({modalAddLink: false});
+                    if (selectedLink && this.sid && this.tid) this.saveNewLink(selectedLink, this.sid, this.tid);
+                }}/>
+        </div>);
 
     }
 }
