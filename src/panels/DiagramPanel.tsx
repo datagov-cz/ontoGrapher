@@ -26,7 +26,8 @@ export default class DiagramPanel extends React.Component<Props, State> {
 	render() {
 		return (<div className={"diagramPanel"}>
 			{Diagrams.map((diag, i) => <DiagramTab key={i} diagram={i} name={diag.name}
-												   update={() => this.forceUpdate()}/>)}
+												   update={() => this.forceUpdate()}
+												   handleChangeLoadingStatus={this.props.handleChangeLoadingStatus}/>)}
 			<DiagramAdd update={() => this.forceUpdate()}/>
 
 			{/*<ModalRenameDiagram*/}

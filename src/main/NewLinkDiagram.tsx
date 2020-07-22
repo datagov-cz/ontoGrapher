@@ -18,23 +18,24 @@ export default class NewLinkDiagram extends React.Component<Props, State> {
 	constructor(props: Props) {
 		super(props);
 		this.state = {
-			selectedLink: Object.keys(Links)[0]
+			selectedLink: ""
 		}
 		this.handleChangeLink = this.handleChangeLink.bind(this);
 	}
 
 	handleChangeLink(event: React.ChangeEvent<HTMLSelectElement>) {
 		this.setState({selectedLink: event.currentTarget.value});
+		if (event.currentTarget.value !== "") this.props.close(event.currentTarget.value);
 	}
 
 	render() {
-		return (<Modal centered show={this.props.modal} onHide={() => this.props.close}>
+		return (<Modal centered scrollable show={this.props.modal} onHide={() => this.props.close}>
 			<Modal.Header>
 				<Modal.Title>{LocaleMenu.modalNewLinkTitle}</Modal.Title>
 			</Modal.Header>
 			<Modal.Body>
 				<p>{LocaleMenu.modalNewLinkDescription}</p>
-				<Form.Control as="select" value={this.state.selectedLink}
+				<Form.Control htmlSize={Object.keys(Links).length} as="select" value={this.state.selectedLink}
 							  onChange={this.handleChangeLink}>
 					{Object.keys(Links).map((link) => (
 						<option key={link}

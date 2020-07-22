@@ -3,11 +3,13 @@ import {Diagrams, ProjectSettings} from "../../config/Variables";
 import {changeDiagrams} from "../../function/FunctionDiagram";
 // @ts-ignore
 import {RIEInput} from "riek";
+import {updateProjectSettings} from "../../interface/TransactionInterface";
 
 interface Props {
 	name: string;
 	diagram: number;
 	update: Function;
+	handleChangeLoadingStatus: Function;
 }
 
 interface State {
@@ -34,6 +36,13 @@ export default class DiagramTab extends React.Component<Props, State> {
 
 	handleChangeDiagramName(event: { textarea: string }) {
 		Diagrams[this.props.diagram].name = event.textarea;
+		updateProjectSettings(ProjectSettings.contextIRI, ProjectSettings.contextEndpoint, DiagramTab.name).then(result => {
+			if (result) {
+				this.props.handleChangeLoadingStatus(false, "", false);
+			} else {
+				this.props.handleChangeLoadingStatus(false, "", true);
+			}
+		})
 		this.forceUpdate();
 		this.props.update();
 	}

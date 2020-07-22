@@ -190,7 +190,7 @@ export default class DetailElement extends React.Component<Props, State> {
 												label={getLabelOrBlank(getStereotypeOrVocabElem(iri).labels, this.props.projectLanguage)}
 												iri={iri}/>
 											&nbsp;
-											{(this.state.inputTypes.length === 1 || (this.state.readOnly)) ? "" :
+											{(this.state.inputTypes.length <= 1 || (this.state.readOnly)) ? "" :
 												<button className={"buttonlink"} onClick={() => {
 													let result = _.cloneDeep(this.state.inputTypes);
 													result.splice(result.indexOf(iri), 1);

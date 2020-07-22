@@ -67,7 +67,12 @@ export function loadDiagram(load: {
         // @ts-ignore
         let cls = graphElement.create(elem.id).prop({
             position: elem.pos,
-            attrs: {label: {text: elem.label, magnet: true}}
+            attrs: {
+                label: {
+                    text: elem.label,
+                    //magnet: true
+                }
+            }
         });
         cls.addTo(graph);
     }

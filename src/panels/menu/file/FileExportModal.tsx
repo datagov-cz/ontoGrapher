@@ -78,7 +78,7 @@ export default class FileExportModal extends React.Component<Props, State> {
                 </Form>
                 <br/>
                 <Tabs id={"exports"}>
-                    <Tab eventKey={1} title={LocaleMenu.glossary}>
+                    <Tab eventKey={LocaleMenu.glossary} title={LocaleMenu.glossary}>
                         <Form.Control
                             style={{height: 150, resize: "none"}}
                             as={"textarea"}
@@ -86,7 +86,7 @@ export default class FileExportModal extends React.Component<Props, State> {
                             value={this.state.exportGlossaryString}
                         />
                     </Tab>
-                    <Tab eventKey={2} title={LocaleMenu.model}>
+                    <Tab eventKey={LocaleMenu.model} title={LocaleMenu.model}>
                         <Form.Control
                             style={{height: 150, resize: "none"}}
                             as={"textarea"}
