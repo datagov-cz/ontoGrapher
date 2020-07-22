@@ -134,7 +134,7 @@ export function getDomainOf(iriElem: string): string[] {
     return result;
 }
 
-export function addVocabularyElement(id: string, iri: string, type: string) {
+export function addVocabularyElement(id: string, iri: string, type?: string) {
     if (ProjectSettings.selectedPackage.scheme) {
         VocabularyElements[iri] = {
             labels: initLanguageObject(""),
@@ -142,12 +142,11 @@ export function addVocabularyElement(id: string, iri: string, type: string) {
             inScheme: ProjectSettings.selectedPackage.scheme,
             domain: undefined,
             range: undefined,
-            types: [type],
+            types: type ? [type] : [],
             subClassOf: [],
             restrictions: []
         }
     }
-
 }
 
 export function addClass(

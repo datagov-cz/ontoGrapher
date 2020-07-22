@@ -13,17 +13,17 @@ export default class InterfaceNotification extends React.Component<Props> {
 
 	render() {
 		if (this.props.error) {
-			return (<span>
+			return (<span className={"interfaceNotification"}>
 				{Locale.errorUpdating}&nbsp;
 				<button className={"buttonlink"} onClick={() => {
 					this.props.retry();
 				}}>{Locale.retry}</button>
 			</span>);
 		} else {
-			return (<span>
-				{this.props.message}
+			return (<span className={"interfaceNotification"}>
+				{this.props.active && <Spinner animation="border" size="sm"/>}
 				&nbsp;
-				{this.props.active ? <Spinner animation="border" size="sm"/> : ""}
+				{this.props.message}
 			</span>);
 		}
 	}

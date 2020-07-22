@@ -1,0 +1,29 @@
+.diagramPanel {
+  background-color: #FFF;
+
+  .diagramTab {
+    background-color: #e3e3e3;
+    display: inline-block;
+    margin-top: 2px;
+    margin-left: 2px;
+    margin-right: 2px;
+    padding-top: 2px;
+    padding-left: 2px;
+    padding-right: 2px;
+    border-top: black 1px solid;
+    border-left: black 1px solid;
+    border-right: black 1px solid;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    border-bottom: black 1px solid;
+    cursor: default;
+
+    &.selected {
+      border-bottom: #e3e3e3 1px solid;
+    }
+
+    &:hover {
+      background-color: lightgray;
+    }
+  }
+}

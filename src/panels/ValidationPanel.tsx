@@ -6,6 +6,7 @@ import {Button, Spinner} from 'react-bootstrap';
 import {validateWorkspace} from "../interface/ValidationInterface";
 import {ProjectElements, ProjectLinks, ProjectSettings, VocabularyElements} from "../config/Variables";
 import {graph} from "../graph/Graph";
+import IRIlabel from "../components/IRIlabel";
 
 interface Props {
 	widthLeft: number;
@@ -51,9 +52,8 @@ export default class ValidationPanel extends React.Component<Props, State> {
 	}
 
 	async validate() {
-		debugger;
 		this.setState({loading: true, error: false});
-		let results = await validateWorkspace(ProjectSettings.contextIRI);
+		let results = await validateWorkspace(ProjectSettings.contextIRI, ProjectSettings.selectedLanguage);
 		if (results !== {}) {
 			this.setState({
 				conforms: results.conforms,
@@ -67,8 +67,8 @@ export default class ValidationPanel extends React.Component<Props, State> {
 	}
 
 	focus(node: string) {
-		let cellElem = graph.getCells().find(element => ProjectElements[element.id].iri === node);
-		let cellLink = graph.getCells().find(element => ProjectElements[element.id].iri === node);
+		let cellElem = graph.getElements().find(element => ProjectElements[element.id].iri === node);
+		let cellLink = graph.getLinks().find(element => ProjectLinks[element.id].iri === node);
 		if (cellElem) cellElem.attr({body: {stroke: '#FFFF00'}});
 		if (cellLink) cellLink.attr({line: {stroke: '#FFFF00'}});
 	}
@@ -102,8 +102,9 @@ export default class ValidationPanel extends React.Component<Props, State> {
 					</span>
 			</div>
 			{this.state.conforms && <div className={"centered"}>{"✅" + LocaleMain.conforms}</div>}
+			{this.state.error && <div className={"centered"}>{"✅" + LocaleMain.validationLoadingError}</div>}
 			{this.state.loading && <div className={"centered"}><Spinner animation={"border"}/></div>}
-			{(!this.state.loading && !this.state.conforms) &&
+			{(!this.state.loading && !this.state.conforms && !this.state.error) &&
             <div style={{overflow: "auto", height: "inherit"}}><TableList
                 headings={[LocaleMain.validationNumber, LocaleMain.validationSeverity, LocaleMain.validationName, LocaleMain.validationError]}>
 				{this.state.results.map((result, i) => <tr>
@@ -111,7 +112,9 @@ export default class ValidationPanel extends React.Component<Props, State> {
 						<button className={"buttonlink"} onClick={() => this.focus(result.focusNode)}>{i + 1}</button>
 					</td>
 					<td>{result.severity.substring(result.severity.lastIndexOf("#") + 1)}</td>
-					<td>{result.focusNode in VocabularyElements ? VocabularyElements[result.focusNode].labels[this.props.projectLanguage] : result.focusNode}</td>
+					{result.focusNode in VocabularyElements ?
+						<IRIlabel label={VocabularyElements[result.focusNode].labels[this.props.projectLanguage]} iri={result.focusNode}/>
+						: <IRIlabel label={result.focusNode} iri={result.focusNode}/>}
 					<td>{result.message.substring(0, result.message.lastIndexOf("@"))}</td>
 				</tr>)}
             </TableList></div>}

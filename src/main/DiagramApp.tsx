@@ -25,6 +25,7 @@ import {getElementsConfig, getLinksConfig} from "../interface/SPARQLInterface";
 import {initRestrictions} from "../function/FunctionRestriction";
 import {updateProjectSettings} from "../interface/TransactionInterface";
 import ValidationPanel from "../panels/ValidationPanel";
+import DiagramPanel from "../panels/DiagramPanel";
 
 interface DiagramAppProps {
 	readOnly?: boolean;
@@ -241,6 +242,9 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 				handleChangeLoadingStatus={this.handleChangeLoadingStatus}
 				retry={this.state.retry}
 			/>
+			<DiagramPanel
+				retry={this.state.retry}
+				handleChangeLoadingStatus={this.handleChangeLoadingStatus}/>
 			<DetailPanel
 				ref={this.detailPanel}
 				projectLanguage={this.state.projectLanguage}
@@ -249,6 +253,7 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 				}}
 				update={() => {
 					this.elementPanel.current?.forceUpdate();
+					this.detailPanel.current?.forceUpdate();
 				}}
 				handleChangeLoadingStatus={this.handleChangeLoadingStatus}
 				retry={this.state.retry}
@@ -271,9 +276,11 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 				projectLanguage={this.state.projectLanguage}
 				prepareDetails={(id: string) => {
 					this.detailPanel.current?.prepareDetails(id);
+					this.setState({widthRight: 300});
 				}}
 				hideDetails={() => {
 					this.detailPanel.current?.hide();
+					this.setState({widthRight: 0});
 				}}
 				updateElementPanel={() => {
 					this.elementPanel.current?.forceUpdate();

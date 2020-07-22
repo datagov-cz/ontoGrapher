@@ -14,7 +14,7 @@ export default class DescriptionTabs extends React.Component<Props> {
     render() {
         return (<Tabs id={"descriptionTabs"}>
             {Object.keys(this.props.descriptions).map((lang, i) =>
-                <Tab key={i} eventKey={i} title={Languages[lang]}>
+                <Tab key={i} eventKey={lang} title={Languages[lang]}>
                     <Form.Control
                         as={"textarea"}
                         rows={3}

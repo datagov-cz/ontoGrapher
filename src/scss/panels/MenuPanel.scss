@@ -1,2 +1,42 @@
 .menuPanel {
+  padding-top: 5px;
+  padding-left: 5px;
+
+  .upper {
+    display: inline-flex;
+    padding-left: 5px;
+
+    .interfaceNotification {
+      margin-left: 5px;
+    }
+
+    form {
+      position: absolute;
+      right: 5px;
+      top: 8px;
+
+      select {
+        font-size: 14px;
+        padding: 0;
+        height: 25px;
+      }
+    }
+  }
+
+  .lower {
+    font-size: 14px;
+
+    a {
+      color: black;
+      padding: 0 5px;
+      margin-bottom: 4px;
+      margin-right: 4px;
+
+      &:hover {
+        background-color: lightgray;
+        border-radius: 2px;
+        cursor: default;
+      }
+    }
+  }
 }

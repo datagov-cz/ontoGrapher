@@ -67,17 +67,24 @@ export function loadDiagram(load: {
         // @ts-ignore
         let cls = graphElement.create(elem.id).prop({
             position: elem.pos,
-            attrs: {label: {text: elem.label, magnet: true}}
+            attrs: {
+                label: {
+                    text: elem.label,
+                    //magnet: true
+                }
+            }
         });
         cls.addTo(graph);
     }
     for (let link of load.links) {
-        let lnk = getNewLink(link.type, link.id);
-        lnk.source({id: link.source});
-        lnk.target({id: link.target});
-        lnk.labels(link.labels);
-        // @ts-ignore
-        lnk.vertices(link.vertices);
-        lnk.addTo(graph);
+        if (ProjectElements[link.source].connections.includes(link.id)) {
+            let lnk = getNewLink(link.type, link.id);
+            lnk.source({id: link.source});
+            lnk.target({id: link.target});
+            lnk.labels(link.labels);
+            // @ts-ignore
+            lnk.vertices(link.vertices);
+            lnk.addTo(graph);
+        }
     }
 }

@@ -1,11 +1,11 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import DiagramApp from './diagram/DiagramApp';
+import DiagramApp from './main/DiagramApp';
 import * as serviceWorker from './serviceWorker';
 
 ReactDOM.render(<DiagramApp
-	contextIRI={"https://slovník.gov.cz/datový/pracovní-prostor/pojem/metadatový-kontext/instance-534712305"}
-	contextEndpoint={"https://graphdb.onto.fel.cvut.cz/repositories/kodi-uloziste-dev"}
+	// contextIRI={"https://slovník.gov.cz/datový/pracovní-prostor/pojem/metadatový-kontext/instance-248608637"}
+	// contextEndpoint={"https://graphdb.onto.fel.cvut.cz/repositories/kodi-uloziste-dev"}
 />, document.getElementById('root'));
 
 // If you want your app to work offline and load faster, you can change

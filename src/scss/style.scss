@@ -4,6 +4,7 @@
 @import "panels/MenuPanel";
 @import "panels/DetailPanel";
 @import "panels/ValidationPanel";
+@import "panels/DiagramPanel";
 
 body {
   overflow: hidden;
@@ -32,6 +33,10 @@ body {
   &:hover {
     color: blue;
     text-decoration: underline;
+
+    &.nounderline {
+      text-decoration: none;
+    }
   }
 }
 

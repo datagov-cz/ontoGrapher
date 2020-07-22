@@ -2,9 +2,8 @@ import React from 'react';
 import {PackageNode} from "../../datatypes/PackageNode";
 import {OverlayTrigger, Tooltip} from "react-bootstrap";
 import * as LocaleMain from "../../locale/LocaleMain.json";
-import {PackageRoot, ProjectElements, ProjectSettings, VocabularyElements} from "../../config/Variables";
+import {ProjectElements, ProjectSettings, VocabularyElements} from "../../config/Variables";
 import {getLabelOrBlank} from "../../function/FunctionGetVars";
-import {initLanguageObject} from "../../function/FunctionEditVars";
 
 interface Props {
     node: PackageNode;
@@ -21,15 +20,15 @@ interface State {
     hover: boolean;
 }
 
-const tooltipA = (
-    <Tooltip id="tooltipS">{LocaleMain.addSubpackage}</Tooltip>
-);
-const tooltipE = (
-    <Tooltip id="tooltipS">{LocaleMain.renamePackage}</Tooltip>
-);
-const tooltipD = (
-    <Tooltip id="tooltipS">{LocaleMain.del}</Tooltip>
-);
+// const tooltipA = (
+//     <Tooltip id="tooltipS">{LocaleMain.addSubpackage}</Tooltip>
+// );
+// const tooltipE = (
+//     <Tooltip id="tooltipS">{LocaleMain.renamePackage}</Tooltip>
+// );
+// const tooltipD = (
+//     <Tooltip id="tooltipS">{LocaleMain.del}</Tooltip>
+// );
 const tooltipDef = (
     <Tooltip id="tooltipS">{LocaleMain.setAsDefault}</Tooltip>
 );
@@ -87,36 +86,36 @@ export default class PackageFolder extends React.Component<Props, State> {
                                     this.props.update();
                                 }}><span role="img" aria-label={""}>🔰</span></button>
                             </OverlayTrigger>}
-                    {this.props.readOnly ? "" : <span>
-                    <OverlayTrigger placement="bottom" overlay={tooltipA}>
-                        <button className={"buttonlink"}
-                                onClick={(event) => {
-                                    event.stopPropagation();
-                                    new PackageNode(initLanguageObject(LocaleMain.untitledPackage), this.props.node);
-                                    this.props.node.open = true;
-                                    this.setState({open: true});
-                                    this.props.update();
-                                }}>
-                            <span role="img" aria-label={""}>➕</span>
-                        </button>
-                    </OverlayTrigger>
-                    <OverlayTrigger placement="bottom" overlay={tooltipE}>
-                        <button className={"buttonlink"}
-                                onClick={(event) => {
-                                    event.stopPropagation();
-                                    this.props.openEditPackage();
-                                }}>
-                            <span role="img" aria-label={""}>✏</span></button></OverlayTrigger>
-                        {(PackageRoot.children.length === 1) ? "" :
-                            <OverlayTrigger placement="bottom" overlay={tooltipD}>
-                                <button className={"buttonlink"}
-                                        onClick={(event) => {
-                                            event.stopPropagation();
-                                            this.props.openRemovePackage();
-                                        }}><span role="img"
-                                                 aria-label={""}>❌</span></button>
-                            </OverlayTrigger>}
-                </span>}
+                    {/*    {this.props.readOnly ? "" : <span>*/}
+                    {/*    <OverlayTrigger placement="bottom" overlay={tooltipA}>*/}
+                    {/*        <button className={"buttonlink"}*/}
+                    {/*                onClick={(event) => {*/}
+                    {/*                    event.stopPropagation();*/}
+                    {/*                    new PackageNode(initLanguageObject(LocaleMain.untitledPackage), this.props.node);*/}
+                    {/*                    this.props.node.open = true;*/}
+                    {/*                    this.setState({open: true});*/}
+                    {/*                    this.props.update();*/}
+                    {/*                }}>*/}
+                    {/*            <span role="img" aria-label={""}>➕</span>*/}
+                    {/*        </button>*/}
+                    {/*    </OverlayTrigger>*/}
+                    {/*    <OverlayTrigger placement="bottom" overlay={tooltipE}>*/}
+                    {/*        <button className={"buttonlink"}*/}
+                    {/*                onClick={(event) => {*/}
+                    {/*                    event.stopPropagation();*/}
+                    {/*                    this.props.openEditPackage();*/}
+                    {/*                }}>*/}
+                    {/*            <span role="img" aria-label={""}>✏</span></button></OverlayTrigger>*/}
+                    {/*        {(PackageRoot.children.length === 1) ? "" :*/}
+                    {/*            <OverlayTrigger placement="bottom" overlay={tooltipD}>*/}
+                    {/*                <button className={"buttonlink"}*/}
+                    {/*                        onClick={(event) => {*/}
+                    {/*                            event.stopPropagation();*/}
+                    {/*                            this.props.openRemovePackage();*/}
+                    {/*                        }}><span role="img"*/}
+                    {/*                                 aria-label={""}>❌</span></button>*/}
+                    {/*            </OverlayTrigger>}*/}
+                    {/*</span>}*/}
                     </span>
                 {this.state.open ?
                     this.props.children

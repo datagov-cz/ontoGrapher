@@ -24,7 +24,7 @@ import IRIlabel from "../../components/IRIlabel";
 import {AttributeObject} from "../../datatypes/AttributeObject";
 // @ts-ignore
 import {RIEInput} from "riek";
-import {nameGraphElement} from "../../function/FunctionGraph";
+import {nameGraphElement, unHighlightAll} from "../../function/FunctionGraph";
 import {graph} from "../../graph/Graph";
 import {
 	processGetTransaction,
@@ -165,9 +165,16 @@ export default class DetailElement extends React.Component<Props, State> {
 			axis={"x"}
 			handleSize={[8, 8]}
 			resizeHandles={['nw']}
-			onResizeStop={(e, d) => this.props.handleWidth(d.size.width)}
+			onResizeStop={() => {
+				let elem = document.querySelector(".details");
+				if (elem) this.props.handleWidth(elem.getBoundingClientRect().width);
+			}}
 			className={"details"}>
 			<div>
+				<button className={"buttonlink close nounderline"} onClick={() => {
+					unHighlightAll();
+					this.setState({id: ""});
+				}}><span role="img" aria-label={""}>❌</span></button>
 				<h3><IRILink
 					label={this.state.id ? getLabelOrBlank(VocabularyElements[ProjectElements[this.state.id].iri].labels, this.props.projectLanguage) : ""}
 					iri={ProjectElements[this.state.id].iri}/></h3>
@@ -183,7 +190,7 @@ export default class DetailElement extends React.Component<Props, State> {
 												label={getLabelOrBlank(getStereotypeOrVocabElem(iri).labels, this.props.projectLanguage)}
 												iri={iri}/>
 											&nbsp;
-											{(this.state.inputTypes.length === 1 || (this.state.readOnly)) ? "" :
+											{(this.state.inputTypes.length <= 1 || (this.state.readOnly)) ? "" :
 												<button className={"buttonlink"} onClick={() => {
 													let result = _.cloneDeep(this.state.inputTypes);
 													result.splice(result.indexOf(iri), 1);
