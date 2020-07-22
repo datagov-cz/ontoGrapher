@@ -1,13 +1,16 @@
 import React from 'react';
 import {Button, Form, Modal} from "react-bootstrap";
 import * as LocaleMenu from "../locale/LocaleMenu.json";
-import {Links} from "../config/Variables";
+import {Links, ProjectElements, ProjectLinks, VocabularyElements} from "../config/Variables";
 import {getLabelOrBlank} from "../function/FunctionGetVars";
+import {graph} from "../graph/Graph";
 
 interface Props {
 	modal: boolean;
 	close: Function;
 	projectLanguage: string;
+	sid: string | undefined;
+	tid: string | undefined;
 }
 
 interface State {
@@ -18,7 +21,7 @@ export default class NewLinkDiagram extends React.Component<Props, State> {
 	constructor(props: Props) {
 		super(props);
 		this.state = {
-			selectedLink: ""
+			selectedLink: "",
 		}
 		this.handleChangeLink = this.handleChangeLink.bind(this);
 	}
@@ -28,8 +31,29 @@ export default class NewLinkDiagram extends React.Component<Props, State> {
 		if (event.currentTarget.value !== "") this.props.close(event.currentTarget.value);
 	}
 
+	getLinks() {
+		let elem = graph.getElements().find(elem => elem.id === this.props.sid);
+		if (elem && this.props.sid) {
+			let conns = ProjectElements[this.props.sid].connections;
+			console.log(conns.map(conn => {
+				return {
+					conn: ProjectLinks[conn].iri,
+					label: VocabularyElements[ProjectElements[ProjectLinks[conn].target].iri].labels
+				}
+			}));
+			return Object.keys(Links).filter(link => !conns.find(conn => ProjectLinks[conn].iri === link && ProjectLinks[conn].target === this.props.tid));
+		} else return [];
+	}
+
+	setLink(link: string) {
+		if (link !== "") this.props.close(link);
+	}
+
 	render() {
-		return (<Modal centered scrollable show={this.props.modal} onHide={() => this.props.close}>
+		return (<Modal centered scrollable show={this.props.modal}
+					   onHide={() => this.props.close}
+					   onEntering={() => this.setState({selectedLink: ""})}
+		>
 			<Modal.Header>
 				<Modal.Title>{LocaleMenu.modalNewLinkTitle}</Modal.Title>
 			</Modal.Header>
@@ -37,8 +61,9 @@ export default class NewLinkDiagram extends React.Component<Props, State> {
 				<p>{LocaleMenu.modalNewLinkDescription}</p>
 				<Form.Control htmlSize={Object.keys(Links).length} as="select" value={this.state.selectedLink}
 							  onChange={this.handleChangeLink}>
-					{Object.keys(Links).map((link) => (
+					{this.getLinks().map((link) => (
 						<option key={link}
+								onClick={() => this.setLink(link)}
 								value={link}>{getLabelOrBlank(Links[link].labels, this.props.projectLanguage)}</option>))}
 				</Form.Control>
 			</Modal.Body>
@@ -46,9 +71,9 @@ export default class NewLinkDiagram extends React.Component<Props, State> {
 				<Button onClick={() => {
 					this.props.close();
 				}} variant="secondary">{LocaleMenu.cancel}</Button>
-				<Button onClick={() => {
-					this.props.close(this.state.selectedLink);
-				}}>{LocaleMenu.confirm}</Button>
+				{/*<Button onClick={() => {*/}
+				{/*	this.props.close(this.state.selectedLink);*/}
+				{/*}}>{LocaleMenu.confirm}</Button>*/}
 			</Modal.Footer>
 		</Modal>);
 	}

@@ -24,7 +24,6 @@ import {
     updateProjectLink
 } from "../interface/TransactionInterface";
 import * as LocaleMain from "../locale/LocaleMain.json";
-import {LinkConfig} from "../config/LinkConfig";
 import NewLinkDiagram from "./NewLinkDiagram";
 
 interface Props {
@@ -47,7 +46,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
     private paper: joint.dia.Paper | undefined;
     private magnet: boolean;
     private drag: { x: any, y: any } | undefined;
-    private lastUpdate: { sid?: string, tid?: string, id?: string, type?: string }
+    private lastUpdate: { sid?: string, tid?: string, id?: string, type?: string, iri?: string }
     private newLink: boolean;
     private sid: string | undefined;
     private tid: string | undefined;
@@ -72,8 +71,8 @@ export default class DiagramCanvas extends React.Component<Props, State> {
 
     componentDidUpdate(prevProps: Readonly<Props>, prevState: Readonly<{}>, snapshot?: any) {
         if (prevProps !== this.props && (this.props.retry && ProjectSettings.lastSource === DiagramCanvas.name)) {
-            if (this.lastUpdate.sid && this.lastUpdate.tid && this.lastUpdate.id && this.lastUpdate.type) {
-                this.updateConnections(this.lastUpdate.sid, this.lastUpdate.tid, this.lastUpdate.id, this.lastUpdate.type);
+            if (this.lastUpdate.sid && this.lastUpdate.tid && this.lastUpdate.id && this.lastUpdate.type && this.lastUpdate.iri) {
+                this.updateConnections(this.lastUpdate.sid, this.lastUpdate.tid, this.lastUpdate.id, this.lastUpdate.type, this.lastUpdate.iri);
             } else if (this.lastUpdate.sid && this.lastUpdate.id && (!this.lastUpdate.tid)) {
                 this.deleteConnections(this.lastUpdate.sid, this.lastUpdate.id);
             }
@@ -112,13 +111,12 @@ export default class DiagramCanvas extends React.Component<Props, State> {
         this.newLink = true;
         this.sid = id;
         graph.getElements().forEach(element => {
-            if (element.id !== id) this.paper?.findViewByModel(element).highlight()
+            this.paper?.findViewByModel(element).highlight()
         });
     }
 
     saveNewLink(iri: string, sid: string, tid: string) {
         let link = getNewLink(Links[iri].type);
-        debugger;
         link.source({id: sid});
         link.target({id: tid});
         link.addTo(graph);
@@ -141,9 +139,9 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                         ])
                     }
                 }
-                let type: string = Links[ProjectSettings.selectedLink].type in LinkConfig ? Links[iri].type : "default";
+                let type: string = Links[iri].type;
                 if (typeof link.id === "string" && typeof sid === "string" && typeof tid === "string") {
-                    this.updateConnections(sid, tid, link.id, type);
+                    this.updateConnections(sid, tid, link.id, type, iri);
                 }
                 if (type === "default") link.appendLabel({attrs: {text: {text: Links[iri].labels[this.props.projectLanguage]}}});
             } else link.remove();
@@ -152,8 +150,9 @@ export default class DiagramCanvas extends React.Component<Props, State> {
         this.tid = undefined;
         this.newLink = false;
         graph.getElements().forEach(element => {
-            this.paper?.findViewByModel(element).unhighlight()
+            this.paper?.findViewByModel(element).unhighlight();
         });
+        this.paper?.update()
     }
 
     resizeElem(id: string) {
@@ -185,10 +184,10 @@ export default class DiagramCanvas extends React.Component<Props, State> {
         }
     }
 
-    updateConnections(sid: string, tid: string, linkID: string, type: string) {
-        this.lastUpdate = {sid: sid, tid: tid, id: linkID, type: type};
+    updateConnections(sid: string, tid: string, linkID: string, type: string, iri: string) {
+        this.lastUpdate = {sid: sid, tid: tid, id: linkID, type: type, iri: iri};
         this.props.handleChangeLoadingStatus(true, LocaleMain.updating, false);
-        addLink(linkID, this.props.selectedLink, sid, tid, type);
+        addLink(linkID, iri, sid, tid, type);
         ProjectElements[sid].connections.push(linkID);
         updateConnections(ProjectSettings.contextEndpoint, linkID, [], DiagramCanvas.name).then(result => {
             if (result) {
@@ -405,7 +404,6 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                 this.props.hideDetails();
                 unHighlightAll();
                 this.drag = {x: x, y: y};
-                this.newLink = false;
                 graph.getElements().forEach(element => {
                     this.paper?.findViewByModel(element).unhighlight()
                 });
@@ -423,7 +421,8 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                 this.drag = undefined;
             },
             'blank:pointerclick': (evt) => {
-                this.createNewConcept(evt);
+                if (!this.newLink) this.createNewConcept(evt);
+                else this.newLink = false;
             }
             // 'link:pointerup': (linkView) => {
             //     let id = linkView.model.id;
@@ -525,9 +524,17 @@ export default class DiagramCanvas extends React.Component<Props, State> {
             <NewLinkDiagram
                 projectLanguage={this.props.projectLanguage}
                 modal={this.state.modalAddLink}
+                sid={this.sid}
+                tid={this.tid}
                 close={(selectedLink: string) => {
                     this.setState({modalAddLink: false});
                     if (selectedLink && this.sid && this.tid) this.saveNewLink(selectedLink, this.sid, this.tid);
+                    else {
+                        this.newLink = false;
+                        graph.getElements().forEach(element => {
+                            this.paper?.findViewByModel(element).unhighlight()
+                        });
+                    }
                 }}/>
         </div>);
 

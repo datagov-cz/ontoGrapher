@@ -33,6 +33,10 @@ body {
   &:hover {
     color: blue;
     text-decoration: underline;
+
+    &.nounderline {
+      text-decoration: none;
+    }
   }
 }
 

@@ -29,7 +29,6 @@ export default class DiagramTab extends React.Component<Props, State> {
 	}
 
 	changeDiagram() {
-		debugger;
 		changeDiagrams(this.props.diagram);
 		this.props.update();
 	}

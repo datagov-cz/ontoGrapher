@@ -22,7 +22,7 @@ export default class DiagramAdd extends React.Component<Props, State> {
 
 	render() {
 		return (<div className={"diagramTab"}>
-			<button className={"buttonlink"} onClick={() => {
+			<button className={"buttonlink nounderline"} onClick={() => {
 				this.addDiagram();
 			}}>
 				<span role="img" aria-label={""}>➕</span>

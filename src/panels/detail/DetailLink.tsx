@@ -146,7 +146,7 @@ export default class DetailLink extends React.Component<Props, State> {
             }}
             className={"details"}>
             <div>
-                <button className={"buttonlink close"} onClick={() => {
+                <button className={"buttonlink close nounderline"} onClick={() => {
                     unHighlightAll();
                     this.setState({id: ""});
                 }}><span role="img" aria-label={""}>❌</span></button>
