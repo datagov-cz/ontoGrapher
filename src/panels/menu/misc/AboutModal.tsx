@@ -21,12 +21,25 @@ export default class AboutModal extends React.Component<Props, State> {
             <Modal.Body>
                 <Tabs id={"changelog"}>
 					<Tab title={"July"} eventKey={"July"}>
-						<h6>7.6.</h6>
+						<h6>20.7.</h6>
+						<ul>
+							<li>Implemented (part of) new UI:</li>
+							<ul>
+								<li>New Menu panel</li>
+								<li>Left panel only shows vocabularies</li>
+								<li>Diagrams are managed via tabs</li>
+								<li>New concepts are created on click on canvas</li>
+								<li>Dragging can be done in the whole area of a concept</li>
+								<li>Clicking on a concept brings up its details</li>
+								<li>Creating new relationships is done via clicking on a new arrow icon</li>
+							</ul>
+						</ul>
+						<h6>7.7.</h6>
 						<ul>
 							<li>New concept IRIs are now correctly created</li>
 							<li>Detail panel header is now a link pointing to IRI of selected element</li>
 						</ul>
-						<h6>5.6.</h6>
+						<h6>5.7.</h6>
 						<ul>
 							<li>rdfs:subClassOf loading support</li>
 							<li>Validation support</li>

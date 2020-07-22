@@ -1,7 +1,7 @@
 import React from 'react';
 import {Button, Form, Modal} from "react-bootstrap";
 import * as LocaleMenu from "../locale/LocaleMenu.json";
-import {Links, ProjectElements, ProjectLinks, VocabularyElements} from "../config/Variables";
+import {Links, ProjectElements, ProjectLinks} from "../config/Variables";
 import {getLabelOrBlank} from "../function/FunctionGetVars";
 import {graph} from "../graph/Graph";
 
@@ -35,12 +35,6 @@ export default class NewLinkDiagram extends React.Component<Props, State> {
 		let elem = graph.getElements().find(elem => elem.id === this.props.sid);
 		if (elem && this.props.sid) {
 			let conns = ProjectElements[this.props.sid].connections;
-			console.log(conns.map(conn => {
-				return {
-					conn: ProjectLinks[conn].iri,
-					label: VocabularyElements[ProjectElements[ProjectLinks[conn].target].iri].labels
-				}
-			}));
 			return Object.keys(Links).filter(link => !conns.find(conn => ProjectLinks[conn].iri === link && ProjectLinks[conn].target === this.props.tid));
 		} else return [];
 	}

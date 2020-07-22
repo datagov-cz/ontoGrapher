@@ -17,6 +17,7 @@ import {createNewScheme} from "../function/FunctionCreateVars";
 import {getLabelOrBlank} from "../function/FunctionGetVars";
 import ModalRemoveItem from "./modal/ModalRemoveItem";
 import {updateProjectSettings} from "../interface/TransactionInterface";
+import {Form, InputGroup} from 'react-bootstrap';
 
 interface Props {
 	projectLanguage: string;
@@ -179,7 +180,7 @@ export default class ItemPanel extends React.Component<Props, State> {
 			>
 				{node.elements.sort((a, b) => ProjectElements[a].iri.localeCompare(ProjectElements[b].iri)).map((id) => {
 					let name = getLabelOrBlank(VocabularyElements[ProjectElements[id].iri].labels, this.props.projectLanguage);
-					if (name.startsWith(this.state.search)) {
+					if (name.toLowerCase().startsWith(this.state.search.toLowerCase())) {
 						return (
 							<PackageItem
 								key={id}
@@ -258,22 +259,22 @@ export default class ItemPanel extends React.Component<Props, State> {
 					this.forceUpdate();
 				}
 				}>{LocaleMain.addNewPackage}</button>}
+				<InputGroup>
+					<InputGroup.Prepend>
+						<InputGroup.Text id="inputGroupPrepend">
+							<span role="img" aria-label={LocaleMain.searchStereotypes}>🔎</span></InputGroup.Text>
+					</InputGroup.Prepend>
+					<Form.Control
+						type="text"
+						placeholder={LocaleMain.searchStereotypes}
+						aria-describedby="inputGroupPrepend"
+						value={this.state.search}
+						onChange={this.handleChangeSearch}
+					/>
+				</InputGroup>
 				<div className="elementLinkList">
 					{this.getFolders()}
 				</div>
-				{/*<InputGroup>*/}
-				{/*	<InputGroup.Prepend>*/}
-				{/*		<InputGroup.Text id="inputGroupPrepend">*/}
-				{/*			<span role="img" aria-label={LocaleMain.searchStereotypes}>🔎</span></InputGroup.Text>*/}
-				{/*	</InputGroup.Prepend>*/}
-				{/*	<Form.Control*/}
-				{/*		type="text"*/}
-				{/*		placeholder={LocaleMain.searchStereotypes}*/}
-				{/*		aria-describedby="inputGroupPrepend"*/}
-				{/*		value={this.state.search}*/}
-				{/*		onChange={this.handleChangeSearch}*/}
-				{/*	/>*/}
-				{/*</InputGroup>*/}
 				{/*<Tabs id="stereotypePanelTabs">*/}
 				{/*    <Tab eventKey={1} title={tooltipS}>*/}
 				{/*        <div className={"elementList"}>*/}

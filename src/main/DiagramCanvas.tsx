@@ -142,6 +142,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                 let type: string = Links[iri].type;
                 if (typeof link.id === "string" && typeof sid === "string" && typeof tid === "string") {
                     this.updateConnections(sid, tid, link.id, type, iri);
+                    this.props.updateElementPanel();
                 }
                 if (type === "default") link.appendLabel({attrs: {text: {text: Links[iri].labels[this.props.projectLanguage]}}});
             } else link.remove();
@@ -209,6 +210,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
         if (ProjectElements[sid].connections.includes(id)) ProjectElements[sid].connections.splice(ProjectElements[sid].connections.indexOf(id), 1);
         updateConnections(ProjectSettings.contextEndpoint, id, [id], DiagramCanvas.name).then(result => {
             if (result) {
+                //Diagrams.forEach(diag => diag.json.links.forEach((link: any) => {if (link.id === id) diag.json.links.splice(diag.json.links.indexOf(link),1)}));
                 delete ProjectLinks[id];
                 graph.getCell(id).remove();
                 updateDeleteProjectElement(ProjectSettings.contextEndpoint, ProjectSettings.ontographerContext + "-" + id, DiagramCanvas.name).then(result => {

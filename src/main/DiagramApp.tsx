@@ -253,6 +253,7 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 				}}
 				update={() => {
 					this.elementPanel.current?.forceUpdate();
+					this.detailPanel.current?.forceUpdate();
 				}}
 				handleChangeLoadingStatus={this.handleChangeLoadingStatus}
 				retry={this.state.retry}
