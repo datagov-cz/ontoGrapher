@@ -17,9 +17,6 @@ interface State {
 }
 
 export default class DiagramTab extends React.Component<Props, State> {
-	constructor(props: Props) {
-		super(props);
-	}
 
 	deleteDiagram() {
 		Diagrams.splice(this.props.diagram, 1);

@@ -11,9 +11,6 @@ interface State {
 }
 
 export default class DiagramAdd extends React.Component<Props, State> {
-	constructor(props: Props) {
-		super(props);
-	}
 
 	addDiagram() {
 		Diagrams.push({name: Locale.untitled, json: {}});
