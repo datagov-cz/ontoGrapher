@@ -2,7 +2,7 @@
   word-wrap: break-word;
   background-color: white;
   float: left;
-  height: calc(100vh - 56px) !important;
+  height: calc(100vh - 55px) !important;
   width: 100%;
   max-width: 600px;
   border-radius: 0;
@@ -41,12 +41,12 @@
   }
 
   .elementList {
-    height: calc(100vh - 175px) !important;
+    height: calc(100vh - 100px) !important;
     overflow: auto;
   }
 
   .elementLinkList {
-    height: calc(100vh - 136px) !important;
+    height: calc(100vh - 100px) !important;
     overflow-y: auto;
     overflow-x: hidden;
   }

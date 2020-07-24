@@ -13,13 +13,13 @@ export async function testContext(contextIRI: string, contextEndpoint: string) {
 		"select ?vocab ?label where {",
 		"BIND(<" + contextIRI + "> as ?contextIRI) .",
 		"OPTIONAL {?contextIRI rdfs:label ?label.}",
-		"?contextIRI <https://slovník.gov.cz/datový/pracovní-prostor/pojem/odkazuje-na-kontext> ?vocab.",
+		"graph ?contextIRI {",
 		"?vocab a ?vocabType .",
 		"VALUES ?vocabType {",
 		"<https://slovník.gov.cz/datový/pracovní-prostor/pojem/slovníkový-kontext>",
 		"<https://slovník.gov.cz/datový/pracovní-prostor/pojem/slovníkovy-kontext>",
 		"<https://slovník.gov.cz/datový/pracovní-prostor/pojem/slovníkový-kontext-pouze-pro-čtení>",
-		"}",
+		"}}",
 		"}"
 	].join(" ");
 	//keep this .log
@@ -38,7 +38,7 @@ export async function testContext(contextIRI: string, contextEndpoint: string) {
 	if (result.error) return result;
 	else {
 		response.forEach((res: { [key: string]: any }) => {
-			if (!(result.labels.includes(res.label.value))) result.labels.push(res.label.value);
+			if (res.label && !(result.labels.includes(res.label.value))) result.labels.push(res.label.value);
 			if (!(result.imports.includes(res.vocab.value))) result.imports.push(res.vocab.value);
 		});
 		return result;
@@ -59,18 +59,18 @@ export async function getContext(
 		"PREFIX termit: <http://onto.fel.cvut.cz/ontologies/application/termit/>",
 		"PREFIX a-popis-dat: <http://onto.fel.cvut.cz/ontologies/slovník/agendový/popis-dat/>",
 		"PREFIX dcterms: <http://purl.org/dc/terms/>",
-		"select ?vocab (bound(?ro) as ?readOnly) ?label ?vocabLabel",
+		"select ?vocab (bound(?ro) as ?readOnly) ?label ?title ?vocabLabel",
 		"?vocabIRI",
 		"where {",
 		"BIND(<" + contextIRI + "> as ?contextIRI) . ",
-		"?contextIRI rdfs:label ?label;",
-		"<https://slovník.gov.cz/datový/pracovní-prostor/pojem/odkazuje-na-kontext> ?vocab. ",
+		"OPTIONAL {?contextIRI rdfs:label ?label. }",
+		"OPTIONAL {?contextIRI dcterms:title ?title. }",
+		"graph ?contextIRI {",
 		"?vocab a ?vocabType .",
 		"VALUES ?vocabType {",
-		"<https://slovník.gov.cz/datový/pracovní-prostor/pojem/slovníkovy-kontext> ",
 		"<https://slovník.gov.cz/datový/pracovní-prostor/pojem/slovníkový-kontext> ",
 		"<https://slovník.gov.cz/datový/pracovní-prostor/pojem/slovníkový-kontext-pouze-pro-čtení> ",
-		"}",
+		"} }",
 		"graph ?vocab {",
 		"?vocabIRI a <http://onto.fel.cvut.cz/ontologies/slovník/agendový/popis-dat/pojem/glosář> .",
 		"?vocabIRI dcterms:title ?vocabLabel .",
@@ -98,7 +98,8 @@ export async function getContext(
 			};
 		}
 		vocabularies[result.vocabIRI.value].names[result.vocabLabel["xml:lang"]] = result.vocabLabel.value;
-		ProjectSettings.name[result.label["xml:lang"]] = result.label.value;
+		if (result.label) ProjectSettings.name[result.label["xml:lang"]] = result.label.value;
+		if (result.title) ProjectSettings.name[result.title["xml:lang"]] = result.title.value;
 	}
 	//load terms
 	for (let vocab in vocabularies) {

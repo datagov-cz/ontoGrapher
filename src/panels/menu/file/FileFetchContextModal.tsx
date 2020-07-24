@@ -27,7 +27,7 @@ export default class FileFetchContextModal extends React.Component<Props, State>
     }
 
     getOutput(response: { labels: string[], imports: string[], error: any }): string {
-        if (response.labels.length === 0) {
+        if (response.error) {
             return "Workspace not found with error:\n" + response.error;
         } else {
             let construct = "Workspace found\nwith label(s) ";
@@ -83,6 +83,7 @@ export default class FileFetchContextModal extends React.Component<Props, State>
                 <p className={"red modal-warning"}>{LocaleMenu.fileNewModalDescription}</p>
                 <Button onClick={() => {
                     this.props.loadContext(this.state.contextIRI, this.state.contextEndpoint, true);
+                    this.props.close();
                 }}>{LocaleMenu.fetch}</Button> &nbsp; <Button onClick={() => {
                 this.props.close();
             }} variant="secondary">{LocaleMenu.cancel}</Button>
