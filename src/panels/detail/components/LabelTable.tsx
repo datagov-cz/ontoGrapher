@@ -3,7 +3,6 @@ import TableList from "../../../components/TableList";
 // @ts-ignore
 import {RIEInput} from "riek";
 import {getLabelOrBlank} from "../../../function/FunctionGetVars";
-import * as LocaleMenu from "../../../locale/LocaleMenu.json";
 import {Languages} from "../../../config/Variables";
 import IRILink from "../../../components/IRILink";
 
@@ -21,6 +20,7 @@ export default class LabelTable extends React.Component<Props> {
             {Object.keys(this.props.labels).map((lang, i) =>
                 <tr key={i}>
                     {(!this.props.readOnly) && this.props.onEdit ?
+                        <span>
                         <td>
                             <RIEInput
                                 className={"rieinput"}
@@ -30,13 +30,14 @@ export default class LabelTable extends React.Component<Props> {
                                 }}
                                 propName="textarea"
                             />
-                            &nbsp;
+                        </td>
+                        <td>
                             <button className={"buttonlink"}
                                     onClick={() => {
                                         if (this.props.onEdit) this.props.onEdit("", lang);
-                                    }}>
-                                {LocaleMenu.deleteProjectName}</button>
+                                    }}>❌</button>
                         </td>
+                            </span>
                         :
                         <td>
                             {this.props.iri ? <IRILink label={getLabelOrBlank(this.props.labels, lang)}
