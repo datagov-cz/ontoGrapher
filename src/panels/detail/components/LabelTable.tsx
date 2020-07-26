@@ -19,8 +19,7 @@ export default class LabelTable extends React.Component<Props> {
         return (<TableList>
             {Object.keys(this.props.labels).map((lang, i) =>
                 <tr key={i}>
-                    {(!this.props.readOnly) && this.props.onEdit ?
-                        <span>
+                    {((!this.props.readOnly) && this.props.onEdit) ?
                         <td>
                             <RIEInput
                                 className={"rieinput"}
@@ -30,14 +29,12 @@ export default class LabelTable extends React.Component<Props> {
                                 }}
                                 propName="textarea"
                             />
-                        </td>
-                        <td>
-                            <button className={"buttonlink"}
+                            <button className={"buttonlink right"}
                                     onClick={() => {
                                         if (this.props.onEdit) this.props.onEdit("", lang);
-                                    }}>❌</button>
+                                    }}><span role="img"
+                                             aria-label={""}>❌</span></button>
                         </td>
-                            </span>
                         :
                         <td>
                             {this.props.iri ? <IRILink label={getLabelOrBlank(this.props.labels, lang)}

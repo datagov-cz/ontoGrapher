@@ -203,7 +203,7 @@ export default class DetailElement extends React.Component<Props, State> {
 													iri={iri}/>
 												{(this.state.inputTypes.length <= 1 || (this.state.readOnly)) ? "" :
 													<td>
-														<button className={"buttonlink"} onClick={() => {
+														<button className={"buttonlink right"} onClick={() => {
 															let result = _.cloneDeep(this.state.inputTypes);
 															result.splice(result.indexOf(iri), 1);
 															this.setState({
@@ -265,21 +265,21 @@ export default class DetailElement extends React.Component<Props, State> {
 					</Card>
 					<Card>
 						<Card.Header>
-							<Accordion.Toggle as={Button} variant={"link"} eventKey={"0"}>
+							<Accordion.Toggle as={Button} variant={"link"} eventKey={"1"}>
 								{LocaleMain.connections}
 							</Accordion.Toggle>
 						</Card.Header>
-						<Accordion.Collapse eventKey={"0"}>
+						<Accordion.Collapse eventKey={"1"}>
 							<Card.Body>
 								<TableList
 									headings={[LocaleMenu.connectionVia, LocaleMenu.connectionTo, LocaleMenu.diagram]}>
 									{this.state.inputConnections.map((conn) => {
-											if (ProjectLinks[conn]) {
-												return (<tr>
-													<IRIlabel
-														label={getLinkOrVocabElem(ProjectLinks[conn].iri).labels[this.props.projectLanguage]}
-														iri={ProjectLinks[conn].iri}/>
-													<td>{getLabelOrBlank(VocabularyElements[ProjectElements[ProjectLinks[conn].target].iri].labels, this.props.projectLanguage)}</td>
+										if (ProjectLinks[conn]) {
+											return (<tr>
+												<IRIlabel
+													label={getLinkOrVocabElem(ProjectLinks[conn].iri).labels[this.props.projectLanguage]}
+													iri={ProjectLinks[conn].iri}/>
+												<td>{getLabelOrBlank(VocabularyElements[ProjectElements[ProjectLinks[conn].target].iri].labels, this.props.projectLanguage)}</td>
 													<td>{Diagrams[ProjectLinks[conn].diagram].name}</td>
 												</tr>)
 											} else return ""
@@ -291,11 +291,11 @@ export default class DetailElement extends React.Component<Props, State> {
 					</Card>
 					<Card>
 						<Card.Header>
-							<Accordion.Toggle as={Button} variant={"link"} eventKey={"0"}>
+							<Accordion.Toggle as={Button} variant={"link"} eventKey={"2"}>
 								{LocaleMain.diagram}
 							</Accordion.Toggle>
 						</Card.Header>
-						<Accordion.Collapse eventKey={"0"}>
+						<Accordion.Collapse eventKey={"2"}>
 							<Card.Body>
 								<TableList headings={[LocaleMenu.diagram]}>
 									{this.state.inputDiagrams.map((diag) =>
