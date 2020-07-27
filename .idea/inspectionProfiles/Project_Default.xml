@@ -18,5 +18,10 @@
       <option name="CHECK_FOR_NOT_ASCII_IDENTIFIER_NAME" value="false" />
       <option name="CHECK_FOR_DIFFERENT_LANGUAGES_IN_IDENTIFIER_NAME" value="false" />
     </inspection_tool>
+    <inspection_tool class="SpellCheckingInspection" enabled="false" level="TYPO" enabled_by_default="false">
+      <option name="processCode" value="true" />
+      <option name="processLiterals" value="true" />
+      <option name="processComments" value="true" />
+    </inspection_tool>
   </profile>
 </component>

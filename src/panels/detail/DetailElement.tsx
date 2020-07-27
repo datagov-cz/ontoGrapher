@@ -72,7 +72,7 @@ export default class DetailElement extends React.Component<Props, State> {
 			inputDefinitions: {},
 			inputSchemes: {},
 			inputProperties: [],
-			formNewStereotype: Object.keys(Stereotypes)[0],
+			formNewStereotype: "",
 			readOnly: true,
 			changes: false
 		}
@@ -198,48 +198,48 @@ export default class DetailElement extends React.Component<Props, State> {
 									{this.state.inputTypes.map(iri => {
 										if (getStereotypeOrVocabElem(iri)) {
 											return (<tr key={iri}>
-												<IRIlabel
-													label={getLabelOrBlank(getStereotypeOrVocabElem(iri).labels, this.props.projectLanguage)}
-													iri={iri}/>
-												{(this.state.inputTypes.length <= 1 || (this.state.readOnly)) ? "" :
-													<td>
-														<button className={"buttonlink right"} onClick={() => {
-															let result = _.cloneDeep(this.state.inputTypes);
-															result.splice(result.indexOf(iri), 1);
-															this.setState({
-																inputTypes: result,
-																changes: true,
-															})
-														}}>❌
-														</button>
-													</td>}
+												<td>
+													<IRILink
+														label={getLabelOrBlank(getStereotypeOrVocabElem(iri).labels, this.props.projectLanguage)}
+														iri={iri}/>
+													<button className={"buttonlink right"} onClick={() => {
+														let result = _.cloneDeep(this.state.inputTypes);
+														result.splice(result.indexOf(iri), 1);
+														this.setState({
+															inputTypes: result,
+															changes: true,
+														})
+													}}>❌
+													</button>
+												</td>
 											</tr>)
 										} else return ""
 									})}
-									{(!this.state.readOnly) ? <tr>
-										<td>
-											<Form inline>
-												<Form.Control size="sm" as="select" value={this.state.formNewStereotype}
-															  onChange={(event) => {
-																  this.setState({formNewStereotype: event.currentTarget.value})
-															  }}>
-													{Object.keys(Stereotypes).filter(stereotype => !(this.state.inputTypes.includes(stereotype))).map((stereotype) => (
-														<option onClick={() => {
-															let result = this.state.inputTypes;
-															if (!(this.state.inputTypes.includes(stereotype))) {
-																result.push(stereotype);
-																this.setState({
-																	inputTypes: _.cloneDeep(result),
-																	formNewStereotype: Object.keys(Stereotypes)[0],
-																	changes: true,
-																})
-															}
-														}} key={stereotype}
-																value={stereotype}>{getName(stereotype, this.props.projectLanguage)}</option>))}
-												</Form.Control>
-											</Form>
-										</td>
-									</tr> : ""}
+									{(!this.state.readOnly) && <tr>
+                                        <td>
+                                            ➕ &nbsp;<Form inline>
+                                            <Form.Control size="sm" as="select"
+                                                          value={""}
+                                                          onChange={(event) => {
+															  let result = this.state.inputTypes;
+															  if (!(this.state.inputTypes.includes(event.currentTarget.value)) && event.currentTarget.value !== "") {
+																  result.push(event.currentTarget.value);
+																  this.setState({
+																	  inputTypes: _.cloneDeep(result),
+																	  formNewStereotype: event.currentTarget.value,
+																	  changes: true,
+																  })
+															  }
+														  }}
+                                            >
+                                                <option key={""} value={""}>{LocaleMain.addNewStereotype}</option>
+												{Object.keys(Stereotypes).filter(stereotype => !(this.state.inputTypes.includes(stereotype))).map((stereotype) => (
+													<option key={stereotype}
+															value={stereotype}>{getName(stereotype, this.props.projectLanguage)}</option>))}
+                                            </Form.Control>
+                                        </Form>
+                                        </td>
+                                    </tr>}
 								</TableList>
 								<h5>{<IRILink label={this.props.headers.inScheme[this.props.projectLanguage]}
 											  iri={"http://www.w3.org/2004/02/skos/core#inScheme"}/>}</h5>

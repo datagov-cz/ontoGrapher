@@ -4,7 +4,7 @@ import TableList from "../../../components/TableList";
 import {RIEInput} from "riek";
 import {getLabelOrBlank} from "../../../function/FunctionGetVars";
 import {Languages} from "../../../config/Variables";
-import IRILink from "../../../components/IRILink";
+import IRIlabel from "../../../components/IRIlabel";
 
 interface Props {
     labels: { [key: string]: string };
@@ -36,10 +36,9 @@ export default class LabelTable extends React.Component<Props> {
                                              aria-label={""}>❌</span></button>
                         </td>
                         :
-                        <td>
-                            {this.props.iri ? <IRILink label={getLabelOrBlank(this.props.labels, lang)}
-                                                       iri={this.props.iri}/> : getLabelOrBlank(this.props.labels, lang)}
-                        </td>
+                        this.props.iri ?
+                            <IRIlabel label={getLabelOrBlank(this.props.labels, lang)} iri={this.props.iri}/> :
+                            <td>getLabelOrBlank(this.props.labels, lang)</td>
                     }
                     <td>{Languages[lang]}</td>
                 </tr>
