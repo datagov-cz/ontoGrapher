@@ -80,6 +80,10 @@ export function addProperties(iri: string, attrs: { name: string, iri: string, t
     });
 }
 
+export function createIDIRI(id: string) {
+    return ProjectSettings.ontographerContext + "/" + id;
+}
+
 export function createNewElemIRI(labels: { [key: string]: string }, target: { [key: string]: any }, url?: string): string {
     let name = LocaleMain.untitled;
     for (let lang in labels) {
@@ -134,7 +138,7 @@ export function getDomainOf(iriElem: string): string[] {
     return result;
 }
 
-export function addVocabularyElement(id: string, iri: string, type?: string) {
+export function addVocabularyElement(iri: string, type?: string) {
     if (ProjectSettings.selectedPackage.scheme) {
         VocabularyElements[iri] = {
             labels: initLanguageObject(""),
