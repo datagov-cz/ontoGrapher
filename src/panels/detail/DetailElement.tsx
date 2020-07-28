@@ -209,7 +209,8 @@ export default class DetailElement extends React.Component<Props, State> {
 															inputTypes: result,
 															changes: true,
 														})
-													}}>❌
+													}}><span role="img"
+															 aria-label={""}>❌</span>
 													</button>
 												</td>
 											</tr>)
@@ -217,7 +218,8 @@ export default class DetailElement extends React.Component<Props, State> {
 									})}
 									{(!this.state.readOnly) && <tr>
                                         <td>
-                                            ➕ &nbsp;<Form inline>
+                                            <span role="img"
+                                                  aria-label={""}>➕</span>&nbsp;<Form inline>
                                             <Form.Control size="sm" as="select"
                                                           value={""}
                                                           onChange={(event) => {
