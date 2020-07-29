@@ -21,6 +21,11 @@ export default class AboutModal extends React.Component<Props, State> {
             <Modal.Body>
                 <Tabs id={"changelog"}>
 					<Tab title={"July"} eventKey={"July"}>
+						<h6>27.7.</h6>
+						<ul>
+							<li>Implemented new Detail panel, with the tabs removed</li>
+							<li>Stereotypes are added on click of the option in the select menu</li>
+						</ul>
 						<h6>20.7.</h6>
 						<ul>
 							<li>Implemented (part of) new UI:</li>

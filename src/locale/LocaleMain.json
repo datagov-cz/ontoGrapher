@@ -20,6 +20,7 @@
   "validationError": "Message",
   "validationReload": "Refresh",
   "validation": "Validation",
+  "addNewStereotype": "Add new stereotype",
   "modalEditDiagramTitle": "Rename diagram",
   "sourceCardinalityExplainer": "The end from which the relationship begins",
   "targetCardinalityExplainer": "The end to which the relationship ends",

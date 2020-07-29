@@ -3,9 +3,8 @@ import TableList from "../../../components/TableList";
 // @ts-ignore
 import {RIEInput} from "riek";
 import {getLabelOrBlank} from "../../../function/FunctionGetVars";
-import * as LocaleMenu from "../../../locale/LocaleMenu.json";
 import {Languages} from "../../../config/Variables";
-import IRILink from "../../../components/IRILink";
+import IRIlabel from "../../../components/IRIlabel";
 
 interface Props {
     labels: { [key: string]: string };
@@ -20,7 +19,7 @@ export default class LabelTable extends React.Component<Props> {
         return (<TableList>
             {Object.keys(this.props.labels).map((lang, i) =>
                 <tr key={i}>
-                    {(!this.props.readOnly) && this.props.onEdit ?
+                    {((!this.props.readOnly) && this.props.onEdit) ?
                         <td>
                             <RIEInput
                                 className={"rieinput"}
@@ -30,18 +29,16 @@ export default class LabelTable extends React.Component<Props> {
                                 }}
                                 propName="textarea"
                             />
-                            &nbsp;
-                            <button className={"buttonlink"}
+                            <button className={"buttonlink right"}
                                     onClick={() => {
                                         if (this.props.onEdit) this.props.onEdit("", lang);
-                                    }}>
-                                {LocaleMenu.deleteProjectName}</button>
+                                    }}><span role="img"
+                                             aria-label={""}>❌</span></button>
                         </td>
                         :
-                        <td>
-                            {this.props.iri ? <IRILink label={getLabelOrBlank(this.props.labels, lang)}
-                                                       iri={this.props.iri}/> : getLabelOrBlank(this.props.labels, lang)}
-                        </td>
+                        this.props.iri ?
+                            <IRIlabel label={getLabelOrBlank(this.props.labels, lang)} iri={this.props.iri}/> :
+                            <td>{getLabelOrBlank(this.props.labels, lang)}</td>
                     }
                     <td>{Languages[lang]}</td>
                 </tr>
