@@ -38,7 +38,7 @@ export default class LabelTable extends React.Component<Props> {
                         :
                         this.props.iri ?
                             <IRIlabel label={getLabelOrBlank(this.props.labels, lang)} iri={this.props.iri}/> :
-                            <td>getLabelOrBlank(this.props.labels, lang)</td>
+                            <td>{getLabelOrBlank(this.props.labels, lang)}</td>
                     }
                     <td>{Languages[lang]}</td>
                 </tr>
