@@ -148,7 +148,8 @@ export function addVocabularyElement(iri: string, type?: string) {
             range: undefined,
             types: type ? [type] : [],
             subClassOf: [],
-            restrictions: []
+            restrictions: [],
+            connections: []
         }
     }
 }

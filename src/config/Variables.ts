@@ -4,6 +4,7 @@ import {PackageNode} from "../datatypes/PackageNode";
 import {initLanguageObject, parsePrefix} from "../function/FunctionEditVars";
 import {AttributeObject} from "../datatypes/AttributeObject";
 import {RestrictionObject} from "../datatypes/RestrictionObject";
+import {ConnectionObject} from "../datatypes/ConnectionObject";
 
 // language code : language label
 export var Languages: { [key: string]: string } = {};
@@ -100,7 +101,8 @@ export var VocabularyElements: {
             range: string | undefined,
             types: string[],
             subClassOf: string[],
-            restrictions: RestrictionObject[]
+            restrictions: RestrictionObject[],
+            connections: ConnectionObject[]
         }
 } = {};
 

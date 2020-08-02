@@ -1,6 +1,7 @@
 import {parsePrefix} from "../function/FunctionEditVars";
 import {RestrictionObject} from "../datatypes/RestrictionObject";
 import {VocabularyElements} from "./Variables";
+import {ConnectionObject} from "../datatypes/ConnectionObject";
 
 export var Restrictions: {
 	[key: string]: {
@@ -22,12 +23,17 @@ Restrictions["http://www.w3.org/2002/07/owl#someValuesFrom"] = {
 					break;
 				}
 			}
-		}
-		if (restriction.onProperty === mvp1IRI) {
+		} else if (restriction.onProperty === mvp1IRI) {
 			for (let rest of VocabularyElements[iri].restrictions) {
 				if (rest.onProperty === mvp1IRI && rest.restriction === parsePrefix("owl", "allValuesFrom") && rest.target === restriction.target) {
 					VocabularyElements[iri].domain = restriction.target;
 					break;
+				}
+			}
+		} else {
+			for (let rest of VocabularyElements[iri].restrictions) {
+				if (rest.onProperty === restriction.onProperty && rest.restriction === parsePrefix("owl", "allValuesFrom") && rest.target === restriction.target) {
+					VocabularyElements[iri].connections.push(new ConnectionObject(restriction.onProperty, restriction.target));
 				}
 			}
 		}

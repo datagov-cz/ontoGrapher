@@ -25,6 +25,14 @@ export function initRestrictions() {
 	}
 }
 
+export function initConnections() {
+	for (let iri in VocabularyElements) {
+		for (let connection of VocabularyElements[iri].connections) {
+			connection.initConnection(iri);
+		}
+	}
+}
+
 export function getRestrictionsAsJSON(iri: string) {
 	let result: {}[] = [];
 	for (let restriction of VocabularyElements[iri].restrictions) {
