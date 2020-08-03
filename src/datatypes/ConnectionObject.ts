@@ -1,7 +1,7 @@
 import {ProjectElements, ProjectLinks, ProjectSettings} from "../config/Variables";
 import {getNewLink} from "../function/FunctionGraph";
 import {addLink} from "../function/FunctionCreateVars";
-import {updateConnections} from "../interface/TransactionInterface";
+import {updateProjectLink} from "../interface/TransactionInterface";
 
 export class ConnectionObject {
 	public onProperty: string;
@@ -24,7 +24,7 @@ export class ConnectionObject {
 				)) {
 					addLink(link.id, this.onProperty, srcElem, tgtElem);
 					ProjectElements[srcElem].connections.push(link.id);
-					updateConnections(ProjectSettings.contextEndpoint, link.id, [], ConnectionObject.name);
+					updateProjectLink(ProjectSettings.contextEndpoint, link.id, ConnectionObject.name);
 				}
 			}
 		}

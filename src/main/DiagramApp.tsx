@@ -22,7 +22,7 @@ import {nameGraphElement, nameGraphLink, unHighlightAll} from "../function/Funct
 import {PackageNode} from "../datatypes/PackageNode";
 import {createNewScheme, setupDiagrams} from "../function/FunctionCreateVars";
 import {getElementsConfig, getLinksConfig} from "../interface/SPARQLInterface";
-import {initConnections, initRestrictions} from "../function/FunctionRestriction";
+import {initRestrictions} from "../function/FunctionRestriction";
 import {updateProjectSettings} from "../interface/TransactionInterface";
 import ValidationPanel from "../panels/ValidationPanel";
 import DiagramPanel from "../panels/DiagramPanel";
@@ -182,7 +182,6 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 					initRestrictions();
 					await getElementsConfig(ProjectSettings.contextIRI, ProjectSettings.contextEndpoint);
 					await getLinksConfig(ProjectSettings.contextIRI, ProjectSettings.contextEndpoint);
-					initConnections();
 					await setupDiagrams(diagram);
 					await updateProjectSettings(contextIRI, contextEndpoint, DiagramApp.name);
 					this.forceUpdate();

@@ -113,9 +113,10 @@ export default class ValidationPanel extends React.Component<Props, State> {
 					</td>
 					<td>{result.severity.substring(result.severity.lastIndexOf("#") + 1)}</td>
 					{result.focusNode in VocabularyElements ?
-						<IRIlabel label={VocabularyElements[result.focusNode].labels[this.props.projectLanguage]} iri={result.focusNode}/>
+						<IRIlabel label={VocabularyElements[result.focusNode].labels[this.props.projectLanguage]}
+								  iri={result.focusNode}/>
 						: <IRIlabel label={result.focusNode} iri={result.focusNode}/>}
-					<td>{result.message.substring(0, result.message.lastIndexOf("@"))}</td>
+					<td>{result.message.includes("@") ? result.message.substring(0, result.message.lastIndexOf("@")) : result.message}</td>
 				</tr>)}
             </TableList></div>}
 		</ResizableBox>);
