@@ -46,10 +46,6 @@ export var ProjectLinks: {
         sourceCardinality: Cardinality,
         //target cardinality Cardinality object
         targetCardinality: Cardinality,
-        //diagram index
-        diagram: number,
-        //vertices
-        vertices: joint.dia.Link.Vertex[];
         //type - dictates saving/loading behaviour
         type: string;
     }

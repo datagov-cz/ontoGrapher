@@ -21,8 +21,6 @@ import {Form, InputGroup} from 'react-bootstrap';
 
 interface Props {
 	projectLanguage: string;
-	handleChangeSelectedLink: Function;
-	selectedLink: string;
 	handleChangeLoadingStatus: Function;
 	retry: boolean;
 	handleWidth: Function;
@@ -41,31 +39,7 @@ interface State {
 	selectedNode: PackageNode;
 }
 
-// const tooltipS = (
-//     <OverlayTrigger placement="right" overlay={<Tooltip id="tooltipS">{LocaleMain.classes}</Tooltip>}>
-//         <div><span role="img" aria-label={LocaleMain.classes}>⬜</span></div>
-//     </OverlayTrigger>
-// );
-// const tooltipR = (
-//     <OverlayTrigger placement="right" overlay={<Tooltip id="tooltipS">{LocaleMain.relationships}</Tooltip>}>
-//         <div><span role="img" aria-label={LocaleMain.relationships}>➡</span></div>
-//     </OverlayTrigger>
-// );
-// const tooltipPM = (
-//     <OverlayTrigger placement="right" overlay={<Tooltip id="tooltipS">{LocaleMain.packageModel}</Tooltip>}>
-//         <div><span role="img" aria-label={LocaleMain.packageModel}>📦</span></div>
-//     </OverlayTrigger>
-// );
-// const tooltipD = (
-//     <OverlayTrigger placement="right" overlay={<Tooltip id="tooltipS">{LocaleMain.diagram}</Tooltip>}>
-//         <div><span role="img" aria-label={LocaleMain.diagram}>🖼️</span></div>
-//     </OverlayTrigger>
-// );
-
 export default class ItemPanel extends React.Component<Props, State> {
-
-	// private stereotypes: string[];
-	// private links: string[];
 
 	constructor(props: Props) {
 		super(props);
@@ -81,12 +55,8 @@ export default class ItemPanel extends React.Component<Props, State> {
 			selectedDiagram: 0,
 			selectedNode: PackageRoot
 		};
-		// this.links = Object.keys(Links);
-		// this.stereotypes = Object.keys(Stereotypes);
 		this.handleChangeSelect = this.handleChangeSelect.bind(this);
 		this.handleChangeSearch = this.handleChangeSearch.bind(this);
-		//this.search = this.search.bind(this);
-		this.handleChangeSelectedLink = this.handleChangeSelectedLink.bind(this);
 	}
 
 	componentDidUpdate(prevProps: Readonly<Props>, prevState: Readonly<{}>, snapshot?: any) {
@@ -94,33 +64,6 @@ export default class ItemPanel extends React.Component<Props, State> {
 			this.save();
 		}
 	}
-
-	handleChangeSelectedLink(linkType: string) {
-		this.props.handleChangeSelectedLink(linkType);
-	}
-
-	// search(search: string, filter: string[]) {
-	// 	let result1 = [];
-	// 	for (let stereotype in Stereotypes) {
-	// 		if ((filter.includes(Stereotypes[stereotype].inScheme) || filter.length === 0)
-	// 			&& (
-	//                 Stereotypes[stereotype].labels[this.props.projectLanguage].startsWith(search)
-	//             )) {
-	//             result1.push(stereotype);
-	//         }
-	//     }
-	//     let result2 = [];
-	//     for (let link in Links) {
-	//         if ((filter.includes(Links[link].inScheme) || filter.length === 0)
-	//             && (
-	//                 Links[link].labels[this.props.projectLanguage].startsWith(search)
-	//             )) {
-	//             result2.push(link);
-	//         }
-	//     }
-	//     this.stereotypes = result1;
-	//     this.links = result2;
-	// }
 
 	handleChangeSelect(event: any) {
 		let result = [];
@@ -130,13 +73,11 @@ export default class ItemPanel extends React.Component<Props, State> {
 			}
 		}
 		this.setState({filter: result});
-		//this.search(this.state.search, result);
         this.forceUpdate();
     }
 
     handleChangeSearch(event: React.ChangeEvent<HTMLSelectElement>) {
 		this.setState({search: event.currentTarget.value});
-		//this.search(event.currentTarget.value, this.state.filter);
 		this.forceUpdate();
 	}
 
@@ -147,12 +88,6 @@ export default class ItemPanel extends React.Component<Props, State> {
     getNameLink(element: string) {
         return Links[element].labels[this.props.projectLanguage];
     }
-
-    update() {
-		//this.stereotypes = Object.keys(Stereotypes);
-		//this.links = Object.keys(Links);
-		this.forceUpdate();
-	}
 
     getFoldersDFS(arr: JSX.Element[], node: PackageNode, depth: number) {
         if (node !== PackageRoot) {
@@ -250,7 +185,6 @@ export default class ItemPanel extends React.Component<Props, State> {
 				height={1000}
 				axis={"x"}
 				handleSize={[8, 8]}
-				//resizeHandles={['ne']}
 				onResizeStop={(e, d) => this.props.handleWidth(d.size.width)}
 			>
 				{!ProjectSettings.contextIRI && <button className={"margins"} onClick={() => {
@@ -272,105 +206,10 @@ export default class ItemPanel extends React.Component<Props, State> {
 						onChange={this.handleChangeSearch}
 					/>
 				</InputGroup>
+
 				<div className="elementLinkList">
 					{this.getFolders()}
 				</div>
-				{/*<Tabs id="stereotypePanelTabs">*/}
-				{/*    <Tab eventKey={1} title={tooltipS}>*/}
-				{/*        <div className={"elementList"}>*/}
-				{/*			{this.stereotypes.sort().map((element) => (*/}
-				{/*				<ElementItem*/}
-				{/*					key={element}*/}
-				{/*					iri={element}*/}
-				{/*					definition={Stereotypes[element].definitions[this.props.projectLanguage]}*/}
-				{/*					label={Stereotypes[element].labels[this.props.projectLanguage]}*/}
-				{/*					scheme={Schemes[Stereotypes[element].inScheme].labels[this.props.projectLanguage]}*/}
-				{/*				/>))}*/}
-				{/*        </div>*/}
-				{/*    </Tab>*/}
-				{/*    <Tab eventKey={2} title={tooltipR}>*/}
-				{/*        <div className="elementList">*/}
-				{/*			{this.links.sort().map((link) => <LinkItem*/}
-				{/*					key={link}*/}
-				{/*					selectedLink={this.props.selectedLink}*/}
-				{/*					handleChangeSelectedLink={this.handleChangeSelectedLink}*/}
-				{/*					linkType={link}*/}
-				{/*					scheme={Schemes[Links[link].inScheme].labels[this.props.projectLanguage]}*/}
-				{/*					definition={Links[link].definitions[this.props.projectLanguage]}*/}
-				{/*					label={Links[link].labels[this.props.projectLanguage]}*/}
-				{/*				/>*/}
-				{/*			)}*/}
-				{/*		</div>*/}
-				{/*	</Tab>*/}
-				{/*	<Tab eventKey={3} title={tooltipPM}>*/}
-				{/*		{!ProjectSettings.contextIRI && <button className={"margins"} onClick={() => {*/}
-				{/*			let scheme = createNewScheme();*/}
-				{/*			new PackageNode(Schemes[scheme].labels, PackageRoot, true, scheme);*/}
-				{/*			this.forceUpdate();*/}
-				{/*		}*/}
-				{/*		}>{LocaleMain.addNewPackage}</button>}*/}
-				{/*		<div className="elementLinkList">*/}
-				{/*			{this.getFolders()}*/}
-				{/*		</div>*/}
-				{/*	</Tab>*/}
-				{/*	<Tab eventKey={4} title={tooltipD}>*/}
-				{/*		<button className={"margins"} onClick={() => {*/}
-				{/*			this.props.handleChangeLoadingStatus(true, LocaleMain.updating, false);*/}
-				{/*			addDiagram();*/}
-				{/*			this.save();*/}
-				{/*			this.forceUpdate();*/}
-				{/*		}*/}
-				{/*        }>{LocaleMain.addDiagram}</button>*/}
-				{/*        <div className="elementLinkList">*/}
-				{/*            {Diagrams.map((model, i) => <DiagramItem*/}
-				{/*				retry={this.props.retry}*/}
-				{/*				key={i}*/}
-				{/*				main={i}*/}
-				{/*				selectedDiagram={ProjectSettings.selectedDiagram}*/}
-				{/*				update={() => {*/}
-				{/*					this.forceUpdate();*/}
-				{/*				}}*/}
-				{/*				openRemoveDiagram={() => {*/}
-				{/*					this.setState({*/}
-				{/*						selectedDiagram: i,*/}
-				{/*						modalRemoveDiagram: true*/}
-				{/*						})*/}
-				{/*					}}*/}
-				{/*					openRenameDiagram={() => {*/}
-				{/*						this.setState({*/}
-				{/*							selectedDiagram: i,*/}
-				{/*							modalRenameDiagram: true*/}
-				{/*						})*/}
-				{/*					}}*/}
-				{/*					handleChangeLoadingStatus={this.props.handleChangeLoadingStatus}*/}
-				{/*				/>*/}
-				{/*			)}*/}
-				{/*		</div>*/}
-				{/*	</Tab>*/}
-				{/*</Tabs>*/}
-
-				{/*<ModalEditPackage*/}
-				{/*	modal={this.state.modalEditPackage}*/}
-				{/*	node={this.state.selectedNode}*/}
-				{/*	close={() => {*/}
-				{/*		this.setState({modalEditPackage: false});*/}
-				{/*	}}*/}
-				{/*	projectLanguage={this.props.projectLanguage}*/}
-				{/*	update={() => {*/}
-				{/*		this.forceUpdate();*/}
-				{/*	}}*/}
-				{/*/>*/}
-
-				{/*<ModalRemovePackage*/}
-				{/*	modal={this.state.modalRemovePackage}*/}
-				{/*	node={this.state.selectedNode}*/}
-				{/*	close={() => {*/}
-				{/*		this.setState({modalRemovePackage: false});*/}
-				{/*	}}*/}
-				{/*	update={() => {*/}
-				{/*		this.forceUpdate();*/}
-				{/*	}}*/}
-				{/*/>*/}
 
 				<ModalRemoveItem
 					modal={this.state.modalRemoveItem}

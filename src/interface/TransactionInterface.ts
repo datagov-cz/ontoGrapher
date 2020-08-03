@@ -216,21 +216,9 @@ export async function updateProjectLink(contextEndpoint: string, id: string, sou
 			"og:target-id": ProjectLinks[id].target,
 			"og:source": ProjectElements[ProjectLinks[id].source].iri,
 			"og:target": ProjectElements[ProjectLinks[id].target].iri,
-			"og:diagram": ProjectLinks[id].diagram,
 			"og:type": ProjectLinks[id].type,
-			...ProjectLinks[id].vertices.map((vert, i) => {
-				return {"og:vertex": linkIRI + "/vertex-" + (i + 1)}
-			}),
 			...cardinalities
-		},
-			...ProjectLinks[id].vertices.map((vert, i) => {
-				return {
-					"@id": linkIRI + "/vertex-" + (i + 1),
-					"og:index": i,
-					"og:position-x": vert.x,
-					"og:position-y": vert.y
-				}
-			}),
+		}
 		]
 	}
 

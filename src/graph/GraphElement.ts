@@ -17,8 +17,7 @@ export var graphElement = joint.dia.Element.define('custom.graphElement', {
                 textVerticalAnchor: 'middle',
                 textAnchor: 'middle',
                 refX: '50%',
-                refY: '50%',
-                //magnet: true,
+                refY: '50%'
             }
         }
     }, {

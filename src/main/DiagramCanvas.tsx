@@ -27,7 +27,6 @@ import NewLinkDiagram from "./NewLinkDiagram";
 
 interface Props {
     projectLanguage: string;
-    selectedLink: string;
     prepareDetails: Function;
     hideDetails: Function;
     updateElementPanel: Function;
@@ -310,9 +309,6 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                         let id = evt.currentTarget.getAttribute("model-id");
                         for (let cell of graph.getElements()) {
                             if (cell.id === id) {
-                                for (let link of graph.getConnectedLinks(cell)) {
-                                    ProjectLinks[link.id].vertices = link.vertices();
-                                }
                                 ProjectElements[id].position[ProjectSettings.selectedDiagram] = cell.position();
                                 cell.remove();
                                 ProjectElements[id].hidden[ProjectSettings.selectedDiagram] = true;

@@ -62,41 +62,6 @@ export default class MenuPanel extends React.Component<MenuPanelProps, MenuPanel
 					</div>
 				</div>
 			</nav>
-			// 	<Navbar className={"menuPanel"} variant="light" bg="light">
-			//     {/*<Navbar.Brand>{Locale.ontoGrapher}</Navbar.Brand>*/}
-			//     <Nav className="mr-auto">
-			//         {this.props.readOnly ?
-			// 			<div/>
-			// 			:
-			// 			<div className={"inert"}>
-			// 				<MenuPanelFile
-			// 					newProject={this.props.newProject}
-			// 					loadProject={this.props.loadProject}
-			// 					update={() => {
-			// 						this.forceUpdate();
-			// 					}}
-			// 					loadContext={this.props.loadContext}
-			// 				/>
-			// 				<MenuPanelValidate validate={() => this.props.validate()}/>
-			// 			</div>
-			//         }
-			//     </Nav>
-			//     <Navbar.Text className="mr-sm-2">
-			// 		<InterfaceNotification active={this.props.loading} message={this.props.status}
-			// 							   error={this.props.loadingError} retry={this.props.retry}/>
-			//         &nbsp;
-			//         {ProjectSettings.name[this.props.projectLanguage] === "" ? "<untitled>" : ProjectSettings.name[this.props.projectLanguage]}
-			//     </Navbar.Text>
-			//     <Form inline>
-			//         <Form.Control as="select" value={this.props.projectLanguage} onChange={this.handleChangeLanguage}>
-			//             {Object.keys(Languages).map((languageCode) => (
-			//                 <option key={languageCode} value={languageCode}>{Languages[languageCode]}</option>))}
-			//         </Form.Control>
-			//     </Form>
-			// 	<MenuPanelHelp/>
-			// 	<MenuPanelAbout/>
-			//
-			// </Navbar>
 		);
 	}
 }

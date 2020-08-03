@@ -4,9 +4,6 @@
   background-color: white;
   float: right;
   padding: 5px;
-  //position: absolute;
-  //right: 0;
-  //top: 56px;
   height: calc(100vh - 56px) !important;
   max-width: 600px;
 
@@ -15,8 +12,7 @@
   }
 
   .bordered {
-    margin: auto;
-    margin-bottom: 10px;
+    margin: auto auto 10px;
     padding: 2px;
     display: flex;
     border-style: solid;

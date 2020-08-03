@@ -69,15 +69,14 @@ export function loadDiagram(load: {
             position: elem.pos,
             attrs: {
                 label: {
-                    text: elem.label,
-                    //magnet: true
+                    text: elem.label
                 }
             }
         });
         cls.addTo(graph);
     }
     for (let link of load.links) {
-        if (ProjectElements[link.source].connections.includes(link.id)) {
+        if (ProjectElements[link.source].connections.includes(link.id) && link.id in ProjectLinks) {
             let lnk = getNewLink(link.type, link.id);
             lnk.source({id: link.source});
             lnk.target({id: link.target});

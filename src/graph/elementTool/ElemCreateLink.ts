@@ -9,8 +9,7 @@ export var ElemCreateLink = joint.elementTools.Button.extend({
 			attributes: {
 				'r': 10,
 				'fill': '#ffd500',
-				'cursor': 'pointer',
-				//'magnet': true
+				'cursor': 'pointer'
 			}
 		}, {
 			tagName: 'line',

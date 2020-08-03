@@ -30,19 +30,6 @@ export default class DiagramPanel extends React.Component<Props, State> {
 												   handleChangeLoadingStatus={this.props.handleChangeLoadingStatus}/>)}
 			<DiagramAdd update={() => this.forceUpdate()}/>
 
-			{/*<ModalRenameDiagram*/}
-			{/*	modal={this.state.modalRenameDiagram}*/}
-			{/*	diagram={this.state.selectedDiagram}*/}
-			{/*	close={() => {*/}
-			{/*		this.setState({modalRenameDiagram: false});*/}
-			{/*	}}*/}
-			{/*	update={() => {*/}
-			{/*		this.forceUpdate();*/}
-			{/*	}}*/}
-			{/*	handleChangeLoadingStatus={this.props.handleChangeLoadingStatus}*/}
-			{/*	retry={this.props.retry}*/}
-			{/*/>*/}
-
 			<ModalRemoveDiagram
 				modal={this.state.modalRemoveDiagram}
 				diagram={this.state.selectedDiagram}

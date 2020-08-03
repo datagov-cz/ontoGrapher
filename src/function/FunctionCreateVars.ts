@@ -187,8 +187,8 @@ export function addLink(id: string, iri: string, source: string, target: string,
         target: target,
         sourceCardinality: CardinalityPool[0],
         targetCardinality: CardinalityPool[0],
-        diagram: ProjectSettings.selectedDiagram,
-        vertices: [],
+        // diagram: ProjectSettings.selectedDiagram,
+        // vertices: [],
         type: type
     }
 }
