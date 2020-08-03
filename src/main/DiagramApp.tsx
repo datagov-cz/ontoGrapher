@@ -180,8 +180,8 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 					ProjectSettings.contextIRI = contextIRI
 					this.handleChangeLanguage(Object.keys(Languages)[0]);
 					initRestrictions();
-					await getElementsConfig(ProjectSettings.contextIRI, ProjectSettings.contextEndpoint)
-					await getLinksConfig(ProjectSettings.contextIRI, ProjectSettings.contextEndpoint)
+					await getElementsConfig(ProjectSettings.contextIRI, ProjectSettings.contextEndpoint);
+					await getLinksConfig(ProjectSettings.contextIRI, ProjectSettings.contextEndpoint);
 					await setupDiagrams(diagram);
 					await updateProjectSettings(contextIRI, contextEndpoint, DiagramApp.name);
 					this.forceUpdate();

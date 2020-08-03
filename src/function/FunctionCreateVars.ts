@@ -19,11 +19,15 @@ import {getSettings} from "../interface/SPARQLInterface";
 import {nameGraphElement, restoreHiddenElem} from "./FunctionGraph";
 import {changeDiagrams} from "./FunctionDiagram";
 import {graph} from "../graph/Graph";
+import {initConnections} from "./FunctionRestriction";
 
 export async function setupDiagrams(diagram: number = 0): Promise<boolean> {
     return await getSettings(ProjectSettings.contextIRI, ProjectSettings.contextEndpoint).then((result) => {
         if (result) {
-            if (!ProjectSettings.initialized) addRelationships();
+            if (!ProjectSettings.initialized) {
+                addRelationships();
+                initConnections();
+            }
             for (let i = 0; i < Diagrams.length; i++) {
                 changeDiagrams(i);
                 for (let id in ProjectElements) {
@@ -148,7 +152,8 @@ export function addVocabularyElement(iri: string, type?: string) {
             range: undefined,
             types: type ? [type] : [],
             subClassOf: [],
-            restrictions: []
+            restrictions: [],
+            connections: []
         }
     }
 }

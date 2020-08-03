@@ -30,6 +30,7 @@ export async function fetchConcepts(
             range?: string,
             subClassOf: string[],
             restrictions: [],
+            connections: []
             type: string,
         }
     } = {};
@@ -72,6 +73,7 @@ export async function fetchConcepts(
                     inScheme: source,
                     subClassOf: [],
                     restrictions: [],
+                    connections: [],
                     type: "default"
                 }
             }
@@ -80,7 +82,7 @@ export async function fetchConcepts(
             if (row.termDefinition) result[row.term.value].definitions[row.termDefinition['xml:lang']] = row.termDefinition.value;
             if (row.termDomain) result[row.term.value].domain = row.termDomain.value;
             if (row.termRange) result[row.term.value].range = row.termRange.value;
-            if (row.subClassOf && !(result[row.term.value].subClassOf.includes(row.subClassOf.value))) result[row.term.value].subClassOf.push(row.subClassOf.value);
+            if (row.subClassOf && row.subClassOf.type !== "bnode" && !(result[row.term.value].subClassOf.includes(row.subClassOf.value))) result[row.term.value].subClassOf.push(row.subClassOf.value);
             if (row.restriction && Object.keys(Links).includes(row.onProperty.value)) createRestriction(result, row.term.value, row.restrictionPred.value, row.onProperty.value, row.target);
         }
         Object.assign(sendTo, result);
