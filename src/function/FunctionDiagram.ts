@@ -3,7 +3,7 @@ import * as joint from "jointjs";
 import {graphElement} from "../graph/GraphElement";
 import {graph} from "../graph/Graph";
 import * as LocaleMain from "../locale/LocaleMain.json";
-import {getNewLink} from "./FunctionGraph";
+import {restoreHiddenElem} from "./FunctionGraph";
 
 export function changeDiagrams(diagram: number = 0) {
     Diagrams[ProjectSettings.selectedDiagram].json = saveDiagram();
@@ -74,16 +74,6 @@ export function loadDiagram(load: {
             }
         });
         cls.addTo(graph);
-    }
-    for (let link of load.links) {
-        if (ProjectElements[link.source].connections.includes(link.id) && link.id in ProjectLinks) {
-            let lnk = getNewLink(link.type, link.id);
-            lnk.source({id: link.source});
-            lnk.target({id: link.target});
-            lnk.labels(link.labels);
-            // @ts-ignore
-            lnk.vertices(link.vertices);
-            lnk.addTo(graph);
-        }
+        restoreHiddenElem(elem.id, cls);
     }
 }

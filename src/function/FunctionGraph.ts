@@ -1,4 +1,4 @@
-import {Links, ProjectElements, ProjectLinks, ProjectSettings} from "../config/Variables";
+import {ProjectElements, ProjectLinks, ProjectSettings} from "../config/Variables";
 import {getName, getStereotypeList} from "./FunctionEditVars";
 import {graph} from "../graph/Graph";
 import {getLinkOrVocabElem, getVocabElementByElementID} from "./FunctionGetVars";
@@ -18,8 +18,6 @@ export function getNewLink(type?: string, id?: string): joint.dia.Link {
     let link = new joint.shapes.standard.Link({id: id});
     if (type && type in LinkConfig) {
         link = LinkConfig[type].newLink(id);
-    } else if (Links[ProjectSettings.selectedLink] && Links[ProjectSettings.selectedLink].type in LinkConfig) {
-        link = LinkConfig[Links[ProjectSettings.selectedLink].type].newLink(id);
     }
     return link;
 }
