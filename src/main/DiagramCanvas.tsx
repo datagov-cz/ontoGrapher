@@ -27,7 +27,6 @@ import NewLinkDiagram from "./NewLinkDiagram";
 
 interface Props {
     projectLanguage: string;
-    selectedLink: string;
     prepareDetails: Function;
     hideDetails: Function;
     updateElementPanel: Function;
@@ -129,7 +128,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                 let tid = t.id;
                 link.source({id: sid});
                 link.target({id: tid});
-                if (sid === tid && (!graph.getConnectedLinks(s).find(link => ProjectLinks[link.id].iri === ProjectSettings.selectedLink))) {
+                if (sid === tid) {
                     let coords = link.getSourcePoint();
                     let bbox = this.paper?.findViewByModel(sid).getBBox();
                     if (bbox) {
@@ -204,6 +203,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                 this.props.handleChangeLoadingStatus(false, "", true);
             }
         });
+        this.props.updateElementPanel();
     }
 
     deleteConnections(sid: string, id: string) {
@@ -310,9 +310,6 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                         let id = evt.currentTarget.getAttribute("model-id");
                         for (let cell of graph.getElements()) {
                             if (cell.id === id) {
-                                for (let link of graph.getConnectedLinks(cell)) {
-                                    ProjectLinks[link.id].vertices = link.vertices();
-                                }
                                 ProjectElements[id].position[ProjectSettings.selectedDiagram] = cell.position();
                                 cell.remove();
                                 ProjectElements[id].hidden[ProjectSettings.selectedDiagram] = true;

@@ -319,7 +319,6 @@ export async function getLinksConfig(contextIRI: string, contextEndpoint: string
         "?link og:target-id ?targetID .",
         "?link og:source ?source .",
         "?link og:target ?target .",
-        "?link og:diagram ?diagram .",
         "?link og:type ?type",
         "OPTIONAL {?link og:vertex ?vertex .}",
         "OPTIONAL {?link og:sourceCardinality1 ?sourceCard1 .}",
@@ -336,7 +335,6 @@ export async function getLinksConfig(contextIRI: string, contextEndpoint: string
             target: string,
             targetID: string,
             sourceID: string,
-            diagram: number,
             vertexIRI: string[]
             vertexes: { [key: number]: any },
             sourceCardinality1?: string,
@@ -357,7 +355,6 @@ export async function getLinksConfig(contextIRI: string, contextEndpoint: string
                     target: result.target.value,
                     targetID: result.targetID.value,
                     sourceID: result.sourceID.value,
-                    diagram: parseInt(result.diagram.value),
                     vertexIRI: [],
                     vertexes: {},
                     type: result.type.value
@@ -433,8 +430,6 @@ export async function getLinksConfig(contextIRI: string, contextEndpoint: string
                 target: targetID,
                 sourceCardinality: sourceCard,
                 targetCardinality: targetCard,
-                vertices: convert,
-                diagram: links[link].diagram,
                 type: links[link].type
             }
             if (sourceID) {

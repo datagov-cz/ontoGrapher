@@ -139,7 +139,7 @@ export default class DetailLink extends React.Component<Props, State> {
             height={1000}
             axis={"x"}
             handleSize={[8, 8]}
-            resizeHandles={['nw']}
+            resizeHandles={['sw']}
             onResizeStop={() => {
                 let elem = document.querySelector(".details");
                 if (elem) this.props.handleWidth(elem.getBoundingClientRect().width);
@@ -147,9 +147,10 @@ export default class DetailLink extends React.Component<Props, State> {
             className={"details"}>
             <div>
                 <button className={"buttonlink close nounderline"} onClick={() => {
-					unHighlightAll();
-					this.setState({id: ""});
-				}}><span role="img" aria-label={""}>➖</span></button>
+                    unHighlightAll();
+                    this.setState({id: ""});
+                    this.props.handleWidth(0);
+                }}><span role="img" aria-label={""}>➖</span></button>
 				<h3><IRILink label={getLinkOrVocabElem(this.state.iri).labels[this.props.projectLanguage]}
 							 iri={this.state.iri}/></h3>
                 <TableList headings={[LocaleMenu.linkInfo, ""]}>

@@ -161,7 +161,7 @@ export default class DetailElement extends React.Component<Props, State> {
 			height={1000}
 			axis={"x"}
 			handleSize={[8, 8]}
-			resizeHandles={['nw']}
+			resizeHandles={['sw']}
 			onResizeStop={() => {
 				let elem = document.querySelector(".details");
 				if (elem) this.props.handleWidth(elem.getBoundingClientRect().width);
@@ -171,6 +171,7 @@ export default class DetailElement extends React.Component<Props, State> {
 				<button className={"buttonlink close nounderline"} onClick={() => {
 					unHighlightAll();
 					this.setState({id: ""});
+					this.props.handleWidth(0);
 				}}><span role="img" aria-label={""}>➖</span></button>
 				<h3><IRILink
 					label={this.state.id ? getLabelOrBlank(VocabularyElements[ProjectElements[this.state.id].iri].labels, this.props.projectLanguage) : ""}
@@ -274,15 +275,14 @@ export default class DetailElement extends React.Component<Props, State> {
 						<Accordion.Collapse eventKey={"1"}>
 							<Card.Body>
 								<TableList
-									headings={[LocaleMenu.connectionVia, LocaleMenu.connectionTo, LocaleMenu.diagram]}>
+									headings={[LocaleMenu.connectionVia, LocaleMenu.connectionTo]}>
 									{this.state.inputConnections.map((conn) => {
-										if (ProjectLinks[conn]) {
-											return (<tr>
-												<IRIlabel
-													label={getLinkOrVocabElem(ProjectLinks[conn].iri).labels[this.props.projectLanguage]}
-													iri={ProjectLinks[conn].iri}/>
-												<td>{getLabelOrBlank(VocabularyElements[ProjectElements[ProjectLinks[conn].target].iri].labels, this.props.projectLanguage)}</td>
-													<td>{Diagrams[ProjectLinks[conn].diagram].name}</td>
+											if (ProjectLinks[conn]) {
+												return (<tr>
+													<IRIlabel
+														label={getLinkOrVocabElem(ProjectLinks[conn].iri).labels[this.props.projectLanguage]}
+														iri={ProjectLinks[conn].iri}/>
+													<td>{getLabelOrBlank(VocabularyElements[ProjectElements[ProjectLinks[conn].target].iri].labels, this.props.projectLanguage)}</td>
 												</tr>)
 											} else return ""
 										}

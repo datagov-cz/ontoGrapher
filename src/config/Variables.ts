@@ -46,10 +46,6 @@ export var ProjectLinks: {
         sourceCardinality: Cardinality,
         //target cardinality Cardinality object
         targetCardinality: Cardinality,
-        //diagram index
-        diagram: number,
-        //vertices
-        vertices: joint.dia.Link.Vertex[];
         //type - dictates saving/loading behaviour
         type: string;
     }
@@ -134,7 +130,6 @@ export var ProjectSettings: {
     selectedPackage: PackageNode,
     knowledgeStructure: string,
     selectedLanguage: string,
-    selectedLink: string,
     contextIRI: string,
     contextEndpoint: string,
     ontographerContext: string,
@@ -148,7 +143,6 @@ export var ProjectSettings: {
     selectedPackage: PackageRoot,
     knowledgeStructure: Object.keys(Structures)[0],
     selectedLanguage: Object.keys(Languages)[0],
-    selectedLink: Object.keys(Links)[0],
     contextIRI: "",
     contextEndpoint: "",
     ontographerContext: "http://onto.fel.cvut.cz/ontologies/application/ontoGrapher",

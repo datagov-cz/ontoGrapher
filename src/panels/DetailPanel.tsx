@@ -28,7 +28,7 @@ interface State {
 export default class DetailPanel extends React.Component<Props, State> {
 
     private readonly detailElem: React.RefObject<DetailElement>;
-    private readonly linkElem: React.RefObject<DetailLink>;
+    private readonly detailLink: React.RefObject<DetailLink>;
 
     constructor(props: Props) {
         super(props);
@@ -38,7 +38,7 @@ export default class DetailPanel extends React.Component<Props, State> {
             type: "",
         };
         this.detailElem = React.createRef();
-        this.linkElem = React.createRef();
+        this.detailLink = React.createRef();
         this.hide = this.hide.bind(this);
         this.save = this.save.bind(this);
     }
@@ -61,13 +61,21 @@ export default class DetailPanel extends React.Component<Props, State> {
                 type: "link",
                 hidden: false
             });
-            this.linkElem.current?.prepareDetails(id);
+            this.detailLink.current?.prepareDetails(id);
         }
     }
 
     save() {
         if (graph.getCell(this.state.id).isElement()) this.props.resizeElem(this.state.id);
         this.props.update();
+    }
+
+    update() {
+        this.detailElem.current?.forceUpdate();
+        this.detailLink.current?.forceUpdate();
+        if (this.detailElem.current?.state.id) {
+            this.prepareDetails(this.detailElem.current?.state.id);
+        }
     }
 
     retry() {
@@ -88,7 +96,7 @@ export default class DetailPanel extends React.Component<Props, State> {
                     handleWidth={this.props.handleWidth}
                     handleChangeLoadingStatus={this.props.handleChangeLoadingStatus}
                     projectLanguage={this.props.projectLanguage} headers={headers}
-                    save={this.save} ref={this.linkElem} retry={this.props.retry}/>);
+                    save={this.save} ref={this.detailLink} retry={this.props.retry}/>);
             }
         } else {
             return (<div/>);

@@ -65,9 +65,6 @@ export default class NewLinkDiagram extends React.Component<Props, State> {
 				<Button onClick={() => {
 					this.props.close();
 				}} variant="secondary">{LocaleMenu.cancel}</Button>
-				{/*<Button onClick={() => {*/}
-				{/*	this.props.close(this.state.selectedLink);*/}
-				{/*}}>{LocaleMenu.confirm}</Button>*/}
 			</Modal.Footer>
 		</Modal>);
 	}

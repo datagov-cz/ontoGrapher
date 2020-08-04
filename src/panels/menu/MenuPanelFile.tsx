@@ -53,28 +53,6 @@ export default class MenuPanelFile extends React.Component<MenuPanelFileProps, M
 
     render() {
         return (<NavDropdown title={LocaleMenu.file} id="basic-nav-dropdown">
-            {/*<NavDropdown.Item onClick={() => {*/}
-            {/*    this.setState({modalFileNew: true})*/}
-            {/*}}>{LocaleMenu.newProject}</NavDropdown.Item>*/}
-            {/*<FileNewModal modal={this.state.modalFileNew} close={() => {*/}
-            {/*    this.setState({modalFileNew: false})*/}
-            {/*}} newProject={this.newProject}/>*/}
-
-            {/*<NavDropdown.Item onClick={() => {*/}
-            {/*    this.setState({modalFileLoad: true})*/}
-            {/*}}>{LocaleMenu.loadProject}</NavDropdown.Item>*/}
-            {/*<FileLoadModal modal={this.state.modalFileLoad} close={() => {*/}
-            {/*    this.setState({modalFileLoad: false})*/}
-            {/*}} loadProject={this.loadProject}/>*/}
-
-            {/*<NavDropdown.Item onClick={() => {*/}
-            {/*    this.setState({modalFileSave: true});*/}
-            {/*}}>{LocaleMenu.saveProject}</NavDropdown.Item>*/}
-            {/*<FileSaveModal modal={this.state.modalFileSave} close={() => {*/}
-            {/*    this.setState({modalFileSave: false})*/}
-            {/*}}/>*/}
-
-            {/*<NavDropdown.Divider/>*/}
 
             <NavDropdown.Item onClick={() => {
                 this.setState({modalFileFetchContext: true});
@@ -82,21 +60,6 @@ export default class MenuPanelFile extends React.Component<MenuPanelFileProps, M
             <FileFetchContextModal modal={this.state.modalFileFetchContext} close={() => {
                 this.setState({modalFileFetchContext: false})
             }} loadContext={this.props.loadContext}/>
-
-            {/*<NavDropdown.Item onClick={() => {*/}
-            {/*    this.setState({modalFileExport: true});*/}
-            {/*}}>{LocaleMenu.exportProject}</NavDropdown.Item>*/}
-            {/*<FileExportModal modal={this.state.modalFileExport} close={() => {*/}
-            {/*    this.setState({modalFileExport: false})*/}
-            {/*}}/>*/}
-
-            {/*<NavDropdown.Item onClick={() => {*/}
-            {/*    this.setState({modalFileProjectSettings: true})*/}
-            {/*}}>{LocaleMenu.projectSettings}</NavDropdown.Item>*/}
-            {/*<FileProjectSettingsModal modal={this.state.modalFileProjectSettings} close={() => {*/}
-            {/*    this.setState({modalFileProjectSettings: false});*/}
-            {/*    this.props.update();*/}
-            {/*}}/>*/}
 
         </NavDropdown>);
     }

@@ -1,4 +1,4 @@
-import {Links, ProjectElements, ProjectLinks, ProjectSettings} from "../config/Variables";
+import {ProjectElements, ProjectLinks, ProjectSettings} from "../config/Variables";
 import {getName, getStereotypeList} from "./FunctionEditVars";
 import {graph} from "../graph/Graph";
 import {getLinkOrVocabElem, getVocabElementByElementID} from "./FunctionGetVars";
@@ -18,8 +18,6 @@ export function getNewLink(type?: string, id?: string): joint.dia.Link {
     let link = new joint.shapes.standard.Link({id: id});
     if (type && type in LinkConfig) {
         link = LinkConfig[type].newLink(id);
-    } else if (Links[ProjectSettings.selectedLink] && Links[ProjectSettings.selectedLink].type in LinkConfig) {
-        link = LinkConfig[Links[ProjectSettings.selectedLink].type].newLink(id);
     }
     return link;
 }
@@ -105,9 +103,6 @@ export function restoreHiddenElem(id: string, cls: joint.dia.Element) {
             }
             lnk.source({id: ProjectLinks[link].source});
             lnk.target({id: ProjectLinks[link].target});
-            if (ProjectLinks[link] && ProjectLinks[link].vertices) {
-                lnk.vertices(ProjectLinks[link].vertices);
-            }
             lnk.addTo(graph);
         } else if (ProjectLinks[link].target === id && graph.getCell(ProjectLinks[link].target)) {
             let relID = ProjectLinks[link].source;
@@ -124,14 +119,8 @@ export function restoreHiddenElem(id: string, cls: joint.dia.Element) {
                     relationship.position(posx, posy);
                     domainLink.source({id: relID});
                     domainLink.target({id: ProjectLinks[link].target});
-                    if (ProjectLinks[link] && ProjectLinks[link].vertices) {
-                        domainLink.vertices(ProjectLinks[link].vertices);
-                    }
                     rangeLink.source({id: relID});
                     rangeLink.target({id: ProjectLinks[targetLink].target});
-                    if (ProjectLinks[targetLink] && ProjectLinks[targetLink].vertices) {
-                        rangeLink.vertices(ProjectLinks[targetLink].vertices);
-                    }
                     domainLink.appendLabel({
                         attrs: {text: {text: getLinkOrVocabElem(ProjectLinks[link].iri).labels[ProjectSettings.selectedLanguage]}},
                         position: {distance: 0.5}
