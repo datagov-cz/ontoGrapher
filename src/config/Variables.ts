@@ -47,7 +47,9 @@ export var ProjectLinks: {
         //target cardinality Cardinality object
         targetCardinality: Cardinality,
         //type - dictates saving/loading behaviour
-        type: string;
+        type: string,
+        //active
+        active: boolean
     }
 } = {};
 
@@ -98,7 +100,8 @@ export var VocabularyElements: {
             types: string[],
             subClassOf: string[],
             restrictions: RestrictionObject[],
-            connections: ConnectionObject[]
+            connections: ConnectionObject[],
+            active: boolean,
         }
 } = {};
 
@@ -119,8 +122,8 @@ export var Stereotypes: {
     }
 } = {};
 
-export var Diagrams: { name: string, json: any }[] = [
-    {name: "Untitled", json: {}}
+export var Diagrams: { name: string, json: any, active: boolean }[] = [
+    {name: "Untitled", json: {}, active: true}
 ];
 
 export var ProjectSettings: {

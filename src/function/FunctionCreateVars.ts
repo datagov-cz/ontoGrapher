@@ -12,44 +12,31 @@ import {
 } from "../config/Variables";
 import * as LocaleMain from "../locale/LocaleMain.json";
 import {AttributeObject} from "../datatypes/AttributeObject";
-import {addRelationships, initLanguageObject} from "./FunctionEditVars";
+import {initLanguageObject} from "./FunctionEditVars";
 import {PackageNode} from "../datatypes/PackageNode";
 import {graphElement} from "../graph/GraphElement";
-import {getSettings} from "../interface/SPARQLInterface";
 import {nameGraphElement, restoreHiddenElem} from "./FunctionGraph";
 import {changeDiagrams} from "./FunctionDiagram";
 import {graph} from "../graph/Graph";
-import {initConnections} from "./FunctionRestriction";
 
 export async function setupDiagrams(diagram: number = 0): Promise<boolean> {
-    return await getSettings(ProjectSettings.contextIRI, ProjectSettings.contextEndpoint).then((result) => {
-        if (result) {
-            if (!ProjectSettings.initialized) {
-                addRelationships();
-                initConnections();
-            }
-            for (let i = 0; i < Diagrams.length; i++) {
-                changeDiagrams(i);
-                for (let id in ProjectElements) {
-                    if (ProjectElements[id].hidden[i] === false && ProjectElements[id].position[i]) {
-                        let position = ProjectElements[id].position[i];
-                        if (position.x !== 0 && position.y !== 0) {
-                            let cls = new graphElement({id: id});
-                            cls.position(ProjectElements[id].position[i].x, ProjectElements[id].position[i].y);
-                            cls.addTo(graph);
-                            nameGraphElement(cls, ProjectSettings.selectedLanguage);
-                            restoreHiddenElem(id, cls);
-                        }
-                    }
+    for (let i = 0; i < Diagrams.length; i++) {
+        changeDiagrams(i);
+        for (let id in ProjectElements) {
+            if (ProjectElements[id].hidden[i] === false && ProjectElements[id].position[i]) {
+                let position = ProjectElements[id].position[i];
+                if (position.x !== 0 && position.y !== 0) {
+                    let cls = new graphElement({id: id});
+                    cls.position(ProjectElements[id].position[i].x, ProjectElements[id].position[i].y);
+                    cls.addTo(graph);
+                    nameGraphElement(cls, ProjectSettings.selectedLanguage);
+                    restoreHiddenElem(id, cls);
                 }
             }
-            changeDiagrams(diagram);
-            return true;
-        } else return false;
-    }).catch((error) => {
-        console.log(error);
-        return false;
-    });
+        }
+    }
+    changeDiagrams(diagram);
+    return true;
 }
 
 export function createValues(values: { [key: string]: string[] }, prefixes: { [key: string]: string }) {
@@ -153,7 +140,8 @@ export function addVocabularyElement(iri: string, type?: string) {
             types: type ? [type] : [],
             subClassOf: [],
             restrictions: [],
-            connections: []
+            connections: [],
+            active: true
         }
     }
 }
@@ -187,8 +175,7 @@ export function addLink(id: string, iri: string, source: string, target: string,
         target: target,
         sourceCardinality: CardinalityPool[0],
         targetCardinality: CardinalityPool[0],
-        // diagram: ProjectSettings.selectedDiagram,
-        // vertices: [],
-        type: type
+        type: type,
+        active: true
     }
 }

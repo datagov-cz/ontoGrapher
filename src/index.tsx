@@ -4,7 +4,7 @@ import DiagramApp from './main/DiagramApp';
 import * as serviceWorker from './serviceWorker';
 
 ReactDOM.render(<DiagramApp
-	contextIRI={"https://slovník.gov.cz/datový/pracovní-prostor/pojem/metadatový-kontext/instance-1077205419"}
+	contextIRI={"https://slovník.gov.cz/datový/pracovní-prostor/pojem/metadatový-kontext/instance-958234704"}
 	contextEndpoint={"http://localhost:7200/repositories/kodi-uloziste-dev"}
 />, document.getElementById('root'));
 

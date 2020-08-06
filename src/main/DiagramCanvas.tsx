@@ -116,6 +116,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
     }
 
     saveNewLink(iri: string, sid: string, tid: string) {
+        this.props.handleChangeLoadingStatus(true, LocaleMain.updating, false);
         let link = getNewLink(Links[iri].type);
         link.source({id: sid});
         link.target({id: tid});
@@ -212,7 +213,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
         updateConnections(ProjectSettings.contextEndpoint, id, [id], DiagramCanvas.name).then(result => {
             if (result) {
                 //Diagrams.forEach(diag => diag.json.links.forEach((link: any) => {if (link.id === id) diag.json.links.splice(diag.json.links.indexOf(link),1)}));
-                delete ProjectLinks[id];
+                ProjectLinks[id].active = false;
                 graph.getCell(id).remove();
                 updateDeleteProjectElement(ProjectSettings.contextEndpoint, ProjectSettings.ontographerContext + "-" + id, DiagramCanvas.name).then(result => {
                     if (result) {
@@ -278,7 +279,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                     let id = evt.currentTarget.getAttribute("model-id");
                     let links = graph.getConnectedLinks(graph.getCell(id));
                     for (let link of links) {
-                        delete ProjectLinks[link.id];
+                        ProjectLinks[link.id].active = false;
                     }
                     graph.getCell(id).remove();
 

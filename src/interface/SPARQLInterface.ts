@@ -42,7 +42,7 @@ export async function fetchConcepts(
         "WHERE {",
         graph ? "GRAPH <" + graph + "> {" : "",
         !subPropertyOf ? "?term skos:inScheme <" + source + ">." : "",
-        "?term a ?termType.",
+        "OPTIONAL {?term a ?termType.}",
         subPropertyOf ? "?term rdfs:subPropertyOf <" + subPropertyOf + ">." : "",
         requiredTypes ? "VALUES ?termType {<" + requiredTypes.join("> <") + ">}" : "",
         requiredValues ? "VALUES ?term {<" + requiredValues.join("> <") + ">}" : "",
@@ -295,7 +295,7 @@ export async function getSettings(contextIRI: string, contextEndpoint: string, c
     }).then(data => {
         for (let result of data.results.bindings) {
             if (!(parseInt(result.index.value) in Diagrams)) {
-                Diagrams[parseInt(result.index.value)] = {name: Locale.untitled, json: {}}
+                Diagrams[parseInt(result.index.value)] = {name: Locale.untitled, json: {}, active: true}
             }
             Diagrams[parseInt(result.index.value)].name = result.name.value;
         }
@@ -319,12 +319,11 @@ export async function getLinksConfig(contextIRI: string, contextEndpoint: string
         "?link og:target-id ?targetID .",
         "?link og:source ?source .",
         "?link og:target ?target .",
-        "?link og:type ?type",
-        "OPTIONAL {?link og:vertex ?vertex .}",
-        "OPTIONAL {?link og:sourceCardinality1 ?sourceCard1 .}",
-        "OPTIONAL {?link og:sourceCardinality2 ?sourceCard2 .}",
-        "OPTIONAL {?link og:targetCardinality1 ?targetCard1 .}",
-        "OPTIONAL {?link og:targetCardinality2 ?targetCard2 .}",
+        "?link og:type ?type .",
+        "?link og:sourceCardinality1 ?sourceCard1 .",
+        "?link og:sourceCardinality2 ?sourceCard2 .",
+        "?link og:targetCardinality1 ?targetCard1 .",
+        "?link og:targetCardinality2 ?targetCard2 .",
         "}"
     ].join(" ");
     let q = contextEndpoint + "?query=" + encodeURIComponent(query);
@@ -337,10 +336,10 @@ export async function getLinksConfig(contextIRI: string, contextEndpoint: string
             sourceID: string,
             vertexIRI: string[]
             vertexes: { [key: number]: any },
-            sourceCardinality1?: string,
-            sourceCardinality2?: string,
-            targetCardinality1?: string,
-            targetCardinality2?: string,
+            sourceCardinality1: string,
+            sourceCardinality2: string,
+            targetCardinality1: string,
+            targetCardinality2: string,
             type: string,
         }
     } = {};
@@ -357,14 +356,13 @@ export async function getLinksConfig(contextIRI: string, contextEndpoint: string
                     sourceID: result.sourceID.value,
                     vertexIRI: [],
                     vertexes: {},
-                    type: result.type.value
+                    type: result.type.value,
+                    sourceCardinality1: result.sourceCard1.value,
+                    sourceCardinality2: result.sourceCard2.value,
+                    targetCardinality1: result.targetCard1.value,
+                    targetCardinality2: result.targetCard2.value,
                 }
             }
-            if (result.vertex) links[result.id.value].vertexIRI.push(result.vertex.value);
-            if (result.sourceCard1) links[result.id.value].sourceCardinality1 = result.sourceCard1.value;
-            if (result.sourceCard2) links[result.id.value].sourceCardinality2 = result.sourceCard2.value;
-            if (result.targetCard1) links[result.id.value].targetCardinality1 = result.targetCard1.value;
-            if (result.targetCard2) links[result.id.value].targetCardinality2 = result.targetCard2.value;
         }
     }).catch(() => {
         if (callback) callback(false);
@@ -412,25 +410,18 @@ export async function getLinksConfig(contextIRI: string, contextEndpoint: string
         if (targetID && sourceID) {
             let sourceCard = new Cardinality(Locale.none, Locale.none);
             let targetCard = new Cardinality(Locale.none, Locale.none);
-            if (links[link].sourceCardinality1 && links[link].sourceCardinality2) {
-                // @ts-ignore
-                sourceCard.setFirstCardinality(links[link].sourceCardinality1 ? links[link].sourceCardinality1 : Locale.none)
-                // @ts-ignore
-                sourceCard.setSecondCardinality(links[link].sourceCardinality2 ? links[link].sourceCardinality2 : Locale.none)
-            }
-            if (links[link].targetCardinality1 && links[link].targetCardinality2) {
-                // @ts-ignore
-                targetCard.setFirstCardinality(links[link].targetCardinality1 ? links[link].targetCardinality1 : Locale.none)
-                // @ts-ignore
-                targetCard.setSecondCardinality(links[link].targetCardinality2 ? links[link].targetCardinality2 : Locale.none)
-            }
+            sourceCard.setFirstCardinality(links[link].sourceCardinality1);
+            sourceCard.setSecondCardinality(links[link].sourceCardinality2);
+            targetCard.setFirstCardinality(links[link].targetCardinality1);
+            targetCard.setSecondCardinality(links[link].targetCardinality2);
             ProjectLinks[link] = {
                 iri: links[link].iri,
                 source: sourceID,
                 target: targetID,
                 sourceCardinality: sourceCard,
                 targetCardinality: targetCard,
-                type: links[link].type
+                type: links[link].type,
+                active: true
             }
             if (sourceID) {
                 if (!ProjectElements[sourceID].connections.includes(link)) {

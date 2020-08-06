@@ -8,7 +8,6 @@ import {
 	VocabularyElements
 } from "../config/Variables";
 import {AttributeObject} from "../datatypes/AttributeObject";
-import * as Locale from "../locale/LocaleMain.json";
 import {getRestrictionsAsJSON} from "../function/FunctionRestriction";
 import {parsePrefix} from "../function/FunctionEditVars";
 import {Restrictions} from "../config/Restrictions";
@@ -187,11 +186,11 @@ export async function updateProjectLink(contextEndpoint: string, id: string, sou
 	let ogContext = "http://onto.fel.cvut.cz/ontologies/application/ontoGrapher";
 	let linkIRI = ogContext + "-" + id;
 	let cardinalities: { [key: string]: string } = {};
-	if (ProjectLinks[id].sourceCardinality && ProjectLinks[id].sourceCardinality.getString() !== Locale.none) {
+	if (ProjectLinks[id].sourceCardinality) {
 		cardinalities["og:sourceCardinality1"] = ProjectLinks[id].sourceCardinality.getFirstCardinality();
 		cardinalities["og:sourceCardinality2"] = ProjectLinks[id].sourceCardinality.getSecondCardinality();
 	}
-	if (ProjectLinks[id].targetCardinality && ProjectLinks[id].targetCardinality.getString() !== Locale.none) {
+	if (ProjectLinks[id].targetCardinality) {
 		cardinalities["og:targetCardinality1"] = ProjectLinks[id].targetCardinality.getFirstCardinality();
 		cardinalities["og:targetCardinality2"] = ProjectLinks[id].targetCardinality.getSecondCardinality();
 	}
@@ -375,7 +374,7 @@ export async function updateProjectSettings(contextIRI: string, contextEndpoint:
 				"og:diagram": Diagrams.map((diag, i) => ogContext + contextInstance + "/diagram-" + (i + 1)),
 				"og:initialized": true
 			},
-			...(Diagrams).map((diag, i) => {
+			...(Diagrams).filter(diag => diag.active).map((diag, i) => {
 				return {
 					"@id": ogContext + contextInstance + "/diagram-" + (i + 1),
 					"og:index": i,

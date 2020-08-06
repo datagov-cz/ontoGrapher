@@ -6,15 +6,15 @@ import * as Locale from "../locale/LocaleMain.json";
 import {Languages, PackageRoot, ProjectElements, ProjectLinks, ProjectSettings, Schemes} from "../config/Variables";
 import DetailPanel from "../panels/DetailPanel";
 import {getVocabulariesFromRemoteJSON} from "../interface/JSONInterface";
-import {initLanguageObject, initVars} from "../function/FunctionEditVars";
+import {addRelationships, initLanguageObject, initVars} from "../function/FunctionEditVars";
 import {getContext} from "../interface/ContextInterface";
 import {graph} from "../graph/Graph";
 import {loadProject, newProject} from "../function/FunctionProject";
 import {nameGraphElement, nameGraphLink, unHighlightAll} from "../function/FunctionGraph";
 import {PackageNode} from "../datatypes/PackageNode";
 import {createNewScheme, setupDiagrams} from "../function/FunctionCreateVars";
-import {getElementsConfig, getLinksConfig} from "../interface/SPARQLInterface";
-import {initRestrictions} from "../function/FunctionRestriction";
+import {getElementsConfig, getLinksConfig, getSettings} from "../interface/SPARQLInterface";
+import {initConnections, initRestrictions} from "../function/FunctionRestriction";
 import {updateProjectSettings} from "../interface/TransactionInterface";
 import ValidationPanel from "../panels/ValidationPanel";
 import DiagramPanel from "../panels/DiagramPanel";
@@ -160,6 +160,12 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 					initRestrictions();
 					await getElementsConfig(ProjectSettings.contextIRI, ProjectSettings.contextEndpoint);
 					await getLinksConfig(ProjectSettings.contextIRI, ProjectSettings.contextEndpoint);
+					await getSettings(ProjectSettings.contextIRI, ProjectSettings.contextEndpoint);
+					if (!ProjectSettings.initialized) {
+						this.handleChangeLoadingStatus(true, "Initializing ontoGrapher data (this will only be done once)...", false);
+						addRelationships();
+						initConnections();
+					}
 					await setupDiagrams(diagram);
 					await updateProjectSettings(contextIRI, contextEndpoint, DiagramApp.name);
 					this.forceUpdate();

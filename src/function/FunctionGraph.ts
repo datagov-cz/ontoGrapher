@@ -81,7 +81,9 @@ export function restoreHiddenElem(id: string, cls: joint.dia.Element) {
         ProjectElements[id].diagrams.push(ProjectSettings.selectedDiagram)
     }
     for (let link in ProjectLinks) {
-        if ((ProjectLinks[link].source === id || ProjectLinks[link].target === id) && (graph.getCell(ProjectLinks[link].source) && graph.getCell(ProjectLinks[link].target))) {
+        if (ProjectLinks[link].active &&
+            (ProjectLinks[link].source === id || ProjectLinks[link].target === id)
+            && (graph.getCell(ProjectLinks[link].source) && graph.getCell(ProjectLinks[link].target))) {
             let lnk = getNewLink(ProjectLinks[link].type, link);
             if (ProjectLinks[link].type === "default") {
                 if (ProjectLinks[link].sourceCardinality.getString() !== LocaleMain.none) {
@@ -104,7 +106,8 @@ export function restoreHiddenElem(id: string, cls: joint.dia.Element) {
             lnk.source({id: ProjectLinks[link].source});
             lnk.target({id: ProjectLinks[link].target});
             lnk.addTo(graph);
-        } else if (ProjectLinks[link].target === id && graph.getCell(ProjectLinks[link].target)) {
+        } else if (ProjectLinks[link].active &&
+            ProjectLinks[link].target === id && graph.getCell(ProjectLinks[link].target)) {
             let relID = ProjectLinks[link].source;
             for (let targetLink in ProjectLinks) {
                 if (ProjectLinks[targetLink].source === relID && ProjectLinks[targetLink].target !== id && graph.getCell(ProjectLinks[targetLink].target)) {

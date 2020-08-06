@@ -137,7 +137,7 @@ export default class DetailElement extends React.Component<Props, State> {
 					if (delString) {
 						await processTransaction(ProjectSettings.contextEndpoint, {"delete": JSON.parse(delString)});
 					}
-					delete VocabularyElements[oldIRI];
+					VocabularyElements[oldIRI].active = false;
 				}
 				ProjectElements[this.state.id].untitled = false;
 				this.prepareDetails(this.state.id);
