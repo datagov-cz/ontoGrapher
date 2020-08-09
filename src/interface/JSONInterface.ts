@@ -24,6 +24,7 @@ export async function getVocabulariesFromRemoteJSON(pathToJSON: string): Promise
                             undefined,
                             false,
                             undefined,
+                            true,
                             [data.classIRI],
                             data.values ? createValues(data.values, data.prefixes) : undefined
                         );
@@ -36,6 +37,7 @@ export async function getVocabulariesFromRemoteJSON(pathToJSON: string): Promise
                             undefined,
                             false,
                             undefined,
+                            true,
                             [data.relationshipIRI],
                             data.values ? createValues(data.values, data.prefixes) : undefined
                         );

@@ -16,6 +16,7 @@ export async function fetchConcepts(
     callback?: Function,
     getSubProperties?: boolean,
     subPropertyOf?: string,
+    requiredType?: boolean,
     requiredTypes?: string[],
     requiredValues?: string[]) {
     if (!(source in Schemes)) await getScheme(source, endpoint, readOnly, callback);
@@ -42,7 +43,7 @@ export async function fetchConcepts(
         "WHERE {",
         graph ? "GRAPH <" + graph + "> {" : "",
         !subPropertyOf ? "?term skos:inScheme <" + source + ">." : "",
-        "OPTIONAL {?term a ?termType.}",
+        requiredType ? "?term a ?termType." : "OPTIONAL {?term a ?termType.}",
         subPropertyOf ? "?term rdfs:subPropertyOf <" + subPropertyOf + ">." : "",
         requiredTypes ? "VALUES ?termType {<" + requiredTypes.join("> <") + ">}" : "",
         requiredValues ? "VALUES ?term {<" + requiredValues.join("> <") + ">}" : "",
@@ -65,7 +66,7 @@ export async function fetchConcepts(
     ).then(data => {
         for (let row of data.results.bindings) {
             if (!(row.term.value in result)) {
-                if (getSubProperties) fetchConcepts(endpoint, source, sendTo, readOnly, graph, callback, getSubProperties, row.term.value, requiredTypes, requiredValues);
+                if (getSubProperties) fetchConcepts(endpoint, source, sendTo, readOnly, graph, callback, getSubProperties, row.term.value, requiredType, requiredTypes, requiredValues);
                 result[row.term.value] = {
                     labels: initLanguageObject(""),
                     definitions: initLanguageObject(""),
