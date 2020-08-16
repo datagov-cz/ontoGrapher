@@ -43,6 +43,8 @@
   "load": "Load",
   "test": "Test connection",
   "fetch": "Fetch",
+  "represantationCompact": "Switch to OWL Compact",
+  "represantationFull": "Switch to OWL Full",
   "output": "Output",
   "fileFetchContextTitle": "Fetch workspace",
   "modalNewElemTitle": "Create new concept",

@@ -139,6 +139,7 @@ export var ProjectSettings: {
     lastUpdate: { [key: string]: any },
     lastSource: string,
     initialized: boolean,
+    representation: string
 } = {
     name: {},
     description: {},
@@ -151,7 +152,8 @@ export var ProjectSettings: {
     ontographerContext: "http://onto.fel.cvut.cz/ontologies/application/ontoGrapher",
     lastUpdate: {},
     lastSource: "",
-    initialized: false
+    initialized: false,
+    representation: "full"
 };
 
 export var AttributeTypePool: { [key: string]: { name: string, array: boolean, type?: string } } = {

@@ -10,6 +10,7 @@ export function changeDiagrams(diagram: number = 0) {
     ProjectSettings.selectedDiagram = diagram;
     if (Object.keys(Diagrams[diagram].json).length > 0) {
         loadDiagram(Diagrams[diagram].json);
+
     } else graph.clear();
 }
 

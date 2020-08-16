@@ -45,6 +45,16 @@ export function nameGraphLink(cell: joint.dia.Link, languageCode: string) {
     }
 }
 
+export function switchRepresentation() {
+    if (ProjectSettings.representation === "full") {
+
+        ProjectSettings.representation = "compact";
+    } else if (ProjectSettings.representation === "compact") {
+
+        ProjectSettings.representation = "full";
+    }
+}
+
 export function highlightCell(id: string) {
     let cell = graph.getCell(id);
     if (cell.isLink()) {
