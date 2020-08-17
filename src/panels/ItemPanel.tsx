@@ -37,6 +37,7 @@ interface State {
 	selectedID: string;
 	selectedDiagram: number;
 	selectedNode: PackageNode;
+	flash: boolean;
 }
 
 export default class ItemPanel extends React.Component<Props, State> {
@@ -45,6 +46,7 @@ export default class ItemPanel extends React.Component<Props, State> {
 		super(props);
 		this.state = {
 			filter: [],
+			flash: false,
 			search: "",
 			modalEditPackage: false,
 			modalRemoveDiagram: false,
@@ -65,6 +67,14 @@ export default class ItemPanel extends React.Component<Props, State> {
 		}
 	}
 
+	update(position?: { x: number, y: number }) {
+		if (position) {
+			this.setState({flash: true});
+			setTimeout(() => this.setState({flash: false}), 2000);
+		}
+		this.forceUpdate();
+	}
+
 	handleChangeSelect(event: any) {
 		let result = [];
 		if (Array.isArray(event)) {
@@ -73,7 +83,7 @@ export default class ItemPanel extends React.Component<Props, State> {
 			}
 		}
 		this.setState({filter: result});
-        this.forceUpdate();
+		this.forceUpdate();
     }
 
     handleChangeSearch(event: React.ChangeEvent<HTMLSelectElement>) {
@@ -93,6 +103,7 @@ export default class ItemPanel extends React.Component<Props, State> {
         if (node !== PackageRoot) {
             arr.push(<PackageFolder
 				key={node.scheme}
+				flash={this.state.flash}
 				projectLanguage={this.props.projectLanguage}
 				node={node}
 				depth={depth}

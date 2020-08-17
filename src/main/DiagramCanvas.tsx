@@ -104,7 +104,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
         let bbox = this.paper?.findViewByModel(cls).getBBox();
         if (bbox) cls.resize(bbox.width, bbox.height);
         ProjectElements[cls.id].hidden[ProjectSettings.selectedDiagram] = false;
-        this.props.updateElementPanel();
+        this.props.updateElementPanel(cls.position());
     }
 
     createNewLink(id: string) {

@@ -1,11 +1,12 @@
-import {ProjectElements, ProjectLinks, ProjectSettings} from "../config/Variables";
-import {getName, getStereotypeList} from "./FunctionEditVars";
+import {ProjectElements, ProjectLinks, ProjectSettings, VocabularyElements} from "../config/Variables";
+import {getName, getStereotypeList, parsePrefix} from "./FunctionEditVars";
 import {graph} from "../graph/Graph";
 import {getLinkOrVocabElem, getVocabElementByElementID} from "./FunctionGetVars";
 import * as joint from "jointjs";
 import * as LocaleMain from "../locale/LocaleMain.json";
 import {graphElement} from "../graph/GraphElement";
 import {LinkConfig} from "../config/LinkConfig";
+import {addLink} from "./FunctionCreateVars";
 
 export function nameGraphElement(cell: joint.dia.Cell, languageCode: string) {
     if (typeof cell.id === "string") {
@@ -46,11 +47,41 @@ export function nameGraphLink(cell: joint.dia.Link, languageCode: string) {
 }
 
 export function switchRepresentation() {
+    let mvp1IRI = "https://slovník.gov.cz/základní/pojem/má-vztažený-prvek-1";
+    let mvp2IRI = "https://slovník.gov.cz/základní/pojem/má-vztažený-prvek-2";
     if (ProjectSettings.representation === "full") {
-
+        for (let elem of graph.getElements()) {
+            if (ProjectElements[elem.id].iri === parsePrefix("z-sgov-pojem", "typ-vztahu")) {
+                let sourceLink = graph.getConnectedLinks(elem).find(src => ProjectLinks[src.id].iri === mvp1IRI);
+                let targetLink = graph.getConnectedLinks(elem).find(src => ProjectLinks[src.id].iri === mvp2IRI);
+                if (sourceLink && targetLink) {
+                    let newLink = getNewLink();
+                    let source = sourceLink.getTargetCell()?.id;
+                    let target = targetLink.getTargetCell()?.id;
+                    newLink.source({id: source});
+                    newLink.target({id: target});
+                    if (typeof newLink.id === "string" && typeof source === "string" && typeof target === "string") {
+                        addLink(newLink.id, ProjectElements[elem.id].iri, source, target);
+                    }
+                    nameGraphLink(newLink, ProjectSettings.selectedLanguage);
+                    sourceLink.remove();
+                    targetLink.remove();
+                }
+            }
+        }
         ProjectSettings.representation = "compact";
     } else if (ProjectSettings.representation === "compact") {
-
+        for (let link of graph.getLinks()) {
+            if (ProjectLinks[link.id].iri in VocabularyElements) {
+                link.remove();
+                ProjectLinks[link.id].active = false;
+            }
+        }
+        for (let elem of graph.getElements()) {
+            if (typeof elem.id === "string") {
+                restoreHiddenElem(elem.id, elem);
+            }
+        }
         ProjectSettings.representation = "full";
     }
 }

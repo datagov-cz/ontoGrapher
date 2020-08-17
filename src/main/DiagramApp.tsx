@@ -258,8 +258,8 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 					this.detailPanel.current?.hide();
 					this.setState({widthRight: 0});
 				}}
-				updateElementPanel={() => {
-					this.elementPanel.current?.forceUpdate();
+				updateElementPanel={(position?: { x: number, y: number }) => {
+					this.elementPanel.current?.update(position);
 					this.detailPanel.current?.update();
 				}}
 				handleChangeLoadingStatus={this.handleChangeLoadingStatus}

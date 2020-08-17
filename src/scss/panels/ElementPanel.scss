@@ -89,6 +89,12 @@
   .defaultPackage {
     background-color: rgba(198, 200, 250, 0.5) !important;
   }
+
+  .flash {
+    background-color: rgb(250, 198, 198) !important;
+    animation: ease-out;
+    animation-delay: 1s;
+  }
 }
 
 

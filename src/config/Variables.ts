@@ -156,13 +156,13 @@ export var ProjectSettings: {
     representation: "full"
 };
 
-export var AttributeTypePool: { [key: string]: { name: string, array: boolean, type?: string } } = {
-    "http://www.w3.org/2001/XMLSchema#string": {name: "String", array: false},
-    "http://www.w3.org/2001/XMLSchema#int": {name: "Integer", array: false},
-    "http://www.w3.org/2001/XMLSchema#boolean": {name: "Boolean", array: false},
-    "http://www.w3.org/2001/XMLSchema#float": {name: "Float", array: false},
-    "http://www.w3.org/2001/XMLSchema#dateTime": {name: "DateTime", array: false}
-};
+// export var AttributeTypePool: { [key: string]: { name: string, array: boolean, type?: string } } = {
+//     "http://www.w3.org/2001/XMLSchema#string": {name: "String", array: false},
+//     "http://www.w3.org/2001/XMLSchema#int": {name: "Integer", array: false},
+//     "http://www.w3.org/2001/XMLSchema#boolean": {name: "Boolean", array: false},
+//     "http://www.w3.org/2001/XMLSchema#float": {name: "Float", array: false},
+//     "http://www.w3.org/2001/XMLSchema#dateTime": {name: "DateTime", array: false}
+// };
 
 export var CardinalityPool: Cardinality[] = [
     new Cardinality(Locale.none, Locale.none),
