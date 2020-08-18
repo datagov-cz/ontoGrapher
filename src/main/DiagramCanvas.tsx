@@ -15,7 +15,7 @@ import {
 import {HideButton} from "../graph/elementTool/ElemHide";
 import {ElemCreateLink} from "../graph/elementTool/ElemCreateLink";
 import {LinkInfoButton} from "../graph/linkTool/LinkInfo";
-import {initLanguageObject} from "../function/FunctionEditVars";
+import {initLanguageObject, parsePrefix} from "../function/FunctionEditVars";
 import {
     updateConnections,
     updateDeleteProjectElement,
@@ -142,7 +142,31 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                 }
                 let type: string = Links[iri].type;
                 if (typeof link.id === "string" && typeof sid === "string" && typeof tid === "string") {
-                    this.updateConnections(sid, tid, link.id, type, iri);
+                    if (ProjectSettings.representation === "full") {
+                        this.updateConnections(sid, tid, link.id, type, iri);
+                    } else if (ProjectSettings.representation === "compact") {
+                        let mvp1IRI = "https://slovník.gov.cz/základní/pojem/má-vztažený-prvek-1";
+                        let mvp2IRI = "https://slovník.gov.cz/základní/pojem/má-vztažený-prvek-2";
+                        let property = new joint.dia.Element();
+                        let source = getNewLink();
+                        let target = getNewLink();
+                        if (typeof source.id === "string" && typeof target.id === "string" && typeof property.id === "string") {
+                            addClass(property.id, iri, ProjectSettings.selectedPackage, false);
+                            addLink(source.id, mvp1IRI, property.id, sid);
+                            addLink(target.id, mvp2IRI, property.id, tid);
+                            this.updateConnections(property.id, source.id, link.id, type, mvp1IRI);
+                            this.updateConnections(property.id, target.id, link.id, type, mvp2IRI);
+                            updateProjectElement(
+                                ProjectSettings.contextEndpoint,
+                                DiagramCanvas.name,
+                                [parsePrefix("z-sgov-pojem", "typ-vlastnosti")],
+                                VocabularyElements[iri].labels,
+                                VocabularyElements[iri].definitions,
+                                [],
+                                [],
+                                property.id);
+                        }
+                    }
                     this.props.updateElementPanel();
                 }
                 if (type === "default") link.appendLabel({attrs: {text: {text: Links[iri].labels[this.props.projectLanguage]}}});

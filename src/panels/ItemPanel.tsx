@@ -18,6 +18,7 @@ import {getLabelOrBlank} from "../function/FunctionGetVars";
 import ModalRemoveItem from "./modal/ModalRemoveItem";
 import {updateProjectSettings} from "../interface/TransactionInterface";
 import {Form, InputGroup} from 'react-bootstrap';
+import {parsePrefix} from "../function/FunctionEditVars";
 
 interface Props {
 	projectLanguage: string;
@@ -151,19 +152,36 @@ export default class ItemPanel extends React.Component<Props, State> {
             </PackageFolder>);
         } else {
             node.elements.forEach((id) => {
-                arr.push(<PackageItem
-					label={getLabelOrBlank(VocabularyElements[ProjectElements[id].iri].labels, this.props.projectLanguage)}
-					depth={depth} id={id}
-					openRemoveItem={() => {
-						this.setState({
-							selectedID: id,
-							modalRemoveItem: true
-						})
-					}}
-					update={() => {
-						this.forceUpdate();
-					}}/>)
-            })
+				if (ProjectSettings.representation === "full") {
+					arr.push(<PackageItem
+						label={getLabelOrBlank(VocabularyElements[ProjectElements[id].iri].labels, this.props.projectLanguage)}
+						depth={depth} id={id}
+						openRemoveItem={() => {
+							this.setState({
+								selectedID: id,
+								modalRemoveItem: true
+							})
+						}}
+						update={() => {
+							this.forceUpdate();
+						}}/>)
+				} else if (ProjectSettings.representation === "compact") {
+					if (!VocabularyElements[ProjectElements[id].iri].types.includes(parsePrefix("z-sgov-pojem", "typ-vlastnosti"))) {
+						arr.push(<PackageItem
+							label={getLabelOrBlank(VocabularyElements[ProjectElements[id].iri].labels, this.props.projectLanguage)}
+							depth={depth} id={id}
+							openRemoveItem={() => {
+								this.setState({
+									selectedID: id,
+									modalRemoveItem: true
+								})
+							}}
+							update={() => {
+								this.forceUpdate();
+							}}/>)
+					}
+				}
+			})
 
         }
         if (node.open) {
