@@ -75,6 +75,7 @@
     border-color: rgba(0, 0, 0, 0.30);
     min-width: 100%;
     border-left-width: 4px;
+    transition: background-color ease-out 0.5s;
 
     &:hover {
       background-color: #f8f9fa;
@@ -88,12 +89,15 @@
 
   .defaultPackage {
     background-color: rgba(198, 200, 250, 0.5) !important;
+    transition: background-color ease-out 0.5s;
+
+    &:hover {
+      background-color: rgba(198, 200, 250, 0.7) !important;
+    }
   }
 
   .flash {
-    background-color: rgb(250, 198, 198) !important;
-    animation: ease-out;
-    animation-delay: 1s;
+    background-color: rgb(198, 250, 207) !important;
   }
 }
 

@@ -51,7 +51,7 @@ export function switchRepresentation() {
     let mvp2IRI = "https://slovník.gov.cz/základní/pojem/má-vztažený-prvek-2";
     if (ProjectSettings.representation === "full") {
         for (let elem of graph.getElements()) {
-            if (ProjectElements[elem.id].iri === parsePrefix("z-sgov-pojem", "typ-vztahu")) {
+            if (VocabularyElements[ProjectElements[elem.id].iri].types.includes(parsePrefix("z-sgov-pojem", "typ-vztahu"))) {
                 let sourceLink = graph.getConnectedLinks(elem).find(src => ProjectLinks[src.id].iri === mvp1IRI);
                 let targetLink = graph.getConnectedLinks(elem).find(src => ProjectLinks[src.id].iri === mvp2IRI);
                 if (sourceLink && targetLink) {
@@ -62,10 +62,12 @@ export function switchRepresentation() {
                     newLink.target({id: target});
                     if (typeof newLink.id === "string" && typeof source === "string" && typeof target === "string") {
                         addLink(newLink.id, ProjectElements[elem.id].iri, source, target);
+                        newLink.addTo(graph);
                     }
                     nameGraphLink(newLink, ProjectSettings.selectedLanguage);
                     sourceLink.remove();
                     targetLink.remove();
+                    elem.remove();
                 }
             }
         }

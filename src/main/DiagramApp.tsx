@@ -202,7 +202,7 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 				loadContext={this.loadVocabularies}
 				handleChangeLanguage={this.handleChangeLanguage}
 				update={() => {
-					this.elementPanel.current?.forceUpdate();
+					this.elementPanel.current?.update();
 				}}
 				loadingError={this.state.error}
 				retry={() => {

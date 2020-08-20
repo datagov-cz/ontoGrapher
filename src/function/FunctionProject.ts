@@ -1,5 +1,4 @@
 import {
-    AttributeTypePool,
     CardinalityPool,
     Diagrams,
     Languages,
@@ -33,7 +32,6 @@ export function saveProject(): { [key: string]: any } {
         links: Links,
         languages: Languages,
         properties: PropertyPool,
-        attributes: AttributeTypePool,
         cardinalities: CardinalityPool
     };
     //keep this .log

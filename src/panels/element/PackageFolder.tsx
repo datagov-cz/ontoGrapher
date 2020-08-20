@@ -68,8 +68,9 @@ export default class PackageFolder extends React.Component<Props, State> {
                 className={"packageFolder" + (this.state.open ? " open" : "") + (ProjectSettings.selectedPackage === this.props.node ? " defaultPackage" : "") + ((ProjectSettings.selectedPackage === this.props.node && this.props.flash) ? " flash" : "")}
                 style={{marginLeft: (this.props.depth - 1) * 20 + "px"}}>
                 {(this.props.readOnly ? "💃🏼" : "") + (this.props.depth === 1 ? "" : "↘") + "📁" + getLabelOrBlank(this.props.node.labels, this.props.projectLanguage)}
-                <span className={"packageOptions right"} style={{display: this.state.hover ? "inline-block" : "none"}}>
-
+                {this.props.flash ?
+                    <span className={"packageOptions right"}
+                          style={{display: this.state.hover ? "inline-block" : "none"}}>
                         {(this.props.readOnly || this.props.depth !== 1 || ProjectSettings.selectedPackage === this.props.node) ? "" :
                             <OverlayTrigger placement="bottom" overlay={tooltipDef}>
                                 <button className={"buttonlink"} onClick={(event) => {
@@ -79,6 +80,19 @@ export default class PackageFolder extends React.Component<Props, State> {
                                 }}><span role="img" aria-label={""}>🔰</span></button>
                             </OverlayTrigger>}
                     </span>
+                    :
+                    <span className={"packageOptions right"}
+                          style={{display: this.state.hover ? "inline-block" : "none"}}>
+                        {(this.props.readOnly || this.props.depth !== 1 || ProjectSettings.selectedPackage === this.props.node) ? "" :
+                            <OverlayTrigger placement="bottom" overlay={tooltipDef}>
+                                <button className={"buttonlink"} onClick={(event) => {
+                                    event.stopPropagation();
+                                    ProjectSettings.selectedPackage = this.props.node;
+                                    this.props.update();
+                                }}><span role="img" aria-label={""}>🔰</span></button>
+                            </OverlayTrigger>}
+                    </span>
+                }
                 {this.state.open ?
                     this.props.children
                     : <span/>}

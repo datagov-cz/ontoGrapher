@@ -127,7 +127,9 @@ export default class ItemPanel extends React.Component<Props, State> {
 			>
 				{node.elements.sort((a, b) => ProjectElements[a].iri.localeCompare(ProjectElements[b].iri)).map((id) => {
 					let name = getLabelOrBlank(VocabularyElements[ProjectElements[id].iri].labels, this.props.projectLanguage);
-					if (name.toLowerCase().startsWith(this.state.search.toLowerCase())) {
+					if (name.toLowerCase().startsWith(this.state.search.toLowerCase()) && (ProjectSettings.representation === "full" ||
+						(ProjectSettings.representation === "compact" &&
+							!(VocabularyElements[ProjectElements[id].iri].types.includes(parsePrefix("z-sgov-pojem", "typ-vztahu")))))) {
 						return (
 							<PackageItem
 								key={id}
@@ -152,7 +154,9 @@ export default class ItemPanel extends React.Component<Props, State> {
             </PackageFolder>);
         } else {
             node.elements.forEach((id) => {
-				if (ProjectSettings.representation === "full") {
+				if (ProjectSettings.representation === "full" ||
+					(ProjectSettings.representation === "compact" &&
+						!(VocabularyElements[ProjectElements[id].iri].types.includes(parsePrefix("z-sgov-pojem", "typ-vztahu"))))) {
 					arr.push(<PackageItem
 						label={getLabelOrBlank(VocabularyElements[ProjectElements[id].iri].labels, this.props.projectLanguage)}
 						depth={depth} id={id}
@@ -165,21 +169,6 @@ export default class ItemPanel extends React.Component<Props, State> {
 						update={() => {
 							this.forceUpdate();
 						}}/>)
-				} else if (ProjectSettings.representation === "compact") {
-					if (!VocabularyElements[ProjectElements[id].iri].types.includes(parsePrefix("z-sgov-pojem", "typ-vlastnosti"))) {
-						arr.push(<PackageItem
-							label={getLabelOrBlank(VocabularyElements[ProjectElements[id].iri].labels, this.props.projectLanguage)}
-							depth={depth} id={id}
-							openRemoveItem={() => {
-								this.setState({
-									selectedID: id,
-									modalRemoveItem: true
-								})
-							}}
-							update={() => {
-								this.forceUpdate();
-							}}/>)
-					}
 				}
 			})
 
