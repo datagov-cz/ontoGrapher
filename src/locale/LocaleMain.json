@@ -14,6 +14,7 @@
   "ontoGrapher": "ontoGrapher",
   "errorMissingRestriction": "Restriction not found",
   "validationNumber": "#",
+  "createdConcept": "Created new concept!",
   "validationName": "Label",
   "validationSeverity": "Severity",
   "conforms": "Workspace conforms according to SGoV server",
