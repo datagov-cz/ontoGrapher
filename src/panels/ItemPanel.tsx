@@ -125,7 +125,7 @@ export default class ItemPanel extends React.Component<Props, State> {
 				readOnly={node.scheme ? Schemes[node.scheme].readOnly : false}
 			>
 				{node.elements.sort((a, b) => ProjectElements[a].iri.localeCompare(ProjectElements[b].iri)).map((id) => {
-					let name = getLabelOrBlank(VocabularyElements[ProjectElements[id].iri].labels, this.props.projectLanguage);
+					let name = VocabularyElements[ProjectElements[id].iri] ? getLabelOrBlank(VocabularyElements[ProjectElements[id].iri].labels, this.props.projectLanguage) : "<blank>";
 					if (name.toLowerCase().startsWith(this.state.search.toLowerCase()) && (ProjectSettings.representation === "full" ||
 						(ProjectSettings.representation === "compact" &&
 							!(VocabularyElements[ProjectElements[id].iri].types.includes(parsePrefix("z-sgov-pojem", "typ-vztahu"))
@@ -159,7 +159,7 @@ export default class ItemPanel extends React.Component<Props, State> {
 						!(VocabularyElements[ProjectElements[id].iri].types.includes(parsePrefix("z-sgov-pojem", "typ-vztahu"))
 							|| VocabularyElements[ProjectElements[id].iri].types.includes(parsePrefix("z-sgov-pojem", "typ-vlastnosti"))))) {
 					arr.push(<PackageItem
-						label={getLabelOrBlank(VocabularyElements[ProjectElements[id].iri].labels, this.props.projectLanguage)}
+						label={VocabularyElements[ProjectElements[id].iri] ? getLabelOrBlank(VocabularyElements[ProjectElements[id].iri].labels, this.props.projectLanguage) : "<blank>"}
 						depth={depth} id={id}
 						openRemoveItem={() => {
 							this.setState({
@@ -206,12 +206,12 @@ export default class ItemPanel extends React.Component<Props, State> {
 				handleSize={[8, 8]}
 				onResizeStop={(e, d) => this.props.handleWidth(d.size.width)}
 			>
-				{!ProjectSettings.contextIRI && <button className={"margins"} onClick={() => {
-					let scheme = createNewScheme();
-					new PackageNode(Schemes[scheme].labels, PackageRoot, true, scheme);
-					this.forceUpdate();
-				}
-				}>{LocaleMain.addNewPackage}</button>}
+				{/*{!ProjectSettings.contextIRI && <button className={"margins"} onClick={() => {*/}
+				{/*	let scheme = createNewScheme();*/}
+				{/*	new PackageNode(Schemes[scheme].labels, PackageRoot, true, scheme);*/}
+				{/*	this.forceUpdate();*/}
+				{/*}*/}
+				{/*}>{LocaleMain.addNewPackage}</button>}*/}
 				<InputGroup>
 					<InputGroup.Prepend>
 						<InputGroup.Text id="inputGroupPrepend">
