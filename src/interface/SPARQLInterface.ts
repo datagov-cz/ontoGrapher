@@ -128,8 +128,6 @@ export async function getElementsConfig(contextIRI: string, contextEndpoint: str
             active: boolean,
             diagramPosition: { [key: number]: { x: number, y: number } },
             hidden: { [key: number]: boolean },
-            attributes: AttributeObject[],
-            properties: AttributeObject[],
             diagrams: number[]
         }
     } = {}
@@ -160,8 +158,6 @@ export async function getElementsConfig(contextIRI: string, contextEndpoint: str
                     active: true,
                     diagramPosition: {},
                     hidden: {},
-                    attributes: [],
-                    properties: [],
                 }
             }
             elements[iri].id = result.id.value;
@@ -198,54 +194,6 @@ export async function getElementsConfig(contextIRI: string, contextEndpoint: str
                                 y: parseInt(result.positionY.value)
                             };
                             elements[iri].hidden[index] = result.hidden.value === "true";
-                        }
-                    }
-                }).catch(() => {
-                    if (callback) callback(false);
-                });
-            }
-        }
-        if (elements[iri].attributeIRI.length > 0) {
-            for (let attr of elements[iri].attributeIRI) {
-                let query = [
-                    "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
-                    "select ?attrname ?attrtype where {",
-                    "BIND(<" + attr + "> as ?iri) .",
-                    "?iri og:attribute-name ?attrname .",
-                    "?iri og:attribute-type ?attrtype .",
-                    "}"
-                ].join(" ");
-                let q = contextEndpoint + "?query=" + encodeURIComponent(query);
-                await fetch(q, {headers: {'Accept': 'application/json'}}).then(response => {
-                    return response.json();
-                }).then(data => {
-                    for (let result of data.results.bindings) {
-                        if (result.attrname && result.attrtype) {
-                            elements[iri].attributes.push(new AttributeObject(result.attrname.value, result.attrtype.value));
-                        }
-                    }
-                }).catch(() => {
-                    if (callback) callback(false);
-                });
-            }
-        }
-        if (elements[iri].propertyIRI.length > 0) {
-            for (let attr of elements[iri].propertyIRI) {
-                let query = [
-                    "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
-                    "select ?attrname ?attrtype where {",
-                    "BIND(<" + attr + "> as ?iri) .",
-                    "?iri og:attribute-name ?attrname .",
-                    "?iri og:attribute-type ?attrtype .",
-                    "}"
-                ].join(" ");
-                let q = contextEndpoint + "?query=" + encodeURIComponent(query);
-                await fetch(q, {headers: {'Accept': 'application/json'}}).then(response => {
-                    return response.json();
-                }).then(data => {
-                    for (let result of data.results.bindings) {
-                        if (result.attrname && result.attrtype) {
-                            elements[iri].properties.push(new AttributeObject(result.attrname.value, result.attrtype.value));
                         }
                     }
                 }).catch(() => {

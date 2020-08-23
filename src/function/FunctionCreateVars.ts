@@ -61,13 +61,6 @@ export function createNewScheme(): string {
     return result;
 }
 
-export function addProperties(iri: string, attrs: { name: string, iri: string, type: string | string[] }[]) {
-    if (!(iri in PropertyPool)) PropertyPool[iri] = [];
-    attrs.forEach(attr => {
-        PropertyPool[iri].push(new AttributeObject(attr.name, Array.isArray(attr.type) ? attr.type[0] : attr.type, Array.isArray(attr.type), attr.iri));
-    });
-}
-
 export function createIDIRI(id: string) {
     return ProjectSettings.ontographerContext + "/" + id;
 }
@@ -90,28 +83,6 @@ export function createNewElemIRI(labels: { [key: string]: string }, target: { [k
         result += "-" + count.toString(10);
     }
     return result;
-}
-
-export function initProperties(scheme: string): AttributeObject[] {
-    let result: AttributeObject[] = [];
-    if (PropertyPool[scheme]) {
-        PropertyPool[scheme].forEach((atrt) => {
-            result.push(atrt);
-        })
-    }
-    return result;
-}
-
-export function addElemsToPackage(scheme: string) {
-    let pkg = new PackageNode(Schemes[scheme].labels, PackageRoot, false, scheme);
-    for (let iri in VocabularyElements) {
-        if (VocabularyElements[iri].inScheme === scheme) {
-            let elem = new graphElement();
-            if (typeof elem.id === "string") {
-                addClass(elem.id, iri, pkg, false, false);
-            }
-        }
-    }
 }
 
 export function getDomainOf(iriElem: string): string[] {
@@ -153,9 +124,7 @@ export function addClass(
         iri: iri,
         connections: [],
         untitled: untitled,
-        attributes: [],
         diagrams: [ProjectSettings.selectedDiagram],
-        properties: property ? initProperties(property) : [],
         hidden: {[ProjectSettings.selectedDiagram]: false},
         position: {[ProjectSettings.selectedDiagram]: {x: 0, y: 0}},
         package: pkg,

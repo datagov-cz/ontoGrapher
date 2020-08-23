@@ -7,7 +7,6 @@ import {
     ProjectElements,
     ProjectLinks,
     ProjectSettings,
-    PropertyPool,
     Schemes,
     Stereotypes,
     VocabularyElements
@@ -31,7 +30,6 @@ export function saveProject(): { [key: string]: any } {
         vocabularyElements: VocabularyElements,
         links: Links,
         languages: Languages,
-        properties: PropertyPool,
         cardinalities: CardinalityPool
     };
     //keep this .log

@@ -17,8 +17,6 @@ export async function updateProjectElement(
 	newTypes: string[],
 	newLabels: { [key: string]: string },
 	newDefinitions: { [key: string]: string },
-	newAttributes: AttributeObject[],
-	newProperties: AttributeObject[],
 	id: string): Promise<boolean> {
 	let iri = ProjectElements[id].iri;
 	let scheme = VocabularyElements[iri].inScheme;
@@ -70,8 +68,6 @@ export async function updateProjectElement(
 				"og:id": id,
 				"og:iri": iri,
 				"og:untitled": ProjectElements[id].untitled,
-				"og:attribute": newAttributes.map((attr, i) => (iri + "/attribute-" + (i + 1))),
-				"og:property": newProperties.map((attr, i) => (iri + "/property-" + (i + 1))),
 				"og:diagram": ProjectElements[id].diagrams.map((diag) => (iri + "/diagram-" + (diag + 1))),
 				"og:active": ProjectElements[id].active,
 			},
@@ -83,22 +79,6 @@ export async function updateProjectElement(
 					"og:position-x": ProjectElements[id].position[diag].x,
 					"og:position-y": ProjectElements[id].position[diag].y,
 					"og:hidden": ProjectElements[id].hidden[diag]
-				}
-			}),
-			...newAttributes.map((attr, i) => {
-				return {
-					"@id": iri + "/attribute-" + (i + 1),
-					"@type": "ex:attribute",
-					"og:attribute-name": attr.name,
-					"og:attribute-type": attr.type
-				}
-			}),
-			...newProperties.map((attr, i) => {
-				return {
-					"@id": iri + "/property-" + (i + 1),
-					"@type": "ex:property",
-					"og:attribute-name": attr.name,
-					"og:attribute-type": attr.type
 				}
 			}),
 		]
@@ -157,20 +137,6 @@ export async function updateProjectElement(
 		} else return false;
 	}
 
-	for (const attr of ProjectElements[id].attributes) {
-		let i = ProjectElements[id].attributes.indexOf(attr);
-		let delString = await processGetTransaction(contextEndpoint, {subject: iri + "/attribute-" + (i + 1)}).catch(() => false);
-		if (typeof delString === "string") {
-			await processTransaction(contextEndpoint, {"delete": JSON.parse(delString)}).catch(() => false);
-		} else return false;
-	}
-	for (const attr of ProjectElements[id].properties) {
-		let i = ProjectElements[id].properties.indexOf(attr);
-		let delString = await processGetTransaction(contextEndpoint, {subject: iri + "/property-" + (i + 1)}).catch(() => false);
-		if (typeof delString === "string") {
-			await processTransaction(contextEndpoint, {"delete": JSON.parse(delString)}).catch(() => false);
-		}
-	}
 	for (const diag of ProjectElements[id].diagrams) {
 		let delString = await processGetTransaction(contextEndpoint, {subject: iri + "/diagram-" + (diag + 1)}).catch(() => false);
 		if (typeof delString === "string") {

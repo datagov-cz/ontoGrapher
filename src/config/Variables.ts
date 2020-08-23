@@ -2,7 +2,6 @@ import * as Locale from "../locale/LocaleMain.json";
 import {Cardinality} from "../datatypes/Cardinality";
 import {PackageNode} from "../datatypes/PackageNode";
 import {initLanguageObject, parsePrefix} from "../function/FunctionEditVars";
-import {AttributeObject} from "../datatypes/AttributeObject";
 import {RestrictionObject} from "../datatypes/RestrictionObject";
 import {ConnectionObject} from "../datatypes/ConnectionObject";
 
@@ -18,11 +17,11 @@ export var ProjectElements: {
         //whether the labels are initialized
         untitled: boolean,
         //AttributeObject array
-        attributes: AttributeObject[],
+        // attributes: AttributeObject[],
         //diagram indexes in which elem is present/hidden
         diagrams: number[],
         //property array
-        properties: AttributeObject[],
+        // properties: AttributeObject[],
         //if hidden in diagram index
         hidden: { [key: number]: boolean }
         //position on graph by diagram index
@@ -156,14 +155,6 @@ export var ProjectSettings: {
     representation: "full"
 };
 
-// export var AttributeTypePool: { [key: string]: { name: string, array: boolean, type?: string } } = {
-//     "http://www.w3.org/2001/XMLSchema#string": {name: "String", array: false},
-//     "http://www.w3.org/2001/XMLSchema#int": {name: "Integer", array: false},
-//     "http://www.w3.org/2001/XMLSchema#boolean": {name: "Boolean", array: false},
-//     "http://www.w3.org/2001/XMLSchema#float": {name: "Float", array: false},
-//     "http://www.w3.org/2001/XMLSchema#dateTime": {name: "DateTime", array: false}
-// };
-
 export var CardinalityPool: Cardinality[] = [
     new Cardinality(Locale.none, Locale.none),
     new Cardinality("*", "*"),
@@ -173,5 +164,3 @@ export var CardinalityPool: Cardinality[] = [
     new Cardinality("1", "1"),
     new Cardinality("1", "*"),
 ];
-
-export var PropertyPool: { [key: string]: AttributeObject[] } = {};

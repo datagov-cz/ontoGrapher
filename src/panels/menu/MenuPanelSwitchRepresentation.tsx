@@ -13,9 +13,6 @@ interface State {
 }
 
 export default class MenuPanelSwitchRepresentation extends React.Component<Props, State> {
-	constructor(props: Props) {
-		super(props);
-	}
 
 	render() {
 		return (<div className={"inert"}><Nav.Link onClick={() => {

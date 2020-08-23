@@ -91,8 +91,6 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                 [],
                 initLanguageObject(""),
                 initLanguageObject(""),
-                [],
-                [],
                 cls.id);
         }
         let point = this.paper?.clientToLocalPoint({x: event.clientX, y: event.clientY})
@@ -162,8 +160,6 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                                 [parsePrefix("z-sgov-pojem", "typ-vlastnosti")],
                                 VocabularyElements[iri].labels,
                                 VocabularyElements[iri].definitions,
-                                [],
-                                [],
                                 property.id);
                         }
                     }
@@ -356,8 +352,6 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                                     VocabularyElements[iri].types,
                                     VocabularyElements[iri].labels,
                                     VocabularyElements[iri].definitions,
-                                    ProjectElements[id].attributes,
-                                    ProjectElements[id].properties,
                                     id);
                                 break;
                             }
@@ -383,8 +377,6 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                                     VocabularyElements[iri].types,
                                     VocabularyElements[iri].labels,
                                     VocabularyElements[iri].definitions,
-                                    ProjectElements[id].attributes,
-                                    ProjectElements[id].properties,
                                     id);
                                 break;
                             }
@@ -501,8 +493,6 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                             VocabularyElements[ProjectElements[cls.id].iri].types,
                             VocabularyElements[ProjectElements[cls.id].iri].labels,
                             VocabularyElements[ProjectElements[cls.id].iri].definitions,
-                            ProjectElements[cls.id].attributes,
-                            ProjectElements[cls.id].properties,
                             cls.id);
                     }
                 }}
