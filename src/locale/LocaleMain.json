@@ -111,6 +111,7 @@
   "menuModalLoadText": "Paste the serialized project data here. Warning: current project will be lost!",
   "saveWarning": "Any changes are not saved until you click 'Confirm'.",
   "saveChanges": "Any changes are not saved until you click 'Save'.",
+  "savedChanges": "✔ Saved successfully.",
   "menuModalLoadPlaceholder": "Serialization",
   "menuModalSaveHeading": "Save project",
   "menuModalSaveText": "Here is your saved project. Save it to a file for later use:",

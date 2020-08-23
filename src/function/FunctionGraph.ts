@@ -51,7 +51,10 @@ export function switchRepresentation() {
     let mvp2IRI = "https://slovník.gov.cz/základní/pojem/má-vztažený-prvek-2";
     if (ProjectSettings.representation === "full") {
         for (let elem of graph.getElements()) {
-            if (VocabularyElements[ProjectElements[elem.id].iri].types.includes(parsePrefix("z-sgov-pojem", "typ-vztahu"))) {
+            if (
+                VocabularyElements[ProjectElements[elem.id].iri].types.includes(parsePrefix("z-sgov-pojem", "typ-vztahu")) ||
+                VocabularyElements[ProjectElements[elem.id].iri].types.includes(parsePrefix("z-sgov-pojem", "typ-vlastnosti"))
+            ) {
                 let sourceLink = graph.getConnectedLinks(elem).find(src => ProjectLinks[src.id].iri === mvp1IRI);
                 let targetLink = graph.getConnectedLinks(elem).find(src => ProjectLinks[src.id].iri === mvp2IRI);
                 if (sourceLink && targetLink) {
@@ -71,6 +74,11 @@ export function switchRepresentation() {
                 }
             }
         }
+        // for (let link of graph.getLinks()){
+        //     if (ProjectLinks[link.id].iri in Links && Links[ProjectLinks[link.id].iri].type === "default"){
+        //         link.remove();
+        //     }
+        // }
         ProjectSettings.representation = "compact";
     } else if (ProjectSettings.representation === "compact") {
         for (let link of graph.getLinks()) {
@@ -157,12 +165,17 @@ export function restoreHiddenElem(id: string, cls: joint.dia.Element) {
                     let domainLink = getNewLink(ProjectLinks[link].type, link);
                     let rangeLink = getNewLink(ProjectLinks[targetLink].type, targetLink);
                     let relationship = new graphElement({id: relID});
-                    let sourcepos = graph.getCell(ProjectLinks[link].target).get('position');
-                    let targetpos = graph.getCell(ProjectLinks[targetLink].target).get('position');
-                    let posx = ((sourcepos.x + targetpos.x) / 2);
-                    let posy = ((sourcepos.y + targetpos.y) / 2);
+                    if (ProjectElements[relID].position[ProjectSettings.selectedDiagram] &&
+                        ProjectElements[relID].position[ProjectSettings.selectedDiagram] !== {x: 0, y: 0}) {
+                        relationship.position(ProjectElements[relID].position[ProjectSettings.selectedDiagram].x, ProjectElements[relID].position[ProjectSettings.selectedDiagram].y);
+                    } else {
+                        let sourcepos = graph.getCell(ProjectLinks[link].target).get('position');
+                        let targetpos = graph.getCell(ProjectLinks[targetLink].target).get('position');
+                        let posx = ((sourcepos.x + targetpos.x) / 2);
+                        let posy = ((sourcepos.y + targetpos.y) / 2);
+                        relationship.position(posx, posy);
+                    }
                     nameGraphElement(relationship, ProjectSettings.selectedLanguage);
-                    relationship.position(posx, posy);
                     domainLink.source({id: relID});
                     domainLink.target({id: ProjectLinks[link].target});
                     rangeLink.source({id: relID});

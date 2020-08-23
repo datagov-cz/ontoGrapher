@@ -44,7 +44,8 @@ export default class NewLinkDiagram extends React.Component<Props, State> {
 						conn => ProjectLinks[conn].iri === link &&
 							ProjectLinks[conn].target === this.props.tid &&
 							link in VocabularyElements &&
-							VocabularyElements[link].types.includes(parsePrefix("z-sgov-pojem", "typ-vztahu"))
+							(VocabularyElements[link].types.includes(parsePrefix("z-sgov-pojem", "typ-vztahu")) ||
+								VocabularyElements[link].types.includes(parsePrefix("z-sgov-pojem", "typ-vlastnosti")))
 					));
 			} else return [];
 		} else return [];

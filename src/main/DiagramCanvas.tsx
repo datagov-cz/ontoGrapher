@@ -320,6 +320,17 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                     highlightCell(id);
                 }
             },
+            'element:pointerup': (cellView) => {
+                ProjectElements[cellView.model.id].position[ProjectSettings.selectedDiagram] = cellView.model.position();
+                let iri = ProjectElements[cellView.model.id].iri;
+                updateProjectElement(
+                    ProjectSettings.contextEndpoint,
+                    DiagramCanvas.name,
+                    [parsePrefix("z-sgov-pojem", "typ-vlastnosti")],
+                    VocabularyElements[iri].labels,
+                    VocabularyElements[iri].definitions,
+                    cellView.model.id);
+            },
             'element:pointerclick': (cellView) => {
                 if (this.newLink) {
                     this.tid = cellView.model.id;

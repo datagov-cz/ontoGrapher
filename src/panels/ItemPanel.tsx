@@ -13,7 +13,6 @@ import {
 import PackageFolder from "./element/PackageFolder";
 import {PackageNode} from "../datatypes/PackageNode";
 import PackageItem from "./element/PackageItem";
-import {createNewScheme} from "../function/FunctionCreateVars";
 import {getLabelOrBlank} from "../function/FunctionGetVars";
 import ModalRemoveItem from "./modal/ModalRemoveItem";
 import {updateProjectSettings} from "../interface/TransactionInterface";
@@ -129,7 +128,8 @@ export default class ItemPanel extends React.Component<Props, State> {
 					let name = getLabelOrBlank(VocabularyElements[ProjectElements[id].iri].labels, this.props.projectLanguage);
 					if (name.toLowerCase().startsWith(this.state.search.toLowerCase()) && (ProjectSettings.representation === "full" ||
 						(ProjectSettings.representation === "compact" &&
-							!(VocabularyElements[ProjectElements[id].iri].types.includes(parsePrefix("z-sgov-pojem", "typ-vztahu")))))) {
+							!(VocabularyElements[ProjectElements[id].iri].types.includes(parsePrefix("z-sgov-pojem", "typ-vztahu"))
+								|| VocabularyElements[ProjectElements[id].iri].types.includes(parsePrefix("z-sgov-pojem", "typ-vlastnosti")))))) {
 						return (
 							<PackageItem
 								key={id}
@@ -156,7 +156,8 @@ export default class ItemPanel extends React.Component<Props, State> {
             node.elements.forEach((id) => {
 				if (ProjectSettings.representation === "full" ||
 					(ProjectSettings.representation === "compact" &&
-						!(VocabularyElements[ProjectElements[id].iri].types.includes(parsePrefix("z-sgov-pojem", "typ-vztahu"))))) {
+						!(VocabularyElements[ProjectElements[id].iri].types.includes(parsePrefix("z-sgov-pojem", "typ-vztahu"))
+							|| VocabularyElements[ProjectElements[id].iri].types.includes(parsePrefix("z-sgov-pojem", "typ-vlastnosti"))))) {
 					arr.push(<PackageItem
 						label={getLabelOrBlank(VocabularyElements[ProjectElements[id].iri].labels, this.props.projectLanguage)}
 						depth={depth} id={id}

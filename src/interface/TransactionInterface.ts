@@ -7,9 +7,7 @@ import {
 	Schemes,
 	VocabularyElements
 } from "../config/Variables";
-import {AttributeObject} from "../datatypes/AttributeObject";
 import {getRestrictionsAsJSON} from "../function/FunctionRestriction";
-import {parsePrefix} from "../function/FunctionEditVars";
 import {Restrictions} from "../config/Restrictions";
 import {LinkConfig} from "../config/LinkConfig";
 
@@ -138,13 +136,13 @@ export async function updateProjectElement(
 		]
 	}
 
-	let delRestrictions = await processGetTransaction(contextEndpoint, {
-		subject: iri,
-		predicate: encodeURIComponent(parsePrefix("rdfs", "subClassOf"))
-	}).catch(() => false);
-	if (typeof delRestrictions === "string") {
-		await processTransaction(contextEndpoint, {"delete": JSON.parse(delRestrictions)}).catch(() => false);
-	} else return false;
+	// let delRestrictions = await processGetTransaction(contextEndpoint, {
+	// 	subject: iri,
+	// 	predicate: encodeURIComponent(parsePrefix("rdfs", "subClassOf"))
+	// }).catch(() => false);
+	// if (typeof delRestrictions === "string") {
+	// 	await processTransaction(contextEndpoint, {"delete": JSON.parse(delRestrictions)}).catch(() => false);
+	// } else return false;
 
 	let delString = await processGetTransaction(contextEndpoint, {subject: iri + "/diagram"}).catch(() => false);
 	if (typeof delString === "string") {

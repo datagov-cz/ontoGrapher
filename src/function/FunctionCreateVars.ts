@@ -1,17 +1,14 @@
 import {
     CardinalityPool,
     Diagrams,
-    PackageRoot,
     ProjectElements,
     ProjectLinks,
     ProjectSettings,
-    PropertyPool,
     Schemes,
     StructuresShort,
     VocabularyElements
 } from "../config/Variables";
 import * as LocaleMain from "../locale/LocaleMain.json";
-import {AttributeObject} from "../datatypes/AttributeObject";
 import {initLanguageObject} from "./FunctionEditVars";
 import {PackageNode} from "../datatypes/PackageNode";
 import {graphElement} from "../graph/GraphElement";
@@ -151,8 +148,7 @@ export function addClass(
     iri: string,
     pkg: PackageNode,
     untitled: boolean = true,
-    active: boolean = true,
-    property?: string) {
+    active: boolean = true) {
     ProjectElements[id] = {
         iri: iri,
         connections: [],

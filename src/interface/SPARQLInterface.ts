@@ -1,6 +1,5 @@
 import {Diagrams, Links, ProjectElements, ProjectLinks, ProjectSettings, Schemes} from "../config/Variables";
 import {initLanguageObject} from "../function/FunctionEditVars";
-import {AttributeObject} from "../datatypes/AttributeObject";
 import * as joint from "jointjs";
 import {Cardinality} from "../datatypes/Cardinality";
 
@@ -125,8 +124,6 @@ export async function getElementsConfig(contextIRI: string, contextEndpoint: str
         [key: string]: {
             id: "",
             untitled: boolean,
-            attributeIRI: string[],
-            propertyIRI: string[],
             diagramIRI: number[],
             active: boolean,
             diagramPosition: { [key: number]: { x: number, y: number } },
@@ -145,8 +142,6 @@ export async function getElementsConfig(contextIRI: string, contextEndpoint: str
         "?elem og:id ?id .",
         "?elem og:active ?active .",
         "?elem og:untitled ?untitled .",
-        "OPTIONAL {?elem og:attribute ?attribute . }",
-        "OPTIONAL {?elem og:property ?property . }",
         "?elem og:diagram ?diagram .",
         "}"
     ].join(" ");
@@ -160,8 +155,6 @@ export async function getElementsConfig(contextIRI: string, contextEndpoint: str
                 elements[iri] = {
                     id: "",
                     untitled: false,
-                    attributeIRI: [],
-                    propertyIRI: [],
                     diagramIRI: [],
                     diagrams: [],
                     active: true,
@@ -175,8 +168,6 @@ export async function getElementsConfig(contextIRI: string, contextEndpoint: str
             elements[iri].active = result.active.value === "true";
             elements[iri].untitled = result.untitled.value === "true";
             elements[iri].diagramIRI.push(result.diagram.value);
-            if (result.attribute) elements[iri].attributeIRI.push(result.attribute.value);
-            if (result.property) elements[iri].propertyIRI.push(result.property.value);
         }
     }).catch(() => {
         if (callback) callback(false);
@@ -266,8 +257,6 @@ export async function getElementsConfig(contextIRI: string, contextEndpoint: str
     for (let id in ProjectElements) {
         if (ProjectElements[id].iri in elements) {
             ProjectElements[id].untitled = elements[ProjectElements[id].iri].untitled;
-            ProjectElements[id].properties = elements[ProjectElements[id].iri].properties;
-            ProjectElements[id].attributes = elements[ProjectElements[id].iri].attributes;
             ProjectElements[id].hidden = elements[ProjectElements[id].iri].hidden;
             ProjectElements[id].diagrams = elements[ProjectElements[id].iri].diagrams;
             ProjectElements[id].active = elements[ProjectElements[id].iri].active;

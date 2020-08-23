@@ -23,7 +23,7 @@ export default class InterfaceNotification extends React.Component<Props> {
 			return (<span className={"interfaceNotification"}>
 				{this.props.active && <Spinner animation="border" size="sm"/>}
 				&nbsp;
-				{this.props.message}
+				{this.props.message === "" && !this.props.active ? Locale.savedChanges : this.props.message}
 			</span>);
 		}
 	}
