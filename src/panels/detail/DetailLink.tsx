@@ -1,5 +1,13 @@
 import React from 'react';
-import {CardinalityPool, Languages, Links, ProjectLinks, ProjectSettings, Schemes} from "../../config/Variables";
+import {
+    CardinalityPool,
+    Languages,
+    Links,
+    ProjectLinks,
+    ProjectSettings,
+    Schemes,
+    VocabularyElements
+} from "../../config/Variables";
 import {Form} from "react-bootstrap";
 import TableList from "../../components/TableList";
 import * as LocaleMain from "../../locale/LocaleMain.json";
@@ -12,6 +20,7 @@ import DescriptionTabs from "./components/DescriptionTabs";
 import {getLabelOrBlank, getLinkOrVocabElem} from "../../function/FunctionGetVars";
 import {updateProjectLink} from "../../interface/TransactionInterface";
 import {unHighlightAll} from "../../function/FunctionGraph";
+import {parsePrefix} from "../../function/FunctionEditVars";
 
 interface Props {
     projectLanguage: string;
@@ -52,10 +61,19 @@ export default class DetailLink extends React.Component<Props, State> {
 
     prepareLinkOptions() {
         let result: JSX.Element[] = [];
-        for (let iri in Links) {
-            if (Links[iri].type === "default")
-                result.push(<option
-                    value={iri}>{getLabelOrBlank(Links[iri].labels, this.props.projectLanguage)}</option>)
+        if (ProjectSettings.representation === "full") {
+            for (let iri in Links) {
+                if (Links[iri].type === "default")
+                    result.push(<option
+                        value={iri}>{getLabelOrBlank(Links[iri].labels, this.props.projectLanguage)}</option>)
+            }
+        } else if (ProjectSettings.representation === "compact") {
+            for (let iri in VocabularyElements) {
+                if ((VocabularyElements[iri].types.includes(parsePrefix("z-sgov-pojem", "typ-vztahu")) ||
+                    VocabularyElements[iri].types.includes(parsePrefix("z-sgov-pojem", "typ-vlastnosti"))))
+                    result.push(<option
+                        value={iri}>{getLabelOrBlank(Links[iri].labels, this.props.projectLanguage)}</option>)
+            }
         }
         return result;
     }

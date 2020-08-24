@@ -79,8 +79,6 @@ export default class DetailElement extends React.Component<Props, State> {
 			iri: ProjectElements[id].iri,
 			inputConnections: _.cloneDeep(ProjectElements[id].connections),
 			inputDiagrams: _.cloneDeep(ProjectElements[id].diagrams),
-			// inputProperties: _.cloneDeep(ProjectElements[id].properties),
-			// inputAttributes: _.cloneDeep(ProjectElements[id].attributes),
 			inputTypes: _.cloneDeep(VocabularyElements[ProjectElements[id].iri].types),
 			inputLabels: _.cloneDeep(VocabularyElements[ProjectElements[id].iri].labels),
 			inputDefinitions: _.cloneDeep(VocabularyElements[ProjectElements[id].iri].definitions),

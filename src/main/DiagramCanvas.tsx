@@ -24,6 +24,7 @@ import {
 } from "../interface/TransactionInterface";
 import * as LocaleMain from "../locale/LocaleMain.json";
 import NewLinkDiagram from "./NewLinkDiagram";
+import {getLinkOrVocabElem} from "../function/FunctionGetVars";
 
 interface Props {
     projectLanguage: string;
@@ -115,7 +116,8 @@ export default class DiagramCanvas extends React.Component<Props, State> {
 
     saveNewLink(iri: string, sid: string, tid: string) {
         this.props.handleChangeLoadingStatus(true, LocaleMain.updating, false);
-        let link = getNewLink(Links[iri].type);
+        let type = iri in Links ? Links[iri].type : "default"
+        let link = getNewLink(type);
         link.source({id: sid});
         link.target({id: tid});
         link.addTo(graph);
@@ -138,7 +140,6 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                         ])
                     }
                 }
-                let type: string = Links[iri].type;
                 if (typeof link.id === "string" && typeof sid === "string" && typeof tid === "string") {
                     if (ProjectSettings.representation === "full") {
                         this.updateConnections(sid, tid, link.id, type, iri);
@@ -152,8 +153,8 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                             addClass(property.id, iri, ProjectSettings.selectedPackage, false);
                             addLink(source.id, mvp1IRI, property.id, sid);
                             addLink(target.id, mvp2IRI, property.id, tid);
-                            this.updateConnections(property.id, source.id, link.id, type, mvp1IRI);
-                            this.updateConnections(property.id, target.id, link.id, type, mvp2IRI);
+                            ProjectElements[property.id].connections.push(source.id);
+                            ProjectElements[property.id].connections.push(target.id);
                             updateProjectElement(
                                 ProjectSettings.contextEndpoint,
                                 DiagramCanvas.name,
@@ -161,11 +162,13 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                                 VocabularyElements[iri].labels,
                                 VocabularyElements[iri].definitions,
                                 property.id);
+                            this.updateConnections(property.id, sid, source.id, type, mvp1IRI);
+                            this.updateConnections(property.id, tid, target.id, type, mvp2IRI);
                         }
                     }
                     this.props.updateElementPanel();
                 }
-                if (type === "default") link.appendLabel({attrs: {text: {text: Links[iri].labels[this.props.projectLanguage]}}});
+                if (type === "default") link.appendLabel({attrs: {text: {text: getLinkOrVocabElem(iri).labels[this.props.projectLanguage]}}});
             } else link.remove();
         }
         this.sid = undefined;

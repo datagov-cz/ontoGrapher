@@ -67,7 +67,7 @@ export function switchRepresentation() {
                         addLink(newLink.id, ProjectElements[elem.id].iri, source, target);
                         newLink.addTo(graph);
                     }
-                    nameGraphLink(newLink, ProjectSettings.selectedLanguage);
+                    newLink.appendLabel({attrs: {text: {text: VocabularyElements[ProjectElements[elem.id].iri].labels[ProjectSettings.selectedLanguage]}}});
                     sourceLink.remove();
                     targetLink.remove();
                     elem.remove();
