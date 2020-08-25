@@ -20,6 +20,10 @@ Restrictions["http://www.w3.org/2002/07/owl#someValuesFrom"] = {
 			for (let rest of VocabularyElements[iri].restrictions) {
 				if (rest.onProperty === mvp2IRI && rest.restriction === parsePrefix("owl", "allValuesFrom") && rest.target === restriction.target) {
 					VocabularyElements[iri].range = restriction.target;
+					if (restriction.target in VocabularyElements && VocabularyElements[iri].domain) {
+						const domain = VocabularyElements[iri].domain;
+						if (domain) VocabularyElements[domain].connections.push(new ConnectionObject(iri, restriction.target, false));
+					}
 					break;
 				}
 			}
@@ -51,6 +55,10 @@ Restrictions["http://www.w3.org/2002/07/owl#allValuesFrom"] = {
 			for (let rest of VocabularyElements[iri].restrictions) {
 				if (rest.onProperty === mvp2IRI && rest.restriction === parsePrefix("owl", "someValuesFrom") && rest.target === restriction.target) {
 					VocabularyElements[iri].range = restriction.target;
+					if (restriction.target in VocabularyElements && VocabularyElements[iri].domain) {
+						const domain = VocabularyElements[iri].domain;
+						if (domain) VocabularyElements[domain].connections.push(new ConnectionObject(iri, restriction.target, false));
+					}
 					break;
 				}
 			}

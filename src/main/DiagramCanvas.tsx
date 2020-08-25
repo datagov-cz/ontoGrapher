@@ -9,6 +9,7 @@ import {
     highlightCell,
     nameGraphElement,
     restoreHiddenElem,
+    switchRepresentation,
     unHighlightAll,
     unHighlightCell
 } from "../function/FunctionGraph";
@@ -498,6 +499,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                             VocabularyElements[ProjectElements[cls.id].iri].definitions,
                             cls.id);
                     }
+                    switchRepresentation(ProjectSettings.representation);
                 }}
             />
             <NewLinkDiagram

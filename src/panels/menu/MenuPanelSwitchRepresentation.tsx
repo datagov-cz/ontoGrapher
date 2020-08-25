@@ -16,7 +16,7 @@ export default class MenuPanelSwitchRepresentation extends React.Component<Props
 
 	render() {
 		return (<div className={"inert"}><Nav.Link onClick={() => {
-			switchRepresentation();
+			switchRepresentation(ProjectSettings.representation === "full" ? "compact" : "full");
 			this.props.update();
 			this.forceUpdate();
 		}}>
