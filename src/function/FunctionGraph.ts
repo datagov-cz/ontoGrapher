@@ -57,45 +57,50 @@ export function switchRepresentation(representation: string) {
             ) {
                 let links = graph.getConnectedLinks(elem);
                 if (links.length > 1) {
-                    for (let link in links) {
-                        //pred -mvp2-> target IRI(s)
-                        let targetConns = links.filter(src => ProjectLinks[src.id].iri === mvp2IRI).map(link => ProjectElements[ProjectLinks[link.id].target].iri);
-                        //pred -mvp1->
-                        let sourceLink = links.find(
-                            src => ProjectLinks[src.id].iri === mvp1IRI &&
-                                VocabularyElements[ProjectElements[ProjectLinks[src.id].target].iri].connections.find(conn =>
-                                    !conn.initialize && targetConns.includes(conn.target) && conn.onProperty === ProjectElements[elem.id].iri));
-                        let targetLink = links.find(src => sourceLink && ProjectLinks[src.id].iri === mvp2IRI &&
-                            VocabularyElements[ProjectElements[ProjectLinks[sourceLink.id].target].iri].connections.find(
-                                conn => conn.target === ProjectElements[ProjectLinks[src.id].target].iri))
-                        if (sourceLink && targetLink) {
-                            let newLink = getNewLink();
-                            let source = sourceLink.getTargetCell()?.id;
-                            let target = targetLink.getTargetCell()?.id;
-                            newLink.source({id: source});
-                            newLink.target({id: target});
-                            if (typeof newLink.id === "string" && typeof source === "string" && typeof target === "string") {
-                                addLink(newLink.id, ProjectElements[elem.id].iri, source, target);
-                                newLink.addTo(graph);
-                            }
+                    // for (let link in links) {
+                    let sourceLink = graph.getConnectedLinks(elem).find(src => ProjectLinks[src.id].iri === mvp1IRI);
+                    let targetLink = graph.getConnectedLinks(elem).find(src => ProjectLinks[src.id].iri === mvp2IRI);
+                    // //pred -mvp2-> target IRI(s)
+                    // let targetConns = links.filter(src => ProjectLinks[src.id].iri === mvp2IRI).map(link => ProjectElements[ProjectLinks[link.id].target].iri);
+                    // //pred -mvp1->
+                    // let sourceLink = links.find(
+                    //     src => ProjectLinks[src.id].iri === mvp1IRI &&
+                    //         VocabularyElements[ProjectElements[ProjectLinks[src.id].target].iri].connections.find(conn =>
+                    //             !conn.initialize && targetConns.includes(conn.target) && conn.onProperty === ProjectElements[elem.id].iri));
+                    // let targetLink = links.find(src => sourceLink && ProjectLinks[src.id].iri === mvp2IRI &&
+                    //     VocabularyElements[ProjectElements[ProjectLinks[sourceLink.id].target].iri].connections.find(
+                    //         conn => conn.target === ProjectElements[ProjectLinks[src.id].target].iri))
+                    if (sourceLink && targetLink) {
+                        let newLink = getNewLink();
+                        let source = sourceLink.getTargetCell()?.id;
+                        let target = targetLink.getTargetCell()?.id;
+                        newLink.source({id: source});
+                        newLink.target({id: target});
+                        if (typeof newLink.id === "string" && typeof source === "string" && typeof target === "string") {
+                            addLink(newLink.id, ProjectElements[elem.id].iri, source, target);
+                            newLink.addTo(graph);
                             newLink.appendLabel({attrs: {text: {text: VocabularyElements[ProjectElements[elem.id].iri].labels[ProjectSettings.selectedLanguage]}}});
+                            }
                             sourceLink.remove();
                             targetLink.remove();
                             if (graph.getConnectedLinks(elem).length < 2) elem.remove();
                         }
                     }
-                }
+                // }
             }
         }
+        let del = false;
         for (let link of graph.getLinks()) {
-            if ((ProjectLinks[link.id].iri === mvp1IRI || ProjectLinks[link.id].iri === mvp2IRI) && Links[ProjectLinks[link.id].iri].type === "default") {
+            if (ProjectLinks[link.id] && (ProjectLinks[link.id].iri === mvp1IRI || ProjectLinks[link.id].iri === mvp2IRI) && Links[ProjectLinks[link.id].iri].type === "default") {
                 link.remove();
+                del = true;
             }
         }
         ProjectSettings.representation = "compact";
+        return del;
     } else if (representation === "full") {
         for (let link of graph.getLinks()) {
-            if (ProjectLinks[link.id].iri in VocabularyElements) {
+            if (ProjectLinks[link.id] && ProjectLinks[link.id].iri in VocabularyElements) {
                 link.remove();
                 ProjectLinks[link.id].active = false;
             }
@@ -106,6 +111,7 @@ export function switchRepresentation(representation: string) {
             }
         }
         ProjectSettings.representation = "full";
+        return false;
     }
 }
 
@@ -179,7 +185,8 @@ export function restoreHiddenElem(id: string, cls: joint.dia.Element) {
                     let rangeLink = getNewLink(ProjectLinks[targetLink].type, targetLink);
                     let relationship = new graphElement({id: relID});
                     if (ProjectElements[relID].position[ProjectSettings.selectedDiagram] &&
-                        ProjectElements[relID].position[ProjectSettings.selectedDiagram] !== {x: 0, y: 0}) {
+                        ProjectElements[relID].position[ProjectSettings.selectedDiagram].x !== 0 &&
+                        ProjectElements[relID].position[ProjectSettings.selectedDiagram].y !== 0) {
                         relationship.position(ProjectElements[relID].position[ProjectSettings.selectedDiagram].x, ProjectElements[relID].position[ProjectSettings.selectedDiagram].y);
                     } else {
                         let sourcepos = graph.getCell(ProjectLinks[link].target).get('position');

@@ -129,7 +129,7 @@ export default class ItemPanel extends React.Component<Props, State> {
 					if (name.toLowerCase().startsWith(this.state.search.toLowerCase()) && (ProjectSettings.representation === "full" ||
 						(ProjectSettings.representation === "compact" &&
 							!(VocabularyElements[ProjectElements[id].iri].types.includes(parsePrefix("z-sgov-pojem", "typ-vztahu"))
-								|| VocabularyElements[ProjectElements[id].iri].types.includes(parsePrefix("z-sgov-pojem", "typ-vlastnosti")))))) {
+							)))) {
 						return (
 							<PackageItem
 								key={id}
@@ -157,7 +157,7 @@ export default class ItemPanel extends React.Component<Props, State> {
 				if (ProjectSettings.representation === "full" ||
 					(ProjectSettings.representation === "compact" &&
 						!(VocabularyElements[ProjectElements[id].iri].types.includes(parsePrefix("z-sgov-pojem", "typ-vztahu"))
-							|| VocabularyElements[ProjectElements[id].iri].types.includes(parsePrefix("z-sgov-pojem", "typ-vlastnosti"))))) {
+						))) {
 					arr.push(<PackageItem
 						label={VocabularyElements[ProjectElements[id].iri] ? getLabelOrBlank(VocabularyElements[ProjectElements[id].iri].labels, this.props.projectLanguage) : "<blank>"}
 						depth={depth} id={id}

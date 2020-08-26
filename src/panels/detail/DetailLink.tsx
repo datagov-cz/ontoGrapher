@@ -69,8 +69,8 @@ export default class DetailLink extends React.Component<Props, State> {
             }
         } else if (ProjectSettings.representation === "compact") {
             for (let iri in VocabularyElements) {
-                if ((VocabularyElements[iri].types.includes(parsePrefix("z-sgov-pojem", "typ-vztahu")) ||
-                    VocabularyElements[iri].types.includes(parsePrefix("z-sgov-pojem", "typ-vlastnosti"))))
+                if ((VocabularyElements[iri].types.includes(parsePrefix("z-sgov-pojem", "typ-vztahu")
+                )))
                     result.push(<option
                         value={iri}>{getLabelOrBlank(Links[iri].labels, this.props.projectLanguage)}</option>)
             }
@@ -101,54 +101,62 @@ export default class DetailLink extends React.Component<Props, State> {
     }
 
     save() {
-        this.props.handleChangeLoadingStatus(true, LocaleMain.updating, false);
-        ProjectLinks[this.state.id].sourceCardinality = CardinalityPool[parseInt(this.state.sourceCardinality, 10)];
-        ProjectLinks[this.state.id].targetCardinality = CardinalityPool[parseInt(this.state.targetCardinality, 10)];
-        ProjectLinks[this.state.id].iri = this.state.iri;
-        updateProjectLink(ProjectSettings.contextEndpoint, this.state.id, DetailLink.name).then((result) => {
-            if (result) {
-                let links = graph.getLinks();
-                for (let link of links) {
-                    if (link.id === this.state.id) {
-                        switch (link.labels.length) {
-                            case 1:
-                                link.removeLabel(0);
-                                break;
-                            case 2:
-                                link.removeLabel(0);
-                                link.removeLabel(0);
-                                break;
-                            case 3:
-                                link.removeLabel(0);
-                                link.removeLabel(0);
-                                link.removeLabel(0);
-                                break;
-                        }
-                        if (ProjectLinks[this.state.id].sourceCardinality.getString() !== LocaleMain.none) {
-                            link.appendLabel({
-                                attrs: {text: {text: ProjectLinks[this.state.id].sourceCardinality.getString()}},
-                                position: {distance: 20}
+        if (ProjectSettings.representation === "full") {
+            this.props.handleChangeLoadingStatus(true, LocaleMain.updating, false);
+            ProjectLinks[this.state.id].sourceCardinality = CardinalityPool[parseInt(this.state.sourceCardinality, 10)];
+            ProjectLinks[this.state.id].targetCardinality = CardinalityPool[parseInt(this.state.targetCardinality, 10)];
+            ProjectLinks[this.state.id].iri = this.state.iri;
+            updateProjectLink(ProjectSettings.contextEndpoint, this.state.id, DetailLink.name).then((result) => {
+                if (result) {
+                    let links = graph.getLinks();
+                    for (let link of links) {
+                        if (link.id === this.state.id) {
+                            switch (link.labels.length) {
+                                case 1:
+                                    link.removeLabel(0);
+                                    break;
+                                case 2:
+                                    link.removeLabel(0);
+                                    link.removeLabel(0);
+                                    break;
+                                case 3:
+                                    link.removeLabel(0);
+                                    link.removeLabel(0);
+                                    link.removeLabel(0);
+                                    break;
+                            }
+                            if (ProjectLinks[this.state.id].sourceCardinality.getString() !== LocaleMain.none) {
+                                link.appendLabel({
+                                    attrs: {text: {text: ProjectLinks[this.state.id].sourceCardinality.getString()}},
+                                    position: {distance: 20}
+                                });
+                            }
+                            if (ProjectLinks[this.state.id].targetCardinality.getString() !== LocaleMain.none) {
+                                link.appendLabel({
+                                    attrs: {text: {text: ProjectLinks[this.state.id].targetCardinality.getString()}},
+                                    position: {distance: -20}
+                                });
+                            }
+                            if (ProjectLinks[this.state.id].type === "default") link.appendLabel({
+                                attrs: {text: {text: getLinkOrVocabElem(this.state.iri).labels[this.props.projectLanguage]}},
+                                position: {distance: 0.5}
                             });
                         }
-                        if (ProjectLinks[this.state.id].targetCardinality.getString() !== LocaleMain.none) {
-                            link.appendLabel({
-                                attrs: {text: {text: ProjectLinks[this.state.id].targetCardinality.getString()}},
-                                position: {distance: -20}
-                            });
-                        }
-                        if (ProjectLinks[this.state.id].type === "default") link.appendLabel({
-                            attrs: {text: {text: getLinkOrVocabElem(this.state.iri).labels[this.props.projectLanguage]}},
-                            position: {distance: 0.5}
-                        });
                     }
+                    this.setState({changes: false});
+                    this.props.save();
+                    this.props.handleChangeLoadingStatus(false, "", false);
+                } else {
+                    this.props.handleChangeLoadingStatus(false, "", true);
                 }
-                this.setState({changes: false});
-                this.props.save();
-                this.props.handleChangeLoadingStatus(false, "", false);
-            } else {
-                this.props.handleChangeLoadingStatus(false, "", true);
-            }
-        })
+            })
+        } else {
+            // this.props.handleChangeLoadingStatus(true, LocaleMain.updating, false);
+            //
+            // this.setState({changes: false});
+            // this.props.save();
+            // this.props.handleChangeLoadingStatus(false, "", false);
+        }
     }
 
     render() {

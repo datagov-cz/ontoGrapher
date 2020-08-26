@@ -326,7 +326,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                 updateProjectElement(
                     ProjectSettings.contextEndpoint,
                     DiagramCanvas.name,
-                    [parsePrefix("z-sgov-pojem", "typ-vlastnosti")],
+                    VocabularyElements[iri].types,
                     VocabularyElements[iri].labels,
                     VocabularyElements[iri].definitions,
                     cellView.model.id);
