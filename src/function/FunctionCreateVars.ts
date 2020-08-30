@@ -1,55 +1,39 @@
 import {
     CardinalityPool,
     Diagrams,
-    PackageRoot,
     ProjectElements,
     ProjectLinks,
     ProjectSettings,
-    PropertyPool,
     Schemes,
     StructuresShort,
     VocabularyElements
 } from "../config/Variables";
 import * as LocaleMain from "../locale/LocaleMain.json";
-import {AttributeObject} from "../datatypes/AttributeObject";
-import {addRelationships, initLanguageObject} from "./FunctionEditVars";
+import {initLanguageObject} from "./FunctionEditVars";
 import {PackageNode} from "../datatypes/PackageNode";
 import {graphElement} from "../graph/GraphElement";
-import {getSettings} from "../interface/SPARQLInterface";
 import {nameGraphElement, restoreHiddenElem} from "./FunctionGraph";
 import {changeDiagrams} from "./FunctionDiagram";
 import {graph} from "../graph/Graph";
-import {initConnections} from "./FunctionRestriction";
 
 export async function setupDiagrams(diagram: number = 0): Promise<boolean> {
-    return await getSettings(ProjectSettings.contextIRI, ProjectSettings.contextEndpoint).then((result) => {
-        if (result) {
-            if (!ProjectSettings.initialized) {
-                addRelationships();
-                initConnections();
-            }
-            for (let i = 0; i < Diagrams.length; i++) {
-                changeDiagrams(i);
-                for (let id in ProjectElements) {
-                    if (ProjectElements[id].hidden[i] === false && ProjectElements[id].position[i]) {
-                        let position = ProjectElements[id].position[i];
-                        if (position.x !== 0 && position.y !== 0) {
-                            let cls = new graphElement({id: id});
-                            cls.position(ProjectElements[id].position[i].x, ProjectElements[id].position[i].y);
-                            cls.addTo(graph);
-                            nameGraphElement(cls, ProjectSettings.selectedLanguage);
-                            restoreHiddenElem(id, cls);
-                        }
-                    }
+    for (let i = 0; i < Diagrams.length; i++) {
+        changeDiagrams(i);
+        for (let id in ProjectElements) {
+            if (ProjectElements[id].hidden[i] === false && ProjectElements[id].position[i]) {
+                let position = ProjectElements[id].position[i];
+                if (position.x !== 0 && position.y !== 0) {
+                    let cls = new graphElement({id: id});
+                    cls.position(ProjectElements[id].position[i].x, ProjectElements[id].position[i].y);
+                    cls.addTo(graph);
+                    nameGraphElement(cls, ProjectSettings.selectedLanguage);
+                    restoreHiddenElem(id, cls);
                 }
             }
-            changeDiagrams(diagram);
-            return true;
-        } else return false;
-    }).catch((error) => {
-        console.log(error);
-        return false;
-    });
+        }
+    }
+    changeDiagrams(diagram);
+    return true;
 }
 
 export function createValues(values: { [key: string]: string[] }, prefixes: { [key: string]: string }) {
@@ -77,13 +61,6 @@ export function createNewScheme(): string {
     return result;
 }
 
-export function addProperties(iri: string, attrs: { name: string, iri: string, type: string | string[] }[]) {
-    if (!(iri in PropertyPool)) PropertyPool[iri] = [];
-    attrs.forEach(attr => {
-        PropertyPool[iri].push(new AttributeObject(attr.name, Array.isArray(attr.type) ? attr.type[0] : attr.type, Array.isArray(attr.type), attr.iri));
-    });
-}
-
 export function createIDIRI(id: string) {
     return ProjectSettings.ontographerContext + "/" + id;
 }
@@ -106,28 +83,6 @@ export function createNewElemIRI(labels: { [key: string]: string }, target: { [k
         result += "-" + count.toString(10);
     }
     return result;
-}
-
-export function initProperties(scheme: string): AttributeObject[] {
-    let result: AttributeObject[] = [];
-    if (PropertyPool[scheme]) {
-        PropertyPool[scheme].forEach((atrt) => {
-            result.push(atrt);
-        })
-    }
-    return result;
-}
-
-export function addElemsToPackage(scheme: string) {
-    let pkg = new PackageNode(Schemes[scheme].labels, PackageRoot, false, scheme);
-    for (let iri in VocabularyElements) {
-        if (VocabularyElements[iri].inScheme === scheme) {
-            let elem = new graphElement();
-            if (typeof elem.id === "string") {
-                addClass(elem.id, iri, pkg, false, false);
-            }
-        }
-    }
 }
 
 export function getDomainOf(iriElem: string): string[] {
@@ -153,7 +108,8 @@ export function addVocabularyElement(iri: string, type?: string) {
             types: type ? [type] : [],
             subClassOf: [],
             restrictions: [],
-            connections: []
+            connections: [],
+            active: true
         }
     }
 }
@@ -163,15 +119,12 @@ export function addClass(
     iri: string,
     pkg: PackageNode,
     untitled: boolean = true,
-    active: boolean = true,
-    property?: string) {
+    active: boolean = true) {
     ProjectElements[id] = {
         iri: iri,
         connections: [],
         untitled: untitled,
-        attributes: [],
         diagrams: [ProjectSettings.selectedDiagram],
-        properties: property ? initProperties(property) : [],
         hidden: {[ProjectSettings.selectedDiagram]: false},
         position: {[ProjectSettings.selectedDiagram]: {x: 0, y: 0}},
         package: pkg,
@@ -187,8 +140,7 @@ export function addLink(id: string, iri: string, source: string, target: string,
         target: target,
         sourceCardinality: CardinalityPool[0],
         targetCardinality: CardinalityPool[0],
-        // diagram: ProjectSettings.selectedDiagram,
-        // vertices: [],
-        type: type
+        type: type,
+        active: true
     }
 }

@@ -14,7 +14,7 @@ import {graph} from "../graph/Graph";
 import {addLink} from "./FunctionCreateVars";
 import {LinkConfig} from "../config/LinkConfig";
 import {getNewLink} from "./FunctionGraph";
-import {updateProjectLink} from "../interface/TransactionInterface";
+import {updateDeleteProjectElement, updateProjectLink} from "../interface/TransactionInterface";
 
 export function getName(element: string, language: string): string {
     if (element in Stereotypes) {
@@ -134,7 +134,8 @@ export function deletePackageItem(id: string) {
     let folder = ProjectElements[id].package;
     folder.elements.splice(folder.elements.indexOf(id), 1);
     for (let connection in ProjectElements[id].connections) {
-        delete ProjectLinks[ProjectElements[id].connections[connection]];
+        ProjectLinks[ProjectElements[id].connections[connection]].active = false;
+        updateDeleteProjectElement(ProjectSettings.contextEndpoint, ProjectSettings.ontographerContext + "-" + connection, "FunctionEditVars");
     }
     ProjectElements[id].connections.splice(0, ProjectElements[id].connections.length - 1);
     if (graph.getCell(id)) {

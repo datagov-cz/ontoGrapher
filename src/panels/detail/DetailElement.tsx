@@ -20,7 +20,6 @@ import {getName} from "../../function/FunctionEditVars";
 import LabelTable from "./components/LabelTable";
 import DescriptionTabs from "./components/DescriptionTabs";
 import IRIlabel from "../../components/IRIlabel";
-import {AttributeObject} from "../../datatypes/AttributeObject";
 import {nameGraphElement, unHighlightAll} from "../../function/FunctionGraph";
 import {graph} from "../../graph/Graph";
 import {
@@ -46,13 +45,11 @@ interface State {
 	iri: string,
 	inputConnections: string[];
 	inputDiagrams: number[];
-	inputProperties: AttributeObject[];
 	inputTypes: string[];
 	inputLabels: { [key: string]: string };
 	inputDefinitions: { [key: string]: string };
 	inputSchemes: { [key: string]: string };
 	formNewStereotype: string;
-	inputAttributes: AttributeObject[];
 	readOnly: boolean;
 	changes: boolean;
 }
@@ -66,12 +63,10 @@ export default class DetailElement extends React.Component<Props, State> {
 			iri: Object.keys(VocabularyElements)[0],
 			inputConnections: [],
 			inputDiagrams: [],
-			inputAttributes: [],
 			inputTypes: [],
 			inputLabels: {},
 			inputDefinitions: {},
 			inputSchemes: {},
-			inputProperties: [],
 			formNewStereotype: "",
 			readOnly: true,
 			changes: false
@@ -84,8 +79,6 @@ export default class DetailElement extends React.Component<Props, State> {
 			iri: ProjectElements[id].iri,
 			inputConnections: _.cloneDeep(ProjectElements[id].connections),
 			inputDiagrams: _.cloneDeep(ProjectElements[id].diagrams),
-			inputProperties: _.cloneDeep(ProjectElements[id].properties),
-			inputAttributes: _.cloneDeep(ProjectElements[id].attributes),
 			inputTypes: _.cloneDeep(VocabularyElements[ProjectElements[id].iri].types),
 			inputLabels: _.cloneDeep(VocabularyElements[ProjectElements[id].iri].labels),
 			inputDefinitions: _.cloneDeep(VocabularyElements[ProjectElements[id].iri].definitions),
@@ -112,15 +105,11 @@ export default class DetailElement extends React.Component<Props, State> {
 			this.state.inputTypes,
 			this.state.inputLabels,
 			this.state.inputDefinitions,
-			this.state.inputAttributes,
-			this.state.inputProperties,
 			this.state.id).then(async result => {
 			if (result) {
 				VocabularyElements[ProjectElements[this.state.id].iri].types = this.state.inputTypes;
 				VocabularyElements[ProjectElements[this.state.id].iri].labels = this.state.inputLabels;
 				VocabularyElements[ProjectElements[this.state.id].iri].definitions = this.state.inputDefinitions;
-				ProjectElements[this.state.id].attributes = this.state.inputAttributes;
-				ProjectElements[this.state.id].properties = this.state.inputProperties;
 				nameGraphElement(graph.getCell(this.state.id), this.props.projectLanguage);
 				this.props.save();
 				this.setState({changes: false});
@@ -137,7 +126,7 @@ export default class DetailElement extends React.Component<Props, State> {
 					if (delString) {
 						await processTransaction(ProjectSettings.contextEndpoint, {"delete": JSON.parse(delString)});
 					}
-					delete VocabularyElements[oldIRI];
+					VocabularyElements[oldIRI].active = false;
 				}
 				ProjectElements[this.state.id].untitled = false;
 				this.prepareDetails(this.state.id);

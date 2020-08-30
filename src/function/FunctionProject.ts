@@ -1,5 +1,4 @@
 import {
-    AttributeTypePool,
     CardinalityPool,
     Diagrams,
     Languages,
@@ -8,7 +7,6 @@ import {
     ProjectElements,
     ProjectLinks,
     ProjectSettings,
-    PropertyPool,
     Schemes,
     Stereotypes,
     VocabularyElements
@@ -32,8 +30,6 @@ export function saveProject(): { [key: string]: any } {
         vocabularyElements: VocabularyElements,
         links: Links,
         languages: Languages,
-        properties: PropertyPool,
-        attributes: AttributeTypePool,
         cardinalities: CardinalityPool
     };
     //keep this .log
@@ -99,7 +95,7 @@ export function newProject() {
     graph.clear();
     initProjectSettings();
     Diagrams.length = 0;
-    Diagrams.push({name: Locale.untitled, json: ""});
+    Diagrams.push({name: Locale.untitled, json: "", active: true});
     Object.keys(Stereotypes).forEach(el => delete Stereotypes[el]);
     Object.keys(Links).forEach(el => delete Links[el]);
     Object.keys(VocabularyElements).forEach(el => delete VocabularyElements[el]);
@@ -122,7 +118,7 @@ export function loadProject(loadString: string) {
         VocabularyElements[key] = save.vocabularyElements[key];
     }
     Diagrams.length = 0;
-    save.diagrams.forEach((diagram: { name: string, json: any }) => {
+    save.diagrams.forEach((diagram: { name: string, json: any, active: boolean }) => {
         Diagrams.push(diagram)
     });
     ProjectSettings.name = save.projectSettings.name;

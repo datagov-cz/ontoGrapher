@@ -2,6 +2,7 @@ import {Restrictions} from "../config/Restrictions";
 import {ProjectElements, ProjectLinks, VocabularyElements} from "../config/Variables";
 import {RestrictionObject} from "../datatypes/RestrictionObject";
 import {parsePrefix} from "./FunctionEditVars";
+import {ConnectionObject} from "../datatypes/ConnectionObject";
 
 export function createRestriction(obj: { [key: string]: any }, iri: string, restriction: string, onProperty: string, target: { type: string, value: string }) {
 	if (target.type !== "bnode" && (restriction in Restrictions)) {
@@ -21,6 +22,11 @@ export function initRestrictions() {
 	for (let iri in VocabularyElements) {
 		for (let restriction of VocabularyElements[iri].restrictions) {
 			restriction.initRestriction(iri);
+		}
+		let domain = VocabularyElements[iri].domain;
+		let range = VocabularyElements[iri].range;
+		if (typeof domain === "string" && typeof range === "string" && VocabularyElements[domain]) {
+			VocabularyElements[domain].connections.push(new ConnectionObject(iri, range, false));
 		}
 	}
 }

@@ -6,16 +6,18 @@ import {addClass, addLink, addVocabularyElement, createIDIRI} from "../function/
 import {graph} from "../graph/Graph";
 import {
     getNewLink,
+    getUnderlyingFullConnections,
     highlightCell,
     nameGraphElement,
     restoreHiddenElem,
+    switchRepresentation,
     unHighlightAll,
     unHighlightCell
 } from "../function/FunctionGraph";
 import {HideButton} from "../graph/elementTool/ElemHide";
 import {ElemCreateLink} from "../graph/elementTool/ElemCreateLink";
 import {LinkInfoButton} from "../graph/linkTool/LinkInfo";
-import {initLanguageObject} from "../function/FunctionEditVars";
+import {initLanguageObject, parsePrefix} from "../function/FunctionEditVars";
 import {
     updateConnections,
     updateDeleteProjectElement,
@@ -24,6 +26,8 @@ import {
 } from "../interface/TransactionInterface";
 import * as LocaleMain from "../locale/LocaleMain.json";
 import NewLinkDiagram from "./NewLinkDiagram";
+import {getLinkOrVocabElem} from "../function/FunctionGetVars";
+import NewElemDiagram from "./NewElemDiagram";
 
 interface Props {
     projectLanguage: string;
@@ -48,6 +52,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
     private newLink: boolean;
     private sid: string | undefined;
     private tid: string | undefined;
+    private newConceptEvent: { x: number, y: number };
 
     constructor(props: Props) {
         super(props);
@@ -63,6 +68,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
         this.newLink = false;
         this.sid = undefined;
         this.tid = undefined;
+        this.newConceptEvent = {x: 0, y: 0}
         this.createNewConcept = this.createNewConcept.bind(this);
         this.createNewLink = this.createNewLink.bind(this);
     }
@@ -77,25 +83,25 @@ export default class DiagramCanvas extends React.Component<Props, State> {
         }
     }
 
-    createNewConcept(event: { clientX: any; clientY: any; }) {
+    createNewConcept(name: string, language: string) {
         let cls = new graphElement();
-        let label = "<blank>";
-        cls.attr({label: {text: label}});
+        cls.attr({label: {text: name}});
         if (typeof cls.id === "string") {
             let iri = createIDIRI(cls.id);
             addVocabularyElement(iri);
             addClass(cls.id, iri, ProjectSettings.selectedPackage, true, true);
+            let labels = initLanguageObject("");
+            labels[language] = name;
+            VocabularyElements[ProjectElements[cls.id].iri].labels = labels;
             updateProjectElement(
                 ProjectSettings.contextEndpoint,
                 DiagramCanvas.name,
                 [],
+                labels,
                 initLanguageObject(""),
-                initLanguageObject(""),
-                [],
-                [],
                 cls.id);
         }
-        let point = this.paper?.clientToLocalPoint({x: event.clientX, y: event.clientY})
+        let point = this.paper?.clientToLocalPoint({x: this.newConceptEvent.x, y: this.newConceptEvent.y})
         if (point) {
             cls.set('position', {x: point.x, y: point.y});
             ProjectElements[cls.id].position[ProjectSettings.selectedDiagram] = {x: point.x, y: point.y};
@@ -104,7 +110,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
         let bbox = this.paper?.findViewByModel(cls).getBBox();
         if (bbox) cls.resize(bbox.width, bbox.height);
         ProjectElements[cls.id].hidden[ProjectSettings.selectedDiagram] = false;
-        this.props.updateElementPanel();
+        this.props.updateElementPanel(cls.position());
     }
 
     createNewLink(id: string) {
@@ -116,7 +122,9 @@ export default class DiagramCanvas extends React.Component<Props, State> {
     }
 
     saveNewLink(iri: string, sid: string, tid: string) {
-        let link = getNewLink(Links[iri].type);
+        this.props.handleChangeLoadingStatus(true, LocaleMain.updating, false);
+        let type = iri in Links ? Links[iri].type : "default"
+        let link = getNewLink(type);
         link.source({id: sid});
         link.target({id: tid});
         link.addTo(graph);
@@ -139,12 +147,35 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                         ])
                     }
                 }
-                let type: string = Links[iri].type;
                 if (typeof link.id === "string" && typeof sid === "string" && typeof tid === "string") {
-                    this.updateConnections(sid, tid, link.id, type, iri);
+                    if (ProjectSettings.representation === "full") {
+                        this.updateConnections(sid, tid, link.id, type, iri);
+                    } else if (ProjectSettings.representation === "compact") {
+                        let mvp1IRI = "https://slovník.gov.cz/základní/pojem/má-vztažený-prvek-1";
+                        let mvp2IRI = "https://slovník.gov.cz/základní/pojem/má-vztažený-prvek-2";
+                        let property = new joint.dia.Element();
+                        let source = getNewLink();
+                        let target = getNewLink();
+                        if (typeof source.id === "string" && typeof target.id === "string" && typeof property.id === "string") {
+                            addClass(property.id, iri, ProjectSettings.selectedPackage, false);
+                            addLink(source.id, mvp1IRI, property.id, sid);
+                            addLink(target.id, mvp2IRI, property.id, tid);
+                            ProjectElements[property.id].connections.push(source.id);
+                            ProjectElements[property.id].connections.push(target.id);
+                            updateProjectElement(
+                                ProjectSettings.contextEndpoint,
+                                DiagramCanvas.name,
+                                [parsePrefix("z-sgov-pojem", "typ-vlastnosti")],
+                                VocabularyElements[iri].labels,
+                                VocabularyElements[iri].definitions,
+                                property.id);
+                            this.updateConnections(property.id, sid, source.id, type, mvp1IRI);
+                            this.updateConnections(property.id, tid, target.id, type, mvp2IRI);
+                        }
+                    }
                     this.props.updateElementPanel();
                 }
-                if (type === "default") link.appendLabel({attrs: {text: {text: Links[iri].labels[this.props.projectLanguage]}}});
+                if (type === "default") link.appendLabel({attrs: {text: {text: getLinkOrVocabElem(iri).labels[this.props.projectLanguage]}}});
             } else link.remove();
         }
         this.sid = undefined;
@@ -212,7 +243,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
         updateConnections(ProjectSettings.contextEndpoint, id, [id], DiagramCanvas.name).then(result => {
             if (result) {
                 //Diagrams.forEach(diag => diag.json.links.forEach((link: any) => {if (link.id === id) diag.json.links.splice(diag.json.links.indexOf(link),1)}));
-                delete ProjectLinks[id];
+                ProjectLinks[id].active = false;
                 graph.getCell(id).remove();
                 updateDeleteProjectElement(ProjectSettings.contextEndpoint, ProjectSettings.ontographerContext + "-" + id, DiagramCanvas.name).then(result => {
                     if (result) {
@@ -278,7 +309,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                     let id = evt.currentTarget.getAttribute("model-id");
                     let links = graph.getConnectedLinks(graph.getCell(id));
                     for (let link of links) {
-                        delete ProjectLinks[link.id];
+                        ProjectLinks[link.id].active = false;
                     }
                     graph.getCell(id).remove();
 
@@ -294,6 +325,17 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                     unHighlightAll();
                     highlightCell(id);
                 }
+            },
+            'element:pointerup': (cellView) => {
+                ProjectElements[cellView.model.id].position[ProjectSettings.selectedDiagram] = cellView.model.position();
+                let iri = ProjectElements[cellView.model.id].iri;
+                updateProjectElement(
+                    ProjectSettings.contextEndpoint,
+                    DiagramCanvas.name,
+                    VocabularyElements[iri].types,
+                    VocabularyElements[iri].labels,
+                    VocabularyElements[iri].definitions,
+                    cellView.model.id);
             },
             'element:pointerclick': (cellView) => {
                 if (this.newLink) {
@@ -320,8 +362,6 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                                     VocabularyElements[iri].types,
                                     VocabularyElements[iri].labels,
                                     VocabularyElements[iri].definitions,
-                                    ProjectElements[id].attributes,
-                                    ProjectElements[id].properties,
                                     id);
                                 break;
                             }
@@ -347,8 +387,6 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                                     VocabularyElements[iri].types,
                                     VocabularyElements[iri].labels,
                                     VocabularyElements[iri].definitions,
-                                    ProjectElements[id].attributes,
-                                    ProjectElements[id].properties,
                                     id);
                                 break;
                             }
@@ -375,10 +413,22 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                 let removeButton = new joint.linkTools.Remove({
                     action: ((evt, view) => {
                         this.props.handleChangeLoadingStatus(true, LocaleMain.updating, false);
-                        let id = view.model.id;
-                        let sid = view.model.getSourceCell()?.id;
-                        if (typeof sid === "string" && typeof id === "string") {
-                            this.deleteConnections(sid, id);
+                        if (ProjectSettings.representation === "full") {
+                            let id = view.model.id;
+                            let sid = view.model.getSourceCell()?.id;
+                            if (typeof sid === "string" && typeof id === "string") {
+                                this.deleteConnections(sid, id);
+                            }
+                        } else {
+                            let deleteLinks = getUnderlyingFullConnections(view.model);
+                            if (deleteLinks) {
+                                let sid1 = graph.getLinks().find(link => link.id === deleteLinks?.src)?.getSourceCell()?.id;
+                                let sid2 = graph.getLinks().find(link => link.id === deleteLinks?.tgt)?.getSourceCell()?.id;
+                                if (sid1 && sid2 && sid1 === sid2 && typeof sid1 === "string") {
+                                    this.deleteConnections(sid1, deleteLinks.src);
+                                    this.deleteConnections(sid1, deleteLinks.tgt);
+                                }
+                            }
                         }
                     })
                 })
@@ -421,8 +471,10 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                 this.drag = undefined;
             },
             'blank:pointerclick': (evt) => {
-                if (!this.newLink) this.createNewConcept(evt);
-                else this.newLink = false;
+                if (!this.newLink) {
+                    this.setState({modalAddElem: true});
+                    this.newConceptEvent = {x: evt.clientX, y: evt.clientY}
+                } else this.newLink = false;
             }
         });
     }
@@ -465,10 +517,9 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                             VocabularyElements[ProjectElements[cls.id].iri].types,
                             VocabularyElements[ProjectElements[cls.id].iri].labels,
                             VocabularyElements[ProjectElements[cls.id].iri].definitions,
-                            ProjectElements[cls.id].attributes,
-                            ProjectElements[cls.id].properties,
                             cls.id);
                     }
+                    switchRepresentation(ProjectSettings.representation);
                 }}
             />
             <NewLinkDiagram
@@ -484,6 +535,17 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                         graph.getElements().forEach(element => {
                             this.paper?.findViewByModel(element).unhighlight()
                         });
+                    }
+                }}/>
+            <NewElemDiagram
+                projectLanguage={this.props.projectLanguage}
+                modal={this.state.modalAddElem}
+                close={(conceptName: string) => {
+                    this.setState({modalAddElem: false});
+                    if (conceptName) {
+                        this.createNewConcept(conceptName, this.props.projectLanguage);
+                    } else {
+                        this.newConceptEvent = {x: 0, y: 0}
                     }
                 }}/>
         </div>);

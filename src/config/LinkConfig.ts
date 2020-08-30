@@ -29,8 +29,10 @@ export var LinkConfig: {
 			})
 
 			ProjectElements[ProjectLinks[id].source].connections.forEach((linkID) => {
-				connections[ProjectLinks[linkID].iri] = ProjectElements[ProjectLinks[linkID].target].iri
-				connectionContext[ProjectLinks[linkID].iri] = {"@type": "@id"}
+				if (linkID in ProjectLinks && ProjectElements[ProjectLinks[linkID].target]) {
+					connections[ProjectLinks[linkID].iri] = ProjectElements[ProjectLinks[linkID].target].iri
+					connectionContext[ProjectLinks[linkID].iri] = {"@type": "@id"}
+				}
 			})
 
 			return {
@@ -57,13 +59,17 @@ export var LinkConfig: {
 			})
 
 			ProjectElements[ProjectLinks[id].source].connections.forEach((linkID) => {
-				connections[ProjectLinks[linkID].iri] = ProjectElements[ProjectLinks[linkID].target].iri
-				connectionContext[ProjectLinks[linkID].iri] = {"@type": "@id"}
+				if (linkID in ProjectLinks && ProjectElements[ProjectLinks[linkID].target]) {
+					connections[ProjectLinks[linkID].iri] = ProjectElements[ProjectLinks[linkID].target].iri
+					connectionContext[ProjectLinks[linkID].iri] = {"@type": "@id"}
+				}
 			})
 
 			del.forEach((linkID) => {
-				connectionContext[ProjectLinks[linkID].iri] = {"@type": "@id"}
-				delConnections[ProjectLinks[linkID].iri] = ProjectElements[ProjectLinks[linkID].target].iri
+				if (linkID in ProjectLinks && ProjectElements[ProjectLinks[linkID].target]) {
+					delConnections[ProjectLinks[linkID].iri] = ProjectElements[ProjectLinks[linkID].target].iri
+					connectionContext[ProjectLinks[linkID].iri] = {"@type": "@id"}
+				}
 			})
 
 			return {

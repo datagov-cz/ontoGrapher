@@ -19,10 +19,18 @@ interface State {
 export default class DiagramTab extends React.Component<Props, State> {
 
 	deleteDiagram() {
-		Diagrams.splice(this.props.diagram, 1);
-		if (this.props.diagram < ProjectSettings.selectedDiagram) changeDiagrams(ProjectSettings.selectedDiagram - 1);
-		else if (this.props.diagram === ProjectSettings.selectedDiagram) changeDiagrams(0);
-		this.props.update();
+		this.props.handleChangeLoadingStatus(true, "", false);
+		updateProjectSettings(ProjectSettings.contextIRI, ProjectSettings.contextEndpoint, DiagramTab.name).then(result => {
+			if (result) {
+				Diagrams[this.props.diagram].active = false;
+				if (this.props.diagram < ProjectSettings.selectedDiagram) changeDiagrams(ProjectSettings.selectedDiagram - 1);
+				else if (this.props.diagram === ProjectSettings.selectedDiagram) changeDiagrams(0);
+				this.props.update();
+				this.props.handleChangeLoadingStatus(false, "", false);
+			} else {
+				this.props.handleChangeLoadingStatus(false, "", true);
+			}
+		})
 	}
 
 	changeDiagram() {
@@ -31,6 +39,7 @@ export default class DiagramTab extends React.Component<Props, State> {
 	}
 
 	handleChangeDiagramName(event: { textarea: string }) {
+		this.props.handleChangeLoadingStatus(true, "", false);
 		Diagrams[this.props.diagram].name = event.textarea;
 		updateProjectSettings(ProjectSettings.contextIRI, ProjectSettings.contextEndpoint, DiagramTab.name).then(result => {
 			if (result) {

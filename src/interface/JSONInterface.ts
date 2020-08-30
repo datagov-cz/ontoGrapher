@@ -1,7 +1,7 @@
 import * as Locale from "./../locale/LocaleMain.json";
 import {Links, Schemes, Stereotypes} from "../config/Variables";
 import {fetchConcepts, getScheme} from "./SPARQLInterface";
-import {addProperties, createValues} from "../function/FunctionCreateVars";
+import {createValues} from "../function/FunctionCreateVars";
 import {initLanguageObject} from "../function/FunctionEditVars";
 import {checkLabels} from "../function/FunctionGetVars";
 
@@ -24,6 +24,7 @@ export async function getVocabulariesFromRemoteJSON(pathToJSON: string): Promise
                             undefined,
                             false,
                             undefined,
+                            true,
                             [data.classIRI],
                             data.values ? createValues(data.values, data.prefixes) : undefined
                         );
@@ -36,11 +37,10 @@ export async function getVocabulariesFromRemoteJSON(pathToJSON: string): Promise
                             undefined,
                             false,
                             undefined,
+                            true,
                             [data.relationshipIRI],
                             data.values ? createValues(data.values, data.prefixes) : undefined
                         );
-
-                        addProperties(data.sourceIRI, data.attributes);
                         checkLabels();
                     }
                 }

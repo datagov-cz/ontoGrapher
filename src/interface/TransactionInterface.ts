@@ -7,10 +7,7 @@ import {
 	Schemes,
 	VocabularyElements
 } from "../config/Variables";
-import {AttributeObject} from "../datatypes/AttributeObject";
-import * as Locale from "../locale/LocaleMain.json";
 import {getRestrictionsAsJSON} from "../function/FunctionRestriction";
-import {parsePrefix} from "../function/FunctionEditVars";
 import {Restrictions} from "../config/Restrictions";
 import {LinkConfig} from "../config/LinkConfig";
 
@@ -20,8 +17,6 @@ export async function updateProjectElement(
 	newTypes: string[],
 	newLabels: { [key: string]: string },
 	newDefinitions: { [key: string]: string },
-	newAttributes: AttributeObject[],
-	newProperties: AttributeObject[],
 	id: string): Promise<boolean> {
 	let iri = ProjectElements[id].iri;
 	let scheme = VocabularyElements[iri].inScheme;
@@ -73,8 +68,6 @@ export async function updateProjectElement(
 				"og:id": id,
 				"og:iri": iri,
 				"og:untitled": ProjectElements[id].untitled,
-				"og:attribute": newAttributes.map((attr, i) => (iri + "/attribute-" + (i + 1))),
-				"og:property": newProperties.map((attr, i) => (iri + "/property-" + (i + 1))),
 				"og:diagram": ProjectElements[id].diagrams.map((diag) => (iri + "/diagram-" + (diag + 1))),
 				"og:active": ProjectElements[id].active,
 			},
@@ -86,22 +79,6 @@ export async function updateProjectElement(
 					"og:position-x": ProjectElements[id].position[diag].x,
 					"og:position-y": ProjectElements[id].position[diag].y,
 					"og:hidden": ProjectElements[id].hidden[diag]
-				}
-			}),
-			...newAttributes.map((attr, i) => {
-				return {
-					"@id": iri + "/attribute-" + (i + 1),
-					"@type": "ex:attribute",
-					"og:attribute-name": attr.name,
-					"og:attribute-type": attr.type
-				}
-			}),
-			...newProperties.map((attr, i) => {
-				return {
-					"@id": iri + "/property-" + (i + 1),
-					"@type": "ex:property",
-					"og:attribute-name": attr.name,
-					"og:attribute-type": attr.type
 				}
 			}),
 		]
@@ -139,13 +116,13 @@ export async function updateProjectElement(
 		]
 	}
 
-	let delRestrictions = await processGetTransaction(contextEndpoint, {
-		subject: iri,
-		predicate: encodeURIComponent(parsePrefix("rdfs", "subClassOf"))
-	}).catch(() => false);
-	if (typeof delRestrictions === "string") {
-		await processTransaction(contextEndpoint, {"delete": JSON.parse(delRestrictions)}).catch(() => false);
-	} else return false;
+	// let delRestrictions = await processGetTransaction(contextEndpoint, {
+	// 	subject: iri,
+	// 	predicate: encodeURIComponent(parsePrefix("rdfs", "subClassOf"))
+	// }).catch(() => false);
+	// if (typeof delRestrictions === "string") {
+	// 	await processTransaction(contextEndpoint, {"delete": JSON.parse(delRestrictions)}).catch(() => false);
+	// } else return false;
 
 	let delString = await processGetTransaction(contextEndpoint, {subject: iri + "/diagram"}).catch(() => false);
 	if (typeof delString === "string") {
@@ -160,20 +137,6 @@ export async function updateProjectElement(
 		} else return false;
 	}
 
-	for (const attr of ProjectElements[id].attributes) {
-		let i = ProjectElements[id].attributes.indexOf(attr);
-		let delString = await processGetTransaction(contextEndpoint, {subject: iri + "/attribute-" + (i + 1)}).catch(() => false);
-		if (typeof delString === "string") {
-			await processTransaction(contextEndpoint, {"delete": JSON.parse(delString)}).catch(() => false);
-		} else return false;
-	}
-	for (const attr of ProjectElements[id].properties) {
-		let i = ProjectElements[id].properties.indexOf(attr);
-		let delString = await processGetTransaction(contextEndpoint, {subject: iri + "/property-" + (i + 1)}).catch(() => false);
-		if (typeof delString === "string") {
-			await processTransaction(contextEndpoint, {"delete": JSON.parse(delString)}).catch(() => false);
-		}
-	}
 	for (const diag of ProjectElements[id].diagrams) {
 		let delString = await processGetTransaction(contextEndpoint, {subject: iri + "/diagram-" + (diag + 1)}).catch(() => false);
 		if (typeof delString === "string") {
@@ -187,11 +150,11 @@ export async function updateProjectLink(contextEndpoint: string, id: string, sou
 	let ogContext = "http://onto.fel.cvut.cz/ontologies/application/ontoGrapher";
 	let linkIRI = ogContext + "-" + id;
 	let cardinalities: { [key: string]: string } = {};
-	if (ProjectLinks[id].sourceCardinality && ProjectLinks[id].sourceCardinality.getString() !== Locale.none) {
+	if (ProjectLinks[id].sourceCardinality) {
 		cardinalities["og:sourceCardinality1"] = ProjectLinks[id].sourceCardinality.getFirstCardinality();
 		cardinalities["og:sourceCardinality2"] = ProjectLinks[id].sourceCardinality.getSecondCardinality();
 	}
-	if (ProjectLinks[id].targetCardinality && ProjectLinks[id].targetCardinality.getString() !== Locale.none) {
+	if (ProjectLinks[id].targetCardinality) {
 		cardinalities["og:targetCardinality1"] = ProjectLinks[id].targetCardinality.getFirstCardinality();
 		cardinalities["og:targetCardinality2"] = ProjectLinks[id].targetCardinality.getSecondCardinality();
 	}
@@ -375,7 +338,7 @@ export async function updateProjectSettings(contextIRI: string, contextEndpoint:
 				"og:diagram": Diagrams.map((diag, i) => ogContext + contextInstance + "/diagram-" + (i + 1)),
 				"og:initialized": true
 			},
-			...(Diagrams).map((diag, i) => {
+			...(Diagrams).filter(diag => diag.active).map((diag, i) => {
 				return {
 					"@id": ogContext + contextInstance + "/diagram-" + (i + 1),
 					"og:index": i,

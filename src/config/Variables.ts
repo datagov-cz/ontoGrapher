@@ -2,7 +2,6 @@ import * as Locale from "../locale/LocaleMain.json";
 import {Cardinality} from "../datatypes/Cardinality";
 import {PackageNode} from "../datatypes/PackageNode";
 import {initLanguageObject, parsePrefix} from "../function/FunctionEditVars";
-import {AttributeObject} from "../datatypes/AttributeObject";
 import {RestrictionObject} from "../datatypes/RestrictionObject";
 import {ConnectionObject} from "../datatypes/ConnectionObject";
 
@@ -18,11 +17,11 @@ export var ProjectElements: {
         //whether the labels are initialized
         untitled: boolean,
         //AttributeObject array
-        attributes: AttributeObject[],
+        // attributes: AttributeObject[],
         //diagram indexes in which elem is present/hidden
         diagrams: number[],
         //property array
-        properties: AttributeObject[],
+        // properties: AttributeObject[],
         //if hidden in diagram index
         hidden: { [key: number]: boolean }
         //position on graph by diagram index
@@ -47,7 +46,9 @@ export var ProjectLinks: {
         //target cardinality Cardinality object
         targetCardinality: Cardinality,
         //type - dictates saving/loading behaviour
-        type: string;
+        type: string,
+        //active
+        active: boolean
     }
 } = {};
 
@@ -98,7 +99,8 @@ export var VocabularyElements: {
             types: string[],
             subClassOf: string[],
             restrictions: RestrictionObject[],
-            connections: ConnectionObject[]
+            connections: ConnectionObject[],
+            active: boolean,
         }
 } = {};
 
@@ -119,8 +121,8 @@ export var Stereotypes: {
     }
 } = {};
 
-export var Diagrams: { name: string, json: any }[] = [
-    {name: "Untitled", json: {}}
+export var Diagrams: { name: string, json: any, active: boolean }[] = [
+    {name: "Untitled", json: {}, active: true}
 ];
 
 export var ProjectSettings: {
@@ -136,6 +138,7 @@ export var ProjectSettings: {
     lastUpdate: { [key: string]: any },
     lastSource: string,
     initialized: boolean,
+    representation: string
 } = {
     name: {},
     description: {},
@@ -148,15 +151,8 @@ export var ProjectSettings: {
     ontographerContext: "http://onto.fel.cvut.cz/ontologies/application/ontoGrapher",
     lastUpdate: {},
     lastSource: "",
-    initialized: false
-};
-
-export var AttributeTypePool: { [key: string]: { name: string, array: boolean, type?: string } } = {
-    "http://www.w3.org/2001/XMLSchema#string": {name: "String", array: false},
-    "http://www.w3.org/2001/XMLSchema#int": {name: "Integer", array: false},
-    "http://www.w3.org/2001/XMLSchema#boolean": {name: "Boolean", array: false},
-    "http://www.w3.org/2001/XMLSchema#float": {name: "Float", array: false},
-    "http://www.w3.org/2001/XMLSchema#dateTime": {name: "DateTime", array: false}
+    initialized: false,
+    representation: "full"
 };
 
 export var CardinalityPool: Cardinality[] = [
@@ -168,5 +164,3 @@ export var CardinalityPool: Cardinality[] = [
     new Cardinality("1", "1"),
     new Cardinality("1", "*"),
 ];
-
-export var PropertyPool: { [key: string]: AttributeObject[] } = {};

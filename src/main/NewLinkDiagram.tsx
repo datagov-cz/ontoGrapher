@@ -1,9 +1,10 @@
 import React from 'react';
 import {Button, Form, Modal} from "react-bootstrap";
 import * as LocaleMenu from "../locale/LocaleMenu.json";
-import {Links, ProjectElements, ProjectLinks} from "../config/Variables";
-import {getLabelOrBlank} from "../function/FunctionGetVars";
+import {Links, ProjectElements, ProjectLinks, ProjectSettings, VocabularyElements} from "../config/Variables";
+import {getLabelOrBlank, getLinkOrVocabElem} from "../function/FunctionGetVars";
 import {graph} from "../graph/Graph";
+import {parsePrefix} from "../function/FunctionEditVars";
 
 interface Props {
 	modal: boolean;
@@ -35,7 +36,16 @@ export default class NewLinkDiagram extends React.Component<Props, State> {
 		let elem = graph.getElements().find(elem => elem.id === this.props.sid);
 		if (elem && this.props.sid) {
 			let conns = ProjectElements[this.props.sid].connections;
-			return Object.keys(Links).filter(link => !conns.find(conn => ProjectLinks[conn].iri === link && ProjectLinks[conn].target === this.props.tid));
+			if (ProjectSettings.representation === "full") {
+				return Object.keys(Links).filter(link => !conns.find(conn => ProjectLinks[conn].iri === link && ProjectLinks[conn].target === this.props.tid));
+			} else if (ProjectSettings.representation === "compact") {
+				return Object.keys(VocabularyElements).filter(link =>
+					!conns.find(
+						conn => ProjectLinks[conn].iri === link &&
+							ProjectLinks[conn].target === this.props.tid
+					) && (VocabularyElements[link].types.includes(parsePrefix("z-sgov-pojem", "typ-vztahu"))
+					));
+			} else return [];
 		} else return [];
 	}
 
@@ -58,7 +68,7 @@ export default class NewLinkDiagram extends React.Component<Props, State> {
 					{this.getLinks().map((link) => (
 						<option key={link}
 								onClick={() => this.setLink(link)}
-								value={link}>{getLabelOrBlank(Links[link].labels, this.props.projectLanguage)}</option>))}
+								value={link}>{getLabelOrBlank(getLinkOrVocabElem(link).labels, this.props.projectLanguage)}</option>))}
 				</Form.Control>
 			</Modal.Body>
 			<Modal.Footer>

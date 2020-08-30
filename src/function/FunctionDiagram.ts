@@ -10,11 +10,12 @@ export function changeDiagrams(diagram: number = 0) {
     ProjectSettings.selectedDiagram = diagram;
     if (Object.keys(Diagrams[diagram].json).length > 0) {
         loadDiagram(Diagrams[diagram].json);
+
     } else graph.clear();
 }
 
 export function addDiagram() {
-    Diagrams.push({name: LocaleMain.untitled, json: {}});
+    Diagrams.push({name: LocaleMain.untitled, json: {}, active: true});
     for (let key of Object.keys(ProjectElements)) {
         ProjectElements[key].hidden[Diagrams.length - 1] = false;
         ProjectElements[key].position[Diagrams.length - 1] = {x: 0, y: 0};

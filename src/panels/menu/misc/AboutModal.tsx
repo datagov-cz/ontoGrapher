@@ -20,6 +20,20 @@ export default class AboutModal extends React.Component<Props, State> {
             </Modal.Header>
             <Modal.Body>
                 <Tabs id={"changelog"}>
+					<Tab title={"August"} eventKey={"August"}>
+						<h6>30.8.</h6>
+						<ul>
+							<li>Bug fixing and stability improvements</li>
+							<li>Creating new concepts now has an intermediate step of entering the label in a dialogue
+								box
+							</li>
+						</ul>
+						<h6>25.8.</h6>
+						<ul>
+							<li>Bug fixing and stability improvements</li>
+							<li>Representation switching</li>
+						</ul>
+					</Tab>
 					<Tab title={"July"} eventKey={"July"}>
 						<h6>27.7.</h6>
 						<ul>
