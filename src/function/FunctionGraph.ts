@@ -8,6 +8,10 @@ import {graphElement} from "../graph/GraphElement";
 import {LinkConfig} from "../config/LinkConfig";
 import {addLink} from "./FunctionCreateVars";
 
+
+let mvp1IRI = "https://slovník.gov.cz/základní/pojem/má-vztažený-prvek-1";
+let mvp2IRI = "https://slovník.gov.cz/základní/pojem/má-vztažený-prvek-2";
+
 export function nameGraphElement(cell: joint.dia.Cell, languageCode: string) {
     if (typeof cell.id === "string") {
         let vocabElem = getVocabElementByElementID(cell.id);
@@ -46,9 +50,29 @@ export function nameGraphLink(cell: joint.dia.Link, languageCode: string) {
     }
 }
 
+export function getUnderlyingFullConnections(link: joint.dia.Link): { src: string, tgt: string } | undefined {
+    let id = link.id;
+    let iri = ProjectLinks[id].iri;
+    if (!(iri in VocabularyElements)) return;
+    let sourceElem = link.getSourceCell();
+    let targetElem = link.getTargetCell();
+    if (sourceElem && targetElem) {
+        let sourceIRI = ProjectElements[sourceElem.id].iri;
+        let targetIRI = ProjectElements[targetElem.id].iri;
+        let links = Object.keys(ProjectLinks).filter(id => (ProjectLinks[id].active &&
+            ProjectElements[ProjectLinks[id].source].iri === iri &&
+            (ProjectLinks[id].iri === mvp1IRI || ProjectLinks[id].iri === mvp2IRI))
+        );
+        if (links.length === 2) {
+            let mvp1 = links.find(id => ProjectLinks[id].iri === mvp1IRI && ProjectElements[ProjectLinks[id].target].iri === sourceIRI);
+            let mvp2 = links.find(id => ProjectLinks[id].iri === mvp2IRI && ProjectElements[ProjectLinks[id].target].iri === targetIRI);
+            if (mvp1 && mvp2) return {src: mvp1, tgt: mvp2};
+            else return;
+        }
+    }
+}
+
 export function switchRepresentation(representation: string) {
-    let mvp1IRI = "https://slovník.gov.cz/základní/pojem/má-vztažený-prvek-1";
-    let mvp2IRI = "https://slovník.gov.cz/základní/pojem/má-vztažený-prvek-2";
     if (representation === "compact") {
         for (let elem of graph.getElements()) {
             if (
@@ -74,24 +98,28 @@ export function switchRepresentation(representation: string) {
                         let newLink = getNewLink();
                         let source = sourceLink.getTargetCell()?.id;
                         let target = targetLink.getTargetCell()?.id;
-                        newLink.source({id: source});
-                        newLink.target({id: target});
                         if (typeof newLink.id === "string" && typeof source === "string" && typeof target === "string") {
+                            newLink.source({id: source});
+                            newLink.target({id: target});
                             addLink(newLink.id, ProjectElements[elem.id].iri, source, target);
                             newLink.addTo(graph);
                             newLink.appendLabel({attrs: {text: {text: VocabularyElements[ProjectElements[elem.id].iri].labels[ProjectSettings.selectedLanguage]}}});
-                            }
-                            sourceLink.remove();
-                            targetLink.remove();
-                            if (graph.getConnectedLinks(elem).length < 2) elem.remove();
                         }
+                        sourceLink.remove();
+                        targetLink.remove();
                     }
+                }
+                if (graph.getConnectedLinks(elem).length < 2) {
+                    ProjectElements[elem.id].position[ProjectSettings.selectedDiagram] = elem.position();
+                    ProjectElements[elem.id].hidden[ProjectSettings.selectedDiagram] = true;
+                    elem.remove();
+                }
                 // }
             }
         }
         let del = false;
         for (let link of graph.getLinks()) {
-            if (ProjectLinks[link.id] && (ProjectLinks[link.id].iri === mvp1IRI || ProjectLinks[link.id].iri === mvp2IRI) && Links[ProjectLinks[link.id].iri].type === "default") {
+            if (ProjectLinks[link.id] && Links[ProjectLinks[link.id].iri].type === "default") {
                 link.remove();
                 del = true;
             }

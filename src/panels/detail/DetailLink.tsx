@@ -19,8 +19,9 @@ import {graph} from "../../graph/Graph";
 import DescriptionTabs from "./components/DescriptionTabs";
 import {getLabelOrBlank, getLinkOrVocabElem} from "../../function/FunctionGetVars";
 import {updateProjectLink} from "../../interface/TransactionInterface";
-import {unHighlightAll} from "../../function/FunctionGraph";
+import {getUnderlyingFullConnections, unHighlightAll} from "../../function/FunctionGraph";
 import {parsePrefix} from "../../function/FunctionEditVars";
+import {Cardinality} from "../../datatypes/Cardinality";
 
 interface Props {
     projectLanguage: string;
@@ -151,11 +152,61 @@ export default class DetailLink extends React.Component<Props, State> {
                 }
             })
         } else {
-            // this.props.handleChangeLoadingStatus(true, LocaleMain.updating, false);
-            //
-            // this.setState({changes: false});
-            // this.props.save();
-            // this.props.handleChangeLoadingStatus(false, "", false);
+            this.props.handleChangeLoadingStatus(true, LocaleMain.updating, false);
+            ProjectLinks[this.state.id].sourceCardinality = CardinalityPool[parseInt(this.state.sourceCardinality, 10)];
+            ProjectLinks[this.state.id].targetCardinality = CardinalityPool[parseInt(this.state.targetCardinality, 10)];
+            let link = graph.getLinks().find(link => link.id === this.state.id);
+            let links = graph.getLinks();
+            for (let link of links) {
+                if (link.id === this.state.id) {
+                    switch (link.labels.length) {
+                        case 1:
+                            link.removeLabel(0);
+                            break;
+                        case 2:
+                            link.removeLabel(0);
+                            link.removeLabel(0);
+                            break;
+                        case 3:
+                            link.removeLabel(0);
+                            link.removeLabel(0);
+                            link.removeLabel(0);
+                            break;
+                    }
+                    if (ProjectLinks[this.state.id].sourceCardinality.getString() !== LocaleMain.none) {
+                        link.appendLabel({
+                            attrs: {text: {text: ProjectLinks[this.state.id].sourceCardinality.getString()}},
+                            position: {distance: 20}
+                        });
+                    }
+                    if (ProjectLinks[this.state.id].targetCardinality.getString() !== LocaleMain.none) {
+                        link.appendLabel({
+                            attrs: {text: {text: ProjectLinks[this.state.id].targetCardinality.getString()}},
+                            position: {distance: -20}
+                        });
+                    }
+                    if (ProjectLinks[this.state.id].type === "default") link.appendLabel({
+                        attrs: {text: {text: getLinkOrVocabElem(this.state.iri).labels[this.props.projectLanguage]}},
+                        position: {distance: 0.5}
+                    });
+                }
+            }
+            if (link) {
+                let underlyingConnections = getUnderlyingFullConnections(link);
+                if (underlyingConnections) {
+                    let sourceCard = CardinalityPool[parseInt(this.state.sourceCardinality, 10)];
+                    let targetCard = CardinalityPool[parseInt(this.state.targetCardinality, 10)];
+                    ProjectLinks[underlyingConnections.src].sourceCardinality = new Cardinality(sourceCard.getFirstCardinality(), sourceCard.getFirstCardinality());
+                    ProjectLinks[underlyingConnections.src].targetCardinality = new Cardinality(sourceCard.getSecondCardinality(), sourceCard.getSecondCardinality());
+                    ProjectLinks[underlyingConnections.tgt].sourceCardinality = new Cardinality(targetCard.getFirstCardinality(), targetCard.getFirstCardinality());
+                    ProjectLinks[underlyingConnections.tgt].targetCardinality = new Cardinality(targetCard.getSecondCardinality(), targetCard.getSecondCardinality());
+                    updateProjectLink(ProjectSettings.contextEndpoint, underlyingConnections.src, DetailLink.name);
+                    updateProjectLink(ProjectSettings.contextEndpoint, underlyingConnections.tgt, DetailLink.name);
+                }
+            }
+            this.setState({changes: false});
+            this.props.save();
+            this.props.handleChangeLoadingStatus(false, "", false);
         }
     }
 
@@ -223,16 +274,20 @@ export default class DetailLink extends React.Component<Props, State> {
                         <td>
                             <span>{LocaleMain.linkType}</span>
                         </td>
-                        <td>
-                            <Form.Control as="select" value={this.state.iri} onChange={(event) => {
-                                this.setState({
-                                    iri: event.currentTarget.value,
-                                    changes: true
-                                })
-                            }}>
-                                {this.prepareLinkOptions()}
-                            </Form.Control>
-                        </td>
+                        {ProjectSettings.representation === "full" ? <td>
+                                <Form.Control as="select" value={this.state.iri} onChange={(event) => {
+                                    this.setState({
+                                        iri: event.currentTarget.value,
+                                        changes: true
+                                    })
+                                }}>
+                                    {this.prepareLinkOptions()}
+                                </Form.Control>
+                            </td> :
+                            <IRIlabel
+                                label={getLabelOrBlank(VocabularyElements[this.state.iri].labels, this.props.projectLanguage)}
+                                iri={this.state.iri}
+                            />}
                     </tr>
                 </TableList>
                 <h5>{<IRILink label={this.props.headers.labels[this.props.projectLanguage]}
