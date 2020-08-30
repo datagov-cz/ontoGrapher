@@ -84,16 +84,6 @@ export function switchRepresentation(representation: string) {
                     // for (let link in links) {
                     let sourceLink = graph.getConnectedLinks(elem).find(src => ProjectLinks[src.id].iri === mvp1IRI);
                     let targetLink = graph.getConnectedLinks(elem).find(src => ProjectLinks[src.id].iri === mvp2IRI);
-                    // //pred -mvp2-> target IRI(s)
-                    // let targetConns = links.filter(src => ProjectLinks[src.id].iri === mvp2IRI).map(link => ProjectElements[ProjectLinks[link.id].target].iri);
-                    // //pred -mvp1->
-                    // let sourceLink = links.find(
-                    //     src => ProjectLinks[src.id].iri === mvp1IRI &&
-                    //         VocabularyElements[ProjectElements[ProjectLinks[src.id].target].iri].connections.find(conn =>
-                    //             !conn.initialize && targetConns.includes(conn.target) && conn.onProperty === ProjectElements[elem.id].iri));
-                    // let targetLink = links.find(src => sourceLink && ProjectLinks[src.id].iri === mvp2IRI &&
-                    //     VocabularyElements[ProjectElements[ProjectLinks[sourceLink.id].target].iri].connections.find(
-                    //         conn => conn.target === ProjectElements[ProjectLinks[src.id].target].iri))
                     if (sourceLink && targetLink) {
                         let newLink = getNewLink();
                         let source = sourceLink.getTargetCell()?.id;
@@ -119,7 +109,7 @@ export function switchRepresentation(representation: string) {
         }
         let del = false;
         for (let link of graph.getLinks()) {
-            if (ProjectLinks[link.id] && Links[ProjectLinks[link.id].iri].type === "default") {
+            if (ProjectLinks[link.id] && ProjectLinks[link.id].iri in Links && Links[ProjectLinks[link.id].iri].type === "default") {
                 link.remove();
                 del = true;
             }
@@ -236,6 +226,34 @@ export function restoreHiddenElem(id: string, cls: joint.dia.Element) {
                         attrs: {text: {text: getLinkOrVocabElem(ProjectLinks[targetLink].iri).labels[ProjectSettings.selectedLanguage]}},
                         position: {distance: 0.5}
                     });
+                    if (ProjectLinks[link].type === "default") {
+                        if (ProjectLinks[link].sourceCardinality.getString() !== LocaleMain.none) {
+                            domainLink.appendLabel({
+                                attrs: {text: {text: ProjectLinks[link].sourceCardinality.getString()}},
+                                position: {distance: 20}
+                            });
+                        }
+                        if (ProjectLinks[link].targetCardinality.getString() !== LocaleMain.none) {
+                            domainLink.appendLabel({
+                                attrs: {text: {text: ProjectLinks[link].targetCardinality.getString()}},
+                                position: {distance: -20}
+                            });
+                        }
+                    }
+                    if (ProjectLinks[targetLink].type === "default") {
+                        if (ProjectLinks[targetLink].sourceCardinality.getString() !== LocaleMain.none) {
+                            rangeLink.appendLabel({
+                                attrs: {text: {text: ProjectLinks[link].sourceCardinality.getString()}},
+                                position: {distance: 20}
+                            });
+                        }
+                        if (ProjectLinks[targetLink].targetCardinality.getString() !== LocaleMain.none) {
+                            rangeLink.appendLabel({
+                                attrs: {text: {text: ProjectLinks[link].targetCardinality.getString()}},
+                                position: {distance: -20}
+                            });
+                        }
+                    }
                     relationship.addTo(graph);
                     domainLink.addTo(graph);
                     rangeLink.addTo(graph);

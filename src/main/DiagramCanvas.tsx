@@ -92,6 +92,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
             addClass(cls.id, iri, ProjectSettings.selectedPackage, true, true);
             let labels = initLanguageObject("");
             labels[language] = name;
+            VocabularyElements[ProjectElements[cls.id].iri].labels = labels;
             updateProjectElement(
                 ProjectSettings.contextEndpoint,
                 DiagramCanvas.name,

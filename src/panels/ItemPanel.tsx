@@ -124,7 +124,8 @@ export default class ItemPanel extends React.Component<Props, State> {
 				}}
 				readOnly={node.scheme ? Schemes[node.scheme].readOnly : false}
 			>
-				{node.elements.sort((a, b) => ProjectElements[a].iri.localeCompare(ProjectElements[b].iri)).map((id) => {
+				{node.elements.sort((a, b) => VocabularyElements[ProjectElements[a].iri].labels[this.props.projectLanguage].localeCompare(
+					VocabularyElements[ProjectElements[b].iri].labels[this.props.projectLanguage])).map((id) => {
 					let name = VocabularyElements[ProjectElements[id].iri] ? getLabelOrBlank(VocabularyElements[ProjectElements[id].iri].labels, this.props.projectLanguage) : "<blank>";
 					if (name.toLowerCase().startsWith(this.state.search.toLowerCase()) && (ProjectSettings.representation === "full" ||
 						(ProjectSettings.representation === "compact" &&
@@ -153,17 +154,20 @@ export default class ItemPanel extends React.Component<Props, State> {
                 )}
             </PackageFolder>);
         } else {
-            node.elements.forEach((id) => {
-				if (ProjectSettings.representation === "full" ||
-					(ProjectSettings.representation === "compact" &&
-						!(VocabularyElements[ProjectElements[id].iri].types.includes(parsePrefix("z-sgov-pojem", "typ-vztahu"))
-						))) {
-					arr.push(<PackageItem
-						label={VocabularyElements[ProjectElements[id].iri] ? getLabelOrBlank(VocabularyElements[ProjectElements[id].iri].labels, this.props.projectLanguage) : "<blank>"}
-						depth={depth} id={id}
-						openRemoveItem={() => {
-							this.setState({
-								selectedID: id,
+			node.elements.sort((a, b) =>
+				VocabularyElements[ProjectElements[a].iri].labels[this.props.projectLanguage].localeCompare(
+					VocabularyElements[ProjectElements[b].iri].labels[this.props.projectLanguage]))
+				.forEach((id) => {
+					if (ProjectSettings.representation === "full" ||
+						(ProjectSettings.representation === "compact" &&
+							!(VocabularyElements[ProjectElements[id].iri].types.includes(parsePrefix("z-sgov-pojem", "typ-vztahu"))
+							))) {
+						arr.push(<PackageItem
+							label={VocabularyElements[ProjectElements[id].iri] ? getLabelOrBlank(VocabularyElements[ProjectElements[id].iri].labels, this.props.projectLanguage) : "<blank>"}
+							depth={depth} id={id}
+							openRemoveItem={() => {
+								this.setState({
+									selectedID: id,
 								modalRemoveItem: true
 							})
 						}}
@@ -206,12 +210,6 @@ export default class ItemPanel extends React.Component<Props, State> {
 				handleSize={[8, 8]}
 				onResizeStop={(e, d) => this.props.handleWidth(d.size.width)}
 			>
-				{/*{!ProjectSettings.contextIRI && <button className={"margins"} onClick={() => {*/}
-				{/*	let scheme = createNewScheme();*/}
-				{/*	new PackageNode(Schemes[scheme].labels, PackageRoot, true, scheme);*/}
-				{/*	this.forceUpdate();*/}
-				{/*}*/}
-				{/*}>{LocaleMain.addNewPackage}</button>}*/}
 				<InputGroup>
 					<InputGroup.Prepend>
 						<InputGroup.Text id="inputGroupPrepend">
