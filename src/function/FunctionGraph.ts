@@ -7,6 +7,7 @@ import * as LocaleMain from "../locale/LocaleMain.json";
 import {graphElement} from "../graph/GraphElement";
 import {LinkConfig} from "../config/LinkConfig";
 import {addLink} from "./FunctionCreateVars";
+import {Cardinality} from "../datatypes/Cardinality";
 
 
 let mvp1IRI = "https://slovník.gov.cz/základní/pojem/má-vztažený-prvek-1";
@@ -94,6 +95,26 @@ export function switchRepresentation(representation: string) {
                             addLink(newLink.id, ProjectElements[elem.id].iri, source, target);
                             newLink.addTo(graph);
                             newLink.appendLabel({attrs: {text: {text: VocabularyElements[ProjectElements[elem.id].iri].labels[ProjectSettings.selectedLanguage]}}});
+                            ProjectLinks[newLink.id].sourceCardinality =
+                                new Cardinality(ProjectLinks[sourceLink.id].sourceCardinality.getFirstCardinality(),
+                                    ProjectLinks[sourceLink.id].targetCardinality.getFirstCardinality());
+                            ProjectLinks[newLink.id].targetCardinality =
+                                new Cardinality(ProjectLinks[targetLink.id].sourceCardinality.getFirstCardinality(),
+                                    ProjectLinks[targetLink.id].targetCardinality.getFirstCardinality());
+                            if (ProjectLinks[newLink.id].type === "default") {
+                                if (ProjectLinks[newLink.id].sourceCardinality.getString() !== LocaleMain.none) {
+                                    newLink.appendLabel({
+                                        attrs: {text: {text: ProjectLinks[newLink.id].sourceCardinality.getString()}},
+                                        position: {distance: 20}
+                                    });
+                                }
+                                if (ProjectLinks[newLink.id].targetCardinality.getString() !== LocaleMain.none) {
+                                    newLink.appendLabel({
+                                        attrs: {text: {text: ProjectLinks[newLink.id].targetCardinality.getString()}},
+                                        position: {distance: -20}
+                                    });
+                                }
+                            }
                         }
                         sourceLink.remove();
                         targetLink.remove();
