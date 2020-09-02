@@ -28,6 +28,7 @@ import * as LocaleMain from "../locale/LocaleMain.json";
 import NewLinkDiagram from "./NewLinkDiagram";
 import {getLinkOrVocabElem} from "../function/FunctionGetVars";
 import NewElemDiagram from "./NewElemDiagram";
+import {PackageNode} from "../datatypes/PackageNode";
 
 interface Props {
     projectLanguage: string;
@@ -83,13 +84,13 @@ export default class DiagramCanvas extends React.Component<Props, State> {
         }
     }
 
-    createNewConcept(name: string, language: string) {
+    createNewConcept(name: string, language: string, pkg: PackageNode) {
         let cls = new graphElement();
         cls.attr({label: {text: name}});
         if (typeof cls.id === "string") {
             let iri = createIDIRI(cls.id);
             addVocabularyElement(iri);
-            addClass(cls.id, iri, ProjectSettings.selectedPackage, true, true);
+            addClass(cls.id, iri, pkg, true, true);
             let labels = initLanguageObject("");
             labels[language] = name;
             VocabularyElements[ProjectElements[cls.id].iri].labels = labels;
@@ -540,10 +541,10 @@ export default class DiagramCanvas extends React.Component<Props, State> {
             <NewElemDiagram
                 projectLanguage={this.props.projectLanguage}
                 modal={this.state.modalAddElem}
-                close={(conceptName: string) => {
+                close={(conceptName: string, pkg: PackageNode) => {
                     this.setState({modalAddElem: false});
-                    if (conceptName) {
-                        this.createNewConcept(conceptName, this.props.projectLanguage);
+                    if (conceptName && pkg) {
+                        this.createNewConcept(conceptName, this.props.projectLanguage, pkg);
                     } else {
                         this.newConceptEvent = {x: 0, y: 0}
                     }

@@ -80,6 +80,7 @@
   "close": "Close",
   "helpDescription": "For help using the component, consult the official wiki: ",
   "modalNewElemError": "You must enter a name in order to create a new concept.",
+  "selectPackage": "Concept will be created in:",
   "view": "View",
   "viewAs": "Display elements as",
   "viewByLabel": "rdfs:label",
