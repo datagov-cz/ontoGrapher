@@ -55,25 +55,28 @@ export function getUnderlyingFullConnections(link: joint.dia.Link): { src: strin
     let id = link.id;
     let iri = ProjectLinks[id].iri;
     if (!(iri in VocabularyElements)) return;
-    let sourceElem = link.getSourceCell();
-    let targetElem = link.getTargetCell();
+    let sourceElem = link.getSourceCell()?.id;
+    let targetElem = link.getTargetCell()?.id;
     if (sourceElem && targetElem) {
-        let sourceIRI = ProjectElements[sourceElem.id].iri;
-        let targetIRI = ProjectElements[targetElem.id].iri;
-        let links = Object.keys(ProjectLinks).filter(id => (ProjectLinks[id].active &&
-            ProjectElements[ProjectLinks[id].source].iri === iri &&
-            (ProjectLinks[id].iri === mvp1IRI || ProjectLinks[id].iri === mvp2IRI))
-        );
-        if (links.length === 2) {
-            let mvp1 = links.find(id => ProjectLinks[id].iri === mvp1IRI && ProjectElements[ProjectLinks[id].target].iri === sourceIRI);
-            let mvp2 = links.find(id => ProjectLinks[id].iri === mvp2IRI && ProjectElements[ProjectLinks[id].target].iri === targetIRI);
-            if (mvp1 && mvp2) return {src: mvp1, tgt: mvp2};
-            else return;
+        let preds = Object.keys(ProjectElements).filter(id => ProjectElements[id].iri === iri);
+        for (let pred of preds) {
+            let sourceLink = Object.keys(ProjectLinks).find(id =>
+                ProjectElements[pred].connections.includes(id) &&
+                ProjectLinks[id].iri === mvp1IRI &&
+                ProjectLinks[id].target === sourceElem
+            );
+            let targetLink = Object.keys(ProjectLinks).find(id =>
+                ProjectElements[pred].connections.includes(id) &&
+                ProjectLinks[id].iri === mvp2IRI &&
+                ProjectLinks[id].target === targetElem
+            );
+            if (sourceLink && targetLink) return {src: sourceLink, tgt: targetLink};
         }
+        return;
     }
 }
 
-export function switchRepresentation(representation: string) {
+export function setRepresentation(representation: string) {
     if (representation === "compact") {
         for (let elem of graph.getElements()) {
             if (
@@ -82,7 +85,6 @@ export function switchRepresentation(representation: string) {
             ) {
                 let links = graph.getConnectedLinks(elem);
                 if (links.length > 1) {
-                    // for (let link in links) {
                     let sourceLink = graph.getConnectedLinks(elem).find(src => ProjectLinks[src.id].iri === mvp1IRI);
                     let targetLink = graph.getConnectedLinks(elem).find(src => ProjectLinks[src.id].iri === mvp2IRI);
                     if (sourceLink && targetLink) {
@@ -125,7 +127,6 @@ export function switchRepresentation(representation: string) {
                     ProjectElements[elem.id].hidden[ProjectSettings.selectedDiagram] = true;
                     elem.remove();
                 }
-                // }
             }
         }
         let del = false;
@@ -182,7 +183,8 @@ export function unHighlightAll() {
 
 export function restoreHiddenElem(id: string, cls: joint.dia.Element) {
     if (ProjectElements[id].position) {
-        if (ProjectElements[id].position[ProjectSettings.selectedDiagram] && ProjectElements[id].position[ProjectSettings.selectedDiagram].x !== 0 && ProjectElements[id].position[ProjectSettings.selectedDiagram].y !== 0) {
+        if (ProjectElements[id].position[ProjectSettings.selectedDiagram] &&
+            ProjectElements[id].position[ProjectSettings.selectedDiagram].x !== 0 && ProjectElements[id].position[ProjectSettings.selectedDiagram].y !== 0) {
             cls.position(ProjectElements[id].position[ProjectSettings.selectedDiagram].x, ProjectElements[id].position[ProjectSettings.selectedDiagram].y);
         }
     }
@@ -216,7 +218,8 @@ export function restoreHiddenElem(id: string, cls: joint.dia.Element) {
             lnk.target({id: ProjectLinks[link].target});
             lnk.addTo(graph);
         } else if (ProjectLinks[link].active &&
-            ProjectLinks[link].target === id && graph.getCell(ProjectLinks[link].target)) {
+            ProjectLinks[link].target === id &&
+            graph.getCell(ProjectLinks[link].target)) {
             let relID = ProjectLinks[link].source;
             for (let targetLink in ProjectLinks) {
                 if (ProjectLinks[targetLink].source === relID && ProjectLinks[targetLink].target !== id && graph.getCell(ProjectLinks[targetLink].target)) {
@@ -264,13 +267,13 @@ export function restoreHiddenElem(id: string, cls: joint.dia.Element) {
                     if (ProjectLinks[targetLink].type === "default") {
                         if (ProjectLinks[targetLink].sourceCardinality.getString() !== LocaleMain.none) {
                             rangeLink.appendLabel({
-                                attrs: {text: {text: ProjectLinks[link].sourceCardinality.getString()}},
+                                attrs: {text: {text: ProjectLinks[targetLink].sourceCardinality.getString()}},
                                 position: {distance: 20}
                             });
                         }
                         if (ProjectLinks[targetLink].targetCardinality.getString() !== LocaleMain.none) {
                             rangeLink.appendLabel({
-                                attrs: {text: {text: ProjectLinks[link].targetCardinality.getString()}},
+                                attrs: {text: {text: ProjectLinks[targetLink].targetCardinality.getString()}},
                                 position: {distance: -20}
                             });
                         }

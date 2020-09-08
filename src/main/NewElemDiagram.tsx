@@ -24,6 +24,13 @@ export default class NewElemDiagram extends React.Component<Props, State> {
 			displayError: false,
 			selectedPackage: PackageRoot
 		}
+		this.save = this.save.bind(this);
+	}
+
+	save() {
+		if (this.state.conceptName === "") {
+			this.setState({displayError: true});
+		} else this.props.close(this.state.conceptName, this.state.selectedPackage);
 	}
 
 	render() {
@@ -44,35 +51,38 @@ export default class NewElemDiagram extends React.Component<Props, State> {
 			</Modal.Header>
 			<Modal.Body>
 				<p>{LocaleMenu.modalNewElemDescription}</p>
-				<InputGroup>
-					<InputGroup.Prepend>
-						<InputGroup.Text
-							id="inputGroupPrepend">{Languages[this.props.projectLanguage]}</InputGroup.Text>
-					</InputGroup.Prepend>
-					<Form.Control type="text" value={this.state.conceptName} required
-								  onChange={(event) => this.setState({conceptName: event.currentTarget.value})}/>
-				</InputGroup>
-				<br/>
-				<Form.Group controlId="exampleForm.ControlSelect1">
-					<Form.Label>{LocaleMenu.selectPackage}</Form.Label>
-					<Form.Control as="select" value={this.state.selectedPackage.labels[this.props.projectLanguage]}
-								  onChange={(event) => {
-									  let pkg = PackageRoot.children.find(pkg => pkg.labels[this.props.projectLanguage] === event.currentTarget.value);
-									  if (pkg) this.setState({selectedPackage: pkg});
-								  }}>
-						{PackageRoot.children.map(pkg => <option
-							value={pkg.labels[this.props.projectLanguage]}>{pkg.labels[this.props.projectLanguage]}</option>)}
-					</Form.Control>
-				</Form.Group>
+				<Form onSubmit={(event) => {
+					event.preventDefault();
+					this.save()
+				}}>
+					<InputGroup>
+						<InputGroup.Prepend>
+							<InputGroup.Text
+								id="inputGroupPrepend">{Languages[this.props.projectLanguage]}</InputGroup.Text>
+						</InputGroup.Prepend>
+						<Form.Control type="text" value={this.state.conceptName} required
+									  onChange={(event) => this.setState({conceptName: event.currentTarget.value})}/>
+					</InputGroup>
+					<br/>
+					<Form.Group controlId="exampleForm.ControlSelect1">
+						<Form.Label>{LocaleMenu.selectPackage}</Form.Label>
+						<Form.Control as="select" value={this.state.selectedPackage.labels[this.props.projectLanguage]}
+									  onChange={(event) => {
+										  let pkg = PackageRoot.children.find(pkg => pkg.labels[this.props.projectLanguage] === event.currentTarget.value);
+										  if (pkg) this.setState({selectedPackage: pkg});
+									  }}>
+							{PackageRoot.children.map((pkg, i) => <option key={i}
+																		  value={pkg.labels[this.props.projectLanguage]}>{pkg.labels[this.props.projectLanguage]}</option>)}
+						</Form.Control>
+					</Form.Group>
+				</Form>
 				<p style={{display: this.state.displayError ? "block" : "none"}}
 				   className="red">{LocaleMenu.modalNewElemError}</p>
 
 			</Modal.Body>
 			<Modal.Footer>
 				<Button onClick={() => {
-					if (this.state.conceptName === "") {
-						this.setState({displayError: true});
-					} else this.props.close(this.state.conceptName, this.state.selectedPackage);
+					this.save()
 				}} variant="primary">{LocaleMenu.confirm}</Button>
 				<Button onClick={() => {
 					this.props.close();

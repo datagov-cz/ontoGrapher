@@ -204,6 +204,10 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 				update={() => {
 					this.elementPanel.current?.update();
 				}}
+				closeDetailPanel={() => {
+					this.detailPanel.current?.hide();
+					unHighlightAll();
+				}}
 				loadingError={this.state.error}
 				retry={() => {
 					this.setState({retry: true});

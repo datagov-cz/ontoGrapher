@@ -20,6 +20,7 @@ interface MenuPanelProps {
 	loadingError: boolean;
 	retry: Function;
 	validate: Function;
+	closeDetailPanel: Function;
 }
 
 interface MenuPanelState {
@@ -54,7 +55,8 @@ export default class MenuPanel extends React.Component<MenuPanelProps, MenuPanel
 					</div>
 				</div>
 				<div className={"lower"}>
-					<MenuPanelSwitchRepresentation update={() => this.props.update()}/>
+					<MenuPanelSwitchRepresentation update={() => this.props.update()}
+												   close={() => this.props.closeDetailPanel()}/>
 					<MenuPanelValidate validate={() => this.props.validate()}/>
 					<div className={"right"}>
 						<MenuPanelHelp/>

@@ -10,7 +10,7 @@ import {
     highlightCell,
     nameGraphElement,
     restoreHiddenElem,
-    switchRepresentation,
+    setRepresentation,
     unHighlightAll,
     unHighlightCell
 } from "../function/FunctionGraph";
@@ -170,6 +170,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                                 VocabularyElements[iri].labels,
                                 VocabularyElements[iri].definitions,
                                 property.id);
+                            addLink(link.id, iri, sid, tid);
                             this.updateConnections(property.id, sid, source.id, type, mvp1IRI);
                             this.updateConnections(property.id, tid, target.id, type, mvp2IRI);
                         }
@@ -243,9 +244,8 @@ export default class DiagramCanvas extends React.Component<Props, State> {
         if (ProjectElements[sid].connections.includes(id)) ProjectElements[sid].connections.splice(ProjectElements[sid].connections.indexOf(id), 1);
         updateConnections(ProjectSettings.contextEndpoint, id, [id], DiagramCanvas.name).then(result => {
             if (result) {
-                //Diagrams.forEach(diag => diag.json.links.forEach((link: any) => {if (link.id === id) diag.json.links.splice(diag.json.links.indexOf(link),1)}));
                 ProjectLinks[id].active = false;
-                graph.getCell(id).remove();
+                if (graph.getCell(id)) graph.getCell(id).remove();
                 updateDeleteProjectElement(ProjectSettings.contextEndpoint, ProjectSettings.ontographerContext + "-" + id, DiagramCanvas.name).then(result => {
                     if (result) {
                         this.props.handleChangeLoadingStatus(false, "", false);
@@ -422,14 +422,15 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                             }
                         } else {
                             let deleteLinks = getUnderlyingFullConnections(view.model);
-                            if (deleteLinks) {
-                                let sid1 = graph.getLinks().find(link => link.id === deleteLinks?.src)?.getSourceCell()?.id;
-                                let sid2 = graph.getLinks().find(link => link.id === deleteLinks?.tgt)?.getSourceCell()?.id;
-                                if (sid1 && sid2 && sid1 === sid2 && typeof sid1 === "string") {
-                                    this.deleteConnections(sid1, deleteLinks.src);
-                                    this.deleteConnections(sid1, deleteLinks.tgt);
-                                }
+                            if (deleteLinks && ProjectLinks[deleteLinks.src] && ProjectLinks[deleteLinks.tgt]) {
+                                ProjectLinks[deleteLinks.src].active = false;
+                                ProjectLinks[deleteLinks.tgt].active = false;
+                                this.deleteConnections(ProjectLinks[deleteLinks.src].source, deleteLinks.src);
+                                this.deleteConnections(ProjectLinks[deleteLinks.src].source, deleteLinks.tgt);
                             }
+                            view.model.remove();
+                            ProjectLinks[view.model.id].active = false;
+                            this.props.handleChangeLoadingStatus(false, "", false);
                         }
                     })
                 })
@@ -520,7 +521,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                             VocabularyElements[ProjectElements[cls.id].iri].definitions,
                             cls.id);
                     }
-                    switchRepresentation(ProjectSettings.representation);
+                    setRepresentation(ProjectSettings.representation);
                 }}
             />
             <NewLinkDiagram

@@ -1,12 +1,13 @@
 import React from 'react';
 import {Nav, OverlayTrigger, Tooltip} from "react-bootstrap";
-import {switchRepresentation} from "../../function/FunctionGraph";
+import {setRepresentation} from "../../function/FunctionGraph";
 import {ProjectSettings} from "../../config/Variables";
 import * as LocaleMenu from "../../locale/LocaleMenu.json";
 import * as LocaleMain from "../../locale/LocaleMain.json";
 
 interface Props {
 	update: Function;
+	close: Function;
 }
 
 interface State {
@@ -28,12 +29,14 @@ export default class MenuPanelSwitchRepresentation extends React.Component<Props
 	render() {
 		return (<OverlayTrigger show={this.state.alert} placement="right" overlay={tooltipNew}>
 			<div className={"inert"}><Nav.Link onClick={() => {
-				let result = switchRepresentation(ProjectSettings.representation === "full" ? "compact" : "full");
+				let result = setRepresentation(ProjectSettings.representation === "full" ? "compact" : "full");
 				if (result) this.setState({alert: result});
 				setTimeout(() => {
 					this.setState({alert: false})
 				}, 3000)
+				this.props.close();
 				this.props.update();
+				this.forceUpdate();
 			}}>
 				{ProjectSettings.representation === "full" ? LocaleMenu.represantationCompact : LocaleMenu.represantationFull}
 			</Nav.Link>
