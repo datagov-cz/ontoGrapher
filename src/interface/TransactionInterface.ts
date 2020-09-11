@@ -150,6 +150,7 @@ export async function updateProjectLink(contextEndpoint: string, id: string, sou
 	let ogContext = "http://onto.fel.cvut.cz/ontologies/application/ontoGrapher";
 	let linkIRI = ogContext + "-" + id;
 	let cardinalities: { [key: string]: string } = {};
+	let vertices: { "@id": string, "@type": "og:vertex", "og:index": number, "og:position-x": number, "og:position-y": number }[] = [];
 	if (ProjectLinks[id].sourceCardinality) {
 		cardinalities["og:sourceCardinality1"] = ProjectLinks[id].sourceCardinality.getFirstCardinality();
 		cardinalities["og:sourceCardinality2"] = ProjectLinks[id].sourceCardinality.getSecondCardinality();
@@ -158,6 +159,16 @@ export async function updateProjectLink(contextEndpoint: string, id: string, sou
 		cardinalities["og:targetCardinality1"] = ProjectLinks[id].targetCardinality.getFirstCardinality();
 		cardinalities["og:targetCardinality2"] = ProjectLinks[id].targetCardinality.getSecondCardinality();
 	}
+
+	ProjectLinks[id].vertices.forEach((vertex, i) => {
+		vertices.push({
+			"@id": linkIRI + "/vertex-" + (i + 1),
+			"@type": "og:vertex",
+			"og:index": i,
+			"og:position-x": vertex.x,
+			"og:position-y": vertex.y
+		})
+	})
 
 	ProjectSettings.lastSource = source;
 	let addLD = {
@@ -180,8 +191,12 @@ export async function updateProjectLink(contextEndpoint: string, id: string, sou
 			"og:source": ProjectElements[ProjectLinks[id].source].iri,
 			"og:target": ProjectElements[ProjectLinks[id].target].iri,
 			"og:type": ProjectLinks[id].type,
-			...cardinalities
-		}
+			...cardinalities,
+			...vertices.map((vertex) => {
+				return {"og:vertex": vertex["@id"]};
+			})
+		},
+			...vertices
 		]
 	}
 

@@ -216,6 +216,7 @@ export function restoreHiddenElem(id: string, cls: joint.dia.Element) {
             }
             lnk.source({id: ProjectLinks[link].source});
             lnk.target({id: ProjectLinks[link].target});
+            lnk.vertices(ProjectLinks[link].vertices);
             lnk.addTo(graph);
         } else if (ProjectLinks[link].active &&
             ProjectLinks[link].target === id &&
@@ -279,6 +280,8 @@ export function restoreHiddenElem(id: string, cls: joint.dia.Element) {
                         }
                     }
                     relationship.addTo(graph);
+                    domainLink.vertices(ProjectLinks[link].vertices);
+                    rangeLink.vertices(ProjectLinks[targetLink].vertices);
                     domainLink.addTo(graph);
                     rangeLink.addTo(graph);
                     break;

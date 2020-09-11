@@ -45,6 +45,8 @@ export var ProjectLinks: {
         sourceCardinality: Cardinality,
         //target cardinality Cardinality object
         targetCardinality: Cardinality,
+        //vertices - point breaks of link
+        vertices: joint.dia.Link.Vertex[],
         //type - dictates saving/loading behaviour
         type: string,
         //active
