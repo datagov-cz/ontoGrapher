@@ -11,16 +11,9 @@ interface Props {
 	close: Function;
 	update: Function;
 	handleChangeLoadingStatus: Function;
-	retry: boolean;
 }
 
 export default class ModalRemoveDiagram extends React.Component<Props> {
-
-	componentDidUpdate(prevProps: Readonly<Props>, prevState: Readonly<{}>, snapshot?: any) {
-		if (prevProps !== this.props && ((this.props.retry && ProjectSettings.lastSource === ModalRemoveDiagram.name))) {
-			this.save();
-		}
-	}
 
 	save() {
 		this.props.handleChangeLoadingStatus(true, "", false);

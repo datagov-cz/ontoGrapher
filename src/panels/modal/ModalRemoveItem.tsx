@@ -12,7 +12,6 @@ interface Props {
     close: Function;
     update: Function;
     handleChangeLoadingStatus: Function;
-    retry: boolean;
 }
 
 interface State {
@@ -31,12 +30,6 @@ export default class ModalRemoveItem extends React.Component<Props, State> {
                 this.props.handleChangeLoadingStatus(false, "", true);
             }
         });
-    }
-
-    componentDidUpdate(prevProps: Readonly<Props>, prevState: Readonly<State>, snapshot?: any) {
-        if (prevProps !== this.props && (this.props.retry && ProjectSettings.lastUpdate.source === ModalRemoveItem.name)) {
-            this.save();
-        }
     }
 
     render() {

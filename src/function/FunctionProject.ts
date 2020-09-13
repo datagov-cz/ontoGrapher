@@ -127,3 +127,7 @@ export function loadProject(loadString: string) {
     loadDiagram(Diagrams[ProjectSettings.selectedDiagram].json);
     loadPackages(save.packageRoot);
 }
+
+export async function retryConnection() {
+    return await ProjectSettings.lastUpdate.func.call(undefined, ProjectSettings.lastUpdate.args);
+}

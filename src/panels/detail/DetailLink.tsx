@@ -27,7 +27,6 @@ interface Props {
     projectLanguage: string;
     headers: { [key: string]: { [key: string]: string } }
     save: Function;
-    retry: boolean;
     handleChangeLoadingStatus: Function;
     handleWidth: Function;
 }
@@ -54,8 +53,6 @@ export default class DetailLink extends React.Component<Props, State> {
 
     componentDidUpdate(prevProps: Readonly<Props>, prevState: Readonly<State>, snapshot?: any) {
         if (prevState !== this.state && (this.state.changes)) {
-            this.save();
-        } else if (prevProps !== this.props && (this.props.retry && ProjectSettings.lastSource === DetailLink.name)) {
             this.save();
         }
     }

@@ -36,7 +36,6 @@ interface Props {
     hideDetails: Function;
     updateElementPanel: Function;
     handleChangeLoadingStatus: Function;
-    retry: boolean;
 }
 
 interface State {
@@ -72,16 +71,6 @@ export default class DiagramCanvas extends React.Component<Props, State> {
         this.newConceptEvent = {x: 0, y: 0}
         this.createNewConcept = this.createNewConcept.bind(this);
         this.createNewLink = this.createNewLink.bind(this);
-    }
-
-    componentDidUpdate(prevProps: Readonly<Props>, prevState: Readonly<{}>, snapshot?: any) {
-        if (prevProps !== this.props && (this.props.retry && ProjectSettings.lastSource === DiagramCanvas.name)) {
-            if (this.lastUpdate.sid && this.lastUpdate.tid && this.lastUpdate.id && this.lastUpdate.type && this.lastUpdate.iri) {
-                this.updateConnections(this.lastUpdate.sid, this.lastUpdate.tid, this.lastUpdate.id, this.lastUpdate.type, this.lastUpdate.iri);
-            } else if (this.lastUpdate.sid && this.lastUpdate.id && (!this.lastUpdate.tid)) {
-                this.deleteConnections(this.lastUpdate.sid, this.lastUpdate.id);
-            }
-        }
     }
 
     createNewConcept(name: string, language: string, pkg: PackageNode) {
@@ -154,7 +143,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                     } else if (ProjectSettings.representation === "compact") {
                         let mvp1IRI = "https://slovník.gov.cz/základní/pojem/má-vztažený-prvek-1";
                         let mvp2IRI = "https://slovník.gov.cz/základní/pojem/má-vztažený-prvek-2";
-                        let property = new joint.dia.Element();
+                        let property = new graphElement();
                         let source = getNewLink();
                         let target = getNewLink();
                         if (typeof source.id === "string" && typeof target.id === "string" && typeof property.id === "string") {
@@ -166,7 +155,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                             updateProjectElement(
                                 ProjectSettings.contextEndpoint,
                                 DiagramCanvas.name,
-                                [parsePrefix("z-sgov-pojem", "typ-vlastnosti")],
+                                [parsePrefix("z-sgov-pojem", "typ-vztahu")],
                                 VocabularyElements[iri].labels,
                                 VocabularyElements[iri].definitions,
                                 property.id);

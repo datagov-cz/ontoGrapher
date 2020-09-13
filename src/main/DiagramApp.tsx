@@ -32,7 +32,6 @@ interface DiagramAppState {
 	loading: boolean;
 	status: string;
 	error: boolean;
-	retry: boolean;
 	widthLeft: number;
 	widthRight: number;
 	validation: boolean;
@@ -62,7 +61,6 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 			loading: true,
 			status: Locale.loading,
 			error: false,
-			retry: false,
 			widthLeft: 300,
 			widthRight: 0,
 			validation: false,
@@ -126,8 +124,7 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 			loading: loading,
 			status: status,
 			error: error,
-		})
-		if (error || !loading) this.setState({retry: false});
+		});
 	}
 
 	loadProject(loadString: string) {
@@ -209,10 +206,8 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 					unHighlightAll();
 				}}
 				loadingError={this.state.error}
-				retry={() => {
-					this.setState({retry: true});
-				}}
 				validate={this.validate}
+				handleChangeLoadingStatus={this.handleChangeLoadingStatus}
 			/>
 			<ItemPanel
 				ref={this.elementPanel}
@@ -221,11 +216,10 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 				}}
 				projectLanguage={this.state.projectLanguage}
 				handleChangeLoadingStatus={this.handleChangeLoadingStatus}
-				retry={this.state.retry}
 			/>
 			<DiagramPanel
-				retry={this.state.retry}
-				handleChangeLoadingStatus={this.handleChangeLoadingStatus}/>
+				handleChangeLoadingStatus={this.handleChangeLoadingStatus}
+			/>
 			<DetailPanel
 				ref={this.detailPanel}
 				projectLanguage={this.state.projectLanguage}
@@ -237,7 +231,6 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 					this.detailPanel.current?.forceUpdate();
 				}}
 				handleChangeLoadingStatus={this.handleChangeLoadingStatus}
-				retry={this.state.retry}
 				handleWidth={(width: number) => {
 					this.setState({widthRight: width})
 				}}
@@ -267,7 +260,6 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 					this.detailPanel.current?.update();
 				}}
 				handleChangeLoadingStatus={this.handleChangeLoadingStatus}
-				retry={this.state.retry}
 			/>
 		</div>);
 	}

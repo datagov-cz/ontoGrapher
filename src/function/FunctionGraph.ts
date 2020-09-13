@@ -80,8 +80,7 @@ export function setRepresentation(representation: string) {
     if (representation === "compact") {
         for (let elem of graph.getElements()) {
             if (
-                VocabularyElements[ProjectElements[elem.id].iri].types.includes(parsePrefix("z-sgov-pojem", "typ-vztahu")) ||
-                VocabularyElements[ProjectElements[elem.id].iri].types.includes(parsePrefix("z-sgov-pojem", "typ-vlastnosti"))
+                VocabularyElements[ProjectElements[elem.id].iri].types.includes(parsePrefix("z-sgov-pojem", "typ-vztahu"))
             ) {
                 let links = graph.getConnectedLinks(elem);
                 if (links.length > 1) {
@@ -226,7 +225,8 @@ export function restoreHiddenElem(id: string, cls: joint.dia.Element) {
                 if (ProjectLinks[targetLink].source === relID && ProjectLinks[targetLink].target !== id && graph.getCell(ProjectLinks[targetLink].target)) {
                     let domainLink = getNewLink(ProjectLinks[link].type, link);
                     let rangeLink = getNewLink(ProjectLinks[targetLink].type, targetLink);
-                    let relationship = new graphElement({id: relID});
+                    let existingRel = graph.getElements().find(elem => elem.id === relID);
+                    let relationship = existingRel ? existingRel : new graphElement({id: relID});
                     if (ProjectElements[relID].position[ProjectSettings.selectedDiagram] &&
                         ProjectElements[relID].position[ProjectSettings.selectedDiagram].x !== 0 &&
                         ProjectElements[relID].position[ProjectSettings.selectedDiagram].y !== 0) {

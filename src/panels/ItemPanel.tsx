@@ -22,7 +22,6 @@ import {parsePrefix} from "../function/FunctionEditVars";
 interface Props {
 	projectLanguage: string;
 	handleChangeLoadingStatus: Function;
-	retry: boolean;
 	handleWidth: Function;
 }
 
@@ -59,12 +58,6 @@ export default class ItemPanel extends React.Component<Props, State> {
 		};
 		this.handleChangeSelect = this.handleChangeSelect.bind(this);
 		this.handleChangeSearch = this.handleChangeSearch.bind(this);
-	}
-
-	componentDidUpdate(prevProps: Readonly<Props>, prevState: Readonly<{}>, snapshot?: any) {
-		if (prevProps !== this.props && ((this.props.retry && ProjectSettings.lastSource === ItemPanel.name))) {
-			this.save();
-		}
 	}
 
 	update(position?: { x: number, y: number }) {
@@ -237,7 +230,6 @@ export default class ItemPanel extends React.Component<Props, State> {
 					update={() => {
 						this.forceUpdate();
 					}}
-					retry={this.props.retry}
 					handleChangeLoadingStatus={this.props.handleChangeLoadingStatus}
 				/>
 
