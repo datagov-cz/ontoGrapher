@@ -21,7 +21,7 @@ interface State {
 export default class ModalRemoveItem extends React.Component<Props, State> {
 
     save() {
-        updateDeleteProjectElement(ProjectSettings.contextEndpoint, ProjectElements[this.props.id].iri, ModalRemoveItem.name).then(result => {
+        updateDeleteProjectElement(ProjectSettings.contextEndpoint, ProjectElements[this.props.id].iri).then(result => {
             this.props.handleChangeLoadingStatus(true, LocaleMain.updating, false);
             if (result) {
                 deletePackageItem(this.props.id);

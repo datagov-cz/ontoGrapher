@@ -164,7 +164,7 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 						initConnections();
 					}
 					await setupDiagrams(diagram);
-					await updateProjectSettings(contextIRI, contextEndpoint, DiagramApp.name);
+					await updateProjectSettings(contextIRI, contextEndpoint);
 					this.forceUpdate();
 					this.elementPanel.current?.forceUpdate();
 					this.handleChangeLoadingStatus(false, "", false);

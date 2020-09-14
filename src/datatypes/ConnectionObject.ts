@@ -27,7 +27,7 @@ export class ConnectionObject {
 					)) {
 						addLink(link.id, this.onProperty, srcElem, tgtElem);
 						ProjectElements[srcElem].connections.push(link.id);
-						updateProjectLink(ProjectSettings.contextEndpoint, link.id, ConnectionObject.name);
+						updateProjectLink(ProjectSettings.contextEndpoint, link.id);
 					}
 				}
 			}

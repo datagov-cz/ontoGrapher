@@ -311,7 +311,7 @@ export async function getLinksConfig(contextIRI: string, contextEndpoint: string
 
     for (let link in links) {
         if (links[link].vertexIRI.length > 0) {
-            for (let vertexIRI in links[link].vertexIRI) {
+            for (let vertexIRI of links[link].vertexIRI) {
                 let query = [
                     "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
                     "select ?posX ?posY ?index where {",

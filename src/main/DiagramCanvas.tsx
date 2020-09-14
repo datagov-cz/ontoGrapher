@@ -212,9 +212,9 @@ export default class DiagramCanvas extends React.Component<Props, State> {
         this.props.handleChangeLoadingStatus(true, LocaleMain.updating, false);
         addLink(linkID, iri, sid, tid, type);
         ProjectElements[sid].connections.push(linkID);
-        updateConnections(ProjectSettings.contextEndpoint, linkID, [], DiagramCanvas.name).then(result => {
+        updateConnections(ProjectSettings.contextEndpoint, linkID, []).then(result => {
             if (result) {
-                updateProjectLink(ProjectSettings.contextEndpoint, linkID, DiagramCanvas.name).then(result => {
+                updateProjectLink(ProjectSettings.contextEndpoint, linkID).then(result => {
                     if (result) {
                         this.props.handleChangeLoadingStatus(false, "", false);
                     } else {
@@ -231,11 +231,11 @@ export default class DiagramCanvas extends React.Component<Props, State> {
     deleteConnections(sid: string, id: string) {
         this.lastUpdate = {sid: sid, id: id, tid: undefined};
         if (ProjectElements[sid].connections.includes(id)) ProjectElements[sid].connections.splice(ProjectElements[sid].connections.indexOf(id), 1);
-        updateConnections(ProjectSettings.contextEndpoint, id, [id], DiagramCanvas.name).then(result => {
+        updateConnections(ProjectSettings.contextEndpoint, id, [id]).then(result => {
             if (result) {
                 ProjectLinks[id].active = false;
                 if (graph.getCell(id)) graph.getCell(id).remove();
-                updateDeleteProjectElement(ProjectSettings.contextEndpoint, ProjectSettings.ontographerContext + "-" + id, DiagramCanvas.name).then(result => {
+                updateDeleteProjectElement(ProjectSettings.contextEndpoint, ProjectSettings.ontographerContext + "-" + id).then(result => {
                     if (result) {
                         this.props.handleChangeLoadingStatus(false, "", false);
                     } else {

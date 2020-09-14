@@ -164,8 +164,8 @@ export async function updateProjectLink(contextEndpoint: string, id: string) {
 			"@id": linkIRI + "/vertex-" + (i + 1),
 			"@type": "og:vertex",
 			"og:index": i,
-			"og:position-x": vertex.x,
-			"og:position-y": vertex.y
+			"og:position-x": Math.round(vertex.x),
+			"og:position-y": Math.round(vertex.y)
 		})
 	})
 
@@ -176,6 +176,7 @@ export async function updateProjectLink(contextEndpoint: string, id: string) {
 			"og:source": {"@type": "@id"},
 			"og:target": {"@type": "@id"},
 			"og:context": {"@type": "@id"},
+			"og:vertex": {"@type": "@id"},
 		},
 		"@id": ProjectSettings.ontographerContext,
 		"@graph": [{
@@ -190,13 +191,13 @@ export async function updateProjectLink(contextEndpoint: string, id: string) {
 			"og:target": ProjectElements[ProjectLinks[id].target].iri,
 			"og:type": ProjectLinks[id].type,
 			...cardinalities,
-			...vertices.map((vertex) => {
-				return {"og:vertex": vertex["@id"]};
-			})
+			"og:vertex": vertices.map(vert => vert["@id"])
 		},
 			...vertices
 		]
 	}
+
+	console.log(addLD);
 
 	let delString = "";
 	let del = await processGetTransaction(contextEndpoint, {subject: linkIRI}).catch(() => false);
@@ -206,6 +207,14 @@ export async function updateProjectLink(contextEndpoint: string, id: string) {
 
 	let addStrings: string[] = [JSON.stringify(addLD)];
 	let delStrings: string[] = delString === "" ? [] : [delString];
+
+	for (let vert of ProjectLinks[id].vertices) {
+		let i = ProjectLinks[id].vertices.indexOf(vert);
+		let del = await processGetTransaction(contextEndpoint, {subject: linkIRI + "/vertex-" + (i + 1)}).catch(() => false);
+		if (typeof del === "string") {
+			delStrings.push(del);
+		}
+	}
 
 	return await processTransaction(contextEndpoint, {"add": addStrings, delete: delStrings}).catch(() => false);
 }

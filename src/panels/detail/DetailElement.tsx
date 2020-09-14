@@ -114,7 +114,7 @@ export default class DetailElement extends React.Component<Props, State> {
 				this.setState({changes: false});
 				this.props.handleChangeLoadingStatus(false, "", false);
 				for (let conn of ProjectElements[this.state.id].connections) {
-					await updateProjectLink(ProjectSettings.contextEndpoint, conn, DetailElement.name).then(res => {
+					await updateProjectLink(ProjectSettings.contextEndpoint, conn).then(res => {
 						if (!res) {
 							this.props.handleChangeLoadingStatus(false, "", true);
 						}

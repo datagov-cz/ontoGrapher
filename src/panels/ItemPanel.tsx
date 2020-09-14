@@ -185,7 +185,7 @@ export default class ItemPanel extends React.Component<Props, State> {
 	}
 
 	save() {
-		updateProjectSettings(ProjectSettings.contextIRI, ProjectSettings.contextEndpoint, ItemPanel.name).then(result => {
+		updateProjectSettings(ProjectSettings.contextIRI, ProjectSettings.contextEndpoint).then(result => {
 			if (result) {
 				this.props.handleChangeLoadingStatus(false, "", false);
 			} else {

@@ -2,7 +2,7 @@
   "untitledProject": "Untitled workspace",
   "updating": "Saving...",
   "retry": "Retry?",
-  "errorUpdating": "Error: update unsuccessful.",
+  "errorUpdating": "❌ Error: update unsuccessful.",
   "createPackage": "Create new package",
   "untitledPackage": "Untitled Package",
   "addNewPackage": "Create new package >",
