@@ -167,7 +167,7 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 					await updateProjectSettings(contextIRI, contextEndpoint);
 					this.forceUpdate();
 					this.elementPanel.current?.forceUpdate();
-					this.handleChangeLoadingStatus(false, "", false);
+					this.handleChangeLoadingStatus(false, "✔ Workspace ready.", false);
 				}
             })
         });
