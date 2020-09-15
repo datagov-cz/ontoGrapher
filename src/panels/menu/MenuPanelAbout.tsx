@@ -22,7 +22,7 @@ export default class MenuPanelAbout extends React.Component<Props, State> {
         return (<div className={"inert"}><Nav.Link onClick={() => {
             this.setState({modal: true});
         }}>
-            {"30 August - Changelog"}
+            {"14 September - Changelog"}
         </Nav.Link>
             <AboutModal modal={this.state.modal} close={() => {
                 this.setState({modal: false})
