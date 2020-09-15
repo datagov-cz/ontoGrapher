@@ -262,6 +262,7 @@ export async function getLinksConfig(contextIRI: string, contextEndpoint: string
         "?link og:sourceCardinality2 ?sourceCard2 .",
         "?link og:targetCardinality1 ?targetCard1 .",
         "?link og:targetCardinality2 ?targetCard2 .",
+        "OPTIONAL {?link og:vertex ?vertex}",
         "}"
     ].join(" ");
     let q = contextEndpoint + "?query=" + encodeURIComponent(query);
@@ -272,8 +273,8 @@ export async function getLinksConfig(contextIRI: string, contextEndpoint: string
             target: string,
             targetID: string,
             sourceID: string,
-            vertexIRI: string[]
-            vertexes: { [key: number]: any },
+            vertexIRI: string[],
+            vertexes: { [key: number]: { x: number, y: number }, },
             sourceCardinality1: string,
             sourceCardinality2: string,
             targetCardinality1: string,
@@ -301,6 +302,8 @@ export async function getLinksConfig(contextIRI: string, contextEndpoint: string
                     targetCardinality2: result.targetCard2.value,
                 }
             }
+            if (result.vertex && !(links[result.id.value].vertexIRI.includes(result.vertex.value)))
+                links[result.id.value].vertexIRI.push(result.vertex.value);
         }
     }).catch(() => {
         if (callback) callback(false);
@@ -308,8 +311,7 @@ export async function getLinksConfig(contextIRI: string, contextEndpoint: string
 
     for (let link in links) {
         if (links[link].vertexIRI.length > 0) {
-            links[link].vertexes = {};
-            for (let vertexIRI in links[link].vertexIRI) {
+            for (let vertexIRI of links[link].vertexIRI) {
                 let query = [
                     "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
                     "select ?posX ?posY ?index where {",
@@ -343,7 +345,9 @@ export async function getLinksConfig(contextIRI: string, contextEndpoint: string
 
         let convert: joint.dia.Link.Vertex[] = [];
 
-        Object.keys(links[link].vertexes).forEach((vertex, i) => convert.push(links[link].vertexes[i]))
+        for (let vert in links[link].vertexes) {
+            convert.push({x: links[link].vertexes[vert].x, y: links[link].vertexes[vert].y})
+        }
 
         if (targetID && sourceID) {
             let sourceCard = new Cardinality(Locale.none, Locale.none);
@@ -359,6 +363,7 @@ export async function getLinksConfig(contextIRI: string, contextEndpoint: string
                 sourceCardinality: sourceCard,
                 targetCardinality: targetCard,
                 type: links[link].type,
+                vertices: convert,
                 active: true
             }
             if (sourceID) {

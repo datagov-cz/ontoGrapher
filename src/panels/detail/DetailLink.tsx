@@ -27,7 +27,6 @@ interface Props {
     projectLanguage: string;
     headers: { [key: string]: { [key: string]: string } }
     save: Function;
-    retry: boolean;
     handleChangeLoadingStatus: Function;
     handleWidth: Function;
 }
@@ -54,8 +53,6 @@ export default class DetailLink extends React.Component<Props, State> {
 
     componentDidUpdate(prevProps: Readonly<Props>, prevState: Readonly<State>, snapshot?: any) {
         if (prevState !== this.state && (this.state.changes)) {
-            this.save();
-        } else if (prevProps !== this.props && (this.props.retry && ProjectSettings.lastSource === DetailLink.name)) {
             this.save();
         }
     }
@@ -107,7 +104,7 @@ export default class DetailLink extends React.Component<Props, State> {
             ProjectLinks[this.state.id].sourceCardinality = CardinalityPool[parseInt(this.state.sourceCardinality, 10)];
             ProjectLinks[this.state.id].targetCardinality = CardinalityPool[parseInt(this.state.targetCardinality, 10)];
             ProjectLinks[this.state.id].iri = this.state.iri;
-            updateProjectLink(ProjectSettings.contextEndpoint, this.state.id, DetailLink.name).then((result) => {
+            updateProjectLink(ProjectSettings.contextEndpoint, this.state.id).then((result) => {
                 if (result) {
                     let links = graph.getLinks();
                     for (let link of links) {
@@ -200,8 +197,8 @@ export default class DetailLink extends React.Component<Props, State> {
                     ProjectLinks[underlyingConnections.src].targetCardinality = new Cardinality(sourceCard.getSecondCardinality(), sourceCard.getSecondCardinality());
                     ProjectLinks[underlyingConnections.tgt].sourceCardinality = new Cardinality(targetCard.getFirstCardinality(), targetCard.getFirstCardinality());
                     ProjectLinks[underlyingConnections.tgt].targetCardinality = new Cardinality(targetCard.getSecondCardinality(), targetCard.getSecondCardinality());
-                    updateProjectLink(ProjectSettings.contextEndpoint, underlyingConnections.src, DetailLink.name);
-                    updateProjectLink(ProjectSettings.contextEndpoint, underlyingConnections.tgt, DetailLink.name);
+                    updateProjectLink(ProjectSettings.contextEndpoint, underlyingConnections.src);
+                    updateProjectLink(ProjectSettings.contextEndpoint, underlyingConnections.tgt);
                 }
             }
             this.setState({changes: false});

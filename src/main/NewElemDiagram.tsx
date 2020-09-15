@@ -2,7 +2,7 @@ import React from 'react';
 import {Button, Form, InputGroup, Modal} from "react-bootstrap";
 import * as LocaleMenu from "../locale/LocaleMenu.json";
 import {PackageNode} from "../datatypes/PackageNode";
-import {Languages, PackageRoot} from "../config/Variables";
+import {Languages, PackageRoot, Schemes} from "../config/Variables";
 
 interface Props {
 	modal: boolean;
@@ -71,8 +71,9 @@ export default class NewElemDiagram extends React.Component<Props, State> {
 										  let pkg = PackageRoot.children.find(pkg => pkg.labels[this.props.projectLanguage] === event.currentTarget.value);
 										  if (pkg) this.setState({selectedPackage: pkg});
 									  }}>
-							{PackageRoot.children.map((pkg, i) => <option key={i}
-																		  value={pkg.labels[this.props.projectLanguage]}>{pkg.labels[this.props.projectLanguage]}</option>)}
+							{PackageRoot.children.filter(pkg => pkg.scheme && !(Schemes[pkg.scheme].readOnly)).map((pkg, i) =>
+								<option key={i}
+										value={pkg.labels[this.props.projectLanguage]}>{pkg.labels[this.props.projectLanguage]}</option>)}
 						</Form.Control>
 					</Form.Group>
 				</Form>

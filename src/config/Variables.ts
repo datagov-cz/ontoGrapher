@@ -45,6 +45,8 @@ export var ProjectLinks: {
         sourceCardinality: Cardinality,
         //target cardinality Cardinality object
         targetCardinality: Cardinality,
+        //vertices - point breaks of link
+        vertices: joint.dia.Link.Vertex[],
         //type - dictates saving/loading behaviour
         type: string,
         //active
@@ -135,10 +137,9 @@ export var ProjectSettings: {
     contextIRI: string,
     contextEndpoint: string,
     ontographerContext: string,
-    lastUpdate: { [key: string]: any },
-    lastSource: string,
     initialized: boolean,
-    representation: string
+    representation: string,
+    lastUpdate: { func: Function, args: [] }
 } = {
     name: {},
     description: {},
@@ -149,10 +150,12 @@ export var ProjectSettings: {
     contextIRI: "",
     contextEndpoint: "",
     ontographerContext: "http://onto.fel.cvut.cz/ontologies/application/ontoGrapher",
-    lastUpdate: {},
-    lastSource: "",
     initialized: false,
-    representation: "full"
+    representation: "full",
+    lastUpdate: {
+        func: function () {
+        }, args: []
+    }
 };
 
 export var CardinalityPool: Cardinality[] = [

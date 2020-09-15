@@ -141,6 +141,7 @@ export function addLink(id: string, iri: string, source: string, target: string,
         sourceCardinality: CardinalityPool[0],
         targetCardinality: CardinalityPool[0],
         type: type,
+        vertices: [],
         active: true
     }
 }

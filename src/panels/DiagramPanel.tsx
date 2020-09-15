@@ -5,7 +5,6 @@ import DiagramTab from "./diagram/DiagramTab";
 import ModalRemoveDiagram from "./modal/ModalRemoveDiagram";
 
 interface Props {
-	retry: boolean;
 	handleChangeLoadingStatus: Function;
 }
 
@@ -40,7 +39,6 @@ export default class DiagramPanel extends React.Component<Props, State> {
 					this.forceUpdate();
 				}}
 				handleChangeLoadingStatus={this.props.handleChangeLoadingStatus}
-				retry={this.props.retry}
 			/>
 
 		</div>);

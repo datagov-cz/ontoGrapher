@@ -1,7 +1,7 @@
 import React from 'react';
 import {PackageNode} from "../../datatypes/PackageNode";
-import {OverlayTrigger, Tooltip} from "react-bootstrap";
-import * as LocaleMain from "../../locale/LocaleMain.json";
+// import {OverlayTrigger, Tooltip} from "react-bootstrap";
+// import * as LocaleMain from "../../locale/LocaleMain.json";
 import {ProjectElements, ProjectSettings, VocabularyElements} from "../../config/Variables";
 import {getLabelOrBlank} from "../../function/FunctionGetVars";
 
@@ -21,13 +21,9 @@ interface State {
     hover: boolean;
 }
 
-// const tooltipDef = (
-//     <Tooltip id="tooltipS">{LocaleMain.setAsDefault}</Tooltip>
+// const tooltipNew = (
+//     <Tooltip id="tooltipC">{LocaleMain.createdConcept}</Tooltip>
 // );
-
-const tooltipNew = (
-    <Tooltip id="tooltipC">{LocaleMain.createdConcept}</Tooltip>
-);
 
 export default class PackageFolder extends React.Component<Props, State> {
     constructor(props: Props) {
@@ -50,7 +46,7 @@ export default class PackageFolder extends React.Component<Props, State> {
 
     render() {
         return (
-            <OverlayTrigger show={this.props.flash} placement="right" overlay={tooltipNew}>
+            //<OverlayTrigger show={this.props.flash} placement="right" overlay={tooltipNew}>
                 <div
                     onMouseOver={() => {
                         this.setState({hover: true})
@@ -72,23 +68,12 @@ export default class PackageFolder extends React.Component<Props, State> {
                     }}
                     className={"packageFolder" + (this.state.open ? " open" : "") + (ProjectSettings.selectedPackage === this.props.node ? " defaultPackage" : "") + ((ProjectSettings.selectedPackage === this.props.node && this.props.flash) ? " flash" : "")}
                     style={{marginLeft: (this.props.depth - 1) * 20 + "px"}}>
-                    {(this.props.readOnly ? "💃🏼" : "") + (this.props.depth === 1 ? "" : "↘") + "📁" + getLabelOrBlank(this.props.node.labels, this.props.projectLanguage)}
-                    {/*<div className={"packageOptions right"}*/}
-                    {/*     style={{display: this.state.hover ? "inline-block" : "none"}}>*/}
-                    {/*    {(this.props.readOnly || this.props.depth !== 1 || ProjectSettings.selectedPackage === this.props.node) ? "" :*/}
-                    {/*        <OverlayTrigger placement="bottom" overlay={tooltipDef}>*/}
-                    {/*            <button className={"buttonlink"} onClick={(event) => {*/}
-                    {/*                event.stopPropagation();*/}
-                    {/*                ProjectSettings.selectedPackage = this.props.node;*/}
-                    {/*                this.props.update();*/}
-                    {/*            }}><span role="img" aria-label={""}>🔰</span></button>*/}
-                    {/*        </OverlayTrigger>}*/}
-                    {/*</div>*/}
+                    {(this.props.readOnly ? "📑📁" : "✏📁") + getLabelOrBlank(this.props.node.labels, this.props.projectLanguage)}
                     {this.state.open ?
                         this.props.children
                         : <span/>}
                 </div>
-            </OverlayTrigger>
+            //</OverlayTrigger>
         );
     }
 }

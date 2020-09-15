@@ -100,7 +100,7 @@ export function addRelationships() {
                 if (typeof linkDomain.id === "string") {
                     addLink(linkDomain.id, parsePrefix("z-sgov-pojem", "má-vztažený-prvek-1"), id, domainID);
                     ProjectElements[id].connections.push(linkDomain.id);
-                    updateProjectLink(ProjectSettings.contextEndpoint, linkDomain.id, "FunctionEditVars");
+                    updateProjectLink(ProjectSettings.contextEndpoint, linkDomain.id);
                 }
             }
             if (rangeID && !(ProjectElements[id].connections.find(conn => ProjectElements[ProjectLinks[conn].target].iri === range))) {
@@ -108,7 +108,7 @@ export function addRelationships() {
                 if (typeof linkRange.id === "string") {
                     addLink(linkRange.id, parsePrefix("z-sgov-pojem", "má-vztažený-prvek-2"), id, rangeID);
                     ProjectElements[id].connections.push(linkRange.id);
-                    updateProjectLink(ProjectSettings.contextEndpoint, linkRange.id, "FunctionEditVars");
+                    updateProjectLink(ProjectSettings.contextEndpoint, linkRange.id);
                 }
             }
         }
@@ -122,7 +122,7 @@ export function addRelationships() {
                     if (typeof linkGeneralization.id === "string") {
                         addLink(linkGeneralization.id, ProjectSettings.ontographerContext + "/uml/generalization", domainID, rangeID, "generalization");
                         ProjectElements[domainID].connections.push(linkGeneralization.id);
-                        updateProjectLink(ProjectSettings.contextEndpoint, linkGeneralization.id, "FunctionEditVars");
+                        updateProjectLink(ProjectSettings.contextEndpoint, linkGeneralization.id);
                     }
                 }
             }
@@ -135,7 +135,7 @@ export function deletePackageItem(id: string) {
     folder.elements.splice(folder.elements.indexOf(id), 1);
     for (let connection in ProjectElements[id].connections) {
         ProjectLinks[ProjectElements[id].connections[connection]].active = false;
-        updateDeleteProjectElement(ProjectSettings.contextEndpoint, ProjectSettings.ontographerContext + "-" + connection, "FunctionEditVars");
+        updateDeleteProjectElement(ProjectSettings.contextEndpoint, ProjectSettings.ontographerContext + "-" + connection);
     }
     ProjectElements[id].connections.splice(0, ProjectElements[id].connections.length - 1);
     if (graph.getCell(id)) {

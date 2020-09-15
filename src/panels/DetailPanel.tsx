@@ -15,7 +15,6 @@ interface Props {
     resizeElem: Function;
     update: Function;
     handleChangeLoadingStatus: Function;
-    retry: boolean;
     handleWidth: Function;
 }
 
@@ -90,7 +89,6 @@ export default class DetailPanel extends React.Component<Props, State> {
                 return (<DetailElement headers={headers} projectLanguage={this.props.projectLanguage}
                                        save={this.save} ref={this.detailElem}
                                        handleChangeLoadingStatus={this.props.handleChangeLoadingStatus}
-                                       retry={this.props.retry}
                                        handleWidth={this.props.handleWidth}
                 />);
             } else if (this.state.type === "link") {
@@ -98,7 +96,7 @@ export default class DetailPanel extends React.Component<Props, State> {
                     handleWidth={this.props.handleWidth}
                     handleChangeLoadingStatus={this.props.handleChangeLoadingStatus}
                     projectLanguage={this.props.projectLanguage} headers={headers}
-                    save={this.save} ref={this.detailLink} retry={this.props.retry}/>);
+                    save={this.save} ref={this.detailLink}/>);
             }
         } else {
             return (<div/>);

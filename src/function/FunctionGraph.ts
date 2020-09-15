@@ -8,6 +8,7 @@ import {graphElement} from "../graph/GraphElement";
 import {LinkConfig} from "../config/LinkConfig";
 import {addLink} from "./FunctionCreateVars";
 import {Cardinality} from "../datatypes/Cardinality";
+import {updateProjectLink} from "../interface/TransactionInterface";
 
 
 let mvp1IRI = "https://slovník.gov.cz/základní/pojem/má-vztažený-prvek-1";
@@ -25,6 +26,16 @@ export function getNewLink(type?: string, id?: string): joint.dia.Link {
     if (type && type in LinkConfig) {
         link = LinkConfig[type].newLink(id);
     }
+    link.on('change:vertices', () => {
+        link.vertices().forEach((vert, i) => {
+            let verti = vert;
+            let proji = ProjectLinks[link.id].vertices[i];
+            if ((!(proji) || (Math.abs(verti.x - proji.x) > 10 || Math.abs(verti.y - proji.y) > 10)) && typeof link.id === "string") {
+                ProjectLinks[link.id].vertices = link.vertices();
+                updateProjectLink(ProjectSettings.contextEndpoint, link.id);
+            }
+        })
+    })
     return link;
 }
 
@@ -80,8 +91,7 @@ export function setRepresentation(representation: string) {
     if (representation === "compact") {
         for (let elem of graph.getElements()) {
             if (
-                VocabularyElements[ProjectElements[elem.id].iri].types.includes(parsePrefix("z-sgov-pojem", "typ-vztahu")) ||
-                VocabularyElements[ProjectElements[elem.id].iri].types.includes(parsePrefix("z-sgov-pojem", "typ-vlastnosti"))
+                VocabularyElements[ProjectElements[elem.id].iri].types.includes(parsePrefix("z-sgov-pojem", "typ-vztahu"))
             ) {
                 let links = graph.getConnectedLinks(elem);
                 if (links.length > 1) {
@@ -131,7 +141,7 @@ export function setRepresentation(representation: string) {
         }
         let del = false;
         for (let link of graph.getLinks()) {
-            if (ProjectLinks[link.id] && ProjectLinks[link.id].iri in Links && Links[ProjectLinks[link.id].iri].type === "default") {
+            if (ProjectLinks[link.id].iri in Links && Links[ProjectLinks[link.id].iri].type === "default") {
                 link.remove();
                 del = true;
             }
@@ -140,7 +150,7 @@ export function setRepresentation(representation: string) {
         return del;
     } else if (representation === "full") {
         for (let link of graph.getLinks()) {
-            if (ProjectLinks[link.id] && ProjectLinks[link.id].iri in VocabularyElements) {
+            if ((ProjectLinks[link.id] && !(ProjectLinks[link.id].iri in Links))) {
                 link.remove();
                 ProjectLinks[link.id].active = false;
             }
@@ -216,6 +226,7 @@ export function restoreHiddenElem(id: string, cls: joint.dia.Element) {
             }
             lnk.source({id: ProjectLinks[link].source});
             lnk.target({id: ProjectLinks[link].target});
+            lnk.vertices(ProjectLinks[link].vertices);
             lnk.addTo(graph);
         } else if (ProjectLinks[link].active &&
             ProjectLinks[link].target === id &&
@@ -225,7 +236,8 @@ export function restoreHiddenElem(id: string, cls: joint.dia.Element) {
                 if (ProjectLinks[targetLink].source === relID && ProjectLinks[targetLink].target !== id && graph.getCell(ProjectLinks[targetLink].target)) {
                     let domainLink = getNewLink(ProjectLinks[link].type, link);
                     let rangeLink = getNewLink(ProjectLinks[targetLink].type, targetLink);
-                    let relationship = new graphElement({id: relID});
+                    let existingRel = graph.getElements().find(elem => elem.id === relID);
+                    let relationship = existingRel ? existingRel : new graphElement({id: relID});
                     if (ProjectElements[relID].position[ProjectSettings.selectedDiagram] &&
                         ProjectElements[relID].position[ProjectSettings.selectedDiagram].x !== 0 &&
                         ProjectElements[relID].position[ProjectSettings.selectedDiagram].y !== 0) {
@@ -237,6 +249,7 @@ export function restoreHiddenElem(id: string, cls: joint.dia.Element) {
                         let posy = ((sourcepos.y + targetpos.y) / 2);
                         relationship.position(posx, posy);
                     }
+                    ProjectElements[relID].hidden[ProjectSettings.selectedDiagram] = false;
                     nameGraphElement(relationship, ProjectSettings.selectedLanguage);
                     domainLink.source({id: relID});
                     domainLink.target({id: ProjectLinks[link].target});
@@ -279,6 +292,8 @@ export function restoreHiddenElem(id: string, cls: joint.dia.Element) {
                         }
                     }
                     relationship.addTo(graph);
+                    domainLink.vertices(ProjectLinks[link].vertices);
+                    rangeLink.vertices(ProjectLinks[targetLink].vertices);
                     domainLink.addTo(graph);
                     rangeLink.addTo(graph);
                     break;

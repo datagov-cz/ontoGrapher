@@ -20,7 +20,7 @@ export default class DiagramTab extends React.Component<Props, State> {
 
 	deleteDiagram() {
 		this.props.handleChangeLoadingStatus(true, "", false);
-		updateProjectSettings(ProjectSettings.contextIRI, ProjectSettings.contextEndpoint, DiagramTab.name).then(result => {
+		updateProjectSettings(ProjectSettings.contextIRI, ProjectSettings.contextEndpoint).then(result => {
 			if (result) {
 				Diagrams[this.props.diagram].active = false;
 				if (this.props.diagram < ProjectSettings.selectedDiagram) changeDiagrams(ProjectSettings.selectedDiagram - 1);
@@ -41,7 +41,7 @@ export default class DiagramTab extends React.Component<Props, State> {
 	handleChangeDiagramName(event: { textarea: string }) {
 		this.props.handleChangeLoadingStatus(true, "", false);
 		Diagrams[this.props.diagram].name = event.textarea;
-		updateProjectSettings(ProjectSettings.contextIRI, ProjectSettings.contextEndpoint, DiagramTab.name).then(result => {
+		updateProjectSettings(ProjectSettings.contextIRI, ProjectSettings.contextEndpoint).then(result => {
 			if (result) {
 				this.props.handleChangeLoadingStatus(false, "", false);
 			} else {

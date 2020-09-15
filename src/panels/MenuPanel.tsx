@@ -18,9 +18,9 @@ interface MenuPanelProps {
 	loading: boolean;
 	status: string;
 	loadingError: boolean;
-	retry: Function;
 	validate: Function;
 	closeDetailPanel: Function;
+	handleChangeLoadingStatus: Function;
 }
 
 interface MenuPanelState {
@@ -42,7 +42,8 @@ export default class MenuPanel extends React.Component<MenuPanelProps, MenuPanel
 				<div className={"upper"}>
 					<h5>{ProjectSettings.name[this.props.projectLanguage] === "" ? "<untitled>" : ProjectSettings.name[this.props.projectLanguage]}</h5>
 					<InterfaceNotification active={this.props.loading} message={this.props.status}
-										   error={this.props.loadingError} retry={this.props.retry}/>
+										   error={this.props.loadingError}
+										   handleChangeLoadingStatus={this.props.handleChangeLoadingStatus}/>
 					<div className={"right"}>
 						<Form inline>
 							<Form.Control as="select" value={this.props.projectLanguage}

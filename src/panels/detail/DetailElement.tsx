@@ -36,7 +36,6 @@ interface Props {
 	headers: { [key: string]: { [key: string]: string } }
 	save: Function;
 	handleChangeLoadingStatus: Function;
-	retry: boolean;
 	handleWidth: Function;
 }
 
@@ -115,7 +114,7 @@ export default class DetailElement extends React.Component<Props, State> {
 				this.setState({changes: false});
 				this.props.handleChangeLoadingStatus(false, "", false);
 				for (let conn of ProjectElements[this.state.id].connections) {
-					await updateProjectLink(ProjectSettings.contextEndpoint, conn, DetailElement.name).then(res => {
+					await updateProjectLink(ProjectSettings.contextEndpoint, conn).then(res => {
 						if (!res) {
 							this.props.handleChangeLoadingStatus(false, "", true);
 						}
@@ -124,7 +123,7 @@ export default class DetailElement extends React.Component<Props, State> {
 				if (ProjectElements[this.state.id].iri !== oldIRI) {
 					let delString = await processGetTransaction(ProjectSettings.contextEndpoint, {subject: oldIRI});
 					if (delString) {
-						await processTransaction(ProjectSettings.contextEndpoint, {"delete": JSON.parse(delString)});
+						await processTransaction(ProjectSettings.contextEndpoint, {add: [], "delete": [delString]});
 					}
 					VocabularyElements[oldIRI].active = false;
 				}
@@ -138,8 +137,6 @@ export default class DetailElement extends React.Component<Props, State> {
 
 	componentDidUpdate(prevProps: Readonly<Props>, prevState: Readonly<State>, snapshot?: any) {
 		if ((prevState !== this.state && this.state.changes)) {
-			this.save();
-		} else if ((prevProps !== this.props && this.props.retry && ProjectSettings.lastSource === DetailElement.name)) {
 			this.save();
 		}
 	}
