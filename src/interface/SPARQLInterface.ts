@@ -252,7 +252,7 @@ export async function getLinksConfig(contextIRI: string, contextEndpoint: string
         "?link a og:link .",
         "?link og:id ?id .",
         "?link og:iri ?iri .",
-        "?ling og:context <" + contextIRI + ">.",
+        "?link og:context <" + contextIRI + ">.",
         "?link og:source-id ?sourceID .",
         "?link og:target-id ?targetID .",
         "?link og:source ?source .",
