@@ -158,16 +158,15 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 					await getElementsConfig(ProjectSettings.contextIRI, ProjectSettings.contextEndpoint);
 					await getLinksConfig(ProjectSettings.contextIRI, ProjectSettings.contextEndpoint);
 					await getSettings(ProjectSettings.contextIRI, ProjectSettings.contextEndpoint);
-					if (!ProjectSettings.initialized) {
-						this.handleChangeLoadingStatus(true, "Initializing ontoGrapher data (this will only be done once)...", false);
-						addRelationships();
-						initConnections();
-					}
+					this.handleChangeLoadingStatus(true, ProjectSettings.initialized ?
+						"Updating ontoGrapher data..." : "Initializing ontoGrapher data (this will only be done once)...", false);
+					addRelationships();
+					initConnections();
 					await setupDiagrams(diagram);
 					await updateProjectSettings(contextIRI, contextEndpoint);
 					this.forceUpdate();
 					this.elementPanel.current?.forceUpdate();
-					this.handleChangeLoadingStatus(false, "", false);
+					this.handleChangeLoadingStatus(false, "✔ Workspace ready.", false);
 				}
             })
         });

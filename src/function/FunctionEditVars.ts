@@ -88,6 +88,7 @@ export function parsePrefix(prefix: string, name: string): string {
 }
 
 export function addRelationships() {
+    let linksToPush: string[] = [];
     for (let iri in VocabularyElements) {
         let id = Object.keys(ProjectElements).find(element => ProjectElements[element].iri === iri);
         let domain = VocabularyElements[iri].domain;
@@ -100,7 +101,7 @@ export function addRelationships() {
                 if (typeof linkDomain.id === "string") {
                     addLink(linkDomain.id, parsePrefix("z-sgov-pojem", "má-vztažený-prvek-1"), id, domainID);
                     ProjectElements[id].connections.push(linkDomain.id);
-                    updateProjectLink(ProjectSettings.contextEndpoint, linkDomain.id);
+                    linksToPush.push(linkDomain.id);
                 }
             }
             if (rangeID && !(ProjectElements[id].connections.find(conn => ProjectElements[ProjectLinks[conn].target].iri === range))) {
@@ -108,7 +109,7 @@ export function addRelationships() {
                 if (typeof linkRange.id === "string") {
                     addLink(linkRange.id, parsePrefix("z-sgov-pojem", "má-vztažený-prvek-2"), id, rangeID);
                     ProjectElements[id].connections.push(linkRange.id);
-                    updateProjectLink(ProjectSettings.contextEndpoint, linkRange.id);
+                    linksToPush.push(linkRange.id);
                 }
             }
         }
@@ -122,12 +123,13 @@ export function addRelationships() {
                     if (typeof linkGeneralization.id === "string") {
                         addLink(linkGeneralization.id, ProjectSettings.ontographerContext + "/uml/generalization", domainID, rangeID, "generalization");
                         ProjectElements[domainID].connections.push(linkGeneralization.id);
-                        updateProjectLink(ProjectSettings.contextEndpoint, linkGeneralization.id);
+                        linksToPush.push(linkGeneralization.id);
                     }
                 }
             }
         }
     }
+    for (let link of linksToPush) updateProjectLink(ProjectSettings.contextEndpoint, link);
 }
 
 export function deletePackageItem(id: string) {
