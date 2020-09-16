@@ -1,12 +1,12 @@
 import React from 'react';
 import {ResizableBox} from "react-resizable";
 import TableList from "../components/TableList";
-import * as LocaleMain from "../locale/LocaleMain.json";
 import {Button, Spinner} from 'react-bootstrap';
 import {validateWorkspace} from "../interface/ValidationInterface";
 import {ProjectElements, ProjectLinks, ProjectSettings, VocabularyElements} from "../config/Variables";
 import {graph} from "../graph/Graph";
 import IRIlabel from "../components/IRIlabel";
+import {Locale} from "../config/Locale";
 
 interface Props {
 	widthLeft: number;
@@ -93,20 +93,23 @@ export default class ValidationPanel extends React.Component<Props, State> {
 							  resizeHandles={['ne']}
 		>
 			<div className={"top"}>
-				<h4>{LocaleMain.validation}</h4>
+				<h4>{Locale[this.props.projectLanguage].validation}</h4>
 				<span className="right">
 				<Button onClick={() => {
 					this.validate()
-				}}>{LocaleMain.validationReload}</Button>
-				<Button variant={"secondary"} onClick={() => this.props.close()}>{LocaleMain.close}</Button>
+				}}>{Locale[this.props.projectLanguage].validationReload}</Button>
+				<Button variant={"secondary"}
+						onClick={() => this.props.close()}>{Locale[this.props.projectLanguage].close}</Button>
 					</span>
 			</div>
-			{this.state.conforms && <div className={"centered"}>{"✅" + LocaleMain.conforms}</div>}
-			{this.state.error && <div className={"centered"}>{"✅" + LocaleMain.validationLoadingError}</div>}
+			{this.state.conforms &&
+            <div className={"centered"}>{"✅" + Locale[this.props.projectLanguage].conforms}</div>}
+			{this.state.error &&
+            <div className={"centered"}>{"✅" + Locale[this.props.projectLanguage].validationLoadingError}</div>}
 			{this.state.loading && <div className={"centered"}><Spinner animation={"border"}/></div>}
 			{(!this.state.loading && !this.state.conforms && !this.state.error) &&
             <div style={{overflow: "auto", height: "inherit"}}><TableList
-                headings={[LocaleMain.validationNumber, LocaleMain.validationSeverity, LocaleMain.validationName, LocaleMain.validationError]}>
+                headings={[Locale[this.props.projectLanguage].validationNumber, Locale[this.props.projectLanguage].validationSeverity, Locale[this.props.projectLanguage].validationName, Locale[this.props.projectLanguage].validationError]}>
 				{this.state.results.map((result, i) => <tr>
 					<td>
 						<button className={"buttonlink"} onClick={() => this.focus(result.focusNode)}>{i + 1}</button>

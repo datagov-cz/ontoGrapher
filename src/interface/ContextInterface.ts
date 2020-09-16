@@ -2,8 +2,8 @@ import {PackageRoot, ProjectSettings, Schemes, VocabularyElements} from "../conf
 import {graphElement} from '../graph/GraphElement';
 import {fetchConcepts, getScheme} from "./SPARQLInterface";
 import {PackageNode} from "../datatypes/PackageNode";
-import * as Locale from "../locale/LocaleMain.json";
 import {addClass} from "../function/FunctionCreateVars";
+import {Locale} from "../config/Locale";
 
 export async function testContext(contextIRI: string, contextEndpoint: string) {
 	let vocabularyQ = [
@@ -50,7 +50,6 @@ export async function getContext(
 	contextEndpoint: string,
 	acceptType: string,
 	callback?: (message: string) => any) {
-	if (callback) callback(Locale.loadingTerms);
 	//get vocabularies
 	let vocabularyQ = [
 		"PREFIX owl: <http://www.w3.org/2002/07/owl#> ",
@@ -85,7 +84,7 @@ export async function getContext(
 		.then((data) => {
 			return data.results.bindings;
 		}).catch(() => {
-			if (callback) callback(Locale.loadingError)
+			if (callback) callback(Locale[ProjectSettings.selectedLanguage].loadingError)
 		});
 	let vocabularies: { [key: string]: { names: { [key: string]: string }, readOnly: boolean, terms: any, graph: string } } = {};
 	if (responseInit) for (const result of responseInit) {

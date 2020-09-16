@@ -2,21 +2,17 @@ import React from 'react';
 import {Nav, OverlayTrigger, Tooltip} from "react-bootstrap";
 import {setRepresentation} from "../../function/FunctionGraph";
 import {ProjectSettings} from "../../config/Variables";
-import * as LocaleMenu from "../../locale/LocaleMenu.json";
-import * as LocaleMain from "../../locale/LocaleMain.json";
+import {Locale} from "../../config/Locale";
 
 interface Props {
 	update: Function;
 	close: Function;
+	projectLanguage: string;
 }
 
 interface State {
 	alert: boolean;
 }
-
-const tooltipNew = (
-	<Tooltip id="tooltipC">{LocaleMain.deletedRelationships}</Tooltip>
-);
 
 export default class MenuPanelSwitchRepresentation extends React.Component<Props, State> {
 	constructor(props: Props) {
@@ -27,7 +23,8 @@ export default class MenuPanelSwitchRepresentation extends React.Component<Props
 	}
 
 	render() {
-		return (<OverlayTrigger show={this.state.alert} placement="right" overlay={tooltipNew}>
+		return (<OverlayTrigger show={this.state.alert} placement="right" overlay={<Tooltip
+			id="tooltipC">{Locale[this.props.projectLanguage].deletedRelationships}</Tooltip>}>
 			<div className={"inert"}><Nav.Link onClick={() => {
 				let result = setRepresentation(ProjectSettings.representation === "full" ? "compact" : "full");
 				if (result) this.setState({alert: result});
@@ -38,7 +35,7 @@ export default class MenuPanelSwitchRepresentation extends React.Component<Props
 				this.props.update();
 				this.forceUpdate();
 			}}>
-				{ProjectSettings.representation === "full" ? LocaleMenu.represantationCompact : LocaleMenu.represantationFull}
+				{ProjectSettings.representation === "full" ? Locale[this.props.projectLanguage].represantationCompact : Locale[this.props.projectLanguage].represantationFull}
 			</Nav.Link>
 			</div>
 		</OverlayTrigger>);

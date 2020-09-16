@@ -197,8 +197,6 @@ export async function updateProjectLink(contextEndpoint: string, id: string) {
 		]
 	}
 
-	console.log(addLD);
-
 	let delString = "";
 	let del = await processGetTransaction(contextEndpoint, {subject: linkIRI}).catch(() => false);
 	if (typeof del === "string") {

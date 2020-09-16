@@ -1,6 +1,6 @@
 import React from 'react';
-import {Diagrams} from "../../config/Variables";
-import * as Locale from "../../locale/LocaleMain.json";
+import {Diagrams, ProjectSettings} from "../../config/Variables";
+import {Locale} from "../../config/Locale";
 
 interface Props {
 	update: Function;
@@ -13,7 +13,7 @@ interface State {
 export default class DiagramAdd extends React.Component<Props, State> {
 
 	addDiagram() {
-		Diagrams.push({name: Locale.untitled, json: {}, active: true});
+		Diagrams.push({name: Locale[ProjectSettings.selectedLanguage].untitled, json: {}, active: true});
 		this.props.update();
 	}
 

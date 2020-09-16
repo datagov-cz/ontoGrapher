@@ -3,7 +3,7 @@ import {Nav} from 'react-bootstrap';
 import AboutModal from "./misc/AboutModal";
 
 interface Props {
-
+    projectLanguage: string;
 }
 
 interface State {
@@ -26,7 +26,7 @@ export default class MenuPanelAbout extends React.Component<Props, State> {
         </Nav.Link>
             <AboutModal modal={this.state.modal} close={() => {
                 this.setState({modal: false})
-            }}/>
+            }} projectLanguage={this.props.projectLanguage}/>
         </div>);
     }
 }

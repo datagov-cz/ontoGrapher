@@ -1,9 +1,9 @@
-import * as Locale from "../locale/LocaleMain.json";
 import {Cardinality} from "../datatypes/Cardinality";
 import {PackageNode} from "../datatypes/PackageNode";
 import {initLanguageObject, parsePrefix} from "../function/FunctionEditVars";
 import {RestrictionObject} from "../datatypes/RestrictionObject";
 import {ConnectionObject} from "../datatypes/ConnectionObject";
+import {Locale} from "./Locale";
 
 // language code : language label
 export var Languages: { [key: string]: string } = {};
@@ -16,12 +16,8 @@ export var ProjectElements: {
         connections: string[],
         //whether the labels are initialized
         untitled: boolean,
-        //AttributeObject array
-        // attributes: AttributeObject[],
         //diagram indexes in which elem is present/hidden
         diagrams: number[],
-        //property array
-        // properties: AttributeObject[],
         //if hidden in diagram index
         hidden: { [key: number]: boolean }
         //position on graph by diagram index
@@ -159,7 +155,7 @@ export var ProjectSettings: {
 };
 
 export var CardinalityPool: Cardinality[] = [
-    new Cardinality(Locale.none, Locale.none),
+    new Cardinality(Locale[ProjectSettings.selectedLanguage].none, Locale[ProjectSettings.selectedLanguage].none),
     new Cardinality("*", "*"),
     new Cardinality("0", "0"),
     new Cardinality("0", "*"),

@@ -1,4 +1,4 @@
-import * as Locale from "./../locale/LocaleMain.json";
+import * as Locale from "../locale/en.json";
 import {Links, Schemes, Stereotypes} from "../config/Variables";
 import {fetchConcepts, getScheme} from "./SPARQLInterface";
 import {createValues} from "../function/FunctionCreateVars";

@@ -10,8 +10,6 @@ import {
 } from "../../config/Variables";
 import {Form} from "react-bootstrap";
 import TableList from "../../components/TableList";
-import * as LocaleMain from "../../locale/LocaleMain.json";
-import * as LocaleMenu from "../../locale/LocaleMenu.json";
 import IRIlabel from "../../components/IRIlabel";
 import IRILink from "../../components/IRILink";
 import {ResizableBox} from "react-resizable";
@@ -22,6 +20,7 @@ import {updateProjectLink} from "../../interface/TransactionInterface";
 import {getUnderlyingFullConnections, unHighlightAll} from "../../function/FunctionGraph";
 import {parsePrefix} from "../../function/FunctionEditVars";
 import {Cardinality} from "../../datatypes/Cardinality";
+import {Locale} from '../../config/Locale';
 
 interface Props {
     projectLanguage: string;
@@ -100,7 +99,7 @@ export default class DetailLink extends React.Component<Props, State> {
 
     save() {
         if (ProjectSettings.representation === "full") {
-            this.props.handleChangeLoadingStatus(true, LocaleMain.updating, false);
+            this.props.handleChangeLoadingStatus(true, Locale[this.props.projectLanguage].updating, false);
             ProjectLinks[this.state.id].sourceCardinality = CardinalityPool[parseInt(this.state.sourceCardinality, 10)];
             ProjectLinks[this.state.id].targetCardinality = CardinalityPool[parseInt(this.state.targetCardinality, 10)];
             ProjectLinks[this.state.id].iri = this.state.iri;
@@ -123,13 +122,13 @@ export default class DetailLink extends React.Component<Props, State> {
                                     link.removeLabel(0);
                                     break;
                             }
-                            if (ProjectLinks[this.state.id].sourceCardinality.getString() !== LocaleMain.none) {
+                            if (ProjectLinks[this.state.id].sourceCardinality.getString() !== Locale[this.props.projectLanguage].none) {
                                 link.appendLabel({
                                     attrs: {text: {text: ProjectLinks[this.state.id].sourceCardinality.getString()}},
                                     position: {distance: 20}
                                 });
                             }
-                            if (ProjectLinks[this.state.id].targetCardinality.getString() !== LocaleMain.none) {
+                            if (ProjectLinks[this.state.id].targetCardinality.getString() !== Locale[this.props.projectLanguage].none) {
                                 link.appendLabel({
                                     attrs: {text: {text: ProjectLinks[this.state.id].targetCardinality.getString()}},
                                     position: {distance: -20}
@@ -149,7 +148,7 @@ export default class DetailLink extends React.Component<Props, State> {
                 }
             })
         } else {
-            this.props.handleChangeLoadingStatus(true, LocaleMain.updating, false);
+            this.props.handleChangeLoadingStatus(true, Locale[this.props.projectLanguage].updating, false);
             ProjectLinks[this.state.id].sourceCardinality = CardinalityPool[parseInt(this.state.sourceCardinality, 10)];
             ProjectLinks[this.state.id].targetCardinality = CardinalityPool[parseInt(this.state.targetCardinality, 10)];
             let link = graph.getLinks().find(link => link.id === this.state.id);
@@ -170,13 +169,13 @@ export default class DetailLink extends React.Component<Props, State> {
                             link.removeLabel(0);
                             break;
                     }
-                    if (ProjectLinks[this.state.id].sourceCardinality.getString() !== LocaleMain.none) {
+                    if (ProjectLinks[this.state.id].sourceCardinality.getString() !== Locale[this.props.projectLanguage].none) {
                         link.appendLabel({
                             attrs: {text: {text: ProjectLinks[this.state.id].sourceCardinality.getString()}},
                             position: {distance: 20}
                         });
                     }
-                    if (ProjectLinks[this.state.id].targetCardinality.getString() !== LocaleMain.none) {
+                    if (ProjectLinks[this.state.id].targetCardinality.getString() !== Locale[this.props.projectLanguage].none) {
                         link.appendLabel({
                             attrs: {text: {text: ProjectLinks[this.state.id].targetCardinality.getString()}},
                             position: {distance: -20}
@@ -225,12 +224,12 @@ export default class DetailLink extends React.Component<Props, State> {
                     this.setState({id: ""});
                     this.props.handleWidth(0);
                 }}><span role="img" aria-label={""}>➖</span></button>
-				<h3><IRILink label={getLinkOrVocabElem(this.state.iri).labels[this.props.projectLanguage]}
-							 iri={this.state.iri}/></h3>
-                <TableList headings={[LocaleMenu.linkInfo, ""]}>
+                <h3><IRILink label={getLinkOrVocabElem(this.state.iri).labels[this.props.projectLanguage]}
+                             iri={this.state.iri}/></h3>
+                <TableList headings={[Locale[this.props.projectLanguage].linkInfo, ""]}>
                     <tr>
                         <td>
-                            <span>{LocaleMain.sourceCardinality}</span>
+                            <span>{Locale[this.props.projectLanguage].sourceCardinality}</span>
                         </td>
                         <td>
                             <Form.Control as="select" value={this.state.sourceCardinality}
@@ -250,7 +249,7 @@ export default class DetailLink extends React.Component<Props, State> {
 
                     <tr>
                         <td>
-                            <span>{LocaleMain.targetCardinality}</span>
+                            <span>{Locale[this.props.projectLanguage].targetCardinality}</span>
                         </td>
                         <td>
                             <Form.Control as="select" value={this.state.targetCardinality}
@@ -269,7 +268,7 @@ export default class DetailLink extends React.Component<Props, State> {
                     </tr>
                     <tr>
                         <td>
-                            <span>{LocaleMain.linkType}</span>
+                            <span>{Locale[this.props.projectLanguage].linkType}</span>
                         </td>
                         {ProjectSettings.representation === "full" ? <td>
                                 <Form.Control as="select" value={this.state.iri} onChange={(event) => {

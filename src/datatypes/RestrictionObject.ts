@@ -1,5 +1,6 @@
 import {Restrictions} from "../config/Restrictions";
-import * as Locale from "../locale/LocaleMain.json";
+import {Locale} from "../config/Locale";
+import {ProjectSettings} from "../config/Variables";
 
 export class RestrictionObject {
 	public onProperty: string;
@@ -12,7 +13,7 @@ export class RestrictionObject {
 			this.restriction = restriction;
 			this.target = target;
 			if (init && id) Restrictions[restriction].init(id, this);
-		} else throw new Error(Locale.errorMissingRestriction)
+		} else throw new Error(Locale[ProjectSettings.selectedLanguage].errorMissingRestriction)
 	}
 
 	initRestriction(iri: string) {

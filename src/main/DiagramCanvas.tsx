@@ -24,11 +24,11 @@ import {
     updateProjectElement,
     updateProjectLink
 } from "../interface/TransactionInterface";
-import * as LocaleMain from "../locale/LocaleMain.json";
 import NewLinkDiagram from "./NewLinkDiagram";
 import {getLinkOrVocabElem} from "../function/FunctionGetVars";
 import NewElemDiagram from "./NewElemDiagram";
 import {PackageNode} from "../datatypes/PackageNode";
+import {Locale} from "../config/Locale";
 
 interface Props {
     projectLanguage: string;
@@ -112,7 +112,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
     }
 
     saveNewLink(iri: string, sid: string, tid: string) {
-        this.props.handleChangeLoadingStatus(true, LocaleMain.updating, false);
+        this.props.handleChangeLoadingStatus(true, Locale[this.props.projectLanguage].updating, false);
         let type = iri in Links ? Links[iri].type : "default"
         let link = getNewLink(type);
         link.source({id: sid});
@@ -209,7 +209,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
 
     updateConnections(sid: string, tid: string, linkID: string, type: string, iri: string) {
         this.lastUpdate = {sid: sid, tid: tid, id: linkID, type: type, iri: iri};
-        this.props.handleChangeLoadingStatus(true, LocaleMain.updating, false);
+        this.props.handleChangeLoadingStatus(true, Locale[this.props.projectLanguage].updating, false);
         addLink(linkID, iri, sid, tid, type);
         ProjectElements[sid].connections.push(linkID);
         updateConnections(ProjectSettings.contextEndpoint, linkID, []).then(result => {
@@ -402,7 +402,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                 let segmentsTool = new joint.linkTools.Segments();
                 let removeButton = new joint.linkTools.Remove({
                     action: ((evt, view) => {
-                        this.props.handleChangeLoadingStatus(true, LocaleMain.updating, false);
+                        this.props.handleChangeLoadingStatus(true, Locale[this.props.projectLanguage].updating, false);
                         if (ProjectSettings.representation === "full") {
                             let id = view.model.id;
                             let sid = view.model.getSourceCell()?.id;

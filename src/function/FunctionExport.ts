@@ -8,8 +8,8 @@ import {
     Stereotypes,
     VocabularyElements
 } from "../config/Variables";
-import * as LocaleMain from "../locale/LocaleMain.json";
 import {parsePrefix} from "./FunctionEditVars";
+import {Locale} from "../config/Locale";
 
 export function exportModel(iri: string, type: string, knowledgeStructure: string, ksShort: string, callback: Function) {
     const N3 = require('n3');
@@ -55,7 +55,7 @@ export function exportModel(iri: string, type: string, knowledgeStructure: strin
             }
         }
         let stereotypeIRI = Array.isArray(ProjectElements[id].iri) ? ProjectElements[id].iri[0] : ProjectElements[id].iri;
-        if (elementName === "") elementName = (LocaleMain.untitled + "-" + Stereotypes[stereotypeIRI].labels[Object.keys(Stereotypes[stereotypeIRI].labels)[0]]).trim().replace(/\s/g, '-');
+        if (elementName === "") elementName = (Locale[ProjectSettings.selectedLanguage].untitled + "-" + Stereotypes[stereotypeIRI].labels[Object.keys(Stereotypes[stereotypeIRI].labels)[0]]).trim().replace(/\s/g, '-');
         elementName = (projectIRI + "/pojem/" + elementName).trim().replace(/\s/g, '-');
         let count = 1;
         if (Object.values(termObj).includes(elementName)) {
@@ -153,7 +153,7 @@ export function exportGlossary(iri: string, type: string, knowledgeStructure: st
                 break;
             }
         }
-        if (elementName === "") elementName = (LocaleMain.untitled + "-" + Stereotypes[iri].labels[Object.keys(Stereotypes[iri].labels)[0]]).trim().replace(/\s/g, '-');
+        if (elementName === "") elementName = (Locale[ProjectSettings.selectedLanguage].untitled + "-" + Stereotypes[iri].labels[Object.keys(Stereotypes[iri].labels)[0]]).trim().replace(/\s/g, '-');
         elementName = (glossaryIRI + "/pojem/" + elementName).trim().replace(/\s/g, '-');
         let count = 1;
         if (Object.values(termObj).includes(elementName)) {

@@ -8,13 +8,13 @@ import {
     StructuresShort,
     VocabularyElements
 } from "../config/Variables";
-import * as LocaleMain from "../locale/LocaleMain.json";
 import {initLanguageObject} from "./FunctionEditVars";
 import {PackageNode} from "../datatypes/PackageNode";
 import {graphElement} from "../graph/GraphElement";
 import {nameGraphElement, restoreHiddenElem} from "./FunctionGraph";
 import {changeDiagrams} from "./FunctionDiagram";
 import {graph} from "../graph/Graph";
+import {Locale} from "../config/Locale";
 
 export async function setupDiagrams(diagram: number = 0): Promise<boolean> {
     for (let i = 0; i < Diagrams.length; i++) {
@@ -48,7 +48,7 @@ export function createValues(values: { [key: string]: string[] }, prefixes: { [k
 }
 
 export function createNewScheme(): string {
-    let result = "https://slovník.gov.cz/" + StructuresShort[ProjectSettings.knowledgeStructure] + "/" + LocaleMain.untitled;
+    let result = "https://slovník.gov.cz/" + StructuresShort[ProjectSettings.knowledgeStructure] + "/" + Locale[ProjectSettings.selectedLanguage].untitled;
     if (result in Schemes) {
         let count = 1;
         while ((result + "-" + count.toString(10)) in Schemes) {
@@ -66,7 +66,7 @@ export function createIDIRI(id: string) {
 }
 
 export function createNewElemIRI(labels: { [key: string]: string }, target: { [key: string]: any }, url?: string): string {
-    let name = LocaleMain.untitled;
+    let name = Locale[ProjectSettings.selectedLanguage].untitled;
     for (let lang in labels) {
         if (labels[lang] !== "") {
             name = labels[lang];

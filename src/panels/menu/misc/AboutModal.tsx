@@ -1,10 +1,11 @@
 import React from 'react';
 import {Button, Modal, Tab, Tabs} from "react-bootstrap";
-import * as LocaleMenu from "../../../locale/LocaleMenu.json";
+import {Locale} from "../../../config/Locale";
 
 interface Props {
-    modal: boolean;
-    close: Function;
+	modal: boolean;
+	close: Function;
+	projectLanguage: string;
 }
 
 interface State {
@@ -16,7 +17,7 @@ export default class AboutModal extends React.Component<Props, State> {
     render() {
         return (<Modal centered scrollable show={this.props.modal}>
             <Modal.Header>
-                <Modal.Title>{LocaleMenu.changelog}</Modal.Title>
+				<Modal.Title>{Locale[this.props.projectLanguage].changelog}</Modal.Title>
             </Modal.Header>
             <Modal.Body>
                 <Tabs id={"changelog"}>
@@ -271,9 +272,9 @@ export default class AboutModal extends React.Component<Props, State> {
                 </Tabs>
             </Modal.Body>
             <Modal.Footer>
-                <Button onClick={() => {
-                    this.props.close();
-                }}>{LocaleMenu.close}</Button>
+				<Button onClick={() => {
+					this.props.close();
+				}}>{Locale[this.props.projectLanguage].close}</Button>
             </Modal.Footer>
         </Modal>);
     }

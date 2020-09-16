@@ -1,14 +1,15 @@
 import React from 'react';
 import {Spinner} from "react-bootstrap";
-import * as Locale from "../locale/LocaleMain.json";
-import * as LocaleMain from "../locale/LocaleMain.json";
 import {retryConnection} from "../function/FunctionProject";
+import {ProjectSettings} from "../config/Variables";
+import {Locale} from "../config/Locale";
 
 interface Props {
 	active: boolean;
 	message: string;
 	error: boolean;
 	handleChangeLoadingStatus: Function;
+	projectLanguage: string;
 }
 
 export default class InterfaceNotification extends React.Component<Props> {
@@ -16,9 +17,9 @@ export default class InterfaceNotification extends React.Component<Props> {
 	render() {
 		if (this.props.error) {
 			return (<span className={"interfaceNotification"}>
-				{Locale.errorUpdating}&nbsp;
+				{Locale[ProjectSettings.selectedLanguage].errorUpdating}&nbsp;
 				<button className={"buttonlink"} onClick={() => {
-					this.props.handleChangeLoadingStatus(true, LocaleMain.updating, false);
+					this.props.handleChangeLoadingStatus(true, Locale[ProjectSettings.selectedLanguage].updating, false);
 					retryConnection().then(ret => {
 						if (ret) {
 							this.props.handleChangeLoadingStatus(false, "", false);

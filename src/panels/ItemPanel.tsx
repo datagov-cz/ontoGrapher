@@ -1,6 +1,5 @@
 import React from 'react';
 import {ResizableBox} from "react-resizable";
-import * as LocaleMain from "../locale/LocaleMain.json";
 import {
 	Links,
 	PackageRoot,
@@ -18,6 +17,7 @@ import ModalRemoveItem from "./modal/ModalRemoveItem";
 import {updateProjectSettings} from "../interface/TransactionInterface";
 import {Form, InputGroup} from 'react-bootstrap';
 import {parsePrefix} from "../function/FunctionEditVars";
+import {Locale} from "../config/Locale";
 
 interface Props {
 	projectLanguage: string;
@@ -206,11 +206,11 @@ export default class ItemPanel extends React.Component<Props, State> {
 				<InputGroup>
 					<InputGroup.Prepend>
 						<InputGroup.Text id="inputGroupPrepend">
-							<span role="img" aria-label={LocaleMain.searchStereotypes}>🔎</span></InputGroup.Text>
+							<span role="img" aria-label={Locale[this.props.projectLanguage].searchStereotypes}>🔎</span></InputGroup.Text>
 					</InputGroup.Prepend>
 					<Form.Control
 						type="text"
-						placeholder={LocaleMain.searchStereotypes}
+						placeholder={Locale[this.props.projectLanguage].searchStereotypes}
 						aria-describedby="inputGroupPrepend"
 						value={this.state.search}
 						onChange={this.handleChangeSearch}
@@ -231,7 +231,7 @@ export default class ItemPanel extends React.Component<Props, State> {
 						this.forceUpdate();
 					}}
 					handleChangeLoadingStatus={this.props.handleChangeLoadingStatus}
-				/>
+					projectLanguage={this.props.projectLanguage}/>
 
 
 			</ResizableBox>

@@ -9,12 +9,12 @@ import {
     Stereotypes,
     VocabularyElements
 } from "../config/Variables";
-import * as Locale from "../locale/LocaleMain.json";
 import {graph} from "../graph/Graph";
 import {addLink} from "./FunctionCreateVars";
 import {LinkConfig} from "../config/LinkConfig";
 import {getNewLink} from "./FunctionGraph";
 import {updateDeleteProjectElement, updateProjectLink} from "../interface/TransactionInterface";
+import {Locale} from "../config/Locale";
 
 export function getName(element: string, language: string): string {
     if (element in Stereotypes) {
@@ -70,7 +70,7 @@ export function loadLanguages() {
 }
 
 export function initProjectSettings() {
-    ProjectSettings.name = initLanguageObject(Locale.untitledProject);
+    ProjectSettings.name = initLanguageObject(Locale[ProjectSettings.selectedLanguage].untitledProject);
     ProjectSettings.description = initLanguageObject("");
     ProjectSettings.selectedDiagram = 0;
 }

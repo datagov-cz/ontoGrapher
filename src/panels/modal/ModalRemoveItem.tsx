@@ -1,10 +1,9 @@
 import React from 'react';
 import {Button, Modal} from "react-bootstrap";
-import * as LocaleMenu from "../../locale/LocaleMenu.json";
 import {deletePackageItem} from "../../function/FunctionEditVars";
 import {updateDeleteProjectElement} from "../../interface/TransactionInterface";
 import {ProjectElements, ProjectSettings} from "../../config/Variables";
-import * as LocaleMain from "../../locale/LocaleMain.json";
+import {Locale} from "../../config/Locale";
 
 interface Props {
     modal: boolean;
@@ -12,6 +11,7 @@ interface Props {
     close: Function;
     update: Function;
     handleChangeLoadingStatus: Function;
+    projectLanguage: string;
 }
 
 interface State {
@@ -22,7 +22,7 @@ export default class ModalRemoveItem extends React.Component<Props, State> {
 
     save() {
         updateDeleteProjectElement(ProjectSettings.contextEndpoint, ProjectElements[this.props.id].iri).then(result => {
-            this.props.handleChangeLoadingStatus(true, LocaleMain.updating, false);
+            this.props.handleChangeLoadingStatus(true, Locale[this.props.projectLanguage].updating, false);
             if (result) {
                 deletePackageItem(this.props.id);
                 this.props.handleChangeLoadingStatus(false, "", false);
@@ -36,20 +36,20 @@ export default class ModalRemoveItem extends React.Component<Props, State> {
         return (
             <Modal centered show={this.props.modal}>
                 <Modal.Header>
-                    <Modal.Title>{LocaleMenu.modalRemovePackageItemTitle}</Modal.Title>
+                    <Modal.Title>{Locale[this.props.projectLanguage].modalRemovePackageItemTitle}</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    <p>{LocaleMenu.modalRemovePackageItemDescription}</p>
+                    <p>{Locale[this.props.projectLanguage].modalRemovePackageItemDescription}</p>
                 </Modal.Body>
                 <Modal.Footer>
                     <Button onClick={() => {
                         this.setState({modalRemove: false});
-                    }} variant="secondary">{LocaleMenu.cancel}</Button>
+                    }} variant="secondary">{Locale[this.props.projectLanguage].cancel}</Button>
                     <Button onClick={() => {
                         this.save();
                         this.props.close();
                         this.props.update();
-                    }}>{LocaleMenu.confirm}</Button>
+                    }}>{Locale[this.props.projectLanguage].confirm}</Button>
                 </Modal.Footer>
             </Modal>
         );

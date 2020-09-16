@@ -1,10 +1,10 @@
 import React from 'react';
 import {Button, Form, Modal} from "react-bootstrap";
-import * as LocaleMenu from "../locale/LocaleMenu.json";
 import {Links, ProjectElements, ProjectLinks, ProjectSettings, VocabularyElements} from "../config/Variables";
 import {getLabelOrBlank, getLinkOrVocabElem} from "../function/FunctionGetVars";
 import {graph} from "../graph/Graph";
 import {parsePrefix} from "../function/FunctionEditVars";
+import {Locale} from "../config/Locale";
 
 interface Props {
 	modal: boolean;
@@ -59,10 +59,10 @@ export default class NewLinkDiagram extends React.Component<Props, State> {
 					   onEntering={() => this.setState({selectedLink: ""})}
 		>
 			<Modal.Header>
-				<Modal.Title>{LocaleMenu.modalNewLinkTitle}</Modal.Title>
+				<Modal.Title>{Locale[this.props.projectLanguage].modalNewLinkTitle}</Modal.Title>
 			</Modal.Header>
 			<Modal.Body>
-				<p>{LocaleMenu.modalNewLinkDescription}</p>
+				<p>{Locale[this.props.projectLanguage].modalNewLinkDescription}</p>
 				<Form.Control htmlSize={Object.keys(Links).length} as="select" value={this.state.selectedLink}
 							  onChange={this.handleChangeLink}>
 					{this.getLinks().map((link) => (
@@ -74,7 +74,7 @@ export default class NewLinkDiagram extends React.Component<Props, State> {
 			<Modal.Footer>
 				<Button onClick={() => {
 					this.props.close();
-				}} variant="secondary">{LocaleMenu.cancel}</Button>
+				}} variant="secondary">{Locale[this.props.projectLanguage].cancel}</Button>
 			</Modal.Footer>
 		</Modal>);
 	}

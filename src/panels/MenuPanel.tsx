@@ -43,7 +43,8 @@ export default class MenuPanel extends React.Component<MenuPanelProps, MenuPanel
 					<h5>{ProjectSettings.name[this.props.projectLanguage] === "" ? "<untitled>" : ProjectSettings.name[this.props.projectLanguage]}</h5>
 					<InterfaceNotification active={this.props.loading} message={this.props.status}
 										   error={this.props.loadingError}
-										   handleChangeLoadingStatus={this.props.handleChangeLoadingStatus}/>
+										   handleChangeLoadingStatus={this.props.handleChangeLoadingStatus}
+										   projectLanguage={this.props.projectLanguage}/>
 					<div className={"right"}>
 						<Form inline>
 							<Form.Control as="select" value={this.props.projectLanguage}
@@ -57,11 +58,13 @@ export default class MenuPanel extends React.Component<MenuPanelProps, MenuPanel
 				</div>
 				<div className={"lower"}>
 					<MenuPanelSwitchRepresentation update={() => this.props.update()}
-												   close={() => this.props.closeDetailPanel()}/>
-					<MenuPanelValidate validate={() => this.props.validate()}/>
+												   close={() => this.props.closeDetailPanel()}
+												   projectLanguage={this.props.projectLanguage}/>
+					<MenuPanelValidate validate={() => this.props.validate()}
+									   projectLanguage={this.props.projectLanguage}/>
 					<div className={"right"}>
-						<MenuPanelHelp/>
-						<MenuPanelAbout/>
+						<MenuPanelHelp projectLanguage={this.props.projectLanguage}/>
+						<MenuPanelAbout projectLanguage={this.props.projectLanguage}/>
 					</div>
 				</div>
 			</nav>

@@ -6,6 +6,7 @@ import ModalRemoveDiagram from "./modal/ModalRemoveDiagram";
 
 interface Props {
 	handleChangeLoadingStatus: Function;
+	projectLanguage: string;
 }
 
 interface State {
@@ -39,7 +40,7 @@ export default class DiagramPanel extends React.Component<Props, State> {
 					this.forceUpdate();
 				}}
 				handleChangeLoadingStatus={this.props.handleChangeLoadingStatus}
-			/>
+				projectLanguage={this.props.projectLanguage}/>
 
 		</div>);
 	}

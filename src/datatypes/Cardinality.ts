@@ -1,4 +1,5 @@
-import * as Locale from "../locale/LocaleMain.json";
+import {Locale} from "../config/Locale";
+import {ProjectSettings} from "../config/Variables";
 
 export class Cardinality {
     private first: string;
@@ -10,7 +11,7 @@ export class Cardinality {
         this.setFirstCardinality(first);
         this.setSecondCardinality(second);
         if (!this.checkCardinalities()) {
-            throw new Error(Locale.errorInvalidCardinality);
+            throw new Error(Locale[ProjectSettings.selectedLanguage].errorInvalidCardinality);
         }
     }
 
@@ -24,7 +25,7 @@ export class Cardinality {
 
     checkCardinality(cardinalityPart: string) {
         let regexp = new RegExp("(^\\d+$|^[*]$)");
-        return cardinalityPart.length !== 1 || regexp.test(cardinalityPart) || cardinalityPart === Locale.none;
+        return cardinalityPart.length !== 1 || regexp.test(cardinalityPart) || cardinalityPart === Locale[ProjectSettings.selectedLanguage].none;
     }
 
     checkFirstCardinality() {
@@ -38,7 +39,7 @@ export class Cardinality {
     checkCardinalities() {
         if (!this.checkFirstCardinality()) return false;
         if (!this.checkSecondCardinality()) return false;
-        if (this.getFirstCardinality() === Locale.none && this.getSecondCardinality() === Locale.none) return true;
+        if (this.getFirstCardinality() === Locale[ProjectSettings.selectedLanguage].none && this.getSecondCardinality() === Locale[ProjectSettings.selectedLanguage].none) return true;
         let regexpNumbers = new RegExp("^\\d+$");
         let regexpStar = new RegExp("^[*]$");
         if (regexpNumbers.test(this.getFirstCardinality()) && regexpNumbers.test(this.getSecondCardinality())) {

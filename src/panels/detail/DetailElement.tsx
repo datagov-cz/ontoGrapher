@@ -1,4 +1,3 @@
-import * as LocaleMain from "../../locale/LocaleMain.json";
 import React from "react";
 import {ResizableBox} from "react-resizable";
 import {
@@ -14,7 +13,6 @@ import {
 import {getLabelOrBlank, getLinkOrVocabElem, getStereotypeOrVocabElem} from "../../function/FunctionGetVars";
 import {Accordion, Button, Card, Form} from "react-bootstrap";
 import TableList from "../../components/TableList";
-import * as LocaleMenu from "../../locale/LocaleMenu.json";
 import IRILink from "../../components/IRILink";
 import {getName} from "../../function/FunctionEditVars";
 import LabelTable from "./components/LabelTable";
@@ -30,6 +28,7 @@ import {
 } from "../../interface/TransactionInterface";
 import {createNewElemIRI} from "../../function/FunctionCreateVars";
 import * as _ from "lodash";
+import {Locale} from "../../config/Locale";
 
 interface Props {
 	projectLanguage: string;
@@ -89,7 +88,7 @@ export default class DetailElement extends React.Component<Props, State> {
 	}
 
 	save() {
-		this.props.handleChangeLoadingStatus(true, LocaleMain.updating, false);
+		this.props.handleChangeLoadingStatus(true, Locale[this.props.projectLanguage].updating, false);
 		let oldIRI = ProjectElements[this.state.id].iri;
 		if (ProjectElements[this.state.id].untitled) {
 			let scheme = VocabularyElements[ProjectElements[this.state.id].iri].inScheme;
@@ -166,7 +165,7 @@ export default class DetailElement extends React.Component<Props, State> {
 					<Card>
 						<Card.Header>
 							<Accordion.Toggle as={Button} variant={"link"} eventKey={"0"}>
-								{LocaleMain.description}
+								{Locale[this.props.projectLanguage].description}
 							</Accordion.Toggle>
 						</Card.Header>
 						<Accordion.Collapse eventKey={"0"}>
@@ -221,7 +220,8 @@ export default class DetailElement extends React.Component<Props, State> {
 															  }
 														  }}
                                             >
-                                                <option key={""} value={""}>{LocaleMain.addNewStereotype}</option>
+                                                <option key={""}
+                                                        value={""}>{Locale[this.props.projectLanguage].addNewStereotype}</option>
 												{Object.keys(Stereotypes).filter(stereotype => !(this.state.inputTypes.includes(stereotype))).map((stereotype) => (
 													<option key={stereotype}
 															value={stereotype}>{getName(stereotype, this.props.projectLanguage)}</option>))}
@@ -255,13 +255,13 @@ export default class DetailElement extends React.Component<Props, State> {
 					<Card>
 						<Card.Header>
 							<Accordion.Toggle as={Button} variant={"link"} eventKey={"1"}>
-								{LocaleMain.connections}
+								{Locale[this.props.projectLanguage].connections}
 							</Accordion.Toggle>
 						</Card.Header>
 						<Accordion.Collapse eventKey={"1"}>
 							<Card.Body>
 								<TableList
-									headings={[LocaleMenu.connectionVia, LocaleMenu.connectionTo]}>
+									headings={[Locale[this.props.projectLanguage].connectionVia, Locale[this.props.projectLanguage].connectionTo]}>
 									{this.state.inputConnections.map((conn) => {
 											if (ProjectLinks[conn]) {
 												return (<tr>
@@ -280,12 +280,12 @@ export default class DetailElement extends React.Component<Props, State> {
 					<Card>
 						<Card.Header>
 							<Accordion.Toggle as={Button} variant={"link"} eventKey={"2"}>
-								{LocaleMain.diagram}
+								{Locale[this.props.projectLanguage].diagram}
 							</Accordion.Toggle>
 						</Card.Header>
 						<Accordion.Collapse eventKey={"2"}>
 							<Card.Body>
-								<TableList headings={[LocaleMenu.diagram]}>
+								<TableList headings={[Locale[this.props.projectLanguage].inDiagram]}>
 									{this.state.inputDiagrams.map((diag) =>
 										(<tr>
 											<td>{Diagrams[diag].name}</td>
