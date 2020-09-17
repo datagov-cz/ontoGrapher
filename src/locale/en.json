@@ -1,5 +1,8 @@
 {
   "untitledProject": "Untitled workspace",
+  "updatingData": "Updating ontoGrapher data...",
+  "initializingData": "Initializing ontoGrapher data (this will only be done once)...",
+  "workspaceReady": "✔ Workspace ready.",
   "updating": "Saving...",
   "retry": "Retry?",
   "errorUpdating": "❌ Error: update unsuccessful.",

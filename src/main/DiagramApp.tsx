@@ -18,6 +18,7 @@ import {updateProjectSettings} from "../interface/TransactionInterface";
 import ValidationPanel from "../panels/ValidationPanel";
 import DiagramPanel from "../panels/DiagramPanel";
 import {Locale} from "../config/Locale";
+import {getBrowserLanguage} from "../function/FunctionGetVars";
 
 interface DiagramAppProps {
 	readOnly?: boolean;
@@ -113,8 +114,9 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 
 	newProject() {
 		newProject();
+		let userLang = getBrowserLanguage();
 		this.setState({
-			projectLanguage: Object.keys(Languages)[0],
+			projectLanguage: userLang in Languages ? userLang : "en",
 		});
 		this.elementPanel.current?.forceUpdate();
 	}
@@ -158,7 +160,7 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 					await getLinksConfig(ProjectSettings.contextIRI, ProjectSettings.contextEndpoint);
 					await getSettings(ProjectSettings.contextIRI, ProjectSettings.contextEndpoint);
 					this.handleChangeLoadingStatus(true, ProjectSettings.initialized ?
-						"Updating ontoGrapher data..." : "Initializing ontoGrapher data (this will only be done once)...", false);
+						Locale[this.state.projectLanguage].updatingData : Locale[this.state.projectLanguage].initializingData, false);
 					initRestrictions();
 					addRelationships();
 					initConnections();
@@ -166,7 +168,7 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 					await updateProjectSettings(contextIRI, contextEndpoint);
 					this.forceUpdate();
 					this.elementPanel.current?.forceUpdate();
-					this.handleChangeLoadingStatus(false, "✔ Workspace ready.", false);
+					this.handleChangeLoadingStatus(false, Locale[this.state.projectLanguage].workspaceReady, false);
 				}
             })
         });

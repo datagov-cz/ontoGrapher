@@ -1,5 +1,8 @@
 {
   "untitledProject": "Nepojmenovaný pracovní prostor",
+  "updatingData": "Aktualizace ontoGrapher dat...",
+  "initializingData": "Inicializace ontoGrapher dat (provádí se pouze jednou)...",
+  "workspaceReady": "✔ Pracovní prostor je připraven.",
   "updating": "Ukládání...",
   "retry": "Zkusit znova?",
   "errorUpdating": "❌ Chyba: připojení bylo neúspěšné.",

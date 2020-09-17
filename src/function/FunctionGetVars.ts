@@ -41,3 +41,8 @@ export function checkLabels() {
         }
     }
 }
+
+export function getBrowserLanguage() {
+    let userLang = window.navigator.language;
+    return userLang.substr(0, 2);
+}

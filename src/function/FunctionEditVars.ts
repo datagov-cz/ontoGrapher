@@ -15,6 +15,7 @@ import {LinkConfig} from "../config/LinkConfig";
 import {getNewLink} from "./FunctionGraph";
 import {updateDeleteProjectElement, updateProjectLink} from "../interface/TransactionInterface";
 import {Locale} from "../config/Locale";
+import {getBrowserLanguage} from "./FunctionGetVars";
 
 export function getName(element: string, language: string): string {
     if (element in Stereotypes) {
@@ -70,7 +71,8 @@ export function loadLanguages() {
 }
 
 export function initProjectSettings() {
-    ProjectSettings.selectedLanguage = Object.keys(Languages)[0];
+    let userLang = getBrowserLanguage();
+    ProjectSettings.selectedLanguage = userLang in Languages ? userLang : "en";
     ProjectSettings.name = initLanguageObject(Locale[ProjectSettings.selectedLanguage].untitledProject);
     ProjectSettings.description = initLanguageObject("");
     ProjectSettings.selectedDiagram = 0;
