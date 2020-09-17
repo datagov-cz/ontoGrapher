@@ -154,12 +154,12 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 					ProjectSettings.contextEndpoint = contextEndpoint;
 					ProjectSettings.contextIRI = contextIRI
 					this.handleChangeLanguage(Object.keys(Languages)[0]);
-					initRestrictions();
 					await getElementsConfig(ProjectSettings.contextIRI, ProjectSettings.contextEndpoint);
 					await getLinksConfig(ProjectSettings.contextIRI, ProjectSettings.contextEndpoint);
 					await getSettings(ProjectSettings.contextIRI, ProjectSettings.contextEndpoint);
 					this.handleChangeLoadingStatus(true, ProjectSettings.initialized ?
 						"Updating ontoGrapher data..." : "Initializing ontoGrapher data (this will only be done once)...", false);
+					initRestrictions();
 					addRelationships();
 					initConnections();
 					await setupDiagrams(diagram);

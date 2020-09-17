@@ -251,7 +251,7 @@ export async function getSettings(contextIRI: string, contextEndpoint: string, c
 export async function getLinksConfig(contextIRI: string, contextEndpoint: string, callback?: Function): Promise<boolean> {
     let query = [
         "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
-        "select ?id ?iri ?sourceID ?targetID ?source ?target ?sourceCard1 ?sourceCard2 ?targetCard1 ?targetCard2 ?diagram ?vertex ?type where {",
+        "select ?id ?iri ?sourceID ?targetID ?source ?active ?target ?sourceCard1 ?sourceCard2 ?targetCard1 ?targetCard2 ?diagram ?vertex ?type where {",
         "?link a og:link .",
         "?link og:id ?id .",
         "?link og:iri ?iri .",
@@ -259,6 +259,7 @@ export async function getLinksConfig(contextIRI: string, contextEndpoint: string
         "?link og:source-id ?sourceID .",
         "?link og:target-id ?targetID .",
         "?link og:source ?source .",
+        "?link og:active ?active .",
         "?link og:target ?target .",
         "?link og:type ?type .",
         "?link og:sourceCardinality1 ?sourceCard1 .",
@@ -282,6 +283,7 @@ export async function getLinksConfig(contextIRI: string, contextEndpoint: string
             sourceCardinality2: string,
             targetCardinality1: string,
             targetCardinality2: string,
+            active: boolean,
             type: string,
         }
     } = {};
@@ -296,6 +298,7 @@ export async function getLinksConfig(contextIRI: string, contextEndpoint: string
                     target: result.target.value,
                     targetID: result.targetID.value,
                     sourceID: result.sourceID.value,
+                    active: result.active.value === "true",
                     vertexIRI: [],
                     vertexes: {},
                     type: result.type.value,
@@ -367,10 +370,10 @@ export async function getLinksConfig(contextIRI: string, contextEndpoint: string
                 targetCardinality: targetCard,
                 type: links[link].type,
                 vertices: convert,
-                active: true
+                active: links[link].active,
             }
             if (sourceID) {
-                if (!ProjectElements[sourceID].connections.includes(link)) {
+                if (!(ProjectElements[sourceID].connections.includes(link))) {
                     ProjectElements[sourceID].connections.push(link);
                 }
             }

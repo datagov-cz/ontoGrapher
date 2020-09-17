@@ -185,6 +185,7 @@ export async function updateProjectLink(contextEndpoint: string, id: string) {
 			"og:id": id,
 			"og:context": ProjectSettings.contextIRI,
 			"og:iri": ProjectLinks[id].iri,
+			"og:active": ProjectLinks[id].active,
 			"og:source-id": ProjectLinks[id].source,
 			"og:target-id": ProjectLinks[id].target,
 			"og:source": ProjectElements[ProjectLinks[id].source].iri,

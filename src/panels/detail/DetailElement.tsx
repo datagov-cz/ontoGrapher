@@ -263,7 +263,7 @@ export default class DetailElement extends React.Component<Props, State> {
 								<TableList
 									headings={[Locale[this.props.projectLanguage].connectionVia, Locale[this.props.projectLanguage].connectionTo]}>
 									{this.state.inputConnections.map((conn) => {
-											if (ProjectLinks[conn]) {
+											if (ProjectLinks[conn] && ProjectLinks[conn].active) {
 												return (<tr>
 													<IRIlabel
 														label={getLinkOrVocabElem(ProjectLinks[conn].iri).labels[this.props.projectLanguage]}

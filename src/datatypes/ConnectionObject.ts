@@ -23,7 +23,8 @@ export class ConnectionObject {
 					let link = getNewLink();
 					if (typeof link.id === "string" && !ProjectElements[srcElem].connections.find(conn =>
 						ProjectLinks[conn].iri === this.onProperty &&
-						ProjectElements[ProjectLinks[conn].target].iri === this.target
+						ProjectElements[ProjectLinks[conn].target].iri === this.target &&
+						ProjectLinks[conn].active
 					)) {
 						addLink(link.id, this.onProperty, srcElem, tgtElem);
 						ProjectElements[srcElem].connections.push(link.id);
