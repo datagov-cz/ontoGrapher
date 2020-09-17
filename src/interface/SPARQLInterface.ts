@@ -3,7 +3,7 @@ import {initLanguageObject} from "../function/FunctionEditVars";
 import * as joint from "jointjs";
 import {Cardinality} from "../datatypes/Cardinality";
 import {createRestriction} from "../function/FunctionRestriction";
-import {Locale} from "../config/Locale";
+import {CommonVars, Locale} from "../config/Locale";
 
 export async function fetchConcepts(
     endpoint: string,
@@ -356,8 +356,8 @@ export async function getLinksConfig(contextIRI: string, contextEndpoint: string
         }
 
         if (targetID && sourceID) {
-            let sourceCard = new Cardinality(Locale[ProjectSettings.selectedLanguage].none, Locale[ProjectSettings.selectedLanguage].none);
-            let targetCard = new Cardinality(Locale[ProjectSettings.selectedLanguage].none, Locale[ProjectSettings.selectedLanguage].none);
+            let sourceCard = new Cardinality(CommonVars.none, CommonVars.none);
+            let targetCard = new Cardinality(CommonVars.none, CommonVars.none);
             sourceCard.setFirstCardinality(links[link].sourceCardinality1);
             sourceCard.setSecondCardinality(links[link].sourceCardinality2);
             targetCard.setFirstCardinality(links[link].targetCardinality1);

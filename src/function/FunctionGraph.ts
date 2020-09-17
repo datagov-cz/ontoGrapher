@@ -8,7 +8,7 @@ import {LinkConfig} from "../config/LinkConfig";
 import {addLink} from "./FunctionCreateVars";
 import {Cardinality} from "../datatypes/Cardinality";
 import {updateProjectLink} from "../interface/TransactionInterface";
-import {Locale} from "../config/Locale";
+import {CommonVars, Locale} from "../config/Locale";
 
 
 let mvp1IRI = "https://slovník.gov.cz/základní/pojem/má-vztažený-prvek-1";
@@ -117,13 +117,13 @@ export function setRepresentation(representation: string) {
 								new Cardinality(ProjectLinks[targetLink.id].sourceCardinality.getFirstCardinality(),
 									ProjectLinks[targetLink.id].targetCardinality.getFirstCardinality());
 							if (ProjectLinks[newLink.id].type === "default") {
-								if (ProjectLinks[newLink.id].sourceCardinality.getString() !== Locale[ProjectSettings.selectedLanguage].none) {
+								if (ProjectLinks[newLink.id].sourceCardinality.getString() !== CommonVars.none) {
 									newLink.appendLabel({
 										attrs: {text: {text: ProjectLinks[newLink.id].sourceCardinality.getString()}},
 										position: {distance: 20}
 									});
 								}
-								if (ProjectLinks[newLink.id].targetCardinality.getString() !== Locale[ProjectSettings.selectedLanguage].none) {
+								if (ProjectLinks[newLink.id].targetCardinality.getString() !== CommonVars.none) {
 									newLink.appendLabel({
 										attrs: {text: {text: ProjectLinks[newLink.id].targetCardinality.getString()}},
 										position: {distance: -20}
@@ -196,13 +196,13 @@ export function unHighlightAll() {
 
 export function setupLinkLabels(id: string, link: joint.dia.Link) {
 	if (ProjectLinks[id].type === "default") {
-		if (ProjectLinks[id].sourceCardinality.getString() !== Locale[ProjectSettings.selectedLanguage].none) {
+		if (ProjectLinks[id].sourceCardinality.getString() !== CommonVars.none) {
 			link.appendLabel({
 				attrs: {text: {text: ProjectLinks[id].sourceCardinality.getString()}},
 				position: {distance: 20}
 			});
 		}
-		if (ProjectLinks[id].targetCardinality.getString() !== Locale[ProjectSettings.selectedLanguage].none) {
+		if (ProjectLinks[id].targetCardinality.getString() !== CommonVars.none) {
 			link.appendLabel({
 				attrs: {text: {text: ProjectLinks[id].targetCardinality.getString()}},
 				position: {distance: -20}

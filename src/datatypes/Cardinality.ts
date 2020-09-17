@@ -1,4 +1,4 @@
-import {Locale} from "../config/Locale";
+import {CommonVars, Locale} from "../config/Locale";
 import {ProjectSettings} from "../config/Variables";
 
 export class Cardinality {
@@ -39,7 +39,7 @@ export class Cardinality {
     checkCardinalities() {
         if (!this.checkFirstCardinality()) return false;
         if (!this.checkSecondCardinality()) return false;
-        if (this.getFirstCardinality() === Locale[ProjectSettings.selectedLanguage].none && this.getSecondCardinality() === Locale[ProjectSettings.selectedLanguage].none) return true;
+        if (this.getFirstCardinality() === CommonVars.none && this.getSecondCardinality() === CommonVars.none) return true;
         let regexpNumbers = new RegExp("^\\d+$");
         let regexpStar = new RegExp("^[*]$");
         if (regexpNumbers.test(this.getFirstCardinality()) && regexpNumbers.test(this.getSecondCardinality())) {

@@ -3,7 +3,7 @@ import {PackageNode} from "../datatypes/PackageNode";
 import {initLanguageObject, parsePrefix} from "../function/FunctionEditVars";
 import {RestrictionObject} from "../datatypes/RestrictionObject";
 import {ConnectionObject} from "../datatypes/ConnectionObject";
-import {Locale} from "./Locale";
+import {CommonVars} from "./Locale";
 
 // language code : language label
 export var Languages: { [key: string]: string } = {};
@@ -155,7 +155,7 @@ export var ProjectSettings: {
 };
 
 export var CardinalityPool: Cardinality[] = [
-    new Cardinality(Locale[ProjectSettings.selectedLanguage].none, Locale[ProjectSettings.selectedLanguage].none),
+    new Cardinality(CommonVars.none, CommonVars.none),
     new Cardinality("*", "*"),
     new Cardinality("0", "0"),
     new Cardinality("0", "*"),

@@ -18,12 +18,7 @@ import {HideButton} from "../graph/elementTool/ElemHide";
 import {ElemCreateLink} from "../graph/elementTool/ElemCreateLink";
 import {LinkInfoButton} from "../graph/linkTool/LinkInfo";
 import {initLanguageObject, parsePrefix} from "../function/FunctionEditVars";
-import {
-    updateConnections,
-    updateDeleteProjectElement,
-    updateProjectElement,
-    updateProjectLink
-} from "../interface/TransactionInterface";
+import {updateConnections, updateProjectElement, updateProjectLink} from "../interface/TransactionInterface";
 import NewLinkDiagram from "./NewLinkDiagram";
 import {getLinkOrVocabElem} from "../function/FunctionGetVars";
 import NewElemDiagram from "./NewElemDiagram";
@@ -206,7 +201,6 @@ export default class DiagramCanvas extends React.Component<Props, State> {
     }
 
     updateConnections(sid: string, tid: string, linkID: string, type: string, iri: string) {
-        this.lastUpdate = {sid: sid, tid: tid, id: linkID, type: type, iri: iri};
         this.props.handleChangeLoadingStatus(true, Locale[this.props.projectLanguage].updating, false);
         addLink(linkID, iri, sid, tid, type);
         ProjectElements[sid].connections.push(linkID);

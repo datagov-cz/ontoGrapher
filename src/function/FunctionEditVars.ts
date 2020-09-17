@@ -70,6 +70,7 @@ export function loadLanguages() {
 }
 
 export function initProjectSettings() {
+    ProjectSettings.selectedLanguage = Object.keys(Languages)[0];
     ProjectSettings.name = initLanguageObject(Locale[ProjectSettings.selectedLanguage].untitledProject);
     ProjectSettings.description = initLanguageObject("");
     ProjectSettings.selectedDiagram = 0;
