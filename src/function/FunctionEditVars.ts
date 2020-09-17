@@ -96,7 +96,9 @@ export function addRelationships() {
         if (id && ((domain && VocabularyElements[domain]) || (range && VocabularyElements[range]))) {
             let domainID = Object.keys(ProjectElements).find(element => ProjectElements[element].iri === domain);
             let rangeID = Object.keys(ProjectElements).find(element => ProjectElements[element].iri === range);
-            if (domainID && !(ProjectElements[id].connections.find(conn => ProjectElements[ProjectLinks[conn].target].iri === domain))) {
+            let link = ProjectElements[id].connections.find(conn =>
+                ProjectElements[ProjectLinks[conn].target].iri === domain);
+            if (domainID && (!link)) {
                 let linkDomain = getNewLink();
                 if (typeof linkDomain.id === "string") {
                     addLink(linkDomain.id, parsePrefix("z-sgov-pojem", "má-vztažený-prvek-1"), id, domainID);
@@ -104,7 +106,9 @@ export function addRelationships() {
                     linksToPush.push(linkDomain.id);
                 }
             }
-            if (rangeID && !(ProjectElements[id].connections.find(conn => ProjectElements[ProjectLinks[conn].target].iri === range))) {
+            link = ProjectElements[id].connections.find(conn =>
+                ProjectElements[ProjectLinks[conn].target].iri === range);
+            if (rangeID && (!link)) {
                 let linkRange = getNewLink();
                 if (typeof linkRange.id === "string") {
                     addLink(linkRange.id, parsePrefix("z-sgov-pojem", "má-vztažený-prvek-2"), id, rangeID);
@@ -118,7 +122,8 @@ export function addRelationships() {
             if (Object.keys(VocabularyElements).find(element => element === subClassOf)) {
                 let domainID = Object.keys(ProjectElements).find(element => ProjectElements[element].iri === iri);
                 let rangeID = Object.keys(ProjectElements).find(element => ProjectElements[element].iri === subClassOf);
-                if (domainID && rangeID && !(ProjectElements[domainID].connections.find(conn => ProjectElements[ProjectLinks[conn].target].iri === subClassOf))) {
+                if (domainID && rangeID && !(ProjectElements[domainID].connections.find(conn =>
+                    ProjectElements[ProjectLinks[conn].target].iri === subClassOf))) {
                     let linkGeneralization = getNewLink("generalization");
                     if (typeof linkGeneralization.id === "string") {
                         addLink(linkGeneralization.id, ProjectSettings.ontographerContext + "/uml/generalization", domainID, rangeID, "generalization");

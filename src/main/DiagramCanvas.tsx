@@ -18,12 +18,7 @@ import {HideButton} from "../graph/elementTool/ElemHide";
 import {ElemCreateLink} from "../graph/elementTool/ElemCreateLink";
 import {LinkInfoButton} from "../graph/linkTool/LinkInfo";
 import {initLanguageObject, parsePrefix} from "../function/FunctionEditVars";
-import {
-    updateConnections,
-    updateDeleteProjectElement,
-    updateProjectElement,
-    updateProjectLink
-} from "../interface/TransactionInterface";
+import {updateConnections, updateProjectElement, updateProjectLink} from "../interface/TransactionInterface";
 import * as LocaleMain from "../locale/LocaleMain.json";
 import NewLinkDiagram from "./NewLinkDiagram";
 import {getLinkOrVocabElem} from "../function/FunctionGetVars";
@@ -48,7 +43,6 @@ export default class DiagramCanvas extends React.Component<Props, State> {
     private paper: joint.dia.Paper | undefined;
     private magnet: boolean;
     private drag: { x: any, y: any } | undefined;
-    private lastUpdate: { sid?: string, tid?: string, id?: string, type?: string, iri?: string }
     private newLink: boolean;
     private sid: string | undefined;
     private tid: string | undefined;
@@ -64,7 +58,6 @@ export default class DiagramCanvas extends React.Component<Props, State> {
         this.magnet = false;
         this.componentDidMount = this.componentDidMount.bind(this);
         this.drag = undefined;
-        this.lastUpdate = {};
         this.newLink = false;
         this.sid = undefined;
         this.tid = undefined;
@@ -208,7 +201,6 @@ export default class DiagramCanvas extends React.Component<Props, State> {
     }
 
     updateConnections(sid: string, tid: string, linkID: string, type: string, iri: string) {
-        this.lastUpdate = {sid: sid, tid: tid, id: linkID, type: type, iri: iri};
         this.props.handleChangeLoadingStatus(true, LocaleMain.updating, false);
         addLink(linkID, iri, sid, tid, type);
         ProjectElements[sid].connections.push(linkID);
@@ -229,13 +221,11 @@ export default class DiagramCanvas extends React.Component<Props, State> {
     }
 
     deleteConnections(sid: string, id: string) {
-        this.lastUpdate = {sid: sid, id: id, tid: undefined};
-        if (ProjectElements[sid].connections.includes(id)) ProjectElements[sid].connections.splice(ProjectElements[sid].connections.indexOf(id), 1);
+        ProjectLinks[id].active = false;
         updateConnections(ProjectSettings.contextEndpoint, id, [id]).then(result => {
             if (result) {
-                ProjectLinks[id].active = false;
                 if (graph.getCell(id)) graph.getCell(id).remove();
-                updateDeleteProjectElement(ProjectSettings.contextEndpoint, ProjectSettings.ontographerContext + "-" + id).then(result => {
+                updateProjectLink(ProjectSettings.contextEndpoint, id).then(result => {
                     if (result) {
                         this.props.handleChangeLoadingStatus(false, "", false);
                     } else {
