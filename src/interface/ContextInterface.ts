@@ -103,7 +103,7 @@ export async function getContext(
 	}
 	//load terms
 	for (let vocab in vocabularies) {
-		await getScheme(vocab, contextEndpoint, vocabularies[vocab].readOnly);
+		await getScheme(vocab, contextEndpoint, vocabularies[vocab].readOnly, vocabularies[vocab].graph);
 		await fetchConcepts(contextEndpoint, vocab, vocabularies[vocab].terms, vocabularies[vocab].readOnly, Schemes[vocab].graph);
 		//put into packages
 		Object.assign(VocabularyElements, vocabularies[vocab].terms);

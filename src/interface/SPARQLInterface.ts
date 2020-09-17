@@ -18,7 +18,7 @@ export async function fetchConcepts(
     requiredType?: boolean,
     requiredTypes?: string[],
     requiredValues?: string[]) {
-    if (!(source in Schemes)) await getScheme(source, endpoint, readOnly, callback);
+    if (!(source in Schemes)) await getScheme(source, endpoint, readOnly);
 
     let result: {
         [key: string]: {
@@ -38,14 +38,15 @@ export async function fetchConcepts(
     let query = [
         "PREFIX skos: <http://www.w3.org/2004/02/skos/core#>",
         "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>",
+        "PREFIX a-popis-dat-pojem: <http://onto.fel.cvut.cz/ontologies/slovník/agendový/popis-dat/pojem/>",
         "SELECT DISTINCT ?term ?termLabel ?termType ?termDefinition ?termDomain ?termRange ?restriction ?restrictionPred ?onProperty ?target ?subClassOf",
         "WHERE {",
-        graph ? "GRAPH <" + graph + "> {" : "",
-        !subPropertyOf ? "?term skos:inScheme <" + source + ">." : "",
+        graph && "GRAPH <" + graph + "> {",
+        !subPropertyOf && "?term skos:inScheme <" + source + ">.",
         requiredType ? "?term a ?termType." : "OPTIONAL {?term a ?termType.}",
-        subPropertyOf ? "?term rdfs:subPropertyOf <" + subPropertyOf + ">." : "",
-        requiredTypes ? "VALUES ?termType {<" + requiredTypes.join("> <") + ">}" : "",
-        requiredValues ? "VALUES ?term {<" + requiredValues.join("> <") + ">}" : "",
+        subPropertyOf && "?term rdfs:subPropertyOf <" + subPropertyOf + ">.",
+        requiredTypes && "VALUES ?termType {<" + requiredTypes.join("> <") + ">}",
+        requiredValues && "VALUES ?term {<" + requiredValues.join("> <") + ">}",
         "OPTIONAL {?term skos:prefLabel ?termLabel.}",
         "OPTIONAL {?term skos:definition ?termDefinition.}",
         "OPTIONAL {?term rdfs:domain ?termDomain.}",
@@ -57,7 +58,7 @@ export async function fetchConcepts(
         "?restriction ?restrictionPred ?target.",
         "filter (?restrictionPred not in (owl:onProperty, rdf:type))}",
         "}",
-        graph ? "}" : "",
+        graph && "}",
     ].join(" ");
     let q = endpoint + "?query=" + encodeURIComponent(query);
     await fetch(q, {headers: {"Accept": "application/json"}}).then(
@@ -92,13 +93,13 @@ export async function fetchConcepts(
     });
 }
 
-export async function getScheme(iri: string, endpoint: string, readOnly: boolean, callback?: Function) {
+export async function getScheme(iri: string, endpoint: string, readOnly: boolean, graph?: string) {
     let query = [
         "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>",
         "PREFIX dct: <http://purl.org/dc/terms/>",
         "SELECT DISTINCT ?termLabel ?termTitle ?graph",
         "WHERE {",
-        "GRAPH ?graph {",
+        "GRAPH " + (graph ? ("<" + graph + ">") : ("?graph")) + " {",
         "OPTIONAL { <" + iri + "> dct:title ?termTitle . }",
         "OPTIONAL { <" + iri + "> rdfs:label ?termLabel . }",
         "}",
@@ -113,9 +114,10 @@ export async function getScheme(iri: string, endpoint: string, readOnly: boolean
             if (result.termLabel) Schemes[iri].labels[result.termLabel['xml:lang']] = result.termLabel.value;
             if (result.termTitle) Schemes[iri].labels[result.termTitle['xml:lang']] = result.termTitle.value;
             if (result.graph) Schemes[iri].graph = result.graph.value;
+            else if (graph) Schemes[iri].graph = graph;
         }
     }).catch(() => {
-        if (callback) callback(false);
+        return false;
     });
 }
 
