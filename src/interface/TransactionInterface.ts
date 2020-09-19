@@ -7,8 +7,6 @@ import {
 	Schemes,
 	VocabularyElements
 } from "../config/Variables";
-import {getRestrictionsAsJSON} from "../function/FunctionRestriction";
-import {Restrictions} from "../config/Restrictions";
 import {LinkConfig} from "../config/LinkConfig";
 
 export async function updateProjectElement(
@@ -21,7 +19,6 @@ export async function updateProjectElement(
 	let iri = ProjectElements[id].iri;
 	let scheme = VocabularyElements[iri].inScheme;
 	let delTypes = VocabularyElements[iri].types;
-	let addRestrictions: { [key: string]: any } = {};
 	let addDefinitions: { "@value": string, "@language": string }[] = [];
 	let addLabels: { "@value": string, "@language": string }[] = [];
 
@@ -31,10 +28,6 @@ export async function updateProjectElement(
 
 	Object.keys(newDefinitions).forEach((lang) => {
 		if (newDefinitions[lang] !== "") addDefinitions.push({"@value": newDefinitions[lang], "@language": lang});
-	})
-
-	Object.keys(Restrictions).forEach((restriction) => {
-		addRestrictions[restriction] = {"@type": "@id"};
 	})
 
 	let addLD = {
@@ -47,7 +40,6 @@ export async function updateProjectElement(
 			"og:iri": {"@type": "@id"},
 			"og:context": {"@type": "@id"},
 			"http://www.w3.org/2002/07/owl#onProperty": {"@type": "@id"},
-			...addRestrictions
 		},
 		"@id": Schemes[scheme].graph,
 		"@graph": [
@@ -57,7 +49,6 @@ export async function updateProjectElement(
 				"skos:prefLabel": addLabels,
 				"skos:definition": addDefinitions,
 				"skos:inScheme": scheme,
-				"rdfs:subClassOf": getRestrictionsAsJSON(iri)
 			},
 			{
 				"@id": iri + "/diagram",
@@ -114,26 +105,8 @@ export async function updateProjectElement(
 		]
 	}
 
-	// let delRestrictions = await processGetTransaction(contextEndpoint, {
-	// 	subject: iri,
-	// 	predicate: encodeURIComponent(parsePrefix("rdfs", "subClassOf"))
-	// }).catch(() => false);
-	// if (typeof delRestrictions === "string") {
-	// 	await processTransaction(contextEndpoint, {"delete": JSON.parse(delRestrictions)}).catch(() => false);
-	// } else return false;
-
 	let addStrings: string[] = [JSON.stringify(addLD)];
 	let delStrings: string[] = [JSON.stringify(deleteLD)];
-
-	let delDiagramString = await processGetTransaction(contextEndpoint, {subject: iri + "/diagram"}).catch(() => false);
-	if (typeof delDiagramString === "string") delStrings.push(delDiagramString); else return false;
-	for (const restr of VocabularyElements[iri].restrictions) {
-		let i = VocabularyElements[iri].restrictions.indexOf(restr);
-		let delString = await processGetTransaction(contextEndpoint, {subject: iri + "/restriction-" + (i + 1)}).catch(() => false);
-		if (typeof delString === "string") {
-			delStrings.push(delString);
-		} else return false;
-	}
 
 	for (const diag of ProjectElements[id].diagrams) {
 		let delString = await processGetTransaction(contextEndpoint, {subject: iri + "/diagram-" + (diag + 1)}).catch(() => false);
