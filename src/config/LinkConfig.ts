@@ -20,7 +20,12 @@ export var LinkConfig: {
 		add: (id: string) => {
 			let iri = ProjectElements[ProjectLinks[id].source].iri;
 			let scheme = VocabularyElements[iri].inScheme;
-			let connections: { [key: string]: string } = {};
+			let connections: {
+				"@type": "owl:Restriction",
+				"owl:onProperty": string,
+				"owl:someValuesFrom"?: string
+				"owl:allValuesFrom"?: string
+			}[] = [];
 			let connectionContext: { [key: string]: any } = {};
 			let linkContext: { [key: string]: any } = {};
 
@@ -30,8 +35,18 @@ export var LinkConfig: {
 
 			ProjectElements[ProjectLinks[id].source].connections.forEach((linkID) => {
 				if (linkID in ProjectLinks && ProjectElements[ProjectLinks[linkID].target]) {
-					connections[ProjectLinks[linkID].iri] = ProjectElements[ProjectLinks[linkID].target].iri
-					connectionContext[ProjectLinks[linkID].iri] = {"@type": "@id"}
+					connections.push({
+						"@type": "owl:Restriction",
+						"owl:onProperty": ProjectLinks[linkID].iri,
+						"owl:someValuesFrom": ProjectElements[ProjectLinks[linkID].target].iri
+					});
+					connections.push({
+						"@type": "owl:Restriction",
+						"owl:onProperty": ProjectLinks[linkID].iri,
+						"owl:allValuesFrom": ProjectElements[ProjectLinks[linkID].target].iri
+					});
+					connectionContext[ProjectLinks[linkID].iri] = {"@type": "@id"};
+					connectionContext[ProjectElements[ProjectLinks[linkID].target].iri] = {"@type": "@id"};
 				}
 			})
 
@@ -41,7 +56,7 @@ export var LinkConfig: {
 				"@graph": [
 					{
 						"@id": iri,
-						...connections
+						"rdfs:subClassOf": connections
 					}
 				]
 			};
@@ -51,23 +66,29 @@ export var LinkConfig: {
 			let scheme = VocabularyElements[iri].inScheme;
 			let connectionContext: { [key: string]: any } = {};
 			let linkContext: { [key: string]: any } = {};
-			let connections: { [key: string]: string } = {};
-			let delConnections: { [key: string]: string } = {};
+			let delConnections: {
+				"@type": "owl:Restriction",
+				"owl:onProperty": string,
+				"owl:someValuesFrom"?: string
+				"owl:allValuesFrom"?: string
+			}[] = [];
 
 			Object.keys(Links).forEach(link => {
 				if (Links[link].type === "default") linkContext[link] = {"@type": "@id"};
 			})
 
-			ProjectElements[ProjectLinks[id].source].connections.forEach((linkID) => {
-				if (linkID in ProjectLinks && ProjectElements[ProjectLinks[linkID].target]) {
-					connections[ProjectLinks[linkID].iri] = ProjectElements[ProjectLinks[linkID].target].iri
-					connectionContext[ProjectLinks[linkID].iri] = {"@type": "@id"}
-				}
-			})
-
 			del.forEach((linkID) => {
 				if (linkID in ProjectLinks && ProjectElements[ProjectLinks[linkID].target]) {
-					delConnections[ProjectLinks[linkID].iri] = ProjectElements[ProjectLinks[linkID].target].iri
+					delConnections.push({
+						"@type": "owl:Restriction",
+						"owl:onProperty": ProjectLinks[linkID].iri,
+						"owl:someValuesFrom": ProjectElements[ProjectLinks[linkID].target].iri
+					});
+					delConnections.push({
+						"@type": "owl:Restriction",
+						"owl:onProperty": ProjectLinks[linkID].iri,
+						"owl:allValuesFrom": ProjectElements[ProjectLinks[linkID].target].iri
+					});
 					connectionContext[ProjectLinks[linkID].iri] = {"@type": "@id"}
 				}
 			})
@@ -78,7 +99,7 @@ export var LinkConfig: {
 				"@graph": [
 					{
 						"@id": iri,
-						...delConnections
+						"rdfs:subClassOf": delConnections
 					}
 				]
 			};
