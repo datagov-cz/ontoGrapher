@@ -67,6 +67,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
     }
 
     createNewConcept(name: string, language: string, pkg: PackageNode) {
+        this.props.handleChangeLoadingStatus(true, LocaleMain.updating, false);
         let cls = new graphElement();
         cls.attr({label: {text: name}});
         if (typeof cls.id === "string") {
@@ -94,6 +95,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
         if (bbox) cls.resize(bbox.width, bbox.height);
         ProjectElements[cls.id].hidden[ProjectSettings.selectedDiagram] = false;
         this.props.updateElementPanel(cls.position());
+        this.props.handleChangeLoadingStatus(false, "", false);
     }
 
     createNewLink(id: string) {
@@ -168,7 +170,6 @@ export default class DiagramCanvas extends React.Component<Props, State> {
         graph.getElements().forEach(element => {
             this.paper?.findViewByModel(element).unhighlight();
         });
-        this.paper?.update()
     }
 
     resizeElem(id: string) {
@@ -309,6 +310,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
             'element:pointerup': (cellView) => {
                 ProjectElements[cellView.model.id].position[ProjectSettings.selectedDiagram] = cellView.model.position();
                 let iri = ProjectElements[cellView.model.id].iri;
+                this.props.handleChangeLoadingStatus(true, LocaleMain.updating, false);
                 updateProjectElement(
                     ProjectSettings.contextEndpoint,
                     DiagramCanvas.name,
@@ -316,6 +318,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                     VocabularyElements[iri].labels,
                     VocabularyElements[iri].definitions,
                     cellView.model.id);
+                this.props.handleChangeLoadingStatus(false, "", false);
             },
             'element:pointerclick': (cellView) => {
                 if (this.newLink) {
@@ -332,6 +335,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                         let id = evt.currentTarget.getAttribute("model-id");
                         for (let cell of graph.getElements()) {
                             if (cell.id === id) {
+                                this.props.handleChangeLoadingStatus(true, LocaleMain.updating, false);
                                 ProjectElements[id].position[ProjectSettings.selectedDiagram] = cell.position();
                                 cell.remove();
                                 ProjectElements[id].hidden[ProjectSettings.selectedDiagram] = true;
@@ -343,6 +347,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                                     VocabularyElements[iri].labels,
                                     VocabularyElements[iri].definitions,
                                     id);
+                                this.props.handleChangeLoadingStatus(false, "", false);
                                 break;
                             }
                         }
@@ -356,6 +361,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                         let id = evt.currentTarget.getAttribute("model-id");
                         for (let cell of graph.getElements()) {
                             if (cell.id === id) {
+                                this.props.handleChangeLoadingStatus(true, LocaleMain.updating, false);
                                 ProjectElements[id].diagrams.splice(ProjectElements[id].diagrams.indexOf(ProjectSettings.selectedDiagram), 1)
                                 ProjectElements[id].position[ProjectSettings.selectedDiagram] = cell.position();
                                 cell.remove();
@@ -368,6 +374,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                                     VocabularyElements[iri].labels,
                                     VocabularyElements[iri].definitions,
                                     id);
+                                this.props.handleChangeLoadingStatus(false, "", false);
                                 break;
                             }
                         }
@@ -477,6 +484,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                 }
                 onDrop={(event) => {
                     // create - get name - insert - (existing: restore)
+                    this.props.handleChangeLoadingStatus(true, LocaleMain.updating, false);
                     const data = JSON.parse(event.dataTransfer.getData("newClass"));
                     let cls = new graphElement({id: data.id});
                     nameGraphElement(cls, ProjectSettings.selectedLanguage);
@@ -501,6 +509,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                             cls.id);
                     }
                     setRepresentation(ProjectSettings.representation);
+                    this.props.handleChangeLoadingStatus(false, "", false);
                 }}
             />
             <NewLinkDiagram
