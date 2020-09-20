@@ -9,6 +9,7 @@ import {LinkConfig} from "../config/LinkConfig";
 import {addLink} from "./FunctionCreateVars";
 import {Cardinality} from "../datatypes/Cardinality";
 import {updateProjectLink} from "../interface/TransactionInterface";
+import {Representation} from "../config/Enum";
 
 
 let mvp1IRI = "https://slovník.gov.cz/základní/pojem/má-vztažený-prvek-1";
@@ -17,7 +18,10 @@ let mvp2IRI = "https://slovník.gov.cz/základní/pojem/má-vztažený-prvek-2";
 export function nameGraphElement(cell: joint.dia.Cell, languageCode: string) {
     if (typeof cell.id === "string") {
         let vocabElem = getVocabElementByElementID(cell.id);
-        cell.prop('attrs/label/text', getStereotypeList(vocabElem.types, languageCode).map((str) => "«" + str.toLowerCase() + "»\n").join("") + (vocabElem.labels[languageCode] === "" ? "<blank>" : vocabElem.labels[languageCode]));
+        cell.prop('attrs/label/text', (
+            ProjectSettings.representation === Representation.FULL &&
+            getStereotypeList(vocabElem.types, languageCode).map((str) => "«" + str.toLowerCase() + "»\n").join("")) +
+            (vocabElem.labels[languageCode] === "" ? "<blank>" : vocabElem.labels[languageCode]));
     }
 }
 
@@ -89,8 +93,8 @@ export function getUnderlyingFullConnections(link: joint.dia.Link): { src: strin
     }
 }
 
-export function setRepresentation(representation: string) {
-    if (representation === "compact") {
+export function setRepresentation(representation: number) {
+    if (representation === Representation.COMPACT) {
         for (let elem of graph.getElements()) {
             if (
                 VocabularyElements[ProjectElements[elem.id].iri].types.includes(parsePrefix("z-sgov-pojem", "typ-vztahu"))
@@ -148,9 +152,10 @@ export function setRepresentation(representation: string) {
                 del = true;
             }
         }
-        ProjectSettings.representation = "compact";
+        ProjectSettings.representation = Representation.COMPACT;
         return del;
-    } else if (representation === "full") {
+    } else if (representation === Representation.FULL) {
+        ProjectSettings.representation = Representation.FULL;
         for (let link of graph.getLinks()) {
             if ((ProjectLinks[link.id] && !(ProjectLinks[link.id].iri in Links))) {
                 link.remove();
@@ -162,7 +167,6 @@ export function setRepresentation(representation: string) {
                 restoreHiddenElem(elem.id, elem);
             }
         }
-        ProjectSettings.representation = "full";
         return false;
     }
 }

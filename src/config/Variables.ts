@@ -4,6 +4,7 @@ import {PackageNode} from "../datatypes/PackageNode";
 import {initLanguageObject, parsePrefix} from "../function/FunctionEditVars";
 import {RestrictionObject} from "../datatypes/RestrictionObject";
 import {ConnectionObject} from "../datatypes/ConnectionObject";
+import {Representation} from "./Enum";
 
 // language code : language label
 export var Languages: { [key: string]: string } = {};
@@ -138,7 +139,7 @@ export var ProjectSettings: {
     contextEndpoint: string,
     ontographerContext: string,
     initialized: boolean,
-    representation: string,
+    representation: number,
     lastUpdate: { func: Function, args: [] }
 } = {
     name: {},
@@ -151,7 +152,7 @@ export var ProjectSettings: {
     contextEndpoint: "",
     ontographerContext: "http://onto.fel.cvut.cz/ontologies/application/ontoGrapher",
     initialized: false,
-    representation: "full",
+    representation: Representation.FULL,
     lastUpdate: {
         func: function () {
         }, args: []

@@ -66,7 +66,7 @@ export default class PackageFolder extends React.Component<Props, State> {
                         this.props.node.open = !this.props.node.open;
                         this.props.update();
                     }}
-                    className={"packageFolder" + (this.state.open ? " open" : "") + (ProjectSettings.selectedPackage === this.props.node ? " defaultPackage" : "") + ((ProjectSettings.selectedPackage === this.props.node && this.props.flash) ? " flash" : "")}
+                    className={"packageFolder" + (this.state.open && " open") + (ProjectSettings.selectedPackage === this.props.node && " defaultPackage") + ((ProjectSettings.selectedPackage === this.props.node && this.props.flash) && " flash")}
                     style={{marginLeft: (this.props.depth - 1) * 20 + "px"}}>
                     {(this.props.readOnly ? "📑" : "✏") + getLabelOrBlank(this.props.node.labels, this.props.projectLanguage)}
                     {this.state.open ?

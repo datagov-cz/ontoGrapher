@@ -24,6 +24,7 @@ import NewLinkDiagram from "./NewLinkDiagram";
 import {getLinkOrVocabElem} from "../function/FunctionGetVars";
 import NewElemDiagram from "./NewElemDiagram";
 import {PackageNode} from "../datatypes/PackageNode";
+import {Representation} from "../config/Enum";
 
 interface Props {
     projectLanguage: string;
@@ -131,9 +132,9 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                     }
                 }
                 if (typeof link.id === "string" && typeof sid === "string" && typeof tid === "string") {
-                    if (ProjectSettings.representation === "full") {
+                    if (ProjectSettings.representation === Representation.FULL) {
                         this.updateConnections(sid, tid, link.id, type, iri);
-                    } else if (ProjectSettings.representation === "compact") {
+                    } else if (ProjectSettings.representation === Representation.COMPACT) {
                         let mvp1IRI = "https://slovník.gov.cz/základní/pojem/má-vztažený-prvek-1";
                         let mvp2IRI = "https://slovník.gov.cz/základní/pojem/má-vztažený-prvek-2";
                         let property = new graphElement();
@@ -393,7 +394,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                 let removeButton = new joint.linkTools.Remove({
                     action: ((evt, view) => {
                         this.props.handleChangeLoadingStatus(true, LocaleMain.updating, false);
-                        if (ProjectSettings.representation === "full") {
+                        if (ProjectSettings.representation === Representation.FULL) {
                             let id = view.model.id;
                             let sid = view.model.getSourceCell()?.id;
                             if (typeof sid === "string" && typeof id === "string") {

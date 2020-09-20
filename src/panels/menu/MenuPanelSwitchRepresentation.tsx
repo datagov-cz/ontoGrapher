@@ -4,6 +4,7 @@ import {setRepresentation} from "../../function/FunctionGraph";
 import {ProjectSettings} from "../../config/Variables";
 import * as LocaleMenu from "../../locale/LocaleMenu.json";
 import * as LocaleMain from "../../locale/LocaleMain.json";
+import {Representation} from "../../config/Enum";
 
 interface Props {
 	update: Function;
@@ -29,7 +30,7 @@ export default class MenuPanelSwitchRepresentation extends React.Component<Props
 	render() {
 		return (<OverlayTrigger show={this.state.alert} placement="right" overlay={tooltipNew}>
 			<div className={"inert"}><Nav.Link onClick={() => {
-				let result = setRepresentation(ProjectSettings.representation === "full" ? "compact" : "full");
+				let result = setRepresentation(ProjectSettings.representation === Representation.FULL ? Representation.COMPACT : Representation.FULL);
 				if (result) this.setState({alert: result});
 				setTimeout(() => {
 					this.setState({alert: false})
@@ -38,7 +39,7 @@ export default class MenuPanelSwitchRepresentation extends React.Component<Props
 				this.props.update();
 				this.forceUpdate();
 			}}>
-				{ProjectSettings.representation === "full" ? LocaleMenu.represantationCompact : LocaleMenu.represantationFull}
+				{ProjectSettings.representation === Representation.FULL ? LocaleMenu.represantationCompact : LocaleMenu.represantationFull}
 			</Nav.Link>
 			</div>
 		</OverlayTrigger>);

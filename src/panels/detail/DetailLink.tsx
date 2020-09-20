@@ -22,6 +22,7 @@ import {updateProjectLink} from "../../interface/TransactionInterface";
 import {getUnderlyingFullConnections, unHighlightAll} from "../../function/FunctionGraph";
 import {parsePrefix} from "../../function/FunctionEditVars";
 import {Cardinality} from "../../datatypes/Cardinality";
+import {Representation} from "../../config/Enum";
 
 interface Props {
     projectLanguage: string;
@@ -59,13 +60,13 @@ export default class DetailLink extends React.Component<Props, State> {
 
     prepareLinkOptions() {
         let result: JSX.Element[] = [];
-        if (ProjectSettings.representation === "full") {
+        if (ProjectSettings.representation === Representation.FULL) {
             for (let iri in Links) {
                 if (Links[iri].type === "default")
                     result.push(<option
                         value={iri}>{getLabelOrBlank(Links[iri].labels, this.props.projectLanguage)}</option>)
             }
-        } else if (ProjectSettings.representation === "compact") {
+        } else if (ProjectSettings.representation === Representation.COMPACT) {
             for (let iri in VocabularyElements) {
                 if ((VocabularyElements[iri].types.includes(parsePrefix("z-sgov-pojem", "typ-vztahu")
                 )))
@@ -99,7 +100,7 @@ export default class DetailLink extends React.Component<Props, State> {
     }
 
     save() {
-        if (ProjectSettings.representation === "full") {
+        if (ProjectSettings.representation === Representation.FULL) {
             this.props.handleChangeLoadingStatus(true, LocaleMain.updating, false);
             ProjectLinks[this.state.id].sourceCardinality = CardinalityPool[parseInt(this.state.sourceCardinality, 10)];
             ProjectLinks[this.state.id].targetCardinality = CardinalityPool[parseInt(this.state.targetCardinality, 10)];
@@ -271,7 +272,7 @@ export default class DetailLink extends React.Component<Props, State> {
                         <td>
                             <span>{LocaleMain.linkType}</span>
                         </td>
-                        {ProjectSettings.representation === "full" ? <td>
+                        {ProjectSettings.representation === Representation.FULL ? <td>
                                 <Form.Control as="select" value={this.state.iri} onChange={(event) => {
                                     this.setState({
                                         iri: event.currentTarget.value,

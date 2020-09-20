@@ -5,6 +5,7 @@ import {Links, ProjectElements, ProjectLinks, ProjectSettings, VocabularyElement
 import {getLabelOrBlank, getLinkOrVocabElem} from "../function/FunctionGetVars";
 import {graph} from "../graph/Graph";
 import {parsePrefix} from "../function/FunctionEditVars";
+import {Representation} from "../config/Enum";
 
 interface Props {
 	modal: boolean;
@@ -36,9 +37,9 @@ export default class NewLinkDiagram extends React.Component<Props, State> {
 		let elem = graph.getElements().find(elem => elem.id === this.props.sid);
 		if (elem && this.props.sid) {
 			let conns = ProjectElements[this.props.sid].connections;
-			if (ProjectSettings.representation === "full") {
+			if (ProjectSettings.representation === Representation.FULL) {
 				return Object.keys(Links).filter(link => !conns.find(conn => ProjectLinks[conn].iri === link && ProjectLinks[conn].target === this.props.tid));
-			} else if (ProjectSettings.representation === "compact") {
+			} else if (ProjectSettings.representation === Representation.COMPACT) {
 				return Object.keys(VocabularyElements).filter(link =>
 					!conns.find(
 						conn => ProjectLinks[conn].iri === link &&
