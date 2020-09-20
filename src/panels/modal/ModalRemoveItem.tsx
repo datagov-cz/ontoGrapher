@@ -3,7 +3,7 @@ import {Button, Modal} from "react-bootstrap";
 import * as LocaleMenu from "../../locale/LocaleMenu.json";
 import {deletePackageItem} from "../../function/FunctionEditVars";
 import {updateDeleteProjectElement} from "../../interface/TransactionInterface";
-import {ProjectElements, ProjectSettings} from "../../config/Variables";
+import {ProjectElements, ProjectSettings, Schemes, VocabularyElements} from "../../config/Variables";
 import * as LocaleMain from "../../locale/LocaleMain.json";
 
 interface Props {
@@ -21,7 +21,8 @@ interface State {
 export default class ModalRemoveItem extends React.Component<Props, State> {
 
     save() {
-        updateDeleteProjectElement(ProjectSettings.contextEndpoint, ProjectElements[this.props.id].iri).then(result => {
+        updateDeleteProjectElement(ProjectSettings.contextEndpoint, ProjectElements[this.props.id].iri,
+            Schemes[VocabularyElements[ProjectElements[this.props.id].iri].inScheme].graph).then(result => {
             this.props.handleChangeLoadingStatus(true, LocaleMain.updating, false);
             if (result) {
                 deletePackageItem(this.props.id);

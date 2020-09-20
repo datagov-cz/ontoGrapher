@@ -149,6 +149,5 @@ export function deletePackageItem(id: string) {
         graph.removeCells([graph.getCell(id)]);
     }
     ProjectElements[id].active = false;
-
 }
 

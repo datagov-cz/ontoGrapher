@@ -8,6 +8,7 @@ import {
 	VocabularyElements
 } from "../config/Variables";
 import {LinkConfig} from "../config/LinkConfig";
+import {parsePrefix} from "../function/FunctionEditVars";
 
 export async function updateProjectElement(
 	contextEndpoint: string,
@@ -109,7 +110,7 @@ export async function updateProjectElement(
 	let delStrings: string[] = [JSON.stringify(deleteLD)];
 
 	for (const diag of ProjectElements[id].diagrams) {
-		let delString = await processGetTransaction(contextEndpoint, {subject: iri + "/diagram-" + (diag + 1)}).catch(() => false);
+		let delString = await processGetTransaction(contextEndpoint, {subject: iri + "/diagram-" + (diag + 1), context: Schemes[scheme].graph}).catch(() => false);
 		if (typeof delString === "string") {
 			delStrings.push(delString);
 		} else return false;
@@ -191,10 +192,10 @@ export async function updateProjectLink(contextEndpoint: string, id: string) {
 	return await processTransaction(contextEndpoint, {"add": addStrings, delete: delStrings}).catch(() => false);
 }
 
-export async function updateDeleteProjectElement(contextEndpoint: string, iri: string) {
-	let subjectLD = await processGetTransaction(contextEndpoint, {subject: iri}).catch(() => false);
-	let predicateLD = await processGetTransaction(contextEndpoint, {predicate: iri}).catch(() => false);
-	let objectLD = await processGetTransaction(contextEndpoint, {object: iri}).catch(() => false);
+export async function updateDeleteProjectElement(contextEndpoint: string, iri: string, context: string) {
+	let subjectLD = await processGetTransaction(contextEndpoint, {subject: iri, context: context}).catch(() => false);
+	let predicateLD = await processGetTransaction(contextEndpoint, {predicate: iri, context: context}).catch(() => false);
+	let objectLD = await processGetTransaction(contextEndpoint, {object: iri, context: context}).catch(() => false);
 	if (typeof subjectLD === "string" && typeof predicateLD === "string" && typeof objectLD === "string") {
 		return await processTransaction(contextEndpoint, {add: [], "delete": [subjectLD]}) &&
 			await processTransaction(contextEndpoint, {add: [], "delete": [predicateLD]}) &&
@@ -206,7 +207,10 @@ export async function updateDeleteProjectElement(contextEndpoint: string, iri: s
 export async function updateConnections(contextEndpoint: string, id: string, del: string[]) {
 
 	let addLD = LinkConfig[ProjectLinks[id].type].add(id);
-	let deleteLD = LinkConfig[ProjectLinks[id].type].delete(id, del);
+	let deleteLD = await processGetTransaction(contextEndpoint, {subject:
+		ProjectElements[ProjectLinks[id].source].iri,
+		predicate: parsePrefix("rdfs","subClassOf")
+	}).catch(() => false);
 
 	return await processTransaction(contextEndpoint, {
 		"add": [JSON.stringify(addLD)],
@@ -230,14 +234,15 @@ export function getTransactionID(contextEndpoint: string) {
 	})
 }
 
-export async function processGetTransaction(contextEndpoint: string, request: { subject?: string, predicate?: string, object?: string }) {
+export async function processGetTransaction(contextEndpoint: string, request: { subject?: string, predicate?: string, object?: string, context?: string}) {
 	const transactionID = await getTransactionID(contextEndpoint);
 
 	if (transactionID) {
 		let transactionUrl = transactionID + "?action=GET" +
-			(request.subject ? "&subj=<" + (request.subject) + ">" : "") +
-			(request.predicate ? "&pred=<" + (request.predicate) + ">" : "") +
-			(request.object ? "&obj=<" + (request.object) + ">" : "");
+			(request.subject && "&subj=<" + (request.subject) + ">") +
+			(request.predicate && "&pred=<" + (request.predicate) + ">") +
+			(request.object && "&obj=<" + (request.object) + ">") +
+			(request.context && "&context=<" + (request.context) + ">")
 		return await fetch(transactionUrl, {
 			headers: {'Accept': "application/ld+json"},
 			method: "PUT"
