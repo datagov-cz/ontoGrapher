@@ -21,7 +21,6 @@ export var LinkConfig: {
 			let iri = ProjectElements[ProjectLinks[id].source].iri;
 			let scheme = VocabularyElements[iri].inScheme;
 			let connections: {
-				//"@id": string,
 				"@type": "owl:Restriction",
 				"owl:onProperty": string,
 				"owl:someValuesFrom"?: string
@@ -41,13 +40,11 @@ export var LinkConfig: {
 					ProjectLinks[linkID].type === "default"
 				) {
 					connections.push({
-						//"@id": iri + "/restriction-"+linkID+"0",
 						"@type": "owl:Restriction",
 						"owl:onProperty": ProjectLinks[linkID].iri,
 						"owl:someValuesFrom": ProjectElements[ProjectLinks[linkID].target].iri
 					});
 					connections.push({
-						//"@id": iri + "/restriction-"+linkID+"1",
 						"@type": "owl:Restriction",
 						"owl:onProperty": ProjectLinks[linkID].iri,
 						"owl:allValuesFrom": ProjectElements[ProjectLinks[linkID].target].iri
@@ -81,7 +78,6 @@ export var LinkConfig: {
 			let connectionContext: { [key: string]: any } = {};
 			let linkContext: { [key: string]: any } = {};
 			let delConnections: {
-				//"@id": string,
 				"@type": "owl:Restriction",
 				"owl:onProperty": string,
 				"owl:someValuesFrom"?: string
@@ -95,13 +91,11 @@ export var LinkConfig: {
 			del.forEach((linkID) => {
 				if (linkID in ProjectLinks && ProjectElements[ProjectLinks[linkID].target]) {
 					delConnections.push({
-						//"@id": iri + "/restriction-"+linkID+"0",
 						"@type": "owl:Restriction",
 						"owl:onProperty": ProjectLinks[linkID].iri,
 						"owl:someValuesFrom": ProjectElements[ProjectLinks[linkID].target].iri
 					});
 					delConnections.push({
-						//"@id": iri + "/restriction-"+linkID+"1",
 						"@type": "owl:Restriction",
 						"owl:onProperty": ProjectLinks[linkID].iri,
 						"owl:allValuesFrom": ProjectElements[ProjectLinks[linkID].target].iri

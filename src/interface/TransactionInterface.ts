@@ -207,10 +207,7 @@ export async function updateDeleteProjectElement(contextEndpoint: string, iri: s
 export async function updateConnections(contextEndpoint: string, id: string, del: string[]) {
 
 	let addLD = LinkConfig[ProjectLinks[id].type].add(id);
-	let deleteLD = await processGetTransaction(contextEndpoint, {subject:
-		ProjectElements[ProjectLinks[id].source].iri,
-		predicate: parsePrefix("rdfs","subClassOf")
-	}).catch(() => false);
+	let deleteLD = LinkConfig[ProjectLinks[id].type].delete(id, del);
 
 	return await processTransaction(contextEndpoint, {
 		"add": [JSON.stringify(addLD)],
@@ -238,11 +235,12 @@ export async function processGetTransaction(contextEndpoint: string, request: { 
 	const transactionID = await getTransactionID(contextEndpoint);
 
 	if (transactionID) {
+		if (request.predicate?.includes("subClassOf")) debugger;
 		let transactionUrl = transactionID + "?action=GET" +
-			(request.subject && "&subj=<" + (request.subject) + ">") +
-			(request.predicate && "&pred=<" + (request.predicate) + ">") +
-			(request.object && "&obj=<" + (request.object) + ">") +
-			(request.context && "&context=<" + (request.context) + ">")
+			((request.subject !== undefined) ? ("&subj=<" + encodeURIComponent(request.subject) + ">") : "") +
+			((request.predicate !== undefined) ? ("&pred=<" + encodeURIComponent(request.predicate) + ">") : "") +
+			((request.object !== undefined) ? ("&obj=<" + encodeURIComponent(request.object) + ">") : "") +
+			((request.context !== undefined) ? ("&context=<" + encodeURIComponent(request.context) + ">") : "")
 		return await fetch(transactionUrl, {
 			headers: {'Accept': "application/ld+json"},
 			method: "PUT"
@@ -344,14 +342,18 @@ export async function updateProjectSettings(contextIRI: string, contextEndpoint:
 	let addStrings = [JSON.stringify(contextLD), JSON.stringify(ogContextLD)];
 	let delStrings: string[] = [];
 
-	let delString = await processGetTransaction(ProjectSettings.contextEndpoint, {subject: ProjectSettings.ontographerContext}).catch(() => false);
+	let delString = await processGetTransaction(ProjectSettings.contextEndpoint, {
+		subject: ProjectSettings.ontographerContext,
+		context: ProjectSettings.ontographerContext}).catch(() => false);
 	if (typeof delString === "string") {
 		delStrings.push(delString);
 	}
 
 	for (const diag of Diagrams) {
 		let i = Diagrams.indexOf(diag);
-		let delString = await processGetTransaction(contextEndpoint, {subject: ProjectSettings.ontographerContext + "/diagram-" + (i + 1)}).catch(() => false);
+		let delString = await processGetTransaction(contextEndpoint, {
+			subject: ProjectSettings.ontographerContext + "/diagram-" + (i + 1),
+			context: ProjectSettings.ontographerContext}).catch(() => false);
 		if (typeof delString === "string") {
 			delStrings.push(delString);
 		}

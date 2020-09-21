@@ -26,18 +26,6 @@ export function getNewLink(type?: string, id?: string): joint.dia.Link {
     if (type && type in LinkConfig) {
         link = LinkConfig[type].newLink(id);
     }
-    link.on('change:vertices', () => {
-        if (ProjectLinks[link.id].iri in Links) {
-            link.vertices().forEach((vert, i) => {
-                let verti = vert;
-                let proji = ProjectLinks[link.id].vertices[i];
-                if ((!(proji) || (Math.abs(verti.x - proji.x) > 10 || Math.abs(verti.y - proji.y) > 10)) && typeof link.id === "string") {
-                    ProjectLinks[link.id].vertices = link.vertices();
-                    updateProjectLink(ProjectSettings.contextEndpoint, link.id);
-                }
-            })
-        }
-    })
     return link;
 }
 

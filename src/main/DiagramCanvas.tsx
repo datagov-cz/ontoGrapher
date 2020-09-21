@@ -395,7 +395,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                 }));
             },
             'link:mouseenter': (linkView) => {
-                let verticesTool = new joint.linkTools.Vertices();
+                let verticesTool = new joint.linkTools.Vertices({stopPropagation: false});
                 let segmentsTool = new joint.linkTools.Segments();
                 let removeButton = new joint.linkTools.Remove({
                     action: ((evt, view) => {
@@ -463,6 +463,14 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                     this.setState({modalAddElem: true});
                     this.newConceptEvent = {x: evt.clientX, y: evt.clientY}
                 } else this.newLink = false;
+            },
+            'link:pointerup': (cellView, evt)=> {
+                let id = cellView.model.id;
+                let link = cellView.model;
+                if (ProjectLinks[id].iri in Links) {
+                    ProjectLinks[link.id].vertices = link.vertices();
+                    updateProjectLink(ProjectSettings.contextEndpoint, link.id);
+                }
             }
         });
     }
