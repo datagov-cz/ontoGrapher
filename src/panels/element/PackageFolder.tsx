@@ -1,7 +1,5 @@
 import React from 'react';
 import {PackageNode} from "../../datatypes/PackageNode";
-// import {OverlayTrigger, Tooltip} from "react-bootstrap";
-// import * as LocaleMain from "../../locale/LocaleMain.json";
 import {ProjectElements, ProjectSettings, VocabularyElements} from "../../config/Variables";
 import {getLabelOrBlank} from "../../function/FunctionGetVars";
 
@@ -20,10 +18,6 @@ interface State {
     open: boolean;
     hover: boolean;
 }
-
-// const tooltipNew = (
-//     <Tooltip id="tooltipC">{LocaleMain.createdConcept}</Tooltip>
-// );
 
 export default class PackageFolder extends React.Component<Props, State> {
     constructor(props: Props) {
@@ -46,34 +40,32 @@ export default class PackageFolder extends React.Component<Props, State> {
 
     render() {
         return (
-            //<OverlayTrigger show={this.props.flash} placement="right" overlay={tooltipNew}>
-                <div
-                    onMouseOver={() => {
-                        this.setState({hover: true})
-                    }}
-                    onMouseOut={() => {
-                        this.setState({hover: false})
-                    }}
-                    onDragOver={(event) => {
-                        event.preventDefault();
-                    }}
-                    onDrop={(event) => {
-                        event.stopPropagation();
-                        if (!this.props.readOnly) this.movePackageItem(JSON.parse(event.dataTransfer.getData("newClass")));
-                    }}
-                    onClick={() => {
-                        this.setState({open: !this.state.open});
-                        this.props.node.open = !this.props.node.open;
-                        this.props.update();
-                    }}
-                    className={"packageFolder" + (this.state.open && " open") + (ProjectSettings.selectedPackage === this.props.node && " defaultPackage") + ((ProjectSettings.selectedPackage === this.props.node && this.props.flash) && " flash")}
-                    style={{marginLeft: (this.props.depth - 1) * 20 + "px"}}>
-                    {(this.props.readOnly ? "📑" : "✏") + getLabelOrBlank(this.props.node.labels, this.props.projectLanguage)}
-                    {this.state.open ?
-                        this.props.children
-                        : <span/>}
-                </div>
-            //</OverlayTrigger>
+            <div
+                onMouseOver={() => {
+                    this.setState({hover: true})
+                }}
+                onMouseOut={() => {
+                    this.setState({hover: false})
+                }}
+                onDragOver={(event) => {
+                    event.preventDefault();
+                }}
+                onDrop={(event) => {
+                    event.stopPropagation();
+                    if (!this.props.readOnly) this.movePackageItem(JSON.parse(event.dataTransfer.getData("newClass")));
+                }}
+                onClick={() => {
+                    this.setState({open: !this.state.open});
+                    this.props.node.open = !this.props.node.open;
+                    this.props.update();
+                }}
+                className={"packageFolder" + (this.state.open ? " open" : "")}
+                style={{marginLeft: (this.props.depth - 1) * 20 + "px"}}>
+                {(this.props.readOnly ? "📑" : "✏") + getLabelOrBlank(this.props.node.labels, this.props.projectLanguage)}
+                {this.state.open ?
+                    this.props.children
+                    : <span/>}
+            </div>
         );
     }
 }

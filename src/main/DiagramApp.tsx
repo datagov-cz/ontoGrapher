@@ -10,7 +10,7 @@ import {addRelationships, initLanguageObject, initVars} from "../function/Functi
 import {getContext} from "../interface/ContextInterface";
 import {graph} from "../graph/Graph";
 import {loadProject, newProject} from "../function/FunctionProject";
-import {nameGraphElement, nameGraphLink, unHighlightAll} from "../function/FunctionGraph";
+import {nameGraphElement, nameGraphLink, setRepresentation, unHighlightAll} from "../function/FunctionGraph";
 import {PackageNode} from "../datatypes/PackageNode";
 import {createNewScheme, setupDiagrams} from "../function/FunctionCreateVars";
 import {getElementsConfig, getLinksConfig, getSettings} from "../interface/SPARQLInterface";
@@ -18,6 +18,9 @@ import {initConnections, initRestrictions} from "../function/FunctionRestriction
 import {updateProjectSettings} from "../interface/TransactionInterface";
 import ValidationPanel from "../panels/ValidationPanel";
 import DiagramPanel from "../panels/DiagramPanel";
+import { graphElementAttributes } from '../graph/GraphElementAttributes';
+import NewLinkDiagram from "./NewLinkDiagram";
+import {Representation} from "../config/Enum";
 
 interface DiagramAppProps {
 	readOnly?: boolean;
@@ -158,7 +161,8 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 					await getLinksConfig(ProjectSettings.contextIRI, ProjectSettings.contextEndpoint);
 					await getSettings(ProjectSettings.contextIRI, ProjectSettings.contextEndpoint);
 					this.handleChangeLoadingStatus(true, ProjectSettings.initialized ?
-						"Updating ontoGrapher data..." : "Initializing ontoGrapher data (this will only be done once)...", false);
+						"Updating ontoGrapher data..." :
+						"Initializing ontoGrapher data (this will only be done once)...", false);
 					initRestrictions();
 					addRelationships();
 					initConnections();
@@ -167,6 +171,7 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 					this.forceUpdate();
 					this.elementPanel.current?.forceUpdate();
 					this.handleChangeLoadingStatus(false, "✔ Workspace ready.", false);
+					setRepresentation(Representation.COMPACT);
 				}
             })
         });

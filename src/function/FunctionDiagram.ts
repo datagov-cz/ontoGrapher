@@ -65,8 +65,8 @@ export function loadDiagram(load: {
 }) {
     graph.clear();
     for (let elem of load.elements) {
-        // @ts-ignore
-        let cls = graphElement.create(elem.id).prop({
+        let cls = new graphElement({id: elem.id});
+        cls.prop({
             position: elem.pos,
             attrs: {
                 label: {
