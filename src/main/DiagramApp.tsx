@@ -149,7 +149,6 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 				}
             ).then(async () => {
                 if (!this.state.error) {
-					this.selectDefaultPackage();
 					document.title = ProjectSettings.name[this.state.projectLanguage] + " | " + Locale.ontoGrapher;
 					ProjectSettings.contextEndpoint = contextEndpoint;
 					ProjectSettings.contextIRI = contextIRI
@@ -170,16 +169,6 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 				}
             })
         });
-	}
-
-	selectDefaultPackage() {
-		for (let pkg of PackageRoot.children) {
-			if (pkg.scheme && !Schemes[pkg.scheme].readOnly) {
-				ProjectSettings.selectedPackage = pkg;
-				return;
-			}
-		}
-		ProjectSettings.selectedPackage = new PackageNode(initLanguageObject(Locale.untitledPackage), PackageRoot, false, createNewScheme());
 	}
 
 	validate() {

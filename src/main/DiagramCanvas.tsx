@@ -1,7 +1,14 @@
 import React from 'react';
 import * as joint from 'jointjs';
 import {graphElement} from "../graph/GraphElement";
-import {Links, ProjectElements, ProjectLinks, ProjectSettings, VocabularyElements} from "../config/Variables";
+import {
+    Links,
+    PackageRoot,
+    ProjectElements,
+    ProjectLinks,
+    ProjectSettings, Schemes,
+    VocabularyElements
+} from "../config/Variables";
 import {addClass, addLink, addVocabularyElement, createIDIRI} from "../function/FunctionCreateVars";
 import {graph} from "../graph/Graph";
 import {
@@ -459,7 +466,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                 this.drag = undefined;
             },
             'blank:pointerclick': (evt) => {
-                if (!this.newLink) {
+                if (!this.newLink && PackageRoot.children.find(pkg => pkg.scheme && !(Schemes[pkg.scheme].readOnly))) {
                     this.setState({modalAddElem: true});
                     this.newConceptEvent = {x: evt.clientX, y: evt.clientY}
                 } else this.newLink = false;
@@ -516,7 +523,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                             VocabularyElements[ProjectElements[cls.id].iri].definitions,
                             cls.id);
                     }
-                    setRepresentation(ProjectSettings.representation);
+                    if (ProjectSettings.representation === "compact") setRepresentation(ProjectSettings.representation);
                     this.props.handleChangeLoadingStatus(false, "", false);
                 }}
             />
