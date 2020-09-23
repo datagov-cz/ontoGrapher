@@ -1,12 +1,11 @@
 import * as joint from 'jointjs';
-import {Links, Prefixes, ProjectElements, ProjectLinks, Schemes, VocabularyElements} from "./Variables";
+import {ProjectElements, ProjectLinks, Schemes, VocabularyElements} from "./Variables";
 import {initLanguageObject} from "../function/FunctionEditVars"
 import {generalizationLink} from "../graph/uml/GeneralizationLink";
 
 export var LinkConfig: {
 	[key: string]: {
-		add: (id: string) => {},
-		delete: (id: string, del: string[]) => {}
+		update: (id: string) => string[],
 		newLink: (id?: string) => joint.dia.Link,
 		labels: { [key: string]: string }
 	}
@@ -17,110 +16,67 @@ export var LinkConfig: {
 			if (id) return new joint.shapes.standard.Link({id: id});
 			else return new joint.shapes.standard.Link();
 		},
-		add: (id: string) => {
+		update: (id: string) => {
 			let iri = ProjectElements[ProjectLinks[id].source].iri;
-			let scheme = VocabularyElements[iri].inScheme;
-			let connections: {
-				"@type": "owl:Restriction",
-				"owl:onProperty": string,
-				"owl:someValuesFrom"?: string
-				"owl:allValuesFrom"?: string
-			}[] = [];
-			let connectionContext: { [key: string]: any } = {};
-			let linkContext: { [key: string]: any } = {};
+			let contextIRI = Schemes[VocabularyElements[iri].inScheme].graph
 
-			Object.keys(Links).forEach(link => {
-				if (Links[link].type === "default") linkContext[link] = {"@type": "@id"};
-			})
+			let conns = ProjectElements[ProjectLinks[id].source].connections.filter(linkID =>
+				linkID in ProjectLinks &&
+				ProjectElements[ProjectLinks[linkID].target] &&
+				ProjectLinks[linkID].active &&
+				ProjectLinks[linkID].type === "default").map((linkID) => ("<" + iri + "> rdfs:subClassOf [rdf:type owl:Restriction; " +
+				"owl:onProperty <" + ProjectLinks[linkID].iri + ">;" +
+				"owl:someValuesFrom <" + ProjectElements[ProjectLinks[linkID].target].iri + ">]." +
+				"<" + iri + "> rdfs:subClassOf [rdf:type owl:Restriction; " +
+				"owl:onProperty <" + ProjectLinks[linkID].iri + ">;" +
+				"owl:allValuesFrom <" + ProjectElements[ProjectLinks[linkID].target].iri + ">].")
+			)
 
-			ProjectElements[ProjectLinks[id].source].connections.forEach((linkID) => {
-				if (linkID in ProjectLinks &&
-					ProjectElements[ProjectLinks[linkID].target] &&
-					ProjectLinks[linkID].active &&
-					ProjectLinks[linkID].type === "default"
-				) {
-					connections.push({
-						"@type": "owl:Restriction",
-						"owl:onProperty": ProjectLinks[linkID].iri,
-						"owl:someValuesFrom": ProjectElements[ProjectLinks[linkID].target].iri
-					});
-					connections.push({
-						"@type": "owl:Restriction",
-						"owl:onProperty": ProjectLinks[linkID].iri,
-						"owl:allValuesFrom": ProjectElements[ProjectLinks[linkID].target].iri
-					});
-					connectionContext[ProjectLinks[linkID].iri] = {"@type": "@id"};
-					connectionContext[ProjectElements[ProjectLinks[linkID].target].iri] = {"@type": "@id"};
+			// let connections = VocabularyElements[iri].connections.map(conn => {
+			// 	if (!(conn.target in VocabularyElements) && !(conn.initialize)){
+			// 		return ("<" + iri + "> rdfs:subClassOf [rdf:type owl:Restriction; " +
+			// 			"owl:onProperty <"+ conn.onProperty +">;" +
+			// 			"owl:someValuesFrom <"+ conn.target +">]." +
+			// 			"<" + iri + "> rdfs:subClassOf [rdf:type owl:Restriction; " +
+			// 			"owl:onProperty <"+ conn.onProperty +">;" +
+			// 			"owl:allValuesFrom <"+ conn.target +">].");
+			// 	}
+			// });
+
+			let restrictions = VocabularyElements[iri].restrictions.map(rest => {
+				if (!(rest.target in VocabularyElements)) {
+					return ("<" + iri + "> rdfs:subClassOf [rdf:type owl:Restriction; " +
+						"owl:onProperty <" + rest.onProperty + ">;" +
+						"<" + rest.restriction + "> <" + rest.target + ">].");
 				}
 			})
 
-			return {
-				"@context": {
-					...Prefixes,
-					...connectionContext,
-					...linkContext,
-					"owl:allValuesFrom": {"@type": "@id"},
-					"owl:someValuesFrom": {"@type": "@id"},
-					"owl:onProperty": {"@type": "@id"},
-				},
-				"@id": Schemes[scheme].graph,
-				"@graph": [
-					{
-						"@id": iri,
-						"rdfs:subClassOf": connections
-					}
-				]
-			};
-		},
-		delete: (id, del) => {
-			let iri = ProjectElements[ProjectLinks[id].source].iri;
-			let scheme = VocabularyElements[iri].inScheme;
-			let connectionContext: { [key: string]: any } = {};
-			let linkContext: { [key: string]: any } = {};
-			let delConnections: {
-				"@type": "owl:Restriction",
-				"owl:onProperty": string,
-				"owl:someValuesFrom"?: string
-				"owl:allValuesFrom"?: string
-			}[] = [];
-
-			Object.keys(Links).forEach(link => {
-				if (Links[link].type === "default") linkContext[link] = {"@type": "@id"};
-			})
-
-			del.forEach((linkID) => {
-				if (linkID in ProjectLinks && ProjectElements[ProjectLinks[linkID].target]) {
-					delConnections.push({
-						"@type": "owl:Restriction",
-						"owl:onProperty": ProjectLinks[linkID].iri,
-						"owl:someValuesFrom": ProjectElements[ProjectLinks[linkID].target].iri
-					});
-					delConnections.push({
-						"@type": "owl:Restriction",
-						"owl:onProperty": ProjectLinks[linkID].iri,
-						"owl:allValuesFrom": ProjectElements[ProjectLinks[linkID].target].iri
-					});
-					connectionContext[ProjectLinks[linkID].iri] = {"@type": "@id"}
-				}
-			})
-
-			return {
-				"@context": {
-					...Prefixes,
-					...connectionContext,
-					...linkContext,
-					"owl:allValuesFrom": {"@type": "@id"},
-					"owl:someValuesFrom": {"@type": "@id"},
-					"owl:onProperty": {"@type": "@id"},
-				},
-				"@id": Schemes[scheme].graph,
-				"@graph": [
-					{
-						"@id": iri,
-						"rdfs:subClassOf": delConnections
-					}
-				]
-			};
+			return [
+				[
+					"PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>",
+					"PREFIX owl: <http://www.w3.org/2002/07/owl#>",
+					"PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>",
+					"with <" + contextIRI + ">",
+					"delete {",
+					"?b ?p ?o.",
+					"<" + iri + "> rdfs:subClassOf ?b.",
+					"} where {",
+					"<" + iri + "> rdfs:subClassOf ?b.",
+					"filter(isBlank(?b)).",
+					"?b ?p ?o.",
+					"}"
+				].join(" "),
+				[
+					"PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>",
+					"PREFIX owl: <http://www.w3.org/2002/07/owl#>",
+					"PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>",
+					"insert data {",
+					"graph <" + contextIRI + ">{",
+					...restrictions,
+					...conns,
+					"}}"
+				].join(" ")
+			];
 		}
 	},
 	"generalization": {
@@ -129,40 +85,35 @@ export var LinkConfig: {
 			if (id) return new generalizationLink({id: id});
 			else return new generalizationLink();
 		},
-		add: (id) => {
-			let subClassOf: string[] = ProjectElements[ProjectLinks[id].source].connections.filter(conn => ProjectLinks[conn].type === "generalization").map(conn => ProjectElements[ProjectLinks[conn].target].iri);
-			let sourceIRI = ProjectElements[ProjectLinks[id].source].iri;
-			let scheme = VocabularyElements[sourceIRI].inScheme;
-			return {
-				"@context": {...Prefixes, "rdfs:subClassOf": {"@type": "@id"}},
-				"@id": Schemes[scheme].graph,
-				"@graph": [
-					{
-						"@id": sourceIRI,
-						"rdfs:subClassOf": subClassOf
-					}
-				]
-			};
-		},
-		delete: (id, del) => {
+		update: (id) => {
 			let iri = ProjectElements[ProjectLinks[id].source].iri;
-			let scheme = VocabularyElements[iri].inScheme;
-			let delConnections: string[] = [];
-
-			del.forEach((linkID) => {
-				delConnections.push(ProjectElements[ProjectLinks[linkID].target].iri);
-			})
-
-			return {
-				"@context": {...Prefixes, "rdfs:subClassOf": {"@type": "@id"}},
-				"@id": Schemes[scheme].graph,
-				"@graph": [
-					{
-						"@id": iri,
-						"rdfs:subClassOf": delConnections,
-					}
-				]
-			};
+			let contextIRI = Schemes[VocabularyElements[iri].inScheme].graph
+			let subClassOf: string[] = ProjectElements[ProjectLinks[id].source].connections.filter(conn =>
+				ProjectLinks[conn].type === "generalization").map(conn =>
+				"<" + iri + "> rdfs:subClassOf <" + ProjectElements[ProjectLinks[conn].target].iri + ">.");
+			let list = VocabularyElements[iri].subClassOf.map(superClass =>
+				"<" + iri + "> rdfs:subClassOf <" + superClass + ">."
+			)
+			return [[
+				"PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>",
+				"with <" + contextIRI + ">",
+				"delete {",
+				"<" + iri + "> rdfs:subClassOf ?c.",
+				"} where {",
+				"<" + iri + "> rdfs:subClassOf ?c.",
+				"filter(!isBlank(?c)).",
+				"}"
+			].join(" "), [
+				"PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>",
+				"PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>",
+				"PREFIX owl: <http://www.w3.org/2002/07/owl#>",
+				"PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>",
+				"insert data {",
+				"graph <" + contextIRI + ">{",
+				...list,
+				...subClassOf,
+				"}}"
+			].join(" ")];
 		}
 	}
 };

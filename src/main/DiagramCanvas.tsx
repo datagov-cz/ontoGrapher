@@ -6,7 +6,8 @@ import {
     PackageRoot,
     ProjectElements,
     ProjectLinks,
-    ProjectSettings, Schemes,
+    ProjectSettings,
+    Schemes,
     VocabularyElements
 } from "../config/Variables";
 import {addClass, addLink, addVocabularyElement, createIDIRI} from "../function/FunctionCreateVars";
@@ -212,7 +213,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
         this.props.handleChangeLoadingStatus(true, LocaleMain.updating, false);
         addLink(linkID, iri, sid, tid, type);
         ProjectElements[sid].connections.push(linkID);
-        updateConnections(ProjectSettings.contextEndpoint, linkID, []).then(result => {
+        updateConnections(ProjectSettings.contextEndpoint, linkID).then(result => {
             if (result) {
                 updateProjectLink(ProjectSettings.contextEndpoint, linkID).then(result => {
                     if (result) {
@@ -230,7 +231,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
 
     deleteConnections(sid: string, id: string) {
         ProjectLinks[id].active = false;
-        updateConnections(ProjectSettings.contextEndpoint, id, [id]).then(result => {
+        updateConnections(ProjectSettings.contextEndpoint, id).then(result => {
             if (result) {
                 if (graph.getCell(id)) graph.getCell(id).remove();
                 updateProjectLink(ProjectSettings.contextEndpoint, id).then(result => {
@@ -324,8 +325,13 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                     VocabularyElements[iri].types,
                     VocabularyElements[iri].labels,
                     VocabularyElements[iri].definitions,
-                    cellView.model.id);
-                this.props.handleChangeLoadingStatus(false, "", false);
+                    cellView.model.id).then(result => {
+                    if (result) {
+                        this.props.handleChangeLoadingStatus(false, "", false);
+                    } else {
+                        this.props.handleChangeLoadingStatus(false, "", true);
+                    }
+                });
             },
             'element:pointerclick': (cellView) => {
                 if (this.newLink) {
@@ -471,12 +477,19 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                     this.newConceptEvent = {x: evt.clientX, y: evt.clientY}
                 } else this.newLink = false;
             },
-            'link:pointerup': (cellView, evt)=> {
+            'link:pointerup': (cellView) => {
+                this.props.handleChangeLoadingStatus(true, LocaleMain.updating, false);
                 let id = cellView.model.id;
                 let link = cellView.model;
                 if (ProjectLinks[id].iri in Links) {
                     ProjectLinks[link.id].vertices = link.vertices();
-                    updateProjectLink(ProjectSettings.contextEndpoint, link.id);
+                    updateProjectLink(ProjectSettings.contextEndpoint, link.id).then(result => {
+                        if (result) {
+                            this.props.handleChangeLoadingStatus(false, "", false);
+                        } else {
+                            this.props.handleChangeLoadingStatus(false, "", true);
+                        }
+                    });
                 }
             }
         });
@@ -521,10 +534,15 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                             VocabularyElements[ProjectElements[cls.id].iri].types,
                             VocabularyElements[ProjectElements[cls.id].iri].labels,
                             VocabularyElements[ProjectElements[cls.id].iri].definitions,
-                            cls.id);
+                            cls.id).then(result => {
+                            if (result) {
+                                this.props.handleChangeLoadingStatus(false, "", false);
+                            } else {
+                                this.props.handleChangeLoadingStatus(false, "", true);
+                            }
+                        });
                     }
                     if (ProjectSettings.representation === "compact") setRepresentation(ProjectSettings.representation);
-                    this.props.handleChangeLoadingStatus(false, "", false);
                 }}
             />
             <NewLinkDiagram

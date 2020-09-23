@@ -8,7 +8,6 @@ import {
 	VocabularyElements
 } from "../config/Variables";
 import {LinkConfig} from "../config/LinkConfig";
-import {parsePrefix} from "../function/FunctionEditVars";
 
 export async function updateProjectElement(
 	contextEndpoint: string,
@@ -204,14 +203,12 @@ export async function updateDeleteProjectElement(contextEndpoint: string, iri: s
 }
 
 //id: link ID
-export async function updateConnections(contextEndpoint: string, id: string, del: string[]) {
-
-	let addLD = LinkConfig[ProjectLinks[id].type].add(id);
-	let deleteLD = LinkConfig[ProjectLinks[id].type].delete(id, del);
+export async function updateConnections(contextEndpoint: string, id: string) {
 
 	return await processTransaction(contextEndpoint, {
-		"add": [JSON.stringify(addLD)],
-		"delete": [JSON.stringify(deleteLD)]
+		"add": [],
+		"delete": [],
+		"update": LinkConfig[ProjectLinks[id].type].update(id)
 	});
 }
 
@@ -235,7 +232,6 @@ export async function processGetTransaction(contextEndpoint: string, request: { 
 	const transactionID = await getTransactionID(contextEndpoint);
 
 	if (transactionID) {
-		if (request.predicate?.includes("subClassOf")) debugger;
 		let transactionUrl = transactionID + "?action=GET" +
 			((request.subject !== undefined) ? ("&subj=<" + encodeURIComponent(request.subject) + ">") : "") +
 			((request.predicate !== undefined) ? ("&pred=<" + encodeURIComponent(request.predicate) + ">") : "") +
@@ -250,11 +246,23 @@ export async function processGetTransaction(contextEndpoint: string, request: { 
 	} else return null;
 }
 
-export async function processTransaction(contextEndpoint: string, transactions: { add: string[], delete: string[] }): Promise<boolean> {
+export async function processTransaction(contextEndpoint: string, transactions: { add: string[], delete: string[], update?: string[] }): Promise<boolean> {
 	const transactionID = await getTransactionID(contextEndpoint);
 
 	if (transactionID) {
-		let resultAdd, resultDelete, resultCommit;
+		let resultAdd, resultDelete, resultUpdate, resultCommit;
+
+		if (transactions.update) {
+			for (let update of transactions.update) {
+				resultUpdate = await fetch(transactionID + "?action=UPDATE&update=" + encodeURIComponent(update), {
+					headers: {
+						'Content-Type': 'application/json'
+					},
+					method: "PUT",
+				}).then(response => response.ok)
+			}
+		}
+
 		for (let del of transactions.delete) {
 			resultDelete = await fetch(transactionID + "?action=DELETE", {
 				headers: {
@@ -282,7 +290,7 @@ export async function processTransaction(contextEndpoint: string, transactions: 
 			method: "PUT"
 		}).then(response => response.ok)
 
-		return ((resultAdd ? resultAdd : true) && (resultDelete ? resultDelete : true) && resultCommit);
+		return ((resultAdd ? resultAdd : true) && (resultDelete ? resultDelete : true) && (resultUpdate ? resultUpdate : true) && resultCommit);
 	} else return false;
 }
 
