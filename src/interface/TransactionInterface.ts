@@ -331,10 +331,7 @@ export async function updateProjectSettings(contextIRI: string, contextEndpoint:
 			{
 				"@id": ProjectSettings.ontographerContext + contextInstance,
 				"og:context": contextIRI,
-				"og:selectedDiagram": ProjectSettings.selectedDiagram,
-				"og:selectedLanguage": ProjectSettings.selectedLanguage,
 				"og:diagram": Diagrams.map((diag, i) => ProjectSettings.ontographerContext + contextInstance + "/diagram-" + (i + 1)),
-				"og:initialized": true
 			},
 			...(Diagrams).filter(diag => diag.active).map((diag, i) => {
 				return {
@@ -352,16 +349,17 @@ export async function updateProjectSettings(contextIRI: string, contextEndpoint:
 
 	let delString = await processGetTransaction(ProjectSettings.contextEndpoint, {
 		subject: ProjectSettings.ontographerContext,
-		context: ProjectSettings.ontographerContext}).catch(() => false);
+		context: ProjectSettings.ontographerContext
+	}).catch(() => false);
 	if (typeof delString === "string") {
 		delStrings.push(delString);
 	}
 
-	for (const diag of Diagrams) {
-		let i = Diagrams.indexOf(diag);
+	for (let i = 0; i < (Diagrams.length + 1); i++) {
 		let delString = await processGetTransaction(contextEndpoint, {
-			subject: ProjectSettings.ontographerContext + "/diagram-" + (i + 1),
-			context: ProjectSettings.ontographerContext}).catch(() => false);
+			subject: ProjectSettings.ontographerContext + contextInstance + "/diagram-" + (i + 1),
+			context: ProjectSettings.ontographerContext
+		}).catch(() => false);
 		if (typeof delString === "string") {
 			delStrings.push(delString);
 		}

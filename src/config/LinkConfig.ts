@@ -43,13 +43,11 @@ export var LinkConfig: {
 			// 	}
 			// });
 
-			let restrictions = VocabularyElements[iri].restrictions.map(rest => {
-				if (!(rest.target in VocabularyElements)) {
-					return ("<" + iri + "> rdfs:subClassOf [rdf:type owl:Restriction; " +
-						"owl:onProperty <" + rest.onProperty + ">;" +
-						"<" + rest.restriction + "> <" + rest.target + ">].");
-				}
-			})
+			let restrictions = VocabularyElements[iri].restrictions.filter(rest => !(rest.target in VocabularyElements)).map(rest =>
+				("<" + iri + "> rdfs:subClassOf [rdf:type owl:Restriction; " +
+					"owl:onProperty <" + rest.onProperty + ">;" +
+					"<" + rest.restriction + "> <" + rest.target + ">].")
+			)
 
 			return [
 				[
@@ -89,9 +87,9 @@ export var LinkConfig: {
 			let iri = ProjectElements[ProjectLinks[id].source].iri;
 			let contextIRI = Schemes[VocabularyElements[iri].inScheme].graph
 			let subClassOf: string[] = ProjectElements[ProjectLinks[id].source].connections.filter(conn =>
-				ProjectLinks[conn].type === "generalization").map(conn =>
+				ProjectLinks[conn].type === "generalization" && ProjectLinks[conn].active).map(conn =>
 				"<" + iri + "> rdfs:subClassOf <" + ProjectElements[ProjectLinks[conn].target].iri + ">.");
-			let list = VocabularyElements[iri].subClassOf.map(superClass =>
+			let list = VocabularyElements[iri].subClassOf.filter(superClass => !(superClass in VocabularyElements)).map(superClass =>
 				"<" + iri + "> rdfs:subClassOf <" + superClass + ">."
 			)
 			return [[
@@ -107,7 +105,6 @@ export var LinkConfig: {
 				"PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>",
 				"PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>",
 				"PREFIX owl: <http://www.w3.org/2002/07/owl#>",
-				"PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>",
 				"insert data {",
 				"graph <" + contextIRI + ">{",
 				...list,

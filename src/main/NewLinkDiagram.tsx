@@ -37,7 +37,9 @@ export default class NewLinkDiagram extends React.Component<Props, State> {
 		if (elem && this.props.sid) {
 			let conns = ProjectElements[this.props.sid].connections;
 			if (ProjectSettings.representation === "full") {
-				return Object.keys(Links).filter(link => !conns.find(conn => ProjectLinks[conn].iri === link && ProjectLinks[conn].target === this.props.tid));
+				return Object.keys(Links).filter(link => !conns.find(conn => ProjectLinks[conn].iri === link &&
+					ProjectLinks[conn].target === this.props.tid &&
+					ProjectLinks[conn].active));
 			} else if (ProjectSettings.representation === "compact") {
 				return Object.keys(VocabularyElements).filter(link =>
 					!conns.find(
