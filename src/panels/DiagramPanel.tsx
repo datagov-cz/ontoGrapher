@@ -27,7 +27,7 @@ export default class DiagramPanel extends React.Component<Props, State> {
 			{Diagrams.filter(diag => diag.active).map((diag, i) => <DiagramTab key={i} diagram={i} name={diag.name}
 																			   update={() => this.forceUpdate()}
 																			   handleChangeLoadingStatus={this.props.handleChangeLoadingStatus}/>)}
-			<DiagramAdd update={() => this.forceUpdate()}/>
+			<DiagramAdd update={() => this.forceUpdate()} handleChangeLoadingStatus={this.props.handleChangeLoadingStatus}/>
 
 			<ModalRemoveDiagram
 				modal={this.state.modalRemoveDiagram}

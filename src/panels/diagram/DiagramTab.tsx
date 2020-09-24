@@ -64,7 +64,8 @@ export default class DiagramTab extends React.Component<Props, State> {
 					}}
 					propName="textarea"
 				/> : this.props.name}
-				{Diagrams.length !== 1 && <button className={"buttonlink"} onClick={() => {
+				{Diagrams.filter(diag => diag.active).length > 1 && <button className={"buttonlink"} onClick={(evt) => {
+					evt.stopPropagation();
 					this.deleteDiagram();
 				}}>
                     <span role="img" aria-label={""}>&nbsp;❌</span>
