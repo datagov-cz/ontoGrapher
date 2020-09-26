@@ -24,6 +24,7 @@ interface Props {
 	projectLanguage: string;
 	handleChangeLoadingStatus: Function;
 	handleWidth: Function;
+	error: boolean;
 }
 
 interface State {
@@ -218,7 +219,7 @@ export default class ItemPanel extends React.Component<Props, State> {
 					/>
 				</InputGroup>
 
-				<div className="elementLinkList">
+				<div className={"elementLinkList" + (this.props.error ? " disabled" : "")}>
 					{this.getFolders()}
 				</div>
 

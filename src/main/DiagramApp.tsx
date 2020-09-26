@@ -18,8 +18,6 @@ import {initConnections, initRestrictions} from "../function/FunctionRestriction
 import {updateProjectSettings} from "../interface/TransactionInterface";
 import ValidationPanel from "../panels/ValidationPanel";
 import DiagramPanel from "../panels/DiagramPanel";
-import { graphElementAttributes } from '../graph/GraphElementAttributes';
-import NewLinkDiagram from "./NewLinkDiagram";
 import {Representation} from "../config/Enum";
 
 interface DiagramAppProps {
@@ -220,6 +218,7 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 				}}
 				projectLanguage={this.state.projectLanguage}
 				handleChangeLoadingStatus={this.handleChangeLoadingStatus}
+				error={this.state.error}
 			/>
 			<DiagramPanel
 				handleChangeLoadingStatus={this.handleChangeLoadingStatus}
@@ -264,6 +263,7 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 					this.detailPanel.current?.update();
 				}}
 				handleChangeLoadingStatus={this.handleChangeLoadingStatus}
+				error={this.state.error}
 			/>
 		</div>);
 	}

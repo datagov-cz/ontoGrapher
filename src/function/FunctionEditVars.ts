@@ -15,6 +15,7 @@ import {addLink} from "./FunctionCreateVars";
 import {LinkConfig} from "../config/LinkConfig";
 import {getNewLink} from "./FunctionGraph";
 import {updateDeleteProjectElement, updateProjectLink} from "../interface/TransactionInterface";
+import {LinkType} from "../config/Enum";
 
 export function getName(element: string, language: string): string {
     if (element in Stereotypes) {
@@ -51,12 +52,13 @@ export function loadUML() {
     }
 
     for (let type in LinkConfig) {
-        if (type !== "default") {
-            Links[scheme + "/" + type] = {
+        let intType = parseInt(type, 10);
+        if (intType !== LinkType.DEFAULT) {
+            Links[scheme + "/" + LinkConfig[type].labels["en"]] = {
                 labels: LinkConfig[type].labels,
                 definitions: initLanguageObject(""),
                 inScheme: scheme,
-                type: type
+                type: intType
             }
         }
     }
@@ -124,9 +126,9 @@ export function addRelationships() {
                 let rangeID = Object.keys(ProjectElements).find(element => ProjectElements[element].iri === subClassOf);
                 if (domainID && rangeID && !(ProjectElements[domainID].connections.find(conn =>
                     ProjectElements[ProjectLinks[conn].target].iri === subClassOf))) {
-                    let linkGeneralization = getNewLink("generalization");
+                    let linkGeneralization = getNewLink(LinkType.GENERALIZATION);
                     if (typeof linkGeneralization.id === "string") {
-                        addLink(linkGeneralization.id, ProjectSettings.ontographerContext + "/uml/generalization", domainID, rangeID, "generalization");
+                        addLink(linkGeneralization.id, ProjectSettings.ontographerContext + "/uml/generalization", domainID, rangeID, LinkType.GENERALIZATION);
                         ProjectElements[domainID].connections.push(linkGeneralization.id);
                         linksToPush.push(linkGeneralization.id);
                     }

@@ -1,6 +1,11 @@
 .diagramPanel {
   background-color: #FFF;
 
+  &.disabled {
+    pointer-events: none;
+    opacity: 0.5;
+  }
+
   .diagramTab {
     background-color: #e3e3e3;
     display: inline-block;

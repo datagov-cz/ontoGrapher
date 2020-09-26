@@ -22,7 +22,7 @@ import {updateProjectLink} from "../../interface/TransactionInterface";
 import {getUnderlyingFullConnections, unHighlightAll} from "../../function/FunctionGraph";
 import {parsePrefix} from "../../function/FunctionEditVars";
 import {Cardinality} from "../../datatypes/Cardinality";
-import {Representation} from "../../config/Enum";
+import {LinkType, Representation} from "../../config/Enum";
 
 interface Props {
     projectLanguage: string;
@@ -62,7 +62,7 @@ export default class DetailLink extends React.Component<Props, State> {
         let result: JSX.Element[] = [];
         if (ProjectSettings.representation === Representation.FULL) {
             for (let iri in Links) {
-                if (Links[iri].type === "default")
+                if (Links[iri].type === LinkType.DEFAULT)
                     result.push(<option
                         value={iri}>{getLabelOrBlank(Links[iri].labels, this.props.projectLanguage)}</option>)
             }
@@ -136,7 +136,7 @@ export default class DetailLink extends React.Component<Props, State> {
                                     position: {distance: -20}
                                 });
                             }
-                            if (ProjectLinks[this.state.id].type === "default") link.appendLabel({
+                            if (ProjectLinks[this.state.id].type === LinkType.DEFAULT) link.appendLabel({
                                 attrs: {text: {text: getLinkOrVocabElem(this.state.iri).labels[this.props.projectLanguage]}},
                                 position: {distance: 0.5}
                             });
@@ -183,7 +183,7 @@ export default class DetailLink extends React.Component<Props, State> {
                             position: {distance: -20}
                         });
                     }
-                    if (ProjectLinks[this.state.id].type === "default") link.appendLabel({
+                    if (ProjectLinks[this.state.id].type === LinkType.DEFAULT) link.appendLabel({
                         attrs: {text: {text: getLinkOrVocabElem(this.state.iri).labels[this.props.projectLanguage]}},
                         position: {distance: 0.5}
                     });

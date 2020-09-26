@@ -24,7 +24,7 @@ import NewLinkDiagram from "./NewLinkDiagram";
 import {getLinkOrVocabElem} from "../function/FunctionGetVars";
 import NewElemDiagram from "./NewElemDiagram";
 import {PackageNode} from "../datatypes/PackageNode";
-import {Representation} from "../config/Enum";
+import {LinkType, Representation} from "../config/Enum";
 
 interface Props {
     projectLanguage: string;
@@ -32,6 +32,7 @@ interface Props {
     hideDetails: Function;
     updateElementPanel: Function;
     handleChangeLoadingStatus: Function;
+    error: boolean;
 }
 
 interface State {
@@ -107,7 +108,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
 
     saveNewLink(iri: string, sid: string, tid: string) {
         this.props.handleChangeLoadingStatus(true, LocaleMain.updating, false);
-        let type = iri in Links ? Links[iri].type : "default"
+        let type = iri in Links ? Links[iri].type : LinkType.DEFAULT;
         let link = getNewLink(type);
         link.source({id: sid});
         link.target({id: tid});
@@ -160,7 +161,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                     }
                     this.props.updateElementPanel();
                 }
-                if (type === "default") link.appendLabel({attrs: {text: {text: getLinkOrVocabElem(iri).labels[this.props.projectLanguage]}}});
+                if (type === LinkType.DEFAULT) link.appendLabel({attrs: {text: {text: getLinkOrVocabElem(iri).labels[this.props.projectLanguage]}}});
             } else link.remove();
         }
         this.sid = undefined;
@@ -201,7 +202,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
         }
     }
 
-    updateConnections(sid: string, tid: string, linkID: string, type: string, iri: string) {
+    updateConnections(sid: string, tid: string, linkID: string, type: number, iri: string) {
         this.props.handleChangeLoadingStatus(true, LocaleMain.updating, false);
         addLink(linkID, iri, sid, tid, type);
         ProjectElements[sid].connections.push(linkID);
@@ -237,6 +238,12 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                 this.props.handleChangeLoadingStatus(false, "", true);
             }
         });
+    }
+
+    componentDidUpdate(prevProps: Readonly<Props>, prevState: Readonly<State>, snapshot?: any) {
+        if (prevProps !== this.props && this.props.error) {
+            this.paper?.setInteractivity(false);
+        }
     }
 
     componentDidMount(): void {
@@ -423,7 +430,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                     }
                 })
                 let tools = [verticesTool, segmentsTool, removeButton]
-                if (ProjectLinks[linkView.model.id] && ProjectLinks[linkView.model.id].type === "default") tools.push(infoButton);
+                if (ProjectLinks[linkView.model.id] && ProjectLinks[linkView.model.id].type === LinkType.DEFAULT) tools.push(infoButton);
                 let toolsView = new joint.dia.ToolsView({
                     tools: tools
                 });
@@ -464,7 +471,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
     render() {
         return (<div>
             <div
-                className={"canvas"}
+                className={"canvas" + (this.props.error ? " disabled" : "")}
                 id={"canvas"}
                 ref={this.canvasRef}
                 onDragOver={(event) => {

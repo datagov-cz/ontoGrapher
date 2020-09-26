@@ -15,6 +15,7 @@ import {graphElement} from "../graph/GraphElement";
 import {nameGraphElement, restoreHiddenElem} from "./FunctionGraph";
 import {changeDiagrams} from "./FunctionDiagram";
 import {graph} from "../graph/Graph";
+import {LinkType} from "../config/Enum";
 
 export async function setupDiagrams(diagram: number = 0): Promise<boolean> {
     for (let i = 0; i < Diagrams.length; i++) {
@@ -133,7 +134,7 @@ export function addClass(
     pkg.elements.push(id);
 }
 
-export function addLink(id: string, iri: string, source: string, target: string, type: string = "default") {
+export function addLink(id: string, iri: string, source: string, target: string, type: number = LinkType.DEFAULT) {
     ProjectLinks[id] = {
         iri: iri,
         source: source,

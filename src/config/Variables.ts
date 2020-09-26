@@ -17,12 +17,8 @@ export var ProjectElements: {
         connections: string[],
         //whether the labels are initialized
         untitled: boolean,
-        //AttributeObject array
-        // attributes: AttributeObject[],
         //diagram indexes in which elem is present/hidden
         diagrams: number[],
-        //property array
-        // properties: AttributeObject[],
         //if hidden in diagram index
         hidden: { [key: number]: boolean }
         //position on graph by diagram index
@@ -49,7 +45,7 @@ export var ProjectLinks: {
         //vertices - point breaks of link
         vertices: joint.dia.Link.Vertex[],
         //type - dictates saving/loading behaviour
-        type: string,
+        type: number,
         //active
         active: boolean
     }
@@ -112,7 +108,7 @@ export var Links: {
         labels: { [key: string]: string },
         definitions: { [key: string]: string },
         inScheme: string,
-        type: string,
+        type: number,
     }
 } = {};
 

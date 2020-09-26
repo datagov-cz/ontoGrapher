@@ -5,6 +5,7 @@ import {Cardinality} from "../datatypes/Cardinality";
 
 import * as Locale from "../locale/LocaleMain.json";
 import {createRestriction} from "../function/FunctionRestriction";
+import {LinkType} from "../config/Enum";
 
 export async function fetchConcepts(
     endpoint: string,
@@ -31,7 +32,7 @@ export async function fetchConcepts(
             subClassOf: string[],
             restrictions: [],
             connections: []
-            type: string,
+            type: number,
         }
     } = {};
 
@@ -75,7 +76,7 @@ export async function fetchConcepts(
                     subClassOf: [],
                     restrictions: [],
                     connections: [],
-                    type: "default"
+                    type: LinkType.DEFAULT
                 }
             }
             if (row.termType && !(result[row.term.value].types.includes(row.termType.value))) result[row.term.value].types.push(row.termType.value);
@@ -283,7 +284,7 @@ export async function getLinksConfig(contextIRI: string, contextEndpoint: string
             targetCardinality1: string,
             targetCardinality2: string,
             active: boolean,
-            type: string,
+            type: number,
         }
     } = {};
     await fetch(q, {headers: {'Accept': 'application/json'}}).then(response => {

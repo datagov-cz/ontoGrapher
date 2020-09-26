@@ -2,16 +2,17 @@ import * as joint from 'jointjs';
 import {Links, Prefixes, ProjectElements, ProjectLinks, Schemes, VocabularyElements} from "./Variables";
 import {initLanguageObject} from "../function/FunctionEditVars"
 import {generalizationLink} from "../graph/uml/GeneralizationLink";
+import {LinkType} from "./Enum";
 
 export var LinkConfig: {
-	[key: string]: {
+	[key: number]: {
 		add: (id: string) => {},
 		delete: (id: string, del: string[]) => {}
 		newLink: (id?: string) => joint.dia.Link,
 		labels: { [key: string]: string }
 	}
 } = {
-	"default": {
+	[LinkType.DEFAULT]: {
 		labels: initLanguageObject(""),
 		newLink: (id) => {
 			if (id) return new joint.shapes.standard.Link({id: id});
@@ -25,7 +26,7 @@ export var LinkConfig: {
 			let linkContext: { [key: string]: any } = {};
 
 			Object.keys(Links).forEach(link => {
-				if (Links[link].type === "default") linkContext[link] = {"@type": "@id"};
+				if (Links[link].type === LinkType.DEFAULT) linkContext[link] = {"@type": "@id"};
 			})
 
 			ProjectElements[ProjectLinks[id].source].connections.forEach((linkID) => {
@@ -55,7 +56,7 @@ export var LinkConfig: {
 			let delConnections: { [key: string]: string } = {};
 
 			Object.keys(Links).forEach(link => {
-				if (Links[link].type === "default") linkContext[link] = {"@type": "@id"};
+				if (Links[link].type === LinkType.DEFAULT) linkContext[link] = {"@type": "@id"};
 			})
 
 			ProjectElements[ProjectLinks[id].source].connections.forEach((linkID) => {
@@ -84,14 +85,14 @@ export var LinkConfig: {
 			};
 		}
 	},
-	"generalization": {
+	[LinkType.GENERALIZATION]: {
 		labels: {"cs": "Generalizace", "en": "Generalization"},
 		newLink: (id) => {
 			if (id) return new generalizationLink({id: id});
 			else return new generalizationLink();
 		},
 		add: (id) => {
-			let subClassOf: string[] = ProjectElements[ProjectLinks[id].source].connections.filter(conn => ProjectLinks[conn].type === "generalization").map(conn => ProjectElements[ProjectLinks[conn].target].iri);
+			let subClassOf: string[] = ProjectElements[ProjectLinks[id].source].connections.filter(conn => ProjectLinks[conn].type === LinkType.GENERALIZATION).map(conn => ProjectElements[ProjectLinks[conn].target].iri);
 			let sourceIRI = ProjectElements[ProjectLinks[id].source].iri;
 			let scheme = VocabularyElements[sourceIRI].inScheme;
 			return {
