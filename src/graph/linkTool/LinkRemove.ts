@@ -7,7 +7,7 @@ export var RemoveButton = joint.linkTools.Remove.extend({
         let id = view.model.id;
         let sid = view.model.getSourceCell().id;
         if (ProjectElements[sid].connections.includes(id)) ProjectElements[sid].connections.splice(ProjectElements[sid].connections.indexOf(id), 1);
-        updateConnections(ProjectSettings.contextEndpoint, id, [id]).then();
+        updateConnections(ProjectSettings.contextEndpoint, id).then();
         ProjectLinks[id].active = false;
         view.model.remove();
     })

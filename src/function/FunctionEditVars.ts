@@ -144,13 +144,14 @@ export function deletePackageItem(id: string) {
     folder.elements.splice(folder.elements.indexOf(id), 1);
     for (let connection in ProjectElements[id].connections) {
         ProjectLinks[ProjectElements[id].connections[connection]].active = false;
-        updateDeleteProjectElement(ProjectSettings.contextEndpoint, ProjectSettings.ontographerContext + "-" + connection);
+        updateDeleteProjectElement(ProjectSettings.contextEndpoint,
+            ProjectSettings.ontographerContext + "-" + connection,
+            ProjectSettings.ontographerContext);
     }
     ProjectElements[id].connections.splice(0, ProjectElements[id].connections.length - 1);
     if (graph.getCell(id)) {
         graph.removeCells([graph.getCell(id)]);
     }
     ProjectElements[id].active = false;
-
 }
 

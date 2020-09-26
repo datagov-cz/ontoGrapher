@@ -3,16 +3,16 @@ import MenuPanel from "../panels/MenuPanel";
 import ItemPanel from "../panels/ItemPanel";
 import DiagramCanvas from "./DiagramCanvas";
 import * as Locale from "../locale/LocaleMain.json";
-import {Languages, PackageRoot, ProjectElements, ProjectLinks, ProjectSettings, Schemes} from "../config/Variables";
+import {Languages, ProjectElements, ProjectLinks, ProjectSettings} from "../config/Variables";
 import DetailPanel from "../panels/DetailPanel";
 import {getVocabulariesFromRemoteJSON} from "../interface/JSONInterface";
-import {addRelationships, initLanguageObject, initVars} from "../function/FunctionEditVars";
+import {addRelationships, initVars} from "../function/FunctionEditVars";
 import {getContext} from "../interface/ContextInterface";
 import {graph} from "../graph/Graph";
 import {loadProject, newProject} from "../function/FunctionProject";
-import {nameGraphElement, nameGraphLink, setRepresentation, unHighlightAll} from "../function/FunctionGraph";
-import {PackageNode} from "../datatypes/PackageNode";
 import {createNewScheme, setupDiagrams} from "../function/FunctionCreateVars";
+import {nameGraphElement, nameGraphLink, unHighlightAll} from "../function/FunctionGraph";
+import {setupDiagrams} from "../function/FunctionCreateVars";
 import {getElementsConfig, getLinksConfig, getSettings} from "../interface/SPARQLInterface";
 import {initConnections, initRestrictions} from "../function/FunctionRestriction";
 import {updateProjectSettings} from "../interface/TransactionInterface";
@@ -150,7 +150,6 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 				}
             ).then(async () => {
                 if (!this.state.error) {
-					this.selectDefaultPackage();
 					document.title = ProjectSettings.name[this.state.projectLanguage] + " | " + Locale.ontoGrapher;
 					ProjectSettings.contextEndpoint = contextEndpoint;
 					ProjectSettings.contextIRI = contextIRI
@@ -173,16 +172,6 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 				}
             })
         });
-	}
-
-	selectDefaultPackage() {
-		for (let pkg of PackageRoot.children) {
-			if (pkg.scheme && !Schemes[pkg.scheme].readOnly) {
-				ProjectSettings.selectedPackage = pkg;
-				return;
-			}
-		}
-		ProjectSettings.selectedPackage = new PackageNode(initLanguageObject(Locale.untitledPackage), PackageRoot, false, createNewScheme());
 	}
 
 	validate() {
