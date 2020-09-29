@@ -3,7 +3,7 @@ import {Button, Form, Modal, Tab, Tabs} from "react-bootstrap";
 import * as LocaleMenu from "../../../locale/LocaleMenu.json";
 import * as Locale from "../../../locale/LocaleMain.json";
 import {parsePrefix} from "../../../function/FunctionEditVars";
-import {ProjectSettings, Structures, StructuresShort} from "../../../config/Variables";
+import {Structures, StructuresShort} from "../../../config/Variables";
 import {exportGlossary, exportModel} from "../../../function/FunctionExport";
 
 interface Props {
@@ -69,7 +69,6 @@ export default class FileExportModal extends React.Component<Props, State> {
                         <Form.Control as="select" value={this.state.knowledgeStructure}
                                       onChange={(event: React.ChangeEvent<HTMLSelectElement>) => {
                                           this.setState({knowledgeStructure: event.currentTarget.value});
-                                          ProjectSettings.knowledgeStructure = event.currentTarget.value;
                                           this.handleExport(event.currentTarget.value);
                                       }}>
                             {Object.keys(Structures).map((key, i) => <option key={i} value={key}>{key}</option>)}

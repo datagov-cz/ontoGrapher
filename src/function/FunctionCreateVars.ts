@@ -4,15 +4,13 @@ import {
     ProjectElements,
     ProjectLinks,
     ProjectSettings,
-    Schemes,
-    StructuresShort,
     VocabularyElements
 } from "../config/Variables";
 import * as LocaleMain from "../locale/LocaleMain.json";
 import {initLanguageObject} from "./FunctionEditVars";
 import {PackageNode} from "../datatypes/PackageNode";
 import {graphElement} from "../graph/GraphElement";
-import {nameGraphElement, restoreHiddenElem} from "./FunctionGraph";
+import {drawGraphElement, restoreHiddenElem} from "./FunctionGraph";
 import {changeDiagrams} from "./FunctionDiagram";
 import {graph} from "../graph/Graph";
 import {LinkType} from "../config/Enum";
@@ -27,7 +25,7 @@ export async function setupDiagrams(diagram: number = 0): Promise<boolean> {
                     let cls = new graphElement({id: id});
                     cls.position(ProjectElements[id].position[i].x, ProjectElements[id].position[i].y);
                     cls.addTo(graph);
-                    nameGraphElement(cls, ProjectSettings.selectedLanguage);
+                    drawGraphElement(cls, ProjectSettings.selectedLanguage);
                     restoreHiddenElem(id, cls);
                 }
             }
@@ -48,25 +46,11 @@ export function createValues(values: { [key: string]: string[] }, prefixes: { [k
     return result;
 }
 
-export function createNewScheme(): string {
-    let result = "https://slovník.gov.cz/" + StructuresShort[ProjectSettings.knowledgeStructure] + "/" + LocaleMain.untitled;
-    if (result in Schemes) {
-        let count = 1;
-        while ((result + "-" + count.toString(10)) in Schemes) {
-            count++;
-        }
-        result += "-" + count.toString(10);
-    }
-    result = result.trim().replace(/\s/g, '-');
-    Schemes[result] = {labels: initLanguageObject(""), readOnly: false, graph: result}
-    return result;
-}
-
 export function createIDIRI(id: string) {
     return ProjectSettings.ontographerContext + "/" + id;
 }
 
-export function createNewElemIRI(labels: { [key: string]: string }, target: { [key: string]: any }, url?: string): string {
+export function createNewElemIRI(labels: { [key: string]: string }, target: { [key: string]: any }, url: string): string {
     let name = LocaleMain.untitled;
     for (let lang in labels) {
         if (labels[lang] !== "") {
@@ -74,7 +58,7 @@ export function createNewElemIRI(labels: { [key: string]: string }, target: { [k
             break;
         }
     }
-    let result = url ? url + name : "https://slovník.gov.cz/" + StructuresShort[ProjectSettings.knowledgeStructure] + "/pojem/" + name;
+    let result = url;
     result = result.trim().replace(/\s/g, '-');
     let count = 1;
     if (result in target) {
@@ -98,20 +82,18 @@ export function getDomainOf(iriElem: string): string[] {
     return result;
 }
 
-export function addVocabularyElement(iri: string, type?: string) {
-    if (ProjectSettings.selectedPackage.scheme) {
-        VocabularyElements[iri] = {
-            labels: initLanguageObject(""),
-            definitions: initLanguageObject(""),
-            inScheme: ProjectSettings.selectedPackage.scheme,
-            domain: undefined,
-            range: undefined,
-            types: type ? [type] : [],
-            subClassOf: [],
-            restrictions: [],
-            connections: [],
-            active: true
-        }
+export function addVocabularyElement(iri: string, scheme: string, type?: string) {
+    VocabularyElements[iri] = {
+        labels: initLanguageObject(""),
+        definitions: initLanguageObject(""),
+        inScheme: scheme,
+        domain: undefined,
+        range: undefined,
+        types: type ? [type] : [],
+        subClassOf: [],
+        restrictions: [],
+        connections: [],
+        active: true
     }
 }
 

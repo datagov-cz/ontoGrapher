@@ -13,10 +13,10 @@ import {
 import {addClass, addLink, addVocabularyElement, createIDIRI} from "../function/FunctionCreateVars";
 import {graph} from "../graph/Graph";
 import {
+    drawGraphElement,
     getNewLink,
     getUnderlyingFullConnections,
     highlightCell,
-    nameGraphElement,
     restoreHiddenElem,
     setRepresentation,
     unHighlightAll,
@@ -80,9 +80,9 @@ export default class DiagramCanvas extends React.Component<Props, State> {
         this.props.handleChangeLoadingStatus(true, LocaleMain.updating, false);
         let cls = new graphElement();
         cls.attr({label: {text: name}});
-        if (typeof cls.id === "string") {
+        if (typeof cls.id === "string" && pkg.scheme) {
             let iri = createIDIRI(cls.id);
-            addVocabularyElement(iri);
+            addVocabularyElement(iri, pkg.scheme);
             addClass(cls.id, iri, pkg, true, true);
             let labels = initLanguageObject("");
             labels[language] = name;
@@ -152,7 +152,9 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                         let source = getNewLink();
                         let target = getNewLink();
                         if (typeof source.id === "string" && typeof target.id === "string" && typeof property.id === "string") {
-                            addClass(property.id, iri, ProjectSettings.selectedPackage, false);
+                            let pkg = PackageRoot.children.find(pkg => pkg.scheme &&
+                                pkg.scheme === VocabularyElements[ProjectElements[sid].iri].inScheme) || PackageRoot;
+                            addClass(property.id, iri, pkg, false);
                             addLink(source.id, mvp1IRI, property.id, sid);
                             addLink(target.id, mvp2IRI, property.id, tid);
                             ProjectElements[property.id].connections.push(source.id);
@@ -523,7 +525,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                     this.props.handleChangeLoadingStatus(true, LocaleMain.updating, false);
                     const data = JSON.parse(event.dataTransfer.getData("newClass"));
                     let cls = new graphElement({id: data.id});
-                    nameGraphElement(cls, ProjectSettings.selectedLanguage);
+                    drawGraphElement(cls, ProjectSettings.selectedLanguage);
                     let point = this.paper?.clientToLocalPoint({x: event.clientX, y: event.clientY});
                     if (point) {
                         cls.set('position', {x: point.x, y: point.y});

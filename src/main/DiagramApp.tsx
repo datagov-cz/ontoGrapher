@@ -10,7 +10,7 @@ import {addRelationships, initVars} from "../function/FunctionEditVars";
 import {getContext} from "../interface/ContextInterface";
 import {graph} from "../graph/Graph";
 import {loadProject, newProject} from "../function/FunctionProject";
-import {nameGraphElement, nameGraphLink, setRepresentation, unHighlightAll} from "../function/FunctionGraph";
+import {drawGraphElement, nameGraphLink, setRepresentation, unHighlightAll} from "../function/FunctionGraph";
 import {setupDiagrams} from "../function/FunctionCreateVars";
 import {getElementsConfig, getLinksConfig, getSettings} from "../interface/SPARQLInterface";
 import {initConnections, initRestrictions} from "../function/FunctionRestriction";
@@ -101,7 +101,7 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 		document.title = ProjectSettings.name[languageCode] + " | " + Locale.ontoGrapher;
 		graph.getElements().forEach((cell) => {
 			if (ProjectElements[cell.id]) {
-				nameGraphElement(cell, languageCode);
+				drawGraphElement(cell, languageCode);
 			}
 		});
 		graph.getLinks().forEach((cell) => {

@@ -3,28 +3,31 @@ import * as joint from "jointjs";
 export var graphElement = joint.dia.Element.define('custom.graphElement', {
         attrs: {
             body: {
-                ref: 'label',
-                refX: '-15%',
-                refY: '-30%',
-                refWidth: '133%',
-                refHeight: '150%',
+                //ref: 'label',
+                //refX: '-15%',
+                //refY: '-30%',
+                //refWidth: '133%',
+                //refHeight: '150%',
                 strokeWidth: 2,
                 stroke: '#000000',
                 fill: '#FFF'
             },
             label: {
-                textVerticalAnchor: 'middle',
+                // ref: 'body',
+                textVerticalAnchor: 'top',
                 textAnchor: 'middle',
-                refX: '50%',
-                refY: '50%'
+                y: 5,
+                fontSize: 16
+                //refX: '50%',
+                //refY: '50%'
             },
             labelAttrs: {
-                ref: 'body',
+                //ref: 'body',
                 textVerticalAnchor: 'top',
                 textAnchor: 'start',
                 fontSize: 14,
-                refY: 30,
-                refX: 5
+                y: 30,
+                x: 5
             }
         }
     }, {
