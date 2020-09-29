@@ -486,12 +486,12 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                 } else this.newLink = false;
             },
             'link:pointerup': (cellView) => {
-                this.props.handleChangeLoadingStatus(true, LocaleMain.updating, false);
                 let id = cellView.model.id;
                 let link = cellView.model;
                 if (ProjectLinks[id].iri in Links) {
+                    this.props.handleChangeLoadingStatus(true, LocaleMain.updating, false);
                     ProjectLinks[link.id].vertices = link.vertices();
-                    updateProjectLink(ProjectSettings.contextEndpoint, link.id).then(result => {
+                    updateProjectLink(ProjectSettings.contextEndpoint, id).then(result => {
                         if (result) {
                             this.props.handleChangeLoadingStatus(false, "", false);
                         } else {
@@ -550,7 +550,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                             }
                         });
                     }
-                    if (ProjectSettings.representation === "compact") setRepresentation(ProjectSettings.representation);
+                    if (ProjectSettings.representation === Representation.COMPACT) setRepresentation(ProjectSettings.representation);
                 }}
             />
             <NewLinkDiagram

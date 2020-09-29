@@ -19,10 +19,12 @@ export var graphElement = joint.dia.Element.define('custom.graphElement', {
                 refY: '50%'
             },
             labelAttrs: {
+                ref: 'body',
                 textVerticalAnchor: 'top',
                 textAnchor: 'start',
                 fontSize: 14,
-                y: 15,
+                refY: 30,
+                refX: 5
             }
         }
     }, {

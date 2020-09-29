@@ -8,7 +8,6 @@ import {graphElement} from "../graph/GraphElement";
 import {LinkConfig} from "../config/LinkConfig";
 import {addLink} from "./FunctionCreateVars";
 import {Cardinality} from "../datatypes/Cardinality";
-import {updateProjectLink} from "../interface/TransactionInterface";
 import {LinkType, Representation} from "../config/Enum";
 
 
@@ -19,12 +18,19 @@ export function nameGraphElement(cell: joint.dia.Cell, languageCode: string) {
     if (typeof cell.id === "string") {
         let vocabElem = getVocabElementByElementID(cell.id);
         cell.prop('attrs/label/text', (
-            ProjectSettings.representation === Representation.FULL ?
-            getStereotypeList(vocabElem.types, languageCode).map((str) => "«" + str.toLowerCase() + "»\n").join(""):"") +
+                ProjectSettings.representation === Representation.FULL ?
+                    getStereotypeList(vocabElem.types, languageCode).map((str) => "«" + str.toLowerCase() + "»\n").join("") : "") +
             (vocabElem.labels[languageCode] === "" ? "<blank>" : vocabElem.labels[languageCode]));
-        cell.prop("attrs/labelAttrs/text", (ProjectSettings.representation === Representation.COMPACT ? "rdf:type = " +
+        cell.prop("attrs/labelAttrs/text", ((ProjectSettings.representation === Representation.COMPACT &&
+            VocabularyElements[ProjectElements[cell.id].iri].types.length > 0) ? "rdf:type = " +
             getStereotypeList(vocabElem.types, languageCode).map((str) => str.toLowerCase())
-            .join(',\n\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0'):""));
+                .join(',\n\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0') : ""));
+        cell.prop("attrs/body/refHeight2", ProjectSettings.representation === Representation.COMPACT ?
+            ((VocabularyElements[ProjectElements[cell.id].iri].types.length + 1) * 8) : "150%");
+        let types = VocabularyElements[ProjectElements[cell.id].iri].types;
+        let typesWidth = types.length > 0 ? types.reduce((a, b) => a.length > b.length ? a : b).length * 14 : 0;
+        let refWidth2 = typesWidth > VocabularyElements[cell.id].labels[languageCode].length * 16 ? typesWidth : "133%";
+        cell.prop("attrs/body/refWidth2", refWidth2);
     }
 }
 
