@@ -97,20 +97,18 @@ export function getDomainOf(iriElem: string): string[] {
     return result;
 }
 
-export function addVocabularyElement(iri: string, type?: string) {
-    if (ProjectSettings.selectedPackage.scheme) {
-        VocabularyElements[iri] = {
-            labels: initLanguageObject(""),
-            definitions: initLanguageObject(""),
-            inScheme: ProjectSettings.selectedPackage.scheme,
-            domain: undefined,
-            range: undefined,
-            types: type ? [type] : [],
-            subClassOf: [],
-            restrictions: [],
-            connections: [],
-            active: true
-        }
+export function addVocabularyElement(iri: string, scheme: string, type?: string) {
+    VocabularyElements[iri] = {
+        labels: initLanguageObject(""),
+        definitions: initLanguageObject(""),
+        inScheme: scheme,
+        domain: undefined,
+        range: undefined,
+        types: type ? [type] : [],
+        subClassOf: [],
+        restrictions: [],
+        connections: [],
+        active: true
     }
 }
 

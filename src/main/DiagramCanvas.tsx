@@ -78,13 +78,13 @@ export default class DiagramCanvas extends React.Component<Props, State> {
         this.props.handleChangeLoadingStatus(true, LocaleMain.updating, false);
         let cls = new graphElement();
         cls.attr({label: {text: name}});
-        if (typeof cls.id === "string") {
+        if (typeof cls.id === "string" && pkg.scheme) {
             let iri = createIDIRI(cls.id);
-            addVocabularyElement(iri);
+            addVocabularyElement(iri, pkg.scheme);
             addClass(cls.id, iri, pkg, true, true);
             let labels = initLanguageObject("");
             labels[language] = name;
-            VocabularyElements[ProjectElements[cls.id].iri].labels = labels;
+            VocabularyElements[iri].labels = labels;
             updateProjectElement(
                 ProjectSettings.contextEndpoint,
                 DiagramCanvas.name,
