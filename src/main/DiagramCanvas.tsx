@@ -89,7 +89,6 @@ export default class DiagramCanvas extends React.Component<Props, State> {
             VocabularyElements[ProjectElements[cls.id].iri].labels = labels;
             updateProjectElement(
                 ProjectSettings.contextEndpoint,
-                DiagramCanvas.name,
                 [],
                 labels,
                 initLanguageObject(""),
@@ -161,7 +160,6 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                             ProjectElements[property.id].connections.push(target.id);
                             updateProjectElement(
                                 ProjectSettings.contextEndpoint,
-                                DiagramCanvas.name,
                                 [parsePrefix("z-sgov-pojem", "typ-vztahu")],
                                 VocabularyElements[iri].labels,
                                 VocabularyElements[iri].definitions,
@@ -223,11 +221,11 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                     if (result) {
                         this.props.handleChangeLoadingStatus(false, "", false);
                     } else {
-                        this.props.handleChangeLoadingStatus(false, "", true);
+                        this.props.handleChangeLoadingStatus(false, LocaleMain.errorUpdating, true);
                     }
                 });
             } else {
-                this.props.handleChangeLoadingStatus(false, "", true);
+                this.props.handleChangeLoadingStatus(false, LocaleMain.errorUpdating, true);
             }
         });
         this.props.updateElementPanel();
@@ -242,18 +240,20 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                     if (result) {
                         this.props.handleChangeLoadingStatus(false, "", false);
                     } else {
-                        this.props.handleChangeLoadingStatus(false, "", true);
+                        this.props.handleChangeLoadingStatus(false, LocaleMain.errorUpdating, true);
                     }
                 })
             } else {
-                this.props.handleChangeLoadingStatus(false, "", true);
+                this.props.handleChangeLoadingStatus(false, LocaleMain.errorUpdating, true);
             }
         });
     }
 
     componentDidUpdate(prevProps: Readonly<Props>, prevState: Readonly<State>, snapshot?: any) {
         if (prevProps !== this.props && this.props.error) {
-            this.paper?.setInteractivity(false);
+            this.paper?.setInteractivity(true);
+        } else if (prevProps !== this.props && !(this.props.error)) {
+            this.paper?.setInteractivity(true);
         }
     }
 
@@ -331,7 +331,6 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                 this.props.handleChangeLoadingStatus(true, LocaleMain.updating, false);
                 updateProjectElement(
                     ProjectSettings.contextEndpoint,
-                    DiagramCanvas.name,
                     VocabularyElements[iri].types,
                     VocabularyElements[iri].labels,
                     VocabularyElements[iri].definitions,
@@ -339,7 +338,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                     if (result) {
                         this.props.handleChangeLoadingStatus(false, "", false);
                     } else {
-                        this.props.handleChangeLoadingStatus(false, "", true);
+                        this.props.handleChangeLoadingStatus(false, LocaleMain.errorUpdating, true);
                     }
                 });
             },
@@ -365,7 +364,6 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                                 let iri = ProjectElements[id].iri;
                                 updateProjectElement(
                                     ProjectSettings.contextEndpoint,
-                                    DiagramCanvas.name,
                                     VocabularyElements[iri].types,
                                     VocabularyElements[iri].labels,
                                     VocabularyElements[iri].definitions,
@@ -392,7 +390,6 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                                 let iri = ProjectElements[id].iri;
                                 updateProjectElement(
                                     ProjectSettings.contextEndpoint,
-                                    DiagramCanvas.name,
                                     VocabularyElements[iri].types,
                                     VocabularyElements[iri].labels,
                                     VocabularyElements[iri].definitions,
@@ -497,7 +494,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                         if (result) {
                             this.props.handleChangeLoadingStatus(false, "", false);
                         } else {
-                            this.props.handleChangeLoadingStatus(false, "", true);
+                            this.props.handleChangeLoadingStatus(false, LocaleMain.errorUpdating, true);
                         }
                     });
                 }
@@ -506,16 +503,20 @@ export default class DiagramCanvas extends React.Component<Props, State> {
     }
 
     render() {
-        return (<div>
+        return (<div
+            style={{cursor: this.props.error ? "not-allowed" : "inherit", opacity: this.props.error ? "0.5" : "1"}}>
             <div
-                className={"canvas" + (this.props.error ? " disabled" : "")}
+                className={"canvas"}
                 id={"canvas"}
                 ref={this.canvasRef}
+                style={{
+                    pointerEvents: this.props.error ? "none" : "auto"
+                }}
                 onDragOver={(event) => {
-                    event.preventDefault();
+                    if (!this.props.error) event.preventDefault();
                 }}
                 onMouseMove={(event) => {
-                    if (this.drag) {
+                    if (this.drag && !(this.props.error)) {
                         this.paper?.translate(event.nativeEvent.offsetX - this.drag.x, event.nativeEvent.offsetY - this.drag.y);
                     }
                 }
@@ -540,7 +541,6 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                     if (typeof cls.id === "string") {
                         updateProjectElement(
                             ProjectSettings.contextEndpoint,
-                            DiagramCanvas.name,
                             VocabularyElements[ProjectElements[cls.id].iri].types,
                             VocabularyElements[ProjectElements[cls.id].iri].labels,
                             VocabularyElements[ProjectElements[cls.id].iri].definitions,
@@ -548,7 +548,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                             if (result) {
                                 this.props.handleChangeLoadingStatus(false, "", false);
                             } else {
-                                this.props.handleChangeLoadingStatus(false, "", true);
+                                this.props.handleChangeLoadingStatus(false, LocaleMain.errorUpdating, true);
                             }
                         });
                     }

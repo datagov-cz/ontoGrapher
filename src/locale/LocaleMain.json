@@ -203,6 +203,8 @@
   "menuModalPrefix": "Prefix",
   "menuModalURI": "URI",
   "generalization": "Generalization",
+  "stableConnection": "You are connected to the DB.",
+  "brokenConnection": "Your connection to the DB has been interrupted.",
   "constraintSettings": "Constraints...",
   "constraintsSettingsHeader": "Constraints",
   "constraintPlaceholder": "Constraint",

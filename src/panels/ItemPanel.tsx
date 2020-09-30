@@ -191,14 +191,14 @@ export default class ItemPanel extends React.Component<Props, State> {
 			if (result) {
 				this.props.handleChangeLoadingStatus(false, "", false);
 			} else {
-				this.props.handleChangeLoadingStatus(false, "", true);
+				this.props.handleChangeLoadingStatus(false, LocaleMain.errorUpdating, true);
 			}
 		})
 	}
 
 	render() {
 		return (<ResizableBox
-				className={"elements"}
+				className={"elements" + (this.props.error ? " disabled" : "")}
 				width={300}
 				height={1000}
 				axis={"x"}

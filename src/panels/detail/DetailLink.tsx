@@ -30,6 +30,7 @@ interface Props {
     save: Function;
     handleChangeLoadingStatus: Function;
     handleWidth: Function;
+    error: boolean;
 }
 
 interface State {
@@ -146,7 +147,7 @@ export default class DetailLink extends React.Component<Props, State> {
                     this.props.save();
                     this.props.handleChangeLoadingStatus(false, "", false);
                 } else {
-                    this.props.handleChangeLoadingStatus(false, "", true);
+                    this.props.handleChangeLoadingStatus(false, LocaleMain.errorUpdating, true);
                 }
             })
         } else {
@@ -219,15 +220,15 @@ export default class DetailLink extends React.Component<Props, State> {
                 let elem = document.querySelector(".details");
                 if (elem) this.props.handleWidth(elem.getBoundingClientRect().width);
             }}
-            className={"details"}>
-            <div>
+            className={"details" + (this.props.error ? " disabled" : "")}>
+            <div className={(this.props.error ? " disabled" : "")}>
                 <button className={"buttonlink close nounderline"} onClick={() => {
                     unHighlightAll();
                     this.setState({id: ""});
                     this.props.handleWidth(0);
                 }}><span role="img" aria-label={""}>➖</span></button>
-				<h3><IRILink label={getLinkOrVocabElem(this.state.iri).labels[this.props.projectLanguage]}
-							 iri={this.state.iri}/></h3>
+                <h3><IRILink label={getLinkOrVocabElem(this.state.iri).labels[this.props.projectLanguage]}
+                             iri={this.state.iri}/></h3>
                 <TableList headings={[LocaleMenu.linkInfo, ""]}>
                     <tr>
                         <td>

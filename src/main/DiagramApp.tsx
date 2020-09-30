@@ -35,6 +35,7 @@ interface DiagramAppState {
 	widthLeft: number;
 	widthRight: number;
 	validation: boolean;
+	retry: boolean;
 }
 
 require("../scss/style.scss");
@@ -64,6 +65,7 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 			widthLeft: 300,
 			widthRight: 0,
 			validation: false,
+			retry: false,
 		});
 		document.title = Locale.ontoGrapher;
 		this.handleChangeLanguage = this.handleChangeLanguage.bind(this);
@@ -119,11 +121,12 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 		this.elementPanel.current?.forceUpdate();
 	}
 
-	handleChangeLoadingStatus(loading: boolean, status: string, error: boolean) {
+	handleChangeLoadingStatus(loading: boolean, status: string, error: boolean, retry: boolean = true) {
 		this.setState({
 			loading: loading,
 			status: status,
 			error: error,
+			retry: retry
 		});
 	}
 
@@ -166,8 +169,8 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 					await updateProjectSettings(contextIRI, contextEndpoint);
 					this.forceUpdate();
 					this.elementPanel.current?.forceUpdate();
+					setRepresentation(Representation.FULL);
 					this.handleChangeLoadingStatus(false, "✔ Workspace ready.", false);
-					setRepresentation(Representation.COMPACT);
 				}
             })
         });
@@ -181,6 +184,7 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 		return (<div className={"app"}>
 			<MenuPanel
 				ref={this.menuPanel}
+				retry={this.state.retry}
 				loading={this.state.loading}
 				newProject={this.newProject}
 				status={this.state.status}
@@ -210,8 +214,10 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 			/>
 			<DiagramPanel
 				handleChangeLoadingStatus={this.handleChangeLoadingStatus}
+				error={this.state.error}
 			/>
 			<DetailPanel
+				error={this.state.error}
 				ref={this.detailPanel}
 				projectLanguage={this.state.projectLanguage}
 				resizeElem={(id: string) => {

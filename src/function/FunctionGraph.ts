@@ -17,23 +17,26 @@ let mvp2IRI = "https://slovník.gov.cz/základní/pojem/má-vztažený-prvek-2";
 export function drawGraphElement(cell: joint.dia.Cell, languageCode: string) {
     if (typeof cell.id === "string") {
         let vocabElem = getVocabElementByElementID(cell.id);
-        cell.prop('attrs/label/text', (
-                ProjectSettings.representation === Representation.FULL ?
-                    getStereotypeList(vocabElem.types, languageCode).map((str) => "«" + str.toLowerCase() + "»\n").join("") : "") +
-            (vocabElem.labels[languageCode] === "" ? "<blank>" : vocabElem.labels[languageCode]));
+        let labels = (ProjectSettings.representation === Representation.FULL ?
+            getStereotypeList(vocabElem.types, languageCode).map((str) => "«" + str.toLowerCase() + "»") : [])
+            .concat([(vocabElem.labels[languageCode] === "" ? "<blank>" : vocabElem.labels[languageCode])]);
+        cell.prop('attrs/label/text', labels.join("\n"));
         cell.prop("attrs/labelAttrs/text", ((ProjectSettings.representation === Representation.COMPACT &&
             VocabularyElements[ProjectElements[cell.id].iri].types.length > 0) ? "rdf:type = " +
             getStereotypeList(vocabElem.types, languageCode).map((str) => str.toLowerCase())
                 .join(',\n\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0') : ""));
         let types = VocabularyElements[ProjectElements[cell.id].iri].types;
-        let width = Math.max(9 * (vocabElem.labels[languageCode].length),
-            types.length > 0 ? 3 * (types.reduce((a, b) => a.length > b.length ? a : b, "").length) : 0);
+        let width = ProjectSettings.representation === Representation.COMPACT ?
+            Math.max(9 * (vocabElem.labels[languageCode].length),
+                types.length > 0 ? 3 * (types.reduce((a, b) => a.length > b.length ? a : b, "").length) : 0) :
+            labels.reduce((a, b) => a.length > b.length ? a : b, "").length * 10;
         cell.prop('attrs/body/width', width);
         cell.prop('attrs/text/x', width / 2);
         let height = ProjectSettings.representation === Representation.COMPACT ?
             (types.length > 0 ? (30 + (types.length * 10)) : 25) :
-            ((types.length + 1) * 24);
+            ((labels.length) * 24);
         cell.prop('attrs/body/height', height);
+        if (cell instanceof joint.dia.Element) cell.resize(width, height);
     }
 }
 
@@ -95,7 +98,10 @@ export function getUnderlyingFullConnections(link: joint.dia.Link): { src: strin
 
 export function setLabels(link: joint.dia.Link, centerLabel: string){
     if (ProjectLinks[link.id].type === LinkType.DEFAULT) {
-        link.appendLabel({attrs: {text: {text: centerLabel}}});
+        link.appendLabel({
+            attrs: {text: {text: centerLabel}},
+            position: {distance: 0.5}
+        });
         if (ProjectLinks[link.id].sourceCardinality.getString() !== LocaleMain.none) {
             link.appendLabel({
                 attrs: {text: {text: ProjectLinks[link.id].sourceCardinality.getString()}},
@@ -138,6 +144,7 @@ export function setRepresentation(representation: number) {
                                 new Cardinality(ProjectLinks[targetLink.id].sourceCardinality.getFirstCardinality(),
                                     ProjectLinks[targetLink.id].targetCardinality.getFirstCardinality());
                             setLabels(newLink, VocabularyElements[ProjectElements[elem.id].iri].labels[ProjectSettings.selectedLanguage]);
+
                         }
                         sourceLink.remove();
                         targetLink.remove();

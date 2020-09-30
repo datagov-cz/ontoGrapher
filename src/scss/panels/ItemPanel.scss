@@ -7,6 +7,11 @@
   max-width: 600px;
   border-radius: 0;
 
+  &.disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+
   .stereotypeElementItem {
     font-size: 14px;
     margin: 1px;
@@ -49,10 +54,8 @@
     height: calc(100vh - 100px) !important;
     overflow-y: auto;
     overflow-x: hidden;
-
     &.disabled {
       pointer-events: none;
-      opacity: 0.5;
     }
   }
 

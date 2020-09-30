@@ -6,6 +6,7 @@ import ModalRemoveDiagram from "./modal/ModalRemoveDiagram";
 
 interface Props {
 	handleChangeLoadingStatus: Function;
+	error: boolean;
 }
 
 interface State {
@@ -23,11 +24,12 @@ export default class DiagramPanel extends React.Component<Props, State> {
 	}
 
 	render() {
-		return (<div className={"diagramPanel"}>
+		return (<div className={"diagramPanel" + (this.props.error ? " disabled" : "")}>
 			{Diagrams.filter(diag => diag.active).map((diag, i) => <DiagramTab key={i} diagram={i} name={diag.name}
+																			   error={this.props.error}
 																			   update={() => this.forceUpdate()}
 																			   handleChangeLoadingStatus={this.props.handleChangeLoadingStatus}/>)}
-			<DiagramAdd update={() => this.forceUpdate()}/>
+			<DiagramAdd update={() => this.forceUpdate()} error={this.props.error}/>
 
 			<ModalRemoveDiagram
 				modal={this.state.modalRemoveDiagram}

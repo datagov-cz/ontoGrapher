@@ -1,10 +1,10 @@
+.disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
 .diagramPanel {
   background-color: #FFF;
-
-  &.disabled {
-    pointer-events: none;
-    opacity: 0.5;
-  }
 
   .diagramTab {
     background-color: #e3e3e3;
@@ -22,6 +22,10 @@
     border-top-right-radius: 5px;
     border-bottom: black 1px solid;
     cursor: default;
+
+    &.disabled {
+      pointer-events: none;
+    }
 
     &.selected {
       border-bottom: #e3e3e3 1px solid;

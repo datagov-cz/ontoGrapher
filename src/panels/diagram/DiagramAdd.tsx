@@ -4,6 +4,7 @@ import * as Locale from "../../locale/LocaleMain.json";
 
 interface Props {
 	update: Function;
+	error: boolean;
 }
 
 interface State {
@@ -18,7 +19,7 @@ export default class DiagramAdd extends React.Component<Props, State> {
 	}
 
 	render() {
-		return (<div className={"diagramTab"}>
+		return (<div className={"diagramTab" + (this.props.error ? " disabled" : "")}>
 			<button className={"buttonlink nounderline"} onClick={() => {
 				this.addDiagram();
 			}}>

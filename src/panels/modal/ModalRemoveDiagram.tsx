@@ -1,6 +1,7 @@
 import React from 'react';
 import {Button, Modal} from "react-bootstrap";
 import * as LocaleMenu from "../../locale/LocaleMenu.json";
+import * as LocaleMain from "../../locale/LocaleMain.json";
 import {Diagrams, ProjectSettings} from "../../config/Variables";
 import {changeDiagrams} from "../../function/FunctionDiagram";
 import {updateProjectSettings} from "../../interface/TransactionInterface";
@@ -25,7 +26,7 @@ export default class ModalRemoveDiagram extends React.Component<Props> {
 			if (result) {
 				this.props.handleChangeLoadingStatus(false, "", false);
 			} else {
-				this.props.handleChangeLoadingStatus(false, "", true);
+				this.props.handleChangeLoadingStatus(false, LocaleMain.errorUpdating, true);
 			}
 		})
 	}

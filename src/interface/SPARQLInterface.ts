@@ -301,7 +301,7 @@ export async function getLinksConfig(contextIRI: string, contextEndpoint: string
                     active: result.active.value === "true",
                     vertexIRI: [],
                     vertexes: {},
-                    type: result.type.value,
+                    type: result.type.value === "default" ? LinkType.DEFAULT : LinkType.GENERALIZATION,
                     sourceCardinality1: result.sourceCard1.value,
                     sourceCardinality2: result.sourceCard2.value,
                     targetCardinality1: result.targetCard1.value,

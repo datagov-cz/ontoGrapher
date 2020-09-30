@@ -37,6 +37,7 @@ interface Props {
 	save: Function;
 	handleChangeLoadingStatus: Function;
 	handleWidth: Function;
+	error: boolean;
 }
 
 interface State {
@@ -100,7 +101,6 @@ export default class DetailElement extends React.Component<Props, State> {
 		}
 		updateProjectElement(
 			ProjectSettings.contextEndpoint,
-			DetailElement.name,
 			this.state.inputTypes,
 			this.state.inputLabels,
 			this.state.inputDefinitions,
@@ -116,7 +116,7 @@ export default class DetailElement extends React.Component<Props, State> {
 				for (let conn of ProjectElements[this.state.id].connections) {
 					await updateProjectLink(ProjectSettings.contextEndpoint, conn).then(res => {
 						if (!res) {
-							this.props.handleChangeLoadingStatus(false, "", true);
+							this.props.handleChangeLoadingStatus(false, LocaleMain.errorUpdating, true);
 						}
 					});
 				}
@@ -130,7 +130,7 @@ export default class DetailElement extends React.Component<Props, State> {
 				ProjectElements[this.state.id].untitled = false;
 				this.prepareDetails(this.state.id);
 			} else {
-				this.props.handleChangeLoadingStatus(false, "", true);
+				this.props.handleChangeLoadingStatus(false, LocaleMain.errorUpdating, true);
 			}
 		});
 	}
@@ -152,8 +152,8 @@ export default class DetailElement extends React.Component<Props, State> {
 				let elem = document.querySelector(".details");
 				if (elem) this.props.handleWidth(elem.getBoundingClientRect().width);
 			}}
-			className={"details"}>
-			<div>
+			className={"details" + (this.props.error ? " disabled" : "")}>
+			<div className={(this.props.error ? " disabled" : "")}>
 				<button className={"buttonlink close nounderline"} onClick={() => {
 					unHighlightAll();
 					this.setState({id: ""});

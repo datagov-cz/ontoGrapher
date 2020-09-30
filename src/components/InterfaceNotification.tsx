@@ -8,6 +8,7 @@ interface Props {
 	active: boolean;
 	message: string;
 	error: boolean;
+	retry: boolean;
 	handleChangeLoadingStatus: Function;
 }
 
@@ -16,8 +17,8 @@ export default class InterfaceNotification extends React.Component<Props> {
 	render() {
 		if (this.props.error) {
 			return (<span className={"interfaceNotification"}>
-				{Locale.errorUpdating}&nbsp;
-				<button className={"buttonlink"} onClick={() => {
+				{this.props.message}&nbsp;
+				{this.props.retry && <button className={"buttonlink"} onClick={() => {
 					this.props.handleChangeLoadingStatus(true, LocaleMain.updating, false);
 					retryConnection().then(ret => {
 						if (ret) {
@@ -26,7 +27,7 @@ export default class InterfaceNotification extends React.Component<Props> {
 							this.props.handleChangeLoadingStatus(false, "", true);
 						}
 					})
-				}}>{Locale.retry}</button>
+				}}>{Locale.retry}</button>}
 			</span>);
 		} else {
 			return (<span className={"interfaceNotification"}>

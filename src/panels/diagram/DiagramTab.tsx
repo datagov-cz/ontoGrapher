@@ -4,12 +4,14 @@ import {changeDiagrams} from "../../function/FunctionDiagram";
 // @ts-ignore
 import {RIEInput} from "riek";
 import {updateProjectSettings} from "../../interface/TransactionInterface";
+import * as LocaleMain from "../../locale/LocaleMain.json";
 
 interface Props {
 	name: string;
 	diagram: number;
 	update: Function;
 	handleChangeLoadingStatus: Function;
+	error: boolean;
 }
 
 interface State {
@@ -28,7 +30,7 @@ export default class DiagramTab extends React.Component<Props, State> {
 				this.props.update();
 				this.props.handleChangeLoadingStatus(false, "", false);
 			} else {
-				this.props.handleChangeLoadingStatus(false, "", true);
+				this.props.handleChangeLoadingStatus(false, LocaleMain.errorUpdating, true);
 			}
 		})
 	}
@@ -45,7 +47,7 @@ export default class DiagramTab extends React.Component<Props, State> {
 			if (result) {
 				this.props.handleChangeLoadingStatus(false, "", false);
 			} else {
-				this.props.handleChangeLoadingStatus(false, "", true);
+				this.props.handleChangeLoadingStatus(false, LocaleMain.errorUpdating, true);
 			}
 		})
 		this.forceUpdate();
@@ -54,8 +56,9 @@ export default class DiagramTab extends React.Component<Props, State> {
 
 	render() {
 		return (
-			<div className={"diagramTab" + (this.props.diagram === ProjectSettings.selectedDiagram ? " selected" : "")}
-				 onClick={() => this.changeDiagram()}>
+			<div
+				className={"diagramTab" + (this.props.diagram === ProjectSettings.selectedDiagram ? " selected" : "") + (this.props.error ? " disabled" : "")}
+				onClick={() => this.changeDiagram()}>
 				{this.props.diagram === ProjectSettings.selectedDiagram ? <RIEInput
 					className={"rieinput"}
 					value={this.props.name.length > 0 ? this.props.name : "<blank>"}
