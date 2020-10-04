@@ -82,7 +82,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
         cls.attr({label: {text: name}});
         if (typeof cls.id === "string" && pkg.scheme) {
             let iri = createIDIRI(cls.id);
-            addVocabularyElement(iri, pkg.scheme);
+            addVocabularyElement(iri, pkg.scheme, [parsePrefix("skos", "Concept")]);
             addClass(cls.id, iri, pkg, true, true);
             let labels = initLanguageObject("");
             labels[language] = name;
@@ -247,14 +247,6 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                 this.props.handleChangeLoadingStatus(false, LocaleMain.errorUpdating, true);
             }
         });
-    }
-
-    componentDidUpdate(prevProps: Readonly<Props>, prevState: Readonly<State>, snapshot?: any) {
-        if (prevProps !== this.props && this.props.error) {
-            this.paper?.setInteractivity(true);
-        } else if (prevProps !== this.props && !(this.props.error)) {
-            this.paper?.setInteractivity(true);
-        }
     }
 
     componentDidMount(): void {
@@ -526,7 +518,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                     this.props.handleChangeLoadingStatus(true, LocaleMain.updating, false);
                     const data = JSON.parse(event.dataTransfer.getData("newClass"));
                     let cls = new graphElement({id: data.id});
-                    drawGraphElement(cls, ProjectSettings.selectedLanguage);
+                    drawGraphElement(cls, ProjectSettings.selectedLanguage, ProjectSettings.representation);
                     let point = this.paper?.clientToLocalPoint({x: event.clientX, y: event.clientY});
                     if (point) {
                         cls.set('position', {x: point.x, y: point.y});

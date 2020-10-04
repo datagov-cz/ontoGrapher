@@ -1,6 +1,6 @@
 import * as Locale from "./../locale/LocaleMain.json";
 import {Links, Schemes, Stereotypes} from "../config/Variables";
-import {fetchConcepts, getScheme} from "./SPARQLInterface";
+import {fetchConcepts, getAllTypes, getScheme} from "./SPARQLInterface";
 import {createValues} from "../function/FunctionCreateVars";
 import {initLanguageObject} from "../function/FunctionEditVars";
 import {checkLabels} from "../function/FunctionGetVars";
@@ -21,7 +21,6 @@ export async function getVocabulariesFromRemoteJSON(pathToJSON: string): Promise
                             Stereotypes,
                             false,
                             undefined,
-                            undefined,
                             false,
                             undefined,
                             true,
@@ -34,7 +33,6 @@ export async function getVocabulariesFromRemoteJSON(pathToJSON: string): Promise
                             Links,
                             false,
                             undefined,
-                            undefined,
                             false,
                             undefined,
                             true,
@@ -42,6 +40,32 @@ export async function getVocabulariesFromRemoteJSON(pathToJSON: string): Promise
                             data.values ? createValues(data.values, data.prefixes) : undefined
                         );
                         checkLabels();
+                        for (let link in Links) {
+                            Links[link].typesDomain = [];
+                            Links[link].typesRange = [];
+                            Links[link].subClassOfDomain = [];
+                            Links[link].subClassOfRange = [];
+                        }
+                        await Promise.all(Object.keys(Stereotypes).map(stereotype =>
+                            getAllTypes(
+                                stereotype,
+                                data.endpoint,
+                                Stereotypes[stereotype].types,
+                                Stereotypes[stereotype].subClassOf)))
+                        await Promise.all(Object.keys(Links).map(link => {
+                            if (Links[link].domain && Links[link].domain !== "") getAllTypes(
+                                Links[link].domain,
+                                data.endpoint,
+                                Links[link].typesDomain,
+                                Links[link].subClassOfDomain, true)
+                        }))
+                        await Promise.all(Object.keys(Links).map(link => {
+                            if (Links[link].range && Links[link].range !== "") getAllTypes(
+                                Links[link].range,
+                                data.endpoint,
+                                Links[link].typesRange,
+                                Links[link].subClassOfRange, true)
+                        }))
                     }
                 }
             }

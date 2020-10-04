@@ -1,7 +1,7 @@
 import * as Locale from "../locale/LocaleMain.json";
 import {Cardinality} from "../datatypes/Cardinality";
 import {PackageNode} from "../datatypes/PackageNode";
-import {initLanguageObject, parsePrefix} from "../function/FunctionEditVars";
+import {initLanguageObject} from "../function/FunctionEditVars";
 import {RestrictionObject} from "../datatypes/RestrictionObject";
 import {ConnectionObject} from "../datatypes/ConnectionObject";
 import {Representation} from "./Enum";
@@ -71,20 +71,6 @@ export var Prefixes: { [key: string]: string } = {
     "v-sgov-pojem": "https://slovník.gov.cz/veřejný-sektor/pojem/"
 };
 
-export var Structures: { [key: string]: string } = {
-    "z-sgov-pojem:základní-struktura": parsePrefix("z-sgov-pojem", "základní-struktura"),
-    "z-sgov-pojem:legislativní-struktura": parsePrefix("z-sgov-pojem", "legislativní-struktura"),
-    "z-sgov-pojem:agendová-struktura": parsePrefix("z-sgov-pojem", "agendová-struktura"),
-    "z-sgov-pojem:datová-struktura": parsePrefix("z-sgov-pojem", "datová-struktura")
-};
-
-export var StructuresShort: { [key: string]: string } = {
-    "z-sgov-pojem:základní-struktura": "základní",
-    "z-sgov-pojem:legislativní-struktura": "legislativní",
-    "z-sgov-pojem:agendová-struktura": "agendová",
-    "z-sgov-pojem:datová-struktura": "datová"
-};
-
 export var PackageRoot: PackageNode = new PackageNode(initLanguageObject("Root"), undefined, true, "");
 
 export var VocabularyElements: {
@@ -109,6 +95,12 @@ export var Links: {
         definitions: { [key: string]: string },
         inScheme: string,
         type: number,
+        domain: string;
+        range: string;
+        typesDomain: string[],
+        subClassOfDomain: string[]
+        typesRange: string[],
+        subClassOfRange: string[]
     }
 } = {};
 
@@ -117,6 +109,8 @@ export var Stereotypes: {
         labels: { [key: string]: string },
         definitions: { [key: string]: string },
         inScheme: string,
+        types: string[],
+        subClassOf: string[]
     }
 } = {};
 
@@ -134,7 +128,8 @@ export var ProjectSettings: {
     ontographerContext: string,
     initialized: boolean,
     representation: number,
-    lastUpdate: { func: Function, args: [] }
+    lastUpdate: { func: Function, args: [] },
+    switchElements: string[],
 } = {
     name: {},
     description: {},
@@ -148,7 +143,8 @@ export var ProjectSettings: {
     lastUpdate: {
         func: function () {
         }, args: []
-    }
+    },
+    switchElements: []
 };
 
 export var CardinalityPool: Cardinality[] = [

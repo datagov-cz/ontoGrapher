@@ -1,7 +1,7 @@
 import {Links, ProjectElements, ProjectLinks, ProjectSettings, VocabularyElements} from "../config/Variables";
 import {getName, getStereotypeList, parsePrefix} from "./FunctionEditVars";
 import {graph} from "../graph/Graph";
-import {getLinkOrVocabElem, getVocabElementByElementID} from "./FunctionGetVars";
+import {getLinkOrVocabElem} from "./FunctionGetVars";
 import * as joint from "jointjs";
 import * as LocaleMain from "../locale/LocaleMain.json";
 import {graphElement} from "../graph/GraphElement";
@@ -14,27 +14,40 @@ import {LinkType, Representation} from "../config/Enum";
 let mvp1IRI = "https://slovník.gov.cz/základní/pojem/má-vztažený-prvek-1";
 let mvp2IRI = "https://slovník.gov.cz/základní/pojem/má-vztažený-prvek-2";
 
-export function drawGraphElement(cell: joint.dia.Cell, languageCode: string) {
+export function drawGraphElement(cell: joint.dia.Cell, languageCode: string, representation: number) {
     if (typeof cell.id === "string") {
-        let vocabElem = getVocabElementByElementID(cell.id);
-        let labels = (ProjectSettings.representation === Representation.FULL ?
-            getStereotypeList(vocabElem.types, languageCode).map((str) => "«" + str.toLowerCase() + "»") : [])
-            .concat([(vocabElem.labels[languageCode] === "" ? "<blank>" : vocabElem.labels[languageCode])]);
-        cell.prop('attrs/label/text', labels.join("\n"));
-        cell.prop("attrs/labelAttrs/text", ((ProjectSettings.representation === Representation.COMPACT &&
-            VocabularyElements[ProjectElements[cell.id].iri].types.length > 0) ? "rdf:type = " +
-            getStereotypeList(vocabElem.types, languageCode).map((str) => str.toLowerCase())
-                .join(',\n\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0') : ""));
         let types = VocabularyElements[ProjectElements[cell.id].iri].types;
-        let width = ProjectSettings.representation === Representation.COMPACT ?
-            Math.max(9 * (vocabElem.labels[languageCode].length),
-                types.length > 0 ? 3 * (types.reduce((a, b) => a.length > b.length ? a : b, "").length) : 0) :
+        let label = VocabularyElements[ProjectElements[cell.id].iri].labels[languageCode];
+        let labels: string[] = [];
+        if (representation === Representation.FULL)
+            getStereotypeList(types, languageCode).forEach((str) => labels.push("«" + str.toLowerCase() + "»"));
+        labels.push(label === "" ? "<blank>" : label);
+        cell.prop('attrs/label/text', labels.join("\n"));
+        let text = [];
+        if (representation === Representation.COMPACT) {
+            for (let link in ProjectLinks) {
+                if (ProjectLinks[link].source === cell.id &&
+                    ProjectLinks[link].active) {
+                    if (ProjectLinks[link].iri === parsePrefix("z-sgov-pojem", "má-vlastnost") &&
+                        ProjectLinks[link].source === cell.id) {
+                        text.push(VocabularyElements[ProjectElements[ProjectLinks[link].target].iri].labels[languageCode])
+                    } else if (ProjectLinks[link].iri === parsePrefix("z-sgov-pojem", "je-vlastností") &&
+                        ProjectLinks[link].target === cell.id) {
+                        text.push(VocabularyElements[ProjectElements[ProjectLinks[link].source].iri].labels[languageCode])
+                    }
+                }
+            }
+        }
+        cell.prop("attrs/labelAttrs/text", text.join("\n"));
+        let width = representation === Representation.COMPACT ?
+            Math.max(9 * (label.length),
+                text.length > 0 ? 3 * (text.reduce((a, b) => a.length > b.length ? a : b, "").length) : 0) :
             labels.reduce((a, b) => a.length > b.length ? a : b, "").length * 10;
         cell.prop('attrs/body/width', width);
         cell.prop('attrs/text/x', width / 2);
-        let height = ProjectSettings.representation === Representation.COMPACT ?
-            (types.length > 0 ? (30 + (types.length * 10)) : 25) :
-            ((labels.length) * 24);
+        let height = representation === Representation.COMPACT ?
+            (text.length > 0 ? (30 + (text.length * 10)) : 25) :
+            (24 + ((labels.length - 1) * 18));
         cell.prop('attrs/body/height', height);
         if (cell instanceof joint.dia.Element) cell.resize(width, height);
     }
@@ -117,11 +130,20 @@ export function setLabels(link: joint.dia.Link, centerLabel: string){
     }
 }
 
+function storeElement(elem: joint.dia.Element) {
+    ProjectElements[elem.id].position[ProjectSettings.selectedDiagram] = elem.position();
+    ProjectElements[elem.id].hidden[ProjectSettings.selectedDiagram] = true;
+    elem.remove();
+    if (typeof elem.id === "string") {
+        ProjectSettings.switchElements.push(elem.id);
+    }
+}
+
 export function setRepresentation(representation: number) {
     if (representation === Representation.COMPACT) {
         ProjectSettings.representation = Representation.COMPACT;
         for (let elem of graph.getElements()) {
-            drawGraphElement(elem, ProjectSettings.selectedLanguage);
+            drawGraphElement(elem, ProjectSettings.selectedLanguage, representation);
             if (
                 VocabularyElements[ProjectElements[elem.id].iri].types.includes(parsePrefix("z-sgov-pojem", "typ-vztahu"))
             ) {
@@ -144,17 +166,14 @@ export function setRepresentation(representation: number) {
                                 new Cardinality(ProjectLinks[targetLink.id].sourceCardinality.getFirstCardinality(),
                                     ProjectLinks[targetLink.id].targetCardinality.getFirstCardinality());
                             setLabels(newLink, VocabularyElements[ProjectElements[elem.id].iri].labels[ProjectSettings.selectedLanguage]);
-
                         }
                         sourceLink.remove();
                         targetLink.remove();
                     }
                 }
-                if (graph.getConnectedLinks(elem).length < 2) {
-                    ProjectElements[elem.id].position[ProjectSettings.selectedDiagram] = elem.position();
-                    ProjectElements[elem.id].hidden[ProjectSettings.selectedDiagram] = true;
-                    elem.remove();
-                }
+                if (graph.getConnectedLinks(elem).length < 2) storeElement(elem);
+            } else if (VocabularyElements[ProjectElements[elem.id].iri].types.includes(parsePrefix("z-sgov-pojem", "typ-vlastnosti"))) {
+                storeElement(elem);
             }
         }
         let del = false;
@@ -173,12 +192,22 @@ export function setRepresentation(representation: number) {
                 ProjectLinks[link.id].active = false;
             }
         }
+        for (let elem of ProjectSettings.switchElements) {
+            let find = graph.getElements().find(cell => cell.id === elem &&
+                ProjectElements[elem].active && ProjectElements[elem].hidden[ProjectSettings.selectedDiagram]);
+            let cell = find || new graphElement({id: elem})
+            cell.addTo(graph);
+            cell.position(ProjectElements[elem].position[ProjectSettings.selectedDiagram].x, ProjectElements[elem].position[ProjectSettings.selectedDiagram].y)
+            drawGraphElement(cell, ProjectSettings.selectedLanguage, representation);
+            restoreHiddenElem(elem, cell);
+        }
         for (let elem of graph.getElements()) {
+            drawGraphElement(elem, ProjectSettings.selectedLanguage, representation);
             if (typeof elem.id === "string") {
-                drawGraphElement(elem, ProjectSettings.selectedLanguage);
                 restoreHiddenElem(elem.id, elem);
             }
         }
+        ProjectSettings.switchElements = [];
         return false;
     }
 }
@@ -252,7 +281,7 @@ export function restoreHiddenElem(id: string, cls: joint.dia.Element) {
                         relationship.position(posx, posy);
                     }
                     ProjectElements[relID].hidden[ProjectSettings.selectedDiagram] = false;
-                    drawGraphElement(relationship, ProjectSettings.selectedLanguage);
+                    drawGraphElement(relationship, ProjectSettings.selectedLanguage, Representation.FULL);
                     domainLink.source({id: relID});
                     domainLink.target({id: ProjectLinks[link].target});
                     rangeLink.source({id: relID});

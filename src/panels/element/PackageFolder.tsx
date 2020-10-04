@@ -1,6 +1,6 @@
 import React from 'react';
 import {PackageNode} from "../../datatypes/PackageNode";
-import {ProjectElements, ProjectSettings, VocabularyElements} from "../../config/Variables";
+import {ProjectElements, VocabularyElements} from "../../config/Variables";
 import {getLabelOrBlank} from "../../function/FunctionGetVars";
 
 interface Props {

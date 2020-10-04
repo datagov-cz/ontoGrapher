@@ -2,7 +2,7 @@ import {Diagrams, Links, ProjectElements, ProjectLinks, ProjectSettings, Schemes
 import {initLanguageObject} from "../function/FunctionEditVars";
 import * as joint from "jointjs";
 import {Cardinality} from "../datatypes/Cardinality";
-
+import * as _ from "lodash";
 import * as Locale from "../locale/LocaleMain.json";
 import {createRestriction} from "../function/FunctionRestriction";
 import {LinkType} from "../config/Enum";
@@ -13,7 +13,6 @@ export async function fetchConcepts(
     sendTo: { [key: string]: any },
     readOnly: boolean,
     graph?: string,
-    callback?: Function,
     getSubProperties?: boolean,
     subPropertyOf?: string,
     requiredType?: boolean,
@@ -67,7 +66,7 @@ export async function fetchConcepts(
     ).then(data => {
         for (let row of data.results.bindings) {
             if (!(row.term.value in result)) {
-                if (getSubProperties) fetchConcepts(endpoint, source, sendTo, readOnly, graph, callback, getSubProperties, row.term.value, requiredType, requiredTypes, requiredValues);
+                if (getSubProperties) fetchConcepts(endpoint, source, sendTo, readOnly, graph, getSubProperties, row.term.value, requiredType, requiredTypes, requiredValues);
                 result[row.term.value] = {
                     labels: initLanguageObject(""),
                     definitions: initLanguageObject(""),
@@ -88,10 +87,42 @@ export async function fetchConcepts(
             if (row.restriction && Object.keys(Links).includes(row.onProperty.value)) createRestriction(result, row.term.value, row.restrictionPred.value, row.onProperty.value, row.target);
         }
         Object.assign(sendTo, result);
-        if (callback) callback(true);
+        return true;
     }).catch(() => {
-        if (callback) callback(false);
+        return false;
     });
+}
+
+export async function getAllTypes(iri: string, endpoint: string, targetTypes: string[], targetSubClass: string[], init: boolean = false): Promise<boolean> {
+    let subClassOf: string[] = init ? [iri] : _.cloneDeep(targetSubClass);
+    while (subClassOf.length > 0) {
+        let subc = subClassOf.pop();
+        if (subc) {
+            if (!(targetSubClass.includes(subc))) targetSubClass.push(subc);
+            let query = [
+                "PREFIX skos: <http://www.w3.org/2004/02/skos/core#>",
+                "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>",
+                "SELECT ?type ?subClass",
+                "WHERE {",
+                "<" + subc + "> a ?type.",
+                "<" + subc + "> rdfs:subClassOf ?subClass.",
+                "}",
+            ].join(" ");
+            let q = endpoint + "?query=" + encodeURIComponent(query);
+            await fetch(q, {headers: {'Accept': 'application/json'}}).then(response => {
+                return response.json();
+            }).then(data => {
+                for (let result of data.results.bindings) {
+                    if (!(targetTypes.includes(result.type.value))) targetTypes.push(result.type.value);
+                    if (!(subClassOf.includes(result.subClass.value)) &&
+                        result.subClass.type !== "bnode") subClassOf.push(result.subClass.value);
+                }
+            }).catch(() => {
+                return false;
+            });
+        } else break;
+    }
+    return true;
 }
 
 export async function getScheme(iri: string, endpoint: string, readOnly: boolean, graph?: string) {

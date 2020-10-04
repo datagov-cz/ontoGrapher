@@ -3,14 +3,14 @@ import MenuPanel from "../panels/MenuPanel";
 import ItemPanel from "../panels/ItemPanel";
 import DiagramCanvas from "./DiagramCanvas";
 import * as Locale from "../locale/LocaleMain.json";
-import {Languages, ProjectElements, ProjectLinks, ProjectSettings} from "../config/Variables";
+import {Languages, ProjectElements, ProjectLinks, ProjectSettings,} from "../config/Variables";
 import DetailPanel from "../panels/DetailPanel";
 import {getVocabulariesFromRemoteJSON} from "../interface/JSONInterface";
 import {addRelationships, initVars} from "../function/FunctionEditVars";
 import {getContext} from "../interface/ContextInterface";
 import {graph} from "../graph/Graph";
 import {loadProject, newProject} from "../function/FunctionProject";
-import {drawGraphElement, nameGraphLink, setRepresentation, unHighlightAll} from "../function/FunctionGraph";
+import {drawGraphElement, nameGraphLink, unHighlightAll} from "../function/FunctionGraph";
 import {setupDiagrams} from "../function/FunctionCreateVars";
 import {getElementsConfig, getLinksConfig, getSettings} from "../interface/SPARQLInterface";
 import {initConnections, initRestrictions} from "../function/FunctionRestriction";
@@ -103,7 +103,7 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 		document.title = ProjectSettings.name[languageCode] + " | " + Locale.ontoGrapher;
 		graph.getElements().forEach((cell) => {
 			if (ProjectElements[cell.id]) {
-				drawGraphElement(cell, languageCode);
+				drawGraphElement(cell, languageCode, ProjectSettings.representation);
 			}
 		});
 		graph.getLinks().forEach((cell) => {
@@ -156,9 +156,10 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 					ProjectSettings.contextEndpoint = contextEndpoint;
 					ProjectSettings.contextIRI = contextIRI
 					this.handleChangeLanguage(Object.keys(Languages)[0]);
-					await getElementsConfig(ProjectSettings.contextIRI, ProjectSettings.contextEndpoint);
-					await getLinksConfig(ProjectSettings.contextIRI, ProjectSettings.contextEndpoint);
-					await getSettings(ProjectSettings.contextIRI, ProjectSettings.contextEndpoint);
+					await Promise.all([
+						getElementsConfig(ProjectSettings.contextIRI, ProjectSettings.contextEndpoint),
+						getLinksConfig(ProjectSettings.contextIRI, ProjectSettings.contextEndpoint),
+						getSettings(ProjectSettings.contextIRI, ProjectSettings.contextEndpoint)]);
 					this.handleChangeLoadingStatus(true, ProjectSettings.initialized ?
 						"Updating ontoGrapher data..." :
 						"Initializing ontoGrapher data (this will only be done once)...", false);
@@ -169,7 +170,8 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 					await updateProjectSettings(contextIRI, contextEndpoint);
 					this.forceUpdate();
 					this.elementPanel.current?.forceUpdate();
-					setRepresentation(Representation.FULL);
+					for (let elem of graph.getElements())
+						drawGraphElement(elem, ProjectSettings.selectedLanguage, Representation.FULL);
 					this.handleChangeLoadingStatus(false, "✔ Workspace ready.", false);
 				}
             })

@@ -6,14 +6,13 @@ import {
     ProjectSettings,
     VocabularyElements
 } from "../config/Variables";
-import * as LocaleMain from "../locale/LocaleMain.json";
 import {initLanguageObject} from "./FunctionEditVars";
 import {PackageNode} from "../datatypes/PackageNode";
 import {graphElement} from "../graph/GraphElement";
 import {drawGraphElement, restoreHiddenElem} from "./FunctionGraph";
 import {changeDiagrams} from "./FunctionDiagram";
 import {graph} from "../graph/Graph";
-import {LinkType} from "../config/Enum";
+import {LinkType, Representation} from "../config/Enum";
 
 export async function setupDiagrams(diagram: number = 0): Promise<boolean> {
     for (let i = 0; i < Diagrams.length; i++) {
@@ -25,7 +24,7 @@ export async function setupDiagrams(diagram: number = 0): Promise<boolean> {
                     let cls = new graphElement({id: id});
                     cls.position(ProjectElements[id].position[i].x, ProjectElements[id].position[i].y);
                     cls.addTo(graph);
-                    drawGraphElement(cls, ProjectSettings.selectedLanguage);
+                    drawGraphElement(cls, ProjectSettings.selectedLanguage, Representation.FULL);
                     restoreHiddenElem(id, cls);
                 }
             }
@@ -51,13 +50,6 @@ export function createIDIRI(id: string) {
 }
 
 export function createNewElemIRI(labels: { [key: string]: string }, target: { [key: string]: any }, url: string): string {
-    let name = LocaleMain.untitled;
-    for (let lang in labels) {
-        if (labels[lang] !== "") {
-            name = labels[lang];
-            break;
-        }
-    }
     let result = url;
     result = result.trim().replace(/\s/g, '-');
     let count = 1;
@@ -82,14 +74,14 @@ export function getDomainOf(iriElem: string): string[] {
     return result;
 }
 
-export function addVocabularyElement(iri: string, scheme: string, type?: string) {
+export function addVocabularyElement(iri: string, scheme: string, types?: string[]) {
     VocabularyElements[iri] = {
         labels: initLanguageObject(""),
         definitions: initLanguageObject(""),
         inScheme: scheme,
         domain: undefined,
         range: undefined,
-        types: type ? [type] : [],
+        types: types ? types : [],
         subClassOf: [],
         restrictions: [],
         connections: [],

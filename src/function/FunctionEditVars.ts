@@ -55,10 +55,13 @@ export function loadUML() {
         let intType = parseInt(type, 10);
         if (intType !== LinkType.DEFAULT) {
             Links[scheme + "/" + LinkConfig[type].labels["en"]] = {
+                subClassOfDomain: [], subClassOfRange: [], typesDomain: [], typesRange: [],
                 labels: LinkConfig[type].labels,
                 definitions: initLanguageObject(""),
                 inScheme: scheme,
-                type: intType
+                type: intType,
+                domain: "",
+                range: ""
             }
         }
     }

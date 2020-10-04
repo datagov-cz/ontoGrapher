@@ -48,7 +48,7 @@ export default class InterfaceStatus extends React.Component<Props, State> {
 					id="tooltipC">{this.state.connection ? LocaleMain.stableConnection : LocaleMain.brokenConnection}</Tooltip>
 			}>
 				{(!this.state.connection) ?
-					<Spinner animation="grow" size="sm" variant={"danger"}/> : <div>🟢</div>}
+					<Spinner animation="grow" size="sm" variant={"danger"}/> : <div className={"noresponse"}>🟢</div>}
 			</OverlayTrigger>
 		</span>);
 	}

@@ -109,7 +109,7 @@ export default class DetailElement extends React.Component<Props, State> {
 				VocabularyElements[ProjectElements[this.state.id].iri].types = this.state.inputTypes;
 				VocabularyElements[ProjectElements[this.state.id].iri].labels = this.state.inputLabels;
 				VocabularyElements[ProjectElements[this.state.id].iri].definitions = this.state.inputDefinitions;
-				drawGraphElement(graph.getCell(this.state.id), this.props.projectLanguage);
+				drawGraphElement(graph.getCell(this.state.id), this.props.projectLanguage, ProjectSettings.representation);
 				this.props.save();
 				this.setState({changes: false});
 				this.props.handleChangeLoadingStatus(false, "", false);
@@ -189,7 +189,8 @@ export default class DetailElement extends React.Component<Props, State> {
 													<IRILink
 														label={getLabelOrBlank(getStereotypeOrVocabElem(iri).labels, this.props.projectLanguage)}
 														iri={iri}/>
-													<button className={"buttonlink right"} onClick={() => {
+													{(!this.state.readOnly) &&
+                                                    <button className={"buttonlink right"} onClick={() => {
 														let result = _.cloneDeep(this.state.inputTypes);
 														result.splice(result.indexOf(iri), 1);
 														this.setState({
@@ -197,8 +198,8 @@ export default class DetailElement extends React.Component<Props, State> {
 															changes: true,
 														})
 													}}><span role="img"
-															 aria-label={""}>❌</span>
-													</button>
+                                                             aria-label={""}>❌</span>
+                                                    </button>}
 												</td>
 											</tr>)
 										} else return ""
