@@ -20,7 +20,7 @@ import {getName} from "../../function/FunctionEditVars";
 import LabelTable from "./components/LabelTable";
 import DescriptionTabs from "./components/DescriptionTabs";
 import IRIlabel from "../../components/IRIlabel";
-import {drawGraphElement, unHighlightAll} from "../../function/FunctionGraph";
+import {drawGraphElement, restoreHiddenElem, unHighlightAll} from "../../function/FunctionGraph";
 import {graph} from "../../graph/Graph";
 import {
 	processGetTransaction,
@@ -30,6 +30,7 @@ import {
 } from "../../interface/TransactionInterface";
 import {createNewElemIRI} from "../../function/FunctionCreateVars";
 import * as _ from "lodash";
+import {graphElement} from "../../graph/GraphElement";
 
 interface Props {
 	projectLanguage: string;
@@ -71,6 +72,7 @@ export default class DetailElement extends React.Component<Props, State> {
 			readOnly: true,
 			changes: false
 		}
+		this.spreadConnections = this.spreadConnections.bind(this);
 	}
 
 	prepareDetails(id: string) {
@@ -139,6 +141,28 @@ export default class DetailElement extends React.Component<Props, State> {
 		if ((prevState !== this.state && this.state.changes)) {
 			this.save();
 		}
+	}
+
+	spreadConnections() {
+		this.props.handleChangeLoadingStatus(true, LocaleMain.updating, false);
+		let elem = graph.getElements().find(elem => elem.id === this.state.id);
+		if (elem) {
+			let centerX = elem.position().x + (elem.size().width / 2);
+			let centerY = elem.position().y + (elem.size().height / 2);
+			let elems = this.state.inputConnections.filter(conn =>
+				ProjectLinks[conn].active && !(graph.getCell(conn)));
+			let radius = 100 + (elems.length * 50);
+			for (let i = 0; i < elems.length; i++) {
+				let x = centerX + radius * Math.cos((i * 2 * Math.PI) / elems.length);
+				let y = centerY + radius * Math.sin((i * 2 * Math.PI) / elems.length);
+				let elem = new graphElement({id: ProjectLinks[elems[i]].target});
+				elem.addTo(graph);
+				elem.position(x, y);
+				drawGraphElement(elem, this.props.projectLanguage, ProjectSettings.representation);
+				restoreHiddenElem(ProjectLinks[elems[i]].target, elem);
+			}
+		}
+		this.props.handleChangeLoadingStatus(false, "", false);
 	}
 
 	render() {
@@ -275,6 +299,11 @@ export default class DetailElement extends React.Component<Props, State> {
 										}
 									)}
 								</TableList>
+								&nbsp;
+								{this.state.inputConnections.filter(conn => ProjectLinks[conn] && ProjectLinks[conn].active).length > 0 &&
+                                <Button className={"buttonlink"} onClick={this.spreadConnections}>
+									{LocaleMain.spreadConnections}
+                                </Button>}
 							</Card.Body>
 						</Accordion.Collapse>
 					</Card>

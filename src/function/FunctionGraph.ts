@@ -253,6 +253,7 @@ export function restoreHiddenElem(id: string, cls: joint.dia.Element) {
             (ProjectLinks[link].source === id || ProjectLinks[link].target === id)
             && (graph.getCell(ProjectLinks[link].source) && graph.getCell(ProjectLinks[link].target))) {
             let lnk = getNewLink(ProjectLinks[link].type, link);
+            console.log(ProjectLinks[link], Object.keys(ProjectLinks).map(link => ProjectLinks[link].iri));
             setLabels(lnk, getLinkOrVocabElem(ProjectLinks[link].iri).labels[ProjectSettings.selectedLanguage])
             lnk.source({id: ProjectLinks[link].source});
             lnk.target({id: ProjectLinks[link].target});

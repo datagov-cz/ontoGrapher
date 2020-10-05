@@ -138,7 +138,7 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 	}
 
 	loadVocabularies(contextIRI: string, contextEndpoint: string, reload: boolean = false, diagram: number = 0) {
-		this.setState({loading: true, status: Locale.loading});
+		this.handleChangeLoadingStatus(true, Locale.loading, false, false);
 		if (reload) this.newProject();
 		getVocabulariesFromRemoteJSON("https://raw.githubusercontent.com/opendata-mvcr/ontoGrapher/latest/src/config/Vocabularies.json").then(() => {
 			getContext(
@@ -172,7 +172,7 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 					this.elementPanel.current?.forceUpdate();
 					for (let elem of graph.getElements())
 						drawGraphElement(elem, ProjectSettings.selectedLanguage, Representation.FULL);
-					this.handleChangeLoadingStatus(false, "✔ Workspace ready.", false);
+					this.handleChangeLoadingStatus(false, "✔ Workspace ready.", false, false);
 				}
             })
         });

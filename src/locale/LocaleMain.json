@@ -35,6 +35,7 @@
   "loadingError": "Loading error.",
   "validationLoadingError": "Connection to validation server unsuccessful. Please reload to try again.",
   "pleaseReload": "Error: connection unsuccessful. Please reload to try again.",
+  "spreadConnections": "Explode connections",
   "finished": "All done!",
   "setAsDefault": "Set as default",
   "linkType": "Type",

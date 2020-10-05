@@ -41,6 +41,7 @@ body {
   &:hover {
     color: blue;
     text-decoration: underline;
+    background: none;
 
     &.nounderline {
       text-decoration: none;

@@ -68,7 +68,7 @@ export var LinkConfig: {
 		}
 	},
 	[LinkType.GENERALIZATION]: {
-		labels: {"cs": "Generalizace", "en": "Generalization"},
+		labels: {"cs": "generalizace", "en": "generalization"},
 		newLink: (id) => {
 			if (id) return new generalizationLink({id: id});
 			else return new generalizationLink();
