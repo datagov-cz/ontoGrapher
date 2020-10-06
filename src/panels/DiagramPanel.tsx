@@ -30,6 +30,7 @@ export default class DiagramPanel extends React.Component<Props, State> {
 																			   update={() => this.forceUpdate()}
 																			   handleChangeLoadingStatus={this.props.handleChangeLoadingStatus}/>)}
 			<DiagramAdd update={() => this.forceUpdate()} error={this.props.error}/>
+			<DiagramAdd update={() => this.forceUpdate()} handleChangeLoadingStatus={this.props.handleChangeLoadingStatus}/>
 
 			<ModalRemoveDiagram
 				modal={this.state.modalRemoveDiagram}

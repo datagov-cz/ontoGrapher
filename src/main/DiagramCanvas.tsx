@@ -112,8 +112,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
     createNewLink(id: string) {
         this.newLink = true;
         this.sid = id;
-        graph.getElements().filter(elem =>
-            !(Schemes[VocabularyElements[ProjectElements[elem.id].iri].inScheme].readOnly)).forEach(element => {
+        graph.getElements().forEach(element => {
             this.paper?.findViewByModel(element).highlight()
         });
     }

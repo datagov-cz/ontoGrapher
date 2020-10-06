@@ -44,6 +44,10 @@ export default class AboutModal extends React.Component<Props, State> {
 						</ul>
 					</Tab>
 					<Tab title={"September"} eventKey={"September"}>
+						<h6>24.9.</h6>
+						<ul>
+							<li>Bug fixing and stability improvements</li>
+						</ul>
 						<h6>14.9.</h6>
 						<ul>
 							<li>Bug fixing and stability improvements</li>
