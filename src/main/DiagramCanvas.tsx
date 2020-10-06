@@ -10,7 +10,7 @@ import {
     Schemes,
     VocabularyElements
 } from "../config/Variables";
-import {addClass, addLink, addVocabularyElement, createIDIRI} from "../function/FunctionCreateVars";
+import {addClass, addLink, addVocabularyElement, createNewElemIRI} from "../function/FunctionCreateVars";
 import {graph} from "../graph/Graph";
 import {
     drawGraphElement,
@@ -80,29 +80,31 @@ export default class DiagramCanvas extends React.Component<Props, State> {
         this.props.handleChangeLoadingStatus(true, LocaleMain.updating, false);
         let cls = new graphElement();
         cls.attr({label: {text: name}});
+        let point = this.paper?.clientToLocalPoint({x: this.newConceptEvent.x, y: this.newConceptEvent.y})
         if (typeof cls.id === "string" && pkg.scheme) {
-            let iri = createIDIRI(cls.id);
+            let url = pkg.scheme.substring(0, pkg.scheme.lastIndexOf("/") + 1) + "pojem/" + name;
+            let iri = createNewElemIRI(VocabularyElements, url);
             addVocabularyElement(iri, pkg.scheme, [parsePrefix("skos", "Concept")]);
             addClass(cls.id, iri, pkg, true, true);
+            if (point) {
+                cls.set('position', {x: point.x, y: point.y});
+                ProjectElements[cls.id].position[ProjectSettings.selectedDiagram] = {x: point.x, y: point.y};
+            }
             let labels = initLanguageObject("");
             labels[language] = name;
             VocabularyElements[ProjectElements[cls.id].iri].labels = labels;
             updateProjectElement(
                 ProjectSettings.contextEndpoint,
-                [],
+                VocabularyElements[iri].types,
                 labels,
                 initLanguageObject(""),
                 cls.id);
-        }
-        let point = this.paper?.clientToLocalPoint({x: this.newConceptEvent.x, y: this.newConceptEvent.y})
-        if (point) {
-            cls.set('position', {x: point.x, y: point.y});
-            ProjectElements[cls.id].position[ProjectSettings.selectedDiagram] = {x: point.x, y: point.y};
         }
         cls.addTo(graph);
         let bbox = this.paper?.findViewByModel(cls).getBBox();
         if (bbox) cls.resize(bbox.width, bbox.height);
         ProjectElements[cls.id].hidden[ProjectSettings.selectedDiagram] = false;
+        drawGraphElement(cls, language, ProjectSettings.representation);
         this.props.updateElementPanel(cls.position());
         this.props.handleChangeLoadingStatus(false, "", false);
     }
@@ -110,7 +112,8 @@ export default class DiagramCanvas extends React.Component<Props, State> {
     createNewLink(id: string) {
         this.newLink = true;
         this.sid = id;
-        graph.getElements().forEach(element => {
+        graph.getElements().filter(elem =>
+            !(Schemes[VocabularyElements[ProjectElements[elem.id].iri].inScheme].readOnly)).forEach(element => {
             this.paper?.findViewByModel(element).highlight()
         });
     }
@@ -335,13 +338,14 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                 });
             },
             'element:pointerclick': (cellView) => {
-                if (this.newLink) {
+                if (this.newLink &&
+                    !(Schemes[VocabularyElements[ProjectElements[cellView.model.id].iri].inScheme].readOnly)) {
                     this.tid = cellView.model.id;
                     this.setState({modalAddLink: true});
                 }
             },
             'element:mouseenter': (elementView) => {
-                let tool = ProjectElements[elementView.model.id].active ? new HideButton({
+                let tool = !(Schemes[VocabularyElements[ProjectElements[elementView.model.id].iri].inScheme].readOnly) ? new HideButton({
                     useModelGeometry: false,
                     x: '100%',
                     y: '0%',
@@ -395,7 +399,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                 });
                 elementView.addTools(new joint.dia.ToolsView({
                     tools: [
-                        new ElemCreateLink({
+                        !(Schemes[VocabularyElements[ProjectElements[elementView.model.id].iri].inScheme].readOnly) && new ElemCreateLink({
                             useModelGeometry: false,
                             y: '0%',
                             x: '0%',
@@ -407,13 +411,13 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                 }));
             },
             'link:mouseenter': (linkView) => {
+                let id = linkView.model.id;
                 let verticesTool = new joint.linkTools.Vertices({stopPropagation: false});
                 let segmentsTool = new joint.linkTools.Segments();
                 let removeButton = new joint.linkTools.Remove({
                     action: ((evt, view) => {
                         this.props.handleChangeLoadingStatus(true, LocaleMain.updating, false);
                         if (ProjectSettings.representation === Representation.FULL) {
-                            let id = view.model.id;
                             let sid = view.model.getSourceCell()?.id;
                             if (typeof sid === "string" && typeof id === "string") {
                                 this.deleteConnections(sid, id);
@@ -440,7 +444,10 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                         highlightCell(id);
                     }
                 })
-                let tools = [verticesTool, segmentsTool, removeButton]
+                let readOnly = (Schemes[VocabularyElements[ProjectElements[ProjectLinks[id].source].iri].inScheme].readOnly) ||
+                    (Schemes[VocabularyElements[ProjectElements[ProjectLinks[id].target].iri].inScheme].readOnly)
+                let tools = [verticesTool, segmentsTool]
+                if (!readOnly) tools.push(removeButton);
                 if (ProjectLinks[linkView.model.id] && ProjectLinks[linkView.model.id].type === LinkType.DEFAULT) tools.push(infoButton);
                 let toolsView = new joint.dia.ToolsView({
                     tools: tools

@@ -1,7 +1,5 @@
 import React from 'react';
 import {ProjectElements, ProjectSettings} from "../../config/Variables";
-// import {OverlayTrigger, Tooltip} from "react-bootstrap";
-// import * as LocaleMain from "../../locale/LocaleMain.json";
 
 interface Props {
 	label: string;
@@ -48,7 +46,7 @@ export default class PackageItem extends React.Component<Props, State> {
 				 onMouseLeave={() => {
 					 this.setState({hover: false})
 				 }}
-				 className={"stereotypeElementItem" + (ProjectElements[this.props.id].hidden[ProjectSettings.selectedDiagram] && " hidden")}
+				 className={"stereotypeElementItem" + (ProjectElements[this.props.id].hidden[ProjectSettings.selectedDiagram] ? " hidden" : "")}
 				 style={{marginLeft: ((this.props.depth * 10) + 5) + "px"}}>
                     <span
 						className={"label"}>{this.props.label}</span>

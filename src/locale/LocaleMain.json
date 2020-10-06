@@ -15,7 +15,7 @@
   "errorMissingRestriction": "Restriction not found",
   "validationNumber": "#",
   "createdConcept": "Created new concept!",
-  "deletedRelationships": "Some relationships are hidden in Compact view. To see them again, switch to Full view.",
+  "deletedRelationships": "Some concepts or relationships are hidden in Compact view. To see them again, switch to Full view.",
   "validationName": "Label",
   "validationSeverity": "Severity",
   "conforms": "Workspace conforms according to SGoV server",

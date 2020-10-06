@@ -20,6 +20,28 @@ export default class AboutModal extends React.Component<Props, State> {
             </Modal.Header>
             <Modal.Body>
                 <Tabs id={"changelog"}>
+					<Tab title={"October"} eventKey={"October"}>
+						<h6>6.10.</h6>
+						<ul>
+							<li>Bug fixing and stability improvements</li>
+							<li><b>New features:</b></li>
+							<li>Connection status indicator</li>
+							<ul>
+								<li>Located on the top right of the screen</li>
+								<li>Indicator is green and static when connected, red and animated when not connected
+								</li>
+							</ul>
+							<li>Editing environment now freezes on connection loss or saving error (and unfreezes on
+								connection restoration or saving error resolution)
+							</li>
+							<li>Connection "exploding" option</li>
+							<ul>
+								<li>Located in concepts' detail panel, in the Connections section</li>
+								<li>Using this option puts all connected concepts around the given concept</li>
+								<li>Option is not shown when all related concepts are already on the diagram</li>
+							</ul>
+						</ul>
+					</Tab>
 					<Tab title={"September"} eventKey={"September"}>
 						<h6>14.9.</h6>
 						<ul>

@@ -29,10 +29,10 @@ export function drawGraphElement(cell: joint.dia.Cell, languageCode: string, rep
                 if (ProjectLinks[link].source === cell.id &&
                     ProjectLinks[link].active) {
                     if (ProjectLinks[link].iri === parsePrefix("z-sgov-pojem", "má-vlastnost") &&
-                        ProjectLinks[link].source === cell.id) {
+                        ProjectLinks[link].source === cell.id && ProjectLinks[link].active) {
                         text.push(VocabularyElements[ProjectElements[ProjectLinks[link].target].iri].labels[languageCode])
                     } else if (ProjectLinks[link].iri === parsePrefix("z-sgov-pojem", "je-vlastností") &&
-                        ProjectLinks[link].target === cell.id) {
+                        ProjectLinks[link].target === cell.id && ProjectLinks[link].active) {
                         text.push(VocabularyElements[ProjectElements[ProjectLinks[link].source].iri].labels[languageCode])
                     }
                 }
@@ -41,12 +41,12 @@ export function drawGraphElement(cell: joint.dia.Cell, languageCode: string, rep
         cell.prop("attrs/labelAttrs/text", text.join("\n"));
         let width = representation === Representation.COMPACT ?
             Math.max(9 * (label.length),
-                text.length > 0 ? 3 * (text.reduce((a, b) => a.length > b.length ? a : b, "").length) : 0) :
+                text.length > 0 ? 8 * (text.reduce((a, b) => a.length > b.length ? a : b, "").length) : 0) :
             labels.reduce((a, b) => a.length > b.length ? a : b, "").length * 10;
         cell.prop('attrs/body/width', width);
         cell.prop('attrs/text/x', width / 2);
         let height = representation === Representation.COMPACT ?
-            (text.length > 0 ? (30 + (text.length * 10)) : 25) :
+            (text.length > 0 ? (30 + (text.length * 13)) : 25) :
             (24 + ((labels.length - 1) * 18));
         cell.prop('attrs/body/height', height);
         if (cell instanceof joint.dia.Element) cell.resize(width, height);
@@ -141,6 +141,7 @@ function storeElement(elem: joint.dia.Element) {
 
 export function setRepresentation(representation: number) {
     if (representation === Representation.COMPACT) {
+        let del = false;
         ProjectSettings.representation = Representation.COMPACT;
         for (let elem of graph.getElements()) {
             drawGraphElement(elem, ProjectSettings.selectedLanguage, representation);
@@ -171,12 +172,15 @@ export function setRepresentation(representation: number) {
                         targetLink.remove();
                     }
                 }
-                if (graph.getConnectedLinks(elem).length < 2) storeElement(elem);
+                if (graph.getConnectedLinks(elem).length < 2) {
+                    storeElement(elem);
+                    del = true;
+                }
             } else if (VocabularyElements[ProjectElements[elem.id].iri].types.includes(parsePrefix("z-sgov-pojem", "typ-vlastnosti"))) {
                 storeElement(elem);
+                del = true;
             }
         }
-        let del = false;
         for (let link of graph.getLinks()) {
             if (ProjectLinks[link.id].iri in Links && Links[ProjectLinks[link.id].iri].type === LinkType.DEFAULT) {
                 link.remove();
@@ -253,7 +257,6 @@ export function restoreHiddenElem(id: string, cls: joint.dia.Element) {
             (ProjectLinks[link].source === id || ProjectLinks[link].target === id)
             && (graph.getCell(ProjectLinks[link].source) && graph.getCell(ProjectLinks[link].target))) {
             let lnk = getNewLink(ProjectLinks[link].type, link);
-            console.log(ProjectLinks[link], Object.keys(ProjectLinks).map(link => ProjectLinks[link].iri));
             setLabels(lnk, getLinkOrVocabElem(ProjectLinks[link].iri).labels[ProjectSettings.selectedLanguage])
             lnk.source({id: ProjectLinks[link].source});
             lnk.target({id: ProjectLinks[link].target});

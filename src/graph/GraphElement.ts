@@ -17,8 +17,8 @@ export var graphElement = joint.dia.Element.define('custom.graphElement', {
                 textVerticalAnchor: 'top',
                 textAnchor: 'start',
                 fontSize: 14,
-                y: 30,
-                x: 5
+                y: 25,
+                x: 2
             }
         }
     }, {

@@ -157,7 +157,6 @@ export async function getElementsConfig(contextIRI: string, contextEndpoint: str
     let elements: {
         [key: string]: {
             id: "",
-            untitled: boolean,
             diagramIRI: number[],
             active: boolean,
             diagramPosition: { [key: number]: { x: number, y: number } },
@@ -167,13 +166,12 @@ export async function getElementsConfig(contextIRI: string, contextEndpoint: str
     } = {}
     let query = [
         "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
-        "select ?id ?iri ?untitled ?active ?attribute ?property ?diagram where {",
+        "select ?id ?iri ?active ?diagram where {",
         "?elem a og:element .",
         "?elem og:context <" + contextIRI + ">.",
         "?elem og:iri ?iri .",
         "?elem og:id ?id .",
         "?elem og:active ?active .",
-        "?elem og:untitled ?untitled .",
         "?elem og:diagram ?diagram .",
         "}"
     ].join(" ");
@@ -186,7 +184,6 @@ export async function getElementsConfig(contextIRI: string, contextEndpoint: str
             if (!(iri in elements)) {
                 elements[iri] = {
                     id: "",
-                    untitled: false,
                     diagramIRI: [],
                     diagrams: [],
                     active: true,
@@ -196,7 +193,6 @@ export async function getElementsConfig(contextIRI: string, contextEndpoint: str
             }
             elements[iri].id = result.id.value;
             elements[iri].active = result.active.value === "true";
-            elements[iri].untitled = result.untitled.value === "true";
             elements[iri].diagramIRI.push(result.diagram.value);
         }
     }).catch(() => {
@@ -238,7 +234,6 @@ export async function getElementsConfig(contextIRI: string, contextEndpoint: str
     }
     for (let id in ProjectElements) {
         if (ProjectElements[id].iri in elements) {
-            ProjectElements[id].untitled = elements[ProjectElements[id].iri].untitled;
             ProjectElements[id].hidden = elements[ProjectElements[id].iri].hidden;
             ProjectElements[id].diagrams = elements[ProjectElements[id].iri].diagrams;
             ProjectElements[id].active = elements[ProjectElements[id].iri].active;

@@ -56,7 +56,6 @@ export async function updateProjectElement(
 				"og:context": ProjectSettings.contextIRI,
 				"og:id": id,
 				"og:iri": iri,
-				"og:untitled": ProjectElements[id].untitled,
 				"og:diagram": ProjectElements[id].diagrams.map((diag) => (iri + "/diagram-" + (diag + 1))),
 				"og:active": ProjectElements[id].active,
 			},
@@ -114,7 +113,6 @@ export async function updateProjectElement(
 			delStrings.push(delString);
 		} else return false;
 	}
-
 
 	return await processTransaction(contextEndpoint, {add: addStrings, delete: delStrings});
 }

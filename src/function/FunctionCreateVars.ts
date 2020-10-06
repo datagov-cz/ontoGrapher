@@ -49,7 +49,7 @@ export function createIDIRI(id: string) {
     return ProjectSettings.ontographerContext + "/" + id;
 }
 
-export function createNewElemIRI(labels: { [key: string]: string }, target: { [key: string]: any }, url: string): string {
+export function createNewElemIRI(target: { [key: string]: any }, url: string): string {
     let result = url;
     result = result.trim().replace(/\s/g, '-');
     let count = 1;
@@ -93,14 +93,13 @@ export function addClass(
     id: string,
     iri: string,
     pkg: PackageNode,
-    untitled: boolean = true,
+    untitled: boolean = false,
     active: boolean = true) {
     ProjectElements[id] = {
         iri: iri,
         connections: [],
-        untitled: untitled,
         diagrams: [ProjectSettings.selectedDiagram],
-        hidden: {[ProjectSettings.selectedDiagram]: false},
+        hidden: {[ProjectSettings.selectedDiagram]: true},
         position: {[ProjectSettings.selectedDiagram]: {x: 0, y: 0}},
         package: pkg,
         active: active
