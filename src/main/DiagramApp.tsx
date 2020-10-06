@@ -217,6 +217,9 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 			<DiagramPanel
 				handleChangeLoadingStatus={this.handleChangeLoadingStatus}
 				error={this.state.error}
+				update={() => {
+					this.elementPanel.current?.forceUpdate();
+				}}
 			/>
 			<DetailPanel
 				error={this.state.error}

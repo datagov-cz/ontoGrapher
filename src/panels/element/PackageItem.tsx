@@ -30,6 +30,11 @@ export default class PackageItem extends React.Component<Props, State> {
 		}
 	}
 
+	isHidden() {
+		return ProjectElements[this.props.id].hidden[ProjectSettings.selectedDiagram] ||
+			ProjectElements[this.props.id].hidden[ProjectSettings.selectedDiagram] === undefined
+	}
+
 	render() {
 		return (
 			<div draggable
@@ -46,11 +51,11 @@ export default class PackageItem extends React.Component<Props, State> {
 				 onMouseLeave={() => {
 					 this.setState({hover: false})
 				 }}
-				 className={"stereotypeElementItem" + (ProjectElements[this.props.id].hidden[ProjectSettings.selectedDiagram] ? " hidden" : "")}
+				 className={"stereotypeElementItem" + (this.isHidden() ? " hidden" : "")}
 				 style={{marginLeft: ((this.props.depth * 10) + 5) + "px"}}>
                     <span
 						className={"label"}>{this.props.label}</span>
-				{(ProjectElements[this.props.id].hidden[ProjectSettings.selectedDiagram] ? hiddenSVG : <span/>)}
+				{(this.isHidden() ? hiddenSVG : <span/>)}
 				<span className={"packageOptions right"}
 					  style={{display: this.state.hover ? "inline-block" : "none"}}>
 					<button className={"buttonlink"}

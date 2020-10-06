@@ -3,7 +3,7 @@ import * as joint from "jointjs";
 import {graphElement} from "../graph/GraphElement";
 import {graph} from "../graph/Graph";
 import * as LocaleMain from "../locale/LocaleMain.json";
-import {restoreHiddenElem} from "./FunctionGraph";
+import {drawGraphElement, restoreHiddenElem} from "./FunctionGraph";
 
 export function changeDiagrams(diagram: number = 0) {
     Diagrams[ProjectSettings.selectedDiagram].json = saveDiagram();
@@ -75,6 +75,7 @@ export function loadDiagram(load: {
             }
         });
         cls.addTo(graph);
+        drawGraphElement(cls, ProjectSettings.selectedLanguage, ProjectSettings.representation);
         restoreHiddenElem(elem.id, cls);
     }
 }

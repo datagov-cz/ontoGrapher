@@ -21,7 +21,7 @@ interface State {
 export default class DiagramTab extends React.Component<Props, State> {
 
 	deleteDiagram() {
-		this.props.handleChangeLoadingStatus(true, "", false);
+		this.props.handleChangeLoadingStatus(true, LocaleMain.updating, false);
 		Diagrams[this.props.diagram].active = false;
 		updateProjectSettings(ProjectSettings.contextIRI, ProjectSettings.contextEndpoint).then(result => {
 			if (result) {
