@@ -173,8 +173,6 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 					for (let elem of graph.getElements())
 						drawGraphElement(elem, ProjectSettings.selectedLanguage, Representation.FULL);
 					this.handleChangeLoadingStatus(false, "✔ Workspace ready.", false, false);
-					console.log(...Object.keys(ProjectElements).map(k => ProjectElements[k].hidden
-					));
 				}
             })
         });

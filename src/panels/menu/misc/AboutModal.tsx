@@ -34,6 +34,7 @@ export default class AboutModal extends React.Component<Props, State> {
 							<li>Editing environment now freezes on connection loss or saving error (and unfreezes on
 								connection restoration or saving error resolution)
 							</li>
+							<li>Button to toggle showing stereotypes</li>
 							<li>Connection "exploding" option</li>
 							<ul>
 								<li>Located in concepts' detail panel, in the Connections section</li>

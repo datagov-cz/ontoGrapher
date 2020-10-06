@@ -128,6 +128,7 @@ export var ProjectSettings: {
     representation: number,
     lastUpdate: { func: Function, args: [] },
     switchElements: string[],
+    viewStereotypes: boolean
 } = {
     name: {},
     description: {},
@@ -142,7 +143,8 @@ export var ProjectSettings: {
         func: function () {
         }, args: []
     },
-    switchElements: []
+    switchElements: [],
+    viewStereotypes: true,
 };
 
 export var CardinalityPool: Cardinality[] = [

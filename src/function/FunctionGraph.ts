@@ -19,7 +19,7 @@ export function drawGraphElement(cell: joint.dia.Cell, languageCode: string, rep
         let types = VocabularyElements[ProjectElements[cell.id].iri].types;
         let label = VocabularyElements[ProjectElements[cell.id].iri].labels[languageCode];
         let labels: string[] = [];
-        if (representation === Representation.FULL)
+        if (ProjectSettings.viewStereotypes)
             getStereotypeList(types, languageCode).forEach((str) => labels.push("«" + str.toLowerCase() + "»"));
         labels.push(label === "" ? "<blank>" : label);
         cell.prop('attrs/label/text', labels.join("\n"));
@@ -45,9 +45,10 @@ export function drawGraphElement(cell: joint.dia.Cell, languageCode: string, rep
             labels.reduce((a, b) => a.length > b.length ? a : b, "").length * 10;
         cell.prop('attrs/body/width', width);
         cell.prop('attrs/text/x', width / 2);
-        let height = representation === Representation.COMPACT ?
-            (text.length > 0 ? (30 + (text.length * 13)) : 25) :
-            (24 + ((labels.length - 1) * 18));
+        let attrHeight = (24 + ((labels.length - 1) * 18));
+        let height = (text.length > 0 ? (4 + (text.length * 13)) : 0) +
+            attrHeight;
+        cell.prop('attrs/labelAttrs/y', attrHeight);
         cell.prop('attrs/body/height', height);
         if (cell instanceof joint.dia.Element) cell.resize(width, height);
     }

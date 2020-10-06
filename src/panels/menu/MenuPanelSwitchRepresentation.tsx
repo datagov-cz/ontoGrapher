@@ -39,7 +39,7 @@ export default class MenuPanelSwitchRepresentation extends React.Component<Props
 				this.props.update();
 				this.forceUpdate();
 			}}>
-				{ProjectSettings.representation === Representation.FULL ? LocaleMenu.represantationCompact : LocaleMenu.represantationFull}
+				{ProjectSettings.representation === Representation.FULL ? LocaleMenu.representationCompact : LocaleMenu.representationFull}
 			</Nav.Link>
 			</div>
 		</OverlayTrigger>);

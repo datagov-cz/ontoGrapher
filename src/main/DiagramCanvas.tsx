@@ -444,8 +444,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                         highlightCell(id);
                     }
                 })
-                let readOnly = (Schemes[VocabularyElements[ProjectElements[ProjectLinks[id].source].iri].inScheme].readOnly) ||
-                    (Schemes[VocabularyElements[ProjectElements[ProjectLinks[id].target].iri].inScheme].readOnly)
+                let readOnly = (Schemes[VocabularyElements[ProjectElements[ProjectLinks[id].target].iri].inScheme].readOnly);
                 let tools = [verticesTool, segmentsTool]
                 if (!readOnly) tools.push(removeButton);
                 if (ProjectLinks[linkView.model.id] && ProjectLinks[linkView.model.id].type === LinkType.DEFAULT) tools.push(infoButton);
