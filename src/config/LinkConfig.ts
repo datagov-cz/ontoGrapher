@@ -2,15 +2,16 @@ import * as joint from 'jointjs';
 import {ProjectElements, ProjectLinks, Schemes, VocabularyElements} from "./Variables";
 import {initLanguageObject} from "../function/FunctionEditVars"
 import {generalizationLink} from "../graph/uml/GeneralizationLink";
+import {LinkType} from "./Enum";
 
 export var LinkConfig: {
-	[key: string]: {
+	[key: number]: {
 		update: (id: string) => string[],
 		newLink: (id?: string) => joint.dia.Link,
 		labels: { [key: string]: string }
 	}
 } = {
-	"default": {
+	[LinkType.DEFAULT]: {
 		labels: initLanguageObject(""),
 		newLink: (id) => {
 			if (id) return new joint.shapes.standard.Link({id: id});
@@ -24,24 +25,13 @@ export var LinkConfig: {
 				linkID in ProjectLinks &&
 				ProjectElements[ProjectLinks[linkID].target] &&
 				ProjectLinks[linkID].active &&
-				ProjectLinks[linkID].type === "default").map((linkID) => ("<" + iri + "> rdfs:subClassOf [rdf:type owl:Restriction; " +
+				ProjectLinks[linkID].type === LinkType.DEFAULT).map((linkID) => ("<" + iri + "> rdfs:subClassOf [rdf:type owl:Restriction; " +
 				"owl:onProperty <" + ProjectLinks[linkID].iri + ">;" +
 				"owl:someValuesFrom <" + ProjectElements[ProjectLinks[linkID].target].iri + ">]." +
 				"<" + iri + "> rdfs:subClassOf [rdf:type owl:Restriction; " +
 				"owl:onProperty <" + ProjectLinks[linkID].iri + ">;" +
 				"owl:allValuesFrom <" + ProjectElements[ProjectLinks[linkID].target].iri + ">].")
 			)
-
-			// let connections = VocabularyElements[iri].connections.map(conn => {
-			// 	if (!(conn.target in VocabularyElements) && !(conn.initialize)){
-			// 		return ("<" + iri + "> rdfs:subClassOf [rdf:type owl:Restriction; " +
-			// 			"owl:onProperty <"+ conn.onProperty +">;" +
-			// 			"owl:someValuesFrom <"+ conn.target +">]." +
-			// 			"<" + iri + "> rdfs:subClassOf [rdf:type owl:Restriction; " +
-			// 			"owl:onProperty <"+ conn.onProperty +">;" +
-			// 			"owl:allValuesFrom <"+ conn.target +">].");
-			// 	}
-			// });
 
 			let restrictions = VocabularyElements[iri].restrictions.filter(rest => !(rest.target in VocabularyElements)).map(rest =>
 				("<" + iri + "> rdfs:subClassOf [rdf:type owl:Restriction; " +
@@ -77,8 +67,8 @@ export var LinkConfig: {
 			];
 		}
 	},
-	"generalization": {
-		labels: {"cs": "Generalizace", "en": "Generalization"},
+	[LinkType.GENERALIZATION]: {
+		labels: {"cs": "generalizace", "en": "generalization"},
 		newLink: (id) => {
 			if (id) return new generalizationLink({id: id});
 			else return new generalizationLink();
@@ -87,7 +77,7 @@ export var LinkConfig: {
 			let iri = ProjectElements[ProjectLinks[id].source].iri;
 			let contextIRI = Schemes[VocabularyElements[iri].inScheme].graph
 			let subClassOf: string[] = ProjectElements[ProjectLinks[id].source].connections.filter(conn =>
-				ProjectLinks[conn].type === "generalization" && ProjectLinks[conn].active).map(conn =>
+				ProjectLinks[conn].type === LinkType.GENERALIZATION && ProjectLinks[conn].active).map(conn =>
 				"<" + iri + "> rdfs:subClassOf <" + ProjectElements[ProjectLinks[conn].target].iri + ">.");
 			let list = VocabularyElements[iri].subClassOf.filter(superClass => !(superClass in VocabularyElements)).map(superClass =>
 				"<" + iri + "> rdfs:subClassOf <" + superClass + ">."

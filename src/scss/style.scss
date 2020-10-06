@@ -1,5 +1,5 @@
 @import "diagram/DiagramApp";
-@import "panels/ElementPanel";
+@import "panels/ItemPanel";
 @import "components/TableList";
 @import "panels/MenuPanel";
 @import "panels/DetailPanel";
@@ -23,6 +23,18 @@ body {
   margin: 0 auto;
 }
 
+.nointeract {
+  pointer-events: none;
+}
+
+.noresponse {
+  cursor: default;
+}
+
+.center {
+  width: 100%;
+}
+
 .buttonlink {
   border: none;
   background: none;
@@ -33,6 +45,7 @@ body {
   &:hover {
     color: blue;
     text-decoration: underline;
+    background: none;
 
     &.nounderline {
       text-decoration: none;

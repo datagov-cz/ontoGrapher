@@ -28,7 +28,7 @@ export default class ModalRemoveItem extends React.Component<Props, State> {
                 deletePackageItem(this.props.id);
                 this.props.handleChangeLoadingStatus(false, "", false);
             } else {
-                this.props.handleChangeLoadingStatus(false, "", true);
+                this.props.handleChangeLoadingStatus(false, LocaleMain.errorUpdating, true);
             }
         });
     }

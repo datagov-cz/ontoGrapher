@@ -22,6 +22,7 @@ import {updateProjectLink} from "../../interface/TransactionInterface";
 import {getUnderlyingFullConnections, unHighlightAll} from "../../function/FunctionGraph";
 import {parsePrefix} from "../../function/FunctionEditVars";
 import {Cardinality} from "../../datatypes/Cardinality";
+import {LinkType, Representation} from "../../config/Enum";
 
 interface Props {
     projectLanguage: string;
@@ -29,6 +30,7 @@ interface Props {
     save: Function;
     handleChangeLoadingStatus: Function;
     handleWidth: Function;
+    error: boolean;
 }
 
 interface State {
@@ -59,13 +61,13 @@ export default class DetailLink extends React.Component<Props, State> {
 
     prepareLinkOptions() {
         let result: JSX.Element[] = [];
-        if (ProjectSettings.representation === "full") {
+        if (ProjectSettings.representation === Representation.FULL) {
             for (let iri in Links) {
-                if (Links[iri].type === "default")
+                if (Links[iri].type === LinkType.DEFAULT)
                     result.push(<option
                         value={iri}>{getLabelOrBlank(Links[iri].labels, this.props.projectLanguage)}</option>)
             }
-        } else if (ProjectSettings.representation === "compact") {
+        } else if (ProjectSettings.representation === Representation.COMPACT) {
             for (let iri in VocabularyElements) {
                 if ((VocabularyElements[iri].types.includes(parsePrefix("z-sgov-pojem", "typ-vztahu")
                 )))
@@ -99,7 +101,7 @@ export default class DetailLink extends React.Component<Props, State> {
     }
 
     save() {
-        if (ProjectSettings.representation === "full") {
+        if (ProjectSettings.representation === Representation.FULL) {
             this.props.handleChangeLoadingStatus(true, LocaleMain.updating, false);
             ProjectLinks[this.state.id].sourceCardinality = CardinalityPool[parseInt(this.state.sourceCardinality, 10)];
             ProjectLinks[this.state.id].targetCardinality = CardinalityPool[parseInt(this.state.targetCardinality, 10)];
@@ -135,7 +137,7 @@ export default class DetailLink extends React.Component<Props, State> {
                                     position: {distance: -20}
                                 });
                             }
-                            if (ProjectLinks[this.state.id].type === "default") link.appendLabel({
+                            if (ProjectLinks[this.state.id].type === LinkType.DEFAULT) link.appendLabel({
                                 attrs: {text: {text: getLinkOrVocabElem(this.state.iri).labels[this.props.projectLanguage]}},
                                 position: {distance: 0.5}
                             });
@@ -145,7 +147,7 @@ export default class DetailLink extends React.Component<Props, State> {
                     this.props.save();
                     this.props.handleChangeLoadingStatus(false, "", false);
                 } else {
-                    this.props.handleChangeLoadingStatus(false, "", true);
+                    this.props.handleChangeLoadingStatus(false, LocaleMain.errorUpdating, true);
                 }
             })
         } else {
@@ -182,7 +184,7 @@ export default class DetailLink extends React.Component<Props, State> {
                             position: {distance: -20}
                         });
                     }
-                    if (ProjectLinks[this.state.id].type === "default") link.appendLabel({
+                    if (ProjectLinks[this.state.id].type === LinkType.DEFAULT) link.appendLabel({
                         attrs: {text: {text: getLinkOrVocabElem(this.state.iri).labels[this.props.projectLanguage]}},
                         position: {distance: 0.5}
                     });
@@ -218,15 +220,15 @@ export default class DetailLink extends React.Component<Props, State> {
                 let elem = document.querySelector(".details");
                 if (elem) this.props.handleWidth(elem.getBoundingClientRect().width);
             }}
-            className={"details"}>
-            <div>
+            className={"details" + (this.props.error ? " disabled" : "")}>
+            <div className={(this.props.error ? " disabled" : "")}>
                 <button className={"buttonlink close nounderline"} onClick={() => {
                     unHighlightAll();
                     this.setState({id: ""});
                     this.props.handleWidth(0);
                 }}><span role="img" aria-label={""}>➖</span></button>
-				<h3><IRILink label={getLinkOrVocabElem(this.state.iri).labels[this.props.projectLanguage]}
-							 iri={this.state.iri}/></h3>
+                <h3><IRILink label={getLinkOrVocabElem(this.state.iri).labels[this.props.projectLanguage]}
+                             iri={this.state.iri}/></h3>
                 <TableList headings={[LocaleMenu.linkInfo, ""]}>
                     <tr>
                         <td>
@@ -271,7 +273,7 @@ export default class DetailLink extends React.Component<Props, State> {
                         <td>
                             <span>{LocaleMain.linkType}</span>
                         </td>
-                        {ProjectSettings.representation === "full" ? <td>
+                        {ProjectSettings.representation === Representation.FULL ? <td>
                                 <Form.Control as="select" value={this.state.iri} onChange={(event) => {
                                     this.setState({
                                         iri: event.currentTarget.value,

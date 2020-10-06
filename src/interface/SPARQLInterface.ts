@@ -2,9 +2,10 @@ import {Diagrams, Links, ProjectElements, ProjectLinks, ProjectSettings, Schemes
 import {initLanguageObject} from "../function/FunctionEditVars";
 import * as joint from "jointjs";
 import {Cardinality} from "../datatypes/Cardinality";
-
+import * as _ from "lodash";
 import * as Locale from "../locale/LocaleMain.json";
 import {createRestriction} from "../function/FunctionRestriction";
+import {LinkType} from "../config/Enum";
 
 export async function fetchConcepts(
     endpoint: string,
@@ -12,7 +13,6 @@ export async function fetchConcepts(
     sendTo: { [key: string]: any },
     readOnly: boolean,
     graph?: string,
-    callback?: Function,
     getSubProperties?: boolean,
     subPropertyOf?: string,
     requiredType?: boolean,
@@ -31,7 +31,7 @@ export async function fetchConcepts(
             subClassOf: string[],
             restrictions: [],
             connections: []
-            type: string,
+            type: number,
         }
     } = {};
 
@@ -66,7 +66,7 @@ export async function fetchConcepts(
     ).then(data => {
         for (let row of data.results.bindings) {
             if (!(row.term.value in result)) {
-                if (getSubProperties) fetchConcepts(endpoint, source, sendTo, readOnly, graph, callback, getSubProperties, row.term.value, requiredType, requiredTypes, requiredValues);
+                if (getSubProperties) fetchConcepts(endpoint, source, sendTo, readOnly, graph, getSubProperties, row.term.value, requiredType, requiredTypes, requiredValues);
                 result[row.term.value] = {
                     labels: initLanguageObject(""),
                     definitions: initLanguageObject(""),
@@ -75,7 +75,7 @@ export async function fetchConcepts(
                     subClassOf: [],
                     restrictions: [],
                     connections: [],
-                    type: "default"
+                    type: LinkType.DEFAULT
                 }
             }
             if (row.termType && !(result[row.term.value].types.includes(row.termType.value))) result[row.term.value].types.push(row.termType.value);
@@ -87,10 +87,42 @@ export async function fetchConcepts(
             if (row.restriction && Object.keys(Links).includes(row.onProperty.value)) createRestriction(result, row.term.value, row.restrictionPred.value, row.onProperty.value, row.target);
         }
         Object.assign(sendTo, result);
-        if (callback) callback(true);
+        return true;
     }).catch(() => {
-        if (callback) callback(false);
+        return false;
     });
+}
+
+export async function getAllTypes(iri: string, endpoint: string, targetTypes: string[], targetSubClass: string[], init: boolean = false): Promise<boolean> {
+    let subClassOf: string[] = init ? [iri] : _.cloneDeep(targetSubClass);
+    while (subClassOf.length > 0) {
+        let subc = subClassOf.pop();
+        if (subc) {
+            if (!(targetSubClass.includes(subc))) targetSubClass.push(subc);
+            let query = [
+                "PREFIX skos: <http://www.w3.org/2004/02/skos/core#>",
+                "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>",
+                "SELECT ?type ?subClass",
+                "WHERE {",
+                "<" + subc + "> a ?type.",
+                "<" + subc + "> rdfs:subClassOf ?subClass.",
+                "}",
+            ].join(" ");
+            let q = endpoint + "?query=" + encodeURIComponent(query);
+            await fetch(q, {headers: {'Accept': 'application/json'}}).then(response => {
+                return response.json();
+            }).then(data => {
+                for (let result of data.results.bindings) {
+                    if (!(targetTypes.includes(result.type.value))) targetTypes.push(result.type.value);
+                    if (!(subClassOf.includes(result.subClass.value)) &&
+                        result.subClass.type !== "bnode") subClassOf.push(result.subClass.value);
+                }
+            }).catch(() => {
+                return false;
+            });
+        } else break;
+    }
+    return true;
 }
 
 export async function getScheme(iri: string, endpoint: string, readOnly: boolean, graph?: string) {
@@ -125,7 +157,6 @@ export async function getElementsConfig(contextIRI: string, contextEndpoint: str
     let elements: {
         [key: string]: {
             id: "",
-            untitled: boolean,
             diagramIRI: number[],
             active: boolean,
             diagramPosition: { [key: number]: { x: number, y: number } },
@@ -135,13 +166,12 @@ export async function getElementsConfig(contextIRI: string, contextEndpoint: str
     } = {}
     let query = [
         "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
-        "select ?id ?iri ?untitled ?active ?attribute ?property ?diagram where {",
+        "select ?id ?iri ?active ?diagram where {",
         "?elem a og:element .",
         "?elem og:context <" + contextIRI + ">.",
         "?elem og:iri ?iri .",
         "?elem og:id ?id .",
         "?elem og:active ?active .",
-        "?elem og:untitled ?untitled .",
         "?elem og:diagram ?diagram .",
         "}"
     ].join(" ");
@@ -154,7 +184,6 @@ export async function getElementsConfig(contextIRI: string, contextEndpoint: str
             if (!(iri in elements)) {
                 elements[iri] = {
                     id: "",
-                    untitled: false,
                     diagramIRI: [],
                     diagrams: [],
                     active: true,
@@ -164,7 +193,6 @@ export async function getElementsConfig(contextIRI: string, contextEndpoint: str
             }
             elements[iri].id = result.id.value;
             elements[iri].active = result.active.value === "true";
-            elements[iri].untitled = result.untitled.value === "true";
             elements[iri].diagramIRI.push(result.diagram.value);
         }
     }).catch(() => {
@@ -206,7 +234,6 @@ export async function getElementsConfig(contextIRI: string, contextEndpoint: str
     }
     for (let id in ProjectElements) {
         if (ProjectElements[id].iri in elements) {
-            ProjectElements[id].untitled = elements[ProjectElements[id].iri].untitled;
             ProjectElements[id].hidden = elements[ProjectElements[id].iri].hidden;
             ProjectElements[id].diagrams = elements[ProjectElements[id].iri].diagrams;
             ProjectElements[id].active = elements[ProjectElements[id].iri].active;
@@ -283,7 +310,7 @@ export async function getLinksConfig(contextIRI: string, contextEndpoint: string
             targetCardinality1: string,
             targetCardinality2: string,
             active: boolean,
-            type: string,
+            type: number,
         }
     } = {};
     await fetch(q, {headers: {'Accept': 'application/json'}}).then(response => {
@@ -300,7 +327,7 @@ export async function getLinksConfig(contextIRI: string, contextEndpoint: string
                     active: result.active.value === "true",
                     vertexIRI: [],
                     vertexes: {},
-                    type: result.type.value,
+                    type: result.type.value === "default" ? LinkType.DEFAULT : LinkType.GENERALIZATION,
                     sourceCardinality1: result.sourceCard1.value,
                     sourceCardinality2: result.sourceCard2.value,
                     targetCardinality1: result.targetCard1.value,

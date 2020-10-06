@@ -18,11 +18,13 @@ import ModalRemoveItem from "./modal/ModalRemoveItem";
 import {updateProjectSettings} from "../interface/TransactionInterface";
 import {Form, InputGroup} from 'react-bootstrap';
 import {parsePrefix} from "../function/FunctionEditVars";
+import {Representation} from "../config/Enum";
 
 interface Props {
 	projectLanguage: string;
 	handleChangeLoadingStatus: Function;
 	handleWidth: Function;
+	error: boolean;
 }
 
 interface State {
@@ -120,8 +122,8 @@ export default class ItemPanel extends React.Component<Props, State> {
 				{node.elements.sort((a, b) => VocabularyElements[ProjectElements[a].iri].labels[this.props.projectLanguage].localeCompare(
 					VocabularyElements[ProjectElements[b].iri].labels[this.props.projectLanguage])).map((id) => {
 					let name = VocabularyElements[ProjectElements[id].iri] ? getLabelOrBlank(VocabularyElements[ProjectElements[id].iri].labels, this.props.projectLanguage) : "<blank>";
-					if (name.toLowerCase().startsWith(this.state.search.toLowerCase()) && (ProjectSettings.representation === "full" ||
-						(ProjectSettings.representation === "compact" &&
+					if (name.toLowerCase().startsWith(this.state.search.toLowerCase()) && (ProjectSettings.representation === Representation.FULL ||
+						(ProjectSettings.representation === Representation.COMPACT &&
 							!(VocabularyElements[ProjectElements[id].iri].types.includes(parsePrefix("z-sgov-pojem", "typ-vztahu"))
 							)))) {
 						return (
@@ -151,8 +153,8 @@ export default class ItemPanel extends React.Component<Props, State> {
 				VocabularyElements[ProjectElements[a].iri].labels[this.props.projectLanguage].localeCompare(
 					VocabularyElements[ProjectElements[b].iri].labels[this.props.projectLanguage]))
 				.forEach((id) => {
-					if (ProjectSettings.representation === "full" ||
-						(ProjectSettings.representation === "compact" &&
+					if (ProjectSettings.representation === Representation.FULL ||
+						(ProjectSettings.representation === Representation.COMPACT &&
 							!(VocabularyElements[ProjectElements[id].iri].types.includes(parsePrefix("z-sgov-pojem", "typ-vztahu"))
 							))) {
 						arr.push(<PackageItem
@@ -189,14 +191,14 @@ export default class ItemPanel extends React.Component<Props, State> {
 			if (result) {
 				this.props.handleChangeLoadingStatus(false, "", false);
 			} else {
-				this.props.handleChangeLoadingStatus(false, "", true);
+				this.props.handleChangeLoadingStatus(false, LocaleMain.errorUpdating, true);
 			}
 		})
 	}
 
 	render() {
 		return (<ResizableBox
-				className={"elements"}
+				className={"elements" + (this.props.error ? " disabled" : "")}
 				width={300}
 				height={1000}
 				axis={"x"}
@@ -217,7 +219,7 @@ export default class ItemPanel extends React.Component<Props, State> {
 					/>
 				</InputGroup>
 
-				<div className="elementLinkList">
+				<div className={"elementLinkList" + (this.props.error ? " disabled" : "")}>
 					{this.getFolders()}
 				</div>
 

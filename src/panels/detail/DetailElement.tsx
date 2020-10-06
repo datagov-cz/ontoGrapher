@@ -20,16 +20,11 @@ import {getName} from "../../function/FunctionEditVars";
 import LabelTable from "./components/LabelTable";
 import DescriptionTabs from "./components/DescriptionTabs";
 import IRIlabel from "../../components/IRIlabel";
-import {nameGraphElement, unHighlightAll} from "../../function/FunctionGraph";
+import {drawGraphElement, restoreHiddenElem, setRepresentation, unHighlightAll} from "../../function/FunctionGraph";
 import {graph} from "../../graph/Graph";
-import {
-	processGetTransaction,
-	processTransaction,
-	updateProjectElement,
-	updateProjectLink
-} from "../../interface/TransactionInterface";
-import {createNewElemIRI} from "../../function/FunctionCreateVars";
+import {updateProjectElement, updateProjectLink} from "../../interface/TransactionInterface";
 import * as _ from "lodash";
+import {graphElement} from "../../graph/GraphElement";
 
 interface Props {
 	projectLanguage: string;
@@ -37,6 +32,7 @@ interface Props {
 	save: Function;
 	handleChangeLoadingStatus: Function;
 	handleWidth: Function;
+	error: boolean;
 }
 
 interface State {
@@ -70,6 +66,7 @@ export default class DetailElement extends React.Component<Props, State> {
 			readOnly: true,
 			changes: false
 		}
+		this.spreadConnections = this.spreadConnections.bind(this);
 	}
 
 	prepareDetails(id: string) {
@@ -90,17 +87,8 @@ export default class DetailElement extends React.Component<Props, State> {
 
 	save() {
 		this.props.handleChangeLoadingStatus(true, LocaleMain.updating, false);
-		let oldIRI = ProjectElements[this.state.id].iri;
-		if (ProjectElements[this.state.id].untitled) {
-			let scheme = VocabularyElements[ProjectElements[this.state.id].iri].inScheme;
-			scheme = scheme.substring(0, scheme.lastIndexOf("/") + 1) + "pojem/";
-			let iri = createNewElemIRI(this.state.inputLabels, VocabularyElements, scheme);
-			VocabularyElements[iri] = VocabularyElements[ProjectElements[this.state.id].iri];
-			ProjectElements[this.state.id].iri = iri;
-		}
 		updateProjectElement(
 			ProjectSettings.contextEndpoint,
-			DetailElement.name,
 			this.state.inputTypes,
 			this.state.inputLabels,
 			this.state.inputDefinitions,
@@ -109,28 +97,20 @@ export default class DetailElement extends React.Component<Props, State> {
 				VocabularyElements[ProjectElements[this.state.id].iri].types = this.state.inputTypes;
 				VocabularyElements[ProjectElements[this.state.id].iri].labels = this.state.inputLabels;
 				VocabularyElements[ProjectElements[this.state.id].iri].definitions = this.state.inputDefinitions;
-				nameGraphElement(graph.getCell(this.state.id), this.props.projectLanguage);
+				drawGraphElement(graph.getCell(this.state.id), this.props.projectLanguage, ProjectSettings.representation);
 				this.props.save();
 				this.setState({changes: false});
 				this.props.handleChangeLoadingStatus(false, "", false);
 				for (let conn of ProjectElements[this.state.id].connections) {
 					await updateProjectLink(ProjectSettings.contextEndpoint, conn).then(res => {
 						if (!res) {
-							this.props.handleChangeLoadingStatus(false, "", true);
+							this.props.handleChangeLoadingStatus(false, LocaleMain.errorUpdating, true);
 						}
 					});
 				}
-				if (ProjectElements[this.state.id].iri !== oldIRI) {
-					let delString = await processGetTransaction(ProjectSettings.contextEndpoint, {subject: oldIRI});
-					if (delString) {
-						await processTransaction(ProjectSettings.contextEndpoint, {add: [], "delete": [delString]});
-					}
-					VocabularyElements[oldIRI].active = false;
-				}
-				ProjectElements[this.state.id].untitled = false;
 				this.prepareDetails(this.state.id);
 			} else {
-				this.props.handleChangeLoadingStatus(false, "", true);
+				this.props.handleChangeLoadingStatus(false, LocaleMain.errorUpdating, true);
 			}
 		});
 	}
@@ -139,6 +119,38 @@ export default class DetailElement extends React.Component<Props, State> {
 		if ((prevState !== this.state && this.state.changes)) {
 			this.save();
 		}
+	}
+
+	spreadConnections() {
+		this.props.handleChangeLoadingStatus(true, LocaleMain.updating, false);
+		let elem = graph.getElements().find(elem => elem.id === this.state.id);
+		if (elem) {
+			let centerX = elem.position().x + (elem.size().width / 2);
+			let centerY = elem.position().y + (elem.size().height / 2);
+			let elems = this.state.inputConnections.filter(conn =>
+				ProjectLinks[conn].active && !(graph.getCell(conn)));
+			let radius = 100 + (elems.length * 50);
+			for (let i = 0; i < elems.length; i++) {
+				let id = ProjectLinks[elems[i]].target;
+				if (graph.getCell(id)) continue;
+				let x = centerX + radius * Math.cos((i * 2 * Math.PI) / elems.length);
+				let y = centerY + radius * Math.sin((i * 2 * Math.PI) / elems.length);
+				let elem = new graphElement({id: id});
+				elem.addTo(graph);
+				elem.position(x, y);
+				ProjectElements[id].position[ProjectSettings.selectedDiagram] = {x: x, y: y};
+				ProjectElements[id].hidden[ProjectSettings.selectedDiagram] = false;
+				drawGraphElement(elem, this.props.projectLanguage, ProjectSettings.representation);
+				restoreHiddenElem(id, elem);
+				updateProjectElement(ProjectSettings.contextEndpoint,
+					VocabularyElements[ProjectElements[id].iri].types,
+					VocabularyElements[ProjectElements[id].iri].labels,
+					VocabularyElements[ProjectElements[id].iri].definitions,
+					id);
+			}
+		}
+		setRepresentation(ProjectSettings.representation);
+		this.props.handleChangeLoadingStatus(false, "", false);
 	}
 
 	render() {
@@ -152,8 +164,8 @@ export default class DetailElement extends React.Component<Props, State> {
 				let elem = document.querySelector(".details");
 				if (elem) this.props.handleWidth(elem.getBoundingClientRect().width);
 			}}
-			className={"details"}>
-			<div>
+			className={"details" + (this.props.error ? " disabled" : "")}>
+			<div className={(this.props.error ? " disabled" : "")}>
 				<button className={"buttonlink close nounderline"} onClick={() => {
 					unHighlightAll();
 					this.setState({id: ""});
@@ -189,7 +201,8 @@ export default class DetailElement extends React.Component<Props, State> {
 													<IRILink
 														label={getLabelOrBlank(getStereotypeOrVocabElem(iri).labels, this.props.projectLanguage)}
 														iri={iri}/>
-													<button className={"buttonlink right"} onClick={() => {
+													{(!this.state.readOnly) &&
+                                                    <button className={"buttonlink right"} onClick={() => {
 														let result = _.cloneDeep(this.state.inputTypes);
 														result.splice(result.indexOf(iri), 1);
 														this.setState({
@@ -197,8 +210,8 @@ export default class DetailElement extends React.Component<Props, State> {
 															changes: true,
 														})
 													}}><span role="img"
-															 aria-label={""}>❌</span>
-													</button>
+                                                             aria-label={""}>❌</span>
+                                                    </button>}
 												</td>
 											</tr>)
 										} else return ""
@@ -274,6 +287,11 @@ export default class DetailElement extends React.Component<Props, State> {
 										}
 									)}
 								</TableList>
+								{(this.state.inputConnections.filter(conn => ProjectLinks[conn] && ProjectLinks[conn].active).length !==
+									graph.getConnectedLinks(graph.getCell(this.state.id)).length) &&
+                                <Button className={"buttonlink center"} onClick={this.spreadConnections}>
+									{LocaleMain.spreadConnections}
+                                </Button>}
 							</Card.Body>
 						</Accordion.Collapse>
 					</Card>

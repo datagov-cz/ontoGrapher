@@ -10,13 +10,13 @@ import {
     Schemes,
     VocabularyElements
 } from "../config/Variables";
-import {addClass, addLink, addVocabularyElement, createIDIRI} from "../function/FunctionCreateVars";
+import {addClass, addLink, addVocabularyElement, createNewElemIRI} from "../function/FunctionCreateVars";
 import {graph} from "../graph/Graph";
 import {
+    drawGraphElement,
     getNewLink,
     getUnderlyingFullConnections,
     highlightCell,
-    nameGraphElement,
     restoreHiddenElem,
     setRepresentation,
     unHighlightAll,
@@ -32,6 +32,7 @@ import NewLinkDiagram from "./NewLinkDiagram";
 import {getLinkOrVocabElem} from "../function/FunctionGetVars";
 import NewElemDiagram from "./NewElemDiagram";
 import {PackageNode} from "../datatypes/PackageNode";
+import {LinkType, Representation} from "../config/Enum";
 
 interface Props {
     projectLanguage: string;
@@ -39,6 +40,7 @@ interface Props {
     hideDetails: Function;
     updateElementPanel: Function;
     handleChangeLoadingStatus: Function;
+    error: boolean;
 }
 
 interface State {
@@ -78,30 +80,31 @@ export default class DiagramCanvas extends React.Component<Props, State> {
         this.props.handleChangeLoadingStatus(true, LocaleMain.updating, false);
         let cls = new graphElement();
         cls.attr({label: {text: name}});
+        let point = this.paper?.clientToLocalPoint({x: this.newConceptEvent.x, y: this.newConceptEvent.y})
         if (typeof cls.id === "string" && pkg.scheme) {
-            let iri = createIDIRI(cls.id);
-            addVocabularyElement(iri, pkg.scheme);
+            let url = pkg.scheme.substring(0, pkg.scheme.lastIndexOf("/") + 1) + "pojem/" + name;
+            let iri = createNewElemIRI(VocabularyElements, url);
+            addVocabularyElement(iri, pkg.scheme, [parsePrefix("skos", "Concept")]);
             addClass(cls.id, iri, pkg, true, true);
+            if (point) {
+                cls.set('position', {x: point.x, y: point.y});
+                ProjectElements[cls.id].position[ProjectSettings.selectedDiagram] = {x: point.x, y: point.y};
+            }
             let labels = initLanguageObject("");
             labels[language] = name;
-            VocabularyElements[iri].labels = labels;
+            VocabularyElements[ProjectElements[cls.id].iri].labels = labels;
             updateProjectElement(
                 ProjectSettings.contextEndpoint,
-                DiagramCanvas.name,
-                [],
+                VocabularyElements[iri].types,
                 labels,
                 initLanguageObject(""),
                 cls.id);
-        }
-        let point = this.paper?.clientToLocalPoint({x: this.newConceptEvent.x, y: this.newConceptEvent.y})
-        if (point) {
-            cls.set('position', {x: point.x, y: point.y});
-            ProjectElements[cls.id].position[ProjectSettings.selectedDiagram] = {x: point.x, y: point.y};
         }
         cls.addTo(graph);
         let bbox = this.paper?.findViewByModel(cls).getBBox();
         if (bbox) cls.resize(bbox.width, bbox.height);
         ProjectElements[cls.id].hidden[ProjectSettings.selectedDiagram] = false;
+        drawGraphElement(cls, language, ProjectSettings.representation);
         this.props.updateElementPanel(cls.position());
         this.props.handleChangeLoadingStatus(false, "", false);
     }
@@ -116,7 +119,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
 
     saveNewLink(iri: string, sid: string, tid: string) {
         this.props.handleChangeLoadingStatus(true, LocaleMain.updating, false);
-        let type = iri in Links ? Links[iri].type : "default"
+        let type = iri in Links ? Links[iri].type : LinkType.DEFAULT;
         let link = getNewLink(type);
         link.source({id: sid});
         link.target({id: tid});
@@ -141,23 +144,24 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                     }
                 }
                 if (typeof link.id === "string" && typeof sid === "string" && typeof tid === "string") {
-                    if (ProjectSettings.representation === "full") {
+                    if (ProjectSettings.representation === Representation.FULL) {
                         this.updateConnections(sid, tid, link.id, type, iri);
-                    } else if (ProjectSettings.representation === "compact") {
+                    } else if (ProjectSettings.representation === Representation.COMPACT) {
                         let mvp1IRI = "https://slovník.gov.cz/základní/pojem/má-vztažený-prvek-1";
                         let mvp2IRI = "https://slovník.gov.cz/základní/pojem/má-vztažený-prvek-2";
                         let property = new graphElement();
                         let source = getNewLink();
                         let target = getNewLink();
                         if (typeof source.id === "string" && typeof target.id === "string" && typeof property.id === "string") {
-                            addClass(property.id, iri, ProjectSettings.selectedPackage, false);
+                            let pkg = PackageRoot.children.find(pkg => pkg.scheme &&
+                                pkg.scheme === VocabularyElements[ProjectElements[sid].iri].inScheme) || PackageRoot;
+                            addClass(property.id, iri, pkg, false);
                             addLink(source.id, mvp1IRI, property.id, sid);
                             addLink(target.id, mvp2IRI, property.id, tid);
                             ProjectElements[property.id].connections.push(source.id);
                             ProjectElements[property.id].connections.push(target.id);
                             updateProjectElement(
                                 ProjectSettings.contextEndpoint,
-                                DiagramCanvas.name,
                                 [parsePrefix("z-sgov-pojem", "typ-vztahu")],
                                 VocabularyElements[iri].labels,
                                 VocabularyElements[iri].definitions,
@@ -169,7 +173,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                     }
                     this.props.updateElementPanel();
                 }
-                if (type === "default") link.appendLabel({attrs: {text: {text: getLinkOrVocabElem(iri).labels[this.props.projectLanguage]}}});
+                if (type === LinkType.DEFAULT) link.appendLabel({attrs: {text: {text: getLinkOrVocabElem(iri).labels[this.props.projectLanguage]}}});
             } else link.remove();
         }
         this.sid = undefined;
@@ -209,7 +213,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
         }
     }
 
-    updateConnections(sid: string, tid: string, linkID: string, type: string, iri: string) {
+    updateConnections(sid: string, tid: string, linkID: string, type: number, iri: string) {
         this.props.handleChangeLoadingStatus(true, LocaleMain.updating, false);
         addLink(linkID, iri, sid, tid, type);
         ProjectElements[sid].connections.push(linkID);
@@ -219,11 +223,11 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                     if (result) {
                         this.props.handleChangeLoadingStatus(false, "", false);
                     } else {
-                        this.props.handleChangeLoadingStatus(false, "", true);
+                        this.props.handleChangeLoadingStatus(false, LocaleMain.errorUpdating, true);
                     }
                 });
             } else {
-                this.props.handleChangeLoadingStatus(false, "", true);
+                this.props.handleChangeLoadingStatus(false, LocaleMain.errorUpdating, true);
             }
         });
         this.props.updateElementPanel();
@@ -238,11 +242,11 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                     if (result) {
                         this.props.handleChangeLoadingStatus(false, "", false);
                     } else {
-                        this.props.handleChangeLoadingStatus(false, "", true);
+                        this.props.handleChangeLoadingStatus(false, LocaleMain.errorUpdating, true);
                     }
                 })
             } else {
-                this.props.handleChangeLoadingStatus(false, "", true);
+                this.props.handleChangeLoadingStatus(false, LocaleMain.errorUpdating, true);
             }
         });
     }
@@ -321,7 +325,6 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                 this.props.handleChangeLoadingStatus(true, LocaleMain.updating, false);
                 updateProjectElement(
                     ProjectSettings.contextEndpoint,
-                    DiagramCanvas.name,
                     VocabularyElements[iri].types,
                     VocabularyElements[iri].labels,
                     VocabularyElements[iri].definitions,
@@ -329,18 +332,19 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                     if (result) {
                         this.props.handleChangeLoadingStatus(false, "", false);
                     } else {
-                        this.props.handleChangeLoadingStatus(false, "", true);
+                        this.props.handleChangeLoadingStatus(false, LocaleMain.errorUpdating, true);
                     }
                 });
             },
             'element:pointerclick': (cellView) => {
-                if (this.newLink) {
+                if (this.newLink &&
+                    !(Schemes[VocabularyElements[ProjectElements[cellView.model.id].iri].inScheme].readOnly)) {
                     this.tid = cellView.model.id;
                     this.setState({modalAddLink: true});
                 }
             },
             'element:mouseenter': (elementView) => {
-                let tool = ProjectElements[elementView.model.id].active ? new HideButton({
+                let tool = !(Schemes[VocabularyElements[ProjectElements[elementView.model.id].iri].inScheme].readOnly) ? new HideButton({
                     useModelGeometry: false,
                     x: '100%',
                     y: '0%',
@@ -355,7 +359,6 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                                 let iri = ProjectElements[id].iri;
                                 updateProjectElement(
                                     ProjectSettings.contextEndpoint,
-                                    DiagramCanvas.name,
                                     VocabularyElements[iri].types,
                                     VocabularyElements[iri].labels,
                                     VocabularyElements[iri].definitions,
@@ -382,7 +385,6 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                                 let iri = ProjectElements[id].iri;
                                 updateProjectElement(
                                     ProjectSettings.contextEndpoint,
-                                    DiagramCanvas.name,
                                     VocabularyElements[iri].types,
                                     VocabularyElements[iri].labels,
                                     VocabularyElements[iri].definitions,
@@ -396,7 +398,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                 });
                 elementView.addTools(new joint.dia.ToolsView({
                     tools: [
-                        new ElemCreateLink({
+                        !(Schemes[VocabularyElements[ProjectElements[elementView.model.id].iri].inScheme].readOnly) && new ElemCreateLink({
                             useModelGeometry: false,
                             y: '0%',
                             x: '0%',
@@ -408,13 +410,13 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                 }));
             },
             'link:mouseenter': (linkView) => {
+                let id = linkView.model.id;
                 let verticesTool = new joint.linkTools.Vertices({stopPropagation: false});
                 let segmentsTool = new joint.linkTools.Segments();
                 let removeButton = new joint.linkTools.Remove({
                     action: ((evt, view) => {
                         this.props.handleChangeLoadingStatus(true, LocaleMain.updating, false);
-                        if (ProjectSettings.representation === "full") {
-                            let id = view.model.id;
+                        if (ProjectSettings.representation === Representation.FULL) {
                             let sid = view.model.getSourceCell()?.id;
                             if (typeof sid === "string" && typeof id === "string") {
                                 this.deleteConnections(sid, id);
@@ -441,8 +443,10 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                         highlightCell(id);
                     }
                 })
-                let tools = [verticesTool, segmentsTool, removeButton]
-                if (ProjectLinks[linkView.model.id] && ProjectLinks[linkView.model.id].type === "default") tools.push(infoButton);
+                let readOnly = (Schemes[VocabularyElements[ProjectElements[ProjectLinks[id].target].iri].inScheme].readOnly);
+                let tools = [verticesTool, segmentsTool]
+                if (!readOnly) tools.push(removeButton);
+                if (ProjectLinks[linkView.model.id] && ProjectLinks[linkView.model.id].type === LinkType.DEFAULT) tools.push(infoButton);
                 let toolsView = new joint.dia.ToolsView({
                     tools: tools
                 });
@@ -483,11 +487,11 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                 if (ProjectLinks[id].iri in Links) {
                     this.props.handleChangeLoadingStatus(true, LocaleMain.updating, false);
                     ProjectLinks[link.id].vertices = link.vertices();
-                    updateProjectLink(ProjectSettings.contextEndpoint, link.id).then(result => {
+                    updateProjectLink(ProjectSettings.contextEndpoint, id).then(result => {
                         if (result) {
                             this.props.handleChangeLoadingStatus(false, "", false);
                         } else {
-                            this.props.handleChangeLoadingStatus(false, "", true);
+                            this.props.handleChangeLoadingStatus(false, LocaleMain.errorUpdating, true);
                         }
                     });
                 }
@@ -496,16 +500,20 @@ export default class DiagramCanvas extends React.Component<Props, State> {
     }
 
     render() {
-        return (<div>
+        return (<div
+            style={{cursor: this.props.error ? "not-allowed" : "inherit", opacity: this.props.error ? "0.5" : "1"}}>
             <div
                 className={"canvas"}
                 id={"canvas"}
                 ref={this.canvasRef}
+                style={{
+                    pointerEvents: this.props.error ? "none" : "auto"
+                }}
                 onDragOver={(event) => {
-                    event.preventDefault();
+                    if (!this.props.error) event.preventDefault();
                 }}
                 onMouseMove={(event) => {
-                    if (this.drag) {
+                    if (this.drag && !(this.props.error)) {
                         this.paper?.translate(event.nativeEvent.offsetX - this.drag.x, event.nativeEvent.offsetY - this.drag.y);
                     }
                 }
@@ -515,7 +523,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                     this.props.handleChangeLoadingStatus(true, LocaleMain.updating, false);
                     const data = JSON.parse(event.dataTransfer.getData("newClass"));
                     let cls = new graphElement({id: data.id});
-                    nameGraphElement(cls, ProjectSettings.selectedLanguage);
+                    drawGraphElement(cls, ProjectSettings.selectedLanguage, ProjectSettings.representation);
                     let point = this.paper?.clientToLocalPoint({x: event.clientX, y: event.clientY});
                     if (point) {
                         cls.set('position', {x: point.x, y: point.y});
@@ -530,7 +538,6 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                     if (typeof cls.id === "string") {
                         updateProjectElement(
                             ProjectSettings.contextEndpoint,
-                            DiagramCanvas.name,
                             VocabularyElements[ProjectElements[cls.id].iri].types,
                             VocabularyElements[ProjectElements[cls.id].iri].labels,
                             VocabularyElements[ProjectElements[cls.id].iri].definitions,
@@ -538,11 +545,11 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                             if (result) {
                                 this.props.handleChangeLoadingStatus(false, "", false);
                             } else {
-                                this.props.handleChangeLoadingStatus(false, "", true);
+                                this.props.handleChangeLoadingStatus(false, LocaleMain.errorUpdating, true);
                             }
                         });
                     }
-                    if (ProjectSettings.representation === "compact") setRepresentation(ProjectSettings.representation);
+                    if (ProjectSettings.representation === Representation.COMPACT) setRepresentation(ProjectSettings.representation);
                 }}
             />
             <NewLinkDiagram

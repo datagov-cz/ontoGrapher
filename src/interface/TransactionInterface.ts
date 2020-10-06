@@ -8,10 +8,10 @@ import {
 	VocabularyElements
 } from "../config/Variables";
 import {LinkConfig} from "../config/LinkConfig";
+import {LinkType} from "../config/Enum";
 
 export async function updateProjectElement(
 	contextEndpoint: string,
-	source: string,
 	newTypes: string[],
 	newLabels: { [key: string]: string },
 	newDefinitions: { [key: string]: string },
@@ -56,7 +56,6 @@ export async function updateProjectElement(
 				"og:context": ProjectSettings.contextIRI,
 				"og:id": id,
 				"og:iri": iri,
-				"og:untitled": ProjectElements[id].untitled,
 				"og:diagram": ProjectElements[id].diagrams.map((diag) => (iri + "/diagram-" + (diag + 1))),
 				"og:active": ProjectElements[id].active,
 			},
@@ -115,7 +114,6 @@ export async function updateProjectElement(
 		} else return false;
 	}
 
-
 	return await processTransaction(contextEndpoint, {add: addStrings, delete: delStrings});
 }
 
@@ -163,7 +161,7 @@ export async function updateProjectLink(contextEndpoint: string, id: string) {
 			"og:target-id": ProjectLinks[id].target,
 			"og:source": ProjectElements[ProjectLinks[id].source].iri,
 			"og:target": ProjectElements[ProjectLinks[id].target].iri,
-			"og:type": ProjectLinks[id].type,
+			"og:type": ProjectLinks[id].type === LinkType.DEFAULT ? "default" : "generalization",
 			...cardinalities,
 			"og:vertex": vertices.map(vert => vert["@id"])
 		},

@@ -1,9 +1,10 @@
 import * as Locale from "../locale/LocaleMain.json";
 import {Cardinality} from "../datatypes/Cardinality";
 import {PackageNode} from "../datatypes/PackageNode";
-import {initLanguageObject, parsePrefix} from "../function/FunctionEditVars";
+import {initLanguageObject} from "../function/FunctionEditVars";
 import {RestrictionObject} from "../datatypes/RestrictionObject";
 import {ConnectionObject} from "../datatypes/ConnectionObject";
+import {Representation} from "./Enum";
 
 // language code : language label
 export var Languages: { [key: string]: string } = {};
@@ -14,14 +15,8 @@ export var ProjectElements: {
         iri: string,
         //array of ProjectLink ids
         connections: string[],
-        //whether the labels are initialized
-        untitled: boolean,
-        //AttributeObject array
-        // attributes: AttributeObject[],
         //diagram indexes in which elem is present/hidden
         diagrams: number[],
-        //property array
-        // properties: AttributeObject[],
         //if hidden in diagram index
         hidden: { [key: number]: boolean }
         //position on graph by diagram index
@@ -48,7 +43,7 @@ export var ProjectLinks: {
         //vertices - point breaks of link
         vertices: joint.dia.Link.Vertex[],
         //type - dictates saving/loading behaviour
-        type: string,
+        type: number,
         //active
         active: boolean
     }
@@ -74,20 +69,6 @@ export var Prefixes: { [key: string]: string } = {
     "v-sgov-pojem": "https://slovník.gov.cz/veřejný-sektor/pojem/"
 };
 
-export var Structures: { [key: string]: string } = {
-    "z-sgov-pojem:základní-struktura": parsePrefix("z-sgov-pojem", "základní-struktura"),
-    "z-sgov-pojem:legislativní-struktura": parsePrefix("z-sgov-pojem", "legislativní-struktura"),
-    "z-sgov-pojem:agendová-struktura": parsePrefix("z-sgov-pojem", "agendová-struktura"),
-    "z-sgov-pojem:datová-struktura": parsePrefix("z-sgov-pojem", "datová-struktura")
-};
-
-export var StructuresShort: { [key: string]: string } = {
-    "z-sgov-pojem:základní-struktura": "základní",
-    "z-sgov-pojem:legislativní-struktura": "legislativní",
-    "z-sgov-pojem:agendová-struktura": "agendová",
-    "z-sgov-pojem:datová-struktura": "datová"
-};
-
 export var PackageRoot: PackageNode = new PackageNode(initLanguageObject("Root"), undefined, true, "");
 
 export var VocabularyElements: {
@@ -111,7 +92,13 @@ export var Links: {
         labels: { [key: string]: string },
         definitions: { [key: string]: string },
         inScheme: string,
-        type: string,
+        type: number,
+        domain: string;
+        range: string;
+        typesDomain: string[],
+        subClassOfDomain: string[]
+        typesRange: string[],
+        subClassOfRange: string[]
     }
 } = {};
 
@@ -120,6 +107,8 @@ export var Stereotypes: {
         labels: { [key: string]: string },
         definitions: { [key: string]: string },
         inScheme: string,
+        types: string[],
+        subClassOf: string[]
     }
 } = {};
 
@@ -131,31 +120,31 @@ export var ProjectSettings: {
     name: { [key: string]: string },
     description: { [key: string]: string },
     selectedDiagram: number,
-    selectedPackage: PackageNode,
-    knowledgeStructure: string,
     selectedLanguage: string,
     contextIRI: string,
     contextEndpoint: string,
     ontographerContext: string,
     initialized: boolean,
-    representation: string,
-    lastUpdate: { func: Function, args: [] }
+    representation: number,
+    lastUpdate: { func: Function, args: [] },
+    switchElements: string[],
+    viewStereotypes: boolean
 } = {
     name: {},
     description: {},
     selectedDiagram: 0,
-    selectedPackage: PackageRoot,
-    knowledgeStructure: Object.keys(Structures)[0],
     selectedLanguage: Object.keys(Languages)[0],
     contextIRI: "",
     contextEndpoint: "",
     ontographerContext: "http://onto.fel.cvut.cz/ontologies/application/ontoGrapher",
     initialized: false,
-    representation: "full",
+    representation: Representation.FULL,
     lastUpdate: {
         func: function () {
         }, args: []
-    }
+    },
+    switchElements: [],
+    viewStereotypes: true,
 };
 
 export var CardinalityPool: Cardinality[] = [

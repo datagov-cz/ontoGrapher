@@ -6,6 +6,8 @@ import MenuPanelAbout from "./menu/MenuPanelAbout";
 import InterfaceNotification from "../components/InterfaceNotification";
 import MenuPanelValidate from "./menu/MenuPanelValidate";
 import MenuPanelSwitchRepresentation from "./menu/MenuPanelSwitchRepresentation";
+import InterfaceStatus from "../components/InterfaceStatus";
+import MenuPanelSwitchStereotypes from "./menu/MenuPanelSwitchStereotypes";
 
 interface MenuPanelProps {
 	readOnly?: boolean;
@@ -21,6 +23,7 @@ interface MenuPanelProps {
 	validate: Function;
 	closeDetailPanel: Function;
 	handleChangeLoadingStatus: Function;
+	retry: boolean;
 }
 
 interface MenuPanelState {
@@ -43,9 +46,12 @@ export default class MenuPanel extends React.Component<MenuPanelProps, MenuPanel
 					<h5>{ProjectSettings.name[this.props.projectLanguage] === "" ? "<untitled>" : ProjectSettings.name[this.props.projectLanguage]}</h5>
 					<InterfaceNotification active={this.props.loading} message={this.props.status}
 										   error={this.props.loadingError}
-										   handleChangeLoadingStatus={this.props.handleChangeLoadingStatus}/>
+										   handleChangeLoadingStatus={this.props.handleChangeLoadingStatus}
+										   retry={this.props.retry}/>
 					<div className={"right"}>
 						<Form inline>
+							<InterfaceStatus handleChangeLoadingStatus={this.props.handleChangeLoadingStatus}/>
+							&nbsp;
 							<Form.Control as="select" value={this.props.projectLanguage}
 										  onChange={this.handleChangeLanguage}>
 								{Object.keys(Languages).map((languageCode) => (
@@ -58,6 +64,7 @@ export default class MenuPanel extends React.Component<MenuPanelProps, MenuPanel
 				<div className={"lower"}>
 					<MenuPanelSwitchRepresentation update={() => this.props.update()}
 												   close={() => this.props.closeDetailPanel()}/>
+					<MenuPanelSwitchStereotypes update={() => this.props.update()}/>
 					<MenuPanelValidate validate={() => this.props.validate()}/>
 					<div className={"right"}>
 						<MenuPanelHelp/>
