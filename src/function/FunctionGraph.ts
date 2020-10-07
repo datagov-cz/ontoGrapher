@@ -26,7 +26,7 @@ export function drawGraphElement(cell: joint.dia.Cell, languageCode: string, rep
         let text = [];
         if (representation === Representation.COMPACT) {
             for (let link in ProjectLinks) {
-                if (ProjectLinks[link].source === cell.id &&
+                if ((ProjectLinks[link].source === cell.id || ProjectLinks[link].target === cell.id) &&
                     ProjectLinks[link].active) {
                     if (ProjectLinks[link].iri === parsePrefix("z-sgov-pojem", "má-vlastnost") &&
                         ProjectLinks[link].source === cell.id && ProjectLinks[link].active) {
