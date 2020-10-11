@@ -19,10 +19,12 @@ interface State {
 export default class NewElemDiagram extends React.Component<Props, State> {
 	constructor(props: Props) {
 		super(props);
+		let pkg = PackageRoot.children.find(pkg => pkg.scheme && (!(Schemes[pkg.scheme].readOnly)))
+		if (!pkg) this.props.close();
 		this.state = {
 			conceptName: "",
 			displayError: false,
-			selectedPackage: PackageRoot
+			selectedPackage: pkg ? pkg : PackageRoot
 		}
 		this.save = this.save.bind(this);
 	}
@@ -37,13 +39,15 @@ export default class NewElemDiagram extends React.Component<Props, State> {
 		return (<Modal centered scrollable show={this.props.modal}
 					   onHide={() => this.props.close}
 					   onEntering={() => {
-						   if (this.state.selectedPackage === PackageRoot)
-							   this.setState({
+						   if (this.state.selectedPackage === PackageRoot) {
+							   let pkg = PackageRoot.children.find(pkg => pkg.scheme && (!(Schemes[pkg.scheme].readOnly)))
+							   if (!pkg) this.props.close();
+							   else this.setState({
 								   conceptName: "",
 								   displayError: false,
-								   selectedPackage: PackageRoot.children[0]
-							   })
-						   else this.setState({conceptName: "", displayError: false})
+								   selectedPackage: pkg
+							   });
+						   } else this.setState({conceptName: "", displayError: false})
 					   }}
 		>
 			<Modal.Header>

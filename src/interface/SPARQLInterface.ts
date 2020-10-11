@@ -32,6 +32,7 @@ export async function fetchConcepts(
             restrictions: [],
             connections: []
             type: number,
+            character?: string;
         }
     } = {};
 
@@ -39,7 +40,8 @@ export async function fetchConcepts(
         "PREFIX skos: <http://www.w3.org/2004/02/skos/core#>",
         "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>",
         "PREFIX a-popis-dat-pojem: <http://onto.fel.cvut.cz/ontologies/slovník/agendový/popis-dat/pojem/>",
-        "SELECT DISTINCT ?term ?termLabel ?termType ?termDefinition ?termDomain ?termRange ?restriction ?restrictionPred ?onProperty ?target ?subClassOf",
+        "PREFIX z-sgov-pojem: <https://slovník.gov.cz/základní/pojem/>",
+        "SELECT DISTINCT ?term ?termLabel ?termType ?termDefinition ?termDomain ?termRange ?character ?restriction ?restrictionPred ?onProperty ?target ?subClassOf",
         "WHERE {",
         graph && "GRAPH <" + graph + "> {",
         !subPropertyOf && "?term skos:inScheme <" + source + ">.",
@@ -49,6 +51,7 @@ export async function fetchConcepts(
         requiredValues && "VALUES ?term {<" + requiredValues.join("> <") + ">}",
         "OPTIONAL {?term skos:prefLabel ?termLabel.}",
         "OPTIONAL {?term skos:definition ?termDefinition.}",
+        "OPTIONAL {?term z-sgov-pojem:charakterizuje ?character.}",
         "OPTIONAL {?term rdfs:domain ?termDomain.}",
         "OPTIONAL {?term rdfs:range ?termRange.}",
         "OPTIONAL {?term rdfs:subClassOf ?subClassOf. }",
@@ -83,6 +86,7 @@ export async function fetchConcepts(
             if (row.termDefinition) result[row.term.value].definitions[row.termDefinition['xml:lang']] = row.termDefinition.value;
             if (row.termDomain) result[row.term.value].domain = row.termDomain.value;
             if (row.termRange) result[row.term.value].range = row.termRange.value;
+            if (row.character) result[row.term.value].character = row.character.value;
             if (row.subClassOf && row.subClassOf.type !== "bnode" && !(result[row.term.value].subClassOf.includes(row.subClassOf.value))) result[row.term.value].subClassOf.push(row.subClassOf.value);
             if (row.restriction && Object.keys(Links).includes(row.onProperty.value)) createRestriction(result, row.term.value, row.restrictionPred.value, row.onProperty.value, row.target);
         }

@@ -46,6 +46,7 @@
   "representationCompact": "Switch to Compact view",
   "representationFull": "Switch to Full view",
   "showStereotypes": "View stereotypes",
+  "showIncompatibleLinks": "Display incompatible relationships",
   "hideStereotypes": "Hide stereotypes",
   "modalNewElemDescription": "Enter a name for the new concept:",
   "output": "Output",

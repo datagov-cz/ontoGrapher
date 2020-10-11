@@ -1,7 +1,15 @@
 import React from 'react';
 import {Button, Form, Modal} from "react-bootstrap";
 import * as LocaleMenu from "../locale/LocaleMenu.json";
-import {Links, ProjectElements, ProjectLinks, ProjectSettings, VocabularyElements} from "../config/Variables";
+import {
+	Links,
+	Prefixes,
+	ProjectElements,
+	ProjectLinks,
+	ProjectSettings,
+	Stereotypes,
+	VocabularyElements
+} from "../config/Variables";
 import {getLabelOrBlank, getLinkOrVocabElem} from "../function/FunctionGetVars";
 import {graph} from "../graph/Graph";
 import {parsePrefix} from "../function/FunctionEditVars";
@@ -17,6 +25,7 @@ interface Props {
 
 interface State {
 	selectedLink: string;
+	displayIncompatible: boolean;
 }
 
 export default class NewLinkDiagram extends React.Component<Props, State> {
@@ -24,6 +33,7 @@ export default class NewLinkDiagram extends React.Component<Props, State> {
 		super(props);
 		this.state = {
 			selectedLink: "",
+			displayIncompatible: true
 		}
 		this.handleChangeLink = this.handleChangeLink.bind(this);
 	}
@@ -33,6 +43,43 @@ export default class NewLinkDiagram extends React.Component<Props, State> {
 		if (event.currentTarget.value !== "") this.props.close(event.currentTarget.value);
 	}
 
+	filtering(link: string): boolean {
+		if (!this.props.sid || !this.props.tid) return false;
+		let sourceTypes = VocabularyElements[ProjectElements[this.props.sid].iri].types
+			.filter(type => type.startsWith(Prefixes["z-sgov-pojem"]))
+		let targetTypes = VocabularyElements[ProjectElements[this.props.tid].iri].types
+			.filter(type => type.startsWith(Prefixes["z-sgov-pojem"]))
+		if (sourceTypes.length === 0 || targetTypes.length === 0) return false;
+		let domain = Links[link].domain;
+		let range = Links[link].range;
+		let source = false;
+		let target = false;
+
+		for (let type of sourceTypes) {
+			let types = Stereotypes[type].types;
+			let subClasses = Stereotypes[type].subClassOf;
+			let character = Stereotypes[type].character;
+			if (character === domain || types.includes(domain) || subClasses.includes(domain)) {
+				source = true;
+				break;
+			}
+		}
+
+		if (!source) return false;
+
+		for (let type of targetTypes) {
+			let types = Stereotypes[type].types;
+			let subClasses = Stereotypes[type].subClassOf;
+			let character = Stereotypes[type].character;
+			if (character === range || types.includes(range) || subClasses.includes(range)) {
+				target = true;
+				break;
+			}
+		}
+
+		return target;
+	}
+
 	getLinks() {
 		let elem = graph.getElements().find(elem => elem.id === this.props.sid);
 		if (elem && this.props.sid) {
@@ -40,7 +87,7 @@ export default class NewLinkDiagram extends React.Component<Props, State> {
 			if (ProjectSettings.representation === Representation.FULL) {
 				return Object.keys(Links).filter(link => !conns.find(conn => ProjectLinks[conn].iri === link &&
 					ProjectLinks[conn].target === this.props.tid &&
-					ProjectLinks[conn].active));
+					ProjectLinks[conn].active) && (this.state.displayIncompatible ? true : this.filtering(link)));
 			} else if (ProjectSettings.representation === Representation.COMPACT) {
 				return Object.keys(VocabularyElements).filter(link =>
 					!conns.find(
@@ -66,6 +113,12 @@ export default class NewLinkDiagram extends React.Component<Props, State> {
 			</Modal.Header>
 			<Modal.Body>
 				<p>{LocaleMenu.modalNewLinkDescription}</p>
+				{/*<Form.Check defaultChecked={this.state.displayIncompatible}*/}
+				{/*			onClick={(event: any) => {*/}
+				{/*				this.setState({displayIncompatible: event.currentTarget.checked})*/}
+				{/*			}}*/}
+				{/*			type="checkbox"*/}
+				{/*			label={LocaleMenu.showIncompatibleLinks} />*/}
 				<Form.Control htmlSize={Object.keys(Links).length} as="select" value={this.state.selectedLink}
 							  onChange={this.handleChangeLink}>
 					{this.getLinks().map((link) => (

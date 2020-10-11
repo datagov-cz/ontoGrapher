@@ -108,7 +108,8 @@ export var Stereotypes: {
         definitions: { [key: string]: string },
         inScheme: string,
         types: string[],
-        subClassOf: string[]
+        subClassOf: string[],
+        character: string | undefined,
     }
 } = {};
 
