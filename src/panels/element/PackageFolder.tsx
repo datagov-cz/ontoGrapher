@@ -11,7 +11,6 @@ interface Props {
     openEditPackage: Function;
     openRemovePackage: Function;
     readOnly: boolean;
-    flash: boolean;
 }
 
 interface State {

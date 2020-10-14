@@ -38,7 +38,6 @@ interface State {
 	selectedID: string;
 	selectedDiagram: number;
 	selectedNode: PackageNode;
-	flash: boolean;
 }
 
 export default class ItemPanel extends React.Component<Props, State> {
@@ -47,7 +46,6 @@ export default class ItemPanel extends React.Component<Props, State> {
 		super(props);
 		this.state = {
 			filter: [],
-			flash: false,
 			search: "",
 			modalEditPackage: false,
 			modalRemoveDiagram: false,
@@ -62,11 +60,7 @@ export default class ItemPanel extends React.Component<Props, State> {
 		this.handleChangeSearch = this.handleChangeSearch.bind(this);
 	}
 
-	update(position?: { x: number, y: number }) {
-		if (position) {
-			this.setState({flash: true});
-			setTimeout(() => this.setState({flash: false}), 2000);
-		}
+	update() {
 		this.forceUpdate();
 	}
 
@@ -98,7 +92,6 @@ export default class ItemPanel extends React.Component<Props, State> {
         if (node !== PackageRoot) {
             arr.push(<PackageFolder
 				key={node.scheme}
-				flash={this.state.flash}
 				projectLanguage={this.props.projectLanguage}
 				node={node}
 				depth={depth}
@@ -122,10 +115,17 @@ export default class ItemPanel extends React.Component<Props, State> {
 				{node.elements.sort((a, b) => VocabularyElements[ProjectElements[a].iri].labels[this.props.projectLanguage].localeCompare(
 					VocabularyElements[ProjectElements[b].iri].labels[this.props.projectLanguage])).map((id) => {
 					let name = VocabularyElements[ProjectElements[id].iri] ? getLabelOrBlank(VocabularyElements[ProjectElements[id].iri].labels, this.props.projectLanguage) : "<blank>";
-					if (name.toLowerCase().startsWith(this.state.search.toLowerCase()) && (ProjectSettings.representation === Representation.FULL ||
-						(ProjectSettings.representation === Representation.COMPACT &&
-							!(VocabularyElements[ProjectElements[id].iri].types.includes(parsePrefix("z-sgov-pojem", "typ-vztahu"))
-							)))) {
+					if (
+						name.toLowerCase().startsWith(this.state.search.toLowerCase()) &&
+						(ProjectSettings.representation === Representation.FULL ||
+							(ProjectSettings.representation === Representation.COMPACT &&
+								(!
+										(VocabularyElements[ProjectElements[id].iri].types.includes(parsePrefix("z-sgov-pojem", "typ-vztahu"))
+											|| VocabularyElements[ProjectElements[id].iri].types.includes(parsePrefix("z-sgov-pojem", "typ-vlastnosti")))
+								)
+							)
+						)
+					) {
 						return (
 							<PackageItem
 								key={id}
@@ -148,30 +148,6 @@ export default class ItemPanel extends React.Component<Props, State> {
                     }
                 )}
             </PackageFolder>);
-        } else {
-			node.elements.sort((a, b) =>
-				VocabularyElements[ProjectElements[a].iri].labels[this.props.projectLanguage].localeCompare(
-					VocabularyElements[ProjectElements[b].iri].labels[this.props.projectLanguage]))
-				.forEach((id) => {
-					if (ProjectSettings.representation === Representation.FULL ||
-						(ProjectSettings.representation === Representation.COMPACT &&
-							!(VocabularyElements[ProjectElements[id].iri].types.includes(parsePrefix("z-sgov-pojem", "typ-vztahu"))
-							))) {
-						arr.push(<PackageItem
-							label={VocabularyElements[ProjectElements[id].iri] ? getLabelOrBlank(VocabularyElements[ProjectElements[id].iri].labels, this.props.projectLanguage) : "<blank>"}
-							depth={depth} id={id}
-							openRemoveItem={() => {
-								this.setState({
-									selectedID: id,
-								modalRemoveItem: true
-							})
-						}}
-						update={() => {
-							this.forceUpdate();
-						}}/>)
-				}
-			})
-
         }
         if (node.open) {
             for (let subnode of node.children) {

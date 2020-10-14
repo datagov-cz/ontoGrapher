@@ -42,7 +42,7 @@ require("../scss/style.scss");
 
 export default class DiagramApp extends React.Component<DiagramAppProps, DiagramAppState> {
 	private readonly canvas: React.RefObject<DiagramCanvas>;
-	private readonly elementPanel: React.RefObject<ItemPanel>;
+	private readonly itemPanel: React.RefObject<ItemPanel>;
 	private readonly detailPanel: React.RefObject<DetailPanel>;
 	private readonly menuPanel: React.RefObject<MenuPanel>;
 
@@ -50,7 +50,7 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 		super(props);
 
 		this.canvas = React.createRef();
-		this.elementPanel = React.createRef();
+		this.itemPanel = React.createRef();
 		this.detailPanel = React.createRef();
 		this.menuPanel = React.createRef();
 
@@ -118,7 +118,7 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 		this.setState({
 			projectLanguage: Object.keys(Languages)[0],
 		});
-		this.elementPanel.current?.forceUpdate();
+		this.itemPanel.current?.forceUpdate();
 	}
 
 	handleChangeLoadingStatus(loading: boolean, status: string, error: boolean, retry: boolean = true) {
@@ -134,7 +134,7 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 		this.newProject();
 		loadProject(loadString);
 		this.setState({projectLanguage: ProjectSettings.selectedLanguage});
-		this.elementPanel.current?.forceUpdate();
+		this.itemPanel.current?.forceUpdate();
 	}
 
 	loadVocabularies(contextIRI: string, contextEndpoint: string, reload: boolean = false, diagram: number = 0) {
@@ -169,7 +169,7 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 					await setupDiagrams(diagram);
 					await updateProjectSettings(contextIRI, contextEndpoint);
 					this.forceUpdate();
-					this.elementPanel.current?.forceUpdate();
+					this.itemPanel.current?.forceUpdate();
 					for (let elem of graph.getElements())
 						drawGraphElement(elem, ProjectSettings.selectedLanguage, Representation.FULL);
 					this.handleChangeLoadingStatus(false, "✔ Workspace ready.", false, false);
@@ -195,7 +195,7 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 				loadContext={this.loadVocabularies}
 				handleChangeLanguage={this.handleChangeLanguage}
 				update={() => {
-					this.elementPanel.current?.update();
+					this.itemPanel.current?.update();
 				}}
 				closeDetailPanel={() => {
 					this.detailPanel.current?.hide();
@@ -206,7 +206,7 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 				handleChangeLoadingStatus={this.handleChangeLoadingStatus}
 			/>
 			<ItemPanel
-				ref={this.elementPanel}
+				ref={this.itemPanel}
 				handleWidth={(width: number) => {
 					this.setState({widthLeft: width})
 				}}
@@ -218,7 +218,7 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 				handleChangeLoadingStatus={this.handleChangeLoadingStatus}
 				error={this.state.error}
 				update={() => {
-					this.elementPanel.current?.forceUpdate();
+					this.itemPanel.current?.forceUpdate();
 				}}
 			/>
 			<DetailPanel
@@ -229,7 +229,7 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 					this.canvas.current?.resizeElem(id);
 				}}
 				update={() => {
-					this.elementPanel.current?.forceUpdate();
+					this.itemPanel.current?.forceUpdate();
 					this.detailPanel.current?.forceUpdate();
 				}}
 				handleChangeLoadingStatus={this.handleChangeLoadingStatus}
@@ -257,8 +257,8 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 					this.detailPanel.current?.hide();
 					this.setState({widthRight: 0});
 				}}
-				updateElementPanel={(position?: { x: number, y: number }) => {
-					this.elementPanel.current?.update(position);
+				updateElementPanel={() => {
+					this.itemPanel.current?.update();
 					this.detailPanel.current?.update();
 				}}
 				handleChangeLoadingStatus={this.handleChangeLoadingStatus}

@@ -45,10 +45,6 @@ export function createValues(values: { [key: string]: string[] }, prefixes: { [k
     return result;
 }
 
-export function createIDIRI(id: string) {
-    return ProjectSettings.ontographerContext + "/" + id;
-}
-
 export function createNewElemIRI(target: { [key: string]: any }, url: string): string {
     let result = url;
     result = result.trim().replace(/\s/g, '-');
@@ -93,7 +89,6 @@ export function addClass(
     id: string,
     iri: string,
     pkg: PackageNode,
-    untitled: boolean = false,
     active: boolean = true) {
     ProjectElements[id] = {
         iri: iri,

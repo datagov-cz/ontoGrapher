@@ -50,7 +50,10 @@ export default class MenuPanel extends React.Component<MenuPanelProps, MenuPanel
 										   retry={this.props.retry}/>
 					<div className={"right"}>
 						<Form inline>
-							<InterfaceStatus handleChangeLoadingStatus={this.props.handleChangeLoadingStatus}/>
+							<InterfaceStatus
+								handleChangeLoadingStatus={this.props.handleChangeLoadingStatus}
+								error={this.props.loadingError}
+							/>
 							&nbsp;
 							<Form.Control as="select" value={this.props.projectLanguage}
 										  onChange={this.handleChangeLanguage}>

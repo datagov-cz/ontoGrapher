@@ -4,7 +4,8 @@ import {ProjectSettings} from "../config/Variables";
 import * as LocaleMain from "../locale/LocaleMain.json";
 
 interface Props {
-	handleChangeLoadingStatus: Function
+	handleChangeLoadingStatus: Function;
+	error: boolean;
 }
 
 interface State {
@@ -27,7 +28,7 @@ export default class InterfaceStatus extends React.Component<Props, State> {
 	setStatus() {
 		this.checkStatus().then(status => {
 			this.setState({connection: status});
-			this.props.handleChangeLoadingStatus(false, "", !status, false)
+			if (status === this.props.error) this.props.handleChangeLoadingStatus(false, "", !status, false)
 		}).catch(() => {
 			this.setState({connection: false});
 			this.props.handleChangeLoadingStatus(false, "Error: connection unsuccessful.", true, false);

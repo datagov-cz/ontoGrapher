@@ -3,6 +3,7 @@ import {
     CardinalityPool,
     Languages,
     Links,
+    ProjectElements,
     ProjectLinks,
     ProjectSettings,
     Schemes,
@@ -19,7 +20,7 @@ import {graph} from "../../graph/Graph";
 import DescriptionTabs from "./components/DescriptionTabs";
 import {getLabelOrBlank, getLinkOrVocabElem} from "../../function/FunctionGetVars";
 import {updateProjectLink} from "../../interface/TransactionInterface";
-import {getUnderlyingFullConnections, unHighlightAll} from "../../function/FunctionGraph";
+import {getUnderlyingFullConnections, setLabels, unHighlightAll} from "../../function/FunctionGraph";
 import {parsePrefix} from "../../function/FunctionEditVars";
 import {Cardinality} from "../../datatypes/Cardinality";
 import {LinkType, Representation} from "../../config/Enum";
@@ -39,6 +40,7 @@ interface State {
     sourceCardinality: string;
     targetCardinality: string;
     changes: boolean;
+    readOnly: boolean;
 }
 
 export default class DetailLink extends React.Component<Props, State> {
@@ -49,7 +51,8 @@ export default class DetailLink extends React.Component<Props, State> {
             iri: Object.keys(Links)[0],
             sourceCardinality: "0",
             targetCardinality: "0",
-            changes: false
+            changes: false,
+            readOnly: false
         }
     }
 
@@ -96,7 +99,8 @@ export default class DetailLink extends React.Component<Props, State> {
         this.setState({
             id: id,
             iri: ProjectLinks[id].iri,
-            changes: false
+            changes: false,
+            readOnly: Schemes[VocabularyElements[ProjectElements[ProjectLinks[id].source].iri].inScheme].readOnly
         });
     }
 
@@ -108,40 +112,9 @@ export default class DetailLink extends React.Component<Props, State> {
             ProjectLinks[this.state.id].iri = this.state.iri;
             updateProjectLink(ProjectSettings.contextEndpoint, this.state.id).then((result) => {
                 if (result) {
-                    let links = graph.getLinks();
-                    for (let link of links) {
-                        if (link.id === this.state.id) {
-                            switch (link.labels.length) {
-                                case 1:
-                                    link.removeLabel(0);
-                                    break;
-                                case 2:
-                                    link.removeLabel(0);
-                                    link.removeLabel(0);
-                                    break;
-                                case 3:
-                                    link.removeLabel(0);
-                                    link.removeLabel(0);
-                                    link.removeLabel(0);
-                                    break;
-                            }
-                            if (ProjectLinks[this.state.id].sourceCardinality.getString() !== LocaleMain.none) {
-                                link.appendLabel({
-                                    attrs: {text: {text: ProjectLinks[this.state.id].sourceCardinality.getString()}},
-                                    position: {distance: 20}
-                                });
-                            }
-                            if (ProjectLinks[this.state.id].targetCardinality.getString() !== LocaleMain.none) {
-                                link.appendLabel({
-                                    attrs: {text: {text: ProjectLinks[this.state.id].targetCardinality.getString()}},
-                                    position: {distance: -20}
-                                });
-                            }
-                            if (ProjectLinks[this.state.id].type === LinkType.DEFAULT) link.appendLabel({
-                                attrs: {text: {text: getLinkOrVocabElem(this.state.iri).labels[this.props.projectLanguage]}},
-                                position: {distance: 0.5}
-                            });
-                        }
+                    let link = graph.getLinks().find(link => link.id === this.state.id);
+                    if (link) {
+                        setLabels(link, getLinkOrVocabElem(this.state.iri).labels[this.props.projectLanguage])
                     }
                     this.setState({changes: false});
                     this.props.save();
@@ -155,42 +128,8 @@ export default class DetailLink extends React.Component<Props, State> {
             ProjectLinks[this.state.id].sourceCardinality = CardinalityPool[parseInt(this.state.sourceCardinality, 10)];
             ProjectLinks[this.state.id].targetCardinality = CardinalityPool[parseInt(this.state.targetCardinality, 10)];
             let link = graph.getLinks().find(link => link.id === this.state.id);
-            let links = graph.getLinks();
-            for (let link of links) {
-                if (link.id === this.state.id) {
-                    switch (link.labels.length) {
-                        case 1:
-                            link.removeLabel(0);
-                            break;
-                        case 2:
-                            link.removeLabel(0);
-                            link.removeLabel(0);
-                            break;
-                        case 3:
-                            link.removeLabel(0);
-                            link.removeLabel(0);
-                            link.removeLabel(0);
-                            break;
-                    }
-                    if (ProjectLinks[this.state.id].sourceCardinality.getString() !== LocaleMain.none) {
-                        link.appendLabel({
-                            attrs: {text: {text: ProjectLinks[this.state.id].sourceCardinality.getString()}},
-                            position: {distance: 20}
-                        });
-                    }
-                    if (ProjectLinks[this.state.id].targetCardinality.getString() !== LocaleMain.none) {
-                        link.appendLabel({
-                            attrs: {text: {text: ProjectLinks[this.state.id].targetCardinality.getString()}},
-                            position: {distance: -20}
-                        });
-                    }
-                    if (ProjectLinks[this.state.id].type === LinkType.DEFAULT) link.appendLabel({
-                        attrs: {text: {text: getLinkOrVocabElem(this.state.iri).labels[this.props.projectLanguage]}},
-                        position: {distance: 0.5}
-                    });
-                }
-            }
             if (link) {
+                setLabels(link, getLinkOrVocabElem(this.state.iri).labels[this.props.projectLanguage])
                 let underlyingConnections = getUnderlyingFullConnections(link);
                 if (underlyingConnections) {
                     let sourceCard = CardinalityPool[parseInt(this.state.sourceCardinality, 10)];
@@ -235,18 +174,18 @@ export default class DetailLink extends React.Component<Props, State> {
                             <span>{LocaleMain.sourceCardinality}</span>
                         </td>
                         <td>
-                            <Form.Control as="select" value={this.state.sourceCardinality}
-                                          onChange={(event: React.ChangeEvent<HTMLSelectElement>) => {
-                                              this.setState({
-                                                  sourceCardinality: event.currentTarget.value,
-                                                  changes: true
-                                              });
-                                          }
-                                          }>
+                            {(!this.state.readOnly) ? <Form.Control as="select" value={this.state.sourceCardinality}
+                                                                    onChange={(event: React.ChangeEvent<HTMLSelectElement>) => {
+                                                                        this.setState({
+                                                                            sourceCardinality: event.currentTarget.value,
+                                                                            changes: true
+                                                                        });
+                                                                    }
+                                                                    }>
                                 {CardinalityPool.map((card, i) =>
                                     (<option key={i} value={i.toString(10)}>{card.getString()}</option>)
                                 )}
-                            </Form.Control>
+                            </Form.Control> : CardinalityPool[parseInt(this.state.sourceCardinality, 10)].getString()}
                         </td>
                     </tr>
 
@@ -255,25 +194,25 @@ export default class DetailLink extends React.Component<Props, State> {
                             <span>{LocaleMain.targetCardinality}</span>
                         </td>
                         <td>
-                            <Form.Control as="select" value={this.state.targetCardinality}
-                                          onChange={(event: React.ChangeEvent<HTMLSelectElement>) => {
-                                              this.setState({
-                                                  targetCardinality: event.currentTarget.value,
-                                                  changes: true
-                                              });
-                                          }
-                                          }>
+                            {(!this.state.readOnly) ? <Form.Control as="select" value={this.state.targetCardinality}
+                                                                    onChange={(event: React.ChangeEvent<HTMLSelectElement>) => {
+                                                                        this.setState({
+                                                                            targetCardinality: event.currentTarget.value,
+                                                                            changes: true
+                                                                        });
+                                                                    }
+                                                                    }>
                                 {CardinalityPool.map((card, i) =>
                                     (<option key={i} value={i.toString(10)}>{card.getString()}</option>)
                                 )}
-                            </Form.Control>
+                            </Form.Control> : CardinalityPool[parseInt(this.state.targetCardinality, 10)].getString()}
                         </td>
                     </tr>
                     <tr>
                         <td>
                             <span>{LocaleMain.linkType}</span>
                         </td>
-                        {ProjectSettings.representation === Representation.FULL ? <td>
+                        {(ProjectSettings.representation === Representation.FULL && !(this.state.readOnly)) ? <td>
                                 <Form.Control as="select" value={this.state.iri} onChange={(event) => {
                                     this.setState({
                                         iri: event.currentTarget.value,
@@ -284,7 +223,7 @@ export default class DetailLink extends React.Component<Props, State> {
                                 </Form.Control>
                             </td> :
                             <IRIlabel
-                                label={getLabelOrBlank(VocabularyElements[this.state.iri].labels, this.props.projectLanguage)}
+                                label={getLabelOrBlank(getLinkOrVocabElem(this.state.iri).labels, this.props.projectLanguage)}
                                 iri={this.state.iri}
                             />}
                     </tr>

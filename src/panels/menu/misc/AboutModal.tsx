@@ -21,6 +21,13 @@ export default class AboutModal extends React.Component<Props, State> {
             <Modal.Body>
                 <Tabs id={"changelog"}>
 					<Tab title={"October"} eventKey={"October"}>
+						<h6>14.10.</h6>
+						<ul>
+							<li>Bug fixing and stability improvements</li>
+							<li>Relationship in the new relationship creation dialogue are now optionally filtered for
+								appropriate relationships
+							</li>
+						</ul>
 						<h6>6.10.</h6>
 						<ul>
 							<li>Bug fixing and stability improvements</li>

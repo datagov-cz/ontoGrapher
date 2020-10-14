@@ -111,6 +111,7 @@ export function getUnderlyingFullConnections(link: joint.dia.Link): { src: strin
 }
 
 export function setLabels(link: joint.dia.Link, centerLabel: string){
+    link.labels([]);
     if (ProjectLinks[link.id].type === LinkType.DEFAULT) {
         link.appendLabel({
             attrs: {text: {text: centerLabel}},
@@ -132,7 +133,6 @@ export function setLabels(link: joint.dia.Link, centerLabel: string){
 }
 
 function storeElement(elem: joint.dia.Element) {
-    ProjectElements[elem.id].position[ProjectSettings.selectedDiagram] = elem.position();
     ProjectElements[elem.id].hidden[ProjectSettings.selectedDiagram] = true;
     elem.remove();
     if (typeof elem.id === "string") {
@@ -162,11 +162,13 @@ export function setRepresentation(representation: number) {
                             addLink(newLink.id, ProjectElements[elem.id].iri, source, target);
                             newLink.addTo(graph);
                             ProjectLinks[newLink.id].sourceCardinality =
-                                new Cardinality(ProjectLinks[sourceLink.id].sourceCardinality.getFirstCardinality(),
-                                    ProjectLinks[sourceLink.id].targetCardinality.getFirstCardinality());
+                                new Cardinality(
+                                    ProjectLinks[sourceLink.id].targetCardinality.getFirstCardinality(),
+                                    ProjectLinks[sourceLink.id].targetCardinality.getSecondCardinality());
                             ProjectLinks[newLink.id].targetCardinality =
-                                new Cardinality(ProjectLinks[targetLink.id].sourceCardinality.getFirstCardinality(),
-                                    ProjectLinks[targetLink.id].targetCardinality.getFirstCardinality());
+                                new Cardinality(
+                                    ProjectLinks[sourceLink.id].sourceCardinality.getFirstCardinality(),
+                                    ProjectLinks[sourceLink.id].sourceCardinality.getSecondCardinality());
                             setLabels(newLink, VocabularyElements[ProjectElements[elem.id].iri].labels[ProjectSettings.selectedLanguage]);
                         }
                         sourceLink.remove();
@@ -203,6 +205,7 @@ export function setRepresentation(representation: number) {
             let cell = find || new graphElement({id: elem})
             cell.addTo(graph);
             cell.position(ProjectElements[elem].position[ProjectSettings.selectedDiagram].x, ProjectElements[elem].position[ProjectSettings.selectedDiagram].y)
+            ProjectElements[elem].hidden[ProjectSettings.selectedDiagram] = false;
             drawGraphElement(cell, ProjectSettings.selectedLanguage, representation);
             restoreHiddenElem(elem, cell);
         }
@@ -277,7 +280,8 @@ export function restoreHiddenElem(id: string, cls: joint.dia.Element) {
                     if (ProjectElements[relID].position[ProjectSettings.selectedDiagram] &&
                         ProjectElements[relID].position[ProjectSettings.selectedDiagram].x !== 0 &&
                         ProjectElements[relID].position[ProjectSettings.selectedDiagram].y !== 0) {
-                        relationship.position(ProjectElements[relID].position[ProjectSettings.selectedDiagram].x, ProjectElements[relID].position[ProjectSettings.selectedDiagram].y);
+                        relationship.position(ProjectElements[relID].position[ProjectSettings.selectedDiagram].x,
+                            ProjectElements[relID].position[ProjectSettings.selectedDiagram].y);
                     } else {
                         let sourcepos = graph.getCell(ProjectLinks[link].target).get('position');
                         let targetpos = graph.getCell(ProjectLinks[targetLink].target).get('position');

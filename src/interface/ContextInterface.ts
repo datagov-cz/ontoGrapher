@@ -111,7 +111,7 @@ export async function getContext(
 		for (let elem in vocabularies[vocab].terms) {
 			let id = new graphElement().id;
 			if (typeof id === "string") {
-				addClass(id, elem, pkg, false, !vocabularies[vocab].readOnly);
+				addClass(id, elem, pkg);
 			}
 		}
 	}

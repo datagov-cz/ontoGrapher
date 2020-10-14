@@ -33,7 +33,7 @@ export default class NewLinkDiagram extends React.Component<Props, State> {
 		super(props);
 		this.state = {
 			selectedLink: "",
-			displayIncompatible: true
+			displayIncompatible: false
 		}
 		this.handleChangeLink = this.handleChangeLink.bind(this);
 	}
@@ -87,14 +87,15 @@ export default class NewLinkDiagram extends React.Component<Props, State> {
 			if (ProjectSettings.representation === Representation.FULL) {
 				return Object.keys(Links).filter(link => !conns.find(conn => ProjectLinks[conn].iri === link &&
 					ProjectLinks[conn].target === this.props.tid &&
-					ProjectLinks[conn].active) && (this.state.displayIncompatible ? true : this.filtering(link)));
+					ProjectLinks[conn].active) && (this.state.displayIncompatible ? true :
+					(this.filtering(link) || Links[link].inScheme === (ProjectSettings.ontographerContext + "/uml"))));
 			} else if (ProjectSettings.representation === Representation.COMPACT) {
 				return Object.keys(VocabularyElements).filter(link =>
 					!conns.find(
 						conn => ProjectLinks[conn].iri === link &&
 							ProjectLinks[conn].target === this.props.tid
 					) && (VocabularyElements[link].types.includes(parsePrefix("z-sgov-pojem", "typ-vztahu"))
-					));
+					)).concat(Object.keys(Links).filter(link => Links[link].inScheme === (ProjectSettings.ontographerContext + "/uml")));
 			} else return [];
 		} else return [];
 	}
@@ -113,12 +114,18 @@ export default class NewLinkDiagram extends React.Component<Props, State> {
 			</Modal.Header>
 			<Modal.Body>
 				<p>{LocaleMenu.modalNewLinkDescription}</p>
-				{/*<Form.Check defaultChecked={this.state.displayIncompatible}*/}
-				{/*			onClick={(event: any) => {*/}
-				{/*				this.setState({displayIncompatible: event.currentTarget.checked})*/}
-				{/*			}}*/}
-				{/*			type="checkbox"*/}
-				{/*			label={LocaleMenu.showIncompatibleLinks} />*/}
+				{ProjectSettings.representation === Representation.FULL && <span>
+					<input defaultChecked={this.state.displayIncompatible}
+                           onClick={(event: any) => {
+							   this.setState({displayIncompatible: event.currentTarget.checked})
+						   }}
+                           type="checkbox"
+                           id={"displayIncompatible"}
+                    />
+                    &nbsp;
+                    <label htmlFor={"displayIncompatible"}>{LocaleMenu.showIncompatibleLinks}</label>
+				</span>}
+				<br/>
 				<Form.Control htmlSize={Object.keys(Links).length} as="select" value={this.state.selectedLink}
 							  onChange={this.handleChangeLink}>
 					{this.getLinks().map((link) => (
