@@ -54,6 +54,7 @@ export var Schemes: {
         labels: { [key: string]: string },
         readOnly: boolean,
         graph: string,
+        color: string,
     }
 } = {};
 
@@ -84,6 +85,7 @@ export var VocabularyElements: {
             restrictions: RestrictionObject[],
             connections: ConnectionObject[],
             active: boolean,
+            topConcept: string | undefined
         }
 } = {};
 

@@ -25,6 +25,7 @@ interface Props {
 	handleChangeLoadingStatus: Function;
 	handleWidth: Function;
 	error: boolean;
+	update: Function;
 }
 
 interface State {
@@ -207,6 +208,7 @@ export default class ItemPanel extends React.Component<Props, State> {
 					}}
 					update={() => {
 						this.forceUpdate();
+						this.props.update();
 					}}
 					handleChangeLoadingStatus={this.props.handleChangeLoadingStatus}
 				/>

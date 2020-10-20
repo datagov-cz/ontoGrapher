@@ -1,6 +1,6 @@
 import React from 'react';
 import {PackageNode} from "../../datatypes/PackageNode";
-import {ProjectElements, VocabularyElements} from "../../config/Variables";
+import {ProjectElements, Schemes, VocabularyElements} from "../../config/Variables";
 import {getLabelOrBlank} from "../../function/FunctionGetVars";
 
 interface Props {
@@ -59,7 +59,10 @@ export default class PackageFolder extends React.Component<Props, State> {
                     this.props.update();
                 }}
                 className={"packageFolder" + (this.state.open ? " open" : "")}
-                style={{marginLeft: (this.props.depth - 1) * 20 + "px"}}>
+                style={{
+                    marginLeft: (this.props.depth - 1) * 20 + "px",
+                    borderLeftColor: this.props.node.scheme ? Schemes[this.props.node.scheme].color : "#FFF"
+                }}>
                 {(this.props.readOnly ? "📑" : "✏") + getLabelOrBlank(this.props.node.labels, this.props.projectLanguage)}
                 {this.state.open ?
                     this.props.children

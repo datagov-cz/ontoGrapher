@@ -4,6 +4,7 @@ import {
     ProjectElements,
     ProjectLinks,
     ProjectSettings,
+    Schemes,
     VocabularyElements
 } from "../config/Variables";
 import {initLanguageObject} from "./FunctionEditVars";
@@ -13,6 +14,8 @@ import {drawGraphElement, restoreHiddenElem} from "./FunctionGraph";
 import {changeDiagrams} from "./FunctionDiagram";
 import {graph} from "../graph/Graph";
 import {LinkType, Representation} from "../config/Enum";
+import {Colors} from "../config/Colors";
+import * as _ from "lodash";
 
 export async function setupDiagrams(diagram: number = 0): Promise<boolean> {
     for (let i = 0; i < Diagrams.length; i++) {
@@ -45,9 +48,14 @@ export function createValues(values: { [key: string]: string[] }, prefixes: { [k
     return result;
 }
 
+export function getNewColor(): string {
+    let color = _.sample(Colors.filter(color => !(Object.keys(Schemes).find(scheme => Schemes[scheme].color === color))));
+    return color ? color : Colors[0];
+}
+
 export function createNewElemIRI(target: { [key: string]: any }, url: string): string {
     let result = url;
-    result = result.trim().replace(/\s/g, '-');
+    result = result.trim().replace(/\s/g, '-').toLowerCase();
     let count = 1;
     if (result in target) {
         while ((result + "-" + count.toString(10)) in target) {
@@ -81,7 +89,8 @@ export function addVocabularyElement(iri: string, scheme: string, types?: string
         subClassOf: [],
         restrictions: [],
         connections: [],
-        active: true
+        active: true,
+        topConcept: scheme
     }
 }
 

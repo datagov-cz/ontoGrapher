@@ -67,6 +67,7 @@ export default class DetailElement extends React.Component<Props, State> {
 			changes: false
 		}
 		this.spreadConnections = this.spreadConnections.bind(this);
+		this.checkSpreadConnections = this.checkSpreadConnections.bind(this);
 	}
 
 	prepareDetails(id: string) {
@@ -83,6 +84,12 @@ export default class DetailElement extends React.Component<Props, State> {
 			readOnly: Schemes[VocabularyElements[ProjectElements[id].iri].inScheme].readOnly,
 			changes: false
 		});
+	}
+
+	checkSpreadConnections(): boolean {
+		if (this.state && this.state.id) return (this.state.inputConnections.filter(conn => ProjectLinks[conn] && ProjectLinks[conn].active).length !==
+			graph.getConnectedLinks(graph.getCell(this.state.id)).length);
+		else return false;
 	}
 
 	save() {
@@ -287,8 +294,7 @@ export default class DetailElement extends React.Component<Props, State> {
 										}
 									)}
 								</TableList>
-								{(this.state.inputConnections.filter(conn => ProjectLinks[conn] && ProjectLinks[conn].active).length !==
-									graph.getConnectedLinks(graph.getCell(this.state.id)).length) &&
+								{this.checkSpreadConnections() &&
                                 <Button className={"buttonlink center"} onClick={this.spreadConnections}>
 									{LocaleMain.spreadConnections}
                                 </Button>}

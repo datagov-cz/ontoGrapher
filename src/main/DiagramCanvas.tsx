@@ -292,42 +292,6 @@ export default class DiagramCanvas extends React.Component<Props, State> {
             }
         });
 
-        let RemoveButton = joint.elementTools.Remove.extend({
-            options: {
-                markup: [{
-                    tagName: 'circle',
-                    selector: 'button',
-                    attributes: {
-                        'r': 10,
-                        'fill': '#ff1d00',
-                        'cursor': 'pointer'
-                    }
-                },
-                    {
-                        tagName: 'path',
-                        selector: 'icon',
-                        attributes: {
-                            'transform': 'scale(2)',
-                            'd': 'M -3 -3 3 3 M -3 3 3 -3',
-                            'fill': 'none',
-                            'stroke': '#fff',
-                            'stroke-width': 1,
-                            'pointer-events': 'none'
-                        }
-                    }
-                ],
-                action: (evt: { currentTarget: { getAttribute: (arg0: string) => any; }; }) => {
-                    let id = evt.currentTarget.getAttribute("model-id");
-                    let links = graph.getConnectedLinks(graph.getCell(id));
-                    for (let link of links) {
-                        ProjectLinks[link.id].active = false;
-                    }
-                    graph.getCell(id).remove();
-
-                }
-            }
-        });
-
         this.paper.on({
             'cell:pointerclick': (cellView) => {
                 if (!this.newLink) {
@@ -362,17 +326,12 @@ export default class DiagramCanvas extends React.Component<Props, State> {
             },
             'element:mouseenter': (elementView) => {
                 let id = elementView.model.id
-                let tool = !(Schemes[VocabularyElements[ProjectElements[id].iri].inScheme].readOnly) ? new HideButton({
+                let tool = new HideButton({
                     useModelGeometry: false,
                     x: '100%',
                     y: '0%',
                     action: () => this.updateElement(elementView.model)
-                }) : new RemoveButton({
-                    useModelGeometry: false,
-                    x: '100%',
-                    y: '0%',
-                    action: () => this.updateElement(elementView.model)
-                });
+                })
                 elementView.addTools(new joint.dia.ToolsView({
                     tools: [
                         !(Schemes[VocabularyElements[ProjectElements[id].iri].inScheme].readOnly) && new ElemCreateLink({

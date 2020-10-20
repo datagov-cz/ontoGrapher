@@ -44,7 +44,7 @@ export default class ModalRemoveItem extends React.Component<Props, State> {
                 </Modal.Body>
                 <Modal.Footer>
                     <Button onClick={() => {
-                        this.setState({modalRemove: false});
+                        this.props.close();
                     }} variant="secondary">{LocaleMenu.cancel}</Button>
                     <Button onClick={() => {
                         this.save();

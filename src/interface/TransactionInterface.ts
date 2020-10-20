@@ -1,5 +1,6 @@
 import {
 	Diagrams,
+	PackageRoot,
 	Prefixes,
 	ProjectElements,
 	ProjectLinks,
@@ -19,6 +20,7 @@ export async function updateProjectElement(
 	let iri = ProjectElements[id].iri;
 	let scheme = VocabularyElements[iri].inScheme;
 	let delTypes = VocabularyElements[iri].types;
+	let topConcept = VocabularyElements[iri].topConcept;
 	let addDefinitions: { "@value": string, "@language": string }[] = [];
 	let addLabels: { "@value": string, "@language": string }[] = [];
 
@@ -40,6 +42,7 @@ export async function updateProjectElement(
 			"og:iri": {"@type": "@id"},
 			"og:context": {"@type": "@id"},
 			"http://www.w3.org/2002/07/owl#onProperty": {"@type": "@id"},
+			"skos:hasTopConcept": {"@type": "@id"},
 		},
 		"@id": Schemes[scheme].graph,
 		"@graph": [
@@ -50,6 +53,10 @@ export async function updateProjectElement(
 				"skos:definition": addDefinitions,
 				"skos:inScheme": scheme,
 			},
+			(topConcept && {
+				"@id": scheme,
+				"skos:hasTopConcept": iri
+			}),
 			{
 				"@id": iri + "/diagram",
 				"@type": "og:element",
@@ -64,8 +71,8 @@ export async function updateProjectElement(
 					"@id": iri + "/diagram-" + (diag + 1),
 					"@type": "og:elementDiagram",
 					"og:index": diag,
-					"og:position-x": ProjectElements[id].position[diag].x,
-					"og:position-y": ProjectElements[id].position[diag].y,
+					"og:position-x": Math.round(ProjectElements[id].position[diag].x),
+					"og:position-y": Math.round(ProjectElements[id].position[diag].y),
 					"og:hidden": ProjectElements[id].hidden[diag]
 				}
 			}),
@@ -190,14 +197,30 @@ export async function updateProjectLink(contextEndpoint: string, id: string) {
 }
 
 export async function updateDeleteProjectElement(contextEndpoint: string, iri: string, context: string) {
-	let subjectLD = await processGetTransaction(contextEndpoint, {subject: iri, context: context}).catch(() => false);
-	let predicateLD = await processGetTransaction(contextEndpoint, {predicate: iri, context: context}).catch(() => false);
-	let objectLD = await processGetTransaction(contextEndpoint, {object: iri, context: context}).catch(() => false);
-	if (typeof subjectLD === "string" && typeof predicateLD === "string" && typeof objectLD === "string") {
-		return await processTransaction(contextEndpoint, {add: [], "delete": [subjectLD]}) &&
-			await processTransaction(contextEndpoint, {add: [], "delete": [predicateLD]}) &&
-			await processTransaction(contextEndpoint, {add: [], "delete": [objectLD]});
-	} else return false;
+	let query1 = [
+		"with <" + context + "> delete {",
+		"<" + iri + "> ?p ?o.",
+		"} where {",
+		"<" + iri + "> ?p ?o.",
+		"}"
+	].join(" ");
+	let query2 = [
+		"with <" + context + "> delete {",
+		"?s ?p <" + iri + ">.",
+		"} where {",
+		"?s ?p <" + iri + ">.",
+		"}"
+	].join(" ");
+	let query3 = [
+		"PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
+		"with <" + ProjectSettings.ontographerContext + "> delete {",
+		"?s ?p <" + iri + ">.",
+		"} where {",
+		"?s ?p <" + iri + ">.",
+		"?s og:context <" + context + ">.",
+		"}"
+	].join(" ");
+	return await processTransaction(contextEndpoint, {add: [], delete: [], update: [query1, query2, query3]});
 }
 
 //id: link ID
@@ -311,6 +334,7 @@ export async function updateProjectSettings(contextIRI: string, contextEndpoint:
 	}
 
 	let contextInstance = ProjectSettings.contextIRI.substring(ProjectSettings.contextIRI.lastIndexOf("/"));
+	let schemes = PackageRoot.children.filter(pkg => pkg.scheme && Schemes[pkg.scheme].color);
 
 	let ogContextLD = {
 		"@context": {
@@ -329,7 +353,10 @@ export async function updateProjectSettings(contextIRI: string, contextEndpoint:
 			{
 				"@id": ProjectSettings.ontographerContext + contextInstance,
 				"og:context": contextIRI,
-				"og:diagram": Diagrams.map((diag, i) => ProjectSettings.ontographerContext + contextInstance + "/diagram-" + (i + 1)),
+				"og:diagram": Diagrams.map((diag, i) =>
+					ProjectSettings.ontographerContext + contextInstance + "/diagram-" + (i + 1)),
+				"og:scheme": schemes.map((pkg, i) =>
+					ProjectSettings.ontographerContext + contextInstance + "/scheme-" + (i + 1))
 			},
 			...(Diagrams).filter(diag => diag.active).map((diag, i) => {
 				return {
@@ -338,6 +365,16 @@ export async function updateProjectSettings(contextIRI: string, contextEndpoint:
 					"og:context": contextIRI,
 					"og:name": diag.name,
 				}
+			}),
+			...schemes.map((pkg, i) => {
+				if (pkg.scheme) {
+					return {
+						"@id": ProjectSettings.ontographerContext + contextInstance + "/scheme-" + (i + 1),
+						"og:index": i,
+						"og:context": contextIRI,
+						"og:color": Schemes[pkg.scheme].color,
+					}
+				} else return {};
 			})
 		]
 	}
@@ -356,6 +393,16 @@ export async function updateProjectSettings(contextIRI: string, contextEndpoint:
 	for (let i = 0; i < (Diagrams.length + 1); i++) {
 		let delString = await processGetTransaction(contextEndpoint, {
 			subject: ProjectSettings.ontographerContext + contextInstance + "/diagram-" + (i + 1),
+			context: ProjectSettings.ontographerContext
+		}).catch(() => false);
+		if (typeof delString === "string") {
+			delStrings.push(delString);
+		}
+	}
+
+	for (let i = 0; i < (schemes.length + 1); i++) {
+		let delString = await processGetTransaction(contextEndpoint, {
+			subject: ProjectSettings.ontographerContext + contextInstance + "/scheme-" + (i + 1),
 			context: ProjectSettings.ontographerContext
 		}).catch(() => false);
 		if (typeof delString === "string") {

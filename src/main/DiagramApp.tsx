@@ -3,7 +3,7 @@ import MenuPanel from "../panels/MenuPanel";
 import ItemPanel from "../panels/ItemPanel";
 import DiagramCanvas from "./DiagramCanvas";
 import * as Locale from "../locale/LocaleMain.json";
-import {Languages, ProjectElements, ProjectLinks, ProjectSettings,} from "../config/Variables";
+import {Languages, ProjectElements, ProjectLinks, ProjectSettings} from "../config/Variables";
 import DetailPanel from "../panels/DetailPanel";
 import {getVocabulariesFromRemoteJSON} from "../interface/JSONInterface";
 import {addRelationships, initVars} from "../function/FunctionEditVars";
@@ -213,6 +213,10 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 				projectLanguage={this.state.projectLanguage}
 				handleChangeLoadingStatus={this.handleChangeLoadingStatus}
 				error={this.state.error}
+				update={() => {
+					this.detailPanel.current?.hide();
+					unHighlightAll();
+				}}
 			/>
 			<DiagramPanel
 				handleChangeLoadingStatus={this.handleChangeLoadingStatus}

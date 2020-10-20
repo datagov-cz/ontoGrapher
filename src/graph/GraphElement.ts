@@ -19,6 +19,13 @@ export var graphElement = joint.dia.Element.define('custom.graphElement', {
                 fontSize: 14,
                 y: 25,
                 x: 2
+            },
+            schemeColor: {
+                ref: 'body',
+                strokeWidth: 0,
+                width: 3,
+                refX: 1,
+                refY: 1
             }
         }
     }, {
@@ -34,6 +41,10 @@ export var graphElement = joint.dia.Element.define('custom.graphElement', {
             {
                 tagName: 'text',
                 selector: 'labelAttrs'
+            },
+            {
+                tagName: 'rect',
+                selector: 'schemeColor'
             }
         ]
     },

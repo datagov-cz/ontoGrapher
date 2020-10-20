@@ -1,4 +1,12 @@
-import {Diagrams, Links, ProjectElements, ProjectLinks, ProjectSettings, Schemes} from "../config/Variables";
+import {
+    Diagrams,
+    Links,
+    PackageRoot,
+    ProjectElements,
+    ProjectLinks,
+    ProjectSettings,
+    Schemes
+} from "../config/Variables";
 import {initLanguageObject} from "../function/FunctionEditVars";
 import * as joint from "jointjs";
 import {Cardinality} from "../datatypes/Cardinality";
@@ -6,6 +14,7 @@ import * as _ from "lodash";
 import * as Locale from "../locale/LocaleMain.json";
 import {createRestriction} from "../function/FunctionRestriction";
 import {LinkType} from "../config/Enum";
+import {getNewColor} from "../function/FunctionCreateVars";
 
 export async function fetchConcepts(
     endpoint: string,
@@ -32,6 +41,7 @@ export async function fetchConcepts(
             restrictions: [],
             connections: []
             type: number,
+            topConcept?: string;
             character?: string;
         }
     } = {};
@@ -41,7 +51,7 @@ export async function fetchConcepts(
         "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>",
         "PREFIX a-popis-dat-pojem: <http://onto.fel.cvut.cz/ontologies/slovník/agendový/popis-dat/pojem/>",
         "PREFIX z-sgov-pojem: <https://slovník.gov.cz/základní/pojem/>",
-        "SELECT DISTINCT ?term ?termLabel ?termType ?termDefinition ?termDomain ?termRange ?character ?restriction ?restrictionPred ?onProperty ?target ?subClassOf",
+        "SELECT DISTINCT ?term ?termLabel ?termType ?termDefinition ?termDomain ?termRange ?topConcept ?character ?restriction ?restrictionPred ?onProperty ?target ?subClassOf",
         "WHERE {",
         graph && "GRAPH <" + graph + "> {",
         !subPropertyOf && "?term skos:inScheme <" + source + ">.",
@@ -55,6 +65,7 @@ export async function fetchConcepts(
         "OPTIONAL {?term rdfs:domain ?termDomain.}",
         "OPTIONAL {?term rdfs:range ?termRange.}",
         "OPTIONAL {?term rdfs:subClassOf ?subClassOf. }",
+        "OPTIONAL {?topConcept skos:hasTopConcept ?term. }",
         "OPTIONAL {?term rdfs:subClassOf ?restriction. ",
         "?restriction a owl:Restriction .",
         "?restriction owl:onProperty ?onProperty.",
@@ -87,6 +98,7 @@ export async function fetchConcepts(
             if (row.termDomain) result[row.term.value].domain = row.termDomain.value;
             if (row.termRange) result[row.term.value].range = row.termRange.value;
             if (row.character) result[row.term.value].character = row.character.value;
+            if (row.topConcept) result[row.term.value].topConcept = row.topConcept.value;
             if (row.subClassOf && row.subClassOf.type !== "bnode" && !(result[row.term.value].subClassOf.includes(row.subClassOf.value))) result[row.term.value].subClassOf.push(row.subClassOf.value);
             if (row.restriction && Object.keys(Links).includes(row.onProperty.value)) createRestriction(result, row.term.value, row.restrictionPred.value, row.onProperty.value, row.target);
         }
@@ -146,7 +158,7 @@ export async function getScheme(iri: string, endpoint: string, readOnly: boolean
         return response.json();
     }).then(data => {
         for (let result of data.results.bindings) {
-            if (!(iri in Schemes)) Schemes[iri] = {labels: {}, readOnly: readOnly, graph: ""}
+            if (!(iri in Schemes)) Schemes[iri] = {labels: {}, readOnly: readOnly, graph: "", color: "#FFF"}
             if (result.termLabel) Schemes[iri].labels[result.termLabel['xml:lang']] = result.termLabel.value;
             if (result.termTitle) Schemes[iri].labels[result.termTitle['xml:lang']] = result.termTitle.value;
             if (result.graph) Schemes[iri].graph = result.graph.value;
@@ -251,16 +263,22 @@ export async function getElementsConfig(contextIRI: string, contextEndpoint: str
 export async function getSettings(contextIRI: string, contextEndpoint: string, callback?: Function): Promise<boolean> {
     let query = [
         "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
-        "select ?diagram ?index ?name where {",
+        "select ?diagram ?index ?name ?scheme ?sindex ?color where {",
         "BIND(<" + ProjectSettings.ontographerContext + "> as ?ogContext).",
         "graph ?ogContext {",
         "?diagram og:context <" + contextIRI + "> .",
         "?diagram og:index ?index .",
         "?diagram og:name ?name .",
+        "OPTIONAL {",
+        "?scheme og:index ?sindex .",
+        "?scheme og:context <" + contextIRI + "> .",
+        "?scheme og:color ?color .",
+        "}",
         "}",
         "}"
     ].join(" ");
     let q = contextEndpoint + "?query=" + encodeURIComponent(query);
+    let schemes = PackageRoot.children.filter(pkg => pkg.scheme && Schemes[pkg.scheme].color).map(pkg => pkg.scheme);
     await fetch(q, {headers: {'Accept': 'application/json'}}).then(response => {
         return response.json();
     }).then(data => {
@@ -269,12 +287,19 @@ export async function getSettings(contextIRI: string, contextEndpoint: string, c
                 Diagrams[parseInt(result.index.value)] = {name: Locale.untitled, json: {}, active: true}
             }
             Diagrams[parseInt(result.index.value)].name = result.name.value;
+            if (result.scheme && result.sindex.value) {
+                let scheme = schemes[parseInt(result.sindex.value)];
+                if (scheme) Schemes[scheme].color = result.color.value;
+            }
         }
         if (data.results.bindings.length > 0) ProjectSettings.initialized = true;
     }).catch(() => {
         if (callback) callback(false);
         return false;
     });
+    for (let scheme of schemes) {
+        if (scheme && Schemes[scheme].color === "#FFF") Schemes[scheme].color = getNewColor();
+    }
     return true;
 }
 

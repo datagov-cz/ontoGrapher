@@ -11,7 +11,7 @@ import {
 } from "../config/Variables";
 import * as Locale from "../locale/LocaleMain.json";
 import {graph} from "../graph/Graph";
-import {addLink} from "./FunctionCreateVars";
+import {addLink, getNewColor} from "./FunctionCreateVars";
 import {LinkConfig} from "../config/LinkConfig";
 import {getNewLink} from "./FunctionGraph";
 import {updateDeleteProjectElement, updateProjectLink} from "../interface/TransactionInterface";
@@ -48,7 +48,8 @@ export function loadUML() {
     Schemes[scheme] = {
         labels: initLanguageObject("UML"),
         readOnly: false,
-        graph: ProjectSettings.ontographerContext
+        graph: ProjectSettings.ontographerContext,
+        color: getNewColor()
     }
 
     for (let type in LinkConfig) {
@@ -144,14 +145,26 @@ export function addRelationships() {
 
 export function deletePackageItem(id: string) {
     let folder = ProjectElements[id].package;
+    let iri = ProjectElements[id].iri;
     folder.elements.splice(folder.elements.indexOf(id), 1);
-    for (let connection in ProjectElements[id].connections) {
-        ProjectLinks[ProjectElements[id].connections[connection]].active = false;
+    for (let connection of ProjectElements[id].connections) {
+        ProjectLinks[connection].active = false;
         updateDeleteProjectElement(ProjectSettings.contextEndpoint,
             ProjectSettings.ontographerContext + "-" + connection,
             ProjectSettings.ontographerContext);
     }
-    ProjectElements[id].connections.splice(0, ProjectElements[id].connections.length - 1);
+    let targets = Object.keys(ProjectLinks).filter(link => ProjectElements[ProjectLinks[link].target].iri === iri)
+    for (let connection of targets) {
+        ProjectLinks[connection].active = false;
+        updateDeleteProjectElement(ProjectSettings.contextEndpoint,
+            ProjectSettings.ontographerContext + "-" + connection,
+            ProjectSettings.ontographerContext);
+    }
+    targets.forEach(target => {
+        let elem = Object.keys(ProjectElements).find(elem => ProjectElements[elem].connections.includes(target));
+        if (elem) ProjectElements[elem].connections.splice(ProjectElements[elem].connections.indexOf(target), 1);
+    })
+    ProjectElements[id].connections = [];
     if (graph.getCell(id)) {
         graph.removeCells([graph.getCell(id)]);
     }
