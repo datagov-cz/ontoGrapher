@@ -15,7 +15,6 @@ interface Props {
 
 interface State {
     open: boolean;
-    hover: boolean;
 }
 
 export default class PackageFolder extends React.Component<Props, State> {
@@ -23,7 +22,6 @@ export default class PackageFolder extends React.Component<Props, State> {
         super(props);
         this.state = {
             open: false,
-            hover: false
         }
     }
 
@@ -40,12 +38,6 @@ export default class PackageFolder extends React.Component<Props, State> {
     render() {
         return (
             <div
-                onMouseOver={() => {
-                    this.setState({hover: true})
-                }}
-                onMouseOut={() => {
-                    this.setState({hover: false})
-                }}
                 onDragOver={(event) => {
                     event.preventDefault();
                 }}
@@ -61,9 +53,10 @@ export default class PackageFolder extends React.Component<Props, State> {
                 className={"packageFolder" + (this.state.open ? " open" : "")}
                 style={{
                     marginLeft: (this.props.depth - 1) * 20 + "px",
-                    borderLeftColor: this.props.node.scheme ? Schemes[this.props.node.scheme].color : "#FFF"
+                    backgroundColor: this.props.node.scheme ? Schemes[this.props.node.scheme].color : "#FFF"
                 }}>
                 {(this.props.readOnly ? "📑" : "✏") + getLabelOrBlank(this.props.node.labels, this.props.projectLanguage)}
+                {(this.props.node.scheme) && <span className="right">{Schemes[this.props.node.scheme].letter}</span>}
                 {this.state.open ?
                     this.props.children
                     : <span/>}

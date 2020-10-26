@@ -55,6 +55,7 @@ export var Schemes: {
         readOnly: boolean,
         graph: string,
         color: string,
+        letter: string,
     }
 } = {};
 
@@ -131,7 +132,8 @@ export var ProjectSettings: {
     representation: number,
     lastUpdate: { func: Function, args: [] },
     switchElements: string[],
-    viewStereotypes: boolean
+    viewStereotypes: boolean,
+    viewZoom: number
 } = {
     name: {},
     description: {},
@@ -148,6 +150,7 @@ export var ProjectSettings: {
     },
     switchElements: [],
     viewStereotypes: true,
+    viewZoom: 1
 };
 
 export var CardinalityPool: Cardinality[] = [

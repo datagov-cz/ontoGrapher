@@ -158,7 +158,13 @@ export async function getScheme(iri: string, endpoint: string, readOnly: boolean
         return response.json();
     }).then(data => {
         for (let result of data.results.bindings) {
-            if (!(iri in Schemes)) Schemes[iri] = {labels: {}, readOnly: readOnly, graph: "", color: "#FFF"}
+            if (!(iri in Schemes)) Schemes[iri] = {
+                labels: {},
+                readOnly: readOnly,
+                graph: "",
+                color: "#FFF",
+                letter: "Z"
+            }
             if (result.termLabel) Schemes[iri].labels[result.termLabel['xml:lang']] = result.termLabel.value;
             if (result.termTitle) Schemes[iri].labels[result.termTitle['xml:lang']] = result.termTitle.value;
             if (result.graph) Schemes[iri].graph = result.graph.value;
@@ -173,7 +179,7 @@ export async function getElementsConfig(contextIRI: string, contextEndpoint: str
     let elements: {
         [key: string]: {
             id: "",
-            diagramIRI: number[],
+            diagramIRI: string[],
             active: boolean,
             diagramPosition: { [key: number]: { x: number, y: number } },
             hidden: { [key: number]: boolean },
@@ -209,7 +215,8 @@ export async function getElementsConfig(contextIRI: string, contextEndpoint: str
             }
             elements[iri].id = result.id.value;
             elements[iri].active = result.active.value === "true";
-            elements[iri].diagramIRI.push(result.diagram.value);
+            if (!(elements[iri].diagramIRI.includes(result.diagram.value)))
+                elements[iri].diagramIRI.push(result.diagram.value);
         }
     }).catch(() => {
         if (callback) callback(false);
@@ -289,7 +296,8 @@ export async function getSettings(contextIRI: string, contextEndpoint: string, c
             Diagrams[parseInt(result.index.value)].name = result.name.value;
             if (result.scheme && result.sindex.value) {
                 let scheme = schemes[parseInt(result.sindex.value)];
-                if (scheme) Schemes[scheme].color = result.color.value;
+                if (scheme) Schemes[scheme].color = getNewColor();
+                if (scheme) Schemes[scheme].letter = "Z";
             }
         }
         if (data.results.bindings.length > 0) ProjectSettings.initialized = true;

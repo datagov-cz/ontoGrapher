@@ -50,8 +50,12 @@ export function drawGraphElement(cell: joint.dia.Cell, languageCode: string, rep
             attrHeight;
         cell.prop('attrs/labelAttrs/y', attrHeight);
         cell.prop('attrs/body/height', height);
+        cell.prop('attrs/body/fill',
+            Schemes[VocabularyElements[ProjectElements[cell.id].iri].inScheme].color);
         cell.prop('attrs/schemeColor/fill',
             Schemes[VocabularyElements[ProjectElements[cell.id].iri].inScheme].color);
+        cell.prop('attrs/labelScheme/y', height - 14);
+        cell.prop('attrs/labelScheme/text', Schemes[VocabularyElements[ProjectElements[cell.id].iri].inScheme].letter);
         cell.prop('attrs/schemeColor/height', height - 2);
         if (cell instanceof joint.dia.Element) cell.resize(width, height);
     }

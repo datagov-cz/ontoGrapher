@@ -41,3 +41,7 @@ export function checkLabels() {
         }
     }
 }
+
+export function getLetter() {
+    return "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").filter(letter => !(Object.keys(Schemes).find(scheme => Schemes[scheme].letter === letter)))[0];
+}

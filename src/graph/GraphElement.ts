@@ -26,6 +26,12 @@ export var graphElement = joint.dia.Element.define('custom.graphElement', {
                 width: 3,
                 refX: 1,
                 refY: 1
+            },
+            labelScheme: {
+                textVerticalAnchor: 'top',
+                textAnchor: 'start',
+                x: 2,
+                fontSize: 14
             }
         }
     }, {
@@ -33,6 +39,10 @@ export var graphElement = joint.dia.Element.define('custom.graphElement', {
             {
                 tagName: 'rect',
                 selector: 'body',
+            },
+            {
+                tagName: 'rect',
+                selector: 'schemeColor'
             },
             {
                 tagName: 'text',
@@ -43,8 +53,8 @@ export var graphElement = joint.dia.Element.define('custom.graphElement', {
                 selector: 'labelAttrs'
             },
             {
-                tagName: 'rect',
-                selector: 'schemeColor'
+                tagName: 'text',
+                selector: 'labelScheme'
             }
         ]
     },

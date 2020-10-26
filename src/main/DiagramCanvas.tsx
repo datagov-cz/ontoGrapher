@@ -26,7 +26,13 @@ import {HideButton} from "../graph/elementTool/ElemHide";
 import {ElemCreateLink} from "../graph/elementTool/ElemCreateLink";
 import {LinkInfoButton} from "../graph/linkTool/LinkInfo";
 import {initLanguageObject, parsePrefix} from "../function/FunctionEditVars";
-import {updateConnections, updateProjectElement, updateProjectLink} from "../interface/TransactionInterface";
+import {
+    updateConnections,
+    updateProjectElement,
+    updateProjectElementDiagram,
+    updateProjectLink,
+    updateProjectLinkVertex
+} from "../interface/TransactionInterface";
 import * as LocaleMain from "../locale/LocaleMain.json";
 import NewLinkDiagram from "./NewLinkDiagram";
 import {getLinkOrVocabElem} from "../function/FunctionGetVars";
@@ -301,22 +307,25 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                     highlightCell(id);
                 }
             },
+            'blank:mousewheel': (evt, x, y, delta) => {
+                ProjectSettings.viewZoom = delta === 1 ? ProjectSettings.viewZoom + 0.05 : ProjectSettings.viewZoom - 0.05;
+                this.paper?.scale(ProjectSettings.viewZoom, ProjectSettings.viewZoom, x, y);
+            },
             'element:pointerup': (cellView) => {
-                ProjectElements[cellView.model.id].position[ProjectSettings.selectedDiagram] = cellView.model.position();
-                let iri = ProjectElements[cellView.model.id].iri;
-                this.props.handleChangeLoadingStatus(true, LocaleMain.updating, false);
-                updateProjectElement(
-                    ProjectSettings.contextEndpoint,
-                    VocabularyElements[iri].types,
-                    VocabularyElements[iri].labels,
-                    VocabularyElements[iri].definitions,
-                    cellView.model.id).then(result => {
-                    if (result) {
-                        this.props.handleChangeLoadingStatus(false, "", false);
-                    } else {
-                        this.props.handleChangeLoadingStatus(false, LocaleMain.errorUpdating, true);
-                    }
-                });
+                if (!this.newLink) {
+                    ProjectElements[cellView.model.id].position[ProjectSettings.selectedDiagram] = cellView.model.position();
+                    this.props.handleChangeLoadingStatus(true, LocaleMain.updating, false);
+                    updateProjectElementDiagram(
+                        ProjectSettings.contextEndpoint,
+                        cellView.model.id,
+                        ProjectSettings.selectedDiagram).then(result => {
+                        if (result) {
+                            this.props.handleChangeLoadingStatus(false, "", false);
+                        } else {
+                            this.props.handleChangeLoadingStatus(false, LocaleMain.errorUpdating, true);
+                        }
+                    });
+                }
             },
             'element:pointerclick': (cellView) => {
                 if (this.newLink) {
@@ -422,14 +431,15 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                 let link = cellView.model;
                 if (ProjectLinks[id].iri in Links) {
                     this.props.handleChangeLoadingStatus(true, LocaleMain.updating, false);
+                    link.vertices().forEach((vert: joint.dia.Link.Vertex, i: number) => {
+                        if (!(ProjectLinks[link.id].vertices[i] &&
+                            ProjectLinks[link.id].vertices[i].x === vert.x &&
+                            ProjectLinks[link.id].vertices[i].y === vert.y))
+                            ProjectLinks[link.id].vertices[i] = {x: vert.x, y: vert.y};
+                        updateProjectLinkVertex(ProjectSettings.contextEndpoint, link.id, i);
+                    })
                     ProjectLinks[link.id].vertices = link.vertices();
-                    updateProjectLink(ProjectSettings.contextEndpoint, id).then(result => {
-                        if (result) {
-                            this.props.handleChangeLoadingStatus(false, "", false);
-                        } else {
-                            this.props.handleChangeLoadingStatus(false, LocaleMain.errorUpdating, true);
-                        }
-                    });
+                    this.props.handleChangeLoadingStatus(false, "", false);
                 }
             }
         });

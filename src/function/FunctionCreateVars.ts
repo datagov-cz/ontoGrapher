@@ -22,14 +22,11 @@ export async function setupDiagrams(diagram: number = 0): Promise<boolean> {
         changeDiagrams(i);
         for (let id in ProjectElements) {
             if (ProjectElements[id].hidden[i] === false && ProjectElements[id].position[i]) {
-                let position = ProjectElements[id].position[i];
-                if (position.x !== 0 && position.y !== 0) {
-                    let cls = new graphElement({id: id});
-                    cls.position(ProjectElements[id].position[i].x, ProjectElements[id].position[i].y);
-                    cls.addTo(graph);
-                    drawGraphElement(cls, ProjectSettings.selectedLanguage, Representation.FULL);
-                    restoreHiddenElem(id, cls);
-                }
+                let cls = new graphElement({id: id});
+                cls.position(ProjectElements[id].position[i].x, ProjectElements[id].position[i].y);
+                cls.addTo(graph);
+                drawGraphElement(cls, ProjectSettings.selectedLanguage, Representation.FULL);
+                restoreHiddenElem(id, cls);
             }
         }
     }

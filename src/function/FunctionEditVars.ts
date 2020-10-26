@@ -49,7 +49,8 @@ export function loadUML() {
         labels: initLanguageObject("UML"),
         readOnly: false,
         graph: ProjectSettings.ontographerContext,
-        color: getNewColor()
+        color: getNewColor(),
+        letter: "Z"
     }
 
     for (let type in LinkConfig) {
