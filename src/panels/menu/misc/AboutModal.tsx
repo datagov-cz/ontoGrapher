@@ -19,7 +19,7 @@ export default class AboutModal extends React.Component<Props, State> {
 				<Modal.Title>{LocaleMenu.changelog}</Modal.Title>
 			</Modal.Header>
 			<Modal.Body>
-				<Tabs id={"changelog"}><Tab title={"October"} eventKey={"October"}>
+				<Tabs id={"changelog"}><Tab title={"November"} eventKey={"November"}>
 					<h6>2.11.</h6>
 					<ul>
 						<li>Bug fixing and stability improvements</li>
