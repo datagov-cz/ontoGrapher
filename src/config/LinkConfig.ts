@@ -43,16 +43,22 @@ export var LinkConfig: {
 			if ((VocabularyElements[iri].types.includes(parsePrefix("z-sgov-pojem", "typ-vlastnosti")) ||
 				VocabularyElements[iri].types.includes(parsePrefix("z-sgov-pojem", "typ-vztahu"))) &&
 				ProjectLinks[id].targetCardinality.getString() !== Locale.none) {
-				let cardinalityMin = ProjectLinks[id].targetCardinality.getFirstCardinality();
-				let cardinalityMax = ProjectLinks[id].targetCardinality.getSecondCardinality();
-				if (cardinalityMin !== "*") restrictions.push("<" + iri + "> rdfs:subClassOf [rdf:type owl:Restriction; " +
-					"owl:onProperty <" + ProjectLinks[id].iri + ">;" +
-					"owl:onClass <" + ProjectElements[ProjectLinks[id].target].iri + ">;" +
-					"owl:minQualifiedCardinality \"" + cardinalityMin + "\"^^xsd:nonNegativeInteger].");
-				if (cardinalityMax !== "*") restrictions.push("<" + iri + "> rdfs:subClassOf [rdf:type owl:Restriction; " +
-					"owl:onProperty <" + ProjectLinks[id].iri + ">;" +
-					"owl:onClass <" + ProjectElements[ProjectLinks[id].target].iri + ">;" +
-					"owl:maxQualifiedCardinality \"" + cardinalityMax + "\"^^xsd:nonNegativeInteger].");
+				ProjectElements[ProjectLinks[id].source].connections.filter(linkID =>
+					linkID in ProjectLinks &&
+					ProjectElements[ProjectLinks[linkID].target] &&
+					ProjectLinks[linkID].active &&
+					ProjectLinks[linkID].type === LinkType.DEFAULT).forEach(linkID => {
+					let cardinalityMin = ProjectLinks[linkID].targetCardinality.getFirstCardinality();
+					let cardinalityMax = ProjectLinks[linkID].targetCardinality.getSecondCardinality();
+					if (cardinalityMin !== "*") restrictions.push("<" + iri + "> rdfs:subClassOf [rdf:type owl:Restriction; " +
+						"owl:onProperty <" + ProjectLinks[linkID].iri + ">;" +
+						"owl:onClass <" + ProjectElements[ProjectLinks[linkID].target].iri + ">;" +
+						"owl:minQualifiedCardinality \"" + cardinalityMin + "\"^^xsd:nonNegativeInteger].");
+					if (cardinalityMax !== "*") restrictions.push("<" + iri + "> rdfs:subClassOf [rdf:type owl:Restriction; " +
+						"owl:onProperty <" + ProjectLinks[linkID].iri + ">;" +
+						"owl:onClass <" + ProjectElements[ProjectLinks[linkID].target].iri + ">;" +
+						"owl:maxQualifiedCardinality \"" + cardinalityMax + "\"^^xsd:nonNegativeInteger].");
+				})
 			}
 
 			return [

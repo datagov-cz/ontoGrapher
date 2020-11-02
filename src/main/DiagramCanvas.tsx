@@ -28,7 +28,6 @@ import {LinkInfoButton} from "../graph/linkTool/LinkInfo";
 import {initLanguageObject, parsePrefix} from "../function/FunctionEditVars";
 import {
     updateConnections,
-    updateDeleteProjectElement,
     updateDeleteProjectLinkVertex,
     updateProjectElement,
     updateProjectElementDiagram,
@@ -264,7 +263,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
 
     deleteConnections(sid: string, id: string) {
         ProjectLinks[id].active = false;
-        updateDeleteProjectElement(ProjectSettings.contextEndpoint, ProjectSettings.ontographerContext + "-" + id, ProjectSettings.ontographerContext).then(result => {
+        updateProjectLink(ProjectSettings.contextEndpoint, id).then(result => {
             if (result) {
                 if (graph.getCell(id)) graph.getCell(id).remove();
                 this.props.handleChangeLoadingStatus(false, "", false);
@@ -275,20 +274,27 @@ export default class DiagramCanvas extends React.Component<Props, State> {
     }
 
     async updateVertices(id: string, projVerts: joint.dia.Link.Vertex[], linkVerts: joint.dia.Link.Vertex[]): Promise<Boolean> {
+        let update = [];
+        let del = -1;
         for (let i = 0; i < Math.max(linkVerts.length, projVerts.length); i++) {
             if (linkVerts[i] && !(projVerts[i])) {
                 projVerts[i] = {x: linkVerts[i].x, y: linkVerts[i].y};
-                await updateProjectLinkVertex(ProjectSettings.contextEndpoint, id, i).catch(() => false);
+                update.push(i);
             } else if (linkVerts[i] && projVerts[i] &&
                 (linkVerts[i].x !== projVerts[i].x ||
                     linkVerts[i].y !== projVerts[i].y)) {
                 projVerts[i] = {x: linkVerts[i].x, y: linkVerts[i].y};
-                await updateProjectLinkVertex(ProjectSettings.contextEndpoint, id, i).catch(() => false);
+                update.push(i);
             } else if (projVerts[i] && !(linkVerts[i])) {
-                await updateDeleteProjectLinkVertex(ProjectSettings.contextEndpoint, id, i, projVerts.length).catch(() => false);
+                del = i;
                 break;
             }
         }
+        await Promise.all([
+            del !== -1 && updateDeleteProjectLinkVertex(ProjectSettings.contextEndpoint, id, del, projVerts.length).catch(() => false),
+            updateProjectLinkVertex(ProjectSettings.contextEndpoint, id, update)
+        ]).catch(() => false);
+
         ProjectLinks[id].vertices = linkVerts;
         return true;
     }
@@ -348,7 +354,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                 }
             },
             'element:mouseenter': (elementView) => {
-                let id = elementView.model.id
+                let id = elementView.model.id;
                 let tool = new HideButton({
                     useModelGeometry: false,
                     x: '100%',
@@ -444,6 +450,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
             'link:pointerup': (cellView) => {
                 let id = cellView.model.id;
                 let link = cellView.model;
+                link.findView(this.paper).removeRedundantLinearVertices();
                 if (ProjectLinks[id].iri in Links) {
                     this.props.handleChangeLoadingStatus(true, LocaleMain.updating, false);
                     this.updateVertices(link.id, ProjectLinks[link.id].vertices, link.vertices()).then(result => {

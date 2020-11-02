@@ -222,16 +222,23 @@ export async function getElementsConfig(contextIRI: string, contextEndpoint: str
     for (let iri in elements) {
         if (elements[iri].diagramIRI.length > 0) {
             for (let diag of elements[iri].diagramIRI) {
+                let graph = "";
+                if (!(iri in VocabularyElements &&
+                    VocabularyElements[iri].inScheme &&
+                    VocabularyElements[iri].inScheme in Schemes &&
+                    Schemes[VocabularyElements[iri].inScheme].graph))
+                    continue;
+                graph = Schemes[VocabularyElements[iri].inScheme].graph;
                 let query = [
                     "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
                     "select ?positionX ?positionY ?hidden ?index where {",
-                    "graph <" + Schemes[VocabularyElements[iri].inScheme].graph + "> {",
+                    graph !== "" ? "graph <" + graph + "> {" : "",
                     "BIND(<" + diag + "> as ?iri) .",
                     "?iri og:position-y ?positionY .",
                     "?iri og:position-x ?positionX .",
                     "?iri og:index ?index .",
                     "?iri og:hidden ?hidden .",
-                    "}",
+                    graph !== "" ? "}" : "",
                     "}"
                 ].join(" ");
                 let q = contextEndpoint + "?query=" + encodeURIComponent(query);

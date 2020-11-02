@@ -143,6 +143,7 @@ export async function updateProjectElementDiagram(contextEndpoint: string, id: s
 	let addLD = {
 		"@context": {
 			...Prefixes,
+			"og:diagram": {"@type": "@id"},
 		},
 		"@id": Schemes[scheme].graph,
 		"@graph": [
@@ -168,11 +169,50 @@ export async function updateProjectElementDiagram(contextEndpoint: string, id: s
 	} else return await processTransaction(contextEndpoint, {add: [JSON.stringify(addLD)], delete: []});
 }
 
-export async function updateProjectLinkVertex(contextEndpoint: string, id: string, vertex: number) {
+export async function updateProjectLinkVertex(contextEndpoint: string, id: string, vertices: number[]) {
 
 	let linkIRI = ProjectSettings.ontographerContext + "-" + id;
 
-	let addLD = {
+	let updateStrings = vertices.map(i =>
+		("<" + (linkIRI + "/vertex-" + (i + 1) + "> og:position-x ?x. " +
+			"<" + linkIRI + "/vertex-" + (i + 1) + "> og:position-y ?y.")));
+
+	let update1 = [
+		"PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
+		"insert data { graph <" + ProjectSettings.ontographerContext + "> {",
+		...vertices.map(i => ("<" + linkIRI + "> og:vertex <" + linkIRI + "/vertex-" + (i + 1) + ">.")),
+		...vertices.map(i => {
+			let vertexIRI = "<" + linkIRI + "/vertex-" + (i + 1) + "> ";
+			return vertexIRI + "a og:vertex." +
+				vertexIRI + "og:index \"" + i + "\"." +
+				vertexIRI + "og:position-x \"" + Math.round(ProjectLinks[id].vertices[i].x) + "\"." +
+				vertexIRI + "og:position-y \"" + Math.round(ProjectLinks[id].vertices[i].y) + "\".";
+		}),
+		"}}"
+	].join(" ");
+
+	let update2 = [
+		"PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
+		"with <" + ProjectSettings.ontographerContext + "> delete {",
+		...updateStrings,
+		"} where {",
+		...updateStrings,
+		"}"
+	].join(" ");
+
+	return await processTransaction(contextEndpoint, {add: [], delete: [], update: [update2, update1]});
+
+}
+
+export async function updateDeleteProjectLinkVertex(contextEndpoint: string, id: string, from: number, to: number): Promise<boolean> {
+	let linkIRI = ProjectSettings.ontographerContext + "-" + id;
+	let vars = [];
+
+	for (let i = from; i < to; i++) {
+		vars.push(i);
+	}
+
+	let delLD = {
 		"@context": {
 			...Prefixes,
 			"og:vertex": {"@type": "@id"},
@@ -181,50 +221,12 @@ export async function updateProjectLinkVertex(contextEndpoint: string, id: strin
 		"@graph": [
 			{
 				"@id": linkIRI,
-				"og:vertex": linkIRI + "/vertex-" + (vertex + 1)
-			},
-			{
-				"@id": linkIRI + "/vertex-" + (vertex + 1),
-				"@type": "og:vertex",
-				"og:index": vertex,
-				"og:position-x": Math.round(ProjectLinks[id].vertices[vertex].x),
-				"og:position-y": Math.round(ProjectLinks[id].vertices[vertex].y)
+				"og:vertex": vars.map(i => (linkIRI + "/vertex-" + (i + 1)))
 			}
 		]
-	}
+	};
 
-	let delLD = [];
-
-	let del = await processGetTransaction(contextEndpoint, {subject: linkIRI + "/vertex-" + (vertex + 1)}).catch(() => false);
-	if (typeof del === "string") {
-		delLD.push(del);
-	}
-
-	return await processTransaction(contextEndpoint, {add: [JSON.stringify(addLD)], delete: delLD});
-
-}
-
-export async function updateDeleteProjectLinkVertex(contextEndpoint: string, id: string, from: number, to: number): Promise<boolean> {
-	let linkIRI = ProjectSettings.ontographerContext + "-" + id;
-	let delLD: string[] = []
-
-	for (let i = from; i < to; i++) {
-		delLD.push(JSON.stringify({
-			"@context": {
-				...Prefixes,
-				"og:vertex": {"@type": "@id"},
-			},
-			"@id": ProjectSettings.ontographerContext,
-			"@graph": [
-				{
-					"@id": linkIRI,
-					"og:vertex": linkIRI + "/vertex-" + (i + 1)
-				}
-			]
-		}))
-	}
-
-	return await processTransaction(contextEndpoint, {add: [], delete: delLD})
+	return await processTransaction(contextEndpoint, {add: [], delete: [JSON.stringify(delLD)]})
 }
 
 export async function updateProjectLink(contextEndpoint: string, id: string) {
@@ -314,15 +316,15 @@ export async function updateDeleteProjectElement(contextEndpoint: string, iri: s
 		"?s ?p <" + iri + ">.",
 		"}"
 	].join(" ");
-	let query3 = [
-		"PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
-		"with <" + ProjectSettings.ontographerContext + "> delete {",
-		"?s ?p <" + iri + ">.",
-		"} where {",
-		"?s ?p <" + iri + ">.",
-		"?s og:context <" + context + ">.",
-		"}"
-	].join(" ");
+	// let query3 = [
+	// 	"PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
+	// 	"with <" + ProjectSettings.ontographerContext + "> delete {",
+	// 	"?s ?p <" + iri + ">.",
+	// 	"} where {",
+	// 	"?s ?p <" + iri + ">.",
+	// 	"?s og:context <" + context + ">.",
+	// 	"}"
+	// ].join(" ");
 	let query4 = [
 		"PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>",
 		"PREFIX owl: <http://www.w3.org/2002/07/owl#>",
@@ -337,7 +339,7 @@ export async function updateDeleteProjectElement(contextEndpoint: string, iri: s
 		"?b ?p ?o.",
 		"}"
 	].join(" ");
-	return await processTransaction(contextEndpoint, {add: [], delete: [], update: [query4, query1, query2, query3]});
+	return await processTransaction(contextEndpoint, {add: [], delete: [], update: [query4, query1, query2]});
 }
 
 //id: link ID

@@ -105,54 +105,56 @@ export default class DetailLink extends React.Component<Props, State> {
     }
 
     save() {
-        if (ProjectSettings.representation === Representation.FULL) {
-            this.props.handleChangeLoadingStatus(true, LocaleMain.updating, false);
-            ProjectLinks[this.state.id].sourceCardinality = CardinalityPool[parseInt(this.state.sourceCardinality, 10)];
-            ProjectLinks[this.state.id].targetCardinality = CardinalityPool[parseInt(this.state.targetCardinality, 10)];
-            ProjectLinks[this.state.id].iri = this.state.iri;
-            updateProjectLink(ProjectSettings.contextEndpoint, this.state.id).then((result) => {
-                if (result) {
-                    let link = graph.getLinks().find(link => link.id === this.state.id);
-                    if (link) {
-                        setLabels(link, getLinkOrVocabElem(this.state.iri).labels[this.props.projectLanguage])
-                    }
-                    this.setState({changes: false});
-                    this.props.save();
-                    updateConnections(ProjectSettings.contextEndpoint, this.state.id).then(result => {
-                        if (result) {
-                            this.props.handleChangeLoadingStatus(false, "", false);
-                        } else {
-                            this.props.handleChangeLoadingStatus(false, LocaleMain.errorUpdating, true);
+        if (this.state.id in ProjectLinks) {
+            if (ProjectSettings.representation === Representation.FULL) {
+                this.props.handleChangeLoadingStatus(true, LocaleMain.updating, false);
+                ProjectLinks[this.state.id].sourceCardinality = CardinalityPool[parseInt(this.state.sourceCardinality, 10)];
+                ProjectLinks[this.state.id].targetCardinality = CardinalityPool[parseInt(this.state.targetCardinality, 10)];
+                ProjectLinks[this.state.id].iri = this.state.iri;
+                updateProjectLink(ProjectSettings.contextEndpoint, this.state.id).then((result) => {
+                    if (result) {
+                        let link = graph.getLinks().find(link => link.id === this.state.id);
+                        if (link) {
+                            setLabels(link, getLinkOrVocabElem(this.state.iri).labels[this.props.projectLanguage])
                         }
-                    })
-                } else {
-                    this.props.handleChangeLoadingStatus(false, LocaleMain.errorUpdating, true);
+                        this.setState({changes: false});
+                        this.props.save();
+                        updateConnections(ProjectSettings.contextEndpoint, this.state.id).then(result => {
+                            if (result) {
+                                this.props.handleChangeLoadingStatus(false, "", false);
+                            } else {
+                                this.props.handleChangeLoadingStatus(false, LocaleMain.errorUpdating, true);
+                            }
+                        })
+                    } else {
+                        this.props.handleChangeLoadingStatus(false, LocaleMain.errorUpdating, true);
+                    }
+                })
+            } else {
+                this.props.handleChangeLoadingStatus(true, LocaleMain.updating, false);
+                ProjectLinks[this.state.id].sourceCardinality = CardinalityPool[parseInt(this.state.sourceCardinality, 10)];
+                ProjectLinks[this.state.id].targetCardinality = CardinalityPool[parseInt(this.state.targetCardinality, 10)];
+                let link = graph.getLinks().find(link => link.id === this.state.id);
+                if (link) {
+                    setLabels(link, getLinkOrVocabElem(this.state.iri).labels[this.props.projectLanguage])
+                    let underlyingConnections = getUnderlyingFullConnections(link);
+                    if (underlyingConnections) {
+                        let sourceCard = CardinalityPool[parseInt(this.state.sourceCardinality, 10)];
+                        let targetCard = CardinalityPool[parseInt(this.state.targetCardinality, 10)];
+                        ProjectLinks[underlyingConnections.src].sourceCardinality = new Cardinality(sourceCard.getFirstCardinality(), sourceCard.getFirstCardinality());
+                        ProjectLinks[underlyingConnections.src].targetCardinality = new Cardinality(sourceCard.getSecondCardinality(), sourceCard.getSecondCardinality());
+                        ProjectLinks[underlyingConnections.tgt].sourceCardinality = new Cardinality(targetCard.getFirstCardinality(), targetCard.getFirstCardinality());
+                        ProjectLinks[underlyingConnections.tgt].targetCardinality = new Cardinality(targetCard.getSecondCardinality(), targetCard.getSecondCardinality());
+                        updateProjectLink(ProjectSettings.contextEndpoint, underlyingConnections.src);
+                        updateProjectLink(ProjectSettings.contextEndpoint, underlyingConnections.tgt);
+                        updateConnections(ProjectSettings.contextEndpoint, underlyingConnections.src);
+                        updateConnections(ProjectSettings.contextEndpoint, underlyingConnections.tgt);
+                    }
                 }
-            })
-        } else {
-            this.props.handleChangeLoadingStatus(true, LocaleMain.updating, false);
-            ProjectLinks[this.state.id].sourceCardinality = CardinalityPool[parseInt(this.state.sourceCardinality, 10)];
-            ProjectLinks[this.state.id].targetCardinality = CardinalityPool[parseInt(this.state.targetCardinality, 10)];
-            let link = graph.getLinks().find(link => link.id === this.state.id);
-            if (link) {
-                setLabels(link, getLinkOrVocabElem(this.state.iri).labels[this.props.projectLanguage])
-                let underlyingConnections = getUnderlyingFullConnections(link);
-                if (underlyingConnections) {
-                    let sourceCard = CardinalityPool[parseInt(this.state.sourceCardinality, 10)];
-                    let targetCard = CardinalityPool[parseInt(this.state.targetCardinality, 10)];
-                    ProjectLinks[underlyingConnections.src].sourceCardinality = new Cardinality(sourceCard.getFirstCardinality(), sourceCard.getFirstCardinality());
-                    ProjectLinks[underlyingConnections.src].targetCardinality = new Cardinality(sourceCard.getSecondCardinality(), sourceCard.getSecondCardinality());
-                    ProjectLinks[underlyingConnections.tgt].sourceCardinality = new Cardinality(targetCard.getFirstCardinality(), targetCard.getFirstCardinality());
-                    ProjectLinks[underlyingConnections.tgt].targetCardinality = new Cardinality(targetCard.getSecondCardinality(), targetCard.getSecondCardinality());
-                    updateProjectLink(ProjectSettings.contextEndpoint, underlyingConnections.src);
-                    updateProjectLink(ProjectSettings.contextEndpoint, underlyingConnections.tgt);
-                    updateConnections(ProjectSettings.contextEndpoint, underlyingConnections.src);
-                    updateConnections(ProjectSettings.contextEndpoint, underlyingConnections.tgt);
-                }
+                this.setState({changes: false});
+                this.props.save();
+                this.props.handleChangeLoadingStatus(false, "", false);
             }
-            this.setState({changes: false});
-            this.props.save();
-            this.props.handleChangeLoadingStatus(false, "", false);
         }
     }
 

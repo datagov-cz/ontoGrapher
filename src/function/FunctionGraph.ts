@@ -40,9 +40,9 @@ export function drawGraphElement(cell: joint.dia.Cell, languageCode: string, rep
         }
         cell.prop("attrs/labelAttrs/text", text.join("\n"));
         let width = representation === Representation.COMPACT ?
-            Math.max(9 * (label.length),
+            Math.max((labels.reduce((a, b) => a.length > b.length ? a : b, "").length * 10) + 4,
                 text.length > 0 ? 8 * (text.reduce((a, b) => a.length > b.length ? a : b, "").length) : 0) :
-            labels.reduce((a, b) => a.length > b.length ? a : b, "").length * 10;
+            (labels.reduce((a, b) => a.length > b.length ? a : b, "").length * 10) + 4;
         cell.prop('attrs/body/width', width);
         cell.prop('attrs/text/x', width / 2);
         let attrHeight = (24 + ((labels.length - 1) * 18));

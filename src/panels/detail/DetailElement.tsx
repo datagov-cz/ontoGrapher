@@ -97,33 +97,35 @@ export default class DetailElement extends React.Component<Props, State> {
 	}
 
 	save() {
-		this.props.handleChangeLoadingStatus(true, LocaleMain.updating, false);
-		updateProjectElement(
-			ProjectSettings.contextEndpoint,
-			this.state.inputTypes,
-			this.state.inputLabels,
-			this.state.inputDefinitions,
-			this.state.id).then(async result => {
-			if (result) {
-				VocabularyElements[ProjectElements[this.state.id].iri].types = this.state.inputTypes;
-				VocabularyElements[ProjectElements[this.state.id].iri].labels = this.state.inputLabels;
-				VocabularyElements[ProjectElements[this.state.id].iri].definitions = this.state.inputDefinitions;
-				drawGraphElement(graph.getCell(this.state.id), this.props.projectLanguage, ProjectSettings.representation);
-				this.props.save();
-				this.setState({changes: false});
-				this.props.handleChangeLoadingStatus(false, "", false);
-				for (let conn of ProjectElements[this.state.id].connections) {
-					await updateProjectLink(ProjectSettings.contextEndpoint, conn).then(res => {
-						if (!res) {
-							this.props.handleChangeLoadingStatus(false, LocaleMain.errorUpdating, true);
-						}
-					});
+		if (this.state.id in ProjectElements) {
+			this.props.handleChangeLoadingStatus(true, LocaleMain.updating, false);
+			updateProjectElement(
+				ProjectSettings.contextEndpoint,
+				this.state.inputTypes,
+				this.state.inputLabels,
+				this.state.inputDefinitions,
+				this.state.id).then(async result => {
+				if (result) {
+					VocabularyElements[ProjectElements[this.state.id].iri].types = this.state.inputTypes;
+					VocabularyElements[ProjectElements[this.state.id].iri].labels = this.state.inputLabels;
+					VocabularyElements[ProjectElements[this.state.id].iri].definitions = this.state.inputDefinitions;
+					drawGraphElement(graph.getCell(this.state.id), this.props.projectLanguage, ProjectSettings.representation);
+					this.props.save();
+					this.setState({changes: false});
+					this.props.handleChangeLoadingStatus(false, "", false);
+					for (let conn of ProjectElements[this.state.id].connections) {
+						await updateProjectLink(ProjectSettings.contextEndpoint, conn).then(res => {
+							if (!res) {
+								this.props.handleChangeLoadingStatus(false, LocaleMain.errorUpdating, true);
+							}
+						});
+					}
+					this.prepareDetails(this.state.id);
+				} else {
+					this.props.handleChangeLoadingStatus(false, LocaleMain.errorUpdating, true);
 				}
-				this.prepareDetails(this.state.id);
-			} else {
-				this.props.handleChangeLoadingStatus(false, LocaleMain.errorUpdating, true);
-			}
-		});
+			});
+		}
 	}
 
 	componentDidUpdate(prevProps: Readonly<Props>, prevState: Readonly<State>, snapshot?: any) {
