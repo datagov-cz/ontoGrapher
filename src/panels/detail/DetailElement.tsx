@@ -315,9 +315,9 @@ export default class DetailElement extends React.Component<Props, State> {
 							<Card.Body>
 								<TableList headings={[LocaleMenu.diagram]}>
 									{this.state.inputDiagrams.map((diag) =>
-										(<tr>
-											<td>{Diagrams[diag] ? Diagrams[diag].name : Diagrams[ProjectSettings.selectedDiagram]}</td>
-										</tr>)
+										Diagrams[diag] ? (<tr>
+											<td>{Diagrams[diag].name}</td>
+										</tr>) : ""
 									)}
 								</TableList>
 							</Card.Body>

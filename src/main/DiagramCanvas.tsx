@@ -29,6 +29,7 @@ import {initLanguageObject, parsePrefix} from "../function/FunctionEditVars";
 import {
     updateConnections,
     updateDeleteProjectElement,
+    updateDeleteProjectLinkVertex,
     updateProjectElement,
     updateProjectElementDiagram,
     updateProjectLink,
@@ -273,6 +274,25 @@ export default class DiagramCanvas extends React.Component<Props, State> {
         });
     }
 
+    async updateVertices(id: string, projVerts: joint.dia.Link.Vertex[], linkVerts: joint.dia.Link.Vertex[]): Promise<Boolean> {
+        for (let i = 0; i < Math.max(linkVerts.length, projVerts.length); i++) {
+            if (linkVerts[i] && !(projVerts[i])) {
+                projVerts[i] = {x: linkVerts[i].x, y: linkVerts[i].y};
+                await updateProjectLinkVertex(ProjectSettings.contextEndpoint, id, i).catch(() => false);
+            } else if (linkVerts[i] && projVerts[i] &&
+                (linkVerts[i].x !== projVerts[i].x ||
+                    linkVerts[i].y !== projVerts[i].y)) {
+                projVerts[i] = {x: linkVerts[i].x, y: linkVerts[i].y};
+                await updateProjectLinkVertex(ProjectSettings.contextEndpoint, id, i).catch(() => false);
+            } else if (projVerts[i] && !(linkVerts[i])) {
+                await updateDeleteProjectLinkVertex(ProjectSettings.contextEndpoint, id, i, projVerts.length).catch(() => false);
+                break;
+            }
+        }
+        ProjectLinks[id].vertices = linkVerts;
+        return true;
+    }
+
     componentDidMount(): void {
         const node = (this.canvasRef.current! as HTMLElement);
 
@@ -351,7 +371,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
             'link:mouseenter': (linkView) => {
                 let id = linkView.model.id;
                 let verticesTool = new joint.linkTools.Vertices({stopPropagation: false});
-                let segmentsTool = new joint.linkTools.Segments();
+                let segmentsTool = new joint.linkTools.Segments({stopPropagation: false});
                 let removeButton = new joint.linkTools.Remove({
                     action: ((evt, view) => {
                         this.props.handleChangeLoadingStatus(true, LocaleMain.updating, false);
@@ -426,15 +446,13 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                 let link = cellView.model;
                 if (ProjectLinks[id].iri in Links) {
                     this.props.handleChangeLoadingStatus(true, LocaleMain.updating, false);
-                    link.vertices().forEach((vert: joint.dia.Link.Vertex, i: number) => {
-                        if (!(ProjectLinks[link.id].vertices[i] &&
-                            ProjectLinks[link.id].vertices[i].x === vert.x &&
-                            ProjectLinks[link.id].vertices[i].y === vert.y))
-                            ProjectLinks[link.id].vertices[i] = {x: vert.x, y: vert.y};
-                        updateProjectLinkVertex(ProjectSettings.contextEndpoint, link.id, i);
-                    })
-                    ProjectLinks[link.id].vertices = link.vertices();
-                    this.props.handleChangeLoadingStatus(false, "", false);
+                    this.updateVertices(link.id, ProjectLinks[link.id].vertices, link.vertices()).then(result => {
+                        if (result) {
+                            this.props.handleChangeLoadingStatus(false, "", false);
+                        } else {
+                            this.props.handleChangeLoadingStatus(false, LocaleMain.errorUpdating, true);
+                        }
+                    });
                 }
             }
         });

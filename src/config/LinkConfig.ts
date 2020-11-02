@@ -40,7 +40,8 @@ export var LinkConfig: {
 					"<" + rest.restriction + "> <" + rest.target + ">].")
 			)
 
-			if (VocabularyElements[iri].types.includes(parsePrefix("z-sgov-pojem", "typ-vlastnosti")) &&
+			if ((VocabularyElements[iri].types.includes(parsePrefix("z-sgov-pojem", "typ-vlastnosti")) ||
+				VocabularyElements[iri].types.includes(parsePrefix("z-sgov-pojem", "typ-vztahu"))) &&
 				ProjectLinks[id].targetCardinality.getString() !== Locale.none) {
 				let cardinalityMin = ProjectLinks[id].targetCardinality.getFirstCardinality();
 				let cardinalityMax = ProjectLinks[id].targetCardinality.getSecondCardinality();

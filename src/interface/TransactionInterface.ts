@@ -204,6 +204,29 @@ export async function updateProjectLinkVertex(contextEndpoint: string, id: strin
 
 }
 
+export async function updateDeleteProjectLinkVertex(contextEndpoint: string, id: string, from: number, to: number): Promise<boolean> {
+	let linkIRI = ProjectSettings.ontographerContext + "-" + id;
+	let delLD: string[] = []
+
+	for (let i = from; i < to; i++) {
+		delLD.push(JSON.stringify({
+			"@context": {
+				...Prefixes,
+				"og:vertex": {"@type": "@id"},
+			},
+			"@id": ProjectSettings.ontographerContext,
+			"@graph": [
+				{
+					"@id": linkIRI,
+					"og:vertex": linkIRI + "/vertex-" + (i + 1)
+				}
+			]
+		}))
+	}
+
+	return await processTransaction(contextEndpoint, {add: [], delete: delLD})
+}
+
 export async function updateProjectLink(contextEndpoint: string, id: string) {
 	let linkIRI = ProjectSettings.ontographerContext + "-" + id;
 	let cardinalities: { [key: string]: string } = {};
