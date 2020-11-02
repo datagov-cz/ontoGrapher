@@ -16,10 +16,16 @@ export default class AboutModal extends React.Component<Props, State> {
     render() {
         return (<Modal centered scrollable show={this.props.modal}>
             <Modal.Header>
-                <Modal.Title>{LocaleMenu.changelog}</Modal.Title>
-            </Modal.Header>
-            <Modal.Body>
-                <Tabs id={"changelog"}>
+				<Modal.Title>{LocaleMenu.changelog}</Modal.Title>
+			</Modal.Header>
+			<Modal.Body>
+				<Tabs id={"changelog"}><Tab title={"October"} eventKey={"October"}>
+					<h6>2.11.</h6>
+					<ul>
+						<li>Bug fixing and stability improvements</li>
+						<li>Concept coloring is now organized in the View submenu</li>
+					</ul>
+				</Tab>
 					<Tab title={"October"} eventKey={"October"}>
 						<h6>20.10.</h6>
 						<ul>
