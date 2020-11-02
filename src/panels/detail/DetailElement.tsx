@@ -87,9 +87,13 @@ export default class DetailElement extends React.Component<Props, State> {
 	}
 
 	checkSpreadConnections(): boolean {
-		if (this.state && this.state.id) return (this.state.inputConnections.filter(conn => ProjectLinks[conn] && ProjectLinks[conn].active).length !==
-			graph.getConnectedLinks(graph.getCell(this.state.id)).length);
-		else return false;
+		if (this.state) {
+			let cell = graph.getElements().find(elem => elem.id === this.state.id);
+			if (cell) {
+				return this.state.inputConnections.filter(conn => ProjectLinks[conn] && ProjectLinks[conn].active).length !==
+					graph.getConnectedLinks(cell).length;
+			} else return false;
+		} else return false;
 	}
 
 	save() {
@@ -148,7 +152,7 @@ export default class DetailElement extends React.Component<Props, State> {
 				ProjectElements[id].position[ProjectSettings.selectedDiagram] = {x: x, y: y};
 				ProjectElements[id].hidden[ProjectSettings.selectedDiagram] = false;
 				drawGraphElement(elem, this.props.projectLanguage, ProjectSettings.representation);
-				restoreHiddenElem(id, elem);
+				restoreHiddenElem(id, elem, true);
 				updateProjectElement(ProjectSettings.contextEndpoint,
 					VocabularyElements[ProjectElements[id].iri].types,
 					VocabularyElements[ProjectElements[id].iri].labels,
@@ -312,7 +316,7 @@ export default class DetailElement extends React.Component<Props, State> {
 								<TableList headings={[LocaleMenu.diagram]}>
 									{this.state.inputDiagrams.map((diag) =>
 										(<tr>
-											<td>{Diagrams[diag].name}</td>
+											<td>{Diagrams[diag] ? Diagrams[diag].name : Diagrams[ProjectSettings.selectedDiagram]}</td>
 										</tr>)
 									)}
 								</TableList>

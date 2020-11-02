@@ -28,6 +28,7 @@ import {LinkInfoButton} from "../graph/linkTool/LinkInfo";
 import {initLanguageObject, parsePrefix} from "../function/FunctionEditVars";
 import {
     updateConnections,
+    updateDeleteProjectElement,
     updateProjectElement,
     updateProjectElementDiagram,
     updateProjectLink,
@@ -45,6 +46,7 @@ interface Props {
     prepareDetails: Function;
     hideDetails: Function;
     updateElementPanel: Function;
+    updateDetailPanel: Function;
     handleChangeLoadingStatus: Function;
     error: boolean;
 }
@@ -178,6 +180,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                         }
                     }
                     this.props.updateElementPanel();
+                    this.props.updateDetailPanel();
                 }
                 if (type === LinkType.DEFAULT) link.appendLabel({attrs: {text: {text: getLinkOrVocabElem(iri).labels[this.props.projectLanguage]}}});
             } else link.remove();
@@ -235,6 +238,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
         }
         this.props.handleChangeLoadingStatus(false, "", false);
         this.props.updateElementPanel();
+        this.props.hideDetails();
     }
 
     updateConnections(sid: string, tid: string, linkID: string, type: number, iri: string) {
@@ -259,16 +263,10 @@ export default class DiagramCanvas extends React.Component<Props, State> {
 
     deleteConnections(sid: string, id: string) {
         ProjectLinks[id].active = false;
-        updateConnections(ProjectSettings.contextEndpoint, id).then(result => {
+        updateDeleteProjectElement(ProjectSettings.contextEndpoint, ProjectSettings.ontographerContext + "-" + id, ProjectSettings.ontographerContext).then(result => {
             if (result) {
                 if (graph.getCell(id)) graph.getCell(id).remove();
-                updateProjectLink(ProjectSettings.contextEndpoint, id).then(result => {
-                    if (result) {
-                        this.props.handleChangeLoadingStatus(false, "", false);
-                    } else {
-                        this.props.handleChangeLoadingStatus(false, LocaleMain.errorUpdating, true);
-                    }
-                })
+                this.props.handleChangeLoadingStatus(false, "", false);
             } else {
                 this.props.handleChangeLoadingStatus(false, LocaleMain.errorUpdating, true);
             }
@@ -306,10 +304,6 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                     unHighlightAll();
                     highlightCell(id);
                 }
-            },
-            'blank:mousewheel': (evt, x, y, delta) => {
-                ProjectSettings.viewZoom = delta === 1 ? ProjectSettings.viewZoom + 0.05 : ProjectSettings.viewZoom - 0.05;
-                this.paper?.scale(ProjectSettings.viewZoom, ProjectSettings.viewZoom, x, y);
             },
             'element:pointerup': (cellView) => {
                 if (!this.newLink) {
@@ -376,6 +370,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                             }
                             view.model.remove();
                             ProjectLinks[view.model.id].active = false;
+                            this.props.hideDetails();
                             this.props.handleChangeLoadingStatus(false, "", false);
                         }
                     })
@@ -480,7 +475,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                     if (bbox) cls.resize(bbox.width, bbox.height);
                     ProjectElements[cls.id].hidden[ProjectSettings.selectedDiagram] = false;
                     this.props.updateElementPanel();
-                    restoreHiddenElem(data.id, cls);
+                    restoreHiddenElem(data.id, cls, true);
                     if (typeof cls.id === "string") {
                         updateProjectElement(
                             ProjectSettings.contextEndpoint,

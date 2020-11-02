@@ -1,5 +1,6 @@
 import {Languages, Links, ProjectElements, Schemes, Stereotypes, VocabularyElements} from "../config/Variables";
 import {initLanguageObject} from "./FunctionEditVars";
+import {ColorPool} from "../config/ColorPool";
 
 export function getVocabElementByElementID(id: string): { [key: string]: any } {
     return VocabularyElements[ProjectElements[id].iri];
@@ -42,6 +43,8 @@ export function checkLabels() {
     }
 }
 
-export function getLetter() {
-    return "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").filter(letter => !(Object.keys(Schemes).find(scheme => Schemes[scheme].letter === letter)))[0];
+export function setSchemeColors(pool: string) {
+    Object.keys(Schemes).forEach((scheme, i) => {
+        Schemes[scheme].color = ColorPool[pool].colors[i];
+    })
 }

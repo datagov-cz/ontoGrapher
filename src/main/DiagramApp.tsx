@@ -3,7 +3,7 @@ import MenuPanel from "../panels/MenuPanel";
 import ItemPanel from "../panels/ItemPanel";
 import DiagramCanvas from "./DiagramCanvas";
 import * as Locale from "../locale/LocaleMain.json";
-import {Languages, PackageRoot, ProjectElements, ProjectLinks, ProjectSettings, Schemes} from "../config/Variables";
+import {Languages, ProjectElements, ProjectLinks, ProjectSettings} from "../config/Variables";
 import DetailPanel from "../panels/DetailPanel";
 import {getVocabulariesFromRemoteJSON} from "../interface/JSONInterface";
 import {addRelationships, initVars} from "../function/FunctionEditVars";
@@ -18,7 +18,6 @@ import {updateProjectSettings} from "../interface/TransactionInterface";
 import ValidationPanel from "../panels/ValidationPanel";
 import DiagramPanel from "../panels/DiagramPanel";
 import {Representation} from "../config/Enum";
-import {getLetter} from "../function/FunctionGetVars";
 
 interface DiagramAppProps {
 	readOnly?: boolean;
@@ -171,11 +170,6 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 					await updateProjectSettings(contextIRI, contextEndpoint);
 					this.forceUpdate();
 					this.itemPanel.current?.forceUpdate();
-					for (let pkg of PackageRoot.children) {
-						if (pkg.scheme) {
-							Schemes[pkg.scheme].letter = getLetter();
-						}
-					}
 					for (let elem of graph.getElements())
 						drawGraphElement(elem, ProjectSettings.selectedLanguage, Representation.FULL);
 					this.handleChangeLoadingStatus(false, "✔ Workspace ready.", false, false);
@@ -269,6 +263,8 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 				}}
 				updateElementPanel={() => {
 					this.itemPanel.current?.update();
+				}}
+				updateDetailPanel={() => {
 					this.detailPanel.current?.update();
 				}}
 				handleChangeLoadingStatus={this.handleChangeLoadingStatus}

@@ -85,6 +85,7 @@
   "modalNewElemError": "You must enter a name in order to create a new concept.",
   "selectPackage": "Concept will be created in:",
   "view": "View",
+  "switchColors": "Vocabulary color scheme",
   "viewAs": "Display elements as",
   "viewByLabel": "rdfs:label",
   "viewByNamespace": "namespace:name",

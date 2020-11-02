@@ -1,8 +1,9 @@
 import * as joint from 'jointjs';
 import {ProjectElements, ProjectLinks, Schemes, VocabularyElements} from "./Variables";
-import {initLanguageObject} from "../function/FunctionEditVars"
+import {initLanguageObject, parsePrefix} from "../function/FunctionEditVars"
 import {generalizationLink} from "../graph/uml/GeneralizationLink";
 import {LinkType} from "./Enum";
+import * as Locale from "../locale/LocaleMain.json";
 
 export var LinkConfig: {
 	[key: number]: {
@@ -39,6 +40,20 @@ export var LinkConfig: {
 					"<" + rest.restriction + "> <" + rest.target + ">].")
 			)
 
+			if (VocabularyElements[iri].types.includes(parsePrefix("z-sgov-pojem", "typ-vlastnosti")) &&
+				ProjectLinks[id].targetCardinality.getString() !== Locale.none) {
+				let cardinalityMin = ProjectLinks[id].targetCardinality.getFirstCardinality();
+				let cardinalityMax = ProjectLinks[id].targetCardinality.getSecondCardinality();
+				if (cardinalityMin !== "*") restrictions.push("<" + iri + "> rdfs:subClassOf [rdf:type owl:Restriction; " +
+					"owl:onProperty <" + ProjectLinks[id].iri + ">;" +
+					"owl:onClass <" + ProjectElements[ProjectLinks[id].target].iri + ">;" +
+					"owl:minQualifiedCardinality \"" + cardinalityMin + "\"^^xsd:nonNegativeInteger].");
+				if (cardinalityMax !== "*") restrictions.push("<" + iri + "> rdfs:subClassOf [rdf:type owl:Restriction; " +
+					"owl:onProperty <" + ProjectLinks[id].iri + ">;" +
+					"owl:onClass <" + ProjectElements[ProjectLinks[id].target].iri + ">;" +
+					"owl:maxQualifiedCardinality \"" + cardinalityMax + "\"^^xsd:nonNegativeInteger].");
+			}
+
 			return [
 				[
 					"PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>",
@@ -46,8 +61,8 @@ export var LinkConfig: {
 					"PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>",
 					"with <" + contextIRI + ">",
 					"delete {",
-					"?b ?p ?o.",
 					"<" + iri + "> rdfs:subClassOf ?b.",
+					"?b ?p ?o.",
 					"} where {",
 					"<" + iri + "> rdfs:subClassOf ?b.",
 					"filter(isBlank(?b)).",

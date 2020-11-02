@@ -11,7 +11,7 @@ import {
 } from "../config/Variables";
 import * as Locale from "../locale/LocaleMain.json";
 import {graph} from "../graph/Graph";
-import {addLink, getNewColor} from "./FunctionCreateVars";
+import {addLink} from "./FunctionCreateVars";
 import {LinkConfig} from "../config/LinkConfig";
 import {getNewLink} from "./FunctionGraph";
 import {updateDeleteProjectElement, updateProjectLink} from "../interface/TransactionInterface";
@@ -49,8 +49,7 @@ export function loadUML() {
         labels: initLanguageObject("UML"),
         readOnly: false,
         graph: ProjectSettings.ontographerContext,
-        color: getNewColor(),
-        letter: "Z"
+        color: "#FFF"
     }
 
     for (let type in LinkConfig) {
@@ -144,7 +143,7 @@ export function addRelationships() {
     for (let link of linksToPush) updateProjectLink(ProjectSettings.contextEndpoint, link);
 }
 
-export function deletePackageItem(id: string) {
+export async function deletePackageItem(id: string): Promise<boolean> {
     let folder = ProjectElements[id].package;
     let iri = ProjectElements[id].iri;
     folder.elements.splice(folder.elements.indexOf(id), 1);
@@ -159,7 +158,7 @@ export function deletePackageItem(id: string) {
         ProjectLinks[connection].active = false;
         updateDeleteProjectElement(ProjectSettings.contextEndpoint,
             ProjectSettings.ontographerContext + "-" + connection,
-            ProjectSettings.ontographerContext);
+            ProjectSettings.ontographerContext)
     }
     targets.forEach(target => {
         let elem = Object.keys(ProjectElements).find(elem => ProjectElements[elem].connections.includes(target));
@@ -170,5 +169,6 @@ export function deletePackageItem(id: string) {
         graph.removeCells([graph.getCell(id)]);
     }
     ProjectElements[id].active = false;
+    return true;
 }
 

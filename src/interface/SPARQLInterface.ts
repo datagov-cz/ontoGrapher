@@ -1,11 +1,11 @@
 import {
     Diagrams,
     Links,
-    PackageRoot,
     ProjectElements,
     ProjectLinks,
     ProjectSettings,
-    Schemes
+    Schemes,
+    VocabularyElements
 } from "../config/Variables";
 import {initLanguageObject} from "../function/FunctionEditVars";
 import * as joint from "jointjs";
@@ -14,7 +14,6 @@ import * as _ from "lodash";
 import * as Locale from "../locale/LocaleMain.json";
 import {createRestriction} from "../function/FunctionRestriction";
 import {LinkType} from "../config/Enum";
-import {getNewColor} from "../function/FunctionCreateVars";
 
 export async function fetchConcepts(
     endpoint: string,
@@ -163,7 +162,6 @@ export async function getScheme(iri: string, endpoint: string, readOnly: boolean
                 readOnly: readOnly,
                 graph: "",
                 color: "#FFF",
-                letter: "Z"
             }
             if (result.termLabel) Schemes[iri].labels[result.termLabel['xml:lang']] = result.termLabel.value;
             if (result.termTitle) Schemes[iri].labels[result.termTitle['xml:lang']] = result.termTitle.value;
@@ -227,11 +225,13 @@ export async function getElementsConfig(contextIRI: string, contextEndpoint: str
                 let query = [
                     "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
                     "select ?positionX ?positionY ?hidden ?index where {",
+                    "graph <" + Schemes[VocabularyElements[iri].inScheme].graph + "> {",
                     "BIND(<" + diag + "> as ?iri) .",
                     "?iri og:position-y ?positionY .",
                     "?iri og:position-x ?positionX .",
                     "?iri og:index ?index .",
                     "?iri og:hidden ?hidden .",
+                    "}",
                     "}"
                 ].join(" ");
                 let q = contextEndpoint + "?query=" + encodeURIComponent(query);
@@ -270,22 +270,16 @@ export async function getElementsConfig(contextIRI: string, contextEndpoint: str
 export async function getSettings(contextIRI: string, contextEndpoint: string, callback?: Function): Promise<boolean> {
     let query = [
         "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
-        "select ?diagram ?index ?name ?scheme ?sindex ?color where {",
+        "select ?diagram ?index ?name where {",
         "BIND(<" + ProjectSettings.ontographerContext + "> as ?ogContext).",
         "graph ?ogContext {",
         "?diagram og:context <" + contextIRI + "> .",
         "?diagram og:index ?index .",
         "?diagram og:name ?name .",
-        "OPTIONAL {",
-        "?scheme og:index ?sindex .",
-        "?scheme og:context <" + contextIRI + "> .",
-        "?scheme og:color ?color .",
-        "}",
         "}",
         "}"
     ].join(" ");
     let q = contextEndpoint + "?query=" + encodeURIComponent(query);
-    let schemes = PackageRoot.children.filter(pkg => pkg.scheme && Schemes[pkg.scheme].color).map(pkg => pkg.scheme);
     await fetch(q, {headers: {'Accept': 'application/json'}}).then(response => {
         return response.json();
     }).then(data => {
@@ -294,20 +288,12 @@ export async function getSettings(contextIRI: string, contextEndpoint: string, c
                 Diagrams[parseInt(result.index.value)] = {name: Locale.untitled, json: {}, active: true}
             }
             Diagrams[parseInt(result.index.value)].name = result.name.value;
-            if (result.scheme && result.sindex.value) {
-                let scheme = schemes[parseInt(result.sindex.value)];
-                if (scheme) Schemes[scheme].color = getNewColor();
-                if (scheme) Schemes[scheme].letter = "Z";
-            }
         }
         if (data.results.bindings.length > 0) ProjectSettings.initialized = true;
     }).catch(() => {
         if (callback) callback(false);
         return false;
     });
-    for (let scheme of schemes) {
-        if (scheme && Schemes[scheme].color === "#FFF") Schemes[scheme].color = getNewColor();
-    }
     return true;
 }
 

@@ -65,7 +65,17 @@ export async function updateProjectElement(
 				"og:iri": iri,
 				"og:diagram": ProjectElements[id].diagrams.map((diag) => (iri + "/diagram-" + (diag + 1))),
 				"og:active": ProjectElements[id].active,
-			}
+			},
+			...ProjectElements[id].diagrams.map(diag => {
+				return {
+					"@id": iri + "/diagram-" + (diag + 1),
+					"@type": "og:elementDiagram",
+					"og:index": diag,
+					"og:position-x": Math.round(ProjectElements[id].position[diag].x),
+					"og:position-y": Math.round(ProjectElements[id].position[diag].y),
+					"og:hidden": ProjectElements[id].hidden[diag]
+				}
+			}),
 		]
 	}
 
@@ -104,6 +114,24 @@ export async function updateProjectElement(
 	let addStrings: string[] = [JSON.stringify(addLD)];
 	let delStrings: string[] = [JSON.stringify(deleteLD)];
 
+	let delString = await processGetTransaction(contextEndpoint, {
+		subject: iri + "/diagram",
+		context: Schemes[scheme].graph
+	}).catch(() => false);
+	if (typeof delString === "string") {
+		delStrings.push(delString);
+	} else return false;
+
+	for (const diag of ProjectElements[id].diagrams) {
+		let delString = await processGetTransaction(contextEndpoint, {
+			subject: iri + "/diagram-" + (diag + 1),
+			context: Schemes[scheme].graph
+		}).catch(() => false);
+		if (typeof delString === "string") {
+			delStrings.push(delString);
+		} else return false;
+	}
+
 	return await processTransaction(contextEndpoint, {add: addStrings, delete: delStrings});
 }
 
@@ -118,6 +146,10 @@ export async function updateProjectElementDiagram(contextEndpoint: string, id: s
 		},
 		"@id": Schemes[scheme].graph,
 		"@graph": [
+			{
+				"@id": iri + "/diagram",
+				"og:diagram": iri + "/diagram-" + (diagram + 1),
+			},
 			{
 				"@id": iri + "/diagram-" + (diagram + 1),
 				"@type": "og:elementDiagram",
@@ -268,7 +300,21 @@ export async function updateDeleteProjectElement(contextEndpoint: string, iri: s
 		"?s og:context <" + context + ">.",
 		"}"
 	].join(" ");
-	return await processTransaction(contextEndpoint, {add: [], delete: [], update: [query1, query2, query3]});
+	let query4 = [
+		"PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>",
+		"PREFIX owl: <http://www.w3.org/2002/07/owl#>",
+		"PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>",
+		"with <" + context + ">",
+		"delete {",
+		"<" + iri + "> rdfs:subClassOf ?b.",
+		"?b ?p ?o.",
+		"} where {",
+		"<" + iri + "> rdfs:subClassOf ?b.",
+		"filter(isBlank(?b)).",
+		"?b ?p ?o.",
+		"}"
+	].join(" ");
+	return await processTransaction(contextEndpoint, {add: [], delete: [], update: [query4, query1, query2, query3]});
 }
 
 //id: link ID

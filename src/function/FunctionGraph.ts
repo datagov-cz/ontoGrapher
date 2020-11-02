@@ -52,12 +52,6 @@ export function drawGraphElement(cell: joint.dia.Cell, languageCode: string, rep
         cell.prop('attrs/body/height', height);
         cell.prop('attrs/body/fill',
             Schemes[VocabularyElements[ProjectElements[cell.id].iri].inScheme].color);
-        cell.prop('attrs/schemeColor/fill',
-            Schemes[VocabularyElements[ProjectElements[cell.id].iri].inScheme].color);
-        cell.prop('attrs/labelScheme/y', height - 14);
-        cell.prop('attrs/labelScheme/text', Schemes[VocabularyElements[ProjectElements[cell.id].iri].inScheme].letter);
-        cell.prop('attrs/schemeColor/height', height - 2);
-        if (cell instanceof joint.dia.Element) cell.resize(width, height);
     }
 }
 
@@ -168,6 +162,14 @@ export function setRepresentation(representation: number) {
                             newLink.target({id: target});
                             addLink(newLink.id, ProjectElements[elem.id].iri, source, target);
                             newLink.addTo(graph);
+                            if (source === target) {
+                                let coords = newLink.getSourcePoint();
+                                newLink.vertices([
+                                    new joint.g.Point(coords.x, coords.y + 100),
+                                    new joint.g.Point(coords.x + 400, coords.y + 100),
+                                    new joint.g.Point(coords.x + 400, coords.y),
+                                ])
+                            }
                             ProjectLinks[newLink.id].sourceCardinality =
                                 new Cardinality(
                                     ProjectLinks[sourceLink.id].targetCardinality.getFirstCardinality(),
@@ -214,12 +216,12 @@ export function setRepresentation(representation: number) {
             cell.position(ProjectElements[elem].position[ProjectSettings.selectedDiagram].x, ProjectElements[elem].position[ProjectSettings.selectedDiagram].y)
             ProjectElements[elem].hidden[ProjectSettings.selectedDiagram] = false;
             drawGraphElement(cell, ProjectSettings.selectedLanguage, representation);
-            restoreHiddenElem(elem, cell);
+            restoreHiddenElem(elem, cell, true);
         }
         for (let elem of graph.getElements()) {
             drawGraphElement(elem, ProjectSettings.selectedLanguage, representation);
             if (typeof elem.id === "string") {
-                restoreHiddenElem(elem.id, elem);
+                restoreHiddenElem(elem.id, elem, true);
             }
         }
         ProjectSettings.switchElements = [];
@@ -253,7 +255,7 @@ export function unHighlightAll() {
     }
 }
 
-export function restoreHiddenElem(id: string, cls: joint.dia.Element) {
+export function restoreHiddenElem(id: string, cls: joint.dia.Element, restoreConnectionPosition: boolean) {
     if (ProjectElements[id].position) {
         if (ProjectElements[id].position[ProjectSettings.selectedDiagram] &&
             ProjectElements[id].position[ProjectSettings.selectedDiagram].x !== 0 && ProjectElements[id].position[ProjectSettings.selectedDiagram].y !== 0) {
@@ -286,7 +288,8 @@ export function restoreHiddenElem(id: string, cls: joint.dia.Element) {
                     let relationship = existingRel ? existingRel : new graphElement({id: relID});
                     if (ProjectElements[relID].position[ProjectSettings.selectedDiagram] &&
                         ProjectElements[relID].position[ProjectSettings.selectedDiagram].x !== 0 &&
-                        ProjectElements[relID].position[ProjectSettings.selectedDiagram].y !== 0) {
+                        ProjectElements[relID].position[ProjectSettings.selectedDiagram].y !== 0 &&
+                        restoreConnectionPosition) {
                         relationship.position(ProjectElements[relID].position[ProjectSettings.selectedDiagram].x,
                             ProjectElements[relID].position[ProjectSettings.selectedDiagram].y);
                     } else {

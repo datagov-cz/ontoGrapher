@@ -5,9 +5,9 @@ import MenuPanelHelp from "./menu/MenuPanelHelp";
 import MenuPanelAbout from "./menu/MenuPanelAbout";
 import InterfaceNotification from "../components/InterfaceNotification";
 import MenuPanelValidate from "./menu/MenuPanelValidate";
-import MenuPanelSwitchRepresentation from "./menu/MenuPanelSwitchRepresentation";
+import MenuPanelSwitchRepresentation from "./menu/view/MenuPanelSwitchRepresentation";
 import InterfaceStatus from "../components/InterfaceStatus";
-import MenuPanelSwitchStereotypes from "./menu/MenuPanelSwitchStereotypes";
+import MenuPanelView from "./menu/MenuPanelView";
 
 interface MenuPanelProps {
 	readOnly?: boolean;
@@ -65,9 +65,9 @@ export default class MenuPanel extends React.Component<MenuPanelProps, MenuPanel
 					</div>
 				</div>
 				<div className={"lower"}>
+					<MenuPanelView update={() => this.props.update()}/>
 					<MenuPanelSwitchRepresentation update={() => this.props.update()}
 												   close={() => this.props.closeDetailPanel()}/>
-					<MenuPanelSwitchStereotypes update={() => this.props.update()}/>
 					<MenuPanelValidate validate={() => this.props.validate()}/>
 					<div className={"right"}>
 						<MenuPanelHelp/>

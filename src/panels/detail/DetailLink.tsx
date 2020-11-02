@@ -19,7 +19,7 @@ import {ResizableBox} from "react-resizable";
 import {graph} from "../../graph/Graph";
 import DescriptionTabs from "./components/DescriptionTabs";
 import {getLabelOrBlank, getLinkOrVocabElem} from "../../function/FunctionGetVars";
-import {updateProjectLink} from "../../interface/TransactionInterface";
+import {updateConnections, updateProjectLink} from "../../interface/TransactionInterface";
 import {getUnderlyingFullConnections, setLabels, unHighlightAll} from "../../function/FunctionGraph";
 import {parsePrefix} from "../../function/FunctionEditVars";
 import {Cardinality} from "../../datatypes/Cardinality";
@@ -118,7 +118,13 @@ export default class DetailLink extends React.Component<Props, State> {
                     }
                     this.setState({changes: false});
                     this.props.save();
-                    this.props.handleChangeLoadingStatus(false, "", false);
+                    updateConnections(ProjectSettings.contextEndpoint, this.state.id).then(result => {
+                        if (result) {
+                            this.props.handleChangeLoadingStatus(false, "", false);
+                        } else {
+                            this.props.handleChangeLoadingStatus(false, LocaleMain.errorUpdating, true);
+                        }
+                    })
                 } else {
                     this.props.handleChangeLoadingStatus(false, LocaleMain.errorUpdating, true);
                 }
@@ -140,6 +146,8 @@ export default class DetailLink extends React.Component<Props, State> {
                     ProjectLinks[underlyingConnections.tgt].targetCardinality = new Cardinality(targetCard.getSecondCardinality(), targetCard.getSecondCardinality());
                     updateProjectLink(ProjectSettings.contextEndpoint, underlyingConnections.src);
                     updateProjectLink(ProjectSettings.contextEndpoint, underlyingConnections.tgt);
+                    updateConnections(ProjectSettings.contextEndpoint, underlyingConnections.src);
+                    updateConnections(ProjectSettings.contextEndpoint, underlyingConnections.tgt);
                 }
             }
             this.setState({changes: false});

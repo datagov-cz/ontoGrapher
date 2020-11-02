@@ -76,6 +76,6 @@ export function loadDiagram(load: {
         });
         cls.addTo(graph);
         drawGraphElement(cls, ProjectSettings.selectedLanguage, ProjectSettings.representation);
-        restoreHiddenElem(elem.id, cls);
+        restoreHiddenElem(elem.id, cls, true);
     }
 }

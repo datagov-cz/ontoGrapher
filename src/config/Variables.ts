@@ -5,6 +5,7 @@ import {initLanguageObject} from "../function/FunctionEditVars";
 import {RestrictionObject} from "../datatypes/RestrictionObject";
 import {ConnectionObject} from "../datatypes/ConnectionObject";
 import {Representation} from "./Enum";
+import {ColorPool} from "./ColorPool";
 
 // language code : language label
 export var Languages: { [key: string]: string } = {};
@@ -55,13 +56,11 @@ export var Schemes: {
         readOnly: boolean,
         graph: string,
         color: string,
-        letter: string,
     }
 } = {};
 
 export var Prefixes: { [key: string]: string } = {
     skos: "http://www.w3.org/2004/02/skos/core#",
-    ex: "http://example.com/ontoGrapher/",
     owl: "http://www.w3.org/2002/07/owl#",
     rdf: "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
     rdfs: "http://www.w3.org/2000/01/rdf-schema#",
@@ -133,7 +132,8 @@ export var ProjectSettings: {
     lastUpdate: { func: Function, args: [] },
     switchElements: string[],
     viewStereotypes: boolean,
-    viewZoom: number
+    viewZoom: number,
+    viewColorPool: string,
 } = {
     name: {},
     description: {},
@@ -150,7 +150,8 @@ export var ProjectSettings: {
     },
     switchElements: [],
     viewStereotypes: true,
-    viewZoom: 1
+    viewZoom: 1,
+    viewColorPool: Object.keys(ColorPool)[0],
 };
 
 export var CardinalityPool: Cardinality[] = [

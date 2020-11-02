@@ -56,7 +56,6 @@ export default class PackageFolder extends React.Component<Props, State> {
                     backgroundColor: this.props.node.scheme ? Schemes[this.props.node.scheme].color : "#FFF"
                 }}>
                 {(this.props.readOnly ? "📑" : "✏") + getLabelOrBlank(this.props.node.labels, this.props.projectLanguage)}
-                {(this.props.node.scheme) && <span className="right">{Schemes[this.props.node.scheme].letter}</span>}
                 {this.state.open ?
                     this.props.children
                     : <span/>}

@@ -26,16 +26,26 @@
   .lower {
     font-size: 14px;
 
-    a {
-      color: black;
+    a, button {
+      font-size: 14px;
+      background: none !important;
+      border: none;
+      color: black !important;
       padding: 0 5px;
       margin-bottom: 4px;
       margin-right: 4px;
+      box-shadow: none !important;
 
       &:hover {
-        background-color: lightgray;
+        background-color: lightgray !important;
         border-radius: 2px;
         cursor: default;
+      }
+
+      &:focus {
+        background-color: lightgray;
+        color: black;
+        box-shadow: none;
       }
     }
   }
