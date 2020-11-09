@@ -105,11 +105,12 @@ export default class DetailElement extends React.Component<Props, State> {
 				this.state.inputLabels,
 				this.state.inputDefinitions,
 				this.state.id).then(async result => {
-				if (result) {
+				let elem = graph.getElements().find(elem => elem.id === (this.state.id));
+				if (result && elem) {
 					VocabularyElements[ProjectElements[this.state.id].iri].types = this.state.inputTypes;
 					VocabularyElements[ProjectElements[this.state.id].iri].labels = this.state.inputLabels;
 					VocabularyElements[ProjectElements[this.state.id].iri].definitions = this.state.inputDefinitions;
-					drawGraphElement(graph.getCell(this.state.id), this.props.projectLanguage, ProjectSettings.representation);
+					drawGraphElement(elem, this.props.projectLanguage, ProjectSettings.representation);
 					this.props.save();
 					this.setState({changes: false});
 					this.props.handleChangeLoadingStatus(false, "", false);

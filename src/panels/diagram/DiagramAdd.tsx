@@ -1,5 +1,5 @@
 import React from 'react';
-import {Diagrams, ProjectElements, ProjectSettings} from "../../config/Variables";
+import {Diagrams, ProjectElements, ProjectLinks, ProjectSettings} from "../../config/Variables";
 import * as Locale from "../../locale/LocaleMain.json";
 import * as LocaleMain from "../../locale/LocaleMain.json";
 import {updateProjectSettings} from "../../interface/TransactionInterface";
@@ -20,6 +20,7 @@ export default class DiagramAdd extends React.Component<Props, State> {
 		this.props.handleChangeLoadingStatus(true, LocaleMain.updating, false);
 		let index = Diagrams.push({name: Locale.untitled, json: {}, active: true}) - 1;
 		Object.keys(ProjectElements).forEach(elem => ProjectElements[elem].hidden[index] = true);
+		Object.keys(ProjectLinks).forEach(link => ProjectLinks[link].vertices[index] = []);
 		updateProjectSettings(ProjectSettings.contextIRI, ProjectSettings.contextEndpoint).then(result => {
 			if (result) {
 				this.props.handleChangeLoadingStatus(false, "", false);

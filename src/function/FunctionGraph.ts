@@ -14,44 +14,45 @@ import {LinkType, Representation} from "../config/Enum";
 let mvp1IRI = "https://slovník.gov.cz/základní/pojem/má-vztažený-prvek-1";
 let mvp2IRI = "https://slovník.gov.cz/základní/pojem/má-vztažený-prvek-2";
 
-export function drawGraphElement(cell: joint.dia.Cell, languageCode: string, representation: number) {
-    if (typeof cell.id === "string") {
-        let types = VocabularyElements[ProjectElements[cell.id].iri].types;
-        let label = VocabularyElements[ProjectElements[cell.id].iri].labels[languageCode];
+export function drawGraphElement(elem: joint.dia.Element, languageCode: string, representation: number) {
+    if (typeof elem.id === "string") {
+        let types = VocabularyElements[ProjectElements[elem.id].iri].types;
+        let label = VocabularyElements[ProjectElements[elem.id].iri].labels[languageCode];
         let labels: string[] = [];
         if (ProjectSettings.viewStereotypes)
             getStereotypeList(types, languageCode).forEach((str) => labels.push("«" + str.toLowerCase() + "»"));
         labels.push(label === "" ? "<blank>" : label);
-        cell.prop('attrs/label/text', labels.join("\n"));
+        elem.prop('attrs/label/text', labels.join("\n"));
         let text = [];
         if (representation === Representation.COMPACT) {
             for (let link in ProjectLinks) {
-                if ((ProjectLinks[link].source === cell.id || ProjectLinks[link].target === cell.id) &&
+                if ((ProjectLinks[link].source === elem.id || ProjectLinks[link].target === elem.id) &&
                     ProjectLinks[link].active) {
                     if (ProjectLinks[link].iri === parsePrefix("z-sgov-pojem", "má-vlastnost") &&
-                        ProjectLinks[link].source === cell.id && ProjectLinks[link].active) {
+                        ProjectLinks[link].source === elem.id && ProjectLinks[link].active) {
                         text.push(VocabularyElements[ProjectElements[ProjectLinks[link].target].iri].labels[languageCode])
                     } else if (ProjectLinks[link].iri === parsePrefix("z-sgov-pojem", "je-vlastností") &&
-                        ProjectLinks[link].target === cell.id && ProjectLinks[link].active) {
+                        ProjectLinks[link].target === elem.id && ProjectLinks[link].active) {
                         text.push(VocabularyElements[ProjectElements[ProjectLinks[link].source].iri].labels[languageCode])
                     }
                 }
             }
         }
-        cell.prop("attrs/labelAttrs/text", text.join("\n"));
+        elem.prop("attrs/labelAttrs/text", text.join("\n"));
         let width = representation === Representation.COMPACT ?
             Math.max((labels.reduce((a, b) => a.length > b.length ? a : b, "").length * 10) + 4,
                 text.length > 0 ? 8 * (text.reduce((a, b) => a.length > b.length ? a : b, "").length) : 0) :
             (labels.reduce((a, b) => a.length > b.length ? a : b, "").length * 10) + 4;
-        cell.prop('attrs/body/width', width);
-        cell.prop('attrs/text/x', width / 2);
+        elem.prop('attrs/body/width', width);
+        elem.prop('attrs/text/x', width / 2);
         let attrHeight = (24 + ((labels.length - 1) * 18));
         let height = (text.length > 0 ? (4 + (text.length * 13)) : 0) +
             attrHeight;
-        cell.prop('attrs/labelAttrs/y', attrHeight);
-        cell.prop('attrs/body/height', height);
-        cell.prop('attrs/body/fill',
-            Schemes[VocabularyElements[ProjectElements[cell.id].iri].inScheme].color);
+        elem.prop('attrs/labelAttrs/y', attrHeight);
+        elem.prop('attrs/body/height', height);
+        elem.prop('attrs/body/fill',
+            Schemes[VocabularyElements[ProjectElements[elem.id].iri].inScheme].color);
+        elem.resize(width, height);
     }
 }
 
@@ -164,11 +165,20 @@ export function setRepresentation(representation: number) {
                             newLink.addTo(graph);
                             if (source === target) {
                                 let coords = newLink.getSourcePoint();
-                                newLink.vertices([
-                                    new joint.g.Point(coords.x, coords.y + 100),
-                                    new joint.g.Point(coords.x + 400, coords.y + 100),
-                                    new joint.g.Point(coords.x + 400, coords.y),
-                                ])
+                                let bbox = sourceLink.getSourceCell()?.getBBox();
+                                if (bbox) {
+                                    newLink.vertices([
+                                        new joint.g.Point(coords.x, coords.y + 100),
+                                        new joint.g.Point(coords.x + (bbox.width / 2) + 50, coords.y + 100),
+                                        new joint.g.Point(coords.x + (bbox.width / 2) + 50, coords.y),
+                                    ])
+                                } else {
+                                    newLink.vertices([
+                                        new joint.g.Point(coords.x, coords.y + 100),
+                                        new joint.g.Point(coords.x + 300, coords.y + 100),
+                                        new joint.g.Point(coords.x + 300, coords.y),
+                                    ])
+                                }
                             }
                             ProjectLinks[newLink.id].sourceCardinality =
                                 new Cardinality(
@@ -273,7 +283,7 @@ export function restoreHiddenElem(id: string, cls: joint.dia.Element, restoreCon
             setLabels(lnk, getLinkOrVocabElem(ProjectLinks[link].iri).labels[ProjectSettings.selectedLanguage])
             lnk.source({id: ProjectLinks[link].source});
             lnk.target({id: ProjectLinks[link].target});
-            lnk.vertices(ProjectLinks[link].vertices);
+            lnk.vertices(ProjectLinks[link].vertices[ProjectSettings.selectedDiagram]);
             lnk.addTo(graph);
         } else if (ProjectLinks[link].active &&
             ProjectSettings.representation === Representation.FULL &&
@@ -308,8 +318,8 @@ export function restoreHiddenElem(id: string, cls: joint.dia.Element, restoreCon
                     setLabels(domainLink, getLinkOrVocabElem(ProjectLinks[link].iri).labels[ProjectSettings.selectedLanguage]);
                     setLabels(rangeLink, getLinkOrVocabElem(ProjectLinks[targetLink].iri).labels[ProjectSettings.selectedLanguage]);
                     relationship.addTo(graph);
-                    domainLink.vertices(ProjectLinks[link].vertices);
-                    rangeLink.vertices(ProjectLinks[targetLink].vertices);
+                    domainLink.vertices(ProjectLinks[link].vertices[ProjectSettings.selectedDiagram]);
+                    rangeLink.vertices(ProjectLinks[targetLink].vertices[ProjectSettings.selectedDiagram]);
                     domainLink.addTo(graph);
                     rangeLink.addTo(graph);
                     break;

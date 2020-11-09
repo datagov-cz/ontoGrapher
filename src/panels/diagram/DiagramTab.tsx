@@ -38,6 +38,7 @@ export default class DiagramTab extends React.Component<Props, State> {
 	changeDiagram() {
 		changeDiagrams(this.props.diagram);
 		this.props.update();
+		ProjectSettings.selectedLink = "";
 	}
 
 	handleChangeDiagramName(event: { textarea: string }) {

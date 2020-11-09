@@ -67,8 +67,8 @@ export default class DetailLink extends React.Component<Props, State> {
         if (ProjectSettings.representation === Representation.FULL) {
             for (let iri in Links) {
                 if (Links[iri].type === LinkType.DEFAULT)
-                    result.push(<option
-                        value={iri}>{getLabelOrBlank(Links[iri].labels, this.props.projectLanguage)}</option>)
+                    result.push(<option key={iri}
+                                        value={iri}>{getLabelOrBlank(Links[iri].labels, this.props.projectLanguage)}</option>)
             }
         } else if (ProjectSettings.representation === Representation.COMPACT) {
             for (let iri in VocabularyElements) {

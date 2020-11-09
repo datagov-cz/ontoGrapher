@@ -36,7 +36,8 @@ export default class NewElemDiagram extends React.Component<Props, State> {
 	}
 
 	render() {
-		return (<Modal centered scrollable show={this.props.modal}
+		return (<Modal centered scrollable show={this.props.modal} keyboard={true}
+					   onEscapeKeyDown={() => this.props.close()}
 					   onHide={() => this.props.close}
 					   onEntering={() => {
 						   if (this.state.selectedPackage === PackageRoot) {
@@ -48,6 +49,8 @@ export default class NewElemDiagram extends React.Component<Props, State> {
 								   selectedPackage: pkg
 							   });
 						   } else this.setState({conceptName: "", displayError: false})
+						   let input = document.getElementById("newElemLabelInput");
+						   if (input) input.focus();
 					   }}
 		>
 			<Modal.Header>
@@ -64,7 +67,7 @@ export default class NewElemDiagram extends React.Component<Props, State> {
 							<InputGroup.Text
 								id="inputGroupPrepend">{Languages[this.props.projectLanguage]}</InputGroup.Text>
 						</InputGroup.Prepend>
-						<Form.Control type="text" value={this.state.conceptName} required
+						<Form.Control id={"newElemLabelInput"} type="text" value={this.state.conceptName} required
 									  onChange={(event) => this.setState({conceptName: event.currentTarget.value})}/>
 					</InputGroup>
 					<br/>

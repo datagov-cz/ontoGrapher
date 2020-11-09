@@ -20,6 +20,15 @@ export default class AboutModal extends React.Component<Props, State> {
 			</Modal.Header>
 			<Modal.Body>
 				<Tabs id={"changelog"}><Tab title={"November"} eventKey={"November"}>
+					<h6>9.11.</h6>
+					<ul>
+						<li>Bug fixing and stability improvements</li>
+						<li>Relationships are now selected by clicking anywhere on the link</li>
+						<li>Deletion and modification of the relationship's shape is now available only on selection of
+							the given relationship
+						</li>
+						<li>Vocabulary color schemes are now saved for each workspace</li>
+					</ul>
 					<h6>2.11.</h6>
 					<ul>
 						<li>Bug fixing and stability improvements</li>

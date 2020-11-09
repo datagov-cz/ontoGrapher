@@ -1,6 +1,5 @@
 import {
 	Diagrams,
-	PackageRoot,
 	Prefixes,
 	ProjectElements,
 	ProjectLinks,
@@ -174,19 +173,20 @@ export async function updateProjectLinkVertex(contextEndpoint: string, id: strin
 	let linkIRI = ProjectSettings.ontographerContext + "-" + id;
 
 	let updateStrings = vertices.map(i =>
-		("<" + (linkIRI + "/vertex-" + (i + 1) + "> og:position-x ?x. " +
-			"<" + linkIRI + "/vertex-" + (i + 1) + "> og:position-y ?y.")));
+		("<" + (linkIRI + "/diagram-" + (ProjectSettings.selectedDiagram + 1) + "/vertex-" + (i + 1) + "> og:position-x ?x" + i + ". " +
+			"<" + linkIRI + "/diagram-" + (ProjectSettings.selectedDiagram + 1) + "/vertex-" + (i + 1) + "> og:position-y ?y" + i + ".")));
 
 	let update1 = [
 		"PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
 		"insert data { graph <" + ProjectSettings.ontographerContext + "> {",
-		...vertices.map(i => ("<" + linkIRI + "> og:vertex <" + linkIRI + "/vertex-" + (i + 1) + ">.")),
+		...vertices.map(i => ("<" + linkIRI + "> og:vertex <" + linkIRI + "/diagram-" + (ProjectSettings.selectedDiagram + 1) + "/vertex-" + (i + 1) + ">.")),
 		...vertices.map(i => {
-			let vertexIRI = "<" + linkIRI + "/vertex-" + (i + 1) + "> ";
+			let vertexIRI = "<" + linkIRI + "/diagram-" + (ProjectSettings.selectedDiagram + 1) + "/vertex-" + (i + 1) + "> ";
 			return vertexIRI + "a og:vertex." +
 				vertexIRI + "og:index \"" + i + "\"." +
-				vertexIRI + "og:position-x \"" + Math.round(ProjectLinks[id].vertices[i].x) + "\"." +
-				vertexIRI + "og:position-y \"" + Math.round(ProjectLinks[id].vertices[i].y) + "\".";
+				vertexIRI + "og:diagram \"" + ProjectSettings.selectedDiagram + "\"." +
+				vertexIRI + "og:position-x \"" + Math.round(ProjectLinks[id].vertices[ProjectSettings.selectedDiagram][i].x) + "\"." +
+				vertexIRI + "og:position-y \"" + Math.round(ProjectLinks[id].vertices[ProjectSettings.selectedDiagram][i].y) + "\".";
 		}),
 		"}}"
 	].join(" ");
@@ -221,7 +221,7 @@ export async function updateDeleteProjectLinkVertex(contextEndpoint: string, id:
 		"@graph": [
 			{
 				"@id": linkIRI,
-				"og:vertex": vars.map(i => (linkIRI + "/vertex-" + (i + 1)))
+				"og:vertex": vars.map(i => (linkIRI + "/diagram-" + (ProjectSettings.selectedDiagram + 1) + "/vertex-" + (i + 1)))
 			}
 		]
 	};
@@ -232,7 +232,7 @@ export async function updateDeleteProjectLinkVertex(contextEndpoint: string, id:
 export async function updateProjectLink(contextEndpoint: string, id: string) {
 	let linkIRI = ProjectSettings.ontographerContext + "-" + id;
 	let cardinalities: { [key: string]: string } = {};
-	let vertices: { "@id": string, "@type": "og:vertex", "og:index": number, "og:position-x": number, "og:position-y": number }[] = [];
+	let vertices: { "@id": string, "@type": "og:vertex", "og:index": number, "og:position-x": number, "og:position-y": number, "og:diagram": number }[] = [];
 	if (ProjectLinks[id].sourceCardinality) {
 		cardinalities["og:sourceCardinality1"] = ProjectLinks[id].sourceCardinality.getFirstCardinality();
 		cardinalities["og:sourceCardinality2"] = ProjectLinks[id].sourceCardinality.getSecondCardinality();
@@ -242,15 +242,17 @@ export async function updateProjectLink(contextEndpoint: string, id: string) {
 		cardinalities["og:targetCardinality2"] = ProjectLinks[id].targetCardinality.getSecondCardinality();
 	}
 
-	ProjectLinks[id].vertices.forEach((vertex, i) => {
-		vertices.push({
-			"@id": linkIRI + "/vertex-" + (i + 1),
-			"@type": "og:vertex",
-			"og:index": i,
-			"og:position-x": Math.round(vertex.x),
-			"og:position-y": Math.round(vertex.y)
+	if (ProjectLinks[id].vertices[ProjectSettings.selectedDiagram])
+		ProjectLinks[id].vertices[ProjectSettings.selectedDiagram].forEach((vertex, i) => {
+			vertices.push({
+				"@id": linkIRI + "/diagram-" + (ProjectSettings.selectedDiagram + 1) + "/vertex-" + (i + 1),
+				"@type": "og:vertex",
+				"og:index": i,
+				"og:diagram": ProjectSettings.selectedDiagram,
+				"og:position-x": Math.round(vertex.x),
+				"og:position-y": Math.round(vertex.y)
+			})
 		})
-	})
 
 	let addLD = {
 		"@context": {
@@ -316,16 +318,7 @@ export async function updateDeleteProjectElement(contextEndpoint: string, iri: s
 		"?s ?p <" + iri + ">.",
 		"}"
 	].join(" ");
-	// let query3 = [
-	// 	"PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
-	// 	"with <" + ProjectSettings.ontographerContext + "> delete {",
-	// 	"?s ?p <" + iri + ">.",
-	// 	"} where {",
-	// 	"?s ?p <" + iri + ">.",
-	// 	"?s og:context <" + context + ">.",
-	// 	"}"
-	// ].join(" ");
-	let query4 = [
+	let query3 = [
 		"PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>",
 		"PREFIX owl: <http://www.w3.org/2002/07/owl#>",
 		"PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>",
@@ -339,7 +332,7 @@ export async function updateDeleteProjectElement(contextEndpoint: string, iri: s
 		"?b ?p ?o.",
 		"}"
 	].join(" ");
-	return await processTransaction(contextEndpoint, {add: [], delete: [], update: [query4, query1, query2]});
+	return await processTransaction(contextEndpoint, {add: [], delete: [], update: [query3, query1, query2]});
 }
 
 //id: link ID
@@ -453,7 +446,6 @@ export async function updateProjectSettings(contextIRI: string, contextEndpoint:
 	}
 
 	let contextInstance = ProjectSettings.contextIRI.substring(ProjectSettings.contextIRI.lastIndexOf("/"));
-	let schemes = PackageRoot.children.filter(pkg => pkg.scheme && Schemes[pkg.scheme].color);
 
 	let ogContextLD = {
 		"@context": {
@@ -472,10 +464,9 @@ export async function updateProjectSettings(contextIRI: string, contextEndpoint:
 			{
 				"@id": ProjectSettings.ontographerContext + contextInstance,
 				"og:context": contextIRI,
+				"og:viewColor": ProjectSettings.viewColorPool,
 				"og:diagram": Diagrams.map((diag, i) =>
-					ProjectSettings.ontographerContext + contextInstance + "/diagram-" + (i + 1)),
-				"og:scheme": schemes.map((pkg, i) =>
-					ProjectSettings.ontographerContext + contextInstance + "/scheme-" + (i + 1))
+					ProjectSettings.ontographerContext + contextInstance + "/diagram-" + (i + 1))
 			},
 			...(Diagrams).filter(diag => diag.active).map((diag, i) => {
 				return {
@@ -484,16 +475,6 @@ export async function updateProjectSettings(contextIRI: string, contextEndpoint:
 					"og:context": contextIRI,
 					"og:name": diag.name,
 				}
-			}),
-			...schemes.map((pkg, i) => {
-				if (pkg.scheme) {
-					return {
-						"@id": ProjectSettings.ontographerContext + contextInstance + "/scheme-" + (i + 1),
-						"og:index": i,
-						"og:context": contextIRI,
-						"og:color": Schemes[pkg.scheme].color,
-					}
-				} else return {};
 			})
 		]
 	}
@@ -512,16 +493,6 @@ export async function updateProjectSettings(contextIRI: string, contextEndpoint:
 	for (let i = 0; i < (Diagrams.length + 1); i++) {
 		let delString = await processGetTransaction(contextEndpoint, {
 			subject: ProjectSettings.ontographerContext + contextInstance + "/diagram-" + (i + 1),
-			context: ProjectSettings.ontographerContext
-		}).catch(() => false);
-		if (typeof delString === "string") {
-			delStrings.push(delString);
-		}
-	}
-
-	for (let i = 0; i < (schemes.length + 1); i++) {
-		let delString = await processGetTransaction(contextEndpoint, {
-			subject: ProjectSettings.ontographerContext + contextInstance + "/scheme-" + (i + 1),
 			context: ProjectSettings.ontographerContext
 		}).catch(() => false);
 		if (typeof delString === "string") {

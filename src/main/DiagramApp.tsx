@@ -18,6 +18,7 @@ import {updateProjectSettings} from "../interface/TransactionInterface";
 import ValidationPanel from "../panels/ValidationPanel";
 import DiagramPanel from "../panels/DiagramPanel";
 import {Representation} from "../config/Enum";
+import {setSchemeColors} from "../function/FunctionGetVars";
 
 interface DiagramAppProps {
 	readOnly?: boolean;
@@ -170,6 +171,7 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 					await updateProjectSettings(contextIRI, contextEndpoint);
 					this.forceUpdate();
 					this.itemPanel.current?.forceUpdate();
+					setSchemeColors(ProjectSettings.viewColorPool);
 					for (let elem of graph.getElements())
 						drawGraphElement(elem, ProjectSettings.selectedLanguage, Representation.FULL);
 					this.handleChangeLoadingStatus(false, "✔ Workspace ready.", false, false);
@@ -223,6 +225,7 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 				error={this.state.error}
 				update={() => {
 					this.itemPanel.current?.forceUpdate();
+					this.detailPanel.current?.hide();
 				}}
 			/>
 			<DetailPanel

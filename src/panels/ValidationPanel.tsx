@@ -53,8 +53,10 @@ export default class ValidationPanel extends React.Component<Props, State> {
 
 	async validate() {
 		this.setState({loading: true, error: false});
-		let results = await validateWorkspace(ProjectSettings.contextIRI, ProjectSettings.selectedLanguage);
-		if (results !== {}) {
+		let results = await validateWorkspace(ProjectSettings.contextIRI, ProjectSettings.selectedLanguage).catch(() => {
+			return false;
+		});
+		if (results) {
 			this.setState({
 				conforms: results.conforms,
 				results: results.results
@@ -101,8 +103,8 @@ export default class ValidationPanel extends React.Component<Props, State> {
 				<Button variant={"secondary"} onClick={() => this.props.close()}>{LocaleMain.close}</Button>
 					</span>
 			</div>
-			{this.state.conforms && <div className={"centered"}>{"✅" + LocaleMain.conforms}</div>}
-			{this.state.error && <div className={"centered"}>{"✅" + LocaleMain.validationLoadingError}</div>}
+			{this.state.conforms && <div className={"centeredValidation"}>{"✅" + LocaleMain.conforms}</div>}
+			{this.state.error && <div className={"centeredValidation"}>{LocaleMain.validationLoadingError}</div>}
 			{this.state.loading && <div className={"centered"}><Spinner animation={"border"}/></div>}
 			{(!this.state.loading && !this.state.conforms && !this.state.error) &&
             <div style={{overflow: "auto", height: "inherit"}}><TableList

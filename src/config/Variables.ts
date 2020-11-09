@@ -5,7 +5,6 @@ import {initLanguageObject} from "../function/FunctionEditVars";
 import {RestrictionObject} from "../datatypes/RestrictionObject";
 import {ConnectionObject} from "../datatypes/ConnectionObject";
 import {Representation} from "./Enum";
-import {ColorPool} from "./ColorPool";
 
 // language code : language label
 export var Languages: { [key: string]: string } = {};
@@ -41,8 +40,8 @@ export var ProjectLinks: {
         sourceCardinality: Cardinality,
         //target cardinality Cardinality object
         targetCardinality: Cardinality,
-        //vertices - point breaks of link
-        vertices: joint.dia.Link.Vertex[],
+        //vertices - point breaks of link by diagram
+        vertices: joint.dia.Link.Vertex[][],
         //type - dictates saving/loading behaviour
         type: number,
         //active
@@ -124,6 +123,7 @@ export var ProjectSettings: {
     description: { [key: string]: string },
     selectedDiagram: number,
     selectedLanguage: string,
+    selectedLink: string,
     contextIRI: string,
     contextEndpoint: string,
     ontographerContext: string,
@@ -139,6 +139,7 @@ export var ProjectSettings: {
     description: {},
     selectedDiagram: 0,
     selectedLanguage: Object.keys(Languages)[0],
+    selectedLink: "",
     contextIRI: "",
     contextEndpoint: "",
     ontographerContext: "http://onto.fel.cvut.cz/ontologies/application/ontoGrapher",
@@ -151,7 +152,7 @@ export var ProjectSettings: {
     switchElements: [],
     viewStereotypes: true,
     viewZoom: 1,
-    viewColorPool: Object.keys(ColorPool)[0],
+    viewColorPool: "pastelLow",
 };
 
 export var CardinalityPool: Cardinality[] = [
