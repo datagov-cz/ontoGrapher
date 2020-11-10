@@ -18,7 +18,7 @@ export async function setupDiagrams(diagram: number = 0): Promise<boolean> {
     for (let i = 0; i < Diagrams.length; i++) {
         changeDiagrams(i);
         for (let id in ProjectElements) {
-            if (ProjectElements[id].hidden[i] === false && ProjectElements[id].position[i]) {
+            if (ProjectElements[id].hidden[i] === false && ProjectElements[id].position[i] && ProjectElements[id].active) {
                 let cls = new graphElement({id: id});
                 cls.position(ProjectElements[id].position[i].x, ProjectElements[id].position[i].y);
                 cls.addTo(graph);

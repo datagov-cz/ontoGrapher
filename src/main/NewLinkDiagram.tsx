@@ -93,7 +93,8 @@ export default class NewLinkDiagram extends React.Component<Props, State> {
 				return Object.keys(VocabularyElements).filter(link =>
 					!conns.find(
 						conn => ProjectLinks[conn].iri === link &&
-							ProjectLinks[conn].target === this.props.tid
+							ProjectLinks[conn].target === this.props.tid &&
+							ProjectLinks[conn].active
 					) && (VocabularyElements[link].types.includes(parsePrefix("z-sgov-pojem", "typ-vztahu"))
 					)).concat(Object.keys(Links).filter(link => Links[link].inScheme === (ProjectSettings.ontographerContext + "/uml")));
 			} else return [];
@@ -128,7 +129,7 @@ export default class NewLinkDiagram extends React.Component<Props, State> {
 				<br/>
 				<Form.Control htmlSize={Object.keys(Links).length} as="select" value={this.state.selectedLink}
 							  onChange={this.handleChangeLink}>
-					{this.getLinks().map((link) => (
+					{this.getLinks().sort().map((link) => (
 						<option key={link}
 								onClick={() => this.setLink(link)}
 								value={link}>{getLabelOrBlank(getLinkOrVocabElem(link).labels, this.props.projectLanguage)}</option>))}

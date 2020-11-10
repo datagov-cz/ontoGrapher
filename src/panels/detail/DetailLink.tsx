@@ -150,6 +150,7 @@ export default class DetailLink extends React.Component<Props, State> {
                         updateConnections(ProjectSettings.contextEndpoint, underlyingConnections.src);
                         updateConnections(ProjectSettings.contextEndpoint, underlyingConnections.tgt);
                     }
+                    updateProjectLink(ProjectSettings.contextEndpoint, this.state.id);
                 }
                 this.setState({changes: false});
                 this.props.save();

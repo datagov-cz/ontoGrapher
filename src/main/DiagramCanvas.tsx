@@ -156,26 +156,29 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                     } else if (ProjectSettings.representation === Representation.COMPACT) {
                         let mvp1IRI = "https://slovník.gov.cz/základní/pojem/má-vztažený-prvek-1";
                         let mvp2IRI = "https://slovník.gov.cz/základní/pojem/má-vztažený-prvek-2";
-                        let property = new graphElement();
+                        let find = Object.keys(ProjectElements).find(elem =>
+                            ProjectElements[elem].active && ProjectElements[elem].iri === iri);
+                        let property = find ? new graphElement({id: find}) : new graphElement();
                         let source = getNewLink();
                         let target = getNewLink();
                         if (typeof source.id === "string" && typeof target.id === "string" && typeof property.id === "string") {
                             let pkg = PackageRoot.children.find(pkg => pkg.scheme &&
                                 pkg.scheme === VocabularyElements[ProjectElements[sid].iri].inScheme) || PackageRoot;
-                            addClass(property.id, iri, pkg);
+                            if (!find) addClass(property.id, iri, pkg);
                             addLink(source.id, mvp1IRI, property.id, sid);
                             addLink(target.id, mvp2IRI, property.id, tid);
                             ProjectElements[property.id].connections.push(source.id);
                             ProjectElements[property.id].connections.push(target.id);
                             updateProjectElement(
                                 ProjectSettings.contextEndpoint,
-                                [parsePrefix("z-sgov-pojem", "typ-vztahu")],
+                                VocabularyElements[iri].types,
                                 VocabularyElements[iri].labels,
                                 VocabularyElements[iri].definitions,
                                 property.id);
                             addLink(link.id, iri, sid, tid);
                             this.updateConnections(property.id, sid, source.id, type, mvp1IRI);
                             this.updateConnections(property.id, tid, target.id, type, mvp2IRI);
+                            this.updateConnections(sid, tid, link.id, type, iri);
                         }
                     }
                     this.props.updateElementPanel();
@@ -306,6 +309,12 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                     let sid = view.model.getSourceCell()?.id;
                     if (typeof sid === "string" && typeof id === "string") {
                         this.deleteConnections(sid, id);
+                        let compactConn = Object.keys(ProjectLinks).find(link => ProjectLinks[link].active &&
+                            ProjectLinks[link].iri === ProjectElements[ProjectLinks[id].source].iri &&
+                            ProjectLinks[link].target === ProjectLinks[id].target);
+                        if (compactConn) {
+                            this.deleteConnections(ProjectLinks[compactConn].source, compactConn);
+                        }
                     }
                 } else {
                     let deleteLinks = getUnderlyingFullConnections(view.model);
@@ -314,6 +323,10 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                         ProjectLinks[deleteLinks.tgt].active = false;
                         this.deleteConnections(ProjectLinks[deleteLinks.src].source, deleteLinks.src);
                         this.deleteConnections(ProjectLinks[deleteLinks.src].source, deleteLinks.tgt);
+                    }
+                    let sid = view.model.getSourceCell()?.id;
+                    if (typeof sid === "string" && typeof id === "string") {
+                        this.deleteConnections(sid, id);
                     }
                     view.model.remove();
                     ProjectLinks[view.model.id].active = false;
@@ -381,6 +394,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                 }
             },
             'element:pointerclick': (cellView) => {
+                ProjectSettings.selectedLink = "";
                 if (this.newLink) {
                     this.tid = cellView.model.id;
                     this.setState({modalAddLink: true});
@@ -455,16 +469,14 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                 let id = cellView.model.id;
                 let link = cellView.model;
                 link.findView(this.paper).removeRedundantLinearVertices();
-                if (ProjectLinks[id].iri in Links) {
-                    this.props.handleChangeLoadingStatus(true, LocaleMain.updating, false);
-                    this.updateVertices(link.id, ProjectLinks[link.id].vertices[ProjectSettings.selectedDiagram], link.vertices()).then(result => {
-                        if (result) {
-                            this.props.handleChangeLoadingStatus(false, "", false);
-                        } else {
-                            this.props.handleChangeLoadingStatus(false, LocaleMain.errorUpdating, true);
-                        }
-                    });
-                }
+                this.props.handleChangeLoadingStatus(true, LocaleMain.updating, false);
+                this.updateVertices(id, ProjectLinks[id].vertices[ProjectSettings.selectedDiagram], link.vertices()).then(result => {
+                    if (result) {
+                        this.props.handleChangeLoadingStatus(false, "", false);
+                    } else {
+                        this.props.handleChangeLoadingStatus(false, LocaleMain.errorUpdating, true);
+                    }
+                });
             }
         });
     }
