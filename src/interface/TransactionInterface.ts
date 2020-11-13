@@ -229,7 +229,7 @@ export async function updateDeleteProjectLinkVertex(contextEndpoint: string, id:
 	return await processTransaction(contextEndpoint, {add: [], delete: [JSON.stringify(delLD)]})
 }
 
-export async function updateProjectLink(contextEndpoint: string, id: string) {
+export function constructProjectLinkLD(contextEndpoint: string, id: string): {}[] {
 	let linkIRI = ProjectSettings.ontographerContext + "-" + id;
 	let cardinalities: { [key: string]: string } = {};
 	let vertices: { "@id": string, "@type": "og:vertex", "og:index": number, "og:position-x": number, "og:position-y": number, "og:diagram": number }[] = [];
@@ -241,7 +241,6 @@ export async function updateProjectLink(contextEndpoint: string, id: string) {
 		cardinalities["og:targetCardinality1"] = ProjectLinks[id].targetCardinality.getFirstCardinality();
 		cardinalities["og:targetCardinality2"] = ProjectLinks[id].targetCardinality.getSecondCardinality();
 	}
-
 	if (ProjectLinks[id].vertices[ProjectSettings.selectedDiagram])
 		ProjectLinks[id].vertices[ProjectSettings.selectedDiagram].forEach((vertex, i) => {
 			vertices.push({
@@ -253,6 +252,27 @@ export async function updateProjectLink(contextEndpoint: string, id: string) {
 				"og:position-y": Math.round(vertex.y)
 			})
 		})
+	return [{
+		"@id": linkIRI,
+		"@type": "og:link",
+		"og:id": id,
+		"og:context": ProjectSettings.contextIRI,
+		"og:iri": ProjectLinks[id].iri,
+		"og:active": ProjectLinks[id].active,
+		"og:source-id": ProjectLinks[id].source,
+		"og:target-id": ProjectLinks[id].target,
+		"og:source": ProjectElements[ProjectLinks[id].source].iri,
+		"og:target": ProjectElements[ProjectLinks[id].target].iri,
+		"og:type": ProjectLinks[id].type === LinkType.DEFAULT ? "default" : "generalization",
+		...cardinalities,
+		"og:vertex": vertices.map(vert => vert["@id"])
+	},
+		...vertices
+	]
+}
+
+export async function updateProjectLink(contextEndpoint: string, id: string) {
+	let linkIRI = ProjectSettings.ontographerContext + "-" + id;
 
 	let addLD = {
 		"@context": {
@@ -264,23 +284,7 @@ export async function updateProjectLink(contextEndpoint: string, id: string) {
 			"og:vertex": {"@type": "@id"},
 		},
 		"@id": ProjectSettings.ontographerContext,
-		"@graph": [{
-			"@id": linkIRI,
-			"@type": "og:link",
-			"og:id": id,
-			"og:context": ProjectSettings.contextIRI,
-			"og:iri": ProjectLinks[id].iri,
-			"og:active": ProjectLinks[id].active,
-			"og:source-id": ProjectLinks[id].source,
-			"og:target-id": ProjectLinks[id].target,
-			"og:source": ProjectElements[ProjectLinks[id].source].iri,
-			"og:target": ProjectElements[ProjectLinks[id].target].iri,
-			"og:type": ProjectLinks[id].type === LinkType.DEFAULT ? "default" : "generalization",
-			...cardinalities,
-			"og:vertex": vertices.map(vert => vert["@id"])
-		},
-			...vertices
-		]
+		"@graph": [...constructProjectLinkLD(ProjectSettings.contextEndpoint, id)]
 	}
 
 	let delString = "";

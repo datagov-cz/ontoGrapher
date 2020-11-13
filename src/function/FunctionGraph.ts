@@ -326,8 +326,26 @@ export function restoreHiddenElem(id: string, cls: joint.dia.Element, restoreCon
             setLabels(lnk, getLinkOrVocabElem(ProjectLinks[link].iri).labels[ProjectSettings.selectedLanguage])
             lnk.source({id: ProjectLinks[link].source});
             lnk.target({id: ProjectLinks[link].target});
-            lnk.vertices(ProjectLinks[link].vertices[ProjectSettings.selectedDiagram]);
             lnk.addTo(graph);
+            if (ProjectLinks[link].source === ProjectLinks[link].target && (!(ProjectLinks[link].vertices[ProjectSettings.selectedDiagram]) ||
+                ProjectLinks[link].vertices[ProjectSettings.selectedDiagram] === [])) {
+                let coords = lnk.getSourcePoint();
+                let bbox = lnk.getSourceCell()?.getBBox();
+                if (bbox) {
+                    ProjectLinks[link].vertices[ProjectSettings.selectedDiagram] = [
+                        new joint.g.Point(coords.x, coords.y + 100),
+                        new joint.g.Point(coords.x + (bbox.width / 2) + 50, coords.y + 100),
+                        new joint.g.Point(coords.x + (bbox.width / 2) + 50, coords.y),
+                    ]
+                } else {
+                    ProjectLinks[link].vertices[ProjectSettings.selectedDiagram] = [
+                        new joint.g.Point(coords.x, coords.y + 100),
+                        new joint.g.Point(coords.x + 300, coords.y + 100),
+                        new joint.g.Point(coords.x + 300, coords.y),
+                    ]
+                }
+            }
+            lnk.vertices(ProjectLinks[link].vertices[ProjectSettings.selectedDiagram]);
         } else if (ProjectSettings.representation === Representation.FULL &&
             ProjectLinks[link].target === id &&
             ProjectLinks[link].iri in Links &&

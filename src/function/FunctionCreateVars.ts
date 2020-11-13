@@ -1,18 +1,21 @@
 import {
     CardinalityPool,
     Diagrams,
+    Prefixes,
     ProjectElements,
     ProjectLinks,
     ProjectSettings,
     VocabularyElements
 } from "../config/Variables";
-import {initLanguageObject} from "./FunctionEditVars";
+import {addRelationships, initLanguageObject} from "./FunctionEditVars";
 import {PackageNode} from "../datatypes/PackageNode";
 import {graphElement} from "../graph/GraphElement";
 import {drawGraphElement, restoreHiddenElem} from "./FunctionGraph";
 import {changeDiagrams} from "./FunctionDiagram";
 import {graph} from "../graph/Graph";
 import {LinkType, Representation} from "../config/Enum";
+import {initConnections} from "./FunctionRestriction";
+import {constructProjectLinkLD, processTransaction} from "../interface/TransactionInterface";
 
 export async function setupDiagrams(diagram: number = 0): Promise<boolean> {
     for (let i = 0; i < Diagrams.length; i++) {
@@ -29,6 +32,27 @@ export async function setupDiagrams(diagram: number = 0): Promise<boolean> {
     }
     changeDiagrams(diagram);
     return true;
+}
+
+export async function updateLinks() {
+    let linksToPush = [...initConnections(), ...addRelationships()];
+    let graph: {}[] = [];
+    linksToPush.forEach(link => {
+        graph.push(...constructProjectLinkLD(ProjectSettings.contextEndpoint, link));
+    })
+    let addLD = {
+        "@context": {
+            ...Prefixes,
+            "og:iri": {"@type": "@id"},
+            "og:source": {"@type": "@id"},
+            "og:target": {"@type": "@id"},
+            "og:context": {"@type": "@id"},
+            "og:vertex": {"@type": "@id"},
+        },
+        "@id": ProjectSettings.ontographerContext,
+        "@graph": graph
+    }
+    await processTransaction(ProjectSettings.contextEndpoint, {add: [JSON.stringify(addLD)], delete: []});
 }
 
 export function createValues(values: { [key: string]: string[] }, prefixes: { [key: string]: string }) {

@@ -14,7 +14,7 @@ import {graph} from "../graph/Graph";
 import {addLink} from "./FunctionCreateVars";
 import {LinkConfig} from "../config/LinkConfig";
 import {getNewLink} from "./FunctionGraph";
-import {updateDeleteProjectElement, updateProjectLink} from "../interface/TransactionInterface";
+import {updateDeleteProjectElement} from "../interface/TransactionInterface";
 import {LinkType} from "../config/Enum";
 
 export function getName(element: string, language: string): string {
@@ -93,7 +93,7 @@ export function parsePrefix(prefix: string, name: string): string {
     return Prefixes[prefix] + name;
 }
 
-export function addRelationships() {
+export function addRelationships(): string[] {
     let linksToPush: string[] = [];
     for (let iri in VocabularyElements) {
         let id = Object.keys(ProjectElements).find(element => ProjectElements[element].iri === iri);
@@ -140,7 +140,7 @@ export function addRelationships() {
             }
         }
     }
-    for (let link of linksToPush) updateProjectLink(ProjectSettings.contextEndpoint, link);
+    return linksToPush;
 }
 
 export async function deletePackageItem(id: string): Promise<boolean> {

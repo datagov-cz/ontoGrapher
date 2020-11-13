@@ -6,14 +6,14 @@ import * as Locale from "../locale/LocaleMain.json";
 import {Languages, ProjectElements, ProjectLinks, ProjectSettings} from "../config/Variables";
 import DetailPanel from "../panels/DetailPanel";
 import {getVocabulariesFromRemoteJSON} from "../interface/JSONInterface";
-import {addRelationships, initVars} from "../function/FunctionEditVars";
+import {initVars} from "../function/FunctionEditVars";
 import {getContext} from "../interface/ContextInterface";
 import {graph} from "../graph/Graph";
 import {loadProject, newProject} from "../function/FunctionProject";
 import {drawGraphElement, nameGraphLink, unHighlightAll} from "../function/FunctionGraph";
-import {setupDiagrams} from "../function/FunctionCreateVars";
+import {setupDiagrams, updateLinks} from "../function/FunctionCreateVars";
 import {getElementsConfig, getLinksConfig, getSettings} from "../interface/SPARQLInterface";
-import {initConnections, initRestrictions} from "../function/FunctionRestriction";
+import {initRestrictions} from "../function/FunctionRestriction";
 import {updateProjectSettings} from "../interface/TransactionInterface";
 import ValidationPanel from "../panels/ValidationPanel";
 import DiagramPanel from "../panels/DiagramPanel";
@@ -145,14 +145,9 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 			getContext(
 				contextIRI,
 				contextEndpoint,
-				"application/json",
-				(message: string) => {
-					if (message === Locale.loadingError) {
-						this.handleChangeLoadingStatus(false, Locale.pleaseReload, false)
-					}
-				}
-            ).then(async () => {
-                if (!this.state.error) {
+				"application/json"
+			).then(async (result) => {
+				if (result) {
 					document.title = ProjectSettings.name[this.state.projectLanguage] + " | " + Locale.ontoGrapher;
 					ProjectSettings.contextEndpoint = contextEndpoint;
 					ProjectSettings.contextIRI = contextIRI;
@@ -165,8 +160,7 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 						"Updating ontoGrapher data..." :
 						"Initializing ontoGrapher data (this will only be done once)...", false);
 					initRestrictions();
-					addRelationships();
-					initConnections();
+					await updateLinks();
 					await setupDiagrams(diagram);
 					await updateProjectSettings(contextIRI, contextEndpoint);
 					this.forceUpdate();
@@ -175,6 +169,8 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 					for (let elem of graph.getElements())
 						drawGraphElement(elem, ProjectSettings.selectedLanguage, Representation.FULL);
 					this.handleChangeLoadingStatus(false, "✔ Workspace ready.", false, false);
+				} else {
+					this.handleChangeLoadingStatus(false, Locale.pleaseReload, false)
 				}
             })
         });

@@ -31,12 +31,15 @@ export function initRestrictions() {
 	}
 }
 
-export function initConnections() {
+export function initConnections(): string[] {
+	let result: string[] = [];
 	for (let iri in VocabularyElements) {
 		for (let connection of VocabularyElements[iri].connections) {
-			connection.initConnection(iri);
+			let conn = connection.initConnection(iri);
+			if (conn) result.push(conn);
 		}
 	}
+	return result;
 }
 
 export function getRestrictionsAsJSON(iri: string) {

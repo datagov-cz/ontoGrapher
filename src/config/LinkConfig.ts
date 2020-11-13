@@ -1,5 +1,5 @@
 import * as joint from 'jointjs';
-import {ProjectElements, ProjectLinks, Schemes, VocabularyElements} from "./Variables";
+import {Links, ProjectElements, ProjectLinks, Schemes, VocabularyElements} from "./Variables";
 import {initLanguageObject, parsePrefix} from "../function/FunctionEditVars"
 import {generalizationLink} from "../graph/uml/GeneralizationLink";
 import {LinkType} from "./Enum";
@@ -26,6 +26,7 @@ export var LinkConfig: {
 				linkID in ProjectLinks &&
 				ProjectElements[ProjectLinks[linkID].target] &&
 				ProjectLinks[linkID].active &&
+				ProjectLinks[linkID].iri in Links &&
 				ProjectLinks[linkID].type === LinkType.DEFAULT).map((linkID) => ("<" + iri + "> rdfs:subClassOf [rdf:type owl:Restriction; " +
 				"owl:onProperty <" + ProjectLinks[linkID].iri + ">;" +
 				"owl:someValuesFrom <" + ProjectElements[ProjectLinks[linkID].target].iri + ">]." +
@@ -47,6 +48,7 @@ export var LinkConfig: {
 					linkID in ProjectLinks &&
 					ProjectElements[ProjectLinks[linkID].target] &&
 					ProjectLinks[linkID].active &&
+					ProjectLinks[linkID].iri in Links &&
 					ProjectLinks[linkID].type === LinkType.DEFAULT).forEach(linkID => {
 					let cardinalityMin = ProjectLinks[linkID].targetCardinality.getFirstCardinality();
 					let cardinalityMax = ProjectLinks[linkID].targetCardinality.getSecondCardinality();

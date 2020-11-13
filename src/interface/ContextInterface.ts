@@ -2,7 +2,6 @@ import {PackageRoot, ProjectSettings, Schemes, VocabularyElements} from "../conf
 import {graphElement} from '../graph/GraphElement';
 import {fetchConcepts, getScheme} from "./SPARQLInterface";
 import {PackageNode} from "../datatypes/PackageNode";
-import * as Locale from "../locale/LocaleMain.json";
 import {addClass} from "../function/FunctionCreateVars";
 
 export async function testContext(contextIRI: string, contextEndpoint: string) {
@@ -48,9 +47,7 @@ export async function testContext(contextIRI: string, contextEndpoint: string) {
 export async function getContext(
 	contextIRI: string,
 	contextEndpoint: string,
-	acceptType: string,
-	callback?: (message: string) => any) {
-	if (callback) callback(Locale.loadingTerms);
+	acceptType: string): Promise<boolean> {
 	//get vocabularies
 	let vocabularyQ = [
 		"PREFIX owl: <http://www.w3.org/2002/07/owl#> ",
@@ -84,9 +81,7 @@ export async function getContext(
 		.then((response) => response.json())
 		.then((data) => {
 			return data.results.bindings;
-		}).catch(() => {
-			if (callback) callback(Locale.loadingError)
-		});
+		}).catch(() => false);
 	let vocabularies: { [key: string]: { names: { [key: string]: string }, readOnly: boolean, terms: any, graph: string } } = {};
 	if (responseInit) for (const result of responseInit) {
 		if (!(result.vocabIRI.value in vocabularies)) {
@@ -103,8 +98,8 @@ export async function getContext(
 	}
 	//load terms
 	for (let vocab in vocabularies) {
-		await getScheme(vocab, contextEndpoint, vocabularies[vocab].readOnly, vocabularies[vocab].graph);
-		await fetchConcepts(contextEndpoint, vocab, vocabularies[vocab].terms, vocabularies[vocab].readOnly, Schemes[vocab].graph);
+		await getScheme(vocab, contextEndpoint, vocabularies[vocab].readOnly, vocabularies[vocab].graph).catch(() => false);
+		await fetchConcepts(contextEndpoint, vocab, vocabularies[vocab].terms, vocabularies[vocab].readOnly, Schemes[vocab].graph).catch(() => false);
 		//put into packages
 		Object.assign(VocabularyElements, vocabularies[vocab].terms);
 		let pkg = new PackageNode(Schemes[vocab].labels, PackageRoot, false, vocab);
@@ -115,4 +110,5 @@ export async function getContext(
 			}
 		}
 	}
+	return true;
 }
