@@ -293,18 +293,18 @@ export function setRepresentation(representation: number) {
     } else if (representation === Representation.FULL) {
         ProjectSettings.representation = Representation.FULL;
         ProjectSettings.selectedLink = "";
-        for (let elem of ProjectSettings.switchElements) {
-            if (ProjectElements[elem].position[ProjectSettings.selectedDiagram]) {
-                let find = graph.getElements().find(cell => cell.id === elem &&
-                    ProjectElements[elem].active && ProjectElements[elem].hidden[ProjectSettings.selectedDiagram]);
-                let cell = find || new graphElement({id: elem})
-                cell.addTo(graph);
-                cell.position(ProjectElements[elem].position[ProjectSettings.selectedDiagram].x, ProjectElements[elem].position[ProjectSettings.selectedDiagram].y)
-                ProjectElements[elem].hidden[ProjectSettings.selectedDiagram] = false;
-                drawGraphElement(cell, ProjectSettings.selectedLanguage, representation);
-                restoreHiddenElem(elem, cell, true);
-            }
-        }
+        // for (let elem of ProjectSettings.switchElements) {
+        //     if (ProjectElements[elem].position[ProjectSettings.selectedDiagram]) {
+        //         let find = graph.getElements().find(cell => cell.id === elem &&
+        //             ProjectElements[elem].active && ProjectElements[elem].hidden[ProjectSettings.selectedDiagram]);
+        //         let cell = find || new graphElement({id: elem})
+        //         cell.addTo(graph);
+        //         cell.position(ProjectElements[elem].position[ProjectSettings.selectedDiagram].x, ProjectElements[elem].position[ProjectSettings.selectedDiagram].y)
+        //         ProjectElements[elem].hidden[ProjectSettings.selectedDiagram] = false;
+        //         drawGraphElement(cell, ProjectSettings.selectedLanguage, representation);
+        //         restoreHiddenElem(elem, cell, true);
+        //     }
+        // }
         for (let elem of graph.getElements()) {
             drawGraphElement(elem, ProjectSettings.selectedLanguage, representation);
             if (typeof elem.id === "string") {
@@ -337,7 +337,7 @@ export function unHighlightCell(id: string, color: string = '#000000') {
         cell.attr({line: {stroke: color}});
     } else {
         if (cell.id) {
-            drawGraphElement(<joint.dia.Element>cell, ProjectSettings.selectedLanguage, ProjectSettings.representation)
+            drawGraphElement(cell as joint.dia.Element, ProjectSettings.selectedLanguage, ProjectSettings.representation)
         }
     }
 }
