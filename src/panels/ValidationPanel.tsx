@@ -7,6 +7,7 @@ import {validateWorkspace} from "../interface/ValidationInterface";
 import {ProjectElements, ProjectLinks, ProjectSettings, VocabularyElements} from "../config/Variables";
 import {graph} from "../graph/Graph";
 import IRIlabel from "../components/IRIlabel";
+import {highlightCell} from "../function/FunctionGraph";
 
 interface Props {
 	widthLeft: number;
@@ -71,17 +72,25 @@ export default class ValidationPanel extends React.Component<Props, State> {
 	focus(node: string) {
 		let cellElem = graph.getElements().find(element => ProjectElements[element.id].iri === node);
 		let cellLink = graph.getLinks().find(element => ProjectLinks[element.id].iri === node);
-		if (cellElem) cellElem.attr({body: {stroke: '#FFFF00'}});
-		if (cellLink) cellLink.attr({line: {stroke: '#FFFF00'}});
+		if (cellElem) if (typeof cellElem.id === "string") {
+			highlightCell(cellElem.id, '#FFFF00');
+		}
+		if (cellLink) if (typeof cellLink.id === "string") {
+			highlightCell(cellLink.id, '#FFFF00');
+		}
 	}
 
 	highlight() {
 		let iriList = this.state.results.map(result => result.focusNode);
 		graph.getCells().forEach(cell => {
 			if (cell.id in ProjectElements && iriList.includes(ProjectElements[cell.id].iri)) {
-				cell.attr({body: {stroke: '#FF0000'}});
+				if (typeof cell.id === "string") {
+					highlightCell(cell.id, '#FF0000');
+				}
 			} else if (cell.id in ProjectLinks && iriList.includes(ProjectLinks[cell.id].iri)) {
-				cell.attr({line: {stroke: '#FF0000'}});
+				if (typeof cell.id === "string") {
+					highlightCell(cell.id, '#FF0000');
+				}
 			}
 		})
 	}

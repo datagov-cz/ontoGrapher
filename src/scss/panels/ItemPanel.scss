@@ -12,9 +12,16 @@
     opacity: 0.5;
   }
 
+  .packageDivider {
+    border-bottom: solid 1px black;
+    user-select: none;
+    font-size: 14px;
+    margin: 1px 1px 1px 12px;
+  }
+
   .stereotypeElementItem {
     font-size: 14px;
-    margin: 1px;
+    margin: 1px 1px 1px 15px;
     padding: 2px 4px;
     border-radius: 1px;
     border-style: none;
@@ -76,7 +83,7 @@
     display: inline-block;
     font-size: 14px;
     user-select: none;
-    margin: 1px;
+    margin: 1px 1px 1px 1px;
     padding: 5px 10px;
     border-style: solid;
     border-width: 2px;
@@ -96,6 +103,9 @@
   }
 }
 
+.packageOptions {
+  display: inline-block;
+}
 
 .custom-handle {
   position: absolute;

@@ -83,6 +83,8 @@
   "close": "Close",
   "helpDescription": "For help using the component, consult the official wiki: ",
   "modalNewElemError": "You must enter a name in order to create a new concept.",
+  "sortByName": "Sort concepts by name",
+  "sortByStereotypes": "Sort concepts by stereotype",
   "selectPackage": "Concept will be created in:",
   "view": "View",
   "switchColors": "Vocabulary color scheme",

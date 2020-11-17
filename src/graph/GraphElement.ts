@@ -2,7 +2,28 @@ import * as joint from "jointjs";
 
 export var graphElement = joint.dia.Element.define('custom.graphElement', {
         attrs: {
-            body: {
+            bodyBox: {
+                strokeWidth: 2,
+                stroke: '#000000',
+                fill: '#FFF'
+            },
+            bodyEllipse: {
+                display: "none",
+                visibility: "hidden",
+                strokeWidth: 2,
+                stroke: '#000000',
+                fill: '#FFF'
+            },
+            bodyTrapezoid: {
+                display: "none",
+                visibility: "hidden",
+                strokeWidth: 2,
+                stroke: '#000000',
+                fill: '#FFF'
+            },
+            bodyDiamond: {
+                display: "none",
+                visibility: "hidden",
                 strokeWidth: 2,
                 stroke: '#000000',
                 fill: '#FFF'
@@ -19,30 +40,25 @@ export var graphElement = joint.dia.Element.define('custom.graphElement', {
                 fontSize: 14,
                 y: 25,
                 x: 2
-            },
-            schemeColor: {
-                ref: 'body',
-                strokeWidth: 0,
-                width: 3,
-                refX: 1,
-                refY: 1
-            },
-            labelScheme: {
-                textVerticalAnchor: 'top',
-                textAnchor: 'start',
-                x: 2,
-                fontSize: 14
             }
         }
     }, {
         markup: [
             {
                 tagName: 'rect',
-                selector: 'body',
+                selector: 'bodyBox',
             },
             {
-                tagName: 'rect',
-                selector: 'schemeColor'
+                tagName: 'ellipse',
+                selector: 'bodyEllipse',
+            },
+            {
+                tagName: 'polygon',
+                selector: 'bodyTrapezoid',
+            },
+            {
+                tagName: 'polygon',
+                selector: 'bodyDiamond',
             },
             {
                 tagName: 'text',
@@ -51,10 +67,6 @@ export var graphElement = joint.dia.Element.define('custom.graphElement', {
             {
                 tagName: 'text',
                 selector: 'labelAttrs'
-            },
-            {
-                tagName: 'text',
-                selector: 'labelScheme'
             }
         ]
     },

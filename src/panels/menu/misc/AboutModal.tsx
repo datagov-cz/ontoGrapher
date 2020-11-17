@@ -20,6 +20,15 @@ export default class AboutModal extends React.Component<Props, State> {
 			</Modal.Header>
 			<Modal.Body>
 				<Tabs id={"changelog"}><Tab title={"November"} eventKey={"November"}>
+					<h6>17.11.</h6>
+					<ul>
+						<li>Bug fixing and stability improvements</li>
+						<li>Added ability to select multiple concepts in the left screen and visualize them at once via
+							checkboxes on the concepts
+						</li>
+						<li>Concepts are now sorted by "type" stereotypes</li>
+						<li>Concepts with "type" stereotypes have differing shapes</li>
+					</ul>
 					<h6>9.11.</h6>
 					<ul>
 						<li>Bug fixing and stability improvements</li>

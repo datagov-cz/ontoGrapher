@@ -1,5 +1,8 @@
 {
   "untitledProject": "Untitled workspace",
+  "deselect": "Deselect ",
+  "items": " item(s)",
+  "unsorted": "Unsorted",
   "updating": "Saving...",
   "retry": "Retry?",
   "errorUpdating": "❌ Error: update unsuccessful.",

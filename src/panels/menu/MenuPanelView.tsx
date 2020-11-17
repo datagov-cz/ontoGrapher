@@ -25,6 +25,8 @@ export default class MenuPanelView extends React.Component<Props, State> {
 				<Dropdown.Divider/>
 				<MenuPanelSwitchColors update={() => this.props.update()}
 									   handleChangeLoadingStatus={this.props.handleChangeLoadingStatus}/>
+				{/*<Dropdown.Divider/>*/}
+				{/*<MenuPanelSwitchItemPanelTypes update={() => this.props.update()}/>*/}
 			</Dropdown.Menu>
 		</Dropdown>);
 	}

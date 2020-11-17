@@ -1,7 +1,7 @@
-import {Links, ProjectElements, ProjectLinks, ProjectSettings, Schemes, VocabularyElements} from "../config/Variables";
-import {getName, getStereotypeList, parsePrefix} from "./FunctionEditVars";
+import {Links, ProjectElements, ProjectLinks, ProjectSettings, VocabularyElements} from "../config/Variables";
+import {getName, getStereotypeList, parsePrefix, setElementShape} from "./FunctionEditVars";
 import {graph} from "../graph/Graph";
-import {getLinkOrVocabElem} from "./FunctionGetVars";
+import {getLinkOrVocabElem, isConnectionWithTrope} from "./FunctionGetVars";
 import * as joint from "jointjs";
 import * as LocaleMain from "../locale/LocaleMain.json";
 import {graphElement} from "../graph/GraphElement";
@@ -9,7 +9,7 @@ import {LinkConfig} from "../config/LinkConfig";
 import {addLink} from "./FunctionCreateVars";
 import {Cardinality} from "../datatypes/Cardinality";
 import {LinkType, Representation} from "../config/Enum";
-import {updateProjectLink} from "../interface/TransactionInterface";
+import {updateProjectElementDiagram, updateProjectLink} from "../interface/TransactionInterface";
 
 
 let mvp1IRI = "https://slovník.gov.cz/základní/pojem/má-vztažený-prvek-1";
@@ -44,15 +44,12 @@ export function drawGraphElement(elem: joint.dia.Element, languageCode: string, 
             Math.max((labels.reduce((a, b) => a.length > b.length ? a : b, "").length * 10) + 4,
                 text.length > 0 ? 8 * (text.reduce((a, b) => a.length > b.length ? a : b, "").length) : 0) :
             (labels.reduce((a, b) => a.length > b.length ? a : b, "").length * 10) + 4;
-        elem.prop('attrs/body/width', width);
         elem.prop('attrs/text/x', width / 2);
         let attrHeight = (24 + ((labels.length - 1) * 18));
-        let height = (text.length > 0 ? (4 + (text.length * 13)) : 0) +
+        let height = (text.length > 0 ? (4 + (text.length * 14)) : 0) +
             attrHeight;
         elem.prop('attrs/labelAttrs/y', attrHeight);
-        elem.prop('attrs/body/height', height);
-        elem.prop('attrs/body/fill',
-            Schemes[VocabularyElements[ProjectElements[elem.id].iri].inScheme].color);
+        setElementShape(elem, width, height);
         elem.resize(width, height);
     }
 }
@@ -86,6 +83,38 @@ export function nameGraphLink(cell: joint.dia.Link, languageCode: string) {
             })
         }
     }
+}
+
+export function spreadConnections(id: string, limitToTropes: boolean, representation: boolean = true) {
+    let elem = graph.getElements().find(elem => elem.id === id);
+    if (elem) {
+        let centerX = elem.position().x + (elem.size().width / 2);
+        let centerY = elem.position().y + (elem.size().height / 2);
+        let elems = Object.keys(ProjectLinks).filter(conn =>
+            (limitToTropes ? isConnectionWithTrope(conn, id) :
+                (ProjectElements[id].connections.includes(conn)
+                    && !(graph.getCell(conn)))) &&
+            ProjectLinks[conn].active &&
+            ProjectLinks[conn].source !== ProjectLinks[conn].target);
+        let radius = 200 + (elems.length * 50);
+        for (let i = 0; i < elems.length; i++) {
+            let elemID: string = ProjectLinks[elems[i]].target === id ? ProjectLinks[elems[i]].source : ProjectLinks[elems[i]].target;
+            let x = centerX + radius * Math.cos((i * 2 * Math.PI) / elems.length);
+            let y = centerY + radius * Math.sin((i * 2 * Math.PI) / elems.length);
+            let find = graph.getElements().find(elem => elem.id ===
+                (ProjectLinks[elems[i]].target === id ? ProjectLinks[elems[i]].source : ProjectLinks[elems[i]].target));
+            let elem = find ? find : new graphElement({id: elemID});
+            elem.addTo(graph);
+            elem.position(x, y);
+            ProjectElements[elemID].position[ProjectSettings.selectedDiagram] = {x: x, y: y};
+            ProjectElements[elemID].hidden[ProjectSettings.selectedDiagram] = false;
+            drawGraphElement(elem, ProjectSettings.selectedLanguage, ProjectSettings.representation);
+            restoreHiddenElem(id, elem, true);
+            updateProjectElementDiagram(ProjectSettings.contextEndpoint,
+                elemID, ProjectSettings.selectedDiagram);
+        }
+    }
+    if (representation) setRepresentation(ProjectSettings.representation);
 }
 
 export function getUnderlyingFullConnections(link: joint.dia.Link): { src: string, tgt: string } | undefined {
@@ -168,8 +197,14 @@ export function setRepresentation(representation: number) {
                             )
                             if (typeof find === "string") {
                                 let newLink = getNewLink(LinkType.DEFAULT, find);
-                                newLink.source({id: source});
-                                newLink.target({id: target});
+                                newLink.source({
+                                    id: source,
+                                    connectionPoint: {name: 'boundary', args: {selector: getElementShape(source)}}
+                                });
+                                newLink.target({
+                                    id: target,
+                                    connectionPoint: {name: 'boundary', args: {selector: getElementShape(target)}}
+                                });
                                 newLink.addTo(graph);
                                 if (ProjectLinks[newLink.id].vertices[ProjectSettings.selectedDiagram])
                                     newLink.vertices(ProjectLinks[newLink.id].vertices[ProjectSettings.selectedDiagram]);
@@ -193,8 +228,14 @@ export function setRepresentation(representation: number) {
                                 setLabels(newLink, VocabularyElements[ProjectElements[elem.id].iri].labels[ProjectSettings.selectedLanguage]);
                             } else {
                                 let newLink = getNewLink();
-                                newLink.source({id: source});
-                                newLink.target({id: target});
+                                newLink.source({
+                                    id: source,
+                                    connectionPoint: {name: 'boundary', args: {selector: getElementShape(source)}}
+                                });
+                                newLink.target({
+                                    id: target,
+                                    connectionPoint: {name: 'boundary', args: {selector: getElementShape(target)}}
+                                });
                                 if (typeof newLink.id === "string") {
                                     addLink(newLink.id, ProjectElements[elem.id].iri, source, target);
                                     newLink.addTo(graph);
@@ -267,7 +308,8 @@ export function setRepresentation(representation: number) {
         for (let elem of graph.getElements()) {
             drawGraphElement(elem, ProjectSettings.selectedLanguage, representation);
             if (typeof elem.id === "string") {
-                restoreHiddenElem(elem.id, elem, true);
+                spreadConnections(elem.id, true, false);
+                restoreHiddenElem(elem.id, elem, false);
             }
         }
         for (let link of graph.getLinks()) {
@@ -280,21 +322,23 @@ export function setRepresentation(representation: number) {
     }
 }
 
-export function highlightCell(id: string) {
+export function highlightCell(id: string, color: string = '#0000FF') {
     let cell = graph.getCell(id);
     if (cell.isLink()) {
-        cell.attr({line: {stroke: '#0000FF'}});
+        cell.attr({line: {stroke: color}});
     } else {
-        cell.attr({body: {stroke: '#0000FF'}});
+        if (cell.id) cell.attr({[getElementShape(cell.id)]: {stroke: color}});
     }
 }
 
-export function unHighlightCell(id: string) {
+export function unHighlightCell(id: string, color: string = '#000000') {
     let cell = graph.getCell(id);
     if (cell.isLink()) {
-        cell.attr({line: {stroke: '#000000'}});
+        cell.attr({line: {stroke: color}});
     } else {
-        cell.attr({body: {stroke: '#000000'}});
+        if (cell.id) {
+            drawGraphElement(<joint.dia.Element>cell, ProjectSettings.selectedLanguage, ProjectSettings.representation)
+        }
     }
 }
 
@@ -303,6 +347,21 @@ export function unHighlightAll() {
         if (typeof cell.id === "string") {
             unHighlightCell(cell.id);
         }
+    }
+}
+
+export function getElementShape(id: string | number): string {
+    let types = VocabularyElements[ProjectElements[id].iri].types;
+    if (types.includes(parsePrefix("z-sgov-pojem", "typ-objektu"))) {
+        return "bodyBox";
+    } else if (types.includes(parsePrefix("z-sgov-pojem", "typ-vztahu"))) {
+        return "bodyEllipse";
+    } else if (types.includes(parsePrefix("z-sgov-pojem", "typ-vlastnosti"))) {
+        return "bodyDiamond";
+    } else if (types.includes(parsePrefix("z-sgov-pojem", "typ-události"))) {
+        return "bodyTrapezoid";
+    } else {
+        return "bodyBox";
     }
 }
 
@@ -324,8 +383,14 @@ export function restoreHiddenElem(id: string, cls: joint.dia.Element, restoreCon
             )) {
             let lnk = getNewLink(ProjectLinks[link].type, link);
             setLabels(lnk, getLinkOrVocabElem(ProjectLinks[link].iri).labels[ProjectSettings.selectedLanguage])
-            lnk.source({id: ProjectLinks[link].source});
-            lnk.target({id: ProjectLinks[link].target});
+            lnk.source({
+                id: ProjectLinks[link].source,
+                connectionPoint: {name: 'boundary', args: {selector: getElementShape(ProjectLinks[link].source)}}
+            });
+            lnk.target({
+                id: ProjectLinks[link].target,
+                connectionPoint: {name: 'boundary', args: {selector: getElementShape(ProjectLinks[link].target)}}
+            });
             lnk.addTo(graph);
             if (ProjectLinks[link].source === ProjectLinks[link].target && (!(ProjectLinks[link].vertices[ProjectSettings.selectedDiagram]) ||
                 ProjectLinks[link].vertices[ProjectSettings.selectedDiagram] === [])) {
@@ -373,10 +438,28 @@ export function restoreHiddenElem(id: string, cls: joint.dia.Element, restoreCon
                     ProjectElements[relID].position[ProjectSettings.selectedDiagram] = relationship.position();
                     ProjectElements[relID].hidden[ProjectSettings.selectedDiagram] = false;
                     drawGraphElement(relationship, ProjectSettings.selectedLanguage, Representation.FULL);
-                    domainLink.source({id: relID});
-                    domainLink.target({id: ProjectLinks[link].target});
-                    rangeLink.source({id: relID});
-                    rangeLink.target({id: ProjectLinks[targetLink].target});
+                    domainLink.source({
+                        id: relID,
+                        connectionPoint: {name: 'boundary', args: {selector: getElementShape(relID)}}
+                    });
+                    domainLink.target({
+                        id: ProjectLinks[link].target,
+                        connectionPoint: {
+                            name: 'boundary',
+                            args: {selector: getElementShape(ProjectLinks[link].target)}
+                        }
+                    });
+                    rangeLink.source({
+                        id: relID,
+                        connectionPoint: {name: 'boundary', args: {selector: getElementShape(relID)}}
+                    });
+                    rangeLink.target({
+                        id: ProjectLinks[targetLink].target,
+                        connectionPoint: {
+                            name: 'boundary',
+                            args: {selector: getElementShape(ProjectLinks[targetLink].target)}
+                        }
+                    });
                     setLabels(domainLink, getLinkOrVocabElem(ProjectLinks[link].iri).labels[ProjectSettings.selectedLanguage]);
                     setLabels(rangeLink, getLinkOrVocabElem(ProjectLinks[targetLink].iri).labels[ProjectSettings.selectedLanguage]);
                     relationship.addTo(graph);

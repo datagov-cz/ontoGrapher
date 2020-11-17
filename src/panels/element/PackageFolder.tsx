@@ -5,16 +5,19 @@ import {getLabelOrBlank} from "../../function/FunctionGetVars";
 
 interface Props {
     node: PackageNode;
-    depth: number;
     update: Function;
     projectLanguage: string;
     openEditPackage: Function;
     openRemovePackage: Function;
     readOnly: boolean;
+    showCheckbox: boolean;
+    handleShowCheckbox: Function;
+    checkboxChecked: boolean;
 }
 
 interface State {
     open: boolean;
+    hover: boolean;
 }
 
 export default class PackageFolder extends React.Component<Props, State> {
@@ -22,6 +25,7 @@ export default class PackageFolder extends React.Component<Props, State> {
         super(props);
         this.state = {
             open: false,
+            hover: false
         }
     }
 
@@ -38,13 +42,19 @@ export default class PackageFolder extends React.Component<Props, State> {
     render() {
         return (
             <div
-                onDragOver={(event) => {
-                    event.preventDefault();
+                onMouseEnter={() => {
+                    this.setState({hover: true})
                 }}
-                onDrop={(event) => {
-                    event.stopPropagation();
-                    if (!this.props.readOnly) this.movePackageItem(JSON.parse(event.dataTransfer.getData("newClass")));
+                onMouseLeave={() => {
+                    this.setState({hover: false})
                 }}
+                // onDragOver={(event) => {
+                //     event.preventDefault();
+                // }}
+                // onDrop={(event) => {
+                //     event.stopPropagation();
+                //     if (!this.props.readOnly) this.movePackageItem(JSON.parse(event.dataTransfer.getData("newClass")));
+                // }}
                 onClick={() => {
                     this.setState({open: !this.state.open});
                     this.props.node.open = !this.props.node.open;
@@ -52,10 +62,14 @@ export default class PackageFolder extends React.Component<Props, State> {
                 }}
                 className={"packageFolder" + (this.state.open ? " open" : "")}
                 style={{
-                    marginLeft: (this.props.depth - 1) * 20 + "px",
                     backgroundColor: this.props.node.scheme ? Schemes[this.props.node.scheme].color : "#FFF"
                 }}>
                 {(this.props.readOnly ? "📑" : "✏") + getLabelOrBlank(this.props.node.labels, this.props.projectLanguage)}
+                {(this.state.hover || this.props.showCheckbox) && <span className="packageOptions right">
+                    <input type="checkbox" checked={this.props.checkboxChecked}
+                           onClick={(event) => event.stopPropagation()}
+                           onChange={() => this.props.handleShowCheckbox()}/>
+                </span>}
                 {this.state.open ?
                     this.props.children
                     : <span/>}

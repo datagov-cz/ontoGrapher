@@ -172,3 +172,54 @@ export async function deletePackageItem(id: string): Promise<boolean> {
     return true;
 }
 
+export function setElementShape(elem: joint.dia.Element, width: number, height: number) {
+    let types = VocabularyElements[ProjectElements[elem.id].iri].types;
+    elem.prop('attrs/bodyBox/width', width);
+    elem.prop('attrs/bodyBox/height', height);
+    elem.prop('attrs/bodyBox/visibility', 'hidden');
+    elem.prop('attrs/bodyBox/display', 'none');
+    elem.prop('attrs/bodyEllipse/display', 'none');
+    elem.prop('attrs/bodyTrapezoid/display', 'none');
+    elem.prop('attrs/bodyDiamond/display', 'none');
+    elem.prop('attrs/bodyBox/strokeDasharray', 'none');
+    elem.prop('attrs/label/color', 'black');
+    elem.prop('attrs/bodyBox/stroke', 'black');
+    if (types.includes(parsePrefix("z-sgov-pojem", "typ-objektu"))) {
+        elem.prop('attrs/bodyBox/display', 'block');
+        elem.prop('attrs/bodyBox/visibility', 'visible');
+        elem.prop('attrs/bodyBox/fill',
+            Schemes[VocabularyElements[ProjectElements[elem.id].iri].inScheme].color);
+    } else if (types.includes(parsePrefix("z-sgov-pojem", "typ-vztahu"))) {
+        elem.prop('attrs/bodyEllipse/display', 'block');
+        elem.prop('attrs/bodyEllipse/visibility', 'visible');
+        elem.prop('attrs/bodyEllipse/rx', width * (2 / 3));
+        elem.prop('attrs/bodyEllipse/ry', height * (2 / 3));
+        elem.prop('attrs/bodyEllipse/cx', width / 2);
+        elem.prop('attrs/bodyEllipse/cy', height / 2);
+        elem.prop('attrs/bodyEllipse/stroke', 'black');
+        elem.prop('attrs/bodyEllipse/fill',
+            Schemes[VocabularyElements[ProjectElements[elem.id].iri].inScheme].color);
+    } else if (types.includes(parsePrefix("z-sgov-pojem", "typ-vlastnosti"))) {
+        elem.prop('attrs/bodyDiamond/display', 'block');
+        elem.prop('attrs/bodyDiamond/visibility', 'visible');
+        elem.prop('attrs/bodyDiamond/points', `${width / 2},${-(height / 2)} ${width * (9 / 8)},${height / 2} ${width / 2},${height * (3 / 2)} ${-(width / 8)},${height / 2}`);
+        elem.prop('attrs/bodyDiamond/stroke', 'black');
+        elem.prop('attrs/bodyDiamond/fill',
+            Schemes[VocabularyElements[ProjectElements[elem.id].iri].inScheme].color);
+    } else if (types.includes(parsePrefix("z-sgov-pojem", "typ-události"))) {
+        elem.prop('attrs/bodyTrapezoid/display', 'block');
+        elem.prop('attrs/bodyTrapezoid/visibility', 'visible');
+        elem.prop('attrs/bodyTrapezoid/points', `0,0 ${width},0 ${width + 20},${height} -20,${height}`);
+        elem.prop('attrs/bodyTrapezoid/stroke', 'black');
+        elem.prop('attrs/bodyTrapezoid/fill',
+            Schemes[VocabularyElements[ProjectElements[elem.id].iri].inScheme].color);
+    } else {
+        elem.prop('attrs/bodyBox/display', 'block');
+        elem.prop('attrs/bodyBox/visibility', 'visible');
+        elem.prop('attrs/bodyBox/strokeDasharray', '10,10');
+        elem.prop('attrs/label/color', 'grey');
+        elem.prop('attrs/bodyBox/stroke', 'grey');
+        elem.prop('attrs/bodyBox/fill',
+            Schemes[VocabularyElements[ProjectElements[elem.id].iri].inScheme].color);
+    }
+}

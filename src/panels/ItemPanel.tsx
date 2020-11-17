@@ -19,6 +19,7 @@ import {updateProjectSettings} from "../interface/TransactionInterface";
 import {Form, InputGroup} from 'react-bootstrap';
 import {parsePrefix} from "../function/FunctionEditVars";
 import {Representation} from "../config/Enum";
+import PackageDivider from "./element/PackageDivider";
 
 interface Props {
 	projectLanguage: string;
@@ -39,9 +40,12 @@ interface State {
 	selectedID: string;
 	selectedDiagram: number;
 	selectedNode: PackageNode;
+	selectionMode: boolean;
+	selectedItems: string[];
 }
 
 export default class ItemPanel extends React.Component<Props, State> {
+	private readonly sortTypes: string[];
 
 	constructor(props: Props) {
 		super(props);
@@ -55,10 +59,18 @@ export default class ItemPanel extends React.Component<Props, State> {
 			modalRenameDiagram: false,
 			selectedID: "",
 			selectedDiagram: 0,
-			selectedNode: PackageRoot
+			selectedNode: PackageRoot,
+			selectionMode: false,
+			selectedItems: []
 		};
 		this.handleChangeSelect = this.handleChangeSelect.bind(this);
 		this.handleChangeSearch = this.handleChangeSearch.bind(this);
+		this.sortTypes = [
+			parsePrefix("z-sgov-pojem", "typ-objektu"),
+			parsePrefix("z-sgov-pojem", "typ-události"),
+			parsePrefix("z-sgov-pojem", "typ-vlastnosti"),
+			parsePrefix("z-sgov-pojem", "typ-vztahu"),
+		].sort();
 	}
 
 	update() {
@@ -77,89 +89,154 @@ export default class ItemPanel extends React.Component<Props, State> {
     }
 
     handleChangeSearch(event: React.ChangeEvent<HTMLSelectElement>) {
+		PackageRoot.children.forEach(pkg => pkg.open = !(event.currentTarget.value === ""));
 		this.setState({search: event.currentTarget.value});
 		this.forceUpdate();
 	}
 
-    getNameStereotype(element: string) {
-        return Stereotypes[element].labels[this.props.projectLanguage];
-    }
-
-    getNameLink(element: string) {
-        return Links[element].labels[this.props.projectLanguage];
-    }
-
-    getFoldersDFS(arr: JSX.Element[], node: PackageNode, depth: number) {
-        if (node !== PackageRoot) {
-            arr.push(<PackageFolder
-				key={node.scheme}
-				projectLanguage={this.props.projectLanguage}
-				node={node}
-				depth={depth}
-				update={() => {
-					this.forceUpdate();
-				}}
-				openEditPackage={() => {
-					this.setState({
-						selectedNode: node,
-						modalEditPackage: true
-					})
-				}}
-				openRemovePackage={() => {
-					this.setState({
-						selectedNode: node,
-						modalRemovePackage: true
-					})
-				}}
-				readOnly={node.scheme ? Schemes[node.scheme].readOnly : false}
-			>
-				{node.elements.sort((a, b) => VocabularyElements[ProjectElements[a].iri].labels[this.props.projectLanguage].localeCompare(
-					VocabularyElements[ProjectElements[b].iri].labels[this.props.projectLanguage])).map((id) => {
-					let name = VocabularyElements[ProjectElements[id].iri] ? getLabelOrBlank(VocabularyElements[ProjectElements[id].iri].labels, this.props.projectLanguage) : "<blank>";
-					if (
-						name.toLowerCase().startsWith(this.state.search.toLowerCase()) &&
-						(ProjectSettings.representation === Representation.FULL ||
-							(ProjectSettings.representation === Representation.COMPACT &&
-								(!
-										(VocabularyElements[ProjectElements[id].iri].types.includes(parsePrefix("z-sgov-pojem", "typ-vztahu"))
-											|| VocabularyElements[ProjectElements[id].iri].types.includes(parsePrefix("z-sgov-pojem", "typ-vlastnosti")))
-								)
-							)
-						)
-					) {
-						return (
-							<PackageItem
-								key={id}
-								label={name}
-								depth={depth}
-								id={id}
-								update={() => {
-									this.forceUpdate();
-								}}
-								openRemoveItem={() => {
-									this.setState({
-										selectedID: id,
-										modalRemoveItem: true
-									})
-								}}
-							/>
-						)
-					} else return "";
-
-                    }
-                )}
-            </PackageFolder>);
-        }
-        if (node.open) {
-            for (let subnode of node.children) {
-                this.getFoldersDFS(arr, subnode, depth + 1);
-			}
-		}
+	getNameStereotype(element: string) {
+		return Stereotypes[element].labels[this.props.projectLanguage];
 	}
 
-	getFolders() {
+	getNameLink(element: string) {
+		return Links[element].labels[this.props.projectLanguage];
+	}
+
+	sort(a: string, b: string): number {
+		let aLabel = VocabularyElements[ProjectElements[a].iri].labels[this.props.projectLanguage];
+		let bLabel = VocabularyElements[ProjectElements[b].iri].labels[this.props.projectLanguage];
+		return aLabel.localeCompare(bLabel);
+	}
+
+	categorizeTypes(elements: string[]): { [key: string]: string[] } {
+		let result: { [key: string]: string[] } = {'unsorted': []};
+		this.sortTypes.forEach(type => result[type] = []);
+		for (let elem of elements) {
+			let types = VocabularyElements[ProjectElements[elem].iri].types;
+			if (types.includes(parsePrefix("z-sgov-pojem", "typ-objektu"))) {
+				result[parsePrefix("z-sgov-pojem", "typ-objektu")].push(elem);
+			} else if (types.includes(parsePrefix("z-sgov-pojem", "typ-události"))) {
+				result[parsePrefix("z-sgov-pojem", "typ-události")].push(elem);
+			} else if (types.includes(parsePrefix("z-sgov-pojem", "typ-vlastnosti"))) {
+				result[parsePrefix("z-sgov-pojem", "typ-vlastnosti")].push(elem);
+			} else if (types.includes(parsePrefix("z-sgov-pojem", "typ-vztahu"))) {
+				result[parsePrefix("z-sgov-pojem", "typ-vztahu")].push(elem);
+			} else {
+				result['unsorted'].push(elem);
+			}
+		}
+		return result;
+	}
+
+	getFolders(): JSX.Element[] {
 		let result: JSX.Element[] = [];
-		this.getFoldersDFS(result, PackageRoot, 0);
+		for (let node of PackageRoot.children) {
+			let elements = node.elements.sort((a, b) => this.sort(a, b)).filter(id => {
+				let name = VocabularyElements[ProjectElements[id].iri] ? getLabelOrBlank(VocabularyElements[ProjectElements[id].iri].labels, this.props.projectLanguage) : "<blank>";
+				return (
+					name.toLowerCase().startsWith(this.state.search.toLowerCase()) &&
+					(ProjectSettings.representation === Representation.FULL ||
+						(ProjectSettings.representation === Representation.COMPACT &&
+							(!(VocabularyElements[ProjectElements[id].iri].types.includes(parsePrefix("z-sgov-pojem", "typ-vztahu"))
+									|| VocabularyElements[ProjectElements[id].iri].types.includes(parsePrefix("z-sgov-pojem", "typ-vlastnosti")))
+							))))
+			});
+			let packageItems: JSX.Element[] = [];
+			let categories = this.categorizeTypes(elements);
+			for (let key in categories) {
+				if (categories[key].length === 0) continue;
+				if (ProjectSettings.viewItemPanelTypes) {
+					let slice = elements.filter(elem => categories[key].includes(elem))
+					packageItems.push(<PackageDivider
+						key={this.sortTypes.includes(key) ? key : ""}
+						iri={this.sortTypes.includes(key) ? key : ""}
+						projectLanguage={this.props.projectLanguage}
+						checkboxChecked={slice.every(elem => this.state.selectedItems.includes(elem))}
+						handleShowCheckbox={() => {
+							let items = this.state.selectedItems;
+							if (slice.every(elem => this.state.selectedItems.includes(elem))) {
+								slice.forEach(elem =>
+									items.splice(this.state.selectedItems.indexOf(elem), 1))
+							} else {
+								slice.forEach(elem => items.push(elem))
+							}
+							this.setState({selectedItems: items, selectionMode: items.length > 0});
+						}}
+						showCheckbox={this.state.selectionMode}
+					/>);
+				}
+				for (let id of categories[key]) {
+					let name = VocabularyElements[ProjectElements[id].iri] ? getLabelOrBlank(VocabularyElements[ProjectElements[id].iri].labels, this.props.projectLanguage) : "<blank>";
+					packageItems.push(<PackageItem
+						key={id}
+						label={name}
+						id={id}
+						update={() => {
+							this.forceUpdate();
+						}}
+						openRemoveItem={() => {
+							this.setState({
+								selectedID: id,
+								modalRemoveItem: true
+							})
+						}}
+						checkboxChecked={this.state.selectedItems.includes(id)}
+						handleShowCheckbox={() => {
+							let items = this.state.selectedItems
+							if (items.includes(id)) {
+								items.splice(items.indexOf(id), 1)
+							} else {
+								items.push(id);
+							}
+							this.setState({selectedItems: items, selectionMode: (items.length > 0)})
+						}}
+						showCheckbox={this.state.selectionMode}
+						selectedItems={this.state.selectedItems}
+						clearSelection={() => {
+							this.setState({selectedItems: [], selectionMode: false})
+						}}
+					/>)
+				}
+			}
+			result.push(
+				<PackageFolder
+					key={node.scheme}
+					projectLanguage={this.props.projectLanguage}
+					node={node}
+					update={() => {
+						this.forceUpdate();
+					}}
+					openEditPackage={() => {
+						this.setState({
+							selectedNode: node,
+							modalEditPackage: true
+						})
+					}}
+					openRemovePackage={() => {
+						this.setState({
+							selectedNode: node,
+							modalRemovePackage: true
+						})
+					}}
+					readOnly={node.scheme ? Schemes[node.scheme].readOnly : false}
+					checkboxChecked={node.elements.every(elem => this.state.selectedItems.includes(elem))}
+					handleShowCheckbox={() => {
+						let items = this.state.selectedItems;
+						if (node.elements.every(elem => this.state.selectedItems.includes(elem))) {
+							node.elements.forEach(elem =>
+								items.splice(this.state.selectedItems.indexOf(elem), 1)
+							)
+							this.setState({selectedItems: items});
+						} else {
+							node.elements.forEach(elem =>
+								items.push(elem)
+							)
+						}
+						this.setState({selectedItems: items, selectionMode: items.length > 0});
+					}}
+					showCheckbox={this.state.selectionMode}
+				>{packageItems}</PackageFolder>);
+		}
 		return result;
 	}
 
@@ -195,7 +272,10 @@ export default class ItemPanel extends React.Component<Props, State> {
 						onChange={this.handleChangeSearch}
 					/>
 				</InputGroup>
-
+				{/*{this.state.selectionMode &&*/}
+				{/*<Button size={"sm"} variant={"secondary"} className={"wide"} onClick={()=>{*/}
+				{/*	this.setState({selectionMode: false, selectedItems: []})*/}
+				{/*}}>{LocaleMain.deselect + this.state.selectedItems.length + LocaleMain.items}</Button>}*/}
 				<div className={"elementLinkList" + (this.props.error ? " disabled" : "")}>
 					{this.getFolders()}
 				</div>
@@ -212,7 +292,6 @@ export default class ItemPanel extends React.Component<Props, State> {
 					}}
 					handleChangeLoadingStatus={this.props.handleChangeLoadingStatus}
 				/>
-
 
 			</ResizableBox>
         );

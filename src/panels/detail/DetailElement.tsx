@@ -20,11 +20,10 @@ import {getName} from "../../function/FunctionEditVars";
 import LabelTable from "./components/LabelTable";
 import DescriptionTabs from "./components/DescriptionTabs";
 import IRIlabel from "../../components/IRIlabel";
-import {drawGraphElement, restoreHiddenElem, setRepresentation, unHighlightAll} from "../../function/FunctionGraph";
+import {drawGraphElement, spreadConnections, unHighlightAll} from "../../function/FunctionGraph";
 import {graph} from "../../graph/Graph";
 import {updateProjectElement, updateProjectLink} from "../../interface/TransactionInterface";
 import * as _ from "lodash";
-import {graphElement} from "../../graph/GraphElement";
 
 interface Props {
 	projectLanguage: string;
@@ -66,7 +65,6 @@ export default class DetailElement extends React.Component<Props, State> {
 			readOnly: true,
 			changes: false
 		}
-		this.spreadConnections = this.spreadConnections.bind(this);
 		this.checkSpreadConnections = this.checkSpreadConnections.bind(this);
 	}
 
@@ -133,38 +131,6 @@ export default class DetailElement extends React.Component<Props, State> {
 		if ((prevState !== this.state && this.state.changes)) {
 			this.save();
 		}
-	}
-
-	spreadConnections() {
-		this.props.handleChangeLoadingStatus(true, LocaleMain.updating, false);
-		let elem = graph.getElements().find(elem => elem.id === this.state.id);
-		if (elem) {
-			let centerX = elem.position().x + (elem.size().width / 2);
-			let centerY = elem.position().y + (elem.size().height / 2);
-			let elems = this.state.inputConnections.filter(conn =>
-				ProjectLinks[conn].active && !(graph.getCell(conn)));
-			let radius = 100 + (elems.length * 50);
-			for (let i = 0; i < elems.length; i++) {
-				let id = ProjectLinks[elems[i]].target;
-				if (graph.getCell(id)) continue;
-				let x = centerX + radius * Math.cos((i * 2 * Math.PI) / elems.length);
-				let y = centerY + radius * Math.sin((i * 2 * Math.PI) / elems.length);
-				let elem = new graphElement({id: id});
-				elem.addTo(graph);
-				elem.position(x, y);
-				ProjectElements[id].position[ProjectSettings.selectedDiagram] = {x: x, y: y};
-				ProjectElements[id].hidden[ProjectSettings.selectedDiagram] = false;
-				drawGraphElement(elem, this.props.projectLanguage, ProjectSettings.representation);
-				restoreHiddenElem(id, elem, true);
-				updateProjectElement(ProjectSettings.contextEndpoint,
-					VocabularyElements[ProjectElements[id].iri].types,
-					VocabularyElements[ProjectElements[id].iri].labels,
-					VocabularyElements[ProjectElements[id].iri].definitions,
-					id);
-			}
-		}
-		setRepresentation(ProjectSettings.representation);
-		this.props.handleChangeLoadingStatus(false, "", false);
 	}
 
 	render() {
@@ -302,7 +268,8 @@ export default class DetailElement extends React.Component<Props, State> {
 									)}
 								</TableList>
 								{this.checkSpreadConnections() &&
-                                <Button className={"buttonlink center"} onClick={this.spreadConnections}>
+                                <Button className={"buttonlink center"}
+                                        onClick={() => spreadConnections(this.state.id, false)}>
 									{LocaleMain.spreadConnections}
                                 </Button>}
 							</Card.Body>

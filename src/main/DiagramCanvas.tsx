@@ -14,6 +14,7 @@ import {addClass, addLink, addVocabularyElement, createNewElemIRI} from "../func
 import {graph} from "../graph/Graph";
 import {
     drawGraphElement,
+    getElementShape,
     getNewLink,
     getUnderlyingFullConnections,
     highlightCell,
@@ -120,7 +121,9 @@ export default class DiagramCanvas extends React.Component<Props, State> {
         this.newLink = true;
         this.sid = id;
         graph.getElements().forEach(element => {
-            this.paper?.findViewByModel(element).highlight()
+            if (typeof element.id === "string") {
+                highlightCell(element.id, '#ff7800');
+            }
         });
     }
 
@@ -128,8 +131,8 @@ export default class DiagramCanvas extends React.Component<Props, State> {
         this.props.handleChangeLoadingStatus(true, LocaleMain.updating, false);
         let type = iri in Links ? Links[iri].type : LinkType.DEFAULT;
         let link = getNewLink(type);
-        link.source({id: sid});
-        link.target({id: tid});
+        link.source({id: sid, connectionPoint: {name: 'boundary', args: {selector: getElementShape(sid)}}});
+        link.target({id: tid, connectionPoint: {name: 'boundary', args: {selector: getElementShape(tid)}}});
         link.addTo(graph);
         if (link) {
             let s = link.getSourceElement();
@@ -137,8 +140,12 @@ export default class DiagramCanvas extends React.Component<Props, State> {
             if (s && t) {
                 let sid = s.id;
                 let tid = t.id;
-                link.source({id: sid});
-                link.target({id: tid});
+                if (typeof sid === "string") {
+                    link.source({id: sid, connectionPoint: {name: 'boundary', args: {selector: getElementShape(sid)}}});
+                }
+                if (typeof tid === "string") {
+                    link.target({id: tid, connectionPoint: {name: 'boundary', args: {selector: getElementShape(tid)}}});
+                }
                 if (sid === tid) {
                     let coords = link.getSourcePoint();
                     let bbox = this.paper?.findViewByModel(sid).getBBox();
@@ -190,9 +197,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
         this.sid = undefined;
         this.tid = undefined;
         this.newLink = false;
-        graph.getElements().forEach(element => {
-            this.paper?.findViewByModel(element).unhighlight();
-        });
+        unHighlightAll();
     }
 
     resizeElem(id: string) {
@@ -216,9 +221,9 @@ export default class DiagramCanvas extends React.Component<Props, State> {
             }
             for (let link of links) {
                 if (link.getSourceCell() === null) {
-                    link.source({id: id});
+                    link.source({id: id, connectionPoint: {name: 'boundary', args: {selector: getElementShape(id)}}});
                 } else {
-                    link.target({id: id});
+                    link.target({id: id, connectionPoint: {name: 'boundary', args: {selector: getElementShape(id)}}});
                 }
             }
         }
@@ -345,6 +350,21 @@ export default class DiagramCanvas extends React.Component<Props, State> {
         linkView.addTools(toolsView);
     }
 
+    getElementToolPosition(id: string | number, topRight: boolean = false): { x: number | string, y: number | string } {
+        switch (getElementShape(id)) {
+            case "bodyEllipse":
+                return topRight ? {x: '85%', y: '15%'} : {x: '15%', y: '15%'};
+            case "bodyTrapezoid":
+                return topRight ? {x: '100%', y: 0} : {x: 20, y: 0};
+            case "bodyDiamond":
+                return topRight ? {x: '75%', y: '25%'} : {x: '25%', y: '25%'};
+            case "bodyBox":
+                return topRight ? {x: '100%', y: 0} : {x: 0, y: 0};
+            default:
+                return topRight ? {x: '100%', y: 0} : {x: 0, y: 0};
+        }
+    }
+
     componentDidMount(): void {
         const node = (this.canvasRef.current! as HTMLElement);
 
@@ -362,7 +382,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
             async: false,
             sorting: joint.dia.Paper.sorting.APPROX,
             connectionStrategy: joint.connectionStrategies.pinAbsolute,
-            defaultConnectionPoint: {name: 'boundary', args: {selector: 'border'}},
+            defaultConnectionPoint: {name: 'boundary', args: {sticky: true, selector: 'bodyBox'}},
             defaultLink: function () {
                 return getNewLink();
             }
@@ -404,16 +424,15 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                 let id = elementView.model.id;
                 let tool = new HideButton({
                     useModelGeometry: false,
-                    x: '100%',
-                    y: '0%',
+                    ...this.getElementToolPosition(id, true),
+                    offset: {x: getElementShape(id) === "bodyTrapezoid" ? -20 : 0, y: 0},
                     action: () => this.updateElement(elementView.model)
                 })
                 elementView.addTools(new joint.dia.ToolsView({
                     tools: [
                         !(Schemes[VocabularyElements[ProjectElements[id].iri].inScheme].readOnly) && new ElemCreateLink({
                             useModelGeometry: false,
-                            y: '0%',
-                            x: '0%',
+                            ...this.getElementToolPosition(id),
                             action: (evt: { currentTarget: { getAttribute: (arg0: string) => any; }; }) => {
                                 if (graph.getElements().length > 1) this.createNewLink(evt.currentTarget.getAttribute("model-id"));
                             }
@@ -432,9 +451,6 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                 this.props.hideDetails();
                 unHighlightAll();
                 this.drag = {x: x, y: y};
-                graph.getElements().forEach(element => {
-                    this.paper?.findViewByModel(element).unhighlight()
-                });
             },
             'blank:pointermove': function (evt, x, y) {
                 const data = evt.data;
@@ -504,33 +520,45 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                     // create - get name - insert - (existing: restore)
                     this.props.handleChangeLoadingStatus(true, LocaleMain.updating, false);
                     const data = JSON.parse(event.dataTransfer.getData("newClass"));
-                    let cls = new graphElement({id: data.id});
-                    drawGraphElement(cls, ProjectSettings.selectedLanguage, ProjectSettings.representation);
-                    let point = this.paper?.clientToLocalPoint({x: event.clientX, y: event.clientY});
-                    if (point) {
-                        cls.set('position', {x: point.x, y: point.y});
-                        ProjectElements[cls.id].position[ProjectSettings.selectedDiagram] = {x: point.x, y: point.y};
-                    }
-                    cls.addTo(graph);
-                    let bbox = this.paper?.findViewByModel(cls).getBBox();
-                    if (bbox) cls.resize(bbox.width, bbox.height);
-                    ProjectElements[cls.id].hidden[ProjectSettings.selectedDiagram] = false;
-                    this.props.updateElementPanel();
-                    restoreHiddenElem(data.id, cls, true);
-                    if (typeof cls.id === "string") {
+                    let matrixDimension = Math.ceil(Math.sqrt(data.id.length));
+                    data.id.forEach((id: string, i: number) => {
+                        let cls = new graphElement({id: id});
+                        drawGraphElement(cls, ProjectSettings.selectedLanguage, ProjectSettings.representation);
+                        let point = this.paper?.clientToLocalPoint({x: event.clientX, y: event.clientY});
+                        if (point) {
+                            if (data.id.length > 1) {
+                                let x = i % matrixDimension;
+                                let y = Math.floor(i / matrixDimension);
+                                cls.set('position', {x: (point.x + (x * 200)), y: (point.y + (y * 200))});
+                                ProjectElements[id].position[ProjectSettings.selectedDiagram] = {
+                                    x: (point.x + (x * 200)),
+                                    y: (point.y + (y * 200))
+                                };
+                            } else {
+                                cls.set('position', {x: point.x, y: point.y});
+                                ProjectElements[id].position[ProjectSettings.selectedDiagram] = {
+                                    x: point.x,
+                                    y: point.y
+                                };
+                            }
+                        }
+                        cls.addTo(graph);
+                        ProjectElements[id].hidden[ProjectSettings.selectedDiagram] = false;
+                        this.props.updateElementPanel();
+                        restoreHiddenElem(id, cls, true);
                         updateProjectElement(
                             ProjectSettings.contextEndpoint,
-                            VocabularyElements[ProjectElements[cls.id].iri].types,
-                            VocabularyElements[ProjectElements[cls.id].iri].labels,
-                            VocabularyElements[ProjectElements[cls.id].iri].definitions,
-                            cls.id).then(result => {
+                            VocabularyElements[ProjectElements[id].iri].types,
+                            VocabularyElements[ProjectElements[id].iri].labels,
+                            VocabularyElements[ProjectElements[id].iri].definitions,
+                            id).then(result => {
                             if (result) {
                                 this.props.handleChangeLoadingStatus(false, "", false);
                             } else {
                                 this.props.handleChangeLoadingStatus(false, LocaleMain.errorUpdating, true);
                             }
                         });
-                    }
+                    })
                     if (ProjectSettings.representation === Representation.COMPACT) setRepresentation(ProjectSettings.representation);
                 }}
             />
@@ -544,9 +572,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                     if (selectedLink && this.sid && this.tid) this.saveNewLink(selectedLink, this.sid, this.tid);
                     else {
                         this.newLink = false;
-                        graph.getElements().forEach(element => {
-                            this.paper?.findViewByModel(element).unhighlight()
-                        });
+                        unHighlightAll();
                     }
                 }}/>
             <NewElemDiagram

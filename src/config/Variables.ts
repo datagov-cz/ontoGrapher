@@ -134,6 +134,7 @@ export var ProjectSettings: {
     viewStereotypes: boolean,
     viewZoom: number,
     viewColorPool: string,
+    viewItemPanelTypes: boolean,
 } = {
     name: {},
     description: {},
@@ -153,6 +154,7 @@ export var ProjectSettings: {
     viewStereotypes: true,
     viewZoom: 1,
     viewColorPool: "pastelLow",
+    viewItemPanelTypes: true
 };
 
 export var CardinalityPool: Cardinality[] = [

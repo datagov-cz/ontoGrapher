@@ -1,5 +1,14 @@
-import {Languages, Links, ProjectElements, Schemes, Stereotypes, VocabularyElements} from "../config/Variables";
-import {initLanguageObject} from "./FunctionEditVars";
+import {
+    Languages,
+    Links,
+    ProjectElements,
+    ProjectLinks,
+    ProjectSettings,
+    Schemes,
+    Stereotypes,
+    VocabularyElements
+} from "../config/Variables";
+import {initLanguageObject, parsePrefix} from "./FunctionEditVars";
 import {ColorPool} from "../config/ColorPool";
 
 export function getVocabElementByElementID(id: string): { [key: string]: any } {
@@ -47,4 +56,15 @@ export function setSchemeColors(pool: string) {
     Object.keys(Schemes).forEach((scheme, i) => {
         Schemes[scheme].color = ColorPool[pool].colors[i];
     })
+}
+
+export function isConnectionWithTrope(link: string, id: string): boolean {
+    if (ProjectLinks[link].iri === parsePrefix("z-sgov-pojem", "má-vlastnost") && ProjectLinks[link].source === id &&
+        ProjectLinks[link].active && !ProjectElements[ProjectLinks[link].target].hidden[ProjectSettings.selectedDiagram]) {
+        return true;
+    } else if (ProjectLinks[link].iri === parsePrefix("z-sgov-pojem", "je-vlastností") && ProjectLinks[link].target === id &&
+        ProjectLinks[link].active && !ProjectElements[ProjectLinks[link].source].hidden[ProjectSettings.selectedDiagram]) {
+        return true;
+    }
+    return false;
 }
