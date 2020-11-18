@@ -52,6 +52,12 @@ export default class PackageItem extends React.Component<Props, State> {
 				 onDragEnd={() => {
 					 this.props.clearSelection()
 				 }}
+				 onClick={(event) => {
+					 event.stopPropagation();
+					 if (event.shiftKey) {
+						 this.props.handleShowCheckbox();
+					 }
+				 }}
 				 onMouseOver={() => {
 					 this.setState({hover: true})
 				 }}
