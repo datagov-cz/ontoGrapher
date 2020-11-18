@@ -76,13 +76,14 @@ export default class PackageItem extends React.Component<Props, State> {
 														 this.props.openRemoveItem();
 													 }}><span role="img"
                                                               aria-label={""}>❌</span></button>}
-                    <input type="checkbox" checked={this.props.checkboxChecked}
-                           onClick={(event) => {
-							   event.stopPropagation();
-							   this.props.handleShowCheckbox()
-						   }}
-
-                    />
+                    &nbsp;<input type="checkbox" checked={this.props.checkboxChecked}
+                                 onClick={(event) => {
+									 event.stopPropagation();
+									 this.props.handleShowCheckbox()
+								 }}
+                                 onChange={() => {
+								 }}
+                />
                     </span>
 				}
 			</div>

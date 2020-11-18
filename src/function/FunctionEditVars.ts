@@ -189,7 +189,7 @@ export function setElementShape(elem: joint.dia.Element, width: number, height: 
         elem.prop('attrs/bodyBox/visibility', 'visible');
         elem.prop('attrs/bodyBox/fill',
             Schemes[VocabularyElements[ProjectElements[elem.id].iri].inScheme].color);
-    } else if (types.includes(parsePrefix("z-sgov-pojem", "typ-vztahu"))) {
+    } else if (types.includes(parsePrefix("z-sgov-pojem", "typ-vlastnosti"))) {
         elem.prop('attrs/bodyEllipse/display', 'block');
         elem.prop('attrs/bodyEllipse/visibility', 'visible');
         elem.prop('attrs/bodyEllipse/rx', width * (2 / 3));
@@ -199,7 +199,7 @@ export function setElementShape(elem: joint.dia.Element, width: number, height: 
         elem.prop('attrs/bodyEllipse/stroke', 'black');
         elem.prop('attrs/bodyEllipse/fill',
             Schemes[VocabularyElements[ProjectElements[elem.id].iri].inScheme].color);
-    } else if (types.includes(parsePrefix("z-sgov-pojem", "typ-vlastnosti"))) {
+    } else if (types.includes(parsePrefix("z-sgov-pojem", "typ-vztahu"))) {
         elem.prop('attrs/bodyDiamond/display', 'block');
         elem.prop('attrs/bodyDiamond/visibility', 'visible');
         elem.prop('attrs/bodyDiamond/points', `${width / 2},${-(height / 2)} ${width * (9 / 8)},${height / 2} ${width / 2},${height * (3 / 2)} ${-(width / 8)},${height / 2}`);

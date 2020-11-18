@@ -17,6 +17,10 @@
     user-select: none;
     font-size: 14px;
     margin: 1px 1px 1px 12px;
+
+    &:hover {
+      background-color: #e9eaeb;
+    }
   }
 
   .stereotypeElementItem {
@@ -92,6 +96,9 @@
     border-left-width: 4px;
     transition: background-color ease-out 0.5s;
 
+    &:hover {
+      background-color: #e9eaeb;
+    }
   }
 
   .open {

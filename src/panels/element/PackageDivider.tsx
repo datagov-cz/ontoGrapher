@@ -30,6 +30,12 @@ export default class PackageDivider extends React.Component<Props, State> {
 					 onMouseLeave={() => {
 						 this.setState({hover: false})
 					 }}
+					 onClick={(event) => {
+						 event.stopPropagation();
+						 if (event.shiftKey) {
+							 this.props.handleShowCheckbox();
+						 }
+					 }}
 		>
 			{this.props.iri in Stereotypes ? Stereotypes[this.props.iri].labels[this.props.projectLanguage] : LocaleMain.unsorted}
 			{(this.props.showCheckbox || this.state.hover) && <span className={"packageOptions right"}>
@@ -37,6 +43,8 @@ export default class PackageDivider extends React.Component<Props, State> {
                        onClick={(event) => {
 						   event.stopPropagation();
 						   this.props.handleShowCheckbox();
+					   }}
+                       onChange={() => {
 					   }}/>
 			</span>}
 		</div>);

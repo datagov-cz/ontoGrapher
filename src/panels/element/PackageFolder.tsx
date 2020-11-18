@@ -48,17 +48,15 @@ export default class PackageFolder extends React.Component<Props, State> {
                 onMouseLeave={() => {
                     this.setState({hover: false})
                 }}
-                // onDragOver={(event) => {
-                //     event.preventDefault();
-                // }}
-                // onDrop={(event) => {
-                //     event.stopPropagation();
-                //     if (!this.props.readOnly) this.movePackageItem(JSON.parse(event.dataTransfer.getData("newClass")));
-                // }}
-                onClick={() => {
-                    this.setState({open: !this.state.open});
-                    this.props.node.open = !this.props.node.open;
-                    this.props.update();
+                onClick={(event) => {
+                    if (event.shiftKey) {
+                        event.stopPropagation();
+                        this.props.handleShowCheckbox();
+                    } else {
+                        this.setState({open: !this.state.open});
+                        this.props.node.open = !this.props.node.open;
+                        this.props.update();
+                    }
                 }}
                 className={"packageFolder" + (this.state.open ? " open" : "")}
                 style={{
@@ -68,7 +66,8 @@ export default class PackageFolder extends React.Component<Props, State> {
                 {(this.state.hover || this.props.showCheckbox) && <span className="packageOptions right">
                     <input type="checkbox" checked={this.props.checkboxChecked}
                            onClick={(event) => event.stopPropagation()}
-                           onChange={() => this.props.handleShowCheckbox()}/>
+                           onChange={() => {
+                           }}/>
                 </span>}
                 {this.state.open ?
                     this.props.children

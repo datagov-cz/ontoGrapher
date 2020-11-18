@@ -9,7 +9,11 @@ import {LinkConfig} from "../config/LinkConfig";
 import {addLink} from "./FunctionCreateVars";
 import {Cardinality} from "../datatypes/Cardinality";
 import {LinkType, Representation} from "../config/Enum";
-import {updateProjectElementDiagram, updateProjectLink} from "../interface/TransactionInterface";
+import {
+    updateDeleteProjectLinkVertex,
+    updateProjectElementDiagram,
+    updateProjectLink
+} from "../interface/TransactionInterface";
 
 
 let mvp1IRI = "https://slovník.gov.cz/základní/pojem/má-vztažený-prvek-1";
@@ -95,6 +99,7 @@ export function spreadConnections(id: string, limitToTropes: boolean, representa
                 (ProjectElements[id].connections.includes(conn)
                     && !(graph.getCell(conn)))) &&
             ProjectLinks[conn].active &&
+            (ProjectLinks[conn].source === id || ProjectLinks[conn].target === id) &&
             ProjectLinks[conn].source !== ProjectLinks[conn].target);
         let radius = 200 + (elems.length * 50);
         for (let i = 0; i < elems.length; i++) {
@@ -104,7 +109,7 @@ export function spreadConnections(id: string, limitToTropes: boolean, representa
             let find = graph.getElements().find(elem => elem.id ===
                 (ProjectLinks[elems[i]].target === id ? ProjectLinks[elems[i]].source : ProjectLinks[elems[i]].target));
             let elem = find ? find : new graphElement({id: elemID});
-            elem.addTo(graph);
+            if (!limitToTropes) elem.addTo(graph);
             elem.position(x, y);
             ProjectElements[elemID].position[ProjectSettings.selectedDiagram] = {x: x, y: y};
             ProjectElements[elemID].hidden[ProjectSettings.selectedDiagram] = false;
@@ -293,18 +298,19 @@ export function setRepresentation(representation: number) {
     } else if (representation === Representation.FULL) {
         ProjectSettings.representation = Representation.FULL;
         ProjectSettings.selectedLink = "";
-        // for (let elem of ProjectSettings.switchElements) {
-        //     if (ProjectElements[elem].position[ProjectSettings.selectedDiagram]) {
-        //         let find = graph.getElements().find(cell => cell.id === elem &&
-        //             ProjectElements[elem].active && ProjectElements[elem].hidden[ProjectSettings.selectedDiagram]);
-        //         let cell = find || new graphElement({id: elem})
-        //         cell.addTo(graph);
-        //         cell.position(ProjectElements[elem].position[ProjectSettings.selectedDiagram].x, ProjectElements[elem].position[ProjectSettings.selectedDiagram].y)
-        //         ProjectElements[elem].hidden[ProjectSettings.selectedDiagram] = false;
-        //         drawGraphElement(cell, ProjectSettings.selectedLanguage, representation);
-        //         restoreHiddenElem(elem, cell, true);
-        //     }
-        // }
+        for (let elem of ProjectSettings.switchElements) {
+            if (ProjectElements[elem].position[ProjectSettings.selectedDiagram] &&
+                !(VocabularyElements[ProjectElements[elem].iri].types.includes(parsePrefix("z-sgov-pojem", "typ-vztahu")))) {
+                let find = graph.getElements().find(cell => cell.id === elem &&
+                    ProjectElements[elem].active && ProjectElements[elem].hidden[ProjectSettings.selectedDiagram]);
+                let cell = find || new graphElement({id: elem})
+                cell.addTo(graph);
+                cell.position(ProjectElements[elem].position[ProjectSettings.selectedDiagram].x, ProjectElements[elem].position[ProjectSettings.selectedDiagram].y)
+                ProjectElements[elem].hidden[ProjectSettings.selectedDiagram] = false;
+                drawGraphElement(cell, ProjectSettings.selectedLanguage, representation);
+                restoreHiddenElem(elem, cell, true);
+            }
+        }
         for (let elem of graph.getElements()) {
             drawGraphElement(elem, ProjectSettings.selectedLanguage, representation);
             if (typeof elem.id === "string") {
@@ -354,9 +360,9 @@ export function getElementShape(id: string | number): string {
     let types = VocabularyElements[ProjectElements[id].iri].types;
     if (types.includes(parsePrefix("z-sgov-pojem", "typ-objektu"))) {
         return "bodyBox";
-    } else if (types.includes(parsePrefix("z-sgov-pojem", "typ-vztahu"))) {
-        return "bodyEllipse";
     } else if (types.includes(parsePrefix("z-sgov-pojem", "typ-vlastnosti"))) {
+        return "bodyEllipse";
+    } else if (types.includes(parsePrefix("z-sgov-pojem", "typ-vztahu"))) {
         return "bodyDiamond";
     } else if (types.includes(parsePrefix("z-sgov-pojem", "typ-události"))) {
         return "bodyTrapezoid";
@@ -463,8 +469,19 @@ export function restoreHiddenElem(id: string, cls: joint.dia.Element, restoreCon
                     setLabels(domainLink, getLinkOrVocabElem(ProjectLinks[link].iri).labels[ProjectSettings.selectedLanguage]);
                     setLabels(rangeLink, getLinkOrVocabElem(ProjectLinks[targetLink].iri).labels[ProjectSettings.selectedLanguage]);
                     relationship.addTo(graph);
-                    domainLink.vertices(ProjectLinks[link].vertices[ProjectSettings.selectedDiagram]);
-                    rangeLink.vertices(ProjectLinks[targetLink].vertices[ProjectSettings.selectedDiagram]);
+                    if (restoreConnectionPosition) {
+                        domainLink.vertices(ProjectLinks[link].vertices[ProjectSettings.selectedDiagram]);
+                        rangeLink.vertices(ProjectLinks[targetLink].vertices[ProjectSettings.selectedDiagram]);
+                    } else {
+                        if (ProjectLinks[link].vertices[ProjectSettings.selectedDiagram])
+                            updateDeleteProjectLinkVertex(ProjectSettings.contextEndpoint, link, 0,
+                                ProjectLinks[link].vertices[ProjectSettings.selectedDiagram].length);
+                        if (ProjectLinks[targetLink].vertices[ProjectSettings.selectedDiagram])
+                            updateDeleteProjectLinkVertex(ProjectSettings.contextEndpoint, targetLink, 0,
+                                ProjectLinks[targetLink].vertices[ProjectSettings.selectedDiagram].length);
+                        ProjectLinks[link].vertices[ProjectSettings.selectedDiagram] = [];
+                        ProjectLinks[targetLink].vertices[ProjectSettings.selectedDiagram] = [];
+                    }
                     domainLink.addTo(graph);
                     rangeLink.addTo(graph);
                     break;
