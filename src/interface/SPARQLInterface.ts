@@ -409,10 +409,10 @@ export async function getLinksConfig(contextIRI: string, contextEndpoint: string
             if (targetID && sourceID) break;
         }
 
-        let convert: joint.dia.Link.Vertex[][] = [];
+        let convert: {[key:number]:joint.dia.Link.Vertex[]} = {};
 
         for (let diagram in links[link].vertexes) {
-            convert.push([]);
+            convert[diagram] = [];
             for (let vert in links[link].vertexes[diagram]) {
                 if (links[link].vertexes[diagram].hasOwnProperty(vert))
                     convert[diagram].push({

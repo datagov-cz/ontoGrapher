@@ -296,11 +296,13 @@ export async function updateProjectLink(contextEndpoint: string, id: string) {
 	let addStrings: string[] = [JSON.stringify(addLD)];
 	let delStrings: string[] = delString === "" ? [] : [delString];
 
-	for (let vert of ProjectLinks[id].vertices) {
-		let i = ProjectLinks[id].vertices.indexOf(vert);
-		let del = await processGetTransaction(contextEndpoint, {subject: linkIRI + "/vertex-" + (i + 1)}).catch(() => false);
-		if (typeof del === "string") {
-			delStrings.push(del);
+	for (let diag in ProjectLinks[id].vertices) {
+		for (let vert of ProjectLinks[id].vertices[diag]){
+			let i = ProjectLinks[id].vertices[diag].indexOf(vert);
+			let del = await processGetTransaction(contextEndpoint, {subject: linkIRI + "/diagram-" + (diag + 1) + "/vertex-" + (i + 1)}).catch(() => false);
+			if (typeof del === "string") {
+				delStrings.push(del);
+			}
 		}
 	}
 
