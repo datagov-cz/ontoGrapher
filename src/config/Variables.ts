@@ -15,7 +15,7 @@ export var ProjectElements: {
         iri: string,
         //array of ProjectLink ids
         connections: string[],
-        //diagram indexes in which elem is present/hidden
+        //diagram indices in which elem is present/hidden
         diagrams: number[],
         //if hidden in diagram index
         hidden: { [key: number]: boolean }

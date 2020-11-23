@@ -14,6 +14,7 @@ import {
     updateProjectElementDiagram,
     updateProjectLink
 } from "../interface/TransactionInterface";
+import {Shapes} from "../config/Shapes";
 
 
 let mvp1IRI = "https://slovník.gov.cz/základní/pojem/má-vztažený-prvek-1";
@@ -89,25 +90,29 @@ export function nameGraphLink(cell: joint.dia.Link, languageCode: string) {
     }
 }
 
+export function getFullConnections(id: string): string[] {
+    return Object.keys(ProjectElements).filter(elem => ProjectElements[elem].active &&
+        parsePrefix("z-sgov-pojem", "typ-vztahu") === ProjectElements[elem].iri &&
+        ProjectElements[elem].connections.find(link => ProjectLinks[link].active &&
+            (ProjectLinks[link].iri === mvp1IRI || ProjectLinks[link].iri === mvp2IRI) &&
+            ProjectLinks[link].target === id));
+}
+
 export function spreadConnections(id: string, limitToTropes: boolean, representation: boolean = true) {
     let elem = graph.getElements().find(elem => elem.id === id);
     if (elem) {
         let centerX = elem.position().x + (elem.size().width / 2);
         let centerY = elem.position().y + (elem.size().height / 2);
-        let elems = Object.keys(ProjectLinks).filter(conn =>
-            (limitToTropes ? isConnectionWithTrope(conn, id) :
-                (ProjectElements[id].connections.includes(conn)
-                    && !(graph.getCell(conn)))) &&
-            ProjectLinks[conn].active &&
-            (ProjectLinks[conn].source === id || ProjectLinks[conn].target === id) &&
-            ProjectLinks[conn].source !== ProjectLinks[conn].target);
+        let elems =
+            ProjectElements[id].connections.filter(conn => ProjectLinks[conn].active &&
+                (limitToTropes ? isConnectionWithTrope(conn, id) : true))
+                .map(conn => ProjectLinks[conn].target);
         let radius = 200 + (elems.length * 50);
         for (let i = 0; i < elems.length; i++) {
-            let elemID: string = ProjectLinks[elems[i]].target === id ? ProjectLinks[elems[i]].source : ProjectLinks[elems[i]].target;
+            let elemID: string = elems[i];
             let x = centerX + radius * Math.cos((i * 2 * Math.PI) / elems.length);
             let y = centerY + radius * Math.sin((i * 2 * Math.PI) / elems.length);
-            let find = graph.getElements().find(elem => elem.id ===
-                (ProjectLinks[elems[i]].target === id ? ProjectLinks[elems[i]].source : ProjectLinks[elems[i]].target));
+            let find = graph.getElements().find(elem => elem.id === elemID);
             let elem = find ? find : new graphElement({id: elemID});
             if (!limitToTropes) elem.addTo(graph);
             elem.position(x, y);
@@ -358,17 +363,10 @@ export function unHighlightAll() {
 
 export function getElementShape(id: string | number): string {
     let types = VocabularyElements[ProjectElements[id].iri].types;
-    if (types.includes(parsePrefix("z-sgov-pojem", "typ-objektu"))) {
-        return "bodyBox";
-    } else if (types.includes(parsePrefix("z-sgov-pojem", "typ-vlastnosti"))) {
-        return "bodyEllipse";
-    } else if (types.includes(parsePrefix("z-sgov-pojem", "typ-vztahu"))) {
-        return "bodyDiamond";
-    } else if (types.includes(parsePrefix("z-sgov-pojem", "typ-události"))) {
-        return "bodyTrapezoid";
-    } else {
-        return "bodyBox";
+    for (let type in Shapes) {
+        if (types.includes(type)) return Shapes[type].body;
     }
+    return Shapes["default"].body;
 }
 
 export function restoreHiddenElem(id: string, cls: joint.dia.Element, restoreConnectionPosition: boolean) {
@@ -384,9 +382,8 @@ export function restoreHiddenElem(id: string, cls: joint.dia.Element, restoreCon
     for (let link of Object.keys(ProjectLinks).filter(link => ProjectLinks[link].active)) {
         if ((ProjectLinks[link].source === id || ProjectLinks[link].target === id)
             && (graph.getCell(ProjectLinks[link].source) && graph.getCell(ProjectLinks[link].target)) && (
-                (ProjectLinks[link].iri in Links && ProjectSettings.representation === Representation.FULL) ||
-                (!(ProjectLinks[link].iri in Links) && ProjectSettings.representation === Representation.COMPACT)
-            )) {
+                (ProjectSettings.representation === Representation.FULL ? ProjectLinks[link].iri in Links : (!(ProjectLinks[link].iri in Links))
+                ))) {
             let lnk = getNewLink(ProjectLinks[link].type, link);
             setLabels(lnk, getLinkOrVocabElem(ProjectLinks[link].iri).labels[ProjectSettings.selectedLanguage])
             lnk.source({

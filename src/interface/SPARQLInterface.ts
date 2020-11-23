@@ -1,12 +1,4 @@
-import {
-    Diagrams,
-    Links,
-    ProjectElements,
-    ProjectLinks,
-    ProjectSettings,
-    Schemes,
-    VocabularyElements
-} from "../config/Variables";
+import {Diagrams, Links, ProjectElements, ProjectLinks, ProjectSettings, Schemes} from "../config/Variables";
 import {initLanguageObject} from "../function/FunctionEditVars";
 import * as joint from "jointjs";
 import {Cardinality} from "../datatypes/Cardinality";
@@ -173,7 +165,7 @@ export async function getScheme(iri: string, endpoint: string, readOnly: boolean
     });
 }
 
-export async function getElementsConfig(contextIRI: string, contextEndpoint: string, callback?: Function): Promise<boolean> {
+export async function getElementsConfig(contextIRI: string, contextEndpoint: string): Promise<boolean> {
     let elements: {
         [key: string]: {
             id: "",
@@ -186,14 +178,20 @@ export async function getElementsConfig(contextIRI: string, contextEndpoint: str
     } = {}
     let query = [
         "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
-        "select ?id ?iri ?active ?diagram where {",
+        "select ?id ?iri ?active ?diagram ?index ?hidden ?posX ?posY where {",
+        "graph ?g {",
         "?elem a og:element .",
         "?elem og:context <" + contextIRI + ">.",
         "?elem og:iri ?iri .",
         "?elem og:id ?id .",
         "?elem og:active ?active .",
         "?elem og:diagram ?diagram .",
-        "}"
+        "optional {?diagram og:index ?index.",
+        "?diagram og:hidden ?hidden.",
+        "?diagram og:position-x ?posX.",
+        "?diagram og:position-y ?posY.",
+        "}}",
+        "<" + contextIRI + "> <https://slovník.gov.cz/datový/pracovní-prostor/pojem/odkazuje-na-kontext> ?g.}"
     ].join(" ");
     let q = contextEndpoint + "?query=" + encodeURIComponent(query);
     await fetch(q, {headers: {'Accept': 'application/json'}}).then(response => {
@@ -203,65 +201,26 @@ export async function getElementsConfig(contextIRI: string, contextEndpoint: str
             let iri = result.iri.value;
             if (!(iri in elements)) {
                 elements[iri] = {
-                    id: "",
+                    id: result.id.value,
                     diagramIRI: [],
                     diagrams: [],
-                    active: true,
+                    active: result.active.value === "true",
                     diagramPosition: {},
                     hidden: {},
                 }
             }
-            elements[iri].id = result.id.value;
-            elements[iri].active = result.active.value === "true";
-            if (!(elements[iri].diagramIRI.includes(result.diagram.value)))
+            if (!(elements[iri].diagramIRI.includes(result.diagram.value))) {
                 elements[iri].diagramIRI.push(result.diagram.value);
-        }
-    }).catch(() => {
-        if (callback) callback(false);
-    });
-    for (let iri in elements) {
-        if (elements[iri].diagramIRI.length > 0) {
-            for (let diag of elements[iri].diagramIRI) {
-                let graph = "";
-                if (!(iri in VocabularyElements &&
-                    VocabularyElements[iri].inScheme &&
-                    VocabularyElements[iri].inScheme in Schemes &&
-                    Schemes[VocabularyElements[iri].inScheme].graph))
-                    continue;
-                graph = Schemes[VocabularyElements[iri].inScheme].graph;
-                let query = [
-                    "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
-                    "select ?positionX ?positionY ?hidden ?index where {",
-                    graph !== "" ? "graph <" + graph + "> {" : "",
-                    "BIND(<" + diag + "> as ?iri) .",
-                    "?iri og:position-y ?positionY .",
-                    "?iri og:position-x ?positionX .",
-                    "?iri og:index ?index .",
-                    "?iri og:hidden ?hidden .",
-                    graph !== "" ? "}" : "",
-                    "}"
-                ].join(" ");
-                let q = contextEndpoint + "?query=" + encodeURIComponent(query);
-                await fetch(q, {headers: {'Accept': 'application/json'}}).then(response => {
-                    return response.json();
-                }).then(data => {
-                    for (let result of data.results.bindings) {
-                        if (result.index) {
-                            let index = parseInt(result.index.value);
-                            elements[iri].diagrams.push(index);
-                            elements[iri].diagramPosition[index] = {
-                                x: parseInt(result.positionX.value),
-                                y: parseInt(result.positionY.value)
-                            };
-                            elements[iri].hidden[index] = result.hidden.value === "true";
-                        }
-                    }
-                }).catch(() => {
-                    if (callback) callback(false);
-                });
+                elements[iri].diagrams.push(parseInt(result.index.value));
+                elements[iri].diagramPosition[parseInt(result.index.value)] = {
+                    x: parseInt(result.posX.value),
+                    y: parseInt(result.posY.value)
+                }
+                elements[iri].hidden[parseInt(result.index.value)] = result.hidden.value === "true";
             }
         }
-    }
+    }).catch(() => false);
+
     for (let id in ProjectElements) {
         if (ProjectElements[id].iri in elements) {
             ProjectElements[id].hidden = elements[ProjectElements[id].iri].hidden;
@@ -270,11 +229,10 @@ export async function getElementsConfig(contextIRI: string, contextEndpoint: str
             ProjectElements[id].position = elements[ProjectElements[id].iri].diagramPosition;
         }
     }
-    if (callback) callback(true);
     return true;
 }
 
-export async function getSettings(contextIRI: string, contextEndpoint: string, callback?: Function): Promise<boolean> {
+export async function getSettings(contextIRI: string, contextEndpoint: string): Promise<boolean> {
     let contextInstance = ProjectSettings.contextIRI.substring(ProjectSettings.contextIRI.lastIndexOf("/"));
     let query = [
         "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
@@ -300,17 +258,14 @@ export async function getSettings(contextIRI: string, contextEndpoint: string, c
             if (result.color) ProjectSettings.viewColorPool = result.color.value;
         }
         if (data.results.bindings.length > 0) ProjectSettings.initialized = true;
-    }).catch(() => {
-        if (callback) callback(false);
-        return false;
-    });
+    }).catch(() => false);
     return true;
 }
 
 export async function getLinksConfig(contextIRI: string, contextEndpoint: string): Promise<boolean> {
     let query = [
         "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
-        "select ?id ?iri ?sourceID ?targetID ?source ?active ?target ?sourceCard1 ?sourceCard2 ?targetCard1 ?targetCard2 ?diagram ?vertex ?type where {",
+        "select ?id ?iri ?sourceID ?targetID ?source ?active ?target ?sourceCard1 ?sourceCard2 ?targetCard1 ?targetCard2 ?diagram ?vertex ?type ?index ?posX ?posY where {",
         "?link a og:link .",
         "?link og:id ?id .",
         "?link og:iri ?iri .",
@@ -325,8 +280,12 @@ export async function getLinksConfig(contextIRI: string, contextEndpoint: string
         "?link og:sourceCardinality2 ?sourceCard2 .",
         "?link og:targetCardinality1 ?targetCard1 .",
         "?link og:targetCardinality2 ?targetCard2 .",
-        "OPTIONAL {?link og:vertex ?vertex}",
-        "}"
+        "optional {?link og:vertex ?vertex.",
+        "?vertex og:index ?index.",
+        "?vertex og:position-x ?posX.",
+        "?vertex og:position-y ?posY.",
+        "optional {?vertex og:diagram ?diagram.}",
+        "}}"
     ].join(" ");
     let q = contextEndpoint + "?query=" + encodeURIComponent(query);
     let links: {
@@ -336,8 +295,15 @@ export async function getLinksConfig(contextIRI: string, contextEndpoint: string
             target: string,
             targetID: string,
             sourceID: string,
-            vertexIRI: string[],
-            vertexes: { [key: number]: { [key: number]: { x: number, y: number }, } },
+            vertexIRI: {
+                [key: string]: {
+                    index: number,
+                    x: number,
+                    y: number,
+                    diagram: number
+                }
+            },
+            vertices: { [key: number]: { [key: number]: { x: number, y: number }, } },
             sourceCardinality1: string,
             sourceCardinality2: string,
             targetCardinality1: string,
@@ -358,8 +324,8 @@ export async function getLinksConfig(contextIRI: string, contextEndpoint: string
                     targetID: result.targetID.value,
                     sourceID: result.sourceID.value,
                     active: result.active.value === "true",
-                    vertexIRI: [],
-                    vertexes: {},
+                    vertexIRI: {},
+                    vertices: {},
                     type: result.type.value === "default" ? LinkType.DEFAULT : LinkType.GENERALIZATION,
                     sourceCardinality1: result.sourceCard1.value,
                     sourceCardinality2: result.sourceCard2.value,
@@ -367,39 +333,27 @@ export async function getLinksConfig(contextIRI: string, contextEndpoint: string
                     targetCardinality2: result.targetCard2.value,
                 }
             }
-            if (result.vertex && !(links[result.id.value].vertexIRI.includes(result.vertex.value)))
-                links[result.id.value].vertexIRI.push(result.vertex.value);
+            if (result.vertex && !(result.vertex.value in links[result.id.value].vertexIRI))
+                links[result.id.value].vertexIRI[result.vertex.value] = {
+                    index: parseInt(result.index.value),
+                    x: parseInt(result.posX.value),
+                    y: parseInt(result.posY.value),
+                    diagram: result.diagram ? parseInt(result.diagram.value) : -1
+                };
         }
     }).catch(() => false);
 
     for (let link in links) {
-        if (links[link].vertexIRI.length > 0) {
-            let skipDeprecated = links[link].vertexIRI.find((iri: string) => iri.includes("/diagram"));
-            for (let vertexIRI of links[link].vertexIRI) {
+        let convert: { [key: number]: joint.dia.Link.Vertex[] } = {};
+        let keys = Object.keys(links[link].vertexIRI);
+        if (keys.length > 0) {
+            let skipDeprecated = keys.find((iri: string) => iri.includes("/diagram"));
+            for (let vertexIRI of keys) {
                 if (!vertexIRI.includes("/diagram") && skipDeprecated) continue;
-                let query = [
-                    "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
-                    "select ?posX ?posY ?index ?diagram where {",
-                    "BIND(<" + vertexIRI + "> as ?iri) .",
-                    "?iri og:index ?index .",
-                    "optional {?iri og:diagram ?diagram .}",
-                    "?iri og:position-x ?posX .",
-                    "?iri og:position-y ?posY .",
-                    "}"
-                ].join(" ");
-                let q = contextEndpoint + "?query=" + encodeURIComponent(query);
-                await fetch(q, {headers: {'Accept': 'application/json'}}).then(response => {
-                    return response.json();
-                }).then(data => {
-                    for (let result of data.results.bindings) {
-                        let diagram = result.diagram ? parseInt(result.diagram.value) : 0;
-                        if (!(diagram in links[link].vertexes)) links[link].vertexes[diagram] = {};
-                        links[link].vertexes[diagram][parseInt(result.index.value)] = {
-                            x: parseInt(result.posX.value),
-                            y: parseInt(result.posY.value)
-                        };
-                    }
-                }).catch(() => false);
+                let vertex = links[link].vertexIRI[vertexIRI];
+                let diagram: number = vertex.diagram !== -1 ? vertex.diagram : 0;
+                if (!(diagram in convert)) convert[diagram] = [];
+                convert[diagram][vertex.index] = {x: vertex.x, y: vertex.y};
             }
         }
         let sourceID, targetID;
@@ -407,19 +361,6 @@ export async function getLinksConfig(contextIRI: string, contextEndpoint: string
             if (ProjectElements[id].iri === links[link].source) sourceID = id;
             if (ProjectElements[id].iri === links[link].target) targetID = id;
             if (targetID && sourceID) break;
-        }
-
-        let convert: {[key:number]:joint.dia.Link.Vertex[]} = {};
-
-        for (let diagram in links[link].vertexes) {
-            convert[diagram] = [];
-            for (let vert in links[link].vertexes[diagram]) {
-                if (links[link].vertexes[diagram].hasOwnProperty(vert))
-                    convert[diagram].push({
-                        x: links[link].vertexes[diagram][vert].x,
-                        y: links[link].vertexes[diagram][vert].y
-                    })
-            }
         }
 
         if (targetID && sourceID) {

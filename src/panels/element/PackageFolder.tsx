@@ -29,9 +29,15 @@ export default class PackageFolder extends React.Component<Props, State> {
         }
     }
 
+    componentDidUpdate(prevProps: Readonly<Props>, prevState: Readonly<State>, snapshot?: any) {
+        if (prevProps !== this.props && this.state.open !== this.props.node.open) {
+            this.setState({open: this.props.node.open});
+        }
+    }
+
     movePackageItem(parse: any) {
         let id = parse.id;
-		let oldpkg = ProjectElements[id].package;
+        let oldpkg = ProjectElements[id].package;
         oldpkg.elements.splice(oldpkg.elements.indexOf(id), 1);
         ProjectElements[id].package = this.props.node;
         if (this.props.node.scheme) VocabularyElements[ProjectElements[id].iri].inScheme = this.props.node.scheme;
@@ -49,8 +55,8 @@ export default class PackageFolder extends React.Component<Props, State> {
                     this.setState({hover: false})
                 }}
                 onClick={(event) => {
+                    event.stopPropagation();
                     if (event.shiftKey) {
-                        event.stopPropagation();
                         this.props.handleShowCheckbox();
                     } else {
                         this.setState({open: !this.state.open});
@@ -62,13 +68,16 @@ export default class PackageFolder extends React.Component<Props, State> {
                 style={{
                     backgroundColor: this.props.node.scheme ? Schemes[this.props.node.scheme].color : "#FFF"
                 }}>
-                {(this.props.readOnly ? "📑" : "✏") + getLabelOrBlank(this.props.node.labels, this.props.projectLanguage)}
-                {(this.state.hover || this.props.showCheckbox) && <span className="packageOptions right">
+                {(this.state.hover || this.props.showCheckbox) && <span className="packageOptions">
                     <input type="checkbox" checked={this.props.checkboxChecked}
-                           onClick={(event) => event.stopPropagation()}
+                           onClick={(event) => {
+                               event.stopPropagation();
+                               this.props.handleShowCheckbox();
+                           }}
                            onChange={() => {
                            }}/>
                 </span>}
+                {(this.props.readOnly ? "📑" : "✏") + getLabelOrBlank(this.props.node.labels, this.props.projectLanguage)}
                 {this.state.open ?
                     this.props.children
                     : <span/>}

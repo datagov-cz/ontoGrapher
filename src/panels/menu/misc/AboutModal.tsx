@@ -20,6 +20,14 @@ export default class AboutModal extends React.Component<Props, State> {
 			</Modal.Header>
 			<Modal.Body>
 				<Tabs id={"changelog"}><Tab title={"November"} eventKey={"November"}>
+					<h6>23.11.</h6>
+					<ul>
+						<li>Bug fixing and stability improvements</li>
+						<li>Loading should now be faster</li>
+						<li>Search function usage improved</li>
+						<li>Elements from the left panel can be multi-selected using shift-click as well</li>
+						<li>Only one Type and one UML stereotype can be selected in the right panel</li>
+					</ul>
 					<h6>17.11.</h6>
 					<ul>
 						<li>Bug fixing and stability improvements</li>

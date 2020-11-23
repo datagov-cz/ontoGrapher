@@ -65,8 +65,16 @@ export default class PackageItem extends React.Component<Props, State> {
 					 this.setState({hover: false})
 				 }}
 				 className={"stereotypeElementItem" + (this.isHidden() ? " hidden" : "")}>
-                    <span
-						className={"label"}>{this.props.label}</span>
+				{(this.props.showCheckbox || this.state.hover) &&
+                <input type="checkbox" checked={this.props.checkboxChecked}
+                       onClick={(event) => {
+						   event.stopPropagation();
+						   this.props.handleShowCheckbox()
+					   }}
+                       onChange={() => {
+					   }}
+                />}
+				&nbsp;<span className={"label"}>{this.props.label}</span>
 				{(this.isHidden() ? hiddenSVG : <span/>)}
 				{(this.props.showCheckbox || this.state.hover) &&
                 <span className={"packageOptions right"}>
@@ -76,14 +84,6 @@ export default class PackageItem extends React.Component<Props, State> {
 														 this.props.openRemoveItem();
 													 }}><span role="img"
                                                               aria-label={""}>❌</span></button>}
-                    &nbsp;<input type="checkbox" checked={this.props.checkboxChecked}
-                                 onClick={(event) => {
-									 event.stopPropagation();
-									 this.props.handleShowCheckbox()
-								 }}
-                                 onChange={() => {
-								 }}
-                />
                     </span>
 				}
 			</div>

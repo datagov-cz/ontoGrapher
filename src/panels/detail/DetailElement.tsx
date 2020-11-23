@@ -11,12 +11,11 @@ import {
 	Stereotypes,
 	VocabularyElements
 } from "../../config/Variables";
-import {getLabelOrBlank, getLinkOrVocabElem, getStereotypeOrVocabElem} from "../../function/FunctionGetVars";
-import {Accordion, Button, Card, Form} from "react-bootstrap";
+import {getLabelOrBlank, getLinkOrVocabElem} from "../../function/FunctionGetVars";
+import {Accordion, Button, Card} from "react-bootstrap";
 import TableList from "../../components/TableList";
 import * as LocaleMenu from "../../locale/LocaleMenu.json";
 import IRILink from "../../components/IRILink";
-import {getName} from "../../function/FunctionEditVars";
 import LabelTable from "./components/LabelTable";
 import DescriptionTabs from "./components/DescriptionTabs";
 import IRIlabel from "../../components/IRIlabel";
@@ -24,6 +23,8 @@ import {drawGraphElement, spreadConnections, unHighlightAll} from "../../functio
 import {graph} from "../../graph/Graph";
 import {updateProjectElement, updateProjectLink} from "../../interface/TransactionInterface";
 import * as _ from "lodash";
+import StereotypeOptions from "./components/StereotypeOptions";
+import {Shapes} from "../../config/Shapes";
 
 interface Props {
 	projectLanguage: string;
@@ -66,6 +67,7 @@ export default class DetailElement extends React.Component<Props, State> {
 			changes: false
 		}
 		this.checkSpreadConnections = this.checkSpreadConnections.bind(this);
+		this.updateStereotype = this.updateStereotype.bind(this);
 	}
 
 	prepareDetails(id: string) {
@@ -133,6 +135,17 @@ export default class DetailElement extends React.Component<Props, State> {
 		}
 	}
 
+	updateStereotype(newStereotype: string, content: boolean) {
+		let stereotypes = this.state.inputTypes;
+		let index = stereotypes.findIndex(stereotype =>
+			(stereotype in Stereotypes && (content ?
+				stereotype in Shapes : !(stereotype in Shapes))));
+		if (index !== -1)
+			stereotypes.splice(index, 1);
+		stereotypes.push(newStereotype);
+		this.setState({inputTypes: stereotypes, changes: true});
+	}
+
 	render() {
 		return this.state.id !== "" && (<ResizableBox
 			width={300}
@@ -174,54 +187,14 @@ export default class DetailElement extends React.Component<Props, State> {
 								}/>
 								<h5>{this.props.headers.stereotype[this.props.projectLanguage]}</h5>
 								<TableList>
-									{this.state.inputTypes.map(iri => {
-										if (getStereotypeOrVocabElem(iri)) {
-											return (<tr key={iri}>
-												<td>
-													<IRILink
-														label={getLabelOrBlank(getStereotypeOrVocabElem(iri).labels, this.props.projectLanguage)}
-														iri={iri}/>
-													{(!this.state.readOnly) &&
-                                                    <button className={"buttonlink right"} onClick={() => {
-														let result = _.cloneDeep(this.state.inputTypes);
-														result.splice(result.indexOf(iri), 1);
-														this.setState({
-															inputTypes: result,
-															changes: true,
-														})
-													}}><span role="img"
-                                                             aria-label={""}>❌</span>
-                                                    </button>}
-												</td>
-											</tr>)
-										} else return ""
-									})}
-									{(!this.state.readOnly) && <tr>
-                                        <td>
-                                            <span role="img"
-                                                  aria-label={""}>➕</span>&nbsp;<Form inline>
-                                            <Form.Control size="sm" as="select"
-                                                          value={""}
-                                                          onChange={(event) => {
-															  let result = this.state.inputTypes;
-															  if (!(this.state.inputTypes.includes(event.currentTarget.value)) && event.currentTarget.value !== "") {
-																  result.push(event.currentTarget.value);
-																  this.setState({
-																	  inputTypes: _.cloneDeep(result),
-																	  formNewStereotype: event.currentTarget.value,
-																	  changes: true,
-																  })
-															  }
-														  }}
-                                            >
-                                                <option key={""} value={""}>{LocaleMain.addNewStereotype}</option>
-												{Object.keys(Stereotypes).filter(stereotype => !(this.state.inputTypes.includes(stereotype))).map((stereotype) => (
-													<option key={stereotype}
-															value={stereotype}>{getName(stereotype, this.props.projectLanguage)}</option>))}
-                                            </Form.Control>
-                                        </Form>
-                                        </td>
-                                    </tr>}
+									<StereotypeOptions readonly={this.state.readOnly} content={true}
+													   projectLanguage={this.props.projectLanguage}
+													   onChange={(value: string) => this.updateStereotype(value, true)}
+													   value={this.state.inputTypes.find(type => type in Shapes) || ""}/>
+									<StereotypeOptions readonly={this.state.readOnly} content={false}
+													   projectLanguage={this.props.projectLanguage}
+													   onChange={(value: string) => this.updateStereotype(value, false)}
+													   value={this.state.inputTypes.find(type => type in Stereotypes && !(type in Shapes)) || ""}/>
 								</TableList>
 								<h5>{<IRILink label={this.props.headers.inScheme[this.props.projectLanguage]}
 											  iri={"http://www.w3.org/2004/02/skos/core#inScheme"}/>}</h5>
@@ -269,7 +242,10 @@ export default class DetailElement extends React.Component<Props, State> {
 								</TableList>
 								{this.checkSpreadConnections() &&
                                 <Button className={"buttonlink center"}
-                                        onClick={() => spreadConnections(this.state.id, false)}>
+                                        onClick={() => {
+											spreadConnections(this.state.id, false)
+											this.forceUpdate();
+										}}>
 									{LocaleMain.spreadConnections}
                                 </Button>}
 							</Card.Body>

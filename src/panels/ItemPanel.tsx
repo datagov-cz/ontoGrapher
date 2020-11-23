@@ -20,6 +20,7 @@ import {Form, InputGroup} from 'react-bootstrap';
 import {parsePrefix} from "../function/FunctionEditVars";
 import {Representation} from "../config/Enum";
 import PackageDivider from "./element/PackageDivider";
+import {Shapes} from "../config/Shapes";
 
 interface Props {
 	projectLanguage: string;
@@ -45,7 +46,6 @@ interface State {
 }
 
 export default class ItemPanel extends React.Component<Props, State> {
-	private readonly sortTypes: string[];
 
 	constructor(props: Props) {
 		super(props);
@@ -65,12 +65,6 @@ export default class ItemPanel extends React.Component<Props, State> {
 		};
 		this.handleChangeSelect = this.handleChangeSelect.bind(this);
 		this.handleChangeSearch = this.handleChangeSearch.bind(this);
-		this.sortTypes = [
-			parsePrefix("z-sgov-pojem", "typ-objektu"),
-			parsePrefix("z-sgov-pojem", "typ-události"),
-			parsePrefix("z-sgov-pojem", "typ-vlastnosti"),
-			parsePrefix("z-sgov-pojem", "typ-vztahu"),
-		].sort();
 	}
 
 	update() {
@@ -110,20 +104,17 @@ export default class ItemPanel extends React.Component<Props, State> {
 
 	categorizeTypes(elements: string[]): { [key: string]: string[] } {
 		let result: { [key: string]: string[] } = {'unsorted': []};
-		this.sortTypes.forEach(type => result[type] = []);
+		Object.keys(Shapes).forEach(type => result[type] = []);
 		for (let elem of elements) {
 			let types = VocabularyElements[ProjectElements[elem].iri].types;
-			if (types.includes(parsePrefix("z-sgov-pojem", "typ-objektu"))) {
-				result[parsePrefix("z-sgov-pojem", "typ-objektu")].push(elem);
-			} else if (types.includes(parsePrefix("z-sgov-pojem", "typ-události"))) {
-				result[parsePrefix("z-sgov-pojem", "typ-události")].push(elem);
-			} else if (types.includes(parsePrefix("z-sgov-pojem", "typ-vlastnosti"))) {
-				result[parsePrefix("z-sgov-pojem", "typ-vlastnosti")].push(elem);
-			} else if (types.includes(parsePrefix("z-sgov-pojem", "typ-vztahu"))) {
-				result[parsePrefix("z-sgov-pojem", "typ-vztahu")].push(elem);
-			} else {
-				result['unsorted'].push(elem);
+			for (let key in Shapes) {
+				if (types.includes(key)) {
+					result[key].push(elem);
+					break;
+				}
 			}
+			if (!Object.values(result).find(arr => arr.includes(elem)))
+				result['unsorted'].push(elem);
 		}
 		return result;
 	}
@@ -134,7 +125,7 @@ export default class ItemPanel extends React.Component<Props, State> {
 			let elements = node.elements.sort((a, b) => this.sort(a, b)).filter(id => {
 				let name = VocabularyElements[ProjectElements[id].iri] ? getLabelOrBlank(VocabularyElements[ProjectElements[id].iri].labels, this.props.projectLanguage) : "<blank>";
 				return (
-					name.toLowerCase().startsWith(this.state.search.toLowerCase()) &&
+					name.toLowerCase().includes(this.state.search.toLowerCase()) &&
 					(ProjectSettings.representation === Representation.FULL ||
 						(ProjectSettings.representation === Representation.COMPACT &&
 							(!(VocabularyElements[ProjectElements[id].iri].types.includes(parsePrefix("z-sgov-pojem", "typ-vztahu"))
@@ -148,8 +139,8 @@ export default class ItemPanel extends React.Component<Props, State> {
 				if (ProjectSettings.viewItemPanelTypes) {
 					let slice = elements.filter(elem => categories[key].includes(elem))
 					packageItems.push(<PackageDivider
-						key={this.sortTypes.includes(key) ? key : ""}
-						iri={this.sortTypes.includes(key) ? key : ""}
+						key={Object.keys(Shapes).includes(key) ? key : ""}
+						iri={Object.keys(Shapes).includes(key) ? key : ""}
 						projectLanguage={this.props.projectLanguage}
 						checkboxChecked={slice.every(elem => this.state.selectedItems.includes(elem))}
 						handleShowCheckbox={() => {
@@ -265,7 +256,7 @@ export default class ItemPanel extends React.Component<Props, State> {
 							<span role="img" aria-label={LocaleMain.searchStereotypes}>🔎</span></InputGroup.Text>
 					</InputGroup.Prepend>
 					<Form.Control
-						type="text"
+						type="search"
 						placeholder={LocaleMain.searchStereotypes}
 						aria-describedby="inputGroupPrepend"
 						value={this.state.search}

@@ -52,7 +52,8 @@ export async function updateLinks() {
         "@id": ProjectSettings.ontographerContext,
         "@graph": graph
     }
-    await processTransaction(ProjectSettings.contextEndpoint, {add: [JSON.stringify(addLD)], delete: []});
+    if (linksToPush.length > 0)
+        await processTransaction(ProjectSettings.contextEndpoint, {add: [JSON.stringify(addLD)], delete: []});
 }
 
 export function createValues(values: { [key: string]: string[] }, prefixes: { [key: string]: string }) {

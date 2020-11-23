@@ -37,8 +37,7 @@ export default class PackageDivider extends React.Component<Props, State> {
 						 }
 					 }}
 		>
-			{this.props.iri in Stereotypes ? Stereotypes[this.props.iri].labels[this.props.projectLanguage] : LocaleMain.unsorted}
-			{(this.props.showCheckbox || this.state.hover) && <span className={"packageOptions right"}>
+			{(this.props.showCheckbox || this.state.hover) && <span className={"packageOptions"}>
 				<input type="checkbox" checked={this.props.checkboxChecked}
                        onClick={(event) => {
 						   event.stopPropagation();
@@ -47,6 +46,7 @@ export default class PackageDivider extends React.Component<Props, State> {
                        onChange={() => {
 					   }}/>
 			</span>}
+			&nbsp;{this.props.iri in Stereotypes ? Stereotypes[this.props.iri].labels[this.props.projectLanguage] : LocaleMain.unsorted}
 		</div>);
 	}
 }
