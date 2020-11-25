@@ -1,9 +1,9 @@
 import {Cardinality} from "../datatypes/Cardinality";
 import {PackageNode} from "../datatypes/PackageNode";
-import {initLanguageObject, parsePrefix} from "../function/FunctionEditVars";
+import {initLanguageObject} from "../function/FunctionEditVars";
 import {RestrictionObject} from "../datatypes/RestrictionObject";
 import {ConnectionObject} from "../datatypes/ConnectionObject";
-import {CommonVars} from "./Locale";
+import {Representation} from "./Enum";
 
 // language code : language label
 export var Languages: { [key: string]: string } = {};
@@ -14,9 +14,7 @@ export var ProjectElements: {
         iri: string,
         //array of ProjectLink ids
         connections: string[],
-        //whether the labels are initialized
-        untitled: boolean,
-        //diagram indexes in which elem is present/hidden
+        //diagram indices in which elem is present/hidden
         diagrams: number[],
         //if hidden in diagram index
         hidden: { [key: number]: boolean }
@@ -41,10 +39,10 @@ export var ProjectLinks: {
         sourceCardinality: Cardinality,
         //target cardinality Cardinality object
         targetCardinality: Cardinality,
-        //vertices - point breaks of link
-        vertices: joint.dia.Link.Vertex[],
+        //vertices - point breaks of link by diagram
+        vertices: {[key:number]: joint.dia.Link.Vertex[]},
         //type - dictates saving/loading behaviour
-        type: string,
+        type: number,
         //active
         active: boolean
     }
@@ -55,12 +53,12 @@ export var Schemes: {
         labels: { [key: string]: string },
         readOnly: boolean,
         graph: string,
+        color: string,
     }
 } = {};
 
 export var Prefixes: { [key: string]: string } = {
     skos: "http://www.w3.org/2004/02/skos/core#",
-    ex: "http://example.com/ontoGrapher/",
     owl: "http://www.w3.org/2002/07/owl#",
     rdf: "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
     rdfs: "http://www.w3.org/2000/01/rdf-schema#",
@@ -68,20 +66,6 @@ export var Prefixes: { [key: string]: string } = {
     "d-sgov-pracovní-prostor-pojem": "https://slovník.gov.cz/datový/pracovní-prostor/pojem/",
     "z-sgov-pojem": "https://slovník.gov.cz/základní/pojem/",
     "v-sgov-pojem": "https://slovník.gov.cz/veřejný-sektor/pojem/"
-};
-
-export var Structures: { [key: string]: string } = {
-    "z-sgov-pojem:základní-struktura": parsePrefix("z-sgov-pojem", "základní-struktura"),
-    "z-sgov-pojem:legislativní-struktura": parsePrefix("z-sgov-pojem", "legislativní-struktura"),
-    "z-sgov-pojem:agendová-struktura": parsePrefix("z-sgov-pojem", "agendová-struktura"),
-    "z-sgov-pojem:datová-struktura": parsePrefix("z-sgov-pojem", "datová-struktura")
-};
-
-export var StructuresShort: { [key: string]: string } = {
-    "z-sgov-pojem:základní-struktura": "základní",
-    "z-sgov-pojem:legislativní-struktura": "legislativní",
-    "z-sgov-pojem:agendová-struktura": "agendová",
-    "z-sgov-pojem:datová-struktura": "datová"
 };
 
 export var PackageRoot: PackageNode = new PackageNode(initLanguageObject("Root"), undefined, true, "");
@@ -99,6 +83,7 @@ export var VocabularyElements: {
             restrictions: RestrictionObject[],
             connections: ConnectionObject[],
             active: boolean,
+            topConcept: string | undefined
         }
 } = {};
 
@@ -107,7 +92,13 @@ export var Links: {
         labels: { [key: string]: string },
         definitions: { [key: string]: string },
         inScheme: string,
-        type: string,
+        type: number,
+        domain: string;
+        range: string;
+        typesDomain: string[],
+        subClassOfDomain: string[]
+        typesRange: string[],
+        subClassOfRange: string[]
     }
 } = {};
 
@@ -116,6 +107,9 @@ export var Stereotypes: {
         labels: { [key: string]: string },
         definitions: { [key: string]: string },
         inScheme: string,
+        types: string[],
+        subClassOf: string[],
+        character: string | undefined,
     }
 } = {};
 
@@ -127,35 +121,46 @@ export var ProjectSettings: {
     name: { [key: string]: string },
     description: { [key: string]: string },
     selectedDiagram: number,
-    selectedPackage: PackageNode,
-    knowledgeStructure: string,
     selectedLanguage: string,
+    selectedLink: string,
     contextIRI: string,
     contextEndpoint: string,
     ontographerContext: string,
     initialized: boolean,
-    representation: string,
-    lastUpdate: { func: Function, args: [] }
+    representation: number,
+    lastTransaction: { add: string[], delete: string[], update: string[] },
+    switchElements: string[],
+    viewStereotypes: boolean,
+    viewZoom: number,
+    viewColorPool: string,
+    viewItemPanelTypes: boolean,
+    viewLanguage: string,
 } = {
     name: {},
     description: {},
     selectedDiagram: 0,
-    selectedPackage: PackageRoot,
-    knowledgeStructure: Object.keys(Structures)[0],
     selectedLanguage: Object.keys(Languages)[0],
+    selectedLink: "",
     contextIRI: "",
     contextEndpoint: "",
     ontographerContext: "http://onto.fel.cvut.cz/ontologies/application/ontoGrapher",
     initialized: false,
-    representation: "full",
-    lastUpdate: {
-        func: function () {
-        }, args: []
-    }
+    representation: Representation.FULL,
+    lastTransaction: {
+        add: [],
+        delete: [],
+        update: []
+    },
+    switchElements: [],
+    viewStereotypes: true,
+    viewZoom: 1,
+    viewColorPool: "pastelLow",
+    viewItemPanelTypes: true,
+    viewLanguage: "en"
 };
 
 export var CardinalityPool: Cardinality[] = [
-    new Cardinality(CommonVars.none, CommonVars.none),
+    new Cardinality("", ""),
     new Cardinality("*", "*"),
     new Cardinality("0", "0"),
     new Cardinality("0", "*"),

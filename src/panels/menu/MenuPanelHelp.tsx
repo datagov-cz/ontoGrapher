@@ -1,10 +1,11 @@
 import React from 'react';
 import {Nav} from 'react-bootstrap';
 import HelpModal from "./misc/HelpModal";
+import {ProjectSettings} from "../../config/Variables";
 import {Locale} from "../../config/Locale";
 
 interface Props {
-    projectLanguage: string;
+
 }
 
 interface State {
@@ -23,11 +24,11 @@ export default class MenuPanelHelp extends React.Component<Props, State> {
         return (<div className={"inert"}><Nav.Link onClick={() => {
             this.setState({modal: true});
         }}>
-            {Locale[this.props.projectLanguage].help}
+            {Locale[ProjectSettings.viewLanguage].help}
         </Nav.Link>
             <HelpModal modal={this.state.modal} close={() => {
                 this.setState({modal: false})
-            }} projectLanguage={this.props.projectLanguage}/>
+            }}/>
         </div>);
     }
 }

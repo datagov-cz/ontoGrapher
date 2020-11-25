@@ -12,10 +12,11 @@ const headers: { [key: string]: { [key: string]: string } } = {
 
 interface Props {
     projectLanguage: string;
-    resizeElem: Function;
+    // resizeElem: Function;
     update: Function;
     handleChangeLoadingStatus: Function;
     handleWidth: Function;
+    error: boolean;
 }
 
 interface State {
@@ -67,7 +68,7 @@ export default class DetailPanel extends React.Component<Props, State> {
     }
 
     save() {
-        if (graph.getCell(this.state.id).isElement()) this.props.resizeElem(this.state.id);
+        // if (graph.getCell(this.state.id).isElement()) this.props.resizeElem(this.state.id);
         this.props.update();
     }
 
@@ -90,9 +91,10 @@ export default class DetailPanel extends React.Component<Props, State> {
                                        save={this.save} ref={this.detailElem}
                                        handleChangeLoadingStatus={this.props.handleChangeLoadingStatus}
                                        handleWidth={this.props.handleWidth}
-                />);
+                                       error={this.props.error}/>);
             } else if (this.state.type === "link") {
                 return (<DetailLink
+                    error={this.props.error}
                     handleWidth={this.props.handleWidth}
                     handleChangeLoadingStatus={this.props.handleChangeLoadingStatus}
                     projectLanguage={this.props.projectLanguage} headers={headers}

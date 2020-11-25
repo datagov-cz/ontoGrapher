@@ -5,7 +5,9 @@ import MenuPanelHelp from "./menu/MenuPanelHelp";
 import MenuPanelAbout from "./menu/MenuPanelAbout";
 import InterfaceNotification from "../components/InterfaceNotification";
 import MenuPanelValidate from "./menu/MenuPanelValidate";
-import MenuPanelSwitchRepresentation from "./menu/MenuPanelSwitchRepresentation";
+import MenuPanelSwitchRepresentation from "./menu/view/MenuPanelSwitchRepresentation";
+import InterfaceStatus from "../components/InterfaceStatus";
+import MenuPanelView from "./menu/MenuPanelView";
 
 interface MenuPanelProps {
 	readOnly?: boolean;
@@ -21,6 +23,7 @@ interface MenuPanelProps {
 	validate: Function;
 	closeDetailPanel: Function;
 	handleChangeLoadingStatus: Function;
+	retry: boolean;
 }
 
 interface MenuPanelState {
@@ -44,9 +47,14 @@ export default class MenuPanel extends React.Component<MenuPanelProps, MenuPanel
 					<InterfaceNotification active={this.props.loading} message={this.props.status}
 										   error={this.props.loadingError}
 										   handleChangeLoadingStatus={this.props.handleChangeLoadingStatus}
-										   projectLanguage={this.props.projectLanguage}/>
+										   retry={this.props.retry}/>
 					<div className={"right"}>
 						<Form inline>
+							<InterfaceStatus
+								handleChangeLoadingStatus={this.props.handleChangeLoadingStatus}
+								error={this.props.loadingError}
+							/>
+							&nbsp;
 							<Form.Control as="select" value={this.props.projectLanguage}
 										  onChange={this.handleChangeLanguage}>
 								{Object.keys(Languages).map((languageCode) => (
@@ -57,14 +65,15 @@ export default class MenuPanel extends React.Component<MenuPanelProps, MenuPanel
 					</div>
 				</div>
 				<div className={"lower"}>
+					<MenuPanelView update={() => this.props.update()}
+								   handleChangeLoadingStatus={this.props.handleChangeLoadingStatus}/>
 					<MenuPanelSwitchRepresentation update={() => this.props.update()}
 												   close={() => this.props.closeDetailPanel()}
-												   projectLanguage={this.props.projectLanguage}/>
-					<MenuPanelValidate validate={() => this.props.validate()}
-									   projectLanguage={this.props.projectLanguage}/>
+												   handleChangeLoadingStatus={this.props.handleChangeLoadingStatus}/>
+					<MenuPanelValidate validate={() => this.props.validate()}/>
 					<div className={"right"}>
-						<MenuPanelHelp projectLanguage={this.props.projectLanguage}/>
-						<MenuPanelAbout projectLanguage={this.props.projectLanguage}/>
+						<MenuPanelHelp/>
+						<MenuPanelAbout/>
 					</div>
 				</div>
 			</nav>

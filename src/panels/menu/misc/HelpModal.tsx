@@ -1,11 +1,11 @@
 import React from 'react';
 import {Button, Modal} from "react-bootstrap";
+import {ProjectSettings} from "../../../config/Variables";
 import {Locale} from "../../../config/Locale";
 
 interface Props {
     modal: boolean;
     close: Function;
-    projectLanguage: string;
 }
 
 interface State {
@@ -17,10 +17,10 @@ export default class HelpModal extends React.Component<Props, State> {
     render() {
         return (<Modal centered show={this.props.modal}>
             <Modal.Header>
-                <Modal.Title>{Locale[this.props.projectLanguage].help}</Modal.Title>
+                <Modal.Title>{Locale[ProjectSettings.viewLanguage].help}</Modal.Title>
             </Modal.Header>
             <Modal.Body>
-                <p>{Locale[this.props.projectLanguage].helpDescription}<a
+                <p>{Locale[ProjectSettings.viewLanguage].helpDescription}<a
                     href="https://github.com/opendata-mvcr/ontoGrapher/wiki"
                     rel="noopener noreferrer"
                     target="_blank">https://github.com/opendata-mvcr/ontoGrapher/wiki</a>
@@ -29,7 +29,7 @@ export default class HelpModal extends React.Component<Props, State> {
             <Modal.Footer>
                 <Button onClick={() => {
                     this.props.close();
-                }}>{Locale[this.props.projectLanguage].close}</Button>
+                }}>{Locale[ProjectSettings.viewLanguage].close}</Button>
             </Modal.Footer>
         </Modal>);
     }

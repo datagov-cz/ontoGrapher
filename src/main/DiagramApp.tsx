@@ -2,23 +2,23 @@ import React from 'react';
 import MenuPanel from "../panels/MenuPanel";
 import ItemPanel from "../panels/ItemPanel";
 import DiagramCanvas from "./DiagramCanvas";
-import {Languages, PackageRoot, ProjectElements, ProjectLinks, ProjectSettings, Schemes} from "../config/Variables";
+import {Languages, ProjectElements, ProjectLinks, ProjectSettings} from "../config/Variables";
 import DetailPanel from "../panels/DetailPanel";
 import {getVocabulariesFromRemoteJSON} from "../interface/JSONInterface";
-import {addRelationships, initLanguageObject, initVars} from "../function/FunctionEditVars";
+import {initVars} from "../function/FunctionEditVars";
 import {getContext} from "../interface/ContextInterface";
 import {graph} from "../graph/Graph";
 import {loadProject, newProject} from "../function/FunctionProject";
-import {nameGraphElement, nameGraphLink, unHighlightAll} from "../function/FunctionGraph";
-import {PackageNode} from "../datatypes/PackageNode";
-import {createNewScheme, setupDiagrams} from "../function/FunctionCreateVars";
+import {drawGraphElement, nameGraphLink, unHighlightAll} from "../function/FunctionGraph";
+import {setupDiagrams} from "../function/FunctionCreateVars";
 import {getElementsConfig, getLinksConfig, getSettings} from "../interface/SPARQLInterface";
-import {initConnections, initRestrictions} from "../function/FunctionRestriction";
-import {updateProjectSettings} from "../interface/TransactionInterface";
+import {initRestrictions} from "../function/FunctionRestriction";
+import {mergeTransactions, processTransaction, updateProjectSettings} from "../interface/TransactionInterface";
 import ValidationPanel from "../panels/ValidationPanel";
 import DiagramPanel from "../panels/DiagramPanel";
+import {setSchemeColors} from "../function/FunctionGetVars";
+import {updateLinks} from "../function/FunctionConstruct";
 import {Locale} from "../config/Locale";
-import {getBrowserLanguage} from "../function/FunctionGetVars";
 
 interface DiagramAppProps {
 	readOnly?: boolean;
@@ -30,19 +30,21 @@ interface DiagramAppProps {
 interface DiagramAppState {
 	detailPanelHidden: boolean;
 	projectLanguage: string;
+	viewLanguage: string,
 	loading: boolean;
 	status: string;
 	error: boolean;
 	widthLeft: number;
 	widthRight: number;
 	validation: boolean;
+	retry: boolean;
 }
 
 require("../scss/style.scss");
 
 export default class DiagramApp extends React.Component<DiagramAppProps, DiagramAppState> {
 	private readonly canvas: React.RefObject<DiagramCanvas>;
-	private readonly elementPanel: React.RefObject<ItemPanel>;
+	private readonly itemPanel: React.RefObject<ItemPanel>;
 	private readonly detailPanel: React.RefObject<DetailPanel>;
 	private readonly menuPanel: React.RefObject<MenuPanel>;
 
@@ -50,7 +52,7 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 		super(props);
 
 		this.canvas = React.createRef();
-		this.elementPanel = React.createRef();
+		this.itemPanel = React.createRef();
 		this.detailPanel = React.createRef();
 		this.menuPanel = React.createRef();
 
@@ -58,15 +60,17 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 
 		this.state = ({
 			projectLanguage: ProjectSettings.selectedLanguage,
+			viewLanguage: ProjectSettings.viewLanguage,
 			detailPanelHidden: false,
 			loading: true,
-			status: Locale[ProjectSettings.selectedLanguage].loading,
+			status: Locale[ProjectSettings.viewLanguage].loading,
 			error: false,
 			widthLeft: 300,
 			widthRight: 0,
 			validation: false,
+			retry: false,
 		});
-		document.title = Locale[this.state.projectLanguage].ontoGrapher;
+		document.title = Locale[ProjectSettings.viewLanguage].ontoGrapher;
 		this.handleChangeLanguage = this.handleChangeLanguage.bind(this);
 		this.newProject = this.newProject.bind(this);
 		this.loadProject = this.loadProject.bind(this);
@@ -99,10 +103,10 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 	handleChangeLanguage(languageCode: string) {
 		this.setState({projectLanguage: languageCode});
 		ProjectSettings.selectedLanguage = languageCode;
-		document.title = ProjectSettings.name[languageCode] + " | " + Locale.ontoGrapher;
+		document.title = ProjectSettings.name[languageCode] + " | " + Locale[ProjectSettings.viewLanguage].ontoGrapher;
 		graph.getElements().forEach((cell) => {
 			if (ProjectElements[cell.id]) {
-				nameGraphElement(cell, languageCode);
+				drawGraphElement(cell, languageCode, ProjectSettings.representation);
 			}
 		});
 		graph.getLinks().forEach((cell) => {
@@ -114,18 +118,18 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 
 	newProject() {
 		newProject();
-		let userLang = getBrowserLanguage();
 		this.setState({
-			projectLanguage: userLang in Languages ? userLang : "en",
+			projectLanguage: Object.keys(Languages)[0],
 		});
-		this.elementPanel.current?.forceUpdate();
+		this.itemPanel.current?.forceUpdate();
 	}
 
-	handleChangeLoadingStatus(loading: boolean, status: string, error: boolean) {
+	handleChangeLoadingStatus(loading: boolean, status: string, error: boolean, retry: boolean = true) {
 		this.setState({
 			loading: loading,
 			status: status,
 			error: error,
+			retry: retry
 		});
 	}
 
@@ -133,55 +137,42 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 		this.newProject();
 		loadProject(loadString);
 		this.setState({projectLanguage: ProjectSettings.selectedLanguage});
-		this.elementPanel.current?.forceUpdate();
+		this.itemPanel.current?.forceUpdate();
 	}
 
 	loadVocabularies(contextIRI: string, contextEndpoint: string, reload: boolean = false, diagram: number = 0) {
-		this.setState({loading: true, status: Locale[this.state.projectLanguage].loading});
+		this.handleChangeLoadingStatus(true, Locale[ProjectSettings.viewLanguage].loading, false, false);
 		if (reload) this.newProject();
 		getVocabulariesFromRemoteJSON("https://raw.githubusercontent.com/opendata-mvcr/ontoGrapher/latest/src/config/Vocabularies.json").then(() => {
 			getContext(
 				contextIRI,
 				contextEndpoint,
-				"application/json",
-				(message: string) => {
-					if (message === Locale[this.state.projectLanguage].loadingError) {
-						this.handleChangeLoadingStatus(false, Locale[this.state.projectLanguage].pleaseReload, false)
-					}
-				}
-            ).then(async () => {
-                if (!this.state.error) {
-					this.selectDefaultPackage();
+				"application/json"
+			).then(async (result) => {
+				if (result) {
 					document.title = ProjectSettings.name[this.state.projectLanguage] + " | " + Locale.ontoGrapher;
 					ProjectSettings.contextEndpoint = contextEndpoint;
-					ProjectSettings.contextIRI = contextIRI
+					ProjectSettings.contextIRI = contextIRI;
 					this.handleChangeLanguage(Object.keys(Languages)[0]);
-					await getElementsConfig(ProjectSettings.contextIRI, ProjectSettings.contextEndpoint);
-					await getLinksConfig(ProjectSettings.contextIRI, ProjectSettings.contextEndpoint);
-					await getSettings(ProjectSettings.contextIRI, ProjectSettings.contextEndpoint);
+					await Promise.all([
+						getElementsConfig(ProjectSettings.contextIRI, ProjectSettings.contextEndpoint),
+						getLinksConfig(ProjectSettings.contextIRI, ProjectSettings.contextEndpoint),
+						getSettings(ProjectSettings.contextIRI, ProjectSettings.contextEndpoint)]);
 					this.handleChangeLoadingStatus(true, ProjectSettings.initialized ?
-						Locale[this.state.projectLanguage].updatingData : Locale[this.state.projectLanguage].initializingData, false);
+						"Updating ontoGrapher data..." :
+						"Initializing ontoGrapher data (this will only be done once)...", false);
 					initRestrictions();
-					addRelationships();
-					initConnections();
-					await setupDiagrams(diagram);
-					await updateProjectSettings(contextIRI, contextEndpoint);
+					setSchemeColors(ProjectSettings.viewColorPool);
+					await processTransaction(ProjectSettings.contextEndpoint, mergeTransactions(updateProjectSettings(contextIRI), updateLinks()));
+					setupDiagrams(diagram);
 					this.forceUpdate();
-					this.elementPanel.current?.forceUpdate();
-					this.handleChangeLoadingStatus(false, Locale[this.state.projectLanguage].workspaceReady, false);
+					this.itemPanel.current?.forceUpdate();
+					this.handleChangeLoadingStatus(false, "✔ Workspace ready.", false, false);
+				} else {
+					this.handleChangeLoadingStatus(false, Locale[ProjectSettings.viewLanguage].pleaseReload, false)
 				}
             })
         });
-	}
-
-	selectDefaultPackage() {
-		for (let pkg of PackageRoot.children) {
-			if (pkg.scheme && !Schemes[pkg.scheme].readOnly) {
-				ProjectSettings.selectedPackage = pkg;
-				return;
-			}
-		}
-		ProjectSettings.selectedPackage = new PackageNode(initLanguageObject(Locale[this.state.projectLanguage].untitledPackage), PackageRoot, false, createNewScheme());
 	}
 
 	validate() {
@@ -192,6 +183,7 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 		return (<div className={"app"}>
 			<MenuPanel
 				ref={this.menuPanel}
+				retry={this.state.retry}
 				loading={this.state.loading}
 				newProject={this.newProject}
 				status={this.state.status}
@@ -200,7 +192,7 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 				loadContext={this.loadVocabularies}
 				handleChangeLanguage={this.handleChangeLanguage}
 				update={() => {
-					this.elementPanel.current?.update();
+					this.itemPanel.current?.update();
 				}}
 				closeDetailPanel={() => {
 					this.detailPanel.current?.hide();
@@ -211,24 +203,32 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 				handleChangeLoadingStatus={this.handleChangeLoadingStatus}
 			/>
 			<ItemPanel
-				ref={this.elementPanel}
+				ref={this.itemPanel}
 				handleWidth={(width: number) => {
 					this.setState({widthLeft: width})
 				}}
 				projectLanguage={this.state.projectLanguage}
 				handleChangeLoadingStatus={this.handleChangeLoadingStatus}
+				error={this.state.error}
+				update={() => {
+					this.detailPanel.current?.hide();
+					unHighlightAll();
+				}}
 			/>
 			<DiagramPanel
 				handleChangeLoadingStatus={this.handleChangeLoadingStatus}
-				projectLanguage={this.state.projectLanguage}/>
+				error={this.state.error}
+				update={() => {
+					this.itemPanel.current?.forceUpdate();
+					this.detailPanel.current?.hide();
+				}}
+			/>
 			<DetailPanel
+				error={this.state.error}
 				ref={this.detailPanel}
 				projectLanguage={this.state.projectLanguage}
-				resizeElem={(id: string) => {
-					this.canvas.current?.resizeElem(id);
-				}}
 				update={() => {
-					this.elementPanel.current?.forceUpdate();
+					this.itemPanel.current?.forceUpdate();
 					this.detailPanel.current?.forceUpdate();
 				}}
 				handleChangeLoadingStatus={this.handleChangeLoadingStatus}
@@ -256,11 +256,14 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 					this.detailPanel.current?.hide();
 					this.setState({widthRight: 0});
 				}}
-				updateElementPanel={(position?: { x: number, y: number }) => {
-					this.elementPanel.current?.update(position);
+				updateElementPanel={() => {
+					this.itemPanel.current?.update();
+				}}
+				updateDetailPanel={() => {
 					this.detailPanel.current?.update();
 				}}
 				handleChangeLoadingStatus={this.handleChangeLoadingStatus}
+				error={this.state.error}
 			/>
 		</div>);
 	}

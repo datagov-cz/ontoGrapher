@@ -1,17 +1,18 @@
 import React from 'react';
 import {PackageNode} from "../../datatypes/PackageNode";
-import {ProjectElements, ProjectSettings, VocabularyElements} from "../../config/Variables";
+import {ProjectElements, Schemes, VocabularyElements} from "../../config/Variables";
 import {getLabelOrBlank} from "../../function/FunctionGetVars";
 
 interface Props {
     node: PackageNode;
-    depth: number;
     update: Function;
     projectLanguage: string;
     openEditPackage: Function;
     openRemovePackage: Function;
     readOnly: boolean;
-    flash: boolean;
+    showCheckbox: boolean;
+    handleShowCheckbox: Function;
+    checkboxChecked: boolean;
 }
 
 interface State {
@@ -28,9 +29,15 @@ export default class PackageFolder extends React.Component<Props, State> {
         }
     }
 
+    componentDidUpdate(prevProps: Readonly<Props>, prevState: Readonly<State>, snapshot?: any) {
+        if (prevProps !== this.props && this.state.open !== this.props.node.open) {
+            this.setState({open: this.props.node.open});
+        }
+    }
+
     movePackageItem(parse: any) {
         let id = parse.id;
-		let oldpkg = ProjectElements[id].package;
+        let oldpkg = ProjectElements[id].package;
         oldpkg.elements.splice(oldpkg.elements.indexOf(id), 1);
         ProjectElements[id].package = this.props.node;
         if (this.props.node.scheme) VocabularyElements[ProjectElements[id].iri].inScheme = this.props.node.scheme;
@@ -41,27 +48,36 @@ export default class PackageFolder extends React.Component<Props, State> {
     render() {
         return (
             <div
-                onMouseOver={() => {
+                onMouseEnter={() => {
                     this.setState({hover: true})
                 }}
-                onMouseOut={() => {
+                onMouseLeave={() => {
                     this.setState({hover: false})
                 }}
-                onDragOver={(event) => {
-                    event.preventDefault();
-                }}
-                onDrop={(event) => {
+                onClick={(event) => {
                     event.stopPropagation();
-                    if (!this.props.readOnly) this.movePackageItem(JSON.parse(event.dataTransfer.getData("newClass")));
+                    if (event.shiftKey) {
+                        this.props.handleShowCheckbox();
+                    } else {
+                        this.setState({open: !this.state.open});
+                        this.props.node.open = !this.props.node.open;
+                        this.props.update();
+                    }
                 }}
-                onClick={() => {
-                    this.setState({open: !this.state.open});
-                    this.props.node.open = !this.props.node.open;
-                    this.props.update();
-                }}
-                className={"packageFolder" + (this.state.open ? " open" : "") + (ProjectSettings.selectedPackage === this.props.node ? " defaultPackage" : "") + ((ProjectSettings.selectedPackage === this.props.node && this.props.flash) ? " flash" : "")}
-                style={{marginLeft: (this.props.depth - 1) * 20 + "px"}}>
-                {(this.props.readOnly ? "📑📁" : "✏📁") + getLabelOrBlank(this.props.node.labels, this.props.projectLanguage)}
+                className={"packageFolder" + (this.state.open ? " open" : "")}
+                style={{
+                    backgroundColor: this.props.node.scheme ? Schemes[this.props.node.scheme].color : "#FFF"
+                }}>
+                {(this.state.hover || this.props.showCheckbox) && <span className="packageOptions">
+                    <input type="checkbox" checked={this.props.checkboxChecked}
+                           onClick={(event) => {
+                               event.stopPropagation();
+                               this.props.handleShowCheckbox();
+                           }}
+                           onChange={() => {
+                           }}/>
+                </span>}
+                {(this.props.readOnly ? "📑" : "✏") + getLabelOrBlank(this.props.node.labels, this.props.projectLanguage)}
                 {this.state.open ?
                     this.props.children
                     : <span/>}

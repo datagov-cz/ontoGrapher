@@ -6,6 +6,7 @@ import {validateWorkspace} from "../interface/ValidationInterface";
 import {ProjectElements, ProjectLinks, ProjectSettings, VocabularyElements} from "../config/Variables";
 import {graph} from "../graph/Graph";
 import IRIlabel from "../components/IRIlabel";
+import {highlightCell} from "../function/FunctionGraph";
 import {Locale} from "../config/Locale";
 
 interface Props {
@@ -53,8 +54,10 @@ export default class ValidationPanel extends React.Component<Props, State> {
 
 	async validate() {
 		this.setState({loading: true, error: false});
-		let results = await validateWorkspace(ProjectSettings.contextIRI, ProjectSettings.selectedLanguage);
-		if (results !== {}) {
+		let results = await validateWorkspace(ProjectSettings.contextIRI, ProjectSettings.selectedLanguage).catch(() => {
+			return false;
+		});
+		if (results) {
 			this.setState({
 				conforms: results.conforms,
 				results: results.results
@@ -69,17 +72,25 @@ export default class ValidationPanel extends React.Component<Props, State> {
 	focus(node: string) {
 		let cellElem = graph.getElements().find(element => ProjectElements[element.id].iri === node);
 		let cellLink = graph.getLinks().find(element => ProjectLinks[element.id].iri === node);
-		if (cellElem) cellElem.attr({body: {stroke: '#FFFF00'}});
-		if (cellLink) cellLink.attr({line: {stroke: '#FFFF00'}});
+		if (cellElem) if (typeof cellElem.id === "string") {
+			highlightCell(cellElem.id, '#FFFF00');
+		}
+		if (cellLink) if (typeof cellLink.id === "string") {
+			highlightCell(cellLink.id, '#FFFF00');
+		}
 	}
 
 	highlight() {
 		let iriList = this.state.results.map(result => result.focusNode);
 		graph.getCells().forEach(cell => {
 			if (cell.id in ProjectElements && iriList.includes(ProjectElements[cell.id].iri)) {
-				cell.attr({body: {stroke: '#FF0000'}});
+				if (typeof cell.id === "string") {
+					highlightCell(cell.id, '#FF0000');
+				}
 			} else if (cell.id in ProjectLinks && iriList.includes(ProjectLinks[cell.id].iri)) {
-				cell.attr({line: {stroke: '#FF0000'}});
+				if (typeof cell.id === "string") {
+					highlightCell(cell.id, '#FF0000');
+				}
 			}
 		})
 	}
@@ -93,23 +104,23 @@ export default class ValidationPanel extends React.Component<Props, State> {
 							  resizeHandles={['ne']}
 		>
 			<div className={"top"}>
-				<h4>{Locale[this.props.projectLanguage].validation}</h4>
+				<h4>{Locale[ProjectSettings.viewLanguage].validation}</h4>
 				<span className="right">
 				<Button onClick={() => {
 					this.validate()
-				}}>{Locale[this.props.projectLanguage].validationReload}</Button>
+				}}>{Locale[ProjectSettings.viewLanguage].validationReload}</Button>
 				<Button variant={"secondary"}
-						onClick={() => this.props.close()}>{Locale[this.props.projectLanguage].close}</Button>
+						onClick={() => this.props.close()}>{Locale[ProjectSettings.viewLanguage].close}</Button>
 					</span>
 			</div>
 			{this.state.conforms &&
-            <div className={"centered"}>{"✅" + Locale[this.props.projectLanguage].conforms}</div>}
+            <div className={"centeredValidation"}>{"✅" + Locale[ProjectSettings.viewLanguage].conforms}</div>}
 			{this.state.error &&
-            <div className={"centered"}>{"✅" + Locale[this.props.projectLanguage].validationLoadingError}</div>}
+            <div className={"centeredValidation"}>{Locale[ProjectSettings.viewLanguage].validationLoadingError}</div>}
 			{this.state.loading && <div className={"centered"}><Spinner animation={"border"}/></div>}
 			{(!this.state.loading && !this.state.conforms && !this.state.error) &&
             <div style={{overflow: "auto", height: "inherit"}}><TableList
-                headings={[Locale[this.props.projectLanguage].validationNumber, Locale[this.props.projectLanguage].validationSeverity, Locale[this.props.projectLanguage].validationName, Locale[this.props.projectLanguage].validationError]}>
+                headings={[Locale[ProjectSettings.viewLanguage].validationNumber, Locale[ProjectSettings.viewLanguage].validationSeverity, Locale[ProjectSettings.viewLanguage].validationName, Locale[ProjectSettings.viewLanguage].validationError]}>
 				{this.state.results.map((result, i) => <tr>
 					<td>
 						<button className={"buttonlink"} onClick={() => this.focus(result.focusNode)}>{i + 1}</button>

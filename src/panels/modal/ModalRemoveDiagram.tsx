@@ -2,7 +2,7 @@ import React from 'react';
 import {Button, Modal} from "react-bootstrap";
 import {Diagrams, ProjectSettings} from "../../config/Variables";
 import {changeDiagrams} from "../../function/FunctionDiagram";
-import {updateProjectSettings} from "../../interface/TransactionInterface";
+import {processTransaction, updateProjectSettings} from "../../interface/TransactionInterface";
 import {Locale} from "../../config/Locale";
 
 interface Props {
@@ -11,7 +11,6 @@ interface Props {
 	close: Function;
 	update: Function;
 	handleChangeLoadingStatus: Function;
-	projectLanguage: string;
 }
 
 export default class ModalRemoveDiagram extends React.Component<Props> {
@@ -22,11 +21,11 @@ export default class ModalRemoveDiagram extends React.Component<Props> {
 		if (ProjectSettings.selectedDiagram === this.props.diagram) {
 			changeDiagrams(0);
 		}
-		updateProjectSettings(ProjectSettings.contextIRI, ProjectSettings.contextEndpoint).then(result => {
+		processTransaction(ProjectSettings.contextEndpoint, updateProjectSettings(ProjectSettings.contextIRI)).then(result => {
 			if (result) {
 				this.props.handleChangeLoadingStatus(false, "", false);
 			} else {
-				this.props.handleChangeLoadingStatus(false, "", true);
+				this.props.handleChangeLoadingStatus(false, Locale[ProjectSettings.viewLanguage].errorUpdating, true);
 			}
 		})
 	}
@@ -35,20 +34,20 @@ export default class ModalRemoveDiagram extends React.Component<Props> {
 		return (
 			<Modal centered show={this.props.modal}>
 				<Modal.Header>
-					<Modal.Title>{Locale[this.props.projectLanguage].modalRemoveDiagramTitle}</Modal.Title>
+					<Modal.Title>{Locale[ProjectSettings.viewLanguage].modalRemoveDiagramTitle}</Modal.Title>
 				</Modal.Header>
 				<Modal.Body>
-					<p>{Locale[this.props.projectLanguage].modalRemoveDiagramDescription}</p>
+					<p>{Locale[ProjectSettings.viewLanguage].modalRemoveDiagramDescription}</p>
 				</Modal.Body>
 				<Modal.Footer>
 					<Button onClick={() => {
 						this.setState({modalRemove: false});
-					}} variant="secondary">{Locale[this.props.projectLanguage].cancel}</Button>
+					}} variant="secondary">{Locale[ProjectSettings.viewLanguage].cancel}</Button>
 					<Button onClick={() => {
 						this.save();
 						this.props.update();
 						this.props.close();
-					}}>{Locale[this.props.projectLanguage].confirm}</Button>
+					}}>{Locale[ProjectSettings.viewLanguage].confirm}</Button>
 				</Modal.Footer>
 			</Modal>
 		);

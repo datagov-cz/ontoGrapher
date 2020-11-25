@@ -13,7 +13,7 @@ export class RestrictionObject {
 			this.restriction = restriction;
 			this.target = target;
 			if (init && id) Restrictions[restriction].init(id, this);
-		} else throw new Error(Locale[ProjectSettings.selectedLanguage].errorMissingRestriction)
+		} else throw new Error(Locale[ProjectSettings.viewLanguage].errorMissingRestriction)
 	}
 
 	initRestriction(iri: string) {

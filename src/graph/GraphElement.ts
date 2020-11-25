@@ -2,38 +2,72 @@ import * as joint from "jointjs";
 
 export var graphElement = joint.dia.Element.define('custom.graphElement', {
         attrs: {
-            body: {
-                ref: 'label',
-                refX: '-15%',
-                refY: '-30%',
-                refWidth: '133%',
-                refHeight: '100%',
-                refHeight2: 20,
+            bodyBox: {
+                strokeWidth: 2,
+                stroke: '#000000',
+                fill: '#FFF'
+            },
+            bodyEllipse: {
+                display: "none",
+                visibility: "hidden",
+                strokeWidth: 2,
+                stroke: '#000000',
+                fill: '#FFF'
+            },
+            bodyTrapezoid: {
+                display: "none",
+                visibility: "hidden",
+                strokeWidth: 2,
+                stroke: '#000000',
+                fill: '#FFF'
+            },
+            bodyDiamond: {
+                display: "none",
+                visibility: "hidden",
                 strokeWidth: 2,
                 stroke: '#000000',
                 fill: '#FFF'
             },
             label: {
-                textVerticalAnchor: 'middle',
+                textVerticalAnchor: 'top',
                 textAnchor: 'middle',
-                refX: '50%',
-                refY: '50%'
+                y: 5,
+                fontSize: 16
+            },
+            labelAttrs: {
+                textVerticalAnchor: 'top',
+                textAnchor: 'start',
+                fontSize: 14,
+                y: 25,
+                x: 2
             }
         }
     }, {
         markup: [
             {
                 tagName: 'rect',
-                selector: 'body',
+                selector: 'bodyBox',
+            },
+            {
+                tagName: 'ellipse',
+                selector: 'bodyEllipse',
+            },
+            {
+                tagName: 'polygon',
+                selector: 'bodyTrapezoid',
+            },
+            {
+                tagName: 'polygon',
+                selector: 'bodyDiamond',
             },
             {
                 tagName: 'text',
                 selector: 'label'
-            },]
+            },
+            {
+                tagName: 'text',
+                selector: 'labelAttrs'
+            }
+        ]
     },
-    {
-        create: function (id: string) {
-            return new this({id: id});
-        }
-    }
 );

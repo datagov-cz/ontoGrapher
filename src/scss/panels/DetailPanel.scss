@@ -7,6 +7,15 @@
   height: calc(100vh - 56px) !important;
   max-width: 600px;
 
+  &.disabled {
+    cursor: not-allowed;
+  }
+
+  .disabled {
+    pointer-events: none;
+    opacity: 0.5;
+  }
+
   .detailTitle {
     margin: 10px 20px;
   }
@@ -25,7 +34,7 @@
   .close {
     position: absolute;
     right: 20px;
-    top: 10px;
+    top: 0;
   }
 
   .card-header {

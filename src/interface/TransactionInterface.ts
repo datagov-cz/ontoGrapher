@@ -7,21 +7,18 @@ import {
 	Schemes,
 	VocabularyElements
 } from "../config/Variables";
-import {getRestrictionsAsJSON} from "../function/FunctionRestriction";
-import {Restrictions} from "../config/Restrictions";
 import {LinkConfig} from "../config/LinkConfig";
+import {constructProjectLinkLD} from "../function/FunctionConstruct";
 
-export async function updateProjectElement(
-	contextEndpoint: string,
-	source: string,
+export function updateProjectElement(
 	newTypes: string[],
 	newLabels: { [key: string]: string },
 	newDefinitions: { [key: string]: string },
-	id: string): Promise<boolean> {
+	id: string): { add: string[], delete: string[], update: string[] } {
 	let iri = ProjectElements[id].iri;
 	let scheme = VocabularyElements[iri].inScheme;
 	let delTypes = VocabularyElements[iri].types;
-	let addRestrictions: { [key: string]: any } = {};
+	let topConcept = VocabularyElements[iri].topConcept;
 	let addDefinitions: { "@value": string, "@language": string }[] = [];
 	let addLabels: { "@value": string, "@language": string }[] = [];
 
@@ -31,10 +28,6 @@ export async function updateProjectElement(
 
 	Object.keys(newDefinitions).forEach((lang) => {
 		if (newDefinitions[lang] !== "") addDefinitions.push({"@value": newDefinitions[lang], "@language": lang});
-	})
-
-	Object.keys(Restrictions).forEach((restriction) => {
-		addRestrictions[restriction] = {"@type": "@id"};
 	})
 
 	let addLD = {
@@ -47,7 +40,7 @@ export async function updateProjectElement(
 			"og:iri": {"@type": "@id"},
 			"og:context": {"@type": "@id"},
 			"http://www.w3.org/2002/07/owl#onProperty": {"@type": "@id"},
-			...addRestrictions
+			"skos:hasTopConcept": {"@type": "@id"},
 		},
 		"@id": Schemes[scheme].graph,
 		"@graph": [
@@ -57,15 +50,17 @@ export async function updateProjectElement(
 				"skos:prefLabel": addLabels,
 				"skos:definition": addDefinitions,
 				"skos:inScheme": scheme,
-				"rdfs:subClassOf": getRestrictionsAsJSON(iri)
 			},
+			(topConcept && {
+				"@id": scheme,
+				"skos:hasTopConcept": iri
+			}),
 			{
 				"@id": iri + "/diagram",
 				"@type": "og:element",
 				"og:context": ProjectSettings.contextIRI,
 				"og:id": id,
 				"og:iri": iri,
-				"og:untitled": ProjectElements[id].untitled,
 				"og:diagram": ProjectElements[id].diagrams.map((diag) => (iri + "/diagram-" + (diag + 1))),
 				"og:active": ProjectElements[id].active,
 			},
@@ -74,8 +69,8 @@ export async function updateProjectElement(
 					"@id": iri + "/diagram-" + (diag + 1),
 					"@type": "og:elementDiagram",
 					"og:index": diag,
-					"og:position-x": ProjectElements[id].position[diag].x,
-					"og:position-y": ProjectElements[id].position[diag].y,
+					"og:position-x": Math.round(ProjectElements[id].position[diag].x),
+					"og:position-y": Math.round(ProjectElements[id].position[diag].y),
 					"og:hidden": ProjectElements[id].hidden[diag]
 				}
 			}),
@@ -108,66 +103,114 @@ export async function updateProjectElement(
 						"@value": VocabularyElements[iri].definitions[lang],
 						"@language": lang
 					}
-				}),
-				"skos:inScheme": scheme,
+				})
 			}
 		]
 	}
 
-	// let delRestrictions = await processGetTransaction(contextEndpoint, {
-	// 	subject: iri,
-	// 	predicate: encodeURIComponent(parsePrefix("rdfs", "subClassOf"))
-	// }).catch(() => false);
-	// if (typeof delRestrictions === "string") {
-	// 	await processTransaction(contextEndpoint, {"delete": JSON.parse(delRestrictions)}).catch(() => false);
-	// } else return false;
-
 	let addStrings: string[] = [JSON.stringify(addLD)];
 	let delStrings: string[] = [JSON.stringify(deleteLD)];
-
-	let delDiagramString = await processGetTransaction(contextEndpoint, {subject: iri + "/diagram"}).catch(() => false);
-	if (typeof delDiagramString === "string") delStrings.push(delDiagramString); else return false;
-	for (const restr of VocabularyElements[iri].restrictions) {
-		let i = VocabularyElements[iri].restrictions.indexOf(restr);
-		let delString = await processGetTransaction(contextEndpoint, {subject: iri + "/restriction-" + (i + 1)}).catch(() => false);
-		if (typeof delString === "string") {
-			delStrings.push(delString);
-		} else return false;
-	}
-
-	for (const diag of ProjectElements[id].diagrams) {
-		let delString = await processGetTransaction(contextEndpoint, {subject: iri + "/diagram-" + (diag + 1)}).catch(() => false);
-		if (typeof delString === "string") {
-			delStrings.push(delString);
-		} else return false;
-	}
-
-
-	return await processTransaction(contextEndpoint, {add: addStrings, delete: delStrings});
+	let updateStrings: string[] = updateDeleteTriples(iri + "/diagram", Schemes[scheme].graph, false, false);
+	updateStrings.concat(...ProjectElements[id].diagrams.map(diag =>
+		updateDeleteTriples(iri + "/diagram-" + (diag + 1), Schemes[scheme].graph, false, false)
+	))
+	return {add: addStrings, delete: delStrings, update: updateStrings}
 }
 
-export async function updateProjectLink(contextEndpoint: string, id: string) {
-	let linkIRI = ProjectSettings.ontographerContext + "-" + id;
-	let cardinalities: { [key: string]: string } = {};
-	let vertices: { "@id": string, "@type": "og:vertex", "og:index": number, "og:position-x": number, "og:position-y": number }[] = [];
-	if (ProjectLinks[id].sourceCardinality) {
-		cardinalities["og:sourceCardinality1"] = ProjectLinks[id].sourceCardinality.getFirstCardinality();
-		cardinalities["og:sourceCardinality2"] = ProjectLinks[id].sourceCardinality.getSecondCardinality();
-	}
-	if (ProjectLinks[id].targetCardinality) {
-		cardinalities["og:targetCardinality1"] = ProjectLinks[id].targetCardinality.getFirstCardinality();
-		cardinalities["og:targetCardinality2"] = ProjectLinks[id].targetCardinality.getSecondCardinality();
+export function updateProjectElementDiagram(id: string, diagram: number): { add: string[], delete: string[], update: string[] } {
+
+	let iri = ProjectElements[id].iri;
+	let scheme = VocabularyElements[iri].inScheme;
+
+	let addLD = {
+		"@context": {
+			...Prefixes,
+			"og:diagram": {"@type": "@id"},
+		},
+		"@id": Schemes[scheme].graph,
+		"@graph": [
+			{
+				"@id": iri + "/diagram",
+				"og:diagram": iri + "/diagram-" + (diagram + 1),
+			},
+			{
+				"@id": iri + "/diagram-" + (diagram + 1),
+				"@type": "og:elementDiagram",
+				"og:index": diagram,
+				"og:position-x": Math.round(ProjectElements[id].position[diagram].x),
+				"og:position-y": Math.round(ProjectElements[id].position[diagram].y),
+				"og:hidden": ProjectElements[id].hidden[diagram]
+			}
+		]
 	}
 
-	ProjectLinks[id].vertices.forEach((vertex, i) => {
-		vertices.push({
-			"@id": linkIRI + "/vertex-" + (i + 1),
-			"@type": "og:vertex",
-			"og:index": i,
-			"og:position-x": Math.round(vertex.x),
-			"og:position-y": Math.round(vertex.y)
-		})
-	})
+	let updString: string[] = updateDeleteTriples(iri + "/diagram-" + (diagram + 1), Schemes[scheme].graph, false, false);
+	return {add: [JSON.stringify(addLD)], delete: [], update: updString}
+}
+
+export function updateProjectLinkVertex(id: string, vertices: number[]): { add: string[], delete: string[], update: string[] } {
+
+	let linkIRI = ProjectSettings.ontographerContext + "-" + id;
+
+	let updateStrings = vertices.map(i =>
+		("<" + (linkIRI + "/diagram-" + (ProjectSettings.selectedDiagram + 1) + "/vertex-" + (i + 1) + "> og:position-x ?x" + i + ". " +
+			"<" + linkIRI + "/diagram-" + (ProjectSettings.selectedDiagram + 1) + "/vertex-" + (i + 1) + "> og:position-y ?y" + i + ".")));
+
+	let update1 = [
+		"PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
+		"insert data { graph <" + ProjectSettings.ontographerContext + "> {",
+		...vertices.map(i => ("<" + linkIRI + "> og:vertex <" + linkIRI + "/diagram-" + (ProjectSettings.selectedDiagram + 1) + "/vertex-" + (i + 1) + ">.")),
+		...vertices.map(i => {
+			let vertexIRI = "<" + linkIRI + "/diagram-" + (ProjectSettings.selectedDiagram + 1) + "/vertex-" + (i + 1) + "> ";
+			return vertexIRI + "a og:vertex." +
+				vertexIRI + "og:index \"" + i + "\"." +
+				vertexIRI + "og:diagram \"" + ProjectSettings.selectedDiagram + "\"." +
+				vertexIRI + "og:position-x \"" + Math.round(ProjectLinks[id].vertices[ProjectSettings.selectedDiagram][i].x) + "\"." +
+				vertexIRI + "og:position-y \"" + Math.round(ProjectLinks[id].vertices[ProjectSettings.selectedDiagram][i].y) + "\".";
+		}),
+		"}}"
+	].join(" ");
+
+	let update2 = [
+		"PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
+		"with <" + ProjectSettings.ontographerContext + "> delete {",
+		...updateStrings,
+		"} where {",
+		...updateStrings,
+		"}"
+	].join(" ");
+
+	return {add: [], delete: [], update: [update2, update1]};
+}
+
+export function updateDeleteProjectLinkVertex(id: string, from: number, to: number): { add: string[], delete: string[], update: string[] } {
+	let linkIRI = ProjectSettings.ontographerContext + "-" + id;
+	let vars = [];
+
+	for (let i = from; i < to; i++) {
+		vars.push(i);
+	}
+
+	let delLD = {
+		"@context": {
+			...Prefixes,
+			"og:vertex": {"@type": "@id"},
+		},
+		"@id": ProjectSettings.ontographerContext,
+		"@graph": [
+			{
+				"@id": linkIRI,
+				"og:vertex": vars.map(i => (linkIRI + "/diagram-" + (ProjectSettings.selectedDiagram + 1) + "/vertex-" + (i + 1)))
+					.concat(vars.map(i => (linkIRI + "/vertex-" + (i + 1))))
+			}
+		]
+	};
+
+	return {add: [], delete: [JSON.stringify(delLD)], update: []}
+}
+
+export function updateProjectLink(id: string): { add: string[], delete: string[], update: string[] } {
+	let linkIRI = ProjectSettings.ontographerContext + "-" + id;
 
 	let addLD = {
 		"@context": {
@@ -179,66 +222,81 @@ export async function updateProjectLink(contextEndpoint: string, id: string) {
 			"og:vertex": {"@type": "@id"},
 		},
 		"@id": ProjectSettings.ontographerContext,
-		"@graph": [{
-			"@id": linkIRI,
-			"@type": "og:link",
-			"og:id": id,
-			"og:context": ProjectSettings.contextIRI,
-			"og:iri": ProjectLinks[id].iri,
-			"og:active": ProjectLinks[id].active,
-			"og:source-id": ProjectLinks[id].source,
-			"og:target-id": ProjectLinks[id].target,
-			"og:source": ProjectElements[ProjectLinks[id].source].iri,
-			"og:target": ProjectElements[ProjectLinks[id].target].iri,
-			"og:type": ProjectLinks[id].type,
-			...cardinalities,
-			"og:vertex": vertices.map(vert => vert["@id"])
-		},
-			...vertices
-		]
-	}
-
-	let delString = "";
-	let del = await processGetTransaction(contextEndpoint, {subject: linkIRI}).catch(() => false);
-	if (typeof del === "string") {
-		delString = del;
+		"@graph": [...constructProjectLinkLD(ProjectSettings.contextEndpoint, id)]
 	}
 
 	let addStrings: string[] = [JSON.stringify(addLD)];
-	let delStrings: string[] = delString === "" ? [] : [delString];
+	let updString: string[] = updateDeleteTriples(linkIRI, ProjectSettings.ontographerContext, false, false);
 
-	for (let vert of ProjectLinks[id].vertices) {
-		let i = ProjectLinks[id].vertices.indexOf(vert);
-		let del = await processGetTransaction(contextEndpoint, {subject: linkIRI + "/vertex-" + (i + 1)}).catch(() => false);
-		if (typeof del === "string") {
-			delStrings.push(del);
+
+	for (let diag in ProjectLinks[id].vertices) {
+		for (let vert of ProjectLinks[id].vertices[diag]) {
+			let i = ProjectLinks[id].vertices[diag].indexOf(vert);
+			updString.push(
+				...updateDeleteTriples(linkIRI + "/diagram-" + (diag + 1) + "/vertex-" + (i + 1), ProjectSettings.ontographerContext, false, false));
 		}
 	}
 
-	return await processTransaction(contextEndpoint, {"add": addStrings, delete: delStrings}).catch(() => false);
+	return {add: addStrings, delete: [], update: updString};
 }
 
-export async function updateDeleteProjectElement(contextEndpoint: string, iri: string) {
-	let subjectLD = await processGetTransaction(contextEndpoint, {subject: iri}).catch(() => false);
-	let predicateLD = await processGetTransaction(contextEndpoint, {predicate: iri}).catch(() => false);
-	let objectLD = await processGetTransaction(contextEndpoint, {object: iri}).catch(() => false);
-	if (typeof subjectLD === "string" && typeof predicateLD === "string" && typeof objectLD === "string") {
-		return await processTransaction(contextEndpoint, {add: [], "delete": [subjectLD]}) &&
-			await processTransaction(contextEndpoint, {add: [], "delete": [predicateLD]}) &&
-			await processTransaction(contextEndpoint, {add: [], "delete": [objectLD]});
-	} else return false;
+export function mergeTransactions(
+	...transactions: { add: string[], delete: string[], update: string[] }[]):
+	{ add: string[], delete: string[], update: string[] } {
+	let add: string[] = [];
+	let del: string[] = [];
+	let upd: string[] = [];
+	transactions.forEach(t => {
+		add.concat(t.add);
+		del.concat(t.delete);
+		upd.concat(t.update);
+	})
+	return {
+		add: add,
+		delete: del,
+		update: upd
+	}
 }
 
-//id: link ID
-export async function updateConnections(contextEndpoint: string, id: string, del: string[]) {
+export function updateDeleteTriples(iri: string, context: string, bNodesFirst: boolean = false, removeObjects: boolean = true): string[] {
+	let queries: string[] = [[
+		"with <" + context + "> delete {",
+		"<" + iri + "> ?p ?o.",
+		"} where {",
+		"<" + iri + "> ?p ?o.",
+		"}"
+	].join(" ")];
+	if (removeObjects) queries.push([
+		"with <" + context + "> delete {",
+		"?s ?p <" + iri + ">.",
+		"} where {",
+		"?s ?p <" + iri + ">.",
+		"}"
+	].join(" "));
+	if (bNodesFirst) queries.unshift([
+		"PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>",
+		"PREFIX owl: <http://www.w3.org/2002/07/owl#>",
+		"PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>",
+		"with <" + context + ">",
+		"delete {",
+		"<" + iri + "> rdfs:subClassOf ?b.",
+		"?b ?p ?o.",
+		"} where {",
+		"<" + iri + "> rdfs:subClassOf ?b.",
+		"filter(isBlank(?b)).",
+		"?b ?p ?o.",
+		"}"
+	].join(" "));
+	return queries;
+}
 
-	let addLD = LinkConfig[ProjectLinks[id].type].add(id);
-	let deleteLD = LinkConfig[ProjectLinks[id].type].delete(id, del);
+export function updateConnections(id: string) {
 
-	return await processTransaction(contextEndpoint, {
-		"add": [JSON.stringify(addLD)],
-		"delete": [JSON.stringify(deleteLD)]
-	});
+	return {
+		"add": [],
+		"delete": [],
+		"update": LinkConfig[ProjectLinks[id].type].update(id)
+	};
 }
 
 export function getTransactionID(contextEndpoint: string) {
@@ -257,61 +315,55 @@ export function getTransactionID(contextEndpoint: string) {
 	})
 }
 
-export async function processGetTransaction(contextEndpoint: string, request: { subject?: string, predicate?: string, object?: string }) {
+export async function processTransaction(contextEndpoint: string, transactions: { add: string[], delete: string[], update: string[] }): Promise<boolean> {
+	ProjectSettings.lastTransaction = transactions
+
 	const transactionID = await getTransactionID(contextEndpoint);
 
 	if (transactionID) {
-		let transactionUrl = transactionID + "?action=GET" +
-			(request.subject ? "&subj=<" + (request.subject) + ">" : "") +
-			(request.predicate ? "&pred=<" + (request.predicate) + ">" : "") +
-			(request.object ? "&obj=<" + (request.object) + ">" : "");
-		return await fetch(transactionUrl, {
-			headers: {'Accept': "application/ld+json"},
-			method: "PUT"
-		}).then(response => response.text()).catch(() => {
-			return null;
-		});
-	} else return null;
-}
 
-export async function processTransaction(contextEndpoint: string, transactions: { add: string[], delete: string[] }): Promise<boolean> {
-	const transactionID = await getTransactionID(contextEndpoint);
+		for (let update of transactions.update) {
+			let resultUpdate = await fetch(transactionID + "?action=UPDATE&update=" + encodeURIComponent(update), {
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				method: "PUT",
+			}).then(response => response.ok)
+			if (!resultUpdate) return false;
+		}
 
-	if (transactionID) {
-		let resultAdd, resultDelete, resultCommit;
 		for (let del of transactions.delete) {
-			resultDelete = await fetch(transactionID + "?action=DELETE", {
+			let resultDelete = await fetch(transactionID + "?action=DELETE", {
 				headers: {
 					'Content-Type': 'application/ld+json'
 				},
 				method: "PUT",
 				body: del
 			}).then(response => response.ok)
+			if (!resultDelete) return false;
 		}
 
 		for (let add of transactions.add) {
-			resultAdd = await fetch(transactionID + "?action=ADD", {
+			let resultAdd = await fetch(transactionID + "?action=ADD", {
 				headers: {
 					'Content-Type': 'application/ld+json'
 				},
 				method: "PUT",
 				body: add
 			}).then(response => response.ok)
+			if (!resultAdd) return false;
 		}
 
-		resultCommit = await fetch(transactionID + "?action=COMMIT", {
+		return await fetch(transactionID + "?action=COMMIT", {
 			headers: {
 				'Content-Type': 'application/json'
 			},
 			method: "PUT"
 		}).then(response => response.ok)
-
-		return ((resultAdd ? resultAdd : true) && (resultDelete ? resultDelete : true) && resultCommit);
 	} else return false;
 }
 
-export async function updateProjectSettings(contextIRI: string, contextEndpoint: string) {
-
+export function updateProjectSettings(contextIRI: string): { add: string[], delete: string[], update: string[] } {
 	let contextLD = {
 		"@context": {
 			...Prefixes,
@@ -347,10 +399,9 @@ export async function updateProjectSettings(contextIRI: string, contextEndpoint:
 			{
 				"@id": ProjectSettings.ontographerContext + contextInstance,
 				"og:context": contextIRI,
-				"og:selectedDiagram": ProjectSettings.selectedDiagram,
-				"og:selectedLanguage": ProjectSettings.selectedLanguage,
-				"og:diagram": Diagrams.map((diag, i) => ProjectSettings.ontographerContext + contextInstance + "/diagram-" + (i + 1)),
-				"og:initialized": true
+				"og:viewColor": ProjectSettings.viewColorPool,
+				"og:diagram": Diagrams.map((diag, i) =>
+					ProjectSettings.ontographerContext + contextInstance + "/diagram-" + (i + 1))
 			},
 			...(Diagrams).filter(diag => diag.active).map((diag, i) => {
 				return {
@@ -364,20 +415,15 @@ export async function updateProjectSettings(contextIRI: string, contextEndpoint:
 	}
 
 	let addStrings = [JSON.stringify(contextLD), JSON.stringify(ogContextLD)];
-	let delStrings: string[] = [];
+	let updStrings: string[] = [];
+	updStrings.push(
+		...updateDeleteTriples(ProjectSettings.ontographerContext, ProjectSettings.ontographerContext, false, false));
 
-	let delString = await processGetTransaction(ProjectSettings.contextEndpoint, {subject: ProjectSettings.ontographerContext}).catch(() => false);
-	if (typeof delString === "string") {
-		delStrings.push(delString);
+	for (let i = 0; i < (Diagrams.length + 1); i++) {
+		updStrings.push(
+			...updateDeleteTriples(ProjectSettings.ontographerContext + contextInstance + "/diagram-" + (i + 1),
+				ProjectSettings.ontographerContext, false, false));
 	}
 
-	for (const diag of Diagrams) {
-		let i = Diagrams.indexOf(diag);
-		let delString = await processGetTransaction(contextEndpoint, {subject: ProjectSettings.ontographerContext + "/diagram-" + (i + 1)}).catch(() => false);
-		if (typeof delString === "string") {
-			delStrings.push(delString);
-		}
-	}
-
-	return await processTransaction(contextEndpoint, {"add": addStrings, "delete": delStrings});
+	return {add: addStrings, delete: [], update: updStrings};
 }

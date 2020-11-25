@@ -7,6 +7,9 @@ export async function validateWorkspace(context: string, language: string) {
 		method: "GET"
 	}).then(result => result.json()).catch((e) => {
 		console.log(e);
-		return {};
+		return false;
+	}).catch((e) => {
+		console.log(e);
+		return false;
 	});
 }

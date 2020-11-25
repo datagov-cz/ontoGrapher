@@ -2,7 +2,7 @@ import {Diagrams, ProjectElements, ProjectLinks, ProjectSettings} from "../confi
 import * as joint from "jointjs";
 import {graphElement} from "../graph/GraphElement";
 import {graph} from "../graph/Graph";
-import {restoreHiddenElem} from "./FunctionGraph";
+import {drawGraphElement, restoreHiddenElem} from "./FunctionGraph";
 import {Locale} from "../config/Locale";
 
 export function changeDiagrams(diagram: number = 0) {
@@ -15,7 +15,7 @@ export function changeDiagrams(diagram: number = 0) {
 }
 
 export function addDiagram() {
-    Diagrams.push({name: Locale[ProjectSettings.selectedLanguage].untitled, json: {}, active: true});
+    Diagrams.push({name: Locale[ProjectSettings.viewLanguage].untitled, json: {}, active: true});
     for (let key of Object.keys(ProjectElements)) {
         ProjectElements[key].hidden[Diagrams.length - 1] = false;
         ProjectElements[key].position[Diagrams.length - 1] = {x: 0, y: 0};
@@ -65,8 +65,8 @@ export function loadDiagram(load: {
 }) {
     graph.clear();
     for (let elem of load.elements) {
-        // @ts-ignore
-        let cls = graphElement.create(elem.id).prop({
+        let cls = new graphElement({id: elem.id});
+        cls.prop({
             position: elem.pos,
             attrs: {
                 label: {
@@ -75,6 +75,7 @@ export function loadDiagram(load: {
             }
         });
         cls.addTo(graph);
-        restoreHiddenElem(elem.id, cls);
+        drawGraphElement(cls, ProjectSettings.selectedLanguage, ProjectSettings.representation);
+        restoreHiddenElem(elem.id, cls, true);
     }
 }

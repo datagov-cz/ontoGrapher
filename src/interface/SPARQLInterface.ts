@@ -2,8 +2,10 @@ import {Diagrams, Links, ProjectElements, ProjectLinks, ProjectSettings, Schemes
 import {initLanguageObject} from "../function/FunctionEditVars";
 import * as joint from "jointjs";
 import {Cardinality} from "../datatypes/Cardinality";
+import * as _ from "lodash";
 import {createRestriction} from "../function/FunctionRestriction";
-import {CommonVars, Locale} from "../config/Locale";
+import {LinkType} from "../config/Enum";
+import {Locale} from "../config/Locale";
 
 export async function fetchConcepts(
     endpoint: string,
@@ -11,13 +13,12 @@ export async function fetchConcepts(
     sendTo: { [key: string]: any },
     readOnly: boolean,
     graph?: string,
-    callback?: Function,
     getSubProperties?: boolean,
     subPropertyOf?: string,
     requiredType?: boolean,
     requiredTypes?: string[],
     requiredValues?: string[]) {
-    if (!(source in Schemes)) await getScheme(source, endpoint, readOnly, callback);
+    if (!(source in Schemes)) await getScheme(source, endpoint, readOnly);
 
     let result: {
         [key: string]: {
@@ -30,33 +31,39 @@ export async function fetchConcepts(
             subClassOf: string[],
             restrictions: [],
             connections: []
-            type: string,
+            type: number,
+            topConcept?: string;
+            character?: string;
         }
     } = {};
 
     let query = [
         "PREFIX skos: <http://www.w3.org/2004/02/skos/core#>",
         "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>",
-        "SELECT DISTINCT ?term ?termLabel ?termType ?termDefinition ?termDomain ?termRange ?restriction ?restrictionPred ?onProperty ?target ?subClassOf",
+        "PREFIX a-popis-dat-pojem: <http://onto.fel.cvut.cz/ontologies/slovník/agendový/popis-dat/pojem/>",
+        "PREFIX z-sgov-pojem: <https://slovník.gov.cz/základní/pojem/>",
+        "SELECT DISTINCT ?term ?termLabel ?termType ?termDefinition ?termDomain ?termRange ?topConcept ?character ?restriction ?restrictionPred ?onProperty ?target ?subClassOf",
         "WHERE {",
-        graph ? "GRAPH <" + graph + "> {" : "",
-        !subPropertyOf ? "?term skos:inScheme <" + source + ">." : "",
+        graph && "GRAPH <" + graph + "> {",
+        !subPropertyOf && "?term skos:inScheme <" + source + ">.",
         requiredType ? "?term a ?termType." : "OPTIONAL {?term a ?termType.}",
-        subPropertyOf ? "?term rdfs:subPropertyOf <" + subPropertyOf + ">." : "",
-        requiredTypes ? "VALUES ?termType {<" + requiredTypes.join("> <") + ">}" : "",
-        requiredValues ? "VALUES ?term {<" + requiredValues.join("> <") + ">}" : "",
+        subPropertyOf && "?term rdfs:subPropertyOf <" + subPropertyOf + ">.",
+        requiredTypes && "VALUES ?termType {<" + requiredTypes.join("> <") + ">}",
+        requiredValues && "VALUES ?term {<" + requiredValues.join("> <") + ">}",
         "OPTIONAL {?term skos:prefLabel ?termLabel.}",
         "OPTIONAL {?term skos:definition ?termDefinition.}",
+        "OPTIONAL {?term z-sgov-pojem:charakterizuje ?character.}",
         "OPTIONAL {?term rdfs:domain ?termDomain.}",
         "OPTIONAL {?term rdfs:range ?termRange.}",
         "OPTIONAL {?term rdfs:subClassOf ?subClassOf. }",
+        "OPTIONAL {?topConcept skos:hasTopConcept ?term. }",
         "OPTIONAL {?term rdfs:subClassOf ?restriction. ",
         "?restriction a owl:Restriction .",
         "?restriction owl:onProperty ?onProperty.",
         "?restriction ?restrictionPred ?target.",
         "filter (?restrictionPred not in (owl:onProperty, rdf:type))}",
         "}",
-        graph ? "}" : "",
+        graph && "}",
     ].join(" ");
     let q = endpoint + "?query=" + encodeURIComponent(query);
     await fetch(q, {headers: {"Accept": "application/json"}}).then(
@@ -64,7 +71,7 @@ export async function fetchConcepts(
     ).then(data => {
         for (let row of data.results.bindings) {
             if (!(row.term.value in result)) {
-                if (getSubProperties) fetchConcepts(endpoint, source, sendTo, readOnly, graph, callback, getSubProperties, row.term.value, requiredType, requiredTypes, requiredValues);
+                if (getSubProperties) fetchConcepts(endpoint, source, sendTo, readOnly, graph, getSubProperties, row.term.value, requiredType, requiredTypes, requiredValues);
                 result[row.term.value] = {
                     labels: initLanguageObject(""),
                     definitions: initLanguageObject(""),
@@ -73,7 +80,7 @@ export async function fetchConcepts(
                     subClassOf: [],
                     restrictions: [],
                     connections: [],
-                    type: "default"
+                    type: LinkType.DEFAULT
                 }
             }
             if (row.termType && !(result[row.term.value].types.includes(row.termType.value))) result[row.term.value].types.push(row.termType.value);
@@ -81,23 +88,57 @@ export async function fetchConcepts(
             if (row.termDefinition) result[row.term.value].definitions[row.termDefinition['xml:lang']] = row.termDefinition.value;
             if (row.termDomain) result[row.term.value].domain = row.termDomain.value;
             if (row.termRange) result[row.term.value].range = row.termRange.value;
+            if (row.character) result[row.term.value].character = row.character.value;
+            if (row.topConcept) result[row.term.value].topConcept = row.topConcept.value;
             if (row.subClassOf && row.subClassOf.type !== "bnode" && !(result[row.term.value].subClassOf.includes(row.subClassOf.value))) result[row.term.value].subClassOf.push(row.subClassOf.value);
             if (row.restriction && Object.keys(Links).includes(row.onProperty.value)) createRestriction(result, row.term.value, row.restrictionPred.value, row.onProperty.value, row.target);
         }
         Object.assign(sendTo, result);
-        if (callback) callback(true);
+        return true;
     }).catch(() => {
-        if (callback) callback(false);
+        return false;
     });
 }
 
-export async function getScheme(iri: string, endpoint: string, readOnly: boolean, callback?: Function) {
+export async function getAllTypes(iri: string, endpoint: string, targetTypes: string[], targetSubClass: string[], init: boolean = false): Promise<boolean> {
+    let subClassOf: string[] = init ? [iri] : _.cloneDeep(targetSubClass);
+    while (subClassOf.length > 0) {
+        let subc = subClassOf.pop();
+        if (subc) {
+            if (!(targetSubClass.includes(subc))) targetSubClass.push(subc);
+            let query = [
+                "PREFIX skos: <http://www.w3.org/2004/02/skos/core#>",
+                "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>",
+                "SELECT ?type ?subClass",
+                "WHERE {",
+                "<" + subc + "> a ?type.",
+                "<" + subc + "> rdfs:subClassOf ?subClass.",
+                "}",
+            ].join(" ");
+            let q = endpoint + "?query=" + encodeURIComponent(query);
+            await fetch(q, {headers: {'Accept': 'application/json'}}).then(response => {
+                return response.json();
+            }).then(data => {
+                for (let result of data.results.bindings) {
+                    if (!(targetTypes.includes(result.type.value))) targetTypes.push(result.type.value);
+                    if (!(subClassOf.includes(result.subClass.value)) &&
+                        result.subClass.type !== "bnode") subClassOf.push(result.subClass.value);
+                }
+            }).catch(() => {
+                return false;
+            });
+        } else break;
+    }
+    return true;
+}
+
+export async function getScheme(iri: string, endpoint: string, readOnly: boolean, graph?: string) {
     let query = [
         "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>",
         "PREFIX dct: <http://purl.org/dc/terms/>",
         "SELECT DISTINCT ?termLabel ?termTitle ?graph",
         "WHERE {",
-        "GRAPH ?graph {",
+        "GRAPH " + (graph ? ("<" + graph + ">") : ("?graph")) + " {",
         "OPTIONAL { <" + iri + "> dct:title ?termTitle . }",
         "OPTIONAL { <" + iri + "> rdfs:label ?termLabel . }",
         "}",
@@ -108,22 +149,27 @@ export async function getScheme(iri: string, endpoint: string, readOnly: boolean
         return response.json();
     }).then(data => {
         for (let result of data.results.bindings) {
-            if (!(iri in Schemes)) Schemes[iri] = {labels: {}, readOnly: readOnly, graph: ""}
+            if (!(iri in Schemes)) Schemes[iri] = {
+                labels: {},
+                readOnly: readOnly,
+                graph: "",
+                color: "#FFF",
+            }
             if (result.termLabel) Schemes[iri].labels[result.termLabel['xml:lang']] = result.termLabel.value;
             if (result.termTitle) Schemes[iri].labels[result.termTitle['xml:lang']] = result.termTitle.value;
             if (result.graph) Schemes[iri].graph = result.graph.value;
+            else if (graph) Schemes[iri].graph = graph;
         }
     }).catch(() => {
-        if (callback) callback(false);
+        return false;
     });
 }
 
-export async function getElementsConfig(contextIRI: string, contextEndpoint: string, callback?: Function): Promise<boolean> {
+export async function getElementsConfig(contextIRI: string, contextEndpoint: string): Promise<boolean> {
     let elements: {
         [key: string]: {
             id: "",
-            untitled: boolean,
-            diagramIRI: number[],
+            diagramIRI: string[],
             active: boolean,
             diagramPosition: { [key: number]: { x: number, y: number } },
             hidden: { [key: number]: boolean },
@@ -132,15 +178,20 @@ export async function getElementsConfig(contextIRI: string, contextEndpoint: str
     } = {}
     let query = [
         "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
-        "select ?id ?iri ?untitled ?active ?attribute ?property ?diagram where {",
+        "select ?id ?iri ?active ?diagram ?index ?hidden ?posX ?posY where {",
+        "graph ?g {",
         "?elem a og:element .",
         "?elem og:context <" + contextIRI + ">.",
         "?elem og:iri ?iri .",
         "?elem og:id ?id .",
         "?elem og:active ?active .",
-        "?elem og:untitled ?untitled .",
         "?elem og:diagram ?diagram .",
-        "}"
+        "optional {?diagram og:index ?index.",
+        "?diagram og:hidden ?hidden.",
+        "?diagram og:position-x ?posX.",
+        "?diagram og:position-y ?posY.",
+        "}}",
+        "<" + contextIRI + "> <https://slovník.gov.cz/datový/pracovní-prostor/pojem/odkazuje-na-kontext> ?g.}"
     ].join(" ");
     let q = contextEndpoint + "?query=" + encodeURIComponent(query);
     await fetch(q, {headers: {'Accept': 'application/json'}}).then(response => {
@@ -150,79 +201,48 @@ export async function getElementsConfig(contextIRI: string, contextEndpoint: str
             let iri = result.iri.value;
             if (!(iri in elements)) {
                 elements[iri] = {
-                    id: "",
-                    untitled: false,
+                    id: result.id.value,
                     diagramIRI: [],
                     diagrams: [],
-                    active: true,
+                    active: result.active.value === "true",
                     diagramPosition: {},
                     hidden: {},
                 }
             }
-            elements[iri].id = result.id.value;
-            elements[iri].active = result.active.value === "true";
-            elements[iri].untitled = result.untitled.value === "true";
-            elements[iri].diagramIRI.push(result.diagram.value);
-        }
-    }).catch(() => {
-        if (callback) callback(false);
-    });
-    for (let iri in elements) {
-        if (elements[iri].diagramIRI.length > 0) {
-            for (let diag of elements[iri].diagramIRI) {
-                let query = [
-                    "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
-                    "select ?positionX ?positionY ?hidden ?index where {",
-                    "BIND(<" + diag + "> as ?iri) .",
-                    "?iri og:position-y ?positionY .",
-                    "?iri og:position-x ?positionX .",
-                    "?iri og:index ?index .",
-                    "?iri og:hidden ?hidden .",
-                    "}"
-                ].join(" ");
-                let q = contextEndpoint + "?query=" + encodeURIComponent(query);
-                await fetch(q, {headers: {'Accept': 'application/json'}}).then(response => {
-                    return response.json();
-                }).then(data => {
-                    for (let result of data.results.bindings) {
-                        if (result.index) {
-                            let index = parseInt(result.index.value);
-                            elements[iri].diagrams.push(index);
-                            elements[iri].diagramPosition[index] = {
-                                x: parseInt(result.positionX.value),
-                                y: parseInt(result.positionY.value)
-                            };
-                            elements[iri].hidden[index] = result.hidden.value === "true";
-                        }
-                    }
-                }).catch(() => {
-                    if (callback) callback(false);
-                });
+            if (!(elements[iri].diagramIRI.includes(result.diagram.value))) {
+                elements[iri].diagramIRI.push(result.diagram.value);
+                elements[iri].diagrams.push(parseInt(result.index.value));
+                elements[iri].diagramPosition[parseInt(result.index.value)] = {
+                    x: parseInt(result.posX.value),
+                    y: parseInt(result.posY.value)
+                }
+                elements[iri].hidden[parseInt(result.index.value)] = result.hidden.value === "true";
             }
         }
-    }
+    }).catch(() => false);
+
     for (let id in ProjectElements) {
         if (ProjectElements[id].iri in elements) {
-            ProjectElements[id].untitled = elements[ProjectElements[id].iri].untitled;
             ProjectElements[id].hidden = elements[ProjectElements[id].iri].hidden;
             ProjectElements[id].diagrams = elements[ProjectElements[id].iri].diagrams;
             ProjectElements[id].active = elements[ProjectElements[id].iri].active;
             ProjectElements[id].position = elements[ProjectElements[id].iri].diagramPosition;
         }
     }
-    if (callback) callback(true);
     return true;
 }
 
-export async function getSettings(contextIRI: string, contextEndpoint: string, callback?: Function): Promise<boolean> {
+export async function getSettings(contextIRI: string, contextEndpoint: string): Promise<boolean> {
+    let contextInstance = ProjectSettings.contextIRI.substring(ProjectSettings.contextIRI.lastIndexOf("/"));
     let query = [
         "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
-        "select ?diagram ?index ?name where {",
+        "select ?diagram ?index ?name ?color where {",
         "BIND(<" + ProjectSettings.ontographerContext + "> as ?ogContext).",
         "graph ?ogContext {",
         "?diagram og:context <" + contextIRI + "> .",
         "?diagram og:index ?index .",
         "?diagram og:name ?name .",
+        "optional {<" + ProjectSettings.ontographerContext + contextInstance + "> og:viewColor ?color}",
         "}",
         "}"
     ].join(" ");
@@ -233,25 +253,23 @@ export async function getSettings(contextIRI: string, contextEndpoint: string, c
         for (let result of data.results.bindings) {
             if (!(parseInt(result.index.value) in Diagrams)) {
                 Diagrams[parseInt(result.index.value)] = {
-                    name: Locale[ProjectSettings.selectedLanguage].untitled,
+                    name: Locale[ProjectSettings.viewLanguage].untitled,
                     json: {},
                     active: true
                 }
             }
             Diagrams[parseInt(result.index.value)].name = result.name.value;
+            if (result.color) ProjectSettings.viewColorPool = result.color.value;
         }
         if (data.results.bindings.length > 0) ProjectSettings.initialized = true;
-    }).catch(() => {
-        if (callback) callback(false);
-        return false;
-    });
+    }).catch(() => false);
     return true;
 }
 
-export async function getLinksConfig(contextIRI: string, contextEndpoint: string, callback?: Function): Promise<boolean> {
+export async function getLinksConfig(contextIRI: string, contextEndpoint: string): Promise<boolean> {
     let query = [
         "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
-        "select ?id ?iri ?sourceID ?targetID ?source ?active ?target ?sourceCard1 ?sourceCard2 ?targetCard1 ?targetCard2 ?diagram ?vertex ?type where {",
+        "select ?id ?iri ?sourceID ?targetID ?source ?active ?target ?sourceCard1 ?sourceCard2 ?targetCard1 ?targetCard2 ?diagram ?vertex ?type ?index ?posX ?posY where {",
         "?link a og:link .",
         "?link og:id ?id .",
         "?link og:iri ?iri .",
@@ -266,8 +284,12 @@ export async function getLinksConfig(contextIRI: string, contextEndpoint: string
         "?link og:sourceCardinality2 ?sourceCard2 .",
         "?link og:targetCardinality1 ?targetCard1 .",
         "?link og:targetCardinality2 ?targetCard2 .",
-        "OPTIONAL {?link og:vertex ?vertex}",
-        "}"
+        "optional {?link og:vertex ?vertex.",
+        "?vertex og:index ?index.",
+        "?vertex og:position-x ?posX.",
+        "?vertex og:position-y ?posY.",
+        "optional {?vertex og:diagram ?diagram.}",
+        "}}"
     ].join(" ");
     let q = contextEndpoint + "?query=" + encodeURIComponent(query);
     let links: {
@@ -277,14 +299,21 @@ export async function getLinksConfig(contextIRI: string, contextEndpoint: string
             target: string,
             targetID: string,
             sourceID: string,
-            vertexIRI: string[],
-            vertexes: { [key: number]: { x: number, y: number }, },
+            vertexIRI: {
+                [key: string]: {
+                    index: number,
+                    x: number,
+                    y: number,
+                    diagram: number
+                }
+            },
+            vertices: { [key: number]: { [key: number]: { x: number, y: number }, } },
             sourceCardinality1: string,
             sourceCardinality2: string,
             targetCardinality1: string,
             targetCardinality2: string,
             active: boolean,
-            type: string,
+            type: number,
         }
     } = {};
     await fetch(q, {headers: {'Accept': 'application/json'}}).then(response => {
@@ -299,47 +328,36 @@ export async function getLinksConfig(contextIRI: string, contextEndpoint: string
                     targetID: result.targetID.value,
                     sourceID: result.sourceID.value,
                     active: result.active.value === "true",
-                    vertexIRI: [],
-                    vertexes: {},
-                    type: result.type.value,
+                    vertexIRI: {},
+                    vertices: {},
+                    type: result.type.value === "default" ? LinkType.DEFAULT : LinkType.GENERALIZATION,
                     sourceCardinality1: result.sourceCard1.value,
                     sourceCardinality2: result.sourceCard2.value,
                     targetCardinality1: result.targetCard1.value,
                     targetCardinality2: result.targetCard2.value,
                 }
             }
-            if (result.vertex && !(links[result.id.value].vertexIRI.includes(result.vertex.value)))
-                links[result.id.value].vertexIRI.push(result.vertex.value);
+            if (result.vertex && !(result.vertex.value in links[result.id.value].vertexIRI))
+                links[result.id.value].vertexIRI[result.vertex.value] = {
+                    index: parseInt(result.index.value),
+                    x: parseInt(result.posX.value),
+                    y: parseInt(result.posY.value),
+                    diagram: result.diagram ? parseInt(result.diagram.value) : -1
+                };
         }
-    }).catch(() => {
-        if (callback) callback(false);
-    });
+    }).catch(() => false);
 
     for (let link in links) {
-        if (links[link].vertexIRI.length > 0) {
-            for (let vertexIRI of links[link].vertexIRI) {
-                let query = [
-                    "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
-                    "select ?posX ?posY ?index where {",
-                    "BIND(<" + vertexIRI + "> as ?iri) .",
-                    "?iri og:index ?index .",
-                    "?iri og:position-x ?posX .",
-                    "?iri og:position-y ?posY .",
-                    "}"
-                ].join(" ");
-                let q = contextEndpoint + "?query=" + encodeURIComponent(query);
-                await fetch(q, {headers: {'Accept': 'application/json'}}).then(response => {
-                    return response.json();
-                }).then(data => {
-                    for (let result of data.results.bindings) {
-                        links[link].vertexes[parseInt(result.index.value)] = {
-                            x: parseInt(result.posX.value),
-                            y: parseInt(result.posY.value)
-                        };
-                    }
-                }).catch(() => {
-                    if (callback) callback(false);
-                });
+        let convert: { [key: number]: joint.dia.Link.Vertex[] } = {};
+        let keys = Object.keys(links[link].vertexIRI);
+        if (keys.length > 0) {
+            let skipDeprecated = keys.find((iri: string) => iri.includes("/diagram"));
+            for (let vertexIRI of keys) {
+                if (!vertexIRI.includes("/diagram") && skipDeprecated) continue;
+                let vertex = links[link].vertexIRI[vertexIRI];
+                let diagram: number = vertex.diagram !== -1 ? vertex.diagram : 0;
+                if (!(diagram in convert)) convert[diagram] = [];
+                convert[diagram][vertex.index] = {x: vertex.x, y: vertex.y};
             }
         }
         let sourceID, targetID;
@@ -349,15 +367,9 @@ export async function getLinksConfig(contextIRI: string, contextEndpoint: string
             if (targetID && sourceID) break;
         }
 
-        let convert: joint.dia.Link.Vertex[] = [];
-
-        for (let vert in links[link].vertexes) {
-            convert.push({x: links[link].vertexes[vert].x, y: links[link].vertexes[vert].y})
-        }
-
         if (targetID && sourceID) {
-            let sourceCard = new Cardinality(CommonVars.none, CommonVars.none);
-            let targetCard = new Cardinality(CommonVars.none, CommonVars.none);
+            let sourceCard = new Cardinality("", "");
+            let targetCard = new Cardinality("", "");
             sourceCard.setFirstCardinality(links[link].sourceCardinality1);
             sourceCard.setSecondCardinality(links[link].sourceCardinality2);
             targetCard.setFirstCardinality(links[link].targetCardinality1);
@@ -379,7 +391,5 @@ export async function getLinksConfig(contextIRI: string, contextEndpoint: string
             }
         }
     }
-
-    if (callback) callback(true);
     return true;
 }

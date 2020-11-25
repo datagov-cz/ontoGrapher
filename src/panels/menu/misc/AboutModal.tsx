@@ -1,11 +1,11 @@
 import React from 'react';
 import {Button, Modal, Tab, Tabs} from "react-bootstrap";
+import {ProjectSettings} from "../../../config/Variables";
 import {Locale} from "../../../config/Locale";
 
 interface Props {
 	modal: boolean;
 	close: Function;
-	projectLanguage: string;
 }
 
 interface State {
@@ -16,12 +16,83 @@ export default class AboutModal extends React.Component<Props, State> {
 
     render() {
         return (<Modal centered scrollable show={this.props.modal}>
-            <Modal.Header>
-				<Modal.Title>{Locale[this.props.projectLanguage].changelog}</Modal.Title>
-            </Modal.Header>
-            <Modal.Body>
-                <Tabs id={"changelog"}>
+			<Modal.Header>
+				<Modal.Title>{Locale[ProjectSettings.viewLanguage].changelog}</Modal.Title>
+			</Modal.Header>
+			<Modal.Body>
+				<Tabs id={"changelog"}><Tab title={"November"} eventKey={"November"}>
+					<h6>23.11.</h6>
+					<ul>
+						<li>Bug fixing and stability improvements</li>
+						<li>Loading should now be faster</li>
+						<li>Search function usage improved</li>
+						<li>Elements from the left panel can be multi-selected using shift-click as well</li>
+						<li>Only one Type and one UML stereotype can be selected in the right panel</li>
+					</ul>
+					<h6>17.11.</h6>
+					<ul>
+						<li>Bug fixing and stability improvements</li>
+						<li>Added ability to select multiple concepts in the left screen and visualize them at once via
+							checkboxes on the concepts
+						</li>
+						<li>Concepts are now sorted by "type" stereotypes</li>
+						<li>Concepts with "type" stereotypes have differing shapes</li>
+					</ul>
+					<h6>9.11.</h6>
+					<ul>
+						<li>Bug fixing and stability improvements</li>
+						<li>Relationships are now selected by clicking anywhere on the link</li>
+						<li>Deletion and modification of the relationship's shape is now available only on selection of
+							the given relationship
+						</li>
+						<li>Vocabulary color schemes are now saved for each workspace</li>
+					</ul>
+					<h6>2.11.</h6>
+					<ul>
+						<li>Bug fixing and stability improvements</li>
+						<li>Concept coloring is now organized in the View submenu</li>
+					</ul>
+				</Tab>
+					<Tab title={"October"} eventKey={"October"}>
+						<h6>20.10.</h6>
+						<ul>
+							<li>Bug fixing and stability improvements</li>
+							<li>Concepts are now colored according to their vocabularies</li>
+						</ul>
+						<h6>14.10.</h6>
+						<ul>
+							<li>Bug fixing and stability improvements</li>
+							<li>Relationship in the new relationship creation dialogue are now optionally filtered for
+								appropriate relationships
+							</li>
+						</ul>
+						<h6>6.10.</h6>
+						<ul>
+							<li>Bug fixing and stability improvements</li>
+							<li><b>New features:</b></li>
+							<li>Connection status indicator</li>
+							<ul>
+								<li>Located on the top right of the screen</li>
+								<li>Indicator is green and static when connected, red and animated when not connected
+								</li>
+							</ul>
+							<li>Editing environment now freezes on connection loss or saving error (and unfreezes on
+								connection restoration or saving error resolution)
+							</li>
+							<li>Button to toggle showing stereotypes</li>
+							<li>Connection "exploding" option</li>
+							<ul>
+								<li>Located in concepts' detail panel, in the Connections section</li>
+								<li>Using this option puts all connected concepts around the given concept</li>
+								<li>Option is not shown when all related concepts are already on the diagram</li>
+							</ul>
+						</ul>
+					</Tab>
 					<Tab title={"September"} eventKey={"September"}>
+						<h6>24.9.</h6>
+						<ul>
+							<li>Bug fixing and stability improvements</li>
+						</ul>
 						<h6>14.9.</h6>
 						<ul>
 							<li>Bug fixing and stability improvements</li>
@@ -274,7 +345,7 @@ export default class AboutModal extends React.Component<Props, State> {
             <Modal.Footer>
 				<Button onClick={() => {
 					this.props.close();
-				}}>{Locale[this.props.projectLanguage].close}</Button>
+				}}>{Locale[ProjectSettings.viewLanguage].close}</Button>
             </Modal.Footer>
         </Modal>);
     }

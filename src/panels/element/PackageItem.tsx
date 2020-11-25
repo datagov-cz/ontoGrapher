@@ -4,9 +4,14 @@ import {ProjectElements, ProjectSettings} from "../../config/Variables";
 interface Props {
 	label: string;
 	id: string;
-	depth: number;
 	update: Function;
 	openRemoveItem: Function;
+	selectedItems: string[];
+	showCheckbox: boolean;
+	handleShowCheckbox: Function;
+	checkboxChecked: boolean;
+	clearSelection: Function;
+	readOnly: boolean;
 }
 
 interface State {
@@ -30,15 +35,29 @@ export default class PackageItem extends React.Component<Props, State> {
 		}
 	}
 
+	isHidden() {
+		return ProjectElements[this.props.id].hidden[ProjectSettings.selectedDiagram] ||
+			ProjectElements[this.props.id].hidden[ProjectSettings.selectedDiagram] === undefined
+	}
+
 	render() {
 		return (
 			<div draggable
 				 onDragStart={(event) => {
 					 event.dataTransfer.setData("newClass", JSON.stringify({
 						 type: "existing",
-						 id: this.props.id,
-						 iri: ProjectElements[this.props.id].iri
+						 id: this.props.selectedItems.length > 0 ? this.props.selectedItems : [this.props.id],
+						 iri: this.props.selectedItems.length > 0 ? this.props.selectedItems.map(id => ProjectElements[id].iri) : [ProjectElements[this.props.id].iri]
 					 }));
+				 }}
+				 onDragEnd={() => {
+					 this.props.clearSelection()
+				 }}
+				 onClick={(event) => {
+					 event.stopPropagation();
+					 if (event.shiftKey) {
+						 this.props.handleShowCheckbox();
+					 }
 				 }}
 				 onMouseOver={() => {
 					 this.setState({hover: true})
@@ -46,23 +65,29 @@ export default class PackageItem extends React.Component<Props, State> {
 				 onMouseLeave={() => {
 					 this.setState({hover: false})
 				 }}
-				 className={"stereotypeElementItem" + (ProjectElements[this.props.id].hidden[ProjectSettings.selectedDiagram] ? " hidden" : "")}
-				 style={{marginLeft: ((this.props.depth * 10) + 5) + "px"}}>
-                    <span
-						className={"label"}>{this.props.label}</span>
-				{(ProjectElements[this.props.id].hidden[ProjectSettings.selectedDiagram] ? hiddenSVG : <span/>)}
-				<span className={"packageOptions right"}
-					  style={{display: this.state.hover ? "inline-block" : "none"}}>
-                        {/*<OverlayTrigger placement="bottom" overlay={tooltipD}>*/}
-					<button className={"buttonlink"}
-							onClick={(event) => {
-								event.stopPropagation();
-								this.props.openRemoveItem();
-							}}><span role="img"
-									 aria-label={""}>❌</span></button>
-					{/*</OverlayTrigger>*/}
+				 className={"stereotypeElementItem" + (this.isHidden() ? " hidden" : "")}>
+				{(this.props.showCheckbox || this.state.hover) &&
+                <input type="checkbox" checked={this.props.checkboxChecked}
+                       onClick={(event) => {
+						   event.stopPropagation();
+						   this.props.handleShowCheckbox()
+					   }}
+                       onChange={() => {
+					   }}
+                />}
+				&nbsp;<span className={"label"}>{this.props.label}</span>
+				{(this.isHidden() ? hiddenSVG : <span/>)}
+				{(this.props.showCheckbox || this.state.hover) &&
+                <span className={"packageOptions right"}>
+						{(this.state.hover && !(this.props.readOnly)) && <button className={"buttonlink"}
+                                                                                 onClick={(event) => {
+																					 event.stopPropagation();
+																					 this.props.openRemoveItem();
+																				 }}><span role="img"
+                                                                                          aria-label={""}>❌</span>
+                        </button>}
                     </span>
-
+				}
 			</div>
 		);
 	}

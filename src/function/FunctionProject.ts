@@ -95,7 +95,7 @@ export function newProject() {
     graph.clear();
     initProjectSettings();
     Diagrams.length = 0;
-    Diagrams.push({name: Locale[ProjectSettings.selectedLanguage].untitled, json: "", active: true});
+    Diagrams.push({name: Locale[ProjectSettings.viewLanguage].untitled, json: "", active: true});
     Object.keys(Stereotypes).forEach(el => delete Stereotypes[el]);
     Object.keys(Links).forEach(el => delete Links[el]);
     Object.keys(VocabularyElements).forEach(el => delete VocabularyElements[el]);
@@ -126,8 +126,4 @@ export function loadProject(loadString: string) {
     ProjectSettings.selectedDiagram = 0;
     loadDiagram(Diagrams[ProjectSettings.selectedDiagram].json);
     loadPackages(save.packageRoot);
-}
-
-export async function retryConnection() {
-    return await ProjectSettings.lastUpdate.func.call(undefined, ProjectSettings.lastUpdate.args);
 }

@@ -10,24 +10,19 @@ import {
 	Stereotypes,
 	VocabularyElements
 } from "../../config/Variables";
-import {getLabelOrBlank, getLinkOrVocabElem, getStereotypeOrVocabElem} from "../../function/FunctionGetVars";
-import {Accordion, Button, Card, Form} from "react-bootstrap";
+import {getLabelOrBlank, getLinkOrVocabElem} from "../../function/FunctionGetVars";
+import {Accordion, Button, Card} from "react-bootstrap";
 import TableList from "../../components/TableList";
 import IRILink from "../../components/IRILink";
-import {getName} from "../../function/FunctionEditVars";
 import LabelTable from "./components/LabelTable";
 import DescriptionTabs from "./components/DescriptionTabs";
 import IRIlabel from "../../components/IRIlabel";
-import {nameGraphElement, unHighlightAll} from "../../function/FunctionGraph";
+import {drawGraphElement, spreadConnections, unHighlightAll} from "../../function/FunctionGraph";
 import {graph} from "../../graph/Graph";
-import {
-	processGetTransaction,
-	processTransaction,
-	updateProjectElement,
-	updateProjectLink
-} from "../../interface/TransactionInterface";
-import {createNewElemIRI} from "../../function/FunctionCreateVars";
+import {processTransaction, updateProjectElement} from "../../interface/TransactionInterface";
 import * as _ from "lodash";
+import StereotypeOptions from "./components/StereotypeOptions";
+import {Shapes} from "../../config/Shapes";
 import {Locale} from "../../config/Locale";
 
 interface Props {
@@ -36,6 +31,7 @@ interface Props {
 	save: Function;
 	handleChangeLoadingStatus: Function;
 	handleWidth: Function;
+	error: boolean;
 }
 
 interface State {
@@ -69,6 +65,8 @@ export default class DetailElement extends React.Component<Props, State> {
 			readOnly: true,
 			changes: false
 		}
+		this.checkSpreadConnections = this.checkSpreadConnections.bind(this);
+		this.updateStereotype = this.updateStereotype.bind(this);
 	}
 
 	prepareDetails(id: string) {
@@ -87,57 +85,58 @@ export default class DetailElement extends React.Component<Props, State> {
 		});
 	}
 
+	checkSpreadConnections(): boolean {
+		if (this.state) {
+			let cell = graph.getElements().find(elem => elem.id === this.state.id);
+			if (cell) {
+				return this.state.inputConnections.filter(conn => ProjectLinks[conn] && ProjectLinks[conn].active).length !==
+					graph.getConnectedLinks(cell).length;
+			} else return false;
+		} else return false;
+	}
+
 	save() {
-		this.props.handleChangeLoadingStatus(true, Locale[this.props.projectLanguage].updating, false);
-		let oldIRI = ProjectElements[this.state.id].iri;
-		if (ProjectElements[this.state.id].untitled) {
-			let scheme = VocabularyElements[ProjectElements[this.state.id].iri].inScheme;
-			scheme = scheme.substring(0, scheme.lastIndexOf("/") + 1) + "pojem/";
-			let iri = createNewElemIRI(this.state.inputLabels, VocabularyElements, scheme);
-			VocabularyElements[iri] = VocabularyElements[ProjectElements[this.state.id].iri];
-			ProjectElements[this.state.id].iri = iri;
+		let elem = graph.getElements().find(elem => elem.id === (this.state.id));
+		if (this.state.id in ProjectElements && elem) {
+			this.props.handleChangeLoadingStatus(true, Locale[ProjectSettings.viewLanguage].updating, false);
+			VocabularyElements[ProjectElements[this.state.id].iri].types = this.state.inputTypes;
+			VocabularyElements[ProjectElements[this.state.id].iri].labels = this.state.inputLabels;
+			VocabularyElements[ProjectElements[this.state.id].iri].definitions = this.state.inputDefinitions;
+			drawGraphElement(elem, this.props.projectLanguage, ProjectSettings.representation);
+			this.props.save();
+			this.setState({changes: false});
+			this.prepareDetails(this.state.id);
+			processTransaction(ProjectSettings.contextEndpoint,
+				updateProjectElement(
+					this.state.inputTypes,
+					this.state.inputLabels,
+					this.state.inputDefinitions,
+					this.state.id)
+			).then(result => {
+				if (!result) {
+					this.props.handleChangeLoadingStatus(false, Locale[ProjectSettings.viewLanguage].errorUpdating, true);
+				} else {
+					this.props.handleChangeLoadingStatus(false, "", false);
+				}
+			});
 		}
-		updateProjectElement(
-			ProjectSettings.contextEndpoint,
-			DetailElement.name,
-			this.state.inputTypes,
-			this.state.inputLabels,
-			this.state.inputDefinitions,
-			this.state.id).then(async result => {
-			if (result) {
-				VocabularyElements[ProjectElements[this.state.id].iri].types = this.state.inputTypes;
-				VocabularyElements[ProjectElements[this.state.id].iri].labels = this.state.inputLabels;
-				VocabularyElements[ProjectElements[this.state.id].iri].definitions = this.state.inputDefinitions;
-				nameGraphElement(graph.getCell(this.state.id), this.props.projectLanguage);
-				this.props.save();
-				this.setState({changes: false});
-				this.props.handleChangeLoadingStatus(false, "", false);
-				for (let conn of ProjectElements[this.state.id].connections) {
-					await updateProjectLink(ProjectSettings.contextEndpoint, conn).then(res => {
-						if (!res) {
-							this.props.handleChangeLoadingStatus(false, "", true);
-						}
-					});
-				}
-				if (ProjectElements[this.state.id].iri !== oldIRI) {
-					let delString = await processGetTransaction(ProjectSettings.contextEndpoint, {subject: oldIRI});
-					if (delString) {
-						await processTransaction(ProjectSettings.contextEndpoint, {add: [], "delete": [delString]});
-					}
-					VocabularyElements[oldIRI].active = false;
-				}
-				ProjectElements[this.state.id].untitled = false;
-				this.prepareDetails(this.state.id);
-			} else {
-				this.props.handleChangeLoadingStatus(false, "", true);
-			}
-		});
 	}
 
 	componentDidUpdate(prevProps: Readonly<Props>, prevState: Readonly<State>, snapshot?: any) {
 		if ((prevState !== this.state && this.state.changes)) {
 			this.save();
 		}
+	}
+
+	updateStereotype(newStereotype: string, content: boolean) {
+		let stereotypes = this.state.inputTypes;
+		let index = stereotypes.findIndex(stereotype =>
+			(stereotype in Stereotypes && (content ?
+				stereotype in Shapes : !(stereotype in Shapes))));
+		if (index !== -1)
+			stereotypes.splice(index, 1);
+		stereotypes.push(newStereotype);
+		this.setState({inputTypes: stereotypes, changes: true});
 	}
 
 	render() {
@@ -151,8 +150,8 @@ export default class DetailElement extends React.Component<Props, State> {
 				let elem = document.querySelector(".details");
 				if (elem) this.props.handleWidth(elem.getBoundingClientRect().width);
 			}}
-			className={"details"}>
-			<div>
+			className={"details" + (this.props.error ? " disabled" : "")}>
+			<div className={(this.props.error ? " disabled" : "")}>
 				<button className={"buttonlink close nounderline"} onClick={() => {
 					unHighlightAll();
 					this.setState({id: ""});
@@ -165,7 +164,7 @@ export default class DetailElement extends React.Component<Props, State> {
 					<Card>
 						<Card.Header>
 							<Accordion.Toggle as={Button} variant={"link"} eventKey={"0"}>
-								{Locale[this.props.projectLanguage].description}
+								{Locale[ProjectSettings.viewLanguage].description}
 							</Accordion.Toggle>
 						</Card.Header>
 						<Accordion.Collapse eventKey={"0"}>
@@ -181,54 +180,14 @@ export default class DetailElement extends React.Component<Props, State> {
 								}/>
 								<h5>{this.props.headers.stereotype[this.props.projectLanguage]}</h5>
 								<TableList>
-									{this.state.inputTypes.map(iri => {
-										if (getStereotypeOrVocabElem(iri)) {
-											return (<tr key={iri}>
-												<td>
-													<IRILink
-														label={getLabelOrBlank(getStereotypeOrVocabElem(iri).labels, this.props.projectLanguage)}
-														iri={iri}/>
-													<button className={"buttonlink right"} onClick={() => {
-														let result = _.cloneDeep(this.state.inputTypes);
-														result.splice(result.indexOf(iri), 1);
-														this.setState({
-															inputTypes: result,
-															changes: true,
-														})
-													}}><span role="img"
-															 aria-label={""}>❌</span>
-													</button>
-												</td>
-											</tr>)
-										} else return ""
-									})}
-									{(!this.state.readOnly) && <tr>
-                                        <td>
-                                            <span role="img"
-                                                  aria-label={""}>➕</span>&nbsp;<Form inline>
-                                            <Form.Control size="sm" as="select"
-                                                          value={""}
-                                                          onChange={(event) => {
-															  let result = this.state.inputTypes;
-															  if (!(this.state.inputTypes.includes(event.currentTarget.value)) && event.currentTarget.value !== "") {
-																  result.push(event.currentTarget.value);
-																  this.setState({
-																	  inputTypes: _.cloneDeep(result),
-																	  formNewStereotype: event.currentTarget.value,
-																	  changes: true,
-																  })
-															  }
-														  }}
-                                            >
-                                                <option key={""}
-                                                        value={""}>{Locale[this.props.projectLanguage].addNewStereotype}</option>
-												{Object.keys(Stereotypes).filter(stereotype => !(this.state.inputTypes.includes(stereotype))).map((stereotype) => (
-													<option key={stereotype}
-															value={stereotype}>{getName(stereotype, this.props.projectLanguage)}</option>))}
-                                            </Form.Control>
-                                        </Form>
-                                        </td>
-                                    </tr>}
+									<StereotypeOptions readonly={this.state.readOnly} content={true}
+													   projectLanguage={this.props.projectLanguage}
+													   onChange={(value: string) => this.updateStereotype(value, true)}
+													   value={this.state.inputTypes.find(type => type in Shapes) || ""}/>
+									<StereotypeOptions readonly={this.state.readOnly} content={false}
+													   projectLanguage={this.props.projectLanguage}
+													   onChange={(value: string) => this.updateStereotype(value, false)}
+													   value={this.state.inputTypes.find(type => type in Stereotypes && !(type in Shapes)) || ""}/>
 								</TableList>
 								<h5>{<IRILink label={this.props.headers.inScheme[this.props.projectLanguage]}
 											  iri={"http://www.w3.org/2004/02/skos/core#inScheme"}/>}</h5>
@@ -255,13 +214,13 @@ export default class DetailElement extends React.Component<Props, State> {
 					<Card>
 						<Card.Header>
 							<Accordion.Toggle as={Button} variant={"link"} eventKey={"1"}>
-								{Locale[this.props.projectLanguage].connections}
+								{Locale[ProjectSettings.viewLanguage].connections}
 							</Accordion.Toggle>
 						</Card.Header>
 						<Accordion.Collapse eventKey={"1"}>
 							<Card.Body>
 								<TableList
-									headings={[Locale[this.props.projectLanguage].connectionVia, Locale[this.props.projectLanguage].connectionTo]}>
+									headings={[Locale[ProjectSettings.viewLanguage].connectionVia, Locale[ProjectSettings.viewLanguage].connectionTo]}>
 									{this.state.inputConnections.map((conn) => {
 											if (ProjectLinks[conn] && ProjectLinks[conn].active) {
 												return (<tr>
@@ -274,22 +233,38 @@ export default class DetailElement extends React.Component<Props, State> {
 										}
 									)}
 								</TableList>
+								{this.checkSpreadConnections() &&
+                                <Button className={"buttonlink center"}
+                                        onClick={() => {
+											console.log(ProjectElements[this.state.id]);
+											this.props.handleChangeLoadingStatus(true, Locale[ProjectSettings.viewLanguage].updating, false);
+											processTransaction(ProjectSettings.contextEndpoint, spreadConnections(this.state.id, false, false)).then(result => {
+												if (result) {
+													this.props.handleChangeLoadingStatus(false, "", false);
+												} else {
+													this.props.handleChangeLoadingStatus(false, Locale[ProjectSettings.viewLanguage].errorUpdating, true);
+												}
+											});
+											this.forceUpdate();
+										}}>
+									{Locale[ProjectSettings.viewLanguage].spreadConnections}
+                                </Button>}
 							</Card.Body>
 						</Accordion.Collapse>
 					</Card>
 					<Card>
 						<Card.Header>
 							<Accordion.Toggle as={Button} variant={"link"} eventKey={"2"}>
-								{Locale[this.props.projectLanguage].diagram}
+								{Locale[ProjectSettings.viewLanguage].diagram}
 							</Accordion.Toggle>
 						</Card.Header>
 						<Accordion.Collapse eventKey={"2"}>
 							<Card.Body>
-								<TableList headings={[Locale[this.props.projectLanguage].inDiagram]}>
+								<TableList headings={[Locale[ProjectSettings.viewLanguage].diagram]}>
 									{this.state.inputDiagrams.map((diag) =>
-										(<tr>
+										Diagrams[diag] ? (<tr>
 											<td>{Diagrams[diag].name}</td>
-										</tr>)
+										</tr>) : ""
 									)}
 								</TableList>
 							</Card.Body>

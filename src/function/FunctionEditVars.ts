@@ -13,9 +13,9 @@ import {graph} from "../graph/Graph";
 import {addLink} from "./FunctionCreateVars";
 import {LinkConfig} from "../config/LinkConfig";
 import {getNewLink} from "./FunctionGraph";
-import {updateDeleteProjectElement, updateProjectLink} from "../interface/TransactionInterface";
+import {updateDeleteTriples} from "../interface/TransactionInterface";
+import {LinkType} from "../config/Enum";
 import {Locale} from "../config/Locale";
-import {getBrowserLanguage} from "./FunctionGetVars";
 
 export function getName(element: string, language: string): string {
     if (element in Stereotypes) {
@@ -48,16 +48,21 @@ export function loadUML() {
     Schemes[scheme] = {
         labels: initLanguageObject("UML"),
         readOnly: false,
-        graph: ProjectSettings.ontographerContext
+        graph: ProjectSettings.ontographerContext,
+        color: "#FFF"
     }
 
     for (let type in LinkConfig) {
-        if (type !== "default") {
-            Links[scheme + "/" + type] = {
+        let intType = parseInt(type, 10);
+        if (intType !== LinkType.DEFAULT) {
+            Links[scheme + "/" + LinkConfig[type].labels["en"]] = {
+                subClassOfDomain: [], subClassOfRange: [], typesDomain: [], typesRange: [],
                 labels: LinkConfig[type].labels,
                 definitions: initLanguageObject(""),
                 inScheme: scheme,
-                type: type
+                type: intType,
+                domain: "",
+                range: ""
             }
         }
     }
@@ -71,9 +76,7 @@ export function loadLanguages() {
 }
 
 export function initProjectSettings() {
-    let userLang = getBrowserLanguage();
-    ProjectSettings.selectedLanguage = userLang in Languages ? userLang : "en";
-    ProjectSettings.name = initLanguageObject(Locale[ProjectSettings.selectedLanguage].untitledProject);
+    ProjectSettings.name = initLanguageObject(Locale[ProjectSettings.viewLanguage].untitledProject);
     ProjectSettings.description = initLanguageObject("");
     ProjectSettings.selectedDiagram = 0;
 }
@@ -90,7 +93,7 @@ export function parsePrefix(prefix: string, name: string): string {
     return Prefixes[prefix] + name;
 }
 
-export function addRelationships() {
+export function addRelationships(): string[] {
     let linksToPush: string[] = [];
     for (let iri in VocabularyElements) {
         let id = Object.keys(ProjectElements).find(element => ProjectElements[element].iri === iri);
@@ -127,9 +130,9 @@ export function addRelationships() {
                 let rangeID = Object.keys(ProjectElements).find(element => ProjectElements[element].iri === subClassOf);
                 if (domainID && rangeID && !(ProjectElements[domainID].connections.find(conn =>
                     ProjectElements[ProjectLinks[conn].target].iri === subClassOf))) {
-                    let linkGeneralization = getNewLink("generalization");
+                    let linkGeneralization = getNewLink(LinkType.GENERALIZATION);
                     if (typeof linkGeneralization.id === "string") {
-                        addLink(linkGeneralization.id, ProjectSettings.ontographerContext + "/uml/generalization", domainID, rangeID, "generalization");
+                        addLink(linkGeneralization.id, ProjectSettings.ontographerContext + "/uml/generalization", domainID, rangeID, LinkType.GENERALIZATION);
                         ProjectElements[domainID].connections.push(linkGeneralization.id);
                         linksToPush.push(linkGeneralization.id);
                     }
@@ -137,21 +140,85 @@ export function addRelationships() {
             }
         }
     }
-    for (let link of linksToPush) updateProjectLink(ProjectSettings.contextEndpoint, link);
+    return linksToPush;
 }
 
-export function deletePackageItem(id: string) {
+export function deletePackageItem(id: string): { add: string[], delete: string[], update: string[] } {
     let folder = ProjectElements[id].package;
+    let iri = ProjectElements[id].iri;
+    let triples: string[] = [];
     folder.elements.splice(folder.elements.indexOf(id), 1);
-    for (let connection in ProjectElements[id].connections) {
-        ProjectLinks[ProjectElements[id].connections[connection]].active = false;
-        updateDeleteProjectElement(ProjectSettings.contextEndpoint, ProjectSettings.ontographerContext + "-" + connection);
+    for (let connection of ProjectElements[id].connections) {
+        ProjectLinks[connection].active = false;
+        triples.concat(updateDeleteTriples(ProjectSettings.ontographerContext + "-" + connection,
+            ProjectSettings.ontographerContext));
     }
-    ProjectElements[id].connections.splice(0, ProjectElements[id].connections.length - 1);
+    let targets = Object.keys(ProjectLinks).filter(link => ProjectElements[ProjectLinks[link].target].iri === iri)
+    for (let connection of targets) {
+        ProjectLinks[connection].active = false;
+        triples.concat(updateDeleteTriples(ProjectSettings.ontographerContext + "-" + connection,
+            ProjectSettings.ontographerContext));
+    }
+    targets.forEach(target => {
+        let elem = Object.keys(ProjectElements).find(elem => ProjectElements[elem].connections.includes(target));
+        if (elem) ProjectElements[elem].connections.splice(ProjectElements[elem].connections.indexOf(target), 1);
+    })
+    ProjectElements[id].connections = [];
     if (graph.getCell(id)) {
         graph.removeCells([graph.getCell(id)]);
     }
     ProjectElements[id].active = false;
-
+    return {add: [], delete: [], update: triples};
 }
 
+export function setElementShape(elem: joint.dia.Element, width: number, height: number) {
+    let types = VocabularyElements[ProjectElements[elem.id].iri].types;
+    elem.prop('attrs/bodyBox/width', width);
+    elem.prop('attrs/bodyBox/height', height);
+    elem.prop('attrs/bodyBox/visibility', 'hidden');
+    elem.prop('attrs/bodyBox/display', 'none');
+    elem.prop('attrs/bodyEllipse/display', 'none');
+    elem.prop('attrs/bodyTrapezoid/display', 'none');
+    elem.prop('attrs/bodyDiamond/display', 'none');
+    elem.prop('attrs/bodyBox/strokeDasharray', 'none');
+    elem.prop('attrs/label/color', 'black');
+    elem.prop('attrs/bodyBox/stroke', 'black');
+    if (types.includes(parsePrefix("z-sgov-pojem", "typ-objektu"))) {
+        elem.prop('attrs/bodyBox/display', 'block');
+        elem.prop('attrs/bodyBox/visibility', 'visible');
+        elem.prop('attrs/bodyBox/fill',
+            Schemes[VocabularyElements[ProjectElements[elem.id].iri].inScheme].color);
+    } else if (types.includes(parsePrefix("z-sgov-pojem", "typ-vlastnosti"))) {
+        elem.prop('attrs/bodyEllipse/display', 'block');
+        elem.prop('attrs/bodyEllipse/visibility', 'visible');
+        elem.prop('attrs/bodyEllipse/rx', width * (2 / 3));
+        elem.prop('attrs/bodyEllipse/ry', height * (2 / 3));
+        elem.prop('attrs/bodyEllipse/cx', width / 2);
+        elem.prop('attrs/bodyEllipse/cy', height / 2);
+        elem.prop('attrs/bodyEllipse/stroke', 'black');
+        elem.prop('attrs/bodyEllipse/fill',
+            Schemes[VocabularyElements[ProjectElements[elem.id].iri].inScheme].color);
+    } else if (types.includes(parsePrefix("z-sgov-pojem", "typ-vztahu"))) {
+        elem.prop('attrs/bodyDiamond/display', 'block');
+        elem.prop('attrs/bodyDiamond/visibility', 'visible');
+        elem.prop('attrs/bodyDiamond/points', `${width / 2},${-(height / 2)} ${width * (9 / 8)},${height / 2} ${width / 2},${height * (3 / 2)} ${-(width / 8)},${height / 2}`);
+        elem.prop('attrs/bodyDiamond/stroke', 'black');
+        elem.prop('attrs/bodyDiamond/fill',
+            Schemes[VocabularyElements[ProjectElements[elem.id].iri].inScheme].color);
+    } else if (types.includes(parsePrefix("z-sgov-pojem", "typ-události"))) {
+        elem.prop('attrs/bodyTrapezoid/display', 'block');
+        elem.prop('attrs/bodyTrapezoid/visibility', 'visible');
+        elem.prop('attrs/bodyTrapezoid/points', `0,0 ${width},0 ${width + 20},${height} -20,${height}`);
+        elem.prop('attrs/bodyTrapezoid/stroke', 'black');
+        elem.prop('attrs/bodyTrapezoid/fill',
+            Schemes[VocabularyElements[ProjectElements[elem.id].iri].inScheme].color);
+    } else {
+        elem.prop('attrs/bodyBox/display', 'block');
+        elem.prop('attrs/bodyBox/visibility', 'visible');
+        elem.prop('attrs/bodyBox/strokeDasharray', '10,10');
+        elem.prop('attrs/label/color', 'grey');
+        elem.prop('attrs/bodyBox/stroke', 'grey');
+        elem.prop('attrs/bodyBox/fill',
+            Schemes[VocabularyElements[ProjectElements[elem.id].iri].inScheme].color);
+    }
+}

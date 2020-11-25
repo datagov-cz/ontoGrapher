@@ -1,8 +1,8 @@
 import React from 'react';
 import {Button, Modal} from "react-bootstrap";
 import {deletePackageItem} from "../../function/FunctionEditVars";
-import {updateDeleteProjectElement} from "../../interface/TransactionInterface";
-import {ProjectElements, ProjectSettings} from "../../config/Variables";
+import {mergeTransactions, processTransaction, updateDeleteTriples} from "../../interface/TransactionInterface";
+import {ProjectElements, ProjectSettings, Schemes, VocabularyElements} from "../../config/Variables";
 import {Locale} from "../../config/Locale";
 
 interface Props {
@@ -11,7 +11,6 @@ interface Props {
     close: Function;
     update: Function;
     handleChangeLoadingStatus: Function;
-    projectLanguage: string;
 }
 
 interface State {
@@ -21,13 +20,18 @@ interface State {
 export default class ModalRemoveItem extends React.Component<Props, State> {
 
     save() {
-        updateDeleteProjectElement(ProjectSettings.contextEndpoint, ProjectElements[this.props.id].iri).then(result => {
-            this.props.handleChangeLoadingStatus(true, Locale[this.props.projectLanguage].updating, false);
+        processTransaction(ProjectSettings.contextEndpoint, mergeTransactions(
+            deletePackageItem(this.props.id), {
+                add: [],
+                delete: [],
+                update: updateDeleteTriples(ProjectElements[this.props.id].iri,
+                    Schemes[VocabularyElements[ProjectElements[this.props.id].iri].inScheme].graph)
+            })).then(result => {
+            this.props.handleChangeLoadingStatus(true, Locale[ProjectSettings.viewLanguage].updating, false);
             if (result) {
-                deletePackageItem(this.props.id);
                 this.props.handleChangeLoadingStatus(false, "", false);
             } else {
-                this.props.handleChangeLoadingStatus(false, "", true);
+                this.props.handleChangeLoadingStatus(false, Locale[ProjectSettings.viewLanguage].errorUpdating, true);
             }
         });
     }
@@ -36,20 +40,20 @@ export default class ModalRemoveItem extends React.Component<Props, State> {
         return (
             <Modal centered show={this.props.modal}>
                 <Modal.Header>
-                    <Modal.Title>{Locale[this.props.projectLanguage].modalRemovePackageItemTitle}</Modal.Title>
+                    <Modal.Title>{Locale[ProjectSettings.viewLanguage].modalRemovePackageItemTitle}</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    <p>{Locale[this.props.projectLanguage].modalRemovePackageItemDescription}</p>
+                    <p>{Locale[ProjectSettings.viewLanguage].modalRemovePackageItemDescription}</p>
                 </Modal.Body>
                 <Modal.Footer>
                     <Button onClick={() => {
-                        this.setState({modalRemove: false});
-                    }} variant="secondary">{Locale[this.props.projectLanguage].cancel}</Button>
+                        this.props.close();
+                    }} variant="secondary">{Locale[ProjectSettings.viewLanguage].cancel}</Button>
                     <Button onClick={() => {
                         this.save();
                         this.props.close();
                         this.props.update();
-                    }}>{Locale[this.props.projectLanguage].confirm}</Button>
+                    }}>{Locale[ProjectSettings.viewLanguage].confirm}</Button>
                 </Modal.Footer>
             </Modal>
         );
