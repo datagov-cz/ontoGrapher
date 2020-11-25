@@ -222,6 +222,7 @@ export async function updateDeleteProjectLinkVertex(contextEndpoint: string, id:
 			{
 				"@id": linkIRI,
 				"og:vertex": vars.map(i => (linkIRI + "/diagram-" + (ProjectSettings.selectedDiagram + 1) + "/vertex-" + (i + 1)))
+					.concat(vars.map(i => (linkIRI + "/vertex-" + (i + 1))))
 			}
 		]
 	};

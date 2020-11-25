@@ -115,7 +115,7 @@ export function spreadConnections(id: string, limitToTropes: boolean, representa
             let find = graph.getElements().find(elem => elem.id === elemID);
             let elem = find ? find : new graphElement({id: elemID});
             if (!limitToTropes) elem.addTo(graph);
-            elem.position(x, y);
+            if (!find) elem.position(x, y);
             ProjectElements[elemID].position[ProjectSettings.selectedDiagram] = {x: x, y: y};
             ProjectElements[elemID].hidden[ProjectSettings.selectedDiagram] = false;
             drawGraphElement(elem, ProjectSettings.selectedLanguage, ProjectSettings.representation);
@@ -124,7 +124,7 @@ export function spreadConnections(id: string, limitToTropes: boolean, representa
                 elemID, ProjectSettings.selectedDiagram);
         }
     }
-    if (representation) setRepresentation(ProjectSettings.representation);
+    if (representation) setRepresentation(ProjectSettings.representation, false);
 }
 
 export function getUnderlyingFullConnections(link: joint.dia.Link): { src: string, tgt: string } | undefined {
@@ -184,7 +184,7 @@ function storeElement(elem: joint.dia.Element) {
     }
 }
 
-export function setRepresentation(representation: number) {
+export function setRepresentation(representation: number, spread: boolean = true) {
     if (representation === Representation.COMPACT) {
         let del = false;
         ProjectSettings.representation = Representation.COMPACT;
@@ -319,7 +319,7 @@ export function setRepresentation(representation: number) {
         for (let elem of graph.getElements()) {
             drawGraphElement(elem, ProjectSettings.selectedLanguage, representation);
             if (typeof elem.id === "string") {
-                spreadConnections(elem.id, true, false);
+                if (spread) spreadConnections(elem.id, true, false);
                 restoreHiddenElem(elem.id, elem, false);
             }
         }
@@ -370,12 +370,6 @@ export function getElementShape(id: string | number): string {
 }
 
 export function restoreHiddenElem(id: string, cls: joint.dia.Element, restoreConnectionPosition: boolean) {
-    if (ProjectElements[id].position) {
-        if (ProjectElements[id].position[ProjectSettings.selectedDiagram] &&
-            ProjectElements[id].position[ProjectSettings.selectedDiagram].x !== 0 && ProjectElements[id].position[ProjectSettings.selectedDiagram].y !== 0) {
-            cls.position(ProjectElements[id].position[ProjectSettings.selectedDiagram].x, ProjectElements[id].position[ProjectSettings.selectedDiagram].y);
-        }
-    }
     if (!(ProjectElements[id].diagrams.includes(ProjectSettings.selectedDiagram))) {
         ProjectElements[id].diagrams.push(ProjectSettings.selectedDiagram)
     }
@@ -470,6 +464,8 @@ export function restoreHiddenElem(id: string, cls: joint.dia.Element, restoreCon
                         domainLink.vertices(ProjectLinks[link].vertices[ProjectSettings.selectedDiagram]);
                         rangeLink.vertices(ProjectLinks[targetLink].vertices[ProjectSettings.selectedDiagram]);
                     } else {
+                        updateProjectElementDiagram(ProjectSettings.contextEndpoint,
+                            relID, ProjectSettings.selectedDiagram);
                         if (ProjectLinks[link].vertices[ProjectSettings.selectedDiagram])
                             updateDeleteProjectLinkVertex(ProjectSettings.contextEndpoint, link, 0,
                                 ProjectLinks[link].vertices[ProjectSettings.selectedDiagram].length);
