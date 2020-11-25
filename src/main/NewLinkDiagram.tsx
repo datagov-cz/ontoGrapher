@@ -56,24 +56,28 @@ export default class NewLinkDiagram extends React.Component<Props, State> {
 		let target = false;
 
 		for (let type of sourceTypes) {
-			let types = Stereotypes[type].types;
-			let subClasses = Stereotypes[type].subClassOf;
-			let character = Stereotypes[type].character;
-			if (character === domain || types.includes(domain) || subClasses.includes(domain)) {
-				source = true;
-				break;
+			if (type in Stereotypes) {
+				let types = Stereotypes[type].types;
+				let subClasses = Stereotypes[type].subClassOf;
+				let character = Stereotypes[type].character;
+				if (character === domain || types.includes(domain) || subClasses.includes(domain)) {
+					source = true;
+					break;
+				}
 			}
 		}
 
 		if (!source) return false;
 
 		for (let type of targetTypes) {
-			let types = Stereotypes[type].types;
-			let subClasses = Stereotypes[type].subClassOf;
-			let character = Stereotypes[type].character;
-			if (character === range || types.includes(range) || subClasses.includes(range)) {
-				target = true;
-				break;
+			if (type in Stereotypes){
+				let types = Stereotypes[type].types;
+				let subClasses = Stereotypes[type].subClassOf;
+				let character = Stereotypes[type].character;
+				if (character === range || types.includes(range) || subClasses.includes(range)) {
+					target = true;
+					break;
+				}
 			}
 		}
 
