@@ -8,14 +8,13 @@ import {
 	VocabularyElements
 } from "../config/Variables";
 import {LinkConfig} from "../config/LinkConfig";
-import {LinkType} from "../config/Enum";
+import {constructProjectLinkLD} from "../function/FunctionConstruct";
 
-export async function updateProjectElement(
-	contextEndpoint: string,
+export function updateProjectElement(
 	newTypes: string[],
 	newLabels: { [key: string]: string },
 	newDefinitions: { [key: string]: string },
-	id: string): Promise<boolean> {
+	id: string): { add: string[], delete: string[], update: string[] } {
 	let iri = ProjectElements[id].iri;
 	let scheme = VocabularyElements[iri].inScheme;
 	let delTypes = VocabularyElements[iri].types;
@@ -104,37 +103,21 @@ export async function updateProjectElement(
 						"@value": VocabularyElements[iri].definitions[lang],
 						"@language": lang
 					}
-				}),
-				"skos:inScheme": scheme,
+				})
 			}
 		]
 	}
 
 	let addStrings: string[] = [JSON.stringify(addLD)];
 	let delStrings: string[] = [JSON.stringify(deleteLD)];
-
-	let delString = await processGetTransaction(contextEndpoint, {
-		subject: iri + "/diagram",
-		context: Schemes[scheme].graph
-	}).catch(() => false);
-	if (typeof delString === "string") {
-		delStrings.push(delString);
-	} else return false;
-
-	for (const diag of ProjectElements[id].diagrams) {
-		let delString = await processGetTransaction(contextEndpoint, {
-			subject: iri + "/diagram-" + (diag + 1),
-			context: Schemes[scheme].graph
-		}).catch(() => false);
-		if (typeof delString === "string") {
-			delStrings.push(delString);
-		} else return false;
-	}
-
-	return await processTransaction(contextEndpoint, {add: addStrings, delete: delStrings});
+	let updateStrings: string[] = updateDeleteTriples(iri + "/diagram", Schemes[scheme].graph, false, false);
+	updateStrings.concat(...ProjectElements[id].diagrams.map(diag =>
+		updateDeleteTriples(iri + "/diagram-" + (diag + 1), Schemes[scheme].graph, false, false)
+	))
+	return {add: addStrings, delete: delStrings, update: updateStrings}
 }
 
-export async function updateProjectElementDiagram(contextEndpoint: string, id: string, diagram: number) {
+export function updateProjectElementDiagram(id: string, diagram: number): { add: string[], delete: string[], update: string[] } {
 
 	let iri = ProjectElements[id].iri;
 	let scheme = VocabularyElements[iri].inScheme;
@@ -161,14 +144,11 @@ export async function updateProjectElementDiagram(contextEndpoint: string, id: s
 		]
 	}
 
-	let delString = await processGetTransaction(contextEndpoint,
-		{subject: iri + "/diagram-" + (diagram + 1), context: Schemes[scheme].graph}).catch(() => false);
-	if (typeof delString === "string") {
-		return await processTransaction(contextEndpoint, {add: [JSON.stringify(addLD)], delete: [delString]});
-	} else return await processTransaction(contextEndpoint, {add: [JSON.stringify(addLD)], delete: []});
+	let updString: string[] = updateDeleteTriples(iri + "/diagram-" + (diagram + 1), Schemes[scheme].graph, false, false);
+	return {add: [JSON.stringify(addLD)], delete: [], update: updString}
 }
 
-export async function updateProjectLinkVertex(contextEndpoint: string, id: string, vertices: number[]) {
+export function updateProjectLinkVertex(id: string, vertices: number[]): { add: string[], delete: string[], update: string[] } {
 
 	let linkIRI = ProjectSettings.ontographerContext + "-" + id;
 
@@ -200,11 +180,10 @@ export async function updateProjectLinkVertex(contextEndpoint: string, id: strin
 		"}"
 	].join(" ");
 
-	return await processTransaction(contextEndpoint, {add: [], delete: [], update: [update2, update1]});
-
+	return {add: [], delete: [], update: [update2, update1]};
 }
 
-export async function updateDeleteProjectLinkVertex(contextEndpoint: string, id: string, from: number, to: number): Promise<boolean> {
+export function updateDeleteProjectLinkVertex(id: string, from: number, to: number): { add: string[], delete: string[], update: string[] } {
 	let linkIRI = ProjectSettings.ontographerContext + "-" + id;
 	let vars = [];
 
@@ -227,52 +206,10 @@ export async function updateDeleteProjectLinkVertex(contextEndpoint: string, id:
 		]
 	};
 
-	return await processTransaction(contextEndpoint, {add: [], delete: [JSON.stringify(delLD)]})
+	return {add: [], delete: [JSON.stringify(delLD)], update: []}
 }
 
-export function constructProjectLinkLD(contextEndpoint: string, id: string): {}[] {
-	let linkIRI = ProjectSettings.ontographerContext + "-" + id;
-	let cardinalities: { [key: string]: string } = {};
-	let vertices: { "@id": string, "@type": "og:vertex", "og:index": number, "og:position-x": number, "og:position-y": number, "og:diagram": number }[] = [];
-	if (ProjectLinks[id].sourceCardinality) {
-		cardinalities["og:sourceCardinality1"] = ProjectLinks[id].sourceCardinality.getFirstCardinality();
-		cardinalities["og:sourceCardinality2"] = ProjectLinks[id].sourceCardinality.getSecondCardinality();
-	}
-	if (ProjectLinks[id].targetCardinality) {
-		cardinalities["og:targetCardinality1"] = ProjectLinks[id].targetCardinality.getFirstCardinality();
-		cardinalities["og:targetCardinality2"] = ProjectLinks[id].targetCardinality.getSecondCardinality();
-	}
-	if (ProjectLinks[id].vertices[ProjectSettings.selectedDiagram])
-		ProjectLinks[id].vertices[ProjectSettings.selectedDiagram].forEach((vertex, i) => {
-			vertices.push({
-				"@id": linkIRI + "/diagram-" + (ProjectSettings.selectedDiagram + 1) + "/vertex-" + (i + 1),
-				"@type": "og:vertex",
-				"og:index": i,
-				"og:diagram": ProjectSettings.selectedDiagram,
-				"og:position-x": Math.round(vertex.x),
-				"og:position-y": Math.round(vertex.y)
-			})
-		})
-	return [{
-		"@id": linkIRI,
-		"@type": "og:link",
-		"og:id": id,
-		"og:context": ProjectSettings.contextIRI,
-		"og:iri": ProjectLinks[id].iri,
-		"og:active": ProjectLinks[id].active,
-		"og:source-id": ProjectLinks[id].source,
-		"og:target-id": ProjectLinks[id].target,
-		"og:source": ProjectElements[ProjectLinks[id].source].iri,
-		"og:target": ProjectElements[ProjectLinks[id].target].iri,
-		"og:type": ProjectLinks[id].type === LinkType.DEFAULT ? "default" : "generalization",
-		...cardinalities,
-		"og:vertex": vertices.map(vert => vert["@id"])
-	},
-		...vertices
-	]
-}
-
-export async function updateProjectLink(contextEndpoint: string, id: string) {
+export function updateProjectLink(id: string): { add: string[], delete: string[], update: string[] } {
 	let linkIRI = ProjectSettings.ontographerContext + "-" + id;
 
 	let addLD = {
@@ -288,44 +225,55 @@ export async function updateProjectLink(contextEndpoint: string, id: string) {
 		"@graph": [...constructProjectLinkLD(ProjectSettings.contextEndpoint, id)]
 	}
 
-	let delString = "";
-	let del = await processGetTransaction(contextEndpoint, {subject: linkIRI}).catch(() => false);
-	if (typeof del === "string") {
-		delString = del;
-	}
-
 	let addStrings: string[] = [JSON.stringify(addLD)];
-	let delStrings: string[] = delString === "" ? [] : [delString];
+	let updString: string[] = updateDeleteTriples(linkIRI, ProjectSettings.ontographerContext, false, false);
+
 
 	for (let diag in ProjectLinks[id].vertices) {
-		for (let vert of ProjectLinks[id].vertices[diag]){
+		for (let vert of ProjectLinks[id].vertices[diag]) {
 			let i = ProjectLinks[id].vertices[diag].indexOf(vert);
-			let del = await processGetTransaction(contextEndpoint, {subject: linkIRI + "/diagram-" + (diag + 1) + "/vertex-" + (i + 1)}).catch(() => false);
-			if (typeof del === "string") {
-				delStrings.push(del);
-			}
+			updString.push(
+				...updateDeleteTriples(linkIRI + "/diagram-" + (diag + 1) + "/vertex-" + (i + 1), ProjectSettings.ontographerContext, false, false));
 		}
 	}
 
-	return await processTransaction(contextEndpoint, {"add": addStrings, delete: delStrings}).catch(() => false);
+	return {add: addStrings, delete: [], update: updString};
 }
 
-export async function updateDeleteProjectElement(contextEndpoint: string, iri: string, context: string) {
-	let query1 = [
+export function mergeTransactions(
+	...transactions: { add: string[], delete: string[], update: string[] }[]):
+	{ add: string[], delete: string[], update: string[] } {
+	let add: string[] = [];
+	let del: string[] = [];
+	let upd: string[] = [];
+	transactions.forEach(t => {
+		add.concat(t.add);
+		del.concat(t.delete);
+		upd.concat(t.update);
+	})
+	return {
+		add: add,
+		delete: del,
+		update: upd
+	}
+}
+
+export function updateDeleteTriples(iri: string, context: string, bNodesFirst: boolean = false, removeObjects: boolean = true): string[] {
+	let queries: string[] = [[
 		"with <" + context + "> delete {",
 		"<" + iri + "> ?p ?o.",
 		"} where {",
 		"<" + iri + "> ?p ?o.",
 		"}"
-	].join(" ");
-	let query2 = [
+	].join(" ")];
+	if (removeObjects) queries.push([
 		"with <" + context + "> delete {",
 		"?s ?p <" + iri + ">.",
 		"} where {",
 		"?s ?p <" + iri + ">.",
 		"}"
-	].join(" ");
-	let query3 = [
+	].join(" "));
+	if (bNodesFirst) queries.unshift([
 		"PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>",
 		"PREFIX owl: <http://www.w3.org/2002/07/owl#>",
 		"PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>",
@@ -338,18 +286,17 @@ export async function updateDeleteProjectElement(contextEndpoint: string, iri: s
 		"filter(isBlank(?b)).",
 		"?b ?p ?o.",
 		"}"
-	].join(" ");
-	return await processTransaction(contextEndpoint, {add: [], delete: [], update: [query3, query1, query2]});
+	].join(" "));
+	return queries;
 }
 
-//id: link ID
-export async function updateConnections(contextEndpoint: string, id: string) {
+export function updateConnections(id: string) {
 
-	return await processTransaction(contextEndpoint, {
+	return {
 		"add": [],
 		"delete": [],
 		"update": LinkConfig[ProjectLinks[id].type].update(id)
-	});
+	};
 }
 
 export function getTransactionID(contextEndpoint: string) {
@@ -368,74 +315,55 @@ export function getTransactionID(contextEndpoint: string) {
 	})
 }
 
-export async function processGetTransaction(contextEndpoint: string, request: { subject?: string, predicate?: string, object?: string, context?: string}) {
+export async function processTransaction(contextEndpoint: string, transactions: { add: string[], delete: string[], update: string[] }): Promise<boolean> {
+	ProjectSettings.lastTransaction = transactions
+
 	const transactionID = await getTransactionID(contextEndpoint);
 
 	if (transactionID) {
-		let transactionUrl = transactionID + "?action=GET" +
-			((request.subject !== undefined) ? ("&subj=<" + encodeURIComponent(request.subject) + ">") : "") +
-			((request.predicate !== undefined) ? ("&pred=<" + encodeURIComponent(request.predicate) + ">") : "") +
-			((request.object !== undefined) ? ("&obj=<" + encodeURIComponent(request.object) + ">") : "") +
-			((request.context !== undefined) ? ("&context=<" + encodeURIComponent(request.context) + ">") : "")
-		return await fetch(transactionUrl, {
-			headers: {'Accept': "application/ld+json"},
-			method: "PUT"
-		}).then(response => response.text()).catch(() => {
-			return null;
-		});
-	} else return null;
-}
 
-export async function processTransaction(contextEndpoint: string, transactions: { add: string[], delete: string[], update?: string[] }): Promise<boolean> {
-	const transactionID = await getTransactionID(contextEndpoint);
-
-	if (transactionID) {
-		let resultAdd, resultDelete, resultUpdate, resultCommit;
-
-		if (transactions.update) {
-			for (let update of transactions.update) {
-				resultUpdate = await fetch(transactionID + "?action=UPDATE&update=" + encodeURIComponent(update), {
-					headers: {
-						'Content-Type': 'application/json'
-					},
-					method: "PUT",
-				}).then(response => response.ok)
-			}
+		for (let update of transactions.update) {
+			let resultUpdate = await fetch(transactionID + "?action=UPDATE&update=" + encodeURIComponent(update), {
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				method: "PUT",
+			}).then(response => response.ok)
+			if (!resultUpdate) return false;
 		}
 
 		for (let del of transactions.delete) {
-			resultDelete = await fetch(transactionID + "?action=DELETE", {
+			let resultDelete = await fetch(transactionID + "?action=DELETE", {
 				headers: {
 					'Content-Type': 'application/ld+json'
 				},
 				method: "PUT",
 				body: del
 			}).then(response => response.ok)
+			if (!resultDelete) return false;
 		}
 
 		for (let add of transactions.add) {
-			resultAdd = await fetch(transactionID + "?action=ADD", {
+			let resultAdd = await fetch(transactionID + "?action=ADD", {
 				headers: {
 					'Content-Type': 'application/ld+json'
 				},
 				method: "PUT",
 				body: add
 			}).then(response => response.ok)
+			if (!resultAdd) return false;
 		}
 
-		resultCommit = await fetch(transactionID + "?action=COMMIT", {
+		return await fetch(transactionID + "?action=COMMIT", {
 			headers: {
 				'Content-Type': 'application/json'
 			},
 			method: "PUT"
 		}).then(response => response.ok)
-
-		return ((resultAdd ? resultAdd : true) && (resultDelete ? resultDelete : true) && (resultUpdate ? resultUpdate : true) && resultCommit);
 	} else return false;
 }
 
-export async function updateProjectSettings(contextIRI: string, contextEndpoint: string) {
-
+export function updateProjectSettings(contextIRI: string): { add: string[], delete: string[], update: string[] } {
 	let contextLD = {
 		"@context": {
 			...Prefixes,
@@ -487,25 +415,15 @@ export async function updateProjectSettings(contextIRI: string, contextEndpoint:
 	}
 
 	let addStrings = [JSON.stringify(contextLD), JSON.stringify(ogContextLD)];
-	let delStrings: string[] = [];
-
-	let delString = await processGetTransaction(ProjectSettings.contextEndpoint, {
-		subject: ProjectSettings.ontographerContext,
-		context: ProjectSettings.ontographerContext
-	}).catch(() => false);
-	if (typeof delString === "string") {
-		delStrings.push(delString);
-	}
+	let updStrings: string[] = [];
+	updStrings.push(
+		...updateDeleteTriples(ProjectSettings.ontographerContext, ProjectSettings.ontographerContext, false, false));
 
 	for (let i = 0; i < (Diagrams.length + 1); i++) {
-		let delString = await processGetTransaction(contextEndpoint, {
-			subject: ProjectSettings.ontographerContext + contextInstance + "/diagram-" + (i + 1),
-			context: ProjectSettings.ontographerContext
-		}).catch(() => false);
-		if (typeof delString === "string") {
-			delStrings.push(delString);
-		}
+		updStrings.push(
+			...updateDeleteTriples(ProjectSettings.ontographerContext + contextInstance + "/diagram-" + (i + 1),
+				ProjectSettings.ontographerContext, false, false));
 	}
 
-	return await processTransaction(contextEndpoint, {"add": addStrings, "delete": delStrings});
+	return {add: addStrings, delete: [], update: updStrings};
 }

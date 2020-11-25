@@ -1,9 +1,9 @@
-import * as Locale from "./../locale/LocaleMain.json";
-import {Links, Schemes, Stereotypes} from "../config/Variables";
+import {Links, ProjectSettings, Schemes, Stereotypes} from "../config/Variables";
 import {fetchConcepts, getAllTypes, getScheme} from "./SPARQLInterface";
 import {createValues} from "../function/FunctionCreateVars";
 import {initLanguageObject} from "../function/FunctionEditVars";
 import {checkLabels} from "../function/FunctionGetVars";
+import {Locale} from "../config/Locale";
 
 export async function getVocabulariesFromRemoteJSON(pathToJSON: string): Promise<boolean> {
     const isURL = require('is-url');
@@ -75,6 +75,6 @@ export async function getVocabulariesFromRemoteJSON(pathToJSON: string): Promise
         });
         return true;
     } else {
-        throw new Error(Locale.vocabularyNotFound)
+        throw new Error(Locale[ProjectSettings.viewLanguage].vocabularyNotFound)
     }
 }

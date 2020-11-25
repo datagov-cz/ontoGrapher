@@ -11,6 +11,7 @@ interface Props {
 	handleShowCheckbox: Function;
 	checkboxChecked: boolean;
 	clearSelection: Function;
+	readOnly: boolean;
 }
 
 interface State {
@@ -78,12 +79,13 @@ export default class PackageItem extends React.Component<Props, State> {
 				{(this.isHidden() ? hiddenSVG : <span/>)}
 				{(this.props.showCheckbox || this.state.hover) &&
                 <span className={"packageOptions right"}>
-						{this.state.hover && <button className={"buttonlink"}
-                                                     onClick={(event) => {
-														 event.stopPropagation();
-														 this.props.openRemoveItem();
-													 }}><span role="img"
-                                                              aria-label={""}>❌</span></button>}
+						{(this.state.hover && !(this.props.readOnly)) && <button className={"buttonlink"}
+                                                                                 onClick={(event) => {
+																					 event.stopPropagation();
+																					 this.props.openRemoveItem();
+																				 }}><span role="img"
+                                                                                          aria-label={""}>❌</span>
+                        </button>}
                     </span>
 				}
 			</div>

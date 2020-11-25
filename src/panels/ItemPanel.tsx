@@ -1,6 +1,5 @@
 import React from 'react';
 import {ResizableBox} from "react-resizable";
-import * as LocaleMain from "../locale/LocaleMain.json";
 import {
 	Links,
 	PackageRoot,
@@ -15,12 +14,13 @@ import {PackageNode} from "../datatypes/PackageNode";
 import PackageItem from "./element/PackageItem";
 import {getLabelOrBlank} from "../function/FunctionGetVars";
 import ModalRemoveItem from "./modal/ModalRemoveItem";
-import {updateProjectSettings} from "../interface/TransactionInterface";
+import {processTransaction, updateProjectSettings} from "../interface/TransactionInterface";
 import {Form, InputGroup} from 'react-bootstrap';
 import {parsePrefix} from "../function/FunctionEditVars";
 import {Representation} from "../config/Enum";
 import PackageDivider from "./element/PackageDivider";
 import {Shapes} from "../config/Shapes";
+import {Locale} from "../config/Locale";
 
 interface Props {
 	projectLanguage: string;
@@ -162,6 +162,7 @@ export default class ItemPanel extends React.Component<Props, State> {
 						key={id}
 						label={name}
 						id={id}
+						readOnly={(node.scheme ? Schemes[node.scheme].readOnly : true)}
 						update={() => {
 							this.forceUpdate();
 						}}
@@ -232,11 +233,11 @@ export default class ItemPanel extends React.Component<Props, State> {
 	}
 
 	save() {
-		updateProjectSettings(ProjectSettings.contextIRI, ProjectSettings.contextEndpoint).then(result => {
+		processTransaction(ProjectSettings.contextEndpoint, updateProjectSettings(ProjectSettings.contextIRI)).then(result => {
 			if (result) {
 				this.props.handleChangeLoadingStatus(false, "", false);
 			} else {
-				this.props.handleChangeLoadingStatus(false, LocaleMain.errorUpdating, true);
+				this.props.handleChangeLoadingStatus(false, Locale[ProjectSettings.viewLanguage].errorUpdating, true);
 			}
 		})
 	}
@@ -253,20 +254,18 @@ export default class ItemPanel extends React.Component<Props, State> {
 				<InputGroup>
 					<InputGroup.Prepend>
 						<InputGroup.Text id="inputGroupPrepend">
-							<span role="img" aria-label={LocaleMain.searchStereotypes}>🔎</span></InputGroup.Text>
+							<span role="img"
+								  aria-label={Locale[ProjectSettings.viewLanguage].searchStereotypes}>🔎</span></InputGroup.Text>
 					</InputGroup.Prepend>
 					<Form.Control
 						type="search"
-						placeholder={LocaleMain.searchStereotypes}
+						id={"searchInput"}
+						placeholder={Locale[ProjectSettings.viewLanguage].searchStereotypes}
 						aria-describedby="inputGroupPrepend"
 						value={this.state.search}
 						onChange={this.handleChangeSearch}
 					/>
 				</InputGroup>
-				{/*{this.state.selectionMode &&*/}
-				{/*<Button size={"sm"} variant={"secondary"} className={"wide"} onClick={()=>{*/}
-				{/*	this.setState({selectionMode: false, selectedItems: []})*/}
-				{/*}}>{LocaleMain.deselect + this.state.selectedItems.length + LocaleMain.items}</Button>}*/}
 				<div className={"elementLinkList" + (this.props.error ? " disabled" : "")}>
 					{this.getFolders()}
 				</div>

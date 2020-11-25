@@ -3,7 +3,6 @@ import {Links, ProjectElements, ProjectLinks, Schemes, VocabularyElements} from 
 import {initLanguageObject, parsePrefix} from "../function/FunctionEditVars"
 import {generalizationLink} from "../graph/uml/GeneralizationLink";
 import {LinkType} from "./Enum";
-import * as Locale from "../locale/LocaleMain.json";
 
 export var LinkConfig: {
 	[key: number]: {
@@ -43,7 +42,7 @@ export var LinkConfig: {
 
 			if ((VocabularyElements[iri].types.includes(parsePrefix("z-sgov-pojem", "typ-vlastnosti")) ||
 				VocabularyElements[iri].types.includes(parsePrefix("z-sgov-pojem", "typ-vztahu"))) &&
-				ProjectLinks[id].targetCardinality.getString() !== Locale.none) {
+				ProjectLinks[id].targetCardinality.getString() !== "") {
 				ProjectElements[ProjectLinks[id].source].connections.filter(linkID =>
 					linkID in ProjectLinks &&
 					ProjectElements[ProjectLinks[linkID].target] &&

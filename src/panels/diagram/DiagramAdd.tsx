@@ -1,8 +1,7 @@
 import React from 'react';
 import {Diagrams, ProjectElements, ProjectLinks, ProjectSettings} from "../../config/Variables";
-import * as Locale from "../../locale/LocaleMain.json";
-import * as LocaleMain from "../../locale/LocaleMain.json";
-import {updateProjectSettings} from "../../interface/TransactionInterface";
+import {processTransaction, updateProjectSettings} from "../../interface/TransactionInterface";
+import {Locale} from "../../config/Locale";
 
 interface Props {
 	update: Function;
@@ -17,11 +16,11 @@ interface State {
 export default class DiagramAdd extends React.Component<Props, State> {
 
 	addDiagram() {
-		this.props.handleChangeLoadingStatus(true, LocaleMain.updating, false);
-		let index = Diagrams.push({name: Locale.untitled, json: {}, active: true}) - 1;
+		this.props.handleChangeLoadingStatus(true, Locale[ProjectSettings.viewLanguage].updating, false);
+		let index = Diagrams.push({name: Locale[ProjectSettings.viewLanguage].untitled, json: {}, active: true}) - 1;
 		Object.keys(ProjectElements).forEach(elem => ProjectElements[elem].hidden[index] = true);
 		Object.keys(ProjectLinks).forEach(link => ProjectLinks[link].vertices[index] = []);
-		updateProjectSettings(ProjectSettings.contextIRI, ProjectSettings.contextEndpoint).then(result => {
+		processTransaction(ProjectSettings.contextEndpoint, updateProjectSettings(ProjectSettings.contextIRI)).then(result => {
 			if (result) {
 				this.props.handleChangeLoadingStatus(false, "", false);
 			} else {

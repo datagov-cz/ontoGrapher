@@ -20,13 +20,14 @@ import {
     highlightCell,
     restoreHiddenElem,
     setRepresentation,
-    unHighlightAll,
-    unHighlightCell
+    unHighlightAll
 } from "../function/FunctionGraph";
 import {HideButton} from "../graph/elementTool/ElemHide";
 import {ElemCreateLink} from "../graph/elementTool/ElemCreateLink";
 import {initLanguageObject, parsePrefix} from "../function/FunctionEditVars";
 import {
+    mergeTransactions,
+    processTransaction,
     updateConnections,
     updateDeleteProjectLinkVertex,
     updateProjectElement,
@@ -34,12 +35,12 @@ import {
     updateProjectLink,
     updateProjectLinkVertex
 } from "../interface/TransactionInterface";
-import * as LocaleMain from "../locale/LocaleMain.json";
-import NewLinkDiagram from "./NewLinkDiagram";
+import NewLinkModal from "./NewLinkModal";
 import {getLinkOrVocabElem} from "../function/FunctionGetVars";
-import NewElemDiagram from "./NewElemDiagram";
+import NewElemModal from "./NewElemModal";
 import {PackageNode} from "../datatypes/PackageNode";
 import {LinkType, Representation} from "../config/Enum";
+import {Locale} from "../config/Locale";
 
 interface Props {
     projectLanguage: string;
@@ -85,7 +86,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
     }
 
     createNewConcept(name: string, language: string, pkg: PackageNode) {
-        this.props.handleChangeLoadingStatus(true, LocaleMain.updating, false);
+        this.props.handleChangeLoadingStatus(true, Locale[ProjectSettings.viewLanguage].updating, false);
         let cls = new graphElement();
         cls.attr({label: {text: name}});
         let point = this.paper?.clientToLocalPoint({x: this.newConceptEvent.x, y: this.newConceptEvent.y})
@@ -102,18 +103,24 @@ export default class DiagramCanvas extends React.Component<Props, State> {
             let labels = initLanguageObject("");
             labels[language] = name;
             VocabularyElements[iri].labels = labels;
-            updateProjectElement(
-                ProjectSettings.contextEndpoint,
-                VocabularyElements[iri].types,
-                VocabularyElements[iri].labels,
-                initLanguageObject(""),
-                cls.id);
+            cls.addTo(graph);
+            let bbox = this.paper?.findViewByModel(cls).getBBox();
+            if (bbox) cls.resize(bbox.width, bbox.height);
+            drawGraphElement(cls, language, ProjectSettings.representation);
+            this.props.updateElementPanel();
+            processTransaction(ProjectSettings.contextEndpoint,
+                updateProjectElement(
+                    VocabularyElements[iri].types,
+                    VocabularyElements[iri].labels,
+                    initLanguageObject(""),
+                    cls.id)).then(result => {
+                if (result) {
+                    this.props.handleChangeLoadingStatus(false, "", false);
+                } else {
+                    this.props.handleChangeLoadingStatus(false, Locale[ProjectSettings.viewLanguage].errorUpdating, true);
+                }
+            });
         }
-        cls.addTo(graph);
-        let bbox = this.paper?.findViewByModel(cls).getBBox();
-        if (bbox) cls.resize(bbox.width, bbox.height);
-        drawGraphElement(cls, language, ProjectSettings.representation);
-        this.props.updateElementPanel();
         this.props.handleChangeLoadingStatus(false, "", false);
     }
 
@@ -128,7 +135,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
     }
 
     saveNewLink(iri: string, sid: string, tid: string) {
-        this.props.handleChangeLoadingStatus(true, LocaleMain.updating, false);
+        this.props.handleChangeLoadingStatus(true, Locale[ProjectSettings.viewLanguage].updating, false);
         let type = iri in Links ? Links[iri].type : LinkType.DEFAULT;
         let link = getNewLink(type);
         link.source({id: sid, connectionPoint: {name: 'boundary', args: {selector: getElementShape(sid)}}});
@@ -159,7 +166,13 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                 }
                 if (typeof link.id === "string" && typeof sid === "string" && typeof tid === "string") {
                     if (ProjectSettings.representation === Representation.FULL || type === LinkType.GENERALIZATION) {
-                        this.updateConnections(sid, tid, link.id, type, iri);
+                        processTransaction(ProjectSettings.contextEndpoint, this.updateConnections(sid, tid, link.id, type, iri)).then(result => {
+                            if (!result) {
+                                this.props.handleChangeLoadingStatus(false, Locale[ProjectSettings.viewLanguage].errorUpdating, true);
+                            } else {
+                                this.props.handleChangeLoadingStatus(false, "", false);
+                            }
+                        });
                     } else if (ProjectSettings.representation === Representation.COMPACT) {
                         let mvp1IRI = "https://slovník.gov.cz/základní/pojem/má-vztažený-prvek-1";
                         let mvp2IRI = "https://slovník.gov.cz/základní/pojem/má-vztažený-prvek-2";
@@ -176,16 +189,25 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                             addLink(target.id, mvp2IRI, property.id, tid);
                             ProjectElements[property.id].connections.push(source.id);
                             ProjectElements[property.id].connections.push(target.id);
-                            updateProjectElement(
-                                ProjectSettings.contextEndpoint,
-                                VocabularyElements[iri].types,
-                                VocabularyElements[iri].labels,
-                                VocabularyElements[iri].definitions,
-                                property.id);
                             addLink(link.id, iri, sid, tid);
-                            this.updateConnections(property.id, sid, source.id, type, mvp1IRI);
-                            this.updateConnections(property.id, tid, target.id, type, mvp2IRI);
-                            this.updateConnections(sid, tid, link.id, type, iri);
+                            processTransaction(ProjectSettings.contextEndpoint,
+                                mergeTransactions(
+                                    updateProjectElement(
+                                        VocabularyElements[iri].types,
+                                        VocabularyElements[iri].labels,
+                                        VocabularyElements[iri].definitions,
+                                        property.id),
+                                    this.updateConnections(property.id, sid, source.id, type, mvp1IRI),
+                                    this.updateConnections(property.id, tid, target.id, type, mvp2IRI),
+                                    this.updateConnections(sid, tid, link.id, type, iri),
+                                )
+                            ).then(result => {
+                                if (!result) {
+                                    this.props.handleChangeLoadingStatus(false, Locale[ProjectSettings.viewLanguage].errorUpdating, true);
+                                } else {
+                                    this.props.handleChangeLoadingStatus(false, "", false);
+                                }
+                            });
                         }
                     }
                     this.props.updateElementPanel();
@@ -200,87 +222,46 @@ export default class DiagramCanvas extends React.Component<Props, State> {
         unHighlightAll();
     }
 
-    resizeElem(id: string) {
-        let view = this.paper?.findViewByModel(id);
-        if (view) {
-            let bbox = view.getBBox();
-            let cell = graph.getCell(id);
-            let links = graph.getConnectedLinks(cell);
-            for (let link of links) {
-                if (link.getSourceCell()?.id === id) {
-                    link.source({x: bbox.x, y: bbox.y});
-                } else {
-                    link.target({x: bbox.x, y: bbox.y});
-                }
-            }
-            if (typeof cell.id === "string") {
-                unHighlightCell(cell.id);
-            }
-            if (typeof cell.id === "string") {
-                highlightCell(cell.id);
-            }
-            for (let link of links) {
-                if (link.getSourceCell() === null) {
-                    link.source({id: id, connectionPoint: {name: 'boundary', args: {selector: getElementShape(id)}}});
-                } else {
-                    link.target({id: id, connectionPoint: {name: 'boundary', args: {selector: getElementShape(id)}}});
-                }
-            }
-        }
-    }
-
     updateElement(cell: joint.dia.Cell) {
         let id = cell.id;
-        this.props.handleChangeLoadingStatus(true, LocaleMain.updating, false);
+        this.props.handleChangeLoadingStatus(true, Locale[ProjectSettings.viewLanguage].updating, false);
         cell.remove();
         ProjectElements[id].hidden[ProjectSettings.selectedDiagram] = true;
         let iri = ProjectElements[id].iri;
-        if (typeof id === "string") {
-            updateProjectElement(
-                ProjectSettings.contextEndpoint,
-                VocabularyElements[iri].types,
-                VocabularyElements[iri].labels,
-                VocabularyElements[iri].definitions,
-                id);
-        }
         this.props.handleChangeLoadingStatus(false, "", false);
         this.props.updateElementPanel();
         this.props.hideDetails();
+        if (typeof id === "string") {
+            processTransaction(ProjectSettings.contextEndpoint,
+                updateProjectElement(
+                    VocabularyElements[iri].types,
+                    VocabularyElements[iri].labels,
+                    VocabularyElements[iri].definitions,
+                    id)).then(result => {
+                if (!result) {
+                    this.props.handleChangeLoadingStatus(false, Locale[ProjectSettings.viewLanguage].errorUpdating, true);
+                } else {
+                    this.props.handleChangeLoadingStatus(false, "", false);
+                }
+            })
+        }
     }
 
     updateConnections(sid: string, tid: string, linkID: string, type: number, iri: string) {
-        this.props.handleChangeLoadingStatus(true, LocaleMain.updating, false);
+        this.props.handleChangeLoadingStatus(true, Locale[ProjectSettings.viewLanguage].updating, false);
         addLink(linkID, iri, sid, tid, type);
         ProjectElements[sid].connections.push(linkID);
-        updateConnections(ProjectSettings.contextEndpoint, linkID).then(result => {
-            if (result) {
-                updateProjectLink(ProjectSettings.contextEndpoint, linkID).then(result => {
-                    if (result) {
-                        this.props.handleChangeLoadingStatus(false, "", false);
-                    } else {
-                        this.props.handleChangeLoadingStatus(false, LocaleMain.errorUpdating, true);
-                    }
-                });
-            } else {
-                this.props.handleChangeLoadingStatus(false, LocaleMain.errorUpdating, true);
-            }
-        });
         this.props.updateElementPanel();
+        return mergeTransactions(updateConnections(linkID), updateProjectLink(linkID));
     }
 
     deleteConnections(sid: string, id: string) {
         ProjectLinks[id].active = false;
-        updateProjectLink(ProjectSettings.contextEndpoint, id).then(result => {
-            if (result) {
-                if (graph.getCell(id)) graph.getCell(id).remove();
-                this.props.handleChangeLoadingStatus(false, "", false);
-            } else {
-                this.props.handleChangeLoadingStatus(false, LocaleMain.errorUpdating, true);
-            }
-        });
+        if (graph.getCell(id)) graph.getCell(id).remove();
+        return updateProjectLink(id);
     }
 
-    async updateVertices(id: string, projVerts: joint.dia.Link.Vertex[], linkVerts: joint.dia.Link.Vertex[]): Promise<Boolean> {
+    updateVertices(id: string, projVerts: joint.dia.Link.Vertex[], linkVerts: joint.dia.Link.Vertex[]) {
         if (!projVerts) projVerts = [];
         let update = [];
         let del = -1;
@@ -293,13 +274,10 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                 update.push(i);
             }
         }
-        await Promise.all([
-            del !== -1 && updateDeleteProjectLinkVertex(ProjectSettings.contextEndpoint, id, del, projVerts.length),
-            updateProjectLinkVertex(ProjectSettings.contextEndpoint, id, update)
-        ]).catch(() => false);
-
+        let transactions = updateProjectLinkVertex(id, update);
+        if (del !== -1) transactions = mergeTransactions(transactions, updateDeleteProjectLinkVertex(id, del, projVerts.length))
         ProjectLinks[id].vertices[ProjectSettings.selectedDiagram] = linkVerts;
-        return true;
+        return transactions;
     }
 
     addLinkTools(linkView: joint.dia.LinkView) {
@@ -309,35 +287,54 @@ export default class DiagramCanvas extends React.Component<Props, State> {
         let removeButton = new joint.linkTools.Remove({
             distance: 5,
             action: ((evt, view) => {
-                this.props.handleChangeLoadingStatus(true, LocaleMain.updating, false);
+                this.props.handleChangeLoadingStatus(true, Locale[ProjectSettings.viewLanguage].updating, false);
                 if (ProjectSettings.representation === Representation.FULL) {
                     let sid = view.model.getSourceCell()?.id;
                     if (typeof sid === "string" && typeof id === "string") {
-                        this.deleteConnections(sid, id);
+                        let transactions = this.deleteConnections(sid, id);
                         let compactConn = Object.keys(ProjectLinks).find(link => ProjectLinks[link].active &&
                             ProjectLinks[link].iri === ProjectElements[ProjectLinks[id].source].iri &&
                             ProjectLinks[link].target === ProjectLinks[id].target);
                         if (compactConn) {
-                            this.deleteConnections(ProjectLinks[compactConn].source, compactConn);
+                            transactions = mergeTransactions(transactions, this.deleteConnections(ProjectLinks[compactConn].source, compactConn));
                         }
+                        processTransaction(ProjectSettings.contextEndpoint, transactions).then(result => {
+                            if (!result) {
+                                this.props.handleChangeLoadingStatus(false, Locale[ProjectSettings.viewLanguage].errorUpdating, true);
+                            } else {
+                                this.props.handleChangeLoadingStatus(false, "", false);
+                            }
+                        });
                     }
                 } else {
                     let deleteLinks = getUnderlyingFullConnections(view.model);
+                    let transactions: { add: string[], delete: string[], update: string[] } = {
+                        add: [],
+                        delete: [],
+                        update: []
+                    };
                     if (deleteLinks && ProjectLinks[deleteLinks.src] && ProjectLinks[deleteLinks.tgt]) {
                         ProjectLinks[deleteLinks.src].active = false;
                         ProjectLinks[deleteLinks.tgt].active = false;
-                        this.deleteConnections(ProjectLinks[deleteLinks.src].source, deleteLinks.src);
-                        this.deleteConnections(ProjectLinks[deleteLinks.src].source, deleteLinks.tgt);
+                        transactions = mergeTransactions(transactions,
+                            this.deleteConnections(ProjectLinks[deleteLinks.src].source, deleteLinks.src),
+                            this.deleteConnections(ProjectLinks[deleteLinks.src].source, deleteLinks.tgt));
                     }
                     let sid = view.model.getSourceCell()?.id;
                     if (typeof sid === "string" && typeof id === "string") {
-                        this.deleteConnections(sid, id);
+                        transactions = mergeTransactions(transactions, this.deleteConnections(sid, id));
                     }
                     view.model.remove();
                     ProjectLinks[view.model.id].active = false;
                     this.props.hideDetails();
                     ProjectSettings.selectedLink = "";
-                    this.props.handleChangeLoadingStatus(false, "", false);
+                    processTransaction(ProjectSettings.contextEndpoint, transactions).then(result => {
+                        if (!result) {
+                            this.props.handleChangeLoadingStatus(false, Locale[ProjectSettings.viewLanguage].errorUpdating, true);
+                        } else {
+                            this.props.handleChangeLoadingStatus(false, "", false);
+                        }
+                    });
                 }
             })
         })
@@ -400,15 +397,15 @@ export default class DiagramCanvas extends React.Component<Props, State> {
             'element:pointerup': (cellView) => {
                 if (!this.newLink) {
                     ProjectElements[cellView.model.id].position[ProjectSettings.selectedDiagram] = cellView.model.position();
-                    this.props.handleChangeLoadingStatus(true, LocaleMain.updating, false);
-                    updateProjectElementDiagram(
-                        ProjectSettings.contextEndpoint,
-                        cellView.model.id,
-                        ProjectSettings.selectedDiagram).then(result => {
+                    this.props.handleChangeLoadingStatus(true, Locale[ProjectSettings.viewLanguage].updating, false);
+                    processTransaction(ProjectSettings.contextEndpoint,
+                        updateProjectElementDiagram(
+                            cellView.model.id,
+                            ProjectSettings.selectedDiagram)).then(result => {
                         if (result) {
                             this.props.handleChangeLoadingStatus(false, "", false);
                         } else {
-                            this.props.handleChangeLoadingStatus(false, LocaleMain.errorUpdating, true);
+                            this.props.handleChangeLoadingStatus(false, Locale[ProjectSettings.viewLanguage].errorUpdating, true);
                         }
                     });
                 }
@@ -485,12 +482,12 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                 let id = cellView.model.id;
                 let link = cellView.model;
                 link.findView(this.paper).removeRedundantLinearVertices();
-                this.props.handleChangeLoadingStatus(true, LocaleMain.updating, false);
-                this.updateVertices(id, ProjectLinks[id].vertices[ProjectSettings.selectedDiagram], link.vertices()).then(result => {
+                this.props.handleChangeLoadingStatus(true, Locale[ProjectSettings.viewLanguage].updating, false);
+                processTransaction(ProjectSettings.contextEndpoint, this.updateVertices(id, ProjectLinks[id].vertices[ProjectSettings.selectedDiagram], link.vertices())).then(result => {
                     if (result) {
                         this.props.handleChangeLoadingStatus(false, "", false);
                     } else {
-                        this.props.handleChangeLoadingStatus(false, LocaleMain.errorUpdating, true);
+                        this.props.handleChangeLoadingStatus(false, Locale[ProjectSettings.viewLanguage].errorUpdating, true);
                     }
                 });
             }
@@ -517,8 +514,12 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                 }
                 }
                 onDrop={(event) => {
-                    // create - get name - insert - (existing: restore)
-                    this.props.handleChangeLoadingStatus(true, LocaleMain.updating, false);
+                    this.props.handleChangeLoadingStatus(true, Locale[ProjectSettings.viewLanguage].updating, false);
+                    let transactions: { add: string[], delete: string[], update: string[] } = {
+                        add: [],
+                        delete: [],
+                        update: []
+                    }
                     const data = JSON.parse(event.dataTransfer.getData("newClass"));
                     let matrixDimension = Math.ceil(Math.sqrt(data.id.length));
                     data.id.forEach((id: string, i: number) => {
@@ -545,24 +546,25 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                         cls.addTo(graph);
                         ProjectElements[id].hidden[ProjectSettings.selectedDiagram] = false;
                         this.props.updateElementPanel();
-                        restoreHiddenElem(id, cls, true);
+                        transactions = mergeTransactions(transactions, restoreHiddenElem(id, cls, true));
+                    });
+                    processTransaction(ProjectSettings.contextEndpoint, mergeTransactions(data.id.map((id: string) =>
                         updateProjectElement(
-                            ProjectSettings.contextEndpoint,
                             VocabularyElements[ProjectElements[id].iri].types,
                             VocabularyElements[ProjectElements[id].iri].labels,
                             VocabularyElements[ProjectElements[id].iri].definitions,
-                            id).then(result => {
-                            if (result) {
-                                this.props.handleChangeLoadingStatus(false, "", false);
-                            } else {
-                                this.props.handleChangeLoadingStatus(false, LocaleMain.errorUpdating, true);
-                            }
-                        });
-                    })
+                            id)
+                    ), transactions)).then(result => {
+                        if (result) {
+                            this.props.handleChangeLoadingStatus(false, "", false);
+                        } else {
+                            this.props.handleChangeLoadingStatus(false, Locale[ProjectSettings.viewLanguage].errorUpdating, true);
+                        }
+                    });
                     if (ProjectSettings.representation === Representation.COMPACT) setRepresentation(ProjectSettings.representation);
                 }}
             />
-            <NewLinkDiagram
+            <NewLinkModal
                 projectLanguage={this.props.projectLanguage}
                 modal={this.state.modalAddLink}
                 sid={this.sid}
@@ -575,7 +577,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                         unHighlightAll();
                     }
                 }}/>
-            <NewElemDiagram
+            <NewElemModal
                 projectLanguage={this.props.projectLanguage}
                 modal={this.state.modalAddElem}
                 close={(conceptName: string, pkg: PackageNode) => {

@@ -1,4 +1,3 @@
-import * as Locale from "../locale/LocaleMain.json";
 import {Cardinality} from "../datatypes/Cardinality";
 import {PackageNode} from "../datatypes/PackageNode";
 import {initLanguageObject} from "../function/FunctionEditVars";
@@ -129,12 +128,13 @@ export var ProjectSettings: {
     ontographerContext: string,
     initialized: boolean,
     representation: number,
-    lastUpdate: { func: Function, args: [] },
+    lastTransaction: { add: string[], delete: string[], update: string[] },
     switchElements: string[],
     viewStereotypes: boolean,
     viewZoom: number,
     viewColorPool: string,
     viewItemPanelTypes: boolean,
+    viewLanguage: string,
 } = {
     name: {},
     description: {},
@@ -146,19 +146,21 @@ export var ProjectSettings: {
     ontographerContext: "http://onto.fel.cvut.cz/ontologies/application/ontoGrapher",
     initialized: false,
     representation: Representation.FULL,
-    lastUpdate: {
-        func: function () {
-        }, args: []
+    lastTransaction: {
+        add: [],
+        delete: [],
+        update: []
     },
     switchElements: [],
     viewStereotypes: true,
     viewZoom: 1,
     viewColorPool: "pastelLow",
-    viewItemPanelTypes: true
+    viewItemPanelTypes: true,
+    viewLanguage: "en"
 };
 
 export var CardinalityPool: Cardinality[] = [
-    new Cardinality(Locale.none, Locale.none),
+    new Cardinality("", ""),
     new Cardinality("*", "*"),
     new Cardinality("0", "0"),
     new Cardinality("0", "*"),

@@ -9,13 +9,13 @@ import {
     Stereotypes,
     VocabularyElements
 } from "../config/Variables";
-import * as Locale from "../locale/LocaleMain.json";
 import {graph} from "../graph/Graph";
 import {addLink} from "./FunctionCreateVars";
 import {LinkConfig} from "../config/LinkConfig";
 import {getNewLink} from "./FunctionGraph";
-import {updateDeleteProjectElement} from "../interface/TransactionInterface";
+import {updateDeleteTriples} from "../interface/TransactionInterface";
 import {LinkType} from "../config/Enum";
+import {Locale} from "../config/Locale";
 
 export function getName(element: string, language: string): string {
     if (element in Stereotypes) {
@@ -76,7 +76,7 @@ export function loadLanguages() {
 }
 
 export function initProjectSettings() {
-    ProjectSettings.name = initLanguageObject(Locale.untitledProject);
+    ProjectSettings.name = initLanguageObject(Locale[ProjectSettings.viewLanguage].untitledProject);
     ProjectSettings.description = initLanguageObject("");
     ProjectSettings.selectedDiagram = 0;
 }
@@ -143,22 +143,21 @@ export function addRelationships(): string[] {
     return linksToPush;
 }
 
-export async function deletePackageItem(id: string): Promise<boolean> {
+export function deletePackageItem(id: string): { add: string[], delete: string[], update: string[] } {
     let folder = ProjectElements[id].package;
     let iri = ProjectElements[id].iri;
+    let triples: string[] = [];
     folder.elements.splice(folder.elements.indexOf(id), 1);
     for (let connection of ProjectElements[id].connections) {
         ProjectLinks[connection].active = false;
-        updateDeleteProjectElement(ProjectSettings.contextEndpoint,
-            ProjectSettings.ontographerContext + "-" + connection,
-            ProjectSettings.ontographerContext);
+        triples.concat(updateDeleteTriples(ProjectSettings.ontographerContext + "-" + connection,
+            ProjectSettings.ontographerContext));
     }
     let targets = Object.keys(ProjectLinks).filter(link => ProjectElements[ProjectLinks[link].target].iri === iri)
     for (let connection of targets) {
         ProjectLinks[connection].active = false;
-        updateDeleteProjectElement(ProjectSettings.contextEndpoint,
-            ProjectSettings.ontographerContext + "-" + connection,
-            ProjectSettings.ontographerContext)
+        triples.concat(updateDeleteTriples(ProjectSettings.ontographerContext + "-" + connection,
+            ProjectSettings.ontographerContext));
     }
     targets.forEach(target => {
         let elem = Object.keys(ProjectElements).find(elem => ProjectElements[elem].connections.includes(target));
@@ -169,7 +168,7 @@ export async function deletePackageItem(id: string): Promise<boolean> {
         graph.removeCells([graph.getCell(id)]);
     }
     ProjectElements[id].active = false;
-    return true;
+    return {add: [], delete: [], update: triples};
 }
 
 export function setElementShape(elem: joint.dia.Element, width: number, height: number) {

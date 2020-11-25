@@ -1,6 +1,6 @@
 import React from 'react';
-import {Stereotypes} from "../../config/Variables";
-import * as LocaleMain from "../../locale/LocaleMain.json";
+import {ProjectSettings, Stereotypes} from "../../config/Variables";
+import {Locale} from "../../config/Locale";
 
 interface Props {
 	iri: string;
@@ -46,7 +46,7 @@ export default class PackageDivider extends React.Component<Props, State> {
                        onChange={() => {
 					   }}/>
 			</span>}
-			&nbsp;{this.props.iri in Stereotypes ? Stereotypes[this.props.iri].labels[this.props.projectLanguage] : LocaleMain.unsorted}
+			&nbsp;{this.props.iri in Stereotypes ? Stereotypes[this.props.iri].labels[this.props.projectLanguage] : Locale[ProjectSettings.viewLanguage].unsorted}
 		</div>);
 	}
 }

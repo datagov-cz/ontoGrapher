@@ -1,6 +1,5 @@
 import React from 'react';
 import {Button, Form, Modal} from "react-bootstrap";
-import * as LocaleMenu from "../locale/LocaleMenu.json";
 import {
 	Links,
 	Prefixes,
@@ -14,6 +13,7 @@ import {getLabelOrBlank, getLinkOrVocabElem} from "../function/FunctionGetVars";
 import {graph} from "../graph/Graph";
 import {parsePrefix} from "../function/FunctionEditVars";
 import {Representation} from "../config/Enum";
+import {Locale} from "../config/Locale";
 
 interface Props {
 	modal: boolean;
@@ -28,7 +28,7 @@ interface State {
 	displayIncompatible: boolean;
 }
 
-export default class NewLinkDiagram extends React.Component<Props, State> {
+export default class NewLinkModal extends React.Component<Props, State> {
 	constructor(props: Props) {
 		super(props);
 		this.state = {
@@ -115,10 +115,10 @@ export default class NewLinkDiagram extends React.Component<Props, State> {
 					   onEntering={() => this.setState({selectedLink: ""})}
 		>
 			<Modal.Header>
-				<Modal.Title>{LocaleMenu.modalNewLinkTitle}</Modal.Title>
+				<Modal.Title>{Locale[ProjectSettings.viewLanguage].modalNewLinkTitle}</Modal.Title>
 			</Modal.Header>
 			<Modal.Body>
-				<p>{LocaleMenu.modalNewLinkDescription}</p>
+				<p>{Locale[ProjectSettings.viewLanguage].modalNewLinkDescription}</p>
 				{ProjectSettings.representation === Representation.FULL && <span>
 					<input defaultChecked={this.state.displayIncompatible}
                            onClick={(event: any) => {
@@ -128,7 +128,8 @@ export default class NewLinkDiagram extends React.Component<Props, State> {
                            id={"displayIncompatible"}
                     />
                     &nbsp;
-                    <label htmlFor={"displayIncompatible"}>{LocaleMenu.showIncompatibleLinks}</label>
+                    <label
+                        htmlFor={"displayIncompatible"}>{Locale[ProjectSettings.viewLanguage].showIncompatibleLinks}</label>
 				</span>}
 				<br/>
 				<Form.Control htmlSize={Object.keys(Links).length} as="select" value={this.state.selectedLink}
@@ -142,7 +143,7 @@ export default class NewLinkDiagram extends React.Component<Props, State> {
 			<Modal.Footer>
 				<Button onClick={() => {
 					this.props.close();
-				}} variant="secondary">{LocaleMenu.cancel}</Button>
+				}} variant="secondary">{Locale[ProjectSettings.viewLanguage].cancel}</Button>
 			</Modal.Footer>
 		</Modal>);
 	}

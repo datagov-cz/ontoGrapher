@@ -1,8 +1,8 @@
 import React from 'react';
 import {Button, Form, InputGroup, Modal} from "react-bootstrap";
-import * as LocaleMenu from "../locale/LocaleMenu.json";
 import {PackageNode} from "../datatypes/PackageNode";
-import {Languages, PackageRoot, Schemes} from "../config/Variables";
+import {Languages, PackageRoot, ProjectSettings, Schemes} from "../config/Variables";
+import {Locale} from "../config/Locale";
 
 interface Props {
 	modal: boolean;
@@ -16,7 +16,7 @@ interface State {
 	selectedPackage: PackageNode;
 }
 
-export default class NewElemDiagram extends React.Component<Props, State> {
+export default class NewElemModal extends React.Component<Props, State> {
 	constructor(props: Props) {
 		super(props);
 		let pkg = PackageRoot.children.find(pkg => pkg.scheme && (!(Schemes[pkg.scheme].readOnly)))
@@ -54,10 +54,10 @@ export default class NewElemDiagram extends React.Component<Props, State> {
 					   }}
 		>
 			<Modal.Header>
-				<Modal.Title>{LocaleMenu.modalNewElemTitle}</Modal.Title>
+				<Modal.Title>{Locale[ProjectSettings.viewLanguage].modalNewElemTitle}</Modal.Title>
 			</Modal.Header>
 			<Modal.Body>
-				<p>{LocaleMenu.modalNewElemDescription}</p>
+				<p>{Locale[ProjectSettings.viewLanguage].modalNewElemDescription}</p>
 				<Form onSubmit={(event) => {
 					event.preventDefault();
 					this.save()
@@ -72,7 +72,7 @@ export default class NewElemDiagram extends React.Component<Props, State> {
 					</InputGroup>
 					<br/>
 					<Form.Group controlId="exampleForm.ControlSelect1">
-						<Form.Label>{LocaleMenu.selectPackage}</Form.Label>
+						<Form.Label>{Locale[ProjectSettings.viewLanguage].selectPackage}</Form.Label>
 						<Form.Control as="select" value={this.state.selectedPackage.labels[this.props.projectLanguage]}
 									  onChange={(event) => {
 										  let pkg = PackageRoot.children.find(pkg => pkg.labels[this.props.projectLanguage] === event.currentTarget.value);
@@ -85,16 +85,16 @@ export default class NewElemDiagram extends React.Component<Props, State> {
 					</Form.Group>
 				</Form>
 				<p style={{display: this.state.displayError ? "block" : "none"}}
-				   className="red">{LocaleMenu.modalNewElemError}</p>
+				   className="red">{Locale[ProjectSettings.viewLanguage].modalNewElemError}</p>
 
 			</Modal.Body>
 			<Modal.Footer>
 				<Button onClick={() => {
 					this.save()
-				}} variant="primary">{LocaleMenu.confirm}</Button>
+				}} variant="primary">{Locale[ProjectSettings.viewLanguage].confirm}</Button>
 				<Button onClick={() => {
 					this.props.close();
-				}} variant="secondary">{LocaleMenu.cancel}</Button>
+				}} variant="secondary">{Locale[ProjectSettings.viewLanguage].cancel}</Button>
 			</Modal.Footer>
 		</Modal>);
 	}

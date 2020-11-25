@@ -3,9 +3,9 @@ import {initLanguageObject} from "../function/FunctionEditVars";
 import * as joint from "jointjs";
 import {Cardinality} from "../datatypes/Cardinality";
 import * as _ from "lodash";
-import * as Locale from "../locale/LocaleMain.json";
 import {createRestriction} from "../function/FunctionRestriction";
 import {LinkType} from "../config/Enum";
+import {Locale} from "../config/Locale";
 
 export async function fetchConcepts(
     endpoint: string,
@@ -252,7 +252,11 @@ export async function getSettings(contextIRI: string, contextEndpoint: string): 
     }).then(data => {
         for (let result of data.results.bindings) {
             if (!(parseInt(result.index.value) in Diagrams)) {
-                Diagrams[parseInt(result.index.value)] = {name: Locale.untitled, json: {}, active: true}
+                Diagrams[parseInt(result.index.value)] = {
+                    name: Locale[ProjectSettings.viewLanguage].untitled,
+                    json: {},
+                    active: true
+                }
             }
             Diagrams[parseInt(result.index.value)].name = result.name.value;
             if (result.color) ProjectSettings.viewColorPool = result.color.value;
@@ -364,8 +368,8 @@ export async function getLinksConfig(contextIRI: string, contextEndpoint: string
         }
 
         if (targetID && sourceID) {
-            let sourceCard = new Cardinality(Locale.none, Locale.none);
-            let targetCard = new Cardinality(Locale.none, Locale.none);
+            let sourceCard = new Cardinality("", "");
+            let targetCard = new Cardinality("", "");
             sourceCard.setFirstCardinality(links[link].sourceCardinality1);
             sourceCard.setSecondCardinality(links[link].sourceCardinality2);
             targetCard.setFirstCardinality(links[link].targetCardinality1);

@@ -68,7 +68,8 @@ export default class MenuPanel extends React.Component<MenuPanelProps, MenuPanel
 					<MenuPanelView update={() => this.props.update()}
 								   handleChangeLoadingStatus={this.props.handleChangeLoadingStatus}/>
 					<MenuPanelSwitchRepresentation update={() => this.props.update()}
-												   close={() => this.props.closeDetailPanel()}/>
+												   close={() => this.props.closeDetailPanel()}
+												   handleChangeLoadingStatus={this.props.handleChangeLoadingStatus}/>
 					<MenuPanelValidate validate={() => this.props.validate()}/>
 					<div className={"right"}>
 						<MenuPanelHelp/>

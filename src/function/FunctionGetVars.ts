@@ -1,12 +1,12 @@
 import {
-    Languages,
-    Links,
-    ProjectElements,
-    ProjectLinks,
-    ProjectSettings,
-    Schemes,
-    Stereotypes,
-    VocabularyElements
+	Languages,
+	Links,
+	ProjectElements,
+	ProjectLinks,
+	ProjectSettings,
+	Schemes,
+	Stereotypes,
+	VocabularyElements
 } from "../config/Variables";
 import {initLanguageObject, parsePrefix} from "./FunctionEditVars";
 import {ColorPool} from "../config/ColorPool";

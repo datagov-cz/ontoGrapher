@@ -12,7 +12,7 @@ const headers: { [key: string]: { [key: string]: string } } = {
 
 interface Props {
     projectLanguage: string;
-    resizeElem: Function;
+    // resizeElem: Function;
     update: Function;
     handleChangeLoadingStatus: Function;
     handleWidth: Function;
@@ -68,7 +68,7 @@ export default class DetailPanel extends React.Component<Props, State> {
     }
 
     save() {
-        if (graph.getCell(this.state.id).isElement()) this.props.resizeElem(this.state.id);
+        // if (graph.getCell(this.state.id).isElement()) this.props.resizeElem(this.state.id);
         this.props.update();
     }
 

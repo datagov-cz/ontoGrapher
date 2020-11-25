@@ -1,7 +1,7 @@
 import React from 'react';
 import {OverlayTrigger, Spinner, Tooltip} from 'react-bootstrap';
 import {ProjectSettings} from "../config/Variables";
-import * as LocaleMain from "../locale/LocaleMain.json";
+import {Locale} from "../config/Locale";
 
 interface Props {
 	handleChangeLoadingStatus: Function;
@@ -46,7 +46,7 @@ export default class InterfaceStatus extends React.Component<Props, State> {
 		return (<span>
 			<OverlayTrigger placement="left" overlay={
 				<Tooltip
-					id="tooltipC">{this.state.connection ? LocaleMain.stableConnection : LocaleMain.brokenConnection}</Tooltip>
+					id="tooltipC">{this.state.connection ? Locale[ProjectSettings.viewLanguage].stableConnection : Locale[ProjectSettings.viewLanguage].brokenConnection}</Tooltip>
 			}>
 				{(!this.state.connection) ?
 					<Spinner animation="grow" size="sm" variant={"danger"}/> : <div className={"noresponse"}>🟢</div>}

@@ -15,7 +15,7 @@ import {loadDiagram, saveDiagram} from "./FunctionDiagram";
 import {PackageNode} from "../datatypes/PackageNode";
 import {graph} from "../graph/Graph";
 import {initProjectSettings} from "./FunctionEditVars";
-import * as Locale from "../locale/LocaleMain.json";
+import {Locale} from "../config/Locale";
 
 export function saveProject(): { [key: string]: any } {
     Diagrams[ProjectSettings.selectedDiagram].json = saveDiagram();
@@ -95,7 +95,7 @@ export function newProject() {
     graph.clear();
     initProjectSettings();
     Diagrams.length = 0;
-    Diagrams.push({name: Locale.untitled, json: "", active: true});
+    Diagrams.push({name: Locale[ProjectSettings.viewLanguage].untitled, json: "", active: true});
     Object.keys(Stereotypes).forEach(el => delete Stereotypes[el]);
     Object.keys(Links).forEach(el => delete Links[el]);
     Object.keys(VocabularyElements).forEach(el => delete VocabularyElements[el]);
@@ -126,8 +126,4 @@ export function loadProject(loadString: string) {
     ProjectSettings.selectedDiagram = 0;
     loadDiagram(Diagrams[ProjectSettings.selectedDiagram].json);
     loadPackages(save.packageRoot);
-}
-
-export async function retryConnection() {
-    return await ProjectSettings.lastUpdate.func.call(undefined, ProjectSettings.lastUpdate.args);
 }

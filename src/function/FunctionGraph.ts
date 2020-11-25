@@ -3,18 +3,19 @@ import {getName, getStereotypeList, parsePrefix, setElementShape} from "./Functi
 import {graph} from "../graph/Graph";
 import {getLinkOrVocabElem, isConnectionWithTrope} from "./FunctionGetVars";
 import * as joint from "jointjs";
-import * as LocaleMain from "../locale/LocaleMain.json";
 import {graphElement} from "../graph/GraphElement";
 import {LinkConfig} from "../config/LinkConfig";
 import {addLink} from "./FunctionCreateVars";
 import {Cardinality} from "../datatypes/Cardinality";
 import {LinkType, Representation} from "../config/Enum";
 import {
+    mergeTransactions,
     updateDeleteProjectLinkVertex,
     updateProjectElementDiagram,
     updateProjectLink
 } from "../interface/TransactionInterface";
 import {Shapes} from "../config/Shapes";
+import {Locale} from "../config/Locale";
 
 
 let mvp1IRI = "https://slovník.gov.cz/základní/pojem/má-vztažený-prvek-1";
@@ -100,6 +101,11 @@ export function getFullConnections(id: string): string[] {
 
 export function spreadConnections(id: string, limitToTropes: boolean, representation: boolean = true) {
     let elem = graph.getElements().find(elem => elem.id === id);
+    let transactions: { add: string[], delete: string[], update: string[] } = {
+        add: [],
+        delete: [],
+        update: []
+    }
     if (elem) {
         let centerX = elem.position().x + (elem.size().width / 2);
         let centerY = elem.position().y + (elem.size().height / 2);
@@ -119,12 +125,13 @@ export function spreadConnections(id: string, limitToTropes: boolean, representa
             ProjectElements[elemID].position[ProjectSettings.selectedDiagram] = {x: x, y: y};
             ProjectElements[elemID].hidden[ProjectSettings.selectedDiagram] = false;
             drawGraphElement(elem, ProjectSettings.selectedLanguage, ProjectSettings.representation);
-            restoreHiddenElem(id, elem, true);
-            updateProjectElementDiagram(ProjectSettings.contextEndpoint,
-                elemID, ProjectSettings.selectedDiagram);
+            transactions = mergeTransactions(restoreHiddenElem(id, elem, true));
+            transactions = mergeTransactions(transactions, updateProjectElementDiagram(
+                elemID, ProjectSettings.selectedDiagram));
         }
+        if (representation) setRepresentation(ProjectSettings.representation, false);
     }
-    if (representation) setRepresentation(ProjectSettings.representation, false);
+    return transactions;
 }
 
 export function getUnderlyingFullConnections(link: joint.dia.Link): { src: string, tgt: string } | undefined {
@@ -161,13 +168,13 @@ export function setLabels(link: joint.dia.Link, centerLabel: string){
             attrs: {text: {text: centerLabel}},
             position: {distance: 0.5}
         });
-        if (ProjectLinks[link.id].sourceCardinality.getString() !== LocaleMain.none) {
+        if (ProjectLinks[link.id].sourceCardinality.getString() !== "") {
             link.appendLabel({
                 attrs: {text: {text: ProjectLinks[link.id].sourceCardinality.getString()}},
                 position: {distance: 20}
             });
         }
-        if (ProjectLinks[link.id].targetCardinality.getString() !== LocaleMain.none) {
+        if (ProjectLinks[link.id].targetCardinality.getString() !== "") {
             link.appendLabel({
                 attrs: {text: {text: ProjectLinks[link.id].targetCardinality.getString()}},
                 position: {distance: -20}
@@ -184,7 +191,12 @@ function storeElement(elem: joint.dia.Element) {
     }
 }
 
-export function setRepresentation(representation: number, spread: boolean = true) {
+export function setRepresentation(representation: number, spread: boolean = true): { result: boolean, transactions: { add: string[], delete: string[], update: string[] } } {
+    let transactions: { add: string[], delete: string[], update: string[] } = {
+        add: [],
+        delete: [],
+        update: []
+    };
     if (representation === Representation.COMPACT) {
         let del = false;
         ProjectSettings.representation = Representation.COMPACT;
@@ -276,7 +288,7 @@ export function setRepresentation(representation: number, spread: boolean = true
                                             ProjectLinks[sourceLink.id].sourceCardinality.getSecondCardinality());
                                     ProjectLinks[newLink.id].vertices[ProjectSettings.selectedDiagram] = newLink.vertices();
                                     setLabels(newLink, VocabularyElements[ProjectElements[elem.id].iri].labels[ProjectSettings.selectedLanguage]);
-                                    updateProjectLink(ProjectSettings.contextEndpoint, newLink.id);
+                                    transactions = mergeTransactions(transactions, updateProjectLink(newLink.id));
                                 }
                             }
                         }
@@ -299,8 +311,8 @@ export function setRepresentation(representation: number, spread: boolean = true
                 del = true;
             }
         }
-        return del;
-    } else if (representation === Representation.FULL) {
+        return {result: del, transactions: transactions};
+    } else {
         ProjectSettings.representation = Representation.FULL;
         ProjectSettings.selectedLink = "";
         for (let elem of ProjectSettings.switchElements) {
@@ -313,12 +325,14 @@ export function setRepresentation(representation: number, spread: boolean = true
                 cell.position(ProjectElements[elem].position[ProjectSettings.selectedDiagram].x, ProjectElements[elem].position[ProjectSettings.selectedDiagram].y)
                 ProjectElements[elem].hidden[ProjectSettings.selectedDiagram] = false;
                 drawGraphElement(cell, ProjectSettings.selectedLanguage, representation);
-                restoreHiddenElem(elem, cell, true);
+                transactions = mergeTransactions(transactions, restoreHiddenElem(elem, cell, true));
             }
         }
         for (let elem of graph.getElements()) {
             drawGraphElement(elem, ProjectSettings.selectedLanguage, representation);
             if (typeof elem.id === "string") {
+                transactions = mergeTransactions(transactions, spreadConnections(elem.id, true, false));
+                transactions = mergeTransactions(restoreHiddenElem(elem.id, elem, false));
                 if (spread) spreadConnections(elem.id, true, false);
                 restoreHiddenElem(elem.id, elem, false);
             }
@@ -329,7 +343,7 @@ export function setRepresentation(representation: number, spread: boolean = true
             }
         }
         ProjectSettings.switchElements = [];
-        return false;
+        return {result: false, transactions: transactions};
     }
 }
 
@@ -369,7 +383,55 @@ export function getElementShape(id: string | number): string {
     return Shapes["default"].body;
 }
 
-export function restoreHiddenElem(id: string, cls: joint.dia.Element, restoreConnectionPosition: boolean) {
+export function setupLink(link: string) {
+    let lnk = getNewLink(ProjectLinks[link].type, link);
+    setLabels(lnk, getLinkOrVocabElem(ProjectLinks[link].iri).labels[ProjectSettings.selectedLanguage])
+    lnk.source({
+        id: ProjectLinks[link].source,
+        connectionPoint: {name: 'boundary', args: {selector: getElementShape(ProjectLinks[link].source)}}
+    });
+    lnk.target({
+        id: ProjectLinks[link].target,
+        connectionPoint: {name: 'boundary', args: {selector: getElementShape(ProjectLinks[link].target)}}
+    });
+    lnk.addTo(graph);
+    if (ProjectLinks[link].source === ProjectLinks[link].target && (!(ProjectLinks[link].vertices[ProjectSettings.selectedDiagram]) ||
+        ProjectLinks[link].vertices[ProjectSettings.selectedDiagram] === [])) {
+        let coords = lnk.getSourcePoint();
+        let bbox = lnk.getSourceCell()?.getBBox();
+        if (bbox) {
+            ProjectLinks[link].vertices[ProjectSettings.selectedDiagram] = [
+                new joint.g.Point(coords.x, coords.y + 100),
+                new joint.g.Point(coords.x + (bbox.width / 2) + 50, coords.y + 100),
+                new joint.g.Point(coords.x + (bbox.width / 2) + 50, coords.y),
+            ]
+        } else {
+            ProjectLinks[link].vertices[ProjectSettings.selectedDiagram] = [
+                new joint.g.Point(coords.x, coords.y + 100),
+                new joint.g.Point(coords.x + 300, coords.y + 100),
+                new joint.g.Point(coords.x + 300, coords.y),
+            ]
+        }
+    }
+    lnk.vertices(ProjectLinks[link].vertices[ProjectSettings.selectedDiagram]);
+}
+
+export function restoreElems() {
+    for (let link of Object.keys(ProjectLinks).filter(link => ProjectLinks[link].active)) {
+        let source = graph.getCell(ProjectLinks[link].source);
+        let target = graph.getCell(ProjectLinks[link].target);
+        if (source && target) {
+            setupLink(link);
+        }
+    }
+}
+
+export function restoreHiddenElem(id: string, cls: joint.dia.Element, restoreConnectionPosition: boolean): { add: string[], delete: string[], update: string[] } {
+    let transactions: { add: string[], delete: string[], update: string[] } = {
+        add: [],
+        delete: [],
+        update: []
+    };
     if (!(ProjectElements[id].diagrams.includes(ProjectSettings.selectedDiagram))) {
         ProjectElements[id].diagrams.push(ProjectSettings.selectedDiagram)
     }
@@ -464,14 +526,13 @@ export function restoreHiddenElem(id: string, cls: joint.dia.Element, restoreCon
                         domainLink.vertices(ProjectLinks[link].vertices[ProjectSettings.selectedDiagram]);
                         rangeLink.vertices(ProjectLinks[targetLink].vertices[ProjectSettings.selectedDiagram]);
                     } else {
-                        updateProjectElementDiagram(ProjectSettings.contextEndpoint,
-                            relID, ProjectSettings.selectedDiagram);
+                        transactions = mergeTransactions(transactions, updateProjectElementDiagram(relID, ProjectSettings.selectedDiagram));
                         if (ProjectLinks[link].vertices[ProjectSettings.selectedDiagram])
-                            updateDeleteProjectLinkVertex(ProjectSettings.contextEndpoint, link, 0,
-                                ProjectLinks[link].vertices[ProjectSettings.selectedDiagram].length);
+                            transactions = mergeTransactions(transactions, updateDeleteProjectLinkVertex(link, 0,
+                                ProjectLinks[link].vertices[ProjectSettings.selectedDiagram].length));
                         if (ProjectLinks[targetLink].vertices[ProjectSettings.selectedDiagram])
-                            updateDeleteProjectLinkVertex(ProjectSettings.contextEndpoint, targetLink, 0,
-                                ProjectLinks[targetLink].vertices[ProjectSettings.selectedDiagram].length);
+                            transactions = mergeTransactions(transactions, updateDeleteProjectLinkVertex(targetLink, 0,
+                                ProjectLinks[targetLink].vertices[ProjectSettings.selectedDiagram].length));
                         ProjectLinks[link].vertices[ProjectSettings.selectedDiagram] = [];
                         ProjectLinks[targetLink].vertices[ProjectSettings.selectedDiagram] = [];
                     }
@@ -482,8 +543,9 @@ export function restoreHiddenElem(id: string, cls: joint.dia.Element, restoreCon
             }
         }
     }
+    return transactions;
 }
 
 export function getNewLabel(iri: string, language: string) {
-    return "«" + getName(iri, language).toLowerCase() + "»\n" + LocaleMain.untitled + " " + getName(iri, language);
+    return "«" + getName(iri, language).toLowerCase() + "»\n" + Locale[ProjectSettings.viewLanguage].untitled + " " + getName(iri, language);
 }

@@ -11,19 +11,23 @@ import {
 } from "../../config/Variables";
 import {Form} from "react-bootstrap";
 import TableList from "../../components/TableList";
-import * as LocaleMain from "../../locale/LocaleMain.json";
-import * as LocaleMenu from "../../locale/LocaleMenu.json";
 import IRIlabel from "../../components/IRIlabel";
 import IRILink from "../../components/IRILink";
 import {ResizableBox} from "react-resizable";
 import {graph} from "../../graph/Graph";
 import DescriptionTabs from "./components/DescriptionTabs";
 import {getLabelOrBlank, getLinkOrVocabElem} from "../../function/FunctionGetVars";
-import {updateConnections, updateProjectLink} from "../../interface/TransactionInterface";
+import {
+    mergeTransactions,
+    processTransaction,
+    updateConnections,
+    updateProjectLink
+} from "../../interface/TransactionInterface";
 import {getUnderlyingFullConnections, setLabels, unHighlightAll} from "../../function/FunctionGraph";
 import {parsePrefix} from "../../function/FunctionEditVars";
 import {Cardinality} from "../../datatypes/Cardinality";
 import {LinkType, Representation} from "../../config/Enum";
+import {Locale} from "../../config/Locale";
 
 interface Props {
     projectLanguage: string;
@@ -106,32 +110,24 @@ export default class DetailLink extends React.Component<Props, State> {
 
     save() {
         if (this.state.id in ProjectLinks) {
+            let transactions: { add: string[], delete: string[], update: string[] } = {
+                add: [],
+                delete: [],
+                update: []
+            }
+            this.props.handleChangeLoadingStatus(true, Locale[ProjectSettings.viewLanguage].updating, false);
             if (ProjectSettings.representation === Representation.FULL) {
-                this.props.handleChangeLoadingStatus(true, LocaleMain.updating, false);
                 ProjectLinks[this.state.id].sourceCardinality = CardinalityPool[parseInt(this.state.sourceCardinality, 10)];
                 ProjectLinks[this.state.id].targetCardinality = CardinalityPool[parseInt(this.state.targetCardinality, 10)];
                 ProjectLinks[this.state.id].iri = this.state.iri;
-                updateProjectLink(ProjectSettings.contextEndpoint, this.state.id).then((result) => {
-                    if (result) {
-                        let link = graph.getLinks().find(link => link.id === this.state.id);
-                        if (link) {
-                            setLabels(link, getLinkOrVocabElem(this.state.iri).labels[this.props.projectLanguage])
-                        }
-                        this.setState({changes: false});
-                        this.props.save();
-                        updateConnections(ProjectSettings.contextEndpoint, this.state.id).then(result => {
-                            if (result) {
-                                this.props.handleChangeLoadingStatus(false, "", false);
-                            } else {
-                                this.props.handleChangeLoadingStatus(false, LocaleMain.errorUpdating, true);
-                            }
-                        })
-                    } else {
-                        this.props.handleChangeLoadingStatus(false, LocaleMain.errorUpdating, true);
-                    }
-                })
+                let link = graph.getLinks().find(link => link.id === this.state.id);
+                if (link) {
+                    setLabels(link, getLinkOrVocabElem(this.state.iri).labels[this.props.projectLanguage])
+                }
+                this.setState({changes: false});
+                this.props.save();
+                transactions = mergeTransactions(transactions, updateProjectLink(this.state.id), updateConnections(this.state.id))
             } else {
-                this.props.handleChangeLoadingStatus(true, LocaleMain.updating, false);
                 ProjectLinks[this.state.id].sourceCardinality = CardinalityPool[parseInt(this.state.sourceCardinality, 10)];
                 ProjectLinks[this.state.id].targetCardinality = CardinalityPool[parseInt(this.state.targetCardinality, 10)];
                 let link = graph.getLinks().find(link => link.id === this.state.id);
@@ -145,17 +141,23 @@ export default class DetailLink extends React.Component<Props, State> {
                         ProjectLinks[underlyingConnections.src].targetCardinality = new Cardinality(sourceCard.getSecondCardinality(), sourceCard.getSecondCardinality());
                         ProjectLinks[underlyingConnections.tgt].sourceCardinality = new Cardinality(targetCard.getFirstCardinality(), targetCard.getFirstCardinality());
                         ProjectLinks[underlyingConnections.tgt].targetCardinality = new Cardinality(targetCard.getSecondCardinality(), targetCard.getSecondCardinality());
-                        updateProjectLink(ProjectSettings.contextEndpoint, underlyingConnections.src);
-                        updateProjectLink(ProjectSettings.contextEndpoint, underlyingConnections.tgt);
-                        updateConnections(ProjectSettings.contextEndpoint, underlyingConnections.src);
-                        updateConnections(ProjectSettings.contextEndpoint, underlyingConnections.tgt);
+                        transactions = mergeTransactions(transactions, updateProjectLink(underlyingConnections.src),
+                            updateProjectLink(underlyingConnections.tgt),
+                            updateConnections(underlyingConnections.src),
+                            updateConnections(underlyingConnections.tgt))
                     }
-                    updateProjectLink(ProjectSettings.contextEndpoint, this.state.id);
+                    transactions = mergeTransactions(transactions, updateProjectLink(this.state.id));
                 }
                 this.setState({changes: false});
                 this.props.save();
-                this.props.handleChangeLoadingStatus(false, "", false);
             }
+            processTransaction(ProjectSettings.contextEndpoint, transactions).then(result => {
+                if (result) {
+                    this.props.handleChangeLoadingStatus(false, "", false);
+                } else {
+                    this.props.handleChangeLoadingStatus(false, Locale[ProjectSettings.viewLanguage].errorUpdating, true);
+                }
+            });
         }
     }
 
@@ -179,10 +181,10 @@ export default class DetailLink extends React.Component<Props, State> {
                 }}><span role="img" aria-label={""}>➖</span></button>
                 <h3><IRILink label={getLinkOrVocabElem(this.state.iri).labels[this.props.projectLanguage]}
                              iri={this.state.iri}/></h3>
-                <TableList headings={[LocaleMenu.linkInfo, ""]}>
+                <TableList headings={[Locale[ProjectSettings.viewLanguage].linkInfo, ""]}>
                     <tr>
                         <td>
-                            <span>{LocaleMain.sourceCardinality}</span>
+                            <span>{Locale[ProjectSettings.viewLanguage].sourceCardinality}</span>
                         </td>
                         <td>
                             {(!this.state.readOnly) ? <Form.Control as="select" value={this.state.sourceCardinality}
@@ -202,7 +204,7 @@ export default class DetailLink extends React.Component<Props, State> {
 
                     <tr>
                         <td>
-                            <span>{LocaleMain.targetCardinality}</span>
+                            <span>{Locale[ProjectSettings.viewLanguage].targetCardinality}</span>
                         </td>
                         <td>
                             {(!this.state.readOnly) ? <Form.Control as="select" value={this.state.targetCardinality}
@@ -221,7 +223,7 @@ export default class DetailLink extends React.Component<Props, State> {
                     </tr>
                     <tr>
                         <td>
-                            <span>{LocaleMain.linkType}</span>
+                            <span>{Locale[ProjectSettings.viewLanguage].linkType}</span>
                         </td>
                         {(ProjectSettings.representation === Representation.FULL && !(this.state.readOnly)) ? <td>
                                 <Form.Control as="select" value={this.state.iri} onChange={(event) => {

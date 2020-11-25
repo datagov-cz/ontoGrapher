@@ -1,4 +1,3 @@
-import * as LocaleMain from "../../locale/LocaleMain.json";
 import React from "react";
 import {ResizableBox} from "react-resizable";
 import {
@@ -14,17 +13,17 @@ import {
 import {getLabelOrBlank, getLinkOrVocabElem} from "../../function/FunctionGetVars";
 import {Accordion, Button, Card} from "react-bootstrap";
 import TableList from "../../components/TableList";
-import * as LocaleMenu from "../../locale/LocaleMenu.json";
 import IRILink from "../../components/IRILink";
 import LabelTable from "./components/LabelTable";
 import DescriptionTabs from "./components/DescriptionTabs";
 import IRIlabel from "../../components/IRIlabel";
 import {drawGraphElement, spreadConnections, unHighlightAll} from "../../function/FunctionGraph";
 import {graph} from "../../graph/Graph";
-import {updateProjectElement, updateProjectLink} from "../../interface/TransactionInterface";
+import {processTransaction, updateProjectElement} from "../../interface/TransactionInterface";
 import * as _ from "lodash";
 import StereotypeOptions from "./components/StereotypeOptions";
 import {Shapes} from "../../config/Shapes";
+import {Locale} from "../../config/Locale";
 
 interface Props {
 	projectLanguage: string;
@@ -97,33 +96,27 @@ export default class DetailElement extends React.Component<Props, State> {
 	}
 
 	save() {
-		if (this.state.id in ProjectElements) {
-			this.props.handleChangeLoadingStatus(true, LocaleMain.updating, false);
-			updateProjectElement(
-				ProjectSettings.contextEndpoint,
-				this.state.inputTypes,
-				this.state.inputLabels,
-				this.state.inputDefinitions,
-				this.state.id).then(async result => {
-				let elem = graph.getElements().find(elem => elem.id === (this.state.id));
-				if (result && elem) {
-					VocabularyElements[ProjectElements[this.state.id].iri].types = this.state.inputTypes;
-					VocabularyElements[ProjectElements[this.state.id].iri].labels = this.state.inputLabels;
-					VocabularyElements[ProjectElements[this.state.id].iri].definitions = this.state.inputDefinitions;
-					drawGraphElement(elem, this.props.projectLanguage, ProjectSettings.representation);
-					this.props.save();
-					this.setState({changes: false});
-					this.props.handleChangeLoadingStatus(false, "", false);
-					for (let conn of ProjectElements[this.state.id].connections) {
-						await updateProjectLink(ProjectSettings.contextEndpoint, conn).then(res => {
-							if (!res) {
-								this.props.handleChangeLoadingStatus(false, LocaleMain.errorUpdating, true);
-							}
-						});
-					}
-					this.prepareDetails(this.state.id);
+		let elem = graph.getElements().find(elem => elem.id === (this.state.id));
+		if (this.state.id in ProjectElements && elem) {
+			this.props.handleChangeLoadingStatus(true, Locale[ProjectSettings.viewLanguage].updating, false);
+			VocabularyElements[ProjectElements[this.state.id].iri].types = this.state.inputTypes;
+			VocabularyElements[ProjectElements[this.state.id].iri].labels = this.state.inputLabels;
+			VocabularyElements[ProjectElements[this.state.id].iri].definitions = this.state.inputDefinitions;
+			drawGraphElement(elem, this.props.projectLanguage, ProjectSettings.representation);
+			this.props.save();
+			this.setState({changes: false});
+			this.prepareDetails(this.state.id);
+			processTransaction(ProjectSettings.contextEndpoint,
+				updateProjectElement(
+					this.state.inputTypes,
+					this.state.inputLabels,
+					this.state.inputDefinitions,
+					this.state.id)
+			).then(result => {
+				if (!result) {
+					this.props.handleChangeLoadingStatus(false, Locale[ProjectSettings.viewLanguage].errorUpdating, true);
 				} else {
-					this.props.handleChangeLoadingStatus(false, LocaleMain.errorUpdating, true);
+					this.props.handleChangeLoadingStatus(false, "", false);
 				}
 			});
 		}
@@ -171,7 +164,7 @@ export default class DetailElement extends React.Component<Props, State> {
 					<Card>
 						<Card.Header>
 							<Accordion.Toggle as={Button} variant={"link"} eventKey={"0"}>
-								{LocaleMain.description}
+								{Locale[ProjectSettings.viewLanguage].description}
 							</Accordion.Toggle>
 						</Card.Header>
 						<Accordion.Collapse eventKey={"0"}>
@@ -221,13 +214,13 @@ export default class DetailElement extends React.Component<Props, State> {
 					<Card>
 						<Card.Header>
 							<Accordion.Toggle as={Button} variant={"link"} eventKey={"1"}>
-								{LocaleMain.connections}
+								{Locale[ProjectSettings.viewLanguage].connections}
 							</Accordion.Toggle>
 						</Card.Header>
 						<Accordion.Collapse eventKey={"1"}>
 							<Card.Body>
 								<TableList
-									headings={[LocaleMenu.connectionVia, LocaleMenu.connectionTo]}>
+									headings={[Locale[ProjectSettings.viewLanguage].connectionVia, Locale[ProjectSettings.viewLanguage].connectionTo]}>
 									{this.state.inputConnections.map((conn) => {
 											if (ProjectLinks[conn] && ProjectLinks[conn].active) {
 												return (<tr>
@@ -243,10 +236,18 @@ export default class DetailElement extends React.Component<Props, State> {
 								{this.checkSpreadConnections() &&
                                 <Button className={"buttonlink center"}
                                         onClick={() => {
-											spreadConnections(this.state.id, false)
+											console.log(ProjectElements[this.state.id]);
+											this.props.handleChangeLoadingStatus(true, Locale[ProjectSettings.viewLanguage].updating, false);
+											processTransaction(ProjectSettings.contextEndpoint, spreadConnections(this.state.id, false, false)).then(result => {
+												if (result) {
+													this.props.handleChangeLoadingStatus(false, "", false);
+												} else {
+													this.props.handleChangeLoadingStatus(false, Locale[ProjectSettings.viewLanguage].errorUpdating, true);
+												}
+											});
 											this.forceUpdate();
 										}}>
-									{LocaleMain.spreadConnections}
+									{Locale[ProjectSettings.viewLanguage].spreadConnections}
                                 </Button>}
 							</Card.Body>
 						</Accordion.Collapse>
@@ -254,12 +255,12 @@ export default class DetailElement extends React.Component<Props, State> {
 					<Card>
 						<Card.Header>
 							<Accordion.Toggle as={Button} variant={"link"} eventKey={"2"}>
-								{LocaleMain.diagram}
+								{Locale[ProjectSettings.viewLanguage].diagram}
 							</Accordion.Toggle>
 						</Card.Header>
 						<Accordion.Collapse eventKey={"2"}>
 							<Card.Body>
-								<TableList headings={[LocaleMenu.diagram]}>
+								<TableList headings={[Locale[ProjectSettings.viewLanguage].diagram]}>
 									{this.state.inputDiagrams.map((diag) =>
 										Diagrams[diag] ? (<tr>
 											<td>{Diagrams[diag].name}</td>
