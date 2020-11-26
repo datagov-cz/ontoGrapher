@@ -21,6 +21,7 @@
   "deletedRelationships": "Some concepts or relationships are hidden in Compact view. To see them again, switch to Full view.",
   "validationName": "Label",
   "validationSeverity": "Severity",
+  "errorMissingWorkspace": "Error: missing or incorrect workspace detected. Please input a valid workspace IRI to proceed.",
   "conforms": "Workspace conforms according to SGoV server",
   "validationError": "Message",
   "validationReload": "Refresh",

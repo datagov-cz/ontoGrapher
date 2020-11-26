@@ -20,14 +20,14 @@ interface State {
 export default class ModalRemoveItem extends React.Component<Props, State> {
 
     save() {
+        this.props.handleChangeLoadingStatus(true, Locale[ProjectSettings.viewLanguage].updating, false);
         processTransaction(ProjectSettings.contextEndpoint, mergeTransactions(
             deletePackageItem(this.props.id), {
                 add: [],
                 delete: [],
                 update: updateDeleteTriples(ProjectElements[this.props.id].iri,
-                    Schemes[VocabularyElements[ProjectElements[this.props.id].iri].inScheme].graph)
+                    Schemes[VocabularyElements[ProjectElements[this.props.id].iri].inScheme].graph, true, true)
             })).then(result => {
-            this.props.handleChangeLoadingStatus(true, Locale[ProjectSettings.viewLanguage].updating, false);
             if (result) {
                 this.props.handleChangeLoadingStatus(false, "", false);
             } else {

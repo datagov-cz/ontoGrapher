@@ -110,10 +110,10 @@ export function updateProjectElement(
 
 	let addStrings: string[] = [JSON.stringify(addLD)];
 	let delStrings: string[] = [JSON.stringify(deleteLD)];
-	let updateStrings: string[] = updateDeleteTriples(iri + "/diagram", Schemes[scheme].graph, false, false);
-	updateStrings.concat(...ProjectElements[id].diagrams.map(diag =>
-		updateDeleteTriples(iri + "/diagram-" + (diag + 1), Schemes[scheme].graph, false, false)
-	))
+	let updateStrings: string[] = updateDeleteTriples(iri + "/diagram", Schemes[scheme].graph, false, false)
+		.concat(...ProjectElements[id].diagrams.map(diag =>
+			updateDeleteTriples(iri + "/diagram-" + (diag + 1), Schemes[scheme].graph, false, false)
+		))
 	return {add: addStrings, delete: delStrings, update: updateStrings}
 }
 
@@ -247,9 +247,9 @@ export function mergeTransactions(
 	let del: string[] = [];
 	let upd: string[] = [];
 	transactions.forEach(t => {
-		add.concat(t.add);
-		del.concat(t.delete);
-		upd.concat(t.update);
+		add = add.concat(t.add);
+		del = del.concat(t.delete);
+		upd = upd.concat(t.update);
 	})
 	return {
 		add: add,
@@ -299,7 +299,7 @@ export function updateConnections(id: string) {
 	};
 }
 
-export function getTransactionID(contextEndpoint: string) {
+export function getTransactionID(contextEndpoint: string): Promise<string> {
 	return new Promise((resolve, reject) => {
 		let transactionUrl = contextEndpoint + "/transactions";
 		fetch(transactionUrl, {
@@ -308,7 +308,11 @@ export function getTransactionID(contextEndpoint: string) {
 			},
 			method: "POST"
 		}).then(response => response.headers).then(
-			headers => resolve(headers.get("location"))
+			headers => {
+				let location = headers.get("location");
+				if (location) resolve(location);
+				else reject(undefined);
+			}
 		).catch((error) => {
 			reject(error);
 		});
@@ -316,20 +320,25 @@ export function getTransactionID(contextEndpoint: string) {
 }
 
 export async function processTransaction(contextEndpoint: string, transactions: { add: string[], delete: string[], update: string[] }): Promise<boolean> {
-	ProjectSettings.lastTransaction = transactions
+	ProjectSettings.lastTransaction = transactions;
 
 	const transactionID = await getTransactionID(contextEndpoint);
 
 	if (transactionID) {
+		let result = true;
 
 		for (let update of transactions.update) {
-			let resultUpdate = await fetch(transactionID + "?action=UPDATE&update=" + encodeURIComponent(update), {
+			let resultUpdate = await fetch(transactionID + "?action=UPDATE", {
 				headers: {
-					'Content-Type': 'application/json'
+					'Content-Type': 'application/sparql-update'
 				},
 				method: "PUT",
+				body: update
 			}).then(response => response.ok)
-			if (!resultUpdate) return false;
+			if (!resultUpdate) {
+				result = false;
+				break;
+			}
 		}
 
 		for (let del of transactions.delete) {
@@ -340,7 +349,10 @@ export async function processTransaction(contextEndpoint: string, transactions: 
 				method: "PUT",
 				body: del
 			}).then(response => response.ok)
-			if (!resultDelete) return false;
+			if (!resultDelete) {
+				result = false;
+				break;
+			}
 		}
 
 		for (let add of transactions.add) {
@@ -351,15 +363,25 @@ export async function processTransaction(contextEndpoint: string, transactions: 
 				method: "PUT",
 				body: add
 			}).then(response => response.ok)
-			if (!resultAdd) return false;
+			if (!resultAdd) {
+				result = false;
+				break;
+			}
 		}
 
-		return await fetch(transactionID + "?action=COMMIT", {
-			headers: {
-				'Content-Type': 'application/json'
-			},
-			method: "PUT"
-		}).then(response => response.ok)
+		if (result) {
+			return await fetch(transactionID + "?action=COMMIT", {
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				method: "PUT"
+			}).then(response => response.ok)
+		} else {
+			await fetch(transactionID, {
+				method: "DELETE"
+			})
+			return false;
+		}
 	} else return false;
 }
 

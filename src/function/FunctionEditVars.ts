@@ -150,13 +150,13 @@ export function deletePackageItem(id: string): { add: string[], delete: string[]
     folder.elements.splice(folder.elements.indexOf(id), 1);
     for (let connection of ProjectElements[id].connections) {
         ProjectLinks[connection].active = false;
-        triples.concat(updateDeleteTriples(ProjectSettings.ontographerContext + "-" + connection,
+        triples = triples.concat(updateDeleteTriples(ProjectSettings.ontographerContext + "-" + connection,
             ProjectSettings.ontographerContext));
     }
     let targets = Object.keys(ProjectLinks).filter(link => ProjectElements[ProjectLinks[link].target].iri === iri)
     for (let connection of targets) {
         ProjectLinks[connection].active = false;
-        triples.concat(updateDeleteTriples(ProjectSettings.ontographerContext + "-" + connection,
+        triples = triples.concat(updateDeleteTriples(ProjectSettings.ontographerContext + "-" + connection,
             ProjectSettings.ontographerContext));
     }
     targets.forEach(target => {
