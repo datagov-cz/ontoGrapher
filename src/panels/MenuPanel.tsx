@@ -74,7 +74,7 @@ export default class MenuPanel extends React.Component<MenuPanelProps, MenuPanel
 					<MenuPanelValidate validate={() => this.props.validate()}/>
 					<div className={"right"}>
 						<MenuPanelHelp/>
-						<MenuPanelAbout projectLanguage={this.props.projectLanguage}/>
+						<MenuPanelAbout/>
 					</div>
 				</div>
 			</nav>
