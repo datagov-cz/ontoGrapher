@@ -255,7 +255,7 @@ export default class DetailElement extends React.Component<Props, State> {
 					<Card>
 						<Card.Header>
 							<Accordion.Toggle as={Button} variant={"link"} eventKey={"2"}>
-								{Locale[ProjectSettings.viewLanguage].diagram}
+								{Locale[ProjectSettings.viewLanguage].diagramTab}
 							</Accordion.Toggle>
 						</Card.Header>
 						<Accordion.Collapse eventKey={"2"}>

@@ -327,45 +327,51 @@ export async function processTransaction(contextEndpoint: string, transactions: 
 	if (transactionID) {
 		let result = true;
 
-		for (let update of transactions.update) {
-			let resultUpdate = await fetch(transactionID + "?action=UPDATE", {
-				headers: {
-					'Content-Type': 'application/sparql-update'
-				},
-				method: "PUT",
-				body: update
-			}).then(response => response.ok)
-			if (!resultUpdate) {
-				result = false;
-				break;
+		for (let upd of transactions.update) {
+			if (upd) {
+				let resultUpdate = await fetch(transactionID + "?action=UPDATE", {
+					headers: {
+						'Content-Type': 'application/sparql-update'
+					},
+					method: "PUT",
+					body: upd
+				}).then(response => response.ok)
+				if (!resultUpdate) {
+					result = false;
+					break;
+				}
 			}
 		}
 
 		for (let del of transactions.delete) {
-			let resultDelete = await fetch(transactionID + "?action=DELETE", {
-				headers: {
-					'Content-Type': 'application/ld+json'
-				},
-				method: "PUT",
-				body: del
-			}).then(response => response.ok)
-			if (!resultDelete) {
-				result = false;
-				break;
+			if (del) {
+				let resultDelete = await fetch(transactionID + "?action=DELETE", {
+					headers: {
+						'Content-Type': 'application/ld+json'
+					},
+					method: "PUT",
+					body: del
+				}).then(response => response.ok)
+				if (!resultDelete) {
+					result = false;
+					break;
+				}
 			}
 		}
 
 		for (let add of transactions.add) {
-			let resultAdd = await fetch(transactionID + "?action=ADD", {
-				headers: {
-					'Content-Type': 'application/ld+json'
-				},
-				method: "PUT",
-				body: add
-			}).then(response => response.ok)
-			if (!resultAdd) {
-				result = false;
-				break;
+			if (add) {
+				let resultAdd = await fetch(transactionID + "?action=ADD", {
+					headers: {
+						'Content-Type': 'application/ld+json'
+					},
+					method: "PUT",
+					body: add
+				}).then(response => response.ok)
+				if (!resultAdd) {
+					result = false;
+					break;
+				}
 			}
 		}
 

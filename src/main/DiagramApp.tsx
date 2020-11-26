@@ -96,7 +96,7 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 			this.loadVocabularies(this.props.contextIRI, this.props.contextEndpoint);
 		} else {
 			this.newProject();
-			this.handleChangeLoadingStatus(false, "", false);
+			this.handleChangeLoadingStatus(false, Locale[ProjectSettings.viewLanguage].errorMissingWorkspace, true, false);
 		}
 	}
 

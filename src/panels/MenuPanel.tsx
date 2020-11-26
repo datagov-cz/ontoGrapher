@@ -53,6 +53,7 @@ export default class MenuPanel extends React.Component<MenuPanelProps, MenuPanel
 							<InterfaceStatus
 								handleChangeLoadingStatus={this.props.handleChangeLoadingStatus}
 								error={this.props.loadingError}
+								status={this.props.status}
 							/>
 							&nbsp;
 							<Form.Control as="select" value={this.props.projectLanguage}
@@ -73,7 +74,7 @@ export default class MenuPanel extends React.Component<MenuPanelProps, MenuPanel
 					<MenuPanelValidate validate={() => this.props.validate()}/>
 					<div className={"right"}>
 						<MenuPanelHelp/>
-						<MenuPanelAbout/>
+						<MenuPanelAbout projectLanguage={this.props.projectLanguage}/>
 					</div>
 				</div>
 			</nav>

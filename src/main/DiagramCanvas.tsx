@@ -548,13 +548,14 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                         this.props.updateElementPanel();
                         transactions = mergeTransactions(transactions, restoreHiddenElem(id, cls, true));
                     });
-                    processTransaction(ProjectSettings.contextEndpoint, mergeTransactions(data.id.map((id: string) =>
+                    let map = data.id.map((id: string) =>
                         updateProjectElement(
                             VocabularyElements[ProjectElements[id].iri].types,
                             VocabularyElements[ProjectElements[id].iri].labels,
                             VocabularyElements[ProjectElements[id].iri].definitions,
                             id)
-                    ), transactions)).then(result => {
+                    )
+                    processTransaction(ProjectSettings.contextEndpoint, mergeTransactions(...map, transactions)).then(result => {
                         if (result) {
                             this.props.handleChangeLoadingStatus(false, "", false);
                         } else {

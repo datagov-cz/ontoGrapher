@@ -22,6 +22,8 @@
   "validationName": "Label",
   "validationSeverity": "Severity",
   "errorMissingWorkspace": "Error: missing or incorrect workspace detected. Please input a valid workspace IRI to proceed.",
+  "errorConnectionLost": "Error: connection to workspace lost.",
+  "diagramTab": "Diagrams",
   "conforms": "Workspace conforms according to SGoV server",
   "validationError": "Message",
   "validationReload": "Refresh",

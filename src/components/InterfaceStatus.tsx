@@ -6,6 +6,7 @@ import {Locale} from "../config/Locale";
 interface Props {
 	handleChangeLoadingStatus: Function;
 	error: boolean;
+	status: string;
 }
 
 interface State {
@@ -28,10 +29,12 @@ export default class InterfaceStatus extends React.Component<Props, State> {
 	setStatus() {
 		this.checkStatus().then(status => {
 			this.setState({connection: status});
-			if (status === this.props.error) this.props.handleChangeLoadingStatus(false, "", !status, false)
+			if (status === this.props.error &&
+				this.props.status === Locale[ProjectSettings.viewLanguage].errorConnectionLost)
+				this.props.handleChangeLoadingStatus(false, "", !status, false)
 		}).catch(() => {
 			this.setState({connection: false});
-			this.props.handleChangeLoadingStatus(false, "Error: connection unsuccessful.", true, false);
+			this.props.handleChangeLoadingStatus(false, Locale[ProjectSettings.viewLanguage].errorConnectionLost, true, false);
 		});
 	}
 

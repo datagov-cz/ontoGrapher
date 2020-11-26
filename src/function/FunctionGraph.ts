@@ -125,7 +125,7 @@ export function spreadConnections(id: string, limitToTropes: boolean, representa
             ProjectElements[elemID].position[ProjectSettings.selectedDiagram] = {x: x, y: y};
             ProjectElements[elemID].hidden[ProjectSettings.selectedDiagram] = false;
             drawGraphElement(elem, ProjectSettings.selectedLanguage, ProjectSettings.representation);
-            transactions = mergeTransactions(restoreHiddenElem(id, elem, true));
+            transactions = mergeTransactions(transactions, restoreHiddenElem(id, elem, true));
             transactions = mergeTransactions(transactions, updateProjectElementDiagram(
                 elemID, ProjectSettings.selectedDiagram));
         }
@@ -331,10 +331,8 @@ export function setRepresentation(representation: number, spread: boolean = true
         for (let elem of graph.getElements()) {
             drawGraphElement(elem, ProjectSettings.selectedLanguage, representation);
             if (typeof elem.id === "string") {
-                transactions = mergeTransactions(transactions, spreadConnections(elem.id, true, false));
-                transactions = mergeTransactions(restoreHiddenElem(elem.id, elem, false));
-                if (spread) spreadConnections(elem.id, true, false);
-                restoreHiddenElem(elem.id, elem, false);
+                if (spread) transactions = mergeTransactions(transactions, spreadConnections(elem.id, true, false));
+                transactions = mergeTransactions(transactions, restoreHiddenElem(elem.id, elem, false));
             }
         }
         for (let link of graph.getLinks()) {
