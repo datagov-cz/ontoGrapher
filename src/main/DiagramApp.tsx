@@ -153,7 +153,7 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 						this.itemPanel.current?.forceUpdate();
 						this.handleChangeLoadingStatus(false, "✔ Workspace ready.", false, false);
 					} else
-						this.handleChangeLoadingStatus(false, Locale[ProjectSettings.viewLanguage].pleaseReload, false)
+						this.handleChangeLoadingStatus(false, Locale[ProjectSettings.viewLanguage].pleaseReloadError, false)
 				} else {
 					this.handleChangeLoadingStatus(false, Locale[ProjectSettings.viewLanguage].pleaseReload, false)
 				}

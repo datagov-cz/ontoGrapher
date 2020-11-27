@@ -325,7 +325,10 @@ export function restoreHiddenElem(id: string, cls: joint.dia.Element, restoreCon
             graph.getCell(ProjectLinks[link].target)) {
             let relID = ProjectLinks[link].source;
             for (let targetLink in ProjectLinks) {
-                if (ProjectLinks[targetLink].source === relID && ProjectLinks[targetLink].target !== id && graph.getCell(ProjectLinks[targetLink].target)) {
+                if (ProjectLinks[targetLink].active &&
+                    ProjectLinks[targetLink].source === relID &&
+                    ProjectLinks[targetLink].target !== id &&
+                    graph.getCell(ProjectLinks[targetLink].target)) {
                     let domainLink = getNewLink(ProjectLinks[link].type, link);
                     let rangeLink = getNewLink(ProjectLinks[targetLink].type, targetLink);
                     let existingRel = graph.getElements().find(elem => elem.id === relID);

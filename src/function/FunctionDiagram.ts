@@ -2,9 +2,9 @@ import {Diagrams, ProjectElements, ProjectLinks, ProjectSettings} from "../confi
 import * as joint from "jointjs";
 import {graphElement} from "../graph/GraphElement";
 import {graph} from "../graph/Graph";
-import {restoreHiddenElem} from "./FunctionGraph";
 import {Locale} from "../config/Locale";
 import {drawGraphElement} from "./FunctionDraw";
+import {getElementShape, getNewLink} from "./FunctionGetVars";
 
 export function changeDiagrams(diagram: number = 0) {
     Diagrams[ProjectSettings.selectedDiagram].json = saveDiagram();
@@ -56,11 +56,11 @@ export function loadDiagram(load: {
         pos: any;
     }[], links: {
         id: string,
-        vertices: { (): joint.dia.Link.Vertex[]; (vertices: joint.dia.Link.Vertex[]): joint.shapes.standard.Link };
-        labels: any;
+        vertices: joint.dia.Link.Vertex[];
+        labels: joint.dia.Link.Label[];
         target: string;
         source: string;
-        type: string;
+        type: number;
     }[]
 }) {
     graph.clear();
@@ -76,6 +76,19 @@ export function loadDiagram(load: {
         });
         cls.addTo(graph);
         drawGraphElement(cls, ProjectSettings.selectedLanguage, ProjectSettings.representation);
-        restoreHiddenElem(elem.id, cls, true);
+    }
+    for (let link of load.links) {
+        let lnk = getNewLink(link.type, link.id);
+        lnk.source({
+            id: link.source,
+            connectionPoint: {name: 'boundary', args: {selector: getElementShape(link.source)}}
+        });
+        lnk.target({
+            id: link.target,
+            connectionPoint: {name: 'boundary', args: {selector: getElementShape(link.target)}}
+        });
+        lnk.vertices(link.vertices);
+        lnk.labels(link.labels);
+        lnk.addTo(graph);
     }
 }

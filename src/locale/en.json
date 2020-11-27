@@ -44,6 +44,7 @@
   "loadingError": "Loading error.",
   "validationLoadingError": "Connection to validation server unsuccessful. Please reload to try again.",
   "pleaseReload": "Error: workspace not found. Please check the workspace IRI.",
+  "pleaseReloadError": "Error: Connection to server unsuccessful. Please check the workspace IRI.",
   "spreadConnections": "Explode connections",
   "finished": "All done!",
   "setAsDefault": "Set as default",
