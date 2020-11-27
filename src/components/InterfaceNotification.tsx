@@ -17,6 +17,7 @@ export default class InterfaceNotification extends React.Component<Props> {
 	render() {
 		if (this.props.error) {
 			return (<span className={"interfaceNotification"}>
+				{this.props.active && <span><Spinner animation="border" size="sm"/>&nbsp;</span>}
 				{this.props.message}&nbsp;
 				{this.props.retry && <button className={"buttonlink"} onClick={() => {
 					this.props.handleChangeLoadingStatus(true, Locale[ProjectSettings.viewLanguage].updating, false);
@@ -26,15 +27,14 @@ export default class InterfaceNotification extends React.Component<Props> {
 						if (ret) {
 							this.props.handleChangeLoadingStatus(false, "", false);
 						} else {
-							this.props.handleChangeLoadingStatus(false, "", true);
+							this.props.handleChangeLoadingStatus(false, Locale[ProjectSettings.viewLanguage].errorUpdating, true);
 						}
 					})
 				}}>{Locale[ProjectSettings.viewLanguage].retry}</button>}
 			</span>);
 		} else {
 			return (<span className={"interfaceNotification"}>
-				{this.props.active && <Spinner animation="border" size="sm"/>}
-				&nbsp;
+				{this.props.active && <span><Spinner animation="border" size="sm"/>&nbsp;</span>}
 				{this.props.message === "" && !this.props.active ? Locale[ProjectSettings.viewLanguage].savedChanges : this.props.message}
 			</span>);
 		}

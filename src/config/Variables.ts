@@ -24,6 +24,8 @@ export var ProjectElements: {
         active: boolean;
         //package
         package: PackageNode;
+        //selected label from pref/altLabels
+        selectedLabel: { [key: string]: string };
     }
 } = {};
 
@@ -74,6 +76,7 @@ export var VocabularyElements: {
     [key: string]:
         {
             labels: { [key: string]: string },
+            altLabels: { label: string, language: string }[]
             definitions: { [key: string]: string },
             inScheme: string,
             domain: string | undefined,

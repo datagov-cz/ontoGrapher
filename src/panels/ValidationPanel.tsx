@@ -6,8 +6,8 @@ import {validateWorkspace} from "../interface/ValidationInterface";
 import {ProjectElements, ProjectLinks, ProjectSettings, VocabularyElements} from "../config/Variables";
 import {graph} from "../graph/Graph";
 import IRIlabel from "../components/IRIlabel";
-import {highlightCell} from "../function/FunctionGraph";
 import {Locale} from "../config/Locale";
+import {highlightCell} from "../function/FunctionDraw";
 
 interface Props {
 	widthLeft: number;

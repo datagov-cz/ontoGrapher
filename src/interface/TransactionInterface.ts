@@ -9,28 +9,39 @@ import {
 } from "../config/Variables";
 import {LinkConfig} from "../config/LinkConfig";
 import {constructProjectLinkLD} from "../function/FunctionConstruct";
+import {RestrictionObject} from "../datatypes/RestrictionObject";
+import {ConnectionObject} from "../datatypes/ConnectionObject";
 
 export function updateProjectElement(
-	newTypes: string[],
-	newLabels: { [key: string]: string },
-	newDefinitions: { [key: string]: string },
-	id: string): { add: string[], delete: string[], update: string[] } {
+	oldVocabularyElement:
+		{
+			labels: { [key: string]: string },
+			altLabels: { label: string, language: string }[]
+			definitions: { [key: string]: string },
+			inScheme: string,
+			domain: string | undefined,
+			range: string | undefined,
+			types: string[],
+			subClassOf: string[],
+			restrictions: RestrictionObject[],
+			connections: ConnectionObject[],
+			active: boolean,
+			topConcept: string | undefined
+		},
+	id: string, saveDiagrams: boolean = true): { add: string[], delete: string[], update: string[] } {
 	let iri = ProjectElements[id].iri;
 	let scheme = VocabularyElements[iri].inScheme;
-	let delTypes = VocabularyElements[iri].types;
-	let topConcept = VocabularyElements[iri].topConcept;
-	let addDefinitions: { "@value": string, "@language": string }[] = [];
-	let addLabels: { "@value": string, "@language": string }[] = [];
+	let newVocabularyElement = VocabularyElements[iri];
 
-	Object.keys(newLabels).forEach((lang) => {
-		if (newLabels[lang] !== "") addLabels.push({"@value": newLabels[lang], "@language": lang});
-	})
+	let oldAltLabels = [];
+	for (let alt of oldVocabularyElement.altLabels) {
+		oldAltLabels.push({
+			"@value": alt.label,
+			"@language": alt.language
+		});
+	}
 
-	Object.keys(newDefinitions).forEach((lang) => {
-		if (newDefinitions[lang] !== "") addDefinitions.push({"@value": newDefinitions[lang], "@language": lang});
-	})
-
-	let addLD = {
+	let addLD: { [key: string]: any } = {
 		"@context": {
 			...Prefixes,
 			"skos:inScheme": {"@type": "@id"},
@@ -46,12 +57,19 @@ export function updateProjectElement(
 		"@graph": [
 			{
 				"@id": iri,
-				"@type": newTypes,
-				"skos:prefLabel": addLabels,
-				"skos:definition": addDefinitions,
+				"@type": newVocabularyElement.types,
+				"skos:prefLabel": Object.keys(newVocabularyElement.labels).map((lang: string) => {
+					return {"@value": newVocabularyElement.labels[lang], "@language": lang}
+				}),
+				"skos:altLabel": newVocabularyElement.altLabels.map(alt => {
+					return {"@value": alt.label, "@language": alt.language}
+				}),
+				"skos:definition": Object.keys(newVocabularyElement.definitions).map((lang: string) => {
+					return {"@value": newVocabularyElement.definitions[lang], "@language": lang}
+				}),
 				"skos:inScheme": scheme,
 			},
-			(topConcept && {
+			(newVocabularyElement.topConcept && {
 				"@id": scheme,
 				"skos:hasTopConcept": iri
 			}),
@@ -61,21 +79,27 @@ export function updateProjectElement(
 				"og:context": ProjectSettings.contextIRI,
 				"og:id": id,
 				"og:iri": iri,
+				"og:name": Object.keys(ProjectElements[id].selectedLabel).map((lang: string) => {
+					return {"@value": ProjectElements[id].selectedLabel[lang], "@language": lang}
+				}),
 				"og:diagram": ProjectElements[id].diagrams.map((diag) => (iri + "/diagram-" + (diag + 1))),
 				"og:active": ProjectElements[id].active,
-			},
-			...ProjectElements[id].diagrams.map(diag => {
-				return {
-					"@id": iri + "/diagram-" + (diag + 1),
-					"@type": "og:elementDiagram",
-					"og:index": diag,
-					"og:position-x": Math.round(ProjectElements[id].position[diag].x),
-					"og:position-y": Math.round(ProjectElements[id].position[diag].y),
-					"og:hidden": ProjectElements[id].hidden[diag]
-				}
-			}),
+			}
 		]
 	}
+
+	if (saveDiagrams) addLD["@graph"].push(
+		...ProjectElements[id].diagrams.map(diag => {
+			return {
+				"@id": iri + "/diagram-" + (diag + 1),
+				"@type": "og:elementDiagram",
+				"og:index": diag,
+				"og:position-x": Math.round(ProjectElements[id].position[diag].x),
+				"og:position-y": Math.round(ProjectElements[id].position[diag].y),
+				"og:hidden": ProjectElements[id].hidden[diag]
+			}
+		}),
+	)
 
 	let deleteLD = {
 		"@context": {
@@ -91,30 +115,28 @@ export function updateProjectElement(
 		"@graph": [
 			{
 				"@id": iri,
-				"@type": delTypes,
-				"skos:prefLabel": Object.keys(VocabularyElements[iri].labels).map(lang => {
+				"@type": oldVocabularyElement.types,
+				"skos:prefLabel": Object.keys(oldVocabularyElement.labels).map(lang => {
 					return {
-						"@value": VocabularyElements[iri].labels[lang],
+						"@value": oldVocabularyElement.labels[lang],
 						"@language": lang
 					}
 				}),
-				"skos:definition": Object.keys(VocabularyElements[iri].definitions).map(lang => {
+				"skos:definition": Object.keys(oldVocabularyElement.definitions).map(lang => {
 					return {
-						"@value": VocabularyElements[iri].definitions[lang],
+						"@value": oldVocabularyElement.definitions[lang],
 						"@language": lang
 					}
-				})
+				}),
+				"skos:altLabel": oldAltLabels
 			}
 		]
 	}
 
-	let addStrings: string[] = [JSON.stringify(addLD)];
-	let delStrings: string[] = [JSON.stringify(deleteLD)];
 	let updateStrings: string[] = updateDeleteTriples(iri + "/diagram", Schemes[scheme].graph, false, false)
-		.concat(...ProjectElements[id].diagrams.map(diag =>
-			updateDeleteTriples(iri + "/diagram-" + (diag + 1), Schemes[scheme].graph, false, false)
-		))
-	return {add: addStrings, delete: delStrings, update: updateStrings}
+	if (saveDiagrams) updateStrings = updateStrings.concat(...ProjectElements[id].diagrams.map(diag =>
+		updateDeleteTriples(iri + "/diagram-" + (diag + 1), Schemes[scheme].graph, false, false)))
+	return {add: [JSON.stringify(addLD)], delete: [JSON.stringify(deleteLD)], update: updateStrings}
 }
 
 export function updateProjectElementDiagram(id: string, diagram: number): { add: string[], delete: string[], update: string[] } {
@@ -337,8 +359,9 @@ export async function processTransaction(contextEndpoint: string, transactions: 
 					body: upd
 				}).then(response => response.ok)
 				if (!resultUpdate) {
-					result = false;
-					break;
+					console.log(upd);
+					await abortTransaction(transactionID);
+					return false;
 				}
 			}
 		}
@@ -353,8 +376,9 @@ export async function processTransaction(contextEndpoint: string, transactions: 
 					body: del
 				}).then(response => response.ok)
 				if (!resultDelete) {
-					result = false;
-					break;
+					console.log(del);
+					await abortTransaction(transactionID);
+					return false;
 				}
 			}
 		}
@@ -369,8 +393,9 @@ export async function processTransaction(contextEndpoint: string, transactions: 
 					body: add
 				}).then(response => response.ok)
 				if (!resultAdd) {
-					result = false;
-					break;
+					console.log(add);
+					await abortTransaction(transactionID);
+					return false;
 				}
 			}
 		}
@@ -383,12 +408,16 @@ export async function processTransaction(contextEndpoint: string, transactions: 
 				method: "PUT"
 			}).then(response => response.ok)
 		} else {
-			await fetch(transactionID, {
-				method: "DELETE"
-			})
+			await abortTransaction(transactionID);
 			return false;
 		}
 	} else return false;
+}
+
+export async function abortTransaction(transaction: string) {
+	return await fetch(transaction, {
+		method: "DELETE"
+	}).then(response => response.ok)
 }
 
 export function updateProjectSettings(contextIRI: string): { add: string[], delete: string[], update: string[] } {

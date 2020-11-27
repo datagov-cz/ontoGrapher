@@ -9,10 +9,11 @@ import {
 import {initLanguageObject} from "./FunctionEditVars";
 import {PackageNode} from "../datatypes/PackageNode";
 import {graphElement} from "../graph/GraphElement";
-import {drawGraphElement, restoreElems} from "./FunctionGraph";
+import {restoreElems} from "./FunctionGraph";
 import {changeDiagrams} from "./FunctionDiagram";
 import {graph} from "../graph/Graph";
 import {LinkType, Representation} from "../config/Enum";
+import {drawGraphElement} from "./FunctionDraw";
 
 export function setupDiagrams(diagram: number = 0) {
     for (let i = 0; i < Diagrams.length; i++) {
@@ -41,17 +42,9 @@ export function createValues(values: { [key: string]: string[] }, prefixes: { [k
     return result;
 }
 
-export function createNewElemIRI(target: { [key: string]: any }, url: string): string {
-    let result = url;
-    result = result.trim().replace(/\s/g, '-').toLowerCase();
-    let count = 1;
-    if (result in target) {
-        while ((result + "-" + count.toString(10)) in target) {
-            count++;
-        }
-        result += "-" + count.toString(10);
-    }
-    return result;
+export function createNewElemIRI(scheme: string, name: string): string {
+    return (scheme.substring(0, scheme.lastIndexOf("/") + 1) + "pojem/" + name)
+        .trim().replace(/\s/g, '-').toLowerCase();
 }
 
 export function getDomainOf(iriElem: string): string[] {
@@ -69,6 +62,7 @@ export function getDomainOf(iriElem: string): string[] {
 export function addVocabularyElement(iri: string, scheme: string, types?: string[]) {
     VocabularyElements[iri] = {
         labels: initLanguageObject(""),
+        altLabels: [],
         definitions: initLanguageObject(""),
         inScheme: scheme,
         domain: undefined,
@@ -94,7 +88,8 @@ export function addClass(
         hidden: {[ProjectSettings.selectedDiagram]: true},
         position: {[ProjectSettings.selectedDiagram]: {x: 0, y: 0}},
         package: pkg,
-        active: active
+        active: active,
+        selectedLabel: initLanguageObject("")
     }
     pkg.elements.push(id);
 }

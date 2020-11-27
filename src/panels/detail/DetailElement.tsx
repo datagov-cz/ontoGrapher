@@ -17,13 +17,15 @@ import IRILink from "../../components/IRILink";
 import LabelTable from "./components/LabelTable";
 import DescriptionTabs from "./components/DescriptionTabs";
 import IRIlabel from "../../components/IRIlabel";
-import {drawGraphElement, spreadConnections, unHighlightAll} from "../../function/FunctionGraph";
+import {spreadConnections} from "../../function/FunctionGraph";
 import {graph} from "../../graph/Graph";
 import {processTransaction, updateProjectElement} from "../../interface/TransactionInterface";
 import * as _ from "lodash";
 import StereotypeOptions from "./components/StereotypeOptions";
 import {Shapes} from "../../config/Shapes";
 import {Locale} from "../../config/Locale";
+import {drawGraphElement, unHighlightAll} from "../../function/FunctionDraw";
+import AltLabelTable from "./components/AltLabelTable";
 
 interface Props {
 	projectLanguage: string;
@@ -40,9 +42,14 @@ interface State {
 	inputConnections: string[];
 	inputDiagrams: number[];
 	inputTypes: string[];
+	inputTypeType: string;
+	inputTypeData: string;
 	inputLabels: { [key: string]: string };
+	inputAltLabels: { label: string, language: string }[];
 	inputDefinitions: { [key: string]: string };
 	inputSchemes: { [key: string]: string };
+	selectedLabel: { [key: string]: string };
+	newAltInput: string;
 	formNewStereotype: string;
 	readOnly: boolean;
 	changes: boolean;
@@ -58,10 +65,15 @@ export default class DetailElement extends React.Component<Props, State> {
 			inputConnections: [],
 			inputDiagrams: [],
 			inputTypes: [],
+			inputTypeType: "",
+			inputTypeData: "",
 			inputLabels: {},
+			inputAltLabels: [],
 			inputDefinitions: {},
 			inputSchemes: {},
 			formNewStereotype: "",
+			selectedLabel: {},
+			newAltInput: "",
 			readOnly: true,
 			changes: false
 		}
@@ -75,11 +87,16 @@ export default class DetailElement extends React.Component<Props, State> {
 			iri: ProjectElements[id].iri,
 			inputConnections: _.cloneDeep(ProjectElements[id].connections),
 			inputDiagrams: _.cloneDeep(ProjectElements[id].diagrams),
+			selectedLabel: _.cloneDeep(ProjectElements[id].selectedLabel),
 			inputTypes: _.cloneDeep(VocabularyElements[ProjectElements[id].iri].types),
+			inputTypeType: _.cloneDeep(VocabularyElements[ProjectElements[id].iri].types.find(type => type in Stereotypes && type in Shapes) || ""),
+			inputTypeData: _.cloneDeep(VocabularyElements[ProjectElements[id].iri].types.find(type => type in Stereotypes && !(type in Shapes)) || ""),
 			inputLabels: _.cloneDeep(VocabularyElements[ProjectElements[id].iri].labels),
+			inputAltLabels: _.cloneDeep(VocabularyElements[ProjectElements[id].iri].altLabels),
 			inputDefinitions: _.cloneDeep(VocabularyElements[ProjectElements[id].iri].definitions),
 			inputSchemes: _.cloneDeep(Schemes[VocabularyElements[ProjectElements[id].iri].inScheme].labels),
 			formNewStereotype: Object.keys(Stereotypes)[0],
+			newAltInput: "",
 			readOnly: Schemes[VocabularyElements[ProjectElements[id].iri].inScheme].readOnly,
 			changes: false
 		});
@@ -99,19 +116,18 @@ export default class DetailElement extends React.Component<Props, State> {
 		let elem = graph.getElements().find(elem => elem.id === (this.state.id));
 		if (this.state.id in ProjectElements && elem) {
 			this.props.handleChangeLoadingStatus(true, Locale[ProjectSettings.viewLanguage].updating, false);
+			let oldVocabularyElement = _.cloneDeep(VocabularyElements[ProjectElements[this.state.id].iri]);
 			VocabularyElements[ProjectElements[this.state.id].iri].types = this.state.inputTypes;
 			VocabularyElements[ProjectElements[this.state.id].iri].labels = this.state.inputLabels;
+			VocabularyElements[ProjectElements[this.state.id].iri].altLabels = this.state.inputAltLabels;
 			VocabularyElements[ProjectElements[this.state.id].iri].definitions = this.state.inputDefinitions;
+			ProjectElements[this.state.id].selectedLabel = this.state.selectedLabel;
 			drawGraphElement(elem, this.props.projectLanguage, ProjectSettings.representation);
 			this.props.save();
 			this.setState({changes: false});
 			this.prepareDetails(this.state.id);
 			processTransaction(ProjectSettings.contextEndpoint,
-				updateProjectElement(
-					this.state.inputTypes,
-					this.state.inputLabels,
-					this.state.inputDefinitions,
-					this.state.id)
+				updateProjectElement(oldVocabularyElement, this.state.id)
 			).then(result => {
 				if (!result) {
 					this.props.handleChangeLoadingStatus(false, Locale[ProjectSettings.viewLanguage].errorUpdating, true);
@@ -128,15 +144,16 @@ export default class DetailElement extends React.Component<Props, State> {
 		}
 	}
 
-	updateStereotype(newStereotype: string, content: boolean) {
-		let stereotypes = this.state.inputTypes;
-		let index = stereotypes.findIndex(stereotype =>
-			(stereotype in Stereotypes && (content ?
-				stereotype in Shapes : !(stereotype in Shapes))));
-		if (index !== -1)
-			stereotypes.splice(index, 1);
-		stereotypes.push(newStereotype);
-		this.setState({inputTypes: stereotypes, changes: true});
+	updateStereotype(newStereotype: string, type: boolean) {
+		let otherStereotype = type ? this.state.inputTypeData : this.state.inputTypeType;
+		let stereotypes = this.state.inputTypes.filter(stereotype => !(stereotype in Stereotypes));
+		if (newStereotype !== "") stereotypes.push(newStereotype);
+		if (otherStereotype !== "") stereotypes.push(otherStereotype);
+		this.setState({
+			inputTypes: stereotypes,
+			changes: true
+		})
+		type ? this.setState({inputTypeType: newStereotype}) : this.setState({inputTypeData: newStereotype});
 	}
 
 	render() {
@@ -169,32 +186,70 @@ export default class DetailElement extends React.Component<Props, State> {
 						</Card.Header>
 						<Accordion.Collapse eventKey={"0"}>
 							<Card.Body>
-								<h5>{<IRILink label={this.props.headers.labels[this.props.projectLanguage]}
+								<h5>{<IRILink label={this.props.headers.labels[ProjectSettings.viewLanguage]}
 											  iri={"http://www.w3.org/2004/02/skos/core#prefLabel"}/>}</h5>
-								<LabelTable labels={this.state.inputLabels} readOnly={this.state.readOnly} onEdit={
-									(textarea: string, language: string) => {
-										let res = _.cloneDeep(this.state.inputLabels);
-										res[language] = textarea;
-										this.setState({inputLabels: res, changes: true});
+								<LabelTable labels={this.state.inputLabels}
+											default={this.state.selectedLabel[this.props.projectLanguage]}
+											selectAsDefault={
+												(label: string) => {
+													let res = this.state.selectedLabel;
+													res[this.props.projectLanguage] = label;
+													this.setState({selectedLabel: res, changes: true})
+												}}/>
+								<h5>{<IRILink label={this.props.headers.altLabels[ProjectSettings.viewLanguage]}
+											  iri={"http://www.w3.org/2004/02/skos/core#altLabel"}/>}</h5>
+								<AltLabelTable labels={this.state.inputAltLabels} readOnly={this.state.readOnly}
+											   onEdit={
+												   (textarea: string, lang: string, i: number) => {
+													   let res = this.state.inputAltLabels;
+													   let resL = this.state.selectedLabel;
+													   if (textarea === "") {
+														   if (res[i].label === this.state.selectedLabel[this.props.projectLanguage]) {
+															   resL[this.props.projectLanguage] = this.state.inputLabels[this.props.projectLanguage];
+														   }
+														   res.splice(i, 1);
+													   } else {
+														   if (res[i].label === this.state.selectedLabel[lang]) {
+															   resL[this.props.projectLanguage] = textarea;
+														   }
+														   res[i] = {label: textarea, language: lang};
+													   }
+													   this.setState({
+														   inputAltLabels: res,
+														   selectedLabel: resL,
+														   changes: true
+													   });
+												   }
+											   } default={this.state.selectedLabel[this.props.projectLanguage]}
+											   selectAsDefault={(lang: string, i: number) => {
+												   let res = this.state.selectedLabel;
+												   res[this.props.projectLanguage] = this.state.inputAltLabels[i].label;
+												   this.setState({selectedLabel: res, changes: true});
+											   }} addAltLabel={(label: string) => {
+									if (label !== "" || this.state.inputAltLabels.find(alt => alt.label === label)) {
+										let res = this.state.inputAltLabels;
+										res.push({label: label, language: this.props.projectLanguage});
+										this.setState({inputAltLabels: res, changes: true});
 									}
-								}/>
-								<h5>{this.props.headers.stereotype[this.props.projectLanguage]}</h5>
+								}}/>
+								<h5>{<IRILink label={this.props.headers.stereotype[ProjectSettings.viewLanguage]}
+											  iri={"http://www.w3.org/2000/01/rdf-schema#type"}/>}</h5>
 								<TableList>
 									<StereotypeOptions readonly={this.state.readOnly} content={true}
 													   projectLanguage={this.props.projectLanguage}
 													   onChange={(value: string) => this.updateStereotype(value, true)}
-													   value={this.state.inputTypes.find(type => type in Shapes) || ""}/>
+													   value={this.state.inputTypeType}/>
 									<StereotypeOptions readonly={this.state.readOnly} content={false}
 													   projectLanguage={this.props.projectLanguage}
 													   onChange={(value: string) => this.updateStereotype(value, false)}
-													   value={this.state.inputTypes.find(type => type in Stereotypes && !(type in Shapes)) || ""}/>
+													   value={this.state.inputTypeData}/>
 								</TableList>
-								<h5>{<IRILink label={this.props.headers.inScheme[this.props.projectLanguage]}
+								<h5>{<IRILink label={this.props.headers.inScheme[ProjectSettings.viewLanguage]}
 											  iri={"http://www.w3.org/2004/02/skos/core#inScheme"}/>}</h5>
-								<LabelTable labels={this.state.inputSchemes} readOnly={this.state.readOnly}
+								<LabelTable labels={this.state.inputSchemes}
 											iri={VocabularyElements[this.state.iri].inScheme}/>
 								{Object.keys(Languages).length > 0 ?
-									<h5>{<IRILink label={this.props.headers.definition[this.props.projectLanguage]}
+									<h5>{<IRILink label={this.props.headers.definition[ProjectSettings.viewLanguage]}
 												  iri={"http://www.w3.org/2004/02/skos/core#definition"}/>}</h5> : ""}
 								<DescriptionTabs
 									descriptions={this.state.inputDefinitions}
@@ -221,22 +276,18 @@ export default class DetailElement extends React.Component<Props, State> {
 							<Card.Body>
 								<TableList
 									headings={[Locale[ProjectSettings.viewLanguage].connectionVia, Locale[ProjectSettings.viewLanguage].connectionTo]}>
-									{this.state.inputConnections.map((conn) => {
-											if (ProjectLinks[conn] && ProjectLinks[conn].active) {
-												return (<tr>
-													<IRIlabel
-														label={getLinkOrVocabElem(ProjectLinks[conn].iri).labels[this.props.projectLanguage]}
-														iri={ProjectLinks[conn].iri}/>
-													<td>{getLabelOrBlank(VocabularyElements[ProjectElements[ProjectLinks[conn].target].iri].labels, this.props.projectLanguage)}</td>
-												</tr>)
-											} else return ""
-										}
+									{this.state.inputConnections.filter(conn => ProjectLinks[conn] && ProjectLinks[conn].active).map((conn) =>
+										<tr key={conn}>
+											<IRIlabel
+												label={getLinkOrVocabElem(ProjectLinks[conn].iri).labels[this.props.projectLanguage]}
+												iri={ProjectLinks[conn].iri}/>
+											<td>{getLabelOrBlank(VocabularyElements[ProjectElements[ProjectLinks[conn].target].iri].labels, this.props.projectLanguage)}</td>
+										</tr>
 									)}
 								</TableList>
 								{this.checkSpreadConnections() &&
                                 <Button className={"buttonlink center"}
                                         onClick={() => {
-											console.log(ProjectElements[this.state.id]);
 											this.props.handleChangeLoadingStatus(true, Locale[ProjectSettings.viewLanguage].updating, false);
 											processTransaction(ProjectSettings.contextEndpoint, spreadConnections(this.state.id, false, false)).then(result => {
 												if (result) {
@@ -261,10 +312,10 @@ export default class DetailElement extends React.Component<Props, State> {
 						<Accordion.Collapse eventKey={"2"}>
 							<Card.Body>
 								<TableList headings={[Locale[ProjectSettings.viewLanguage].diagram]}>
-									{this.state.inputDiagrams.map((diag) =>
-										Diagrams[diag] ? (<tr>
+									{this.state.inputDiagrams.filter(diag => Diagrams[diag]).map((diag, i) =>
+										<tr key={i}>
 											<td>{Diagrams[diag].name}</td>
-										</tr>) : ""
+										</tr>
 									)}
 								</TableList>
 							</Card.Body>

@@ -37,6 +37,7 @@
     "react-resizable": "^1.10.1",
     "react-scripts": "^3.4.3",
     "react-select": "^3.1.0",
+    "riec": "^0.1.9",
     "riek": "^1.1.0",
     "sass": "^1.26.8",
     "typescript": "^3.9.5"

@@ -3,10 +3,10 @@ import {Dropdown} from 'react-bootstrap';
 import {ColorPool} from "../../../config/ColorPool";
 import {ProjectSettings} from "../../../config/Variables";
 import {graph} from "../../../graph/Graph";
-import {drawGraphElement} from "../../../function/FunctionGraph";
 import {setSchemeColors} from "../../../function/FunctionGetVars";
 import {processTransaction, updateProjectSettings} from "../../../interface/TransactionInterface";
 import {Locale} from "../../../config/Locale";
+import {drawGraphElement} from "../../../function/FunctionDraw";
 
 interface Props {
 	update: Function;
