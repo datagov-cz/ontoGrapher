@@ -8,8 +8,7 @@ import {getVocabulariesFromRemoteJSON} from "../interface/JSONInterface";
 import {initVars} from "../function/FunctionEditVars";
 import {getContext} from "../interface/ContextInterface";
 import {graph} from "../graph/Graph";
-import {loadProject, newProject} from "../function/FunctionProject";
-import {drawGraphElement, nameGraphLink, unHighlightAll} from "../function/FunctionGraph";
+import {nameGraphLink} from "../function/FunctionGraph";
 import {setupDiagrams} from "../function/FunctionCreateVars";
 import {getElementsConfig, getLinksConfig, getSettings} from "../interface/SPARQLInterface";
 import {initRestrictions} from "../function/FunctionRestriction";
@@ -19,6 +18,7 @@ import DiagramPanel from "../panels/DiagramPanel";
 import {setSchemeColors} from "../function/FunctionGetVars";
 import {updateLinks} from "../function/FunctionConstruct";
 import {Locale} from "../config/Locale";
+import {drawGraphElement, unHighlightAll} from "../function/FunctionDraw";
 
 interface DiagramAppProps {
 	readOnly?: boolean;
@@ -72,8 +72,6 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 		});
 		document.title = Locale[ProjectSettings.viewLanguage].ontoGrapher;
 		this.handleChangeLanguage = this.handleChangeLanguage.bind(this);
-		this.newProject = this.newProject.bind(this);
-		this.loadProject = this.loadProject.bind(this);
 		this.loadVocabularies = this.loadVocabularies.bind(this);
 		this.handleChangeLoadingStatus = this.handleChangeLoadingStatus.bind(this);
 		this.validate = this.validate.bind(this);
@@ -85,18 +83,17 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 		let contextIRI = urlParams.get('workspace');
 		if (contextIRI && isURL(contextIRI)) {
 			contextIRI = decodeURIComponent(contextIRI);
-			if (contextIRI.includes("/diagram-")){
+			if (contextIRI.includes("/diagram-")) {
 				let diagram = contextIRI.substring(contextIRI.lastIndexOf("/"));
 				let match = diagram.match(/(\d+)/);
 				let diagramNumber;
 				if (match) diagramNumber = parseInt(match[0], 10);
-				this.loadVocabularies(contextIRI, "https://graphdb.onto.fel.cvut.cz/repositories/kodi-uloziste-dev", false, diagramNumber ? diagramNumber : 0);
-			} else this.loadVocabularies(contextIRI, "https://graphdb.onto.fel.cvut.cz/repositories/kodi-uloziste-dev", false, 0);
+				this.loadVocabularies(contextIRI, "https://graphdb.onto.fel.cvut.cz/repositories/kodi-uloziste-dev", diagramNumber ? diagramNumber : 0);
+			} else this.loadVocabularies(contextIRI, "https://graphdb.onto.fel.cvut.cz/repositories/kodi-uloziste-dev", 0);
 		} else if (this.props.contextIRI && this.props.contextEndpoint) {
 			this.loadVocabularies(this.props.contextIRI, this.props.contextEndpoint);
 		} else {
-			this.newProject();
-			this.handleChangeLoadingStatus(false, "", false);
+			this.handleChangeLoadingStatus(false, Locale[ProjectSettings.viewLanguage].errorMissingWorkspace, true, false);
 		}
 	}
 
@@ -116,14 +113,6 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 		})
 	}
 
-	newProject() {
-		newProject();
-		this.setState({
-			projectLanguage: Object.keys(Languages)[0],
-		});
-		this.itemPanel.current?.forceUpdate();
-	}
-
 	handleChangeLoadingStatus(loading: boolean, status: string, error: boolean, retry: boolean = true) {
 		this.setState({
 			loading: loading,
@@ -133,16 +122,8 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 		});
 	}
 
-	loadProject(loadString: string) {
-		this.newProject();
-		loadProject(loadString);
-		this.setState({projectLanguage: ProjectSettings.selectedLanguage});
-		this.itemPanel.current?.forceUpdate();
-	}
-
-	loadVocabularies(contextIRI: string, contextEndpoint: string, reload: boolean = false, diagram: number = 0) {
-		this.handleChangeLoadingStatus(true, Locale[ProjectSettings.viewLanguage].loading, false, false);
-		if (reload) this.newProject();
+	loadVocabularies(contextIRI: string, contextEndpoint: string, diagram: number = 0) {
+		this.handleChangeLoadingStatus(true, Locale[ProjectSettings.viewLanguage].loading, true, false);
 		getVocabulariesFromRemoteJSON("https://raw.githubusercontent.com/opendata-mvcr/ontoGrapher/latest/src/config/Vocabularies.json").then(() => {
 			getContext(
 				contextIRI,
@@ -154,20 +135,25 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 					ProjectSettings.contextEndpoint = contextEndpoint;
 					ProjectSettings.contextIRI = contextIRI;
 					this.handleChangeLanguage(Object.keys(Languages)[0]);
-					await Promise.all([
+					let res = await Promise.all([
 						getElementsConfig(ProjectSettings.contextIRI, ProjectSettings.contextEndpoint),
 						getLinksConfig(ProjectSettings.contextIRI, ProjectSettings.contextEndpoint),
 						getSettings(ProjectSettings.contextIRI, ProjectSettings.contextEndpoint)]);
 					this.handleChangeLoadingStatus(true, ProjectSettings.initialized ?
 						"Updating ontoGrapher data..." :
-						"Initializing ontoGrapher data (this will only be done once)...", false);
+						"Initializing ontoGrapher data (this will only be done once)...", true, false);
 					initRestrictions();
 					setSchemeColors(ProjectSettings.viewColorPool);
-					await processTransaction(ProjectSettings.contextEndpoint, mergeTransactions(updateProjectSettings(contextIRI), updateLinks()));
-					setupDiagrams(diagram);
-					this.forceUpdate();
-					this.itemPanel.current?.forceUpdate();
-					this.handleChangeLoadingStatus(false, "✔ Workspace ready.", false, false);
+					res.push(
+						await processTransaction(ProjectSettings.contextEndpoint,
+							mergeTransactions(updateProjectSettings(contextIRI), updateLinks())));
+					if (res.every(bool => bool)) {
+						setupDiagrams(diagram);
+						this.forceUpdate();
+						this.itemPanel.current?.forceUpdate();
+						this.handleChangeLoadingStatus(false, "✔ Workspace ready.", false, false);
+					} else
+						this.handleChangeLoadingStatus(false, Locale[ProjectSettings.viewLanguage].pleaseReload, false)
 				} else {
 					this.handleChangeLoadingStatus(false, Locale[ProjectSettings.viewLanguage].pleaseReload, false)
 				}
@@ -185,11 +171,8 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 				ref={this.menuPanel}
 				retry={this.state.retry}
 				loading={this.state.loading}
-				newProject={this.newProject}
 				status={this.state.status}
 				projectLanguage={this.state.projectLanguage}
-				loadProject={this.loadProject}
-				loadContext={this.loadVocabularies}
 				handleChangeLanguage={this.handleChangeLanguage}
 				update={() => {
 					this.itemPanel.current?.update();
@@ -198,7 +181,7 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 					this.detailPanel.current?.hide();
 					unHighlightAll();
 				}}
-				loadingError={this.state.error}
+				error={this.state.error}
 				validate={this.validate}
 				handleChangeLoadingStatus={this.handleChangeLoadingStatus}
 			/>
@@ -230,6 +213,9 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 				update={() => {
 					this.itemPanel.current?.forceUpdate();
 					this.detailPanel.current?.forceUpdate();
+				}}
+				resizeElem={(id: string) => {
+					this.canvas.current?.resizeElem(id);
 				}}
 				handleChangeLoadingStatus={this.handleChangeLoadingStatus}
 				handleWidth={(width: number) => {

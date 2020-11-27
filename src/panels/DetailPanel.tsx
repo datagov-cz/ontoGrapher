@@ -4,7 +4,8 @@ import {graph} from "../graph/Graph";
 import DetailElement from "./detail/DetailElement";
 
 const headers: { [key: string]: { [key: string]: string } } = {
-    labels: {"cs": "Název", "en": "Label"},
+    labels: {"cs": "Název", "en": "Name"},
+    altLabels: {"cs": "Alternativní názvy", "en": "Alternative labels"},
     inScheme: {"cs": "Ze slovníku", "en": "In vocabulary"},
     definition: {"cs": "Definice", "en": "Definition"},
     stereotype: {"cs": "Stereotyp", "en": "Stereotype"}
@@ -12,7 +13,7 @@ const headers: { [key: string]: { [key: string]: string } } = {
 
 interface Props {
     projectLanguage: string;
-    // resizeElem: Function;
+    resizeElem: Function;
     update: Function;
     handleChangeLoadingStatus: Function;
     handleWidth: Function;
@@ -68,7 +69,7 @@ export default class DetailPanel extends React.Component<Props, State> {
     }
 
     save() {
-        // if (graph.getCell(this.state.id).isElement()) this.props.resizeElem(this.state.id);
+        if (graph.getCell(this.state.id).isElement()) this.props.resizeElem(this.state.id);
         this.props.update();
     }
 

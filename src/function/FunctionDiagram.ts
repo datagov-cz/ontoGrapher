@@ -2,15 +2,15 @@ import {Diagrams, ProjectElements, ProjectLinks, ProjectSettings} from "../confi
 import * as joint from "jointjs";
 import {graphElement} from "../graph/GraphElement";
 import {graph} from "../graph/Graph";
-import {drawGraphElement, restoreHiddenElem} from "./FunctionGraph";
+import {restoreHiddenElem} from "./FunctionGraph";
 import {Locale} from "../config/Locale";
+import {drawGraphElement} from "./FunctionDraw";
 
 export function changeDiagrams(diagram: number = 0) {
     Diagrams[ProjectSettings.selectedDiagram].json = saveDiagram();
     ProjectSettings.selectedDiagram = diagram;
     if (Object.keys(Diagrams[diagram].json).length > 0) {
         loadDiagram(Diagrams[diagram].json);
-
     } else graph.clear();
 }
 

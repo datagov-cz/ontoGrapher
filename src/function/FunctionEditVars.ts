@@ -12,10 +12,10 @@ import {
 import {graph} from "../graph/Graph";
 import {addLink} from "./FunctionCreateVars";
 import {LinkConfig} from "../config/LinkConfig";
-import {getNewLink} from "./FunctionGraph";
 import {updateDeleteTriples} from "../interface/TransactionInterface";
 import {LinkType} from "../config/Enum";
 import {Locale} from "../config/Locale";
+import {getNewLink} from "./FunctionGetVars";
 
 export function getName(element: string, language: string): string {
     if (element in Stereotypes) {
@@ -81,10 +81,10 @@ export function initProjectSettings() {
     ProjectSettings.selectedDiagram = 0;
 }
 
-export function initLanguageObject(defaultString: string) {
-    let result: { [key: string]: string } = {};
+export function initLanguageObject(def: any) {
+    let result: { [key: string]: any } = {};
     for (let code in Languages) {
-        result[code] = defaultString;
+        result[code] = def;
     }
     return result;
 }
@@ -191,7 +191,7 @@ export function setElementShape(elem: joint.dia.Element, width: number, height: 
     } else if (types.includes(parsePrefix("z-sgov-pojem", "typ-vlastnosti"))) {
         elem.prop('attrs/bodyEllipse/display', 'block');
         elem.prop('attrs/bodyEllipse/visibility', 'visible');
-        elem.prop('attrs/bodyEllipse/rx', width * (2 / 3));
+        elem.prop('attrs/bodyEllipse/rx', width * (3 / 5));
         elem.prop('attrs/bodyEllipse/ry', height * (2 / 3));
         elem.prop('attrs/bodyEllipse/cx', width / 2);
         elem.prop('attrs/bodyEllipse/cy', height / 2);
@@ -208,7 +208,7 @@ export function setElementShape(elem: joint.dia.Element, width: number, height: 
     } else if (types.includes(parsePrefix("z-sgov-pojem", "typ-události"))) {
         elem.prop('attrs/bodyTrapezoid/display', 'block');
         elem.prop('attrs/bodyTrapezoid/visibility', 'visible');
-        elem.prop('attrs/bodyTrapezoid/points', `0,0 ${width},0 ${width + 20},${height} -20,${height}`);
+        elem.prop('attrs/bodyTrapezoid/points', `20,0 ${width - 20},0 ${width},${height} 0,${height}`);
         elem.prop('attrs/bodyTrapezoid/stroke', 'black');
         elem.prop('attrs/bodyTrapezoid/fill',
             Schemes[VocabularyElements[ProjectElements[elem.id].iri].inScheme].color);

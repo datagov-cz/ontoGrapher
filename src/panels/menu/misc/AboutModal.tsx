@@ -21,6 +21,17 @@ export default class AboutModal extends React.Component<Props, State> {
 			</Modal.Header>
 			<Modal.Body>
 				<Tabs id={"changelog"}><Tab title={"November"} eventKey={"November"}>
+					<h6>27.11.</h6>
+					<ul>
+						<li>Bug fixing and stability improvements (especially in transaction management)</li>
+						<li>Startup without a workspace is unsupported, interaction is disabled until the workspace is
+							loaded
+						</li>
+						<li>skos:altLabel support: management is located in the detail panel</li>
+						<li>Display label support: the user can choose what pref/altLabel can be displayed on the canvas
+							(altLabel is default, then prefLabel) - this display is saved per workspace
+						</li>
+					</ul>
 					<h6>23.11.</h6>
 					<ul>
 						<li>Bug fixing and stability improvements</li>

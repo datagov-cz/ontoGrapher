@@ -1,6 +1,6 @@
 import {ProjectElements, ProjectLinks} from "../config/Variables";
-import {getNewLink} from "../function/FunctionGraph";
 import {addLink} from "../function/FunctionCreateVars";
+import {getNewLink} from "../function/FunctionGetVars";
 
 export class ConnectionObject {
 	public onProperty: string;

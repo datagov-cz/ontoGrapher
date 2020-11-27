@@ -13,13 +13,10 @@ interface MenuPanelProps {
 	readOnly?: boolean;
 	projectLanguage: string;
 	handleChangeLanguage: any;
-	newProject: Function;
-	loadProject: Function;
-	loadContext: Function;
 	update: Function;
 	loading: boolean;
 	status: string;
-	loadingError: boolean;
+	error: boolean;
 	validate: Function;
 	closeDetailPanel: Function;
 	handleChangeLoadingStatus: Function;
@@ -45,14 +42,15 @@ export default class MenuPanel extends React.Component<MenuPanelProps, MenuPanel
 				<div className={"upper"}>
 					<h5>{ProjectSettings.name[this.props.projectLanguage] === "" ? "<untitled>" : ProjectSettings.name[this.props.projectLanguage]}</h5>
 					<InterfaceNotification active={this.props.loading} message={this.props.status}
-										   error={this.props.loadingError}
+										   error={this.props.error}
 										   handleChangeLoadingStatus={this.props.handleChangeLoadingStatus}
 										   retry={this.props.retry}/>
-					<div className={"right"}>
+					<div className={"right" + (this.props.error ? " nointeract" : "")}>
 						<Form inline>
 							<InterfaceStatus
 								handleChangeLoadingStatus={this.props.handleChangeLoadingStatus}
-								error={this.props.loadingError}
+								error={this.props.error}
+								status={this.props.status}
 							/>
 							&nbsp;
 							<Form.Control as="select" value={this.props.projectLanguage}
@@ -64,14 +62,14 @@ export default class MenuPanel extends React.Component<MenuPanelProps, MenuPanel
 						</Form>
 					</div>
 				</div>
-				<div className={"lower"}>
+				<div className={"lower" + (this.props.error ? " nointeract" : "")}>
 					<MenuPanelView update={() => this.props.update()}
 								   handleChangeLoadingStatus={this.props.handleChangeLoadingStatus}/>
 					<MenuPanelSwitchRepresentation update={() => this.props.update()}
 												   close={() => this.props.closeDetailPanel()}
 												   handleChangeLoadingStatus={this.props.handleChangeLoadingStatus}/>
 					<MenuPanelValidate validate={() => this.props.validate()}/>
-					<div className={"right"}>
+					<div className={"right" + (this.props.error ? " nointeract" : "")}>
 						<MenuPanelHelp/>
 						<MenuPanelAbout/>
 					</div>
