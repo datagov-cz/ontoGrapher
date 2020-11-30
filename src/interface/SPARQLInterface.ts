@@ -24,6 +24,7 @@ export async function fetchConcepts(
         [key: string]: {
             labels: { [key: string]: string },
             definitions: { [key: string]: string },
+            altLabels: { label: string, language: string }[]
             types: string[],
             inScheme: string,
             domain?: string,
@@ -42,7 +43,7 @@ export async function fetchConcepts(
         "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>",
         "PREFIX a-popis-dat-pojem: <http://onto.fel.cvut.cz/ontologies/slovník/agendový/popis-dat/pojem/>",
         "PREFIX z-sgov-pojem: <https://slovník.gov.cz/základní/pojem/>",
-        "SELECT DISTINCT ?term ?termLabel ?termType ?termDefinition ?termDomain ?termRange ?topConcept ?character ?restriction ?restrictionPred ?onProperty ?target ?subClassOf",
+        "SELECT DISTINCT ?term ?termLabel ?termAltLabel ?termType ?termDefinition ?termDomain ?termRange ?topConcept ?character ?restriction ?restrictionPred ?onProperty ?target ?subClassOf",
         "WHERE {",
         graph && "GRAPH <" + graph + "> {",
         !subPropertyOf && "?term skos:inScheme <" + source + ">.",
@@ -51,6 +52,7 @@ export async function fetchConcepts(
         requiredTypes && "VALUES ?termType {<" + requiredTypes.join("> <") + ">}",
         requiredValues && "VALUES ?term {<" + requiredValues.join("> <") + ">}",
         "OPTIONAL {?term skos:prefLabel ?termLabel.}",
+        "OPTIONAL {?term skos:altLabel ?termAltLabel.}",
         "OPTIONAL {?term skos:definition ?termDefinition.}",
         "OPTIONAL {?term z-sgov-pojem:charakterizuje ?character.}",
         "OPTIONAL {?term rdfs:domain ?termDomain.}",
@@ -75,6 +77,7 @@ export async function fetchConcepts(
                 result[row.term.value] = {
                     labels: initLanguageObject(""),
                     definitions: initLanguageObject(""),
+                    altLabels: [],
                     types: [],
                     inScheme: source,
                     subClassOf: [],
@@ -84,14 +87,30 @@ export async function fetchConcepts(
                 }
             }
             if (row.termType && !(result[row.term.value].types.includes(row.termType.value))) result[row.term.value].types.push(row.termType.value);
-            if (row.termLabel) result[row.term.value].labels[row.termLabel['xml:lang']] = row.termLabel.value;
-            if (row.termDefinition) result[row.term.value].definitions[row.termDefinition['xml:lang']] = row.termDefinition.value;
+            if (row.termLabel) {
+                if (!(row.termLabel['xml:lang'] in result[row.term.value].labels))
+                    result[row.term.value].labels[row.termLabel['xml:lang']] = "";
+                result[row.term.value].labels[row.termLabel['xml:lang']] = row.termLabel.value;
+            }
+            if (row.termAltLabel) {
+                if (!(result[row.term.value].altLabels.find(
+                    (alt: { label: string; language: string; }) => alt.label === row.termAltLabel.value && alt.language === row.termAltLabel['xml:lang'])))
+                    result[row.term.value].altLabels
+                        .push({label: row.termAltLabel.value, language: row.termAltLabel['xml:lang']});
+            }
+            if (row.termDefinition) {
+                if (!(row.termDefinition['xml:lang'] in result[row.term.value].definitions))
+                    result[row.term.value].definitions[row.termDefinition['xml:lang']] = "";
+                result[row.term.value].definitions[row.termDefinition['xml:lang']] = row.termDefinition.value;
+            }
             if (row.termDomain) result[row.term.value].domain = row.termDomain.value;
             if (row.termRange) result[row.term.value].range = row.termRange.value;
             if (row.character) result[row.term.value].character = row.character.value;
             if (row.topConcept) result[row.term.value].topConcept = row.topConcept.value;
-            if (row.subClassOf && row.subClassOf.type !== "bnode" && !(result[row.term.value].subClassOf.includes(row.subClassOf.value))) result[row.term.value].subClassOf.push(row.subClassOf.value);
-            if (row.restriction && Object.keys(Links).includes(row.onProperty.value)) createRestriction(result, row.term.value, row.restrictionPred.value, row.onProperty.value, row.target);
+            if (row.subClassOf && row.subClassOf.type !== "bnode" && !(result[row.term.value].subClassOf.includes(row.subClassOf.value)))
+                result[row.term.value].subClassOf.push(row.subClassOf.value);
+            if (row.restriction && Object.keys(Links).includes(row.onProperty.value))
+                createRestriction(result, row.term.value, row.restrictionPred.value, row.onProperty.value, row.target);
         }
         Object.assign(sendTo, result);
         return true;
@@ -173,12 +192,13 @@ export async function getElementsConfig(contextIRI: string, contextEndpoint: str
             active: boolean,
             diagramPosition: { [key: number]: { x: number, y: number } },
             hidden: { [key: number]: boolean },
-            diagrams: number[]
+            diagrams: number[],
+            selectedName: { [key: string]: string },
         }
     } = {}
     let query = [
         "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
-        "select ?id ?iri ?active ?diagram ?index ?hidden ?posX ?posY where {",
+        "select ?id ?iri ?active ?diagram ?index ?hidden ?posX ?posY ?name where {",
         "graph ?g {",
         "?elem a og:element .",
         "?elem og:context <" + contextIRI + ">.",
@@ -186,6 +206,7 @@ export async function getElementsConfig(contextIRI: string, contextEndpoint: str
         "?elem og:id ?id .",
         "?elem og:active ?active .",
         "?elem og:diagram ?diagram .",
+        "optional {?elem og:name ?name.}",
         "optional {?diagram og:index ?index.",
         "?diagram og:hidden ?hidden.",
         "?diagram og:position-x ?posX.",
@@ -207,8 +228,11 @@ export async function getElementsConfig(contextIRI: string, contextEndpoint: str
                     active: result.active.value === "true",
                     diagramPosition: {},
                     hidden: {},
+                    selectedName: initLanguageObject("")
                 }
             }
+            if (result.name && !(result.name['xml:lang'] in elements[iri].selectedName))
+                elements[iri].selectedName['xml:lang'] = result.name.value;
             if (!(elements[iri].diagramIRI.includes(result.diagram.value))) {
                 elements[iri].diagramIRI.push(result.diagram.value);
                 elements[iri].diagrams.push(parseInt(result.index.value));
@@ -227,6 +251,7 @@ export async function getElementsConfig(contextIRI: string, contextEndpoint: str
             ProjectElements[id].diagrams = elements[ProjectElements[id].iri].diagrams;
             ProjectElements[id].active = elements[ProjectElements[id].iri].active;
             ProjectElements[id].position = elements[ProjectElements[id].iri].diagramPosition;
+            ProjectElements[id].selectedLabel = elements[ProjectElements[id].iri].selectedName;
         }
     }
     return true;
@@ -261,7 +286,6 @@ export async function getSettings(contextIRI: string, contextEndpoint: string): 
             Diagrams[parseInt(result.index.value)].name = result.name.value;
             if (result.color) ProjectSettings.viewColorPool = result.color.value;
         }
-        if (data.results.bindings.length > 0) ProjectSettings.initialized = true;
     }).catch(() => false);
     return true;
 }

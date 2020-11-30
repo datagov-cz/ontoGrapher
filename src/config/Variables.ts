@@ -24,6 +24,8 @@ export var ProjectElements: {
         active: boolean;
         //package
         package: PackageNode;
+        //selected label from pref/altLabels
+        selectedLabel: { [key: string]: string };
     }
 } = {};
 
@@ -74,6 +76,7 @@ export var VocabularyElements: {
     [key: string]:
         {
             labels: { [key: string]: string },
+            altLabels: { label: string, language: string }[]
             definitions: { [key: string]: string },
             inScheme: string,
             domain: string | undefined,
@@ -126,7 +129,6 @@ export var ProjectSettings: {
     contextIRI: string,
     contextEndpoint: string,
     ontographerContext: string,
-    initialized: boolean,
     representation: number,
     lastTransaction: { add: string[], delete: string[], update: string[] },
     switchElements: string[],
@@ -144,7 +146,6 @@ export var ProjectSettings: {
     contextIRI: "",
     contextEndpoint: "",
     ontographerContext: "http://onto.fel.cvut.cz/ontologies/application/ontoGrapher",
-    initialized: false,
     representation: Representation.FULL,
     lastTransaction: {
         add: [],

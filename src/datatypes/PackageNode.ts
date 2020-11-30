@@ -4,9 +4,9 @@ export class PackageNode {
 	public parent?: PackageNode;
 	public elements: string[];
 	public open: boolean;
-	public scheme?: string;
+	public scheme: string;
 
-	constructor(labels: { [key: string]: string }, parent: PackageNode | undefined, open?: boolean, scheme?: string) {
+	constructor(labels: { [key: string]: string }, parent: PackageNode | undefined, open: boolean, scheme: string) {
 		this.labels = labels;
 		this.children = [];
 		this.elements = [];
@@ -15,8 +15,8 @@ export class PackageNode {
 			this.parent.children.push(this);
 		}
 		this.open = false;
-		if (open !== undefined) this.open = open;
-		if (scheme) this.scheme = scheme;
+		this.open = open;
+		this.scheme = scheme;
 	}
 
 }

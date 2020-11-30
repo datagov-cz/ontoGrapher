@@ -9,25 +9,26 @@ import {
     Schemes,
     VocabularyElements
 } from "../../config/Variables";
-import {Form} from "react-bootstrap";
+import {Accordion, Button, Card, Form} from "react-bootstrap";
 import TableList from "../../components/TableList";
 import IRIlabel from "../../components/IRIlabel";
 import IRILink from "../../components/IRILink";
 import {ResizableBox} from "react-resizable";
 import {graph} from "../../graph/Graph";
 import DescriptionTabs from "./components/DescriptionTabs";
-import {getLabelOrBlank, getLinkOrVocabElem} from "../../function/FunctionGetVars";
+import {getLabelOrBlank, getLinkOrVocabElem, getUnderlyingFullConnections} from "../../function/FunctionGetVars";
 import {
     mergeTransactions,
     processTransaction,
     updateConnections,
     updateProjectLink
 } from "../../interface/TransactionInterface";
-import {getUnderlyingFullConnections, setLabels, unHighlightAll} from "../../function/FunctionGraph";
+import {setLabels} from "../../function/FunctionGraph";
 import {parsePrefix} from "../../function/FunctionEditVars";
 import {Cardinality} from "../../datatypes/Cardinality";
 import {LinkType, Representation} from "../../config/Enum";
 import {Locale} from "../../config/Locale";
+import {unHighlightAll} from "../../function/FunctionDraw";
 
 interface Props {
     projectLanguage: string;
@@ -141,7 +142,8 @@ export default class DetailLink extends React.Component<Props, State> {
                         ProjectLinks[underlyingConnections.src].targetCardinality = new Cardinality(sourceCard.getSecondCardinality(), sourceCard.getSecondCardinality());
                         ProjectLinks[underlyingConnections.tgt].sourceCardinality = new Cardinality(targetCard.getFirstCardinality(), targetCard.getFirstCardinality());
                         ProjectLinks[underlyingConnections.tgt].targetCardinality = new Cardinality(targetCard.getSecondCardinality(), targetCard.getSecondCardinality());
-                        transactions = mergeTransactions(transactions, updateProjectLink(underlyingConnections.src),
+                        transactions = mergeTransactions(transactions,
+                            updateProjectLink(underlyingConnections.src),
                             updateProjectLink(underlyingConnections.tgt),
                             updateConnections(underlyingConnections.src),
                             updateConnections(underlyingConnections.tgt))
@@ -181,98 +183,118 @@ export default class DetailLink extends React.Component<Props, State> {
                 }}><span role="img" aria-label={""}>➖</span></button>
                 <h3><IRILink label={getLinkOrVocabElem(this.state.iri).labels[this.props.projectLanguage]}
                              iri={this.state.iri}/></h3>
-                <TableList headings={[Locale[ProjectSettings.viewLanguage].linkInfo, ""]}>
-                    <tr>
-                        <td>
-                            <span>{Locale[ProjectSettings.viewLanguage].sourceCardinality}</span>
-                        </td>
-                        <td>
-                            {(!this.state.readOnly) ? <Form.Control as="select" value={this.state.sourceCardinality}
-                                                                    onChange={(event: React.ChangeEvent<HTMLSelectElement>) => {
-                                                                        this.setState({
-                                                                            sourceCardinality: event.currentTarget.value,
-                                                                            changes: true
-                                                                        });
-                                                                    }
-                                                                    }>
-                                {CardinalityPool.map((card, i) =>
-                                    (<option key={i} value={i.toString(10)}>{card.getString()}</option>)
-                                )}
-                            </Form.Control> : CardinalityPool[parseInt(this.state.sourceCardinality, 10)].getString()}
-                        </td>
-                    </tr>
+                <Accordion defaultActiveKey={"0"}>
+                    <Card>
+                        <Card.Header>
+                            <Accordion.Toggle as={Button} variant={"link"} eventKey={"0"}>
+                                {Locale[ProjectSettings.viewLanguage].description}
+                            </Accordion.Toggle>
+                        </Card.Header>
+                        <Accordion.Collapse eventKey={"0"}>
+                            <Card.Body>
+                                {ProjectLinks[this.state.id].type === LinkType.DEFAULT &&
+                                <TableList>
+                                    <tr>
+                                        <td className={"first"}>
+                                            <span>{Locale[ProjectSettings.viewLanguage].sourceCardinality}</span>
+                                        </td>
+                                        <td className={"last"}>
+                                            {(!this.state.readOnly) ?
+                                                <Form.Control as="select" value={this.state.sourceCardinality}
+                                                              onChange={(event: React.ChangeEvent<HTMLSelectElement>) => {
+                                                                  this.setState({
+                                                                      sourceCardinality: event.currentTarget.value,
+                                                                      changes: true
+                                                                  });
+                                                              }
+                                                              }>
+                                                    {CardinalityPool.map((card, i) =>
+                                                        (<option key={i}
+                                                                 value={i.toString(10)}>{card.getString()}</option>)
+                                                    )}
+                                                </Form.Control> : CardinalityPool[parseInt(this.state.sourceCardinality, 10)].getString()}
+                                        </td>
+                                    </tr>
 
-                    <tr>
-                        <td>
-                            <span>{Locale[ProjectSettings.viewLanguage].targetCardinality}</span>
-                        </td>
-                        <td>
-                            {(!this.state.readOnly) ? <Form.Control as="select" value={this.state.targetCardinality}
-                                                                    onChange={(event: React.ChangeEvent<HTMLSelectElement>) => {
-                                                                        this.setState({
-                                                                            targetCardinality: event.currentTarget.value,
-                                                                            changes: true
-                                                                        });
-                                                                    }
-                                                                    }>
-                                {CardinalityPool.map((card, i) =>
-                                    (<option key={i} value={i.toString(10)}>{card.getString()}</option>)
-                                )}
-                            </Form.Control> : CardinalityPool[parseInt(this.state.targetCardinality, 10)].getString()}
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <span>{Locale[ProjectSettings.viewLanguage].linkType}</span>
-                        </td>
-                        {(ProjectSettings.representation === Representation.FULL && !(this.state.readOnly)) ? <td>
-                                <Form.Control as="select" value={this.state.iri} onChange={(event) => {
-                                    this.setState({
-                                        iri: event.currentTarget.value,
-                                        changes: true
-                                    })
-                                }}>
-                                    {this.prepareLinkOptions()}
-                                </Form.Control>
-                            </td> :
-                            <IRIlabel
-                                label={getLabelOrBlank(getLinkOrVocabElem(this.state.iri).labels, this.props.projectLanguage)}
-                                iri={this.state.iri}
-                            />}
-                    </tr>
-                </TableList>
-                <h5>{<IRILink label={this.props.headers.labels[this.props.projectLanguage]}
-                              iri={"http://www.w3.org/2004/02/skos/core#prefLabel"}/>}</h5>
-                <TableList>
-                    {
-                        Object.keys(getLinkOrVocabElem(this.state.iri).labels).map(lang => (
-                            <tr>
-                                <td>{getLinkOrVocabElem(this.state.iri).labels[lang]}</td>
-                                <td>{Languages[lang]}</td>
-                            </tr>
-                        ))
-                    }
-                </TableList>
-                <h5>{<IRILink label={this.props.headers.inScheme[this.props.projectLanguage]}
-                              iri={"http://www.w3.org/2004/02/skos/core#inScheme"}/>}</h5>
-                <TableList>
-                    {Object.keys(Schemes[getLinkOrVocabElem(this.state.iri).inScheme].labels).map(lang => (
-                        <tr>
-                            <IRIlabel
-                                label={Schemes[getLinkOrVocabElem(this.state.iri).inScheme].labels[lang]}
-                                iri={getLinkOrVocabElem(this.state.iri).inScheme}/>
-                            <td>{Languages[lang]}</td>
-                        </tr>
-                    ))}
-                </TableList>
+                                    <tr>
+                                        <td className={"first"}>
+                                            <span>{Locale[ProjectSettings.viewLanguage].targetCardinality}</span>
+                                        </td>
+                                        <td className={"last"}>
+                                            {(!this.state.readOnly) ?
+                                                <Form.Control as="select" value={this.state.targetCardinality}
+                                                              onChange={(event: React.ChangeEvent<HTMLSelectElement>) => {
+                                                                  this.setState({
+                                                                      targetCardinality: event.currentTarget.value,
+                                                                      changes: true
+                                                                  });
+                                                              }
+                                                              }>
+                                                    {CardinalityPool.map((card, i) =>
+                                                        (<option key={i}
+                                                                 value={i.toString(10)}>{card.getString()}</option>)
+                                                    )}
+                                                </Form.Control> : CardinalityPool[parseInt(this.state.targetCardinality, 10)].getString()}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td className={"first"}>
+                                            <span>{Locale[ProjectSettings.viewLanguage].linkType}</span>
+                                        </td>
+                                        {(ProjectSettings.representation === Representation.FULL && !(this.state.readOnly)) ?
+                                            <td className={"last"}>
+                                                <Form.Control as="select" value={this.state.iri} onChange={(event) => {
+                                                    this.setState({
+                                                        iri: event.currentTarget.value,
+                                                        changes: true
+                                                    })
+                                                }}>
+                                                    {this.prepareLinkOptions()}
+                                                </Form.Control>
+                                            </td> :
+                                            <IRIlabel
+                                                label={getLabelOrBlank(getLinkOrVocabElem(this.state.iri).labels, this.props.projectLanguage)}
+                                                iri={this.state.iri}
+                                            />}
+                                    </tr>
+                                </TableList>}
+                                <h5>{<IRILink label={this.props.headers.labels[ProjectSettings.viewLanguage]}
+                                              iri={"http://www.w3.org/2004/02/skos/core#prefLabel"}/>}</h5>
+                                <TableList>
+                                    {
+                                        Object.keys(getLinkOrVocabElem(this.state.iri).labels).map(lang => (
+                                            <tr key={lang}>
+                                                <td>{getLinkOrVocabElem(this.state.iri).labels[lang]}</td>
+                                                <td>{Languages[lang]}</td>
+                                            </tr>
+                                        ))
+                                    }
+                                </TableList>
+                                <h5>{<IRILink label={this.props.headers.inScheme[ProjectSettings.viewLanguage]}
+                                              iri={"http://www.w3.org/2004/02/skos/core#inScheme"}/>}</h5>
+                                <TableList>
+                                    {Object.keys(Schemes[getLinkOrVocabElem(this.state.iri).inScheme].labels).map(lang => (
+                                        <tr key={lang}>
+                                            <IRIlabel
+                                                label={Schemes[getLinkOrVocabElem(this.state.iri).inScheme].labels[lang]}
+                                                iri={getLinkOrVocabElem(this.state.iri).inScheme}/>
+                                            <td>{Languages[lang]}</td>
+                                        </tr>
+                                    ))}
+                                </TableList>
 
-                {Object.keys(getLinkOrVocabElem(this.state.iri).definitions).length > 0 ?
-                    <div>
-                        <h5>{<IRILink label={this.props.headers.definition[this.props.projectLanguage]}
-                                      iri={"http://www.w3.org/2004/02/skos/core#definition"}/>}</h5>
-                        <DescriptionTabs descriptions={getLinkOrVocabElem(this.state.iri).definitions}
-                                         readOnly={true}/>
-                    </div> : ""}
+                                {Object.keys(getLinkOrVocabElem(this.state.iri).definitions).length > 0 &&
+                                <div>
+                                    <h5>{<IRILink
+                                        label={this.props.headers.definition[ProjectSettings.viewLanguage]}
+                                        iri={"http://www.w3.org/2004/02/skos/core#definition"}/>}</h5>
+                                    <DescriptionTabs descriptions={getLinkOrVocabElem(this.state.iri).definitions}
+                                                     readOnly={true}/>
+                                </div>}
+                            </Card.Body>
+                        </Accordion.Collapse>
+                    </Card>
+                </Accordion>
             </div>
         </ResizableBox>);
     }

@@ -41,6 +41,7 @@ export async function getContext(
 		.then((data) => {
 			return data.results.bindings;
 		}).catch(() => false);
+	if (responseInit.length === 0) return false;
 	let vocabularies: { [key: string]: { names: { [key: string]: string }, readOnly: boolean, terms: any, graph: string } } = {};
 	if (responseInit) for (const result of responseInit) {
 		if (!(result.vocabIRI.value in vocabularies)) {

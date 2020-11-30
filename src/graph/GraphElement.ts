@@ -9,21 +9,18 @@ export var graphElement = joint.dia.Element.define('custom.graphElement', {
             },
             bodyEllipse: {
                 display: "none",
-                visibility: "hidden",
                 strokeWidth: 2,
                 stroke: '#000000',
                 fill: '#FFF'
             },
             bodyTrapezoid: {
                 display: "none",
-                visibility: "hidden",
                 strokeWidth: 2,
                 stroke: '#000000',
                 fill: '#FFF'
             },
             bodyDiamond: {
                 display: "none",
-                visibility: "hidden",
                 strokeWidth: 2,
                 stroke: '#000000',
                 fill: '#FFF'

@@ -1,9 +1,9 @@
 import React from 'react';
 import {Dropdown} from "react-bootstrap";
-import {drawGraphElement} from "../../../function/FunctionGraph";
 import {ProjectSettings} from "../../../config/Variables";
 import {graph} from "../../../graph/Graph";
 import {Locale} from "../../../config/Locale";
+import {drawGraphElement} from "../../../function/FunctionDraw";
 
 interface Props {
 	update: Function;
