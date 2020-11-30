@@ -342,6 +342,8 @@ export function getTransactionID(contextEndpoint: string): Promise<string> {
 }
 
 export async function processTransaction(contextEndpoint: string, transactions: { add: string[], delete: string[], update: string[] }): Promise<boolean> {
+	if (transactions.add.length === 0 && transactions.delete.length === 0 && transactions.update.length === 0)
+		return true;
 	ProjectSettings.lastTransaction = transactions;
 
 	const transactionID = await getTransactionID(contextEndpoint);
@@ -421,25 +423,10 @@ export async function abortTransaction(transaction: string) {
 }
 
 export function updateProjectSettings(contextIRI: string): { add: string[], delete: string[], update: string[] } {
-	let contextLD = {
-		"@context": {
-			...Prefixes,
-			"d-sgov-pracovní-prostor-pojem:aplikační-kontext": {"@type": "@id"},
-			"d-sgov-pracovní-prostor-pojem:odkazuje-na-kontext": {"@type": "@id"}
-		},
-		"@id": contextIRI,
-		"@graph": [{
-			"@id": contextIRI,
-			"d-sgov-pracovní-prostor-pojem:odkazuje-na-kontext": ProjectSettings.ontographerContext
-		}, {
-			"@id": ProjectSettings.ontographerContext,
-			"@type": "d-sgov-pracovní-prostor-pojem:aplikační-kontext"
-		}]
-	}
 
 	let contextInstance = ProjectSettings.contextIRI.substring(ProjectSettings.contextIRI.lastIndexOf("/"));
 
-	let ogContextLD = {
+	let addLD = {
 		"@context": {
 			...Prefixes,
 			"og:diagram": {"@type": "@id"},
@@ -448,11 +435,6 @@ export function updateProjectSettings(contextIRI: string): { add: string[], dele
 		},
 		"@id": ProjectSettings.ontographerContext,
 		"@graph": [
-			{
-				"@id": ProjectSettings.ontographerContext,
-				"@type": "d-sgov-pracovní-prostor-pojem:aplikační-kontext",
-				"d-sgov-pracovní-prostor-pojem:aplikační-kontext": contextIRI,
-			},
 			{
 				"@id": ProjectSettings.ontographerContext + contextInstance,
 				"og:context": contextIRI,
@@ -471,10 +453,11 @@ export function updateProjectSettings(contextIRI: string): { add: string[], dele
 		]
 	}
 
-	let addStrings = [JSON.stringify(contextLD), JSON.stringify(ogContextLD)];
+	let addStrings = [JSON.stringify(addLD)];
 	let updStrings: string[] = [];
 	updStrings.push(
-		...updateDeleteTriples(ProjectSettings.ontographerContext, ProjectSettings.ontographerContext, false, false));
+		...updateDeleteTriples(ProjectSettings.ontographerContext + contextInstance,
+			ProjectSettings.ontographerContext, false, false));
 
 	for (let i = 0; i < (Diagrams.length + 1); i++) {
 		updStrings.push(

@@ -63,5 +63,5 @@ export function updateLinks(): { add: string[], delete: string[], update: string
 		"@id": ProjectSettings.ontographerContext,
 		"@graph": graph
 	}
-	return {add: [JSON.stringify(addLD)], delete: [], update: []};
+	return {add: linksToPush.length > 0 ? [JSON.stringify(addLD)] : [], delete: [], update: []};
 }

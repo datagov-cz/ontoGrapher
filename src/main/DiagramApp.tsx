@@ -12,7 +12,7 @@ import {nameGraphLink} from "../function/FunctionGraph";
 import {setupDiagrams} from "../function/FunctionCreateVars";
 import {getElementsConfig, getLinksConfig, getSettings} from "../interface/SPARQLInterface";
 import {initRestrictions} from "../function/FunctionRestriction";
-import {mergeTransactions, processTransaction, updateProjectSettings} from "../interface/TransactionInterface";
+import {processTransaction} from "../interface/TransactionInterface";
 import ValidationPanel from "../panels/ValidationPanel";
 import DiagramPanel from "../panels/DiagramPanel";
 import {setSchemeColors} from "../function/FunctionGetVars";
@@ -139,19 +139,14 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 						getElementsConfig(ProjectSettings.contextIRI, ProjectSettings.contextEndpoint),
 						getLinksConfig(ProjectSettings.contextIRI, ProjectSettings.contextEndpoint),
 						getSettings(ProjectSettings.contextIRI, ProjectSettings.contextEndpoint)]);
-					this.handleChangeLoadingStatus(true, ProjectSettings.initialized ?
-						"Updating ontoGrapher data..." :
-						"Initializing ontoGrapher data (this will only be done once)...", true, false);
 					initRestrictions();
 					setSchemeColors(ProjectSettings.viewColorPool);
-					res.push(
-						await processTransaction(ProjectSettings.contextEndpoint,
-							mergeTransactions(updateProjectSettings(contextIRI), updateLinks())));
+					res.push(await processTransaction(ProjectSettings.contextEndpoint, updateLinks()));
 					if (res.every(bool => bool)) {
 						setupDiagrams(diagram);
 						this.forceUpdate();
 						this.itemPanel.current?.forceUpdate();
-						this.handleChangeLoadingStatus(false, "✔ Workspace ready.", false, false);
+						this.handleChangeLoadingStatus(false, Locale[ProjectSettings.viewLanguage].workspaceReady, false, false);
 					} else
 						this.handleChangeLoadingStatus(false, Locale[ProjectSettings.viewLanguage].pleaseReloadError, false)
 				} else {

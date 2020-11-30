@@ -148,7 +148,7 @@ export default class DetailElement extends React.Component<Props, State> {
 		let otherStereotype = type ? this.state.inputTypeData : this.state.inputTypeType;
 		let stereotypes = this.state.inputTypes.filter(stereotype => !(stereotype in Stereotypes));
 		if (newStereotype !== "") stereotypes.push(newStereotype);
-		if (otherStereotype !== "") stereotypes.push(otherStereotype);
+		if (otherStereotype !== "") type ? stereotypes.push(otherStereotype) : stereotypes.unshift(otherStereotype);
 		this.setState({
 			inputTypes: stereotypes,
 			changes: true

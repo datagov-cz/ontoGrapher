@@ -33,21 +33,22 @@ export default class NewElemModal extends React.Component<Props, State> {
 	}
 
 	checkExists(name: string): boolean {
-		return createNewElemIRI(this.state.selectedPackage.scheme, name) in VocabularyElements;
+		return (createNewElemIRI(this.state.selectedPackage.scheme, name) in VocabularyElements) ||
+			(Object.keys(VocabularyElements).find(iri =>
+				Object.values(VocabularyElements[iri].labels).find(
+					label => label.trim().toLowerCase() === name.trim().toLowerCase())) !== undefined);
 	}
 
-	handleChangeInput(event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>, language: string, required: boolean) {
+	handleChangeInput(event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>, language: string) {
 		let res = this.state.conceptName;
 		res[language] = event.currentTarget.value;
 		this.setState({conceptName: res});
-		if (required) {
-			if (event.currentTarget.value === "") {
-				this.setState({errorText: Locale[ProjectSettings.viewLanguage].modalNewElemError});
-			} else if (this.checkExists(event.currentTarget.value)) {
-				this.setState({errorText: Locale[ProjectSettings.viewLanguage].modalNewElemExistsError});
-			} else {
-				this.setState({errorText: ""});
-			}
+		if (res["cs"] === "") {
+			this.setState({errorText: Locale[ProjectSettings.viewLanguage].modalNewElemError});
+		} else if (this.checkExists(event.currentTarget.value)) {
+			this.setState({errorText: Locale[ProjectSettings.viewLanguage].modalNewElemExistsError});
+		} else {
+			this.setState({errorText: ""});
 		}
 	}
 
@@ -102,7 +103,7 @@ export default class NewElemModal extends React.Component<Props, State> {
 							</InputGroup.Prepend>
 							<Form.Control id={"newElemLabelInput" + lang} type="text"
 										  value={this.state.conceptName[lang]} required={lang === "cs"}
-										  onChange={(event) => this.handleChangeInput(event, lang, lang === "cs")}/>
+										  onChange={(event) => this.handleChangeInput(event, lang)}/>
 						</InputGroup>
 					</div>)}
 					<br/>
@@ -119,10 +120,10 @@ export default class NewElemModal extends React.Component<Props, State> {
 				<p className="red">{this.state.errorText}</p>
 			</Modal.Body>
 			<Modal.Footer>
-				<Button onClick={() => {
+				<Button disabled={this.state.errorText !== ""} onClick={() => {
 					this.save()
 				}} variant="primary">{Locale[ProjectSettings.viewLanguage].confirm}</Button>
-				<Button disabled={this.state.errorText === ""} onClick={() => {
+				<Button onClick={() => {
 					this.props.close();
 				}} variant="secondary">{Locale[ProjectSettings.viewLanguage].cancel}</Button>
 			</Modal.Footer>

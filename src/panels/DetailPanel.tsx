@@ -4,8 +4,8 @@ import {graph} from "../graph/Graph";
 import DetailElement from "./detail/DetailElement";
 
 const headers: { [key: string]: { [key: string]: string } } = {
-    labels: {"cs": "Název", "en": "Name"},
-    altLabels: {"cs": "Alternativní názvy", "en": "Alternative labels"},
+    labels: {"cs": "Název", "en": "Labels"},
+    altLabels: {"cs": "Synonyma", "en": "Synonyms"},
     inScheme: {"cs": "Ze slovníku", "en": "In vocabulary"},
     definition: {"cs": "Definice", "en": "Definition"},
     stereotype: {"cs": "Stereotyp", "en": "Stereotype"}

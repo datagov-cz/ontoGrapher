@@ -263,7 +263,7 @@ export default class DetailLink extends React.Component<Props, State> {
                                 <TableList>
                                     {
                                         Object.keys(getLinkOrVocabElem(this.state.iri).labels).map(lang => (
-                                            <tr>
+                                            <tr key={lang}>
                                                 <td>{getLinkOrVocabElem(this.state.iri).labels[lang]}</td>
                                                 <td>{Languages[lang]}</td>
                                             </tr>
@@ -274,7 +274,7 @@ export default class DetailLink extends React.Component<Props, State> {
                                               iri={"http://www.w3.org/2004/02/skos/core#inScheme"}/>}</h5>
                                 <TableList>
                                     {Object.keys(Schemes[getLinkOrVocabElem(this.state.iri).inScheme].labels).map(lang => (
-                                        <tr>
+                                        <tr key={lang}>
                                             <IRIlabel
                                                 label={Schemes[getLinkOrVocabElem(this.state.iri).inScheme].labels[lang]}
                                                 iri={getLinkOrVocabElem(this.state.iri).inScheme}/>
@@ -283,14 +283,14 @@ export default class DetailLink extends React.Component<Props, State> {
                                     ))}
                                 </TableList>
 
-                                {Object.keys(getLinkOrVocabElem(this.state.iri).definitions).length > 0 ?
-                                    <div>
-                                        <h5>{<IRILink
-                                            label={this.props.headers.definition[ProjectSettings.viewLanguage]}
-                                            iri={"http://www.w3.org/2004/02/skos/core#definition"}/>}</h5>
-                                        <DescriptionTabs descriptions={getLinkOrVocabElem(this.state.iri).definitions}
-                                                         readOnly={true}/>
-                                    </div> : ""}
+                                {Object.keys(getLinkOrVocabElem(this.state.iri).definitions).length > 0 &&
+                                <div>
+                                    <h5>{<IRILink
+                                        label={this.props.headers.definition[ProjectSettings.viewLanguage]}
+                                        iri={"http://www.w3.org/2004/02/skos/core#definition"}/>}</h5>
+                                    <DescriptionTabs descriptions={getLinkOrVocabElem(this.state.iri).definitions}
+                                                     readOnly={true}/>
+                                </div>}
                             </Card.Body>
                         </Accordion.Collapse>
                     </Card>

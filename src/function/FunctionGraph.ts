@@ -295,7 +295,9 @@ export function setupLink(link: string) {
 }
 
 export function restoreElems() {
-    for (let link of Object.keys(ProjectLinks).filter(link => ProjectLinks[link].active)) {
+    for (let link of Object.keys(ProjectLinks).filter(link => ProjectLinks[link].active &&
+        (ProjectSettings.representation === Representation.FULL ?
+            ProjectLinks[link].iri in Links : !(ProjectLinks[link].iri in Links)))) {
         let source = graph.getCell(ProjectLinks[link].source);
         let target = graph.getCell(ProjectLinks[link].target);
         if (source && target) {

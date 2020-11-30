@@ -286,7 +286,6 @@ export async function getSettings(contextIRI: string, contextEndpoint: string): 
             Diagrams[parseInt(result.index.value)].name = result.name.value;
             if (result.color) ProjectSettings.viewColorPool = result.color.value;
         }
-        if (data.results.bindings.length > 0) ProjectSettings.initialized = true;
     }).catch(() => false);
     return true;
 }

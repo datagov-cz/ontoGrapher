@@ -33,6 +33,11 @@
     overflow: auto;
     border-color: rgba(0, 0, 0, 0.30);
     user-select: none;
+    cursor: grab;
+
+    &:active {
+      cursor: grabbing;
+    }
 
     &:hover {
       background-color: #e9eaeb;
