@@ -133,8 +133,8 @@ export function setRepresentation(representation: number, spread: boolean = true
                                 ProjectLinks[link].iri === ProjectElements[elem.id].iri &&
                                 ProjectLinks[link].source === source && ProjectLinks[link].target === target
                             )
-                            if (typeof find === "string") {
-                                let newLink = getNewLink(LinkType.DEFAULT, find);
+                            let newLink = typeof find === "string" ? getNewLink(LinkType.DEFAULT, find) : getNewLink();
+                            if (typeof newLink.id === "string") {
                                 newLink.source({
                                     id: source,
                                     connectionPoint: {name: 'boundary', args: {selector: getElementShape(source)}}
@@ -144,11 +144,13 @@ export function setRepresentation(representation: number, spread: boolean = true
                                     connectionPoint: {name: 'boundary', args: {selector: getElementShape(target)}}
                                 });
                                 newLink.addTo(graph);
+                                if (!(newLink.id in ProjectLinks))
+                                    addLink(newLink.id, ProjectElements[elem.id].iri, source, target);
                                 if (ProjectLinks[newLink.id].vertices[ProjectSettings.selectedDiagram])
                                     newLink.vertices(ProjectLinks[newLink.id].vertices[ProjectSettings.selectedDiagram]);
                                 else if (source === target) {
                                     let coords = newLink.getSourcePoint();
-                                    let bbox = sourceLink.getSourceCell()?.getBBox();
+                                    let bbox = sourceLink.getTargetCell()?.getBBox();
                                     if (bbox) {
                                         newLink.vertices([
                                             new joint.g.Point(coords.x, coords.y + 100),
@@ -163,37 +165,8 @@ export function setRepresentation(representation: number, spread: boolean = true
                                         ])
                                     }
                                 }
-                                setLabels(newLink, ProjectElements[elem.id].selectedLabel[ProjectSettings.selectedLanguage]);
-                            } else {
-                                let newLink = getNewLink();
-                                newLink.source({
-                                    id: source,
-                                    connectionPoint: {name: 'boundary', args: {selector: getElementShape(source)}}
-                                });
-                                newLink.target({
-                                    id: target,
-                                    connectionPoint: {name: 'boundary', args: {selector: getElementShape(target)}}
-                                });
-                                if (typeof newLink.id === "string") {
-                                    addLink(newLink.id, ProjectElements[elem.id].iri, source, target);
-                                    newLink.addTo(graph);
-                                    if (source === target) {
-                                        let coords = newLink.getSourcePoint();
-                                        let bbox = sourceLink.getSourceCell()?.getBBox();
-                                        if (bbox) {
-                                            newLink.vertices([
-                                                new joint.g.Point(coords.x, coords.y + 100),
-                                                new joint.g.Point(coords.x + (bbox.width / 2) + 50, coords.y + 100),
-                                                new joint.g.Point(coords.x + (bbox.width / 2) + 50, coords.y),
-                                            ])
-                                        } else {
-                                            newLink.vertices([
-                                                new joint.g.Point(coords.x, coords.y + 100),
-                                                new joint.g.Point(coords.x + 300, coords.y + 100),
-                                                new joint.g.Point(coords.x + 300, coords.y),
-                                            ])
-                                        }
-                                    }
+                                ProjectLinks[newLink.id].vertices[ProjectSettings.selectedDiagram] = newLink.vertices();
+                                if (!find) {
                                     ProjectLinks[newLink.id].sourceCardinality =
                                         new Cardinality(
                                             ProjectLinks[sourceLink.id].targetCardinality.getFirstCardinality(),
@@ -202,10 +175,9 @@ export function setRepresentation(representation: number, spread: boolean = true
                                         new Cardinality(
                                             ProjectLinks[sourceLink.id].sourceCardinality.getFirstCardinality(),
                                             ProjectLinks[sourceLink.id].sourceCardinality.getSecondCardinality());
-                                    ProjectLinks[newLink.id].vertices[ProjectSettings.selectedDiagram] = newLink.vertices();
-                                    setLabels(newLink, ProjectElements[elem.id].selectedLabel[ProjectSettings.selectedLanguage]);
                                     transactions = mergeTransactions(transactions, updateProjectLink(newLink.id));
                                 }
+                                setLabels(newLink, ProjectElements[elem.id].selectedLabel[ProjectSettings.selectedLanguage]);
                             }
                         }
                         sourceLink.remove();

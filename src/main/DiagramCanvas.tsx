@@ -15,7 +15,7 @@ import {graph} from "../graph/Graph";
 import {restoreHiddenElem, setRepresentation} from "../function/FunctionGraph";
 import {HideButton} from "../graph/elementTool/ElemHide";
 import {ElemCreateLink} from "../graph/elementTool/ElemCreateLink";
-import {initLanguageObject, parsePrefix} from "../function/FunctionEditVars";
+import {parsePrefix} from "../function/FunctionEditVars";
 import {
     mergeTransactions,
     processTransaction,
@@ -84,13 +84,12 @@ export default class DiagramCanvas extends React.Component<Props, State> {
         this.createNewLink = this.createNewLink.bind(this);
     }
 
-    createNewConcept(name: string, language: string, pkg: PackageNode) {
+    createNewConcept(name: { [key: string]: string }, language: string, pkg: PackageNode) {
         this.props.handleChangeLoadingStatus(true, Locale[ProjectSettings.viewLanguage].updating, false);
         let cls = new graphElement();
-        cls.attr({label: {text: name}});
         let point = this.paper?.clientToLocalPoint({x: this.newConceptEvent.x, y: this.newConceptEvent.y})
         if (typeof cls.id === "string") {
-            let iri = createNewElemIRI(pkg.scheme, name);
+            let iri = createNewElemIRI(pkg.scheme, name[language]);
             addVocabularyElement(iri, pkg.scheme, [parsePrefix("skos", "Concept")]);
             addClass(cls.id, iri, pkg);
             ProjectElements[cls.id].hidden[ProjectSettings.selectedDiagram] = false;
@@ -98,9 +97,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                 cls.set('position', {x: point.x, y: point.y});
                 ProjectElements[cls.id].position[ProjectSettings.selectedDiagram] = {x: point.x, y: point.y};
             }
-            let labels = initLanguageObject("");
-            labels[language] = name;
-            VocabularyElements[iri].labels = labels;
+            VocabularyElements[iri].labels = name;
             cls.addTo(graph);
             let bbox = this.paper?.findViewByModel(cls).getBBox();
             if (bbox) cls.resize(bbox.width, bbox.height);
@@ -591,7 +588,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
             <NewElemModal
                 projectLanguage={this.props.projectLanguage}
                 modal={this.state.modalAddElem}
-                close={(conceptName: string, pkg: PackageNode) => {
+                close={(conceptName: { [key: string]: string }, pkg: PackageNode) => {
                     this.setState({modalAddElem: false});
                     if (conceptName && pkg) {
                         this.createNewConcept(conceptName, this.props.projectLanguage, pkg);
