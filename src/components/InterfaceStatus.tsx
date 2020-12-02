@@ -29,9 +29,12 @@ export default class InterfaceStatus extends React.Component<Props, State> {
 	setStatus() {
 		this.checkStatus().then(status => {
 			this.setState({connection: status});
-			if (status === this.props.error &&
-				this.props.status === Locale[ProjectSettings.viewLanguage].errorConnectionLost)
-				this.props.handleChangeLoadingStatus(false, "", !status, false)
+			if (status && this.props.error && this.props.status === Locale[ProjectSettings.viewLanguage].errorConnectionLost) {
+				this.props.handleChangeLoadingStatus(false, Locale[ProjectSettings.viewLanguage].workspaceReady, false, false)
+			} else if ((status === this.props.error) &&
+				!status) {
+				this.props.handleChangeLoadingStatus(false, Locale[ProjectSettings.viewLanguage].errorConnectionLost, true, false)
+			}
 		}).catch(() => {
 			this.setState({connection: false});
 			this.props.handleChangeLoadingStatus(false, Locale[ProjectSettings.viewLanguage].errorConnectionLost, true, false);
@@ -40,9 +43,18 @@ export default class InterfaceStatus extends React.Component<Props, State> {
 
 	async checkStatus(): Promise<boolean> {
 		if (!(navigator.onLine)) return false;
-		else return await fetch(ProjectSettings.contextEndpoint + "?query=select%20*%20where%20%7B%3Fs%20%3Fp%20%3Fo.%7D%20limit%201", {
-			headers: {'Accept': 'application/json'}, method: "GET"
-		}).then(response => response.ok).catch(() => false);
+		else {
+			let miliseconds = 5000;
+			let controller = new AbortController();
+			const signal = controller.signal;
+			let timeout = window.setTimeout(() => controller.abort(), miliseconds);
+			return await fetch(ProjectSettings.contextEndpoint + "?query=select%20*%20where%20%7B%3Fs%20%3Fp%20%3Fo.%7D%20limit%201", {
+				headers: {'Accept': 'application/json'}, method: "GET", signal
+			}).then(response => {
+				window.clearTimeout(timeout);
+				return response.ok;
+			}).catch(() => false);
+		}
 	}
 
 	render() {

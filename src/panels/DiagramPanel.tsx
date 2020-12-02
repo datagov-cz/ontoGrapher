@@ -5,7 +5,7 @@ import DiagramTab from "./diagram/DiagramTab";
 import ModalRemoveDiagram from "./modal/ModalRemoveDiagram";
 
 interface Props {
-	handleChangeLoadingStatus: Function;
+	performTransaction: (transaction: { add: string[], delete: string[], update: string[] }) => void;
 	error: boolean;
 	update: Function;
 }
@@ -33,13 +33,13 @@ export default class DiagramPanel extends React.Component<Props, State> {
 														 this.forceUpdate();
 														 this.props.update();
 													 }}
-													 handleChangeLoadingStatus={this.props.handleChangeLoadingStatus}/>)
+													 performTransaction={this.props.performTransaction}/>)
 				else return "";
 			})}
 			<DiagramAdd update={() => {
 				this.forceUpdate();
 				this.props.update();
-			}} error={this.props.error} handleChangeLoadingStatus={this.props.handleChangeLoadingStatus}/>
+			}} error={this.props.error} performTransaction={this.props.performTransaction}/>
 			<ModalRemoveDiagram
 				modal={this.state.modalRemoveDiagram}
 				diagram={this.state.selectedDiagram}
@@ -49,7 +49,7 @@ export default class DiagramPanel extends React.Component<Props, State> {
 				update={() => {
 					this.forceUpdate();
 				}}
-				handleChangeLoadingStatus={this.props.handleChangeLoadingStatus}
+				performTransaction={this.props.performTransaction}
 			/>
 
 		</div>);

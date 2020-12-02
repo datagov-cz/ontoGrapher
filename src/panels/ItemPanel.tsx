@@ -1,20 +1,11 @@
 import React from 'react';
 import {ResizableBox} from "react-resizable";
-import {
-	Links,
-	PackageRoot,
-	ProjectElements,
-	ProjectSettings,
-	Schemes,
-	Stereotypes,
-	VocabularyElements
-} from "../config/Variables";
+import {PackageRoot, ProjectElements, ProjectSettings, Schemes, VocabularyElements} from "../config/Variables";
 import PackageFolder from "./element/PackageFolder";
 import {PackageNode} from "../datatypes/PackageNode";
 import PackageItem from "./element/PackageItem";
 import {getLabelOrBlank} from "../function/FunctionGetVars";
 import ModalRemoveItem from "./modal/ModalRemoveItem";
-import {processTransaction, updateProjectSettings} from "../interface/TransactionInterface";
 import {Form, InputGroup} from 'react-bootstrap';
 import {parsePrefix} from "../function/FunctionEditVars";
 import {Representation} from "../config/Enum";
@@ -24,7 +15,7 @@ import {Locale} from "../config/Locale";
 
 interface Props {
 	projectLanguage: string;
-	handleChangeLoadingStatus: Function;
+	performTransaction: (transaction: { add: string[], delete: string[], update: string[] }) => void;
 	handleWidth: Function;
 	error: boolean;
 	update: Function;
@@ -86,14 +77,6 @@ export default class ItemPanel extends React.Component<Props, State> {
 		PackageRoot.children.forEach(pkg => pkg.open = !(event.currentTarget.value === ""));
 		this.setState({search: event.currentTarget.value});
 		this.forceUpdate();
-	}
-
-	getNameStereotype(element: string) {
-		return Stereotypes[element].labels[this.props.projectLanguage];
-	}
-
-	getNameLink(element: string) {
-		return Links[element].labels[this.props.projectLanguage];
 	}
 
 	sort(a: string, b: string): number {
@@ -232,16 +215,6 @@ export default class ItemPanel extends React.Component<Props, State> {
 		return result;
 	}
 
-	save() {
-		processTransaction(ProjectSettings.contextEndpoint, updateProjectSettings(ProjectSettings.contextIRI)).then(result => {
-			if (result) {
-				this.props.handleChangeLoadingStatus(false, "", false);
-			} else {
-				this.props.handleChangeLoadingStatus(false, Locale[ProjectSettings.viewLanguage].errorUpdating, true);
-			}
-		})
-	}
-
 	render() {
 		return (<ResizableBox
 				className={"elements" + (this.props.error ? " disabled" : "")}
@@ -280,7 +253,7 @@ export default class ItemPanel extends React.Component<Props, State> {
 						this.forceUpdate();
 						this.props.update();
 					}}
-					handleChangeLoadingStatus={this.props.handleChangeLoadingStatus}
+					performTransaction={this.props.performTransaction}
 				/>
 
 			</ResizableBox>

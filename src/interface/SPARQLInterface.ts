@@ -17,7 +17,7 @@ export async function fetchConcepts(
     subPropertyOf?: string,
     requiredType?: boolean,
     requiredTypes?: string[],
-    requiredValues?: string[]) {
+    requiredValues?: string[]): Promise<boolean> {
     if (!(source in Schemes)) await getScheme(source, endpoint, readOnly);
 
     let result: {
@@ -71,6 +71,7 @@ export async function fetchConcepts(
     await fetch(q, {headers: {"Accept": "application/json"}}).then(
         response => response.json()
     ).then(data => {
+        if (data.results.bindings.length === 0) return false;
         for (let row of data.results.bindings) {
             if (!(row.term.value in result)) {
                 if (getSubProperties) fetchConcepts(endpoint, source, sendTo, readOnly, graph, getSubProperties, row.term.value, requiredType, requiredTypes, requiredValues);
@@ -113,10 +114,8 @@ export async function fetchConcepts(
                 createRestriction(result, row.term.value, row.restrictionPred.value, row.onProperty.value, row.target);
         }
         Object.assign(sendTo, result);
-        return true;
-    }).catch(() => {
-        return false;
-    });
+    }).catch(() => false);
+    return true;
 }
 
 export async function getAllTypes(iri: string, endpoint: string, targetTypes: string[], targetSubClass: string[], init: boolean = false): Promise<boolean> {
@@ -151,7 +150,7 @@ export async function getAllTypes(iri: string, endpoint: string, targetTypes: st
     return true;
 }
 
-export async function getScheme(iri: string, endpoint: string, readOnly: boolean, graph?: string) {
+export async function getScheme(iri: string, endpoint: string, readOnly: boolean, graph?: string): Promise<boolean> {
     let query = [
         "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>",
         "PREFIX dct: <http://purl.org/dc/terms/>",
@@ -167,6 +166,7 @@ export async function getScheme(iri: string, endpoint: string, readOnly: boolean
     await fetch(q, {headers: {'Accept': 'application/json'}}).then(response => {
         return response.json();
     }).then(data => {
+        if (data.results.bindings.length === 0) return false;
         for (let result of data.results.bindings) {
             if (!(iri in Schemes)) Schemes[iri] = {
                 labels: {},
@@ -182,6 +182,7 @@ export async function getScheme(iri: string, endpoint: string, readOnly: boolean
     }).catch(() => {
         return false;
     });
+    return true;
 }
 
 export async function getElementsConfig(contextIRI: string, contextEndpoint: string): Promise<boolean> {

@@ -15,8 +15,8 @@ interface Props {
     projectLanguage: string;
     resizeElem: Function;
     update: Function;
-    handleChangeLoadingStatus: Function;
     handleWidth: Function;
+    performTransaction: (transaction: { add: string[], delete: string[], update: string[] }) => void;
     error: boolean;
 }
 
@@ -90,15 +90,15 @@ export default class DetailPanel extends React.Component<Props, State> {
             if (this.state.type === "elem") {
                 return (<DetailElement headers={headers} projectLanguage={this.props.projectLanguage}
                                        save={this.save} ref={this.detailElem}
-                                       handleChangeLoadingStatus={this.props.handleChangeLoadingStatus}
                                        handleWidth={this.props.handleWidth}
+                                       performTransaction={this.props.performTransaction}
                                        error={this.props.error}/>);
             } else if (this.state.type === "link") {
                 return (<DetailLink
                     error={this.props.error}
                     handleWidth={this.props.handleWidth}
-                    handleChangeLoadingStatus={this.props.handleChangeLoadingStatus}
                     projectLanguage={this.props.projectLanguage} headers={headers}
+                    performTransaction={this.props.performTransaction}
                     save={this.save} ref={this.detailLink}/>);
             }
         } else {

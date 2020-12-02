@@ -2,7 +2,7 @@ import React from 'react';
 import {Button, Modal} from "react-bootstrap";
 import {Diagrams, ProjectSettings} from "../../config/Variables";
 import {changeDiagrams} from "../../function/FunctionDiagram";
-import {processTransaction, updateProjectSettings} from "../../interface/TransactionInterface";
+import {updateProjectSettings} from "../../interface/TransactionInterface";
 import {Locale} from "../../config/Locale";
 
 interface Props {
@@ -10,24 +10,17 @@ interface Props {
 	diagram: number;
 	close: Function;
 	update: Function;
-	handleChangeLoadingStatus: Function;
+	performTransaction: (transaction: { add: string[], delete: string[], update: string[] }) => void;
 }
 
 export default class ModalRemoveDiagram extends React.Component<Props> {
 
 	save() {
-		this.props.handleChangeLoadingStatus(true, "", false);
 		Diagrams[this.props.diagram].active = false;
 		if (ProjectSettings.selectedDiagram === this.props.diagram) {
 			changeDiagrams(0);
 		}
-		processTransaction(ProjectSettings.contextEndpoint, updateProjectSettings(ProjectSettings.contextIRI)).then(result => {
-			if (result) {
-				this.props.handleChangeLoadingStatus(false, "", false);
-			} else {
-				this.props.handleChangeLoadingStatus(false, Locale[ProjectSettings.viewLanguage].errorUpdating, true);
-			}
-		})
+		this.props.performTransaction(updateProjectSettings(ProjectSettings.contextIRI));
 	}
 
 	render() {

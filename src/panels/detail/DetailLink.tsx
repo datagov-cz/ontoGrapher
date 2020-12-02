@@ -17,12 +17,7 @@ import {ResizableBox} from "react-resizable";
 import {graph} from "../../graph/Graph";
 import DescriptionTabs from "./components/DescriptionTabs";
 import {getLabelOrBlank, getLinkOrVocabElem, getUnderlyingFullConnections} from "../../function/FunctionGetVars";
-import {
-    mergeTransactions,
-    processTransaction,
-    updateConnections,
-    updateProjectLink
-} from "../../interface/TransactionInterface";
+import {mergeTransactions, updateConnections, updateProjectLink} from "../../interface/TransactionInterface";
 import {setLabels} from "../../function/FunctionGraph";
 import {parsePrefix} from "../../function/FunctionEditVars";
 import {Cardinality} from "../../datatypes/Cardinality";
@@ -34,7 +29,7 @@ interface Props {
     projectLanguage: string;
     headers: { [key: string]: { [key: string]: string } }
     save: Function;
-    handleChangeLoadingStatus: Function;
+    performTransaction: (transaction: { add: string[], delete: string[], update: string[] }) => void;
     handleWidth: Function;
     error: boolean;
 }
@@ -116,7 +111,6 @@ export default class DetailLink extends React.Component<Props, State> {
                 delete: [],
                 update: []
             }
-            this.props.handleChangeLoadingStatus(true, Locale[ProjectSettings.viewLanguage].updating, false);
             if (ProjectSettings.representation === Representation.FULL) {
                 ProjectLinks[this.state.id].sourceCardinality = CardinalityPool[parseInt(this.state.sourceCardinality, 10)];
                 ProjectLinks[this.state.id].targetCardinality = CardinalityPool[parseInt(this.state.targetCardinality, 10)];
@@ -153,13 +147,7 @@ export default class DetailLink extends React.Component<Props, State> {
                 this.setState({changes: false});
                 this.props.save();
             }
-            processTransaction(ProjectSettings.contextEndpoint, transactions).then(result => {
-                if (result) {
-                    this.props.handleChangeLoadingStatus(false, "", false);
-                } else {
-                    this.props.handleChangeLoadingStatus(false, Locale[ProjectSettings.viewLanguage].errorUpdating, true);
-                }
-            });
+            this.props.performTransaction(transactions);
         }
     }
 

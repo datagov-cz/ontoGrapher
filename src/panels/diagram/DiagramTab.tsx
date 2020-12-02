@@ -3,14 +3,13 @@ import {Diagrams, ProjectSettings} from "../../config/Variables";
 import {changeDiagrams} from "../../function/FunctionDiagram";
 // @ts-ignore
 import {RIEInput} from "riek";
-import {processTransaction, updateProjectSettings} from "../../interface/TransactionInterface";
-import {Locale} from "../../config/Locale";
+import {updateProjectSettings} from "../../interface/TransactionInterface";
 
 interface Props {
 	name: string;
 	diagram: number;
 	update: Function;
-	handleChangeLoadingStatus: Function;
+	performTransaction: (transaction: { add: string[], delete: string[], update: string[] }) => void;
 	error: boolean;
 }
 
@@ -21,18 +20,11 @@ interface State {
 export default class DiagramTab extends React.Component<Props, State> {
 
 	deleteDiagram() {
-		this.props.handleChangeLoadingStatus(true, Locale[ProjectSettings.viewLanguage].updating, false);
 		Diagrams[this.props.diagram].active = false;
 		if (this.props.diagram < ProjectSettings.selectedDiagram) changeDiagrams(ProjectSettings.selectedDiagram - 1);
 		else if (this.props.diagram === ProjectSettings.selectedDiagram) changeDiagrams(0);
 		this.props.update();
-		processTransaction(ProjectSettings.contextEndpoint, updateProjectSettings(ProjectSettings.contextIRI)).then(result => {
-			if (result) {
-				this.props.handleChangeLoadingStatus(false, "", false);
-			} else {
-				this.props.handleChangeLoadingStatus(false, Locale[ProjectSettings.viewLanguage].errorUpdating, true);
-			}
-		})
+		this.props.performTransaction(updateProjectSettings(ProjectSettings.contextIRI));
 	}
 
 	changeDiagram() {
@@ -42,15 +34,8 @@ export default class DiagramTab extends React.Component<Props, State> {
 	}
 
 	handleChangeDiagramName(event: { textarea: string }) {
-		this.props.handleChangeLoadingStatus(true, "", false);
 		Diagrams[this.props.diagram].name = event.textarea;
-		processTransaction(ProjectSettings.contextEndpoint, updateProjectSettings(ProjectSettings.contextIRI)).then(result => {
-			if (result) {
-				this.props.handleChangeLoadingStatus(false, "", false);
-			} else {
-				this.props.handleChangeLoadingStatus(false, Locale[ProjectSettings.viewLanguage].errorUpdating, true);
-			}
-		})
+		this.props.performTransaction(updateProjectSettings(ProjectSettings.contextIRI));
 		this.forceUpdate();
 		this.props.update();
 	}

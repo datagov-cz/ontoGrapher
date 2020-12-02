@@ -1,7 +1,7 @@
 import React from 'react';
 import {Button, Modal} from "react-bootstrap";
 import {deletePackageItem} from "../../function/FunctionEditVars";
-import {mergeTransactions, processTransaction, updateDeleteTriples} from "../../interface/TransactionInterface";
+import {mergeTransactions, updateDeleteTriples} from "../../interface/TransactionInterface";
 import {ProjectElements, ProjectSettings, Schemes, VocabularyElements} from "../../config/Variables";
 import {Locale} from "../../config/Locale";
 
@@ -10,7 +10,7 @@ interface Props {
     id: string;
     close: Function;
     update: Function;
-    handleChangeLoadingStatus: Function;
+    performTransaction: (transaction: { add: string[], delete: string[], update: string[] }) => void;
 }
 
 interface State {
@@ -20,20 +20,13 @@ interface State {
 export default class ModalRemoveItem extends React.Component<Props, State> {
 
     save() {
-        this.props.handleChangeLoadingStatus(true, Locale[ProjectSettings.viewLanguage].updating, false);
-        processTransaction(ProjectSettings.contextEndpoint, mergeTransactions(
+        this.props.performTransaction(mergeTransactions(
             deletePackageItem(this.props.id), {
                 add: [],
                 delete: [],
                 update: updateDeleteTriples(ProjectElements[this.props.id].iri,
                     Schemes[VocabularyElements[ProjectElements[this.props.id].iri].inScheme].graph, true, true)
-            })).then(result => {
-            if (result) {
-                this.props.handleChangeLoadingStatus(false, "", false);
-            } else {
-                this.props.handleChangeLoadingStatus(false, Locale[ProjectSettings.viewLanguage].errorUpdating, true);
-            }
-        });
+            }));
     }
 
     render() {

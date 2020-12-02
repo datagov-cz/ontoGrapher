@@ -3,13 +3,12 @@ import {Nav, OverlayTrigger, Tooltip} from "react-bootstrap";
 import {setRepresentation} from "../../../function/FunctionGraph";
 import {ProjectSettings} from "../../../config/Variables";
 import {Representation} from "../../../config/Enum";
-import {processTransaction} from "../../../interface/TransactionInterface";
 import {Locale} from "../../../config/Locale";
 
 interface Props {
 	update: Function;
 	close: Function;
-	handleChangeLoadingStatus: Function;
+	performTransaction: (transaction: { add: string[], delete: string[], update: string[] }) => void;
 }
 
 interface State {
@@ -34,14 +33,7 @@ export default class MenuPanelSwitchRepresentation extends React.Component<Props
 		setTimeout(() => {
 			this.setState({alert: false})
 		}, 3000)
-		this.props.handleChangeLoadingStatus(true, Locale[ProjectSettings.viewLanguage].updating, false);
-		processTransaction(ProjectSettings.contextEndpoint, result.transactions).then(result => {
-			if (result) {
-				this.props.handleChangeLoadingStatus(false, "", false);
-			} else {
-				this.props.handleChangeLoadingStatus(false, Locale[ProjectSettings.viewLanguage].errorUpdating, true);
-			}
-		});
+		this.props.performTransaction(result.transactions);
 		this.props.close();
 		this.props.update();
 		this.forceUpdate();

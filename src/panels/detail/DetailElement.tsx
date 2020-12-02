@@ -19,7 +19,7 @@ import DescriptionTabs from "./components/DescriptionTabs";
 import IRIlabel from "../../components/IRIlabel";
 import {spreadConnections} from "../../function/FunctionGraph";
 import {graph} from "../../graph/Graph";
-import {processTransaction, updateProjectElement} from "../../interface/TransactionInterface";
+import {updateProjectElement} from "../../interface/TransactionInterface";
 import * as _ from "lodash";
 import StereotypeOptions from "./components/StereotypeOptions";
 import {Shapes} from "../../config/Shapes";
@@ -31,7 +31,7 @@ interface Props {
 	projectLanguage: string;
 	headers: { [key: string]: { [key: string]: string } }
 	save: Function;
-	handleChangeLoadingStatus: Function;
+	performTransaction: (transaction: { add: string[], delete: string[], update: string[] }) => void;
 	handleWidth: Function;
 	error: boolean;
 }
@@ -106,7 +106,8 @@ export default class DetailElement extends React.Component<Props, State> {
 		if (this.state) {
 			let cell = graph.getElements().find(elem => elem.id === this.state.id);
 			if (cell) {
-				return this.state.inputConnections.filter(conn => ProjectLinks[conn] && ProjectLinks[conn].active).length !==
+				return this.state.inputConnections.filter(conn => ProjectLinks[conn] && ProjectLinks[conn].active
+					&& getLinkOrVocabElem(ProjectLinks[conn].iri)).length !==
 					graph.getConnectedLinks(cell).length;
 			} else return false;
 		} else return false;
@@ -115,7 +116,6 @@ export default class DetailElement extends React.Component<Props, State> {
 	save() {
 		let elem = graph.getElements().find(elem => elem.id === (this.state.id));
 		if (this.state.id in ProjectElements && elem) {
-			this.props.handleChangeLoadingStatus(true, Locale[ProjectSettings.viewLanguage].updating, false);
 			let oldVocabularyElement = _.cloneDeep(VocabularyElements[ProjectElements[this.state.id].iri]);
 			VocabularyElements[ProjectElements[this.state.id].iri].types = this.state.inputTypes;
 			VocabularyElements[ProjectElements[this.state.id].iri].labels = this.state.inputLabels;
@@ -126,15 +126,7 @@ export default class DetailElement extends React.Component<Props, State> {
 			this.props.save();
 			this.setState({changes: false});
 			this.prepareDetails(this.state.id);
-			processTransaction(ProjectSettings.contextEndpoint,
-				updateProjectElement(oldVocabularyElement, this.state.id)
-			).then(result => {
-				if (!result) {
-					this.props.handleChangeLoadingStatus(false, Locale[ProjectSettings.viewLanguage].errorUpdating, true);
-				} else {
-					this.props.handleChangeLoadingStatus(false, "", false);
-				}
-			});
+			this.props.performTransaction(updateProjectElement(oldVocabularyElement, this.state.id));
 		}
 	}
 
@@ -276,7 +268,8 @@ export default class DetailElement extends React.Component<Props, State> {
 							<Card.Body>
 								<TableList
 									headings={[Locale[ProjectSettings.viewLanguage].connectionVia, Locale[ProjectSettings.viewLanguage].connectionTo]}>
-									{this.state.inputConnections.filter(conn => ProjectLinks[conn] && ProjectLinks[conn].active).map((conn) =>
+									{this.state.inputConnections.filter(conn => ProjectLinks[conn] &&
+										ProjectLinks[conn].active && getLinkOrVocabElem(ProjectLinks[conn].iri)).map((conn) =>
 										<tr key={conn}>
 											<IRIlabel
 												label={getLinkOrVocabElem(ProjectLinks[conn].iri).labels[this.props.projectLanguage]}
@@ -288,14 +281,7 @@ export default class DetailElement extends React.Component<Props, State> {
 								{this.checkSpreadConnections() &&
                                 <Button className={"buttonlink center"}
                                         onClick={() => {
-											this.props.handleChangeLoadingStatus(true, Locale[ProjectSettings.viewLanguage].updating, false);
-											processTransaction(ProjectSettings.contextEndpoint, spreadConnections(this.state.id, false, false)).then(result => {
-												if (result) {
-													this.props.handleChangeLoadingStatus(false, "", false);
-												} else {
-													this.props.handleChangeLoadingStatus(false, Locale[ProjectSettings.viewLanguage].errorUpdating, true);
-												}
-											});
+											this.props.performTransaction(spreadConnections(this.state.id, false, false));
 											this.forceUpdate();
 										}}>
 									{Locale[ProjectSettings.viewLanguage].spreadConnections}

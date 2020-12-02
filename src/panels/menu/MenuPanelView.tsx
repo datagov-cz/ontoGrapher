@@ -7,7 +7,7 @@ import {ProjectSettings} from "../../config/Variables";
 
 interface Props {
 	update: Function;
-	handleChangeLoadingStatus: Function;
+	performTransaction: (transaction: { add: string[], delete: string[], update: string[] }) => void;
 }
 
 interface State {
@@ -25,7 +25,7 @@ export default class MenuPanelView extends React.Component<Props, State> {
 				<MenuPanelSwitchStereotypes update={() => this.props.update()}/>
 				<Dropdown.Divider/>
 				<MenuPanelSwitchColors update={() => this.props.update()}
-									   handleChangeLoadingStatus={this.props.handleChangeLoadingStatus}/>
+									   performTransaction={this.props.performTransaction}/>
 			</Dropdown.Menu>
 		</Dropdown>);
 	}

@@ -321,45 +321,46 @@ export function updateConnections(id: string) {
 	};
 }
 
-export function getTransactionID(contextEndpoint: string): Promise<string> {
-	return new Promise((resolve, reject) => {
-		let transactionUrl = contextEndpoint + "/transactions";
-		fetch(transactionUrl, {
-			headers: {
-				'Content-Type': 'application/json'
-			},
-			method: "POST"
-		}).then(response => response.headers).then(
-			headers => {
-				let location = headers.get("location");
-				if (location) resolve(location);
-				else reject(undefined);
-			}
-		).catch((error) => {
-			reject(error);
-		});
-	})
-}
-
 export async function processTransaction(contextEndpoint: string, transactions: { add: string[], delete: string[], update: string[] }): Promise<boolean> {
 	if (transactions.add.length === 0 && transactions.delete.length === 0 && transactions.update.length === 0)
 		return true;
 	ProjectSettings.lastTransaction = transactions;
+	let miliseconds = 30000;
+	let controller = new AbortController();
+	const signal = controller.signal;
+	let timeout = window.setTimeout(() => controller.abort(), miliseconds);
 
-	const transactionID = await getTransactionID(contextEndpoint);
+	let transactionUrl = contextEndpoint + "/transactions";
+
+	const transactionID = await fetch(transactionUrl, {
+		method: "POST",
+		signal
+	}).then(response => response.headers).then(
+		headers => {
+			let location = headers.get("location");
+			if (location) return location;
+			else return undefined;
+		}
+	).catch(() => undefined);
 
 	if (transactionID) {
-		let result = true;
+		ProjectSettings.lastTransactionID = transactionID;
 
 		for (let upd of transactions.update) {
 			if (upd) {
+				window.clearTimeout(timeout);
+				timeout = window.setTimeout(() => {
+					controller.abort();
+					abortTransaction(transactionID);
+				}, miliseconds);
 				let resultUpdate = await fetch(transactionID + "?action=UPDATE", {
 					headers: {
 						'Content-Type': 'application/sparql-update'
 					},
 					method: "PUT",
-					body: upd
-				}).then(response => response.ok)
+					body: upd,
+					signal
+				}).then(response => response.ok).catch(() => false);
 				if (!resultUpdate) {
 					console.log(upd);
 					await abortTransaction(transactionID);
@@ -370,13 +371,19 @@ export async function processTransaction(contextEndpoint: string, transactions: 
 
 		for (let del of transactions.delete) {
 			if (del) {
+				window.clearTimeout(timeout);
+				timeout = window.setTimeout(() => {
+					controller.abort();
+					abortTransaction(transactionID);
+				}, miliseconds);
 				let resultDelete = await fetch(transactionID + "?action=DELETE", {
 					headers: {
 						'Content-Type': 'application/ld+json'
 					},
 					method: "PUT",
-					body: del
-				}).then(response => response.ok)
+					body: del,
+					signal
+				}).then(response => response.ok).catch(() => false);
 				if (!resultDelete) {
 					console.log(del);
 					await abortTransaction(transactionID);
@@ -387,13 +394,19 @@ export async function processTransaction(contextEndpoint: string, transactions: 
 
 		for (let add of transactions.add) {
 			if (add) {
+				window.clearTimeout(timeout);
+				timeout = window.setTimeout(() => {
+					controller.abort();
+					abortTransaction(transactionID);
+				}, miliseconds);
 				let resultAdd = await fetch(transactionID + "?action=ADD", {
 					headers: {
 						'Content-Type': 'application/ld+json'
 					},
 					method: "PUT",
-					body: add
-				}).then(response => response.ok)
+					body: add,
+					signal
+				}).then(response => response.ok).catch(() => false);
 				if (!resultAdd) {
 					console.log(add);
 					await abortTransaction(transactionID);
@@ -402,13 +415,22 @@ export async function processTransaction(contextEndpoint: string, transactions: 
 			}
 		}
 
-		if (result) {
-			return await fetch(transactionID + "?action=COMMIT", {
-				headers: {
-					'Content-Type': 'application/json'
-				},
-				method: "PUT"
-			}).then(response => response.ok)
+		window.clearTimeout(timeout);
+		timeout = window.setTimeout(() => {
+			controller.abort();
+			abortTransaction(transactionID);
+		}, miliseconds);
+		let resultCommit = await fetch(transactionID + "?action=COMMIT", {
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			method: "PUT",
+			signal
+		}).then(response => response.ok).catch(() => false);
+		if (resultCommit) {
+			window.clearTimeout(timeout);
+			ProjectSettings.lastTransactionID = "";
+			return true;
 		} else {
 			await abortTransaction(transactionID);
 			return false;
@@ -418,8 +440,12 @@ export async function processTransaction(contextEndpoint: string, transactions: 
 
 export async function abortTransaction(transaction: string) {
 	return await fetch(transaction, {
-		method: "DELETE"
-	}).then(response => response.ok)
+		method: "DELETE",
+		keepalive: true
+	}).then(response => {
+		ProjectSettings.lastTransactionID = "";
+		return response.ok;
+	}).catch(() => false);
 }
 
 export function updateProjectSettings(contextIRI: string): { add: string[], delete: string[], update: string[] } {

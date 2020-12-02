@@ -12,7 +12,7 @@ import {nameGraphLink} from "../function/FunctionGraph";
 import {setupDiagrams} from "../function/FunctionCreateVars";
 import {getElementsConfig, getLinksConfig, getSettings} from "../interface/SPARQLInterface";
 import {initRestrictions} from "../function/FunctionRestriction";
-import {processTransaction} from "../interface/TransactionInterface";
+import {abortTransaction, processTransaction} from "../interface/TransactionInterface";
 import ValidationPanel from "../panels/ValidationPanel";
 import DiagramPanel from "../panels/DiagramPanel";
 import {setSchemeColors} from "../function/FunctionGetVars";
@@ -58,6 +58,16 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 
 		initVars();
 
+		window.onbeforeunload = () => {
+			if (ProjectSettings.lastTransactionID)
+				return 'Transaction in progress';
+		}
+
+		window.onpagehide = () => {
+			if (ProjectSettings.lastTransactionID)
+				abortTransaction(ProjectSettings.lastTransactionID);
+		}
+
 		this.state = ({
 			projectLanguage: ProjectSettings.selectedLanguage,
 			viewLanguage: ProjectSettings.viewLanguage,
@@ -75,6 +85,7 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 		this.loadVocabularies = this.loadVocabularies.bind(this);
 		this.handleChangeLoadingStatus = this.handleChangeLoadingStatus.bind(this);
 		this.validate = this.validate.bind(this);
+		this.performTransaction = this.performTransaction.bind(this);
 	}
 
 	componentDidMount(): void {
@@ -113,6 +124,17 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 		})
 	}
 
+	performTransaction(transaction: { add: string[], delete: string[], update: string[] }) {
+		this.handleChangeLoadingStatus(true, Locale[ProjectSettings.viewLanguage].updating, false);
+		processTransaction(ProjectSettings.contextEndpoint, transaction).then(result => {
+			if (result) {
+				this.handleChangeLoadingStatus(false, Locale[ProjectSettings.viewLanguage].savedChanges, false);
+			} else {
+				this.handleChangeLoadingStatus(false, Locale[ProjectSettings.viewLanguage].errorUpdating, true);
+			}
+		})
+	}
+
 	handleChangeLoadingStatus(loading: boolean, status: string, error: boolean, retry: boolean = true) {
 		this.setState({
 			loading: loading,
@@ -124,8 +146,8 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 
 	loadVocabularies(contextIRI: string, contextEndpoint: string, diagram: number = 0) {
 		this.handleChangeLoadingStatus(true, Locale[ProjectSettings.viewLanguage].loading, true, false);
-		getVocabulariesFromRemoteJSON("https://raw.githubusercontent.com/opendata-mvcr/ontoGrapher/latest/src/config/Vocabularies.json").then(() => {
-			getContext(
+		getVocabulariesFromRemoteJSON("https://raw.githubusercontent.com/opendata-mvcr/ontoGrapher/master/src/config/Vocabularies.json").then((result) => {
+			if (result) getContext(
 				contextIRI,
 				contextEndpoint,
 				"application/json"
@@ -152,7 +174,8 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 				} else {
 					this.handleChangeLoadingStatus(false, Locale[ProjectSettings.viewLanguage].pleaseReload, false)
 				}
-            })
+			})
+			else this.handleChangeLoadingStatus(false, Locale[ProjectSettings.viewLanguage].pleaseReload, false);
         });
 	}
 
@@ -179,6 +202,7 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 				error={this.state.error}
 				validate={this.validate}
 				handleChangeLoadingStatus={this.handleChangeLoadingStatus}
+				performTransaction={this.performTransaction}
 			/>
 			<ItemPanel
 				ref={this.itemPanel}
@@ -186,20 +210,20 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 					this.setState({widthLeft: width})
 				}}
 				projectLanguage={this.state.projectLanguage}
-				handleChangeLoadingStatus={this.handleChangeLoadingStatus}
 				error={this.state.error}
 				update={() => {
 					this.detailPanel.current?.hide();
 					unHighlightAll();
 				}}
+				performTransaction={this.performTransaction}
 			/>
 			<DiagramPanel
-				handleChangeLoadingStatus={this.handleChangeLoadingStatus}
 				error={this.state.error}
 				update={() => {
 					this.itemPanel.current?.forceUpdate();
 					this.detailPanel.current?.hide();
 				}}
+				performTransaction={this.performTransaction}
 			/>
 			<DetailPanel
 				error={this.state.error}
@@ -212,10 +236,10 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 				resizeElem={(id: string) => {
 					this.canvas.current?.resizeElem(id);
 				}}
-				handleChangeLoadingStatus={this.handleChangeLoadingStatus}
 				handleWidth={(width: number) => {
 					this.setState({widthRight: width})
 				}}
+				performTransaction={this.performTransaction}
 			/>
 			{this.state.validation && <ValidationPanel
                 widthLeft={this.state.widthLeft}
@@ -243,8 +267,8 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 				updateDetailPanel={() => {
 					this.detailPanel.current?.update();
 				}}
-				handleChangeLoadingStatus={this.handleChangeLoadingStatus}
 				error={this.state.error}
+				performTransaction={this.performTransaction}
 			/>
 		</div>);
 	}

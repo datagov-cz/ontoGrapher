@@ -20,6 +20,7 @@ interface MenuPanelProps {
 	validate: Function;
 	closeDetailPanel: Function;
 	handleChangeLoadingStatus: Function;
+	performTransaction: (transaction: { add: string[], delete: string[], update: string[] }) => void;
 	retry: boolean;
 }
 
@@ -43,7 +44,7 @@ export default class MenuPanel extends React.Component<MenuPanelProps, MenuPanel
 					<h5>{ProjectSettings.name[this.props.projectLanguage] === "" ? "<untitled>" : ProjectSettings.name[this.props.projectLanguage]}</h5>
 					<InterfaceNotification active={this.props.loading} message={this.props.status}
 										   error={this.props.error}
-										   handleChangeLoadingStatus={this.props.handleChangeLoadingStatus}
+										   performTransaction={this.props.performTransaction}
 										   retry={this.props.retry}/>
 					<div className={"right" + (this.props.error ? " nointeract" : "")}>
 						<Form inline>
@@ -64,10 +65,10 @@ export default class MenuPanel extends React.Component<MenuPanelProps, MenuPanel
 				</div>
 				<div className={"lower" + (this.props.error ? " nointeract" : "")}>
 					<MenuPanelView update={() => this.props.update()}
-								   handleChangeLoadingStatus={this.props.handleChangeLoadingStatus}/>
+								   performTransaction={this.props.performTransaction}/>
 					<MenuPanelSwitchRepresentation update={() => this.props.update()}
 												   close={() => this.props.closeDetailPanel()}
-												   handleChangeLoadingStatus={this.props.handleChangeLoadingStatus}/>
+												   performTransaction={this.props.performTransaction}/>
 					<MenuPanelValidate validate={() => this.props.validate()}/>
 					<div className={"right" + (this.props.error ? " nointeract" : "")}>
 						<MenuPanelHelp/>

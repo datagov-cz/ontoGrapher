@@ -1,6 +1,5 @@
 import React from 'react';
 import {Spinner} from "react-bootstrap";
-import {processTransaction} from "../interface/TransactionInterface";
 import {ProjectSettings} from "../config/Variables";
 import {Locale} from "../config/Locale";
 
@@ -9,7 +8,7 @@ interface Props {
 	message: string;
 	error: boolean;
 	retry: boolean;
-	handleChangeLoadingStatus: Function;
+	performTransaction: (transaction: { add: string[], delete: string[], update: string[] }) => void;
 }
 
 export default class InterfaceNotification extends React.Component<Props> {
@@ -20,22 +19,13 @@ export default class InterfaceNotification extends React.Component<Props> {
 				{this.props.active && <span><Spinner animation="border" size="sm"/>&nbsp;</span>}
 				{this.props.message}&nbsp;
 				{this.props.retry && <button className={"buttonlink"} onClick={() => {
-					this.props.handleChangeLoadingStatus(true, Locale[ProjectSettings.viewLanguage].updating, false);
-					processTransaction(ProjectSettings.contextEndpoint,
-						ProjectSettings.lastTransaction
-					).then(ret => {
-						if (ret) {
-							this.props.handleChangeLoadingStatus(false, "", false);
-						} else {
-							this.props.handleChangeLoadingStatus(false, Locale[ProjectSettings.viewLanguage].errorUpdating, true);
-						}
-					})
+					this.props.performTransaction(ProjectSettings.lastTransaction);
 				}}>{Locale[ProjectSettings.viewLanguage].retry}</button>}
 			</span>);
 		} else {
 			return (<span className={"interfaceNotification"}>
 				{this.props.active && <span><Spinner animation="border" size="sm"/>&nbsp;</span>}
-				{this.props.message === "" && !this.props.active ? Locale[ProjectSettings.viewLanguage].savedChanges : this.props.message}
+				{this.props.message}
 			</span>);
 		}
 	}

@@ -131,6 +131,7 @@ export var ProjectSettings: {
     ontographerContext: string,
     representation: number,
     lastTransaction: { add: string[], delete: string[], update: string[] },
+    lastTransactionID: string,
     switchElements: string[],
     viewStereotypes: boolean,
     viewZoom: number,
@@ -152,6 +153,7 @@ export var ProjectSettings: {
         delete: [],
         update: []
     },
+    lastTransactionID: "",
     switchElements: [],
     viewStereotypes: true,
     viewZoom: 1,

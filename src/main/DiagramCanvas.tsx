@@ -18,7 +18,6 @@ import {ElemCreateLink} from "../graph/elementTool/ElemCreateLink";
 import {parsePrefix} from "../function/FunctionEditVars";
 import {
     mergeTransactions,
-    processTransaction,
     updateConnections,
     updateDeleteProjectLinkVertex,
     updateProjectElement,
@@ -36,7 +35,6 @@ import {
 import NewElemModal from "./NewElemModal";
 import {PackageNode} from "../datatypes/PackageNode";
 import {LinkType, Representation} from "../config/Enum";
-import {Locale} from "../config/Locale";
 import {drawGraphElement, highlightCell, unHighlightCell, unHighlightSelected} from "../function/FunctionDraw";
 
 interface Props {
@@ -45,8 +43,8 @@ interface Props {
     hideDetails: Function;
     updateElementPanel: Function;
     updateDetailPanel: Function;
-    handleChangeLoadingStatus: Function;
     error: boolean;
+    performTransaction: (transaction: { add: string[], delete: string[], update: string[] }) => void;
 }
 
 interface State {
@@ -85,7 +83,6 @@ export default class DiagramCanvas extends React.Component<Props, State> {
     }
 
     createNewConcept(name: { [key: string]: string }, language: string, pkg: PackageNode) {
-        this.props.handleChangeLoadingStatus(true, Locale[ProjectSettings.viewLanguage].updating, false);
         let cls = new graphElement();
         let point = this.paper?.clientToLocalPoint({x: this.newConceptEvent.x, y: this.newConceptEvent.y})
         if (typeof cls.id === "string") {
@@ -103,17 +100,9 @@ export default class DiagramCanvas extends React.Component<Props, State> {
             if (bbox) cls.resize(bbox.width, bbox.height);
             drawGraphElement(cls, language, ProjectSettings.representation);
             this.props.updateElementPanel();
-            processTransaction(ProjectSettings.contextEndpoint,
-                updateProjectElement(
-                    VocabularyElements[iri], cls.id)).then(result => {
-                if (result) {
-                    this.props.handleChangeLoadingStatus(false, "", false);
-                } else {
-                    this.props.handleChangeLoadingStatus(false, Locale[ProjectSettings.viewLanguage].errorUpdating, true);
-                }
-            });
+            this.props.performTransaction(updateProjectElement(
+                VocabularyElements[iri], cls.id));
         }
-        this.props.handleChangeLoadingStatus(false, "", false);
     }
 
     createNewLink(id: string) {
@@ -128,7 +117,6 @@ export default class DiagramCanvas extends React.Component<Props, State> {
     }
 
     saveNewLink(iri: string, sid: string, tid: string) {
-        this.props.handleChangeLoadingStatus(true, Locale[ProjectSettings.viewLanguage].updating, false);
         let type = iri in Links ? Links[iri].type : LinkType.DEFAULT;
         let link = getNewLink(type);
         link.source({id: sid, connectionPoint: {name: 'boundary', args: {selector: getElementShape(sid)}}});
@@ -159,13 +147,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                 }
                 if (typeof link.id === "string" && typeof sid === "string" && typeof tid === "string") {
                     if (ProjectSettings.representation === Representation.FULL || type === LinkType.GENERALIZATION) {
-                        processTransaction(ProjectSettings.contextEndpoint, this.updateConnections(sid, tid, link.id, type, iri)).then(result => {
-                            if (!result) {
-                                this.props.handleChangeLoadingStatus(false, Locale[ProjectSettings.viewLanguage].errorUpdating, true);
-                            } else {
-                                this.props.handleChangeLoadingStatus(false, "", false);
-                            }
-                        });
+                        this.props.performTransaction(this.updateConnections(sid, tid, link.id, type, iri));
                     } else if (ProjectSettings.representation === Representation.COMPACT) {
                         let mvp1IRI = "https://slovník.gov.cz/základní/pojem/má-vztažený-prvek-1";
                         let mvp2IRI = "https://slovník.gov.cz/základní/pojem/má-vztažený-prvek-2";
@@ -183,20 +165,14 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                             ProjectElements[property.id].connections.push(source.id);
                             ProjectElements[property.id].connections.push(target.id);
                             addLink(link.id, iri, sid, tid);
-                            processTransaction(ProjectSettings.contextEndpoint,
+                            this.props.performTransaction(
                                 mergeTransactions(
                                     updateProjectElement(VocabularyElements[iri], property.id),
                                     this.updateConnections(property.id, sid, source.id, type, mvp1IRI),
                                     this.updateConnections(property.id, tid, target.id, type, mvp2IRI),
                                     this.updateConnections(sid, tid, link.id, type, iri),
                                 )
-                            ).then(result => {
-                                if (!result) {
-                                    this.props.handleChangeLoadingStatus(false, Locale[ProjectSettings.viewLanguage].errorUpdating, true);
-                                } else {
-                                    this.props.handleChangeLoadingStatus(false, "", false);
-                                }
-                            });
+                            )
                         }
                     }
                     this.props.updateElementPanel();
@@ -240,28 +216,17 @@ export default class DiagramCanvas extends React.Component<Props, State> {
 
     updateElement(cell: joint.dia.Cell) {
         let id = cell.id;
-        this.props.handleChangeLoadingStatus(true, Locale[ProjectSettings.viewLanguage].updating, false);
         cell.remove();
         ProjectElements[id].hidden[ProjectSettings.selectedDiagram] = true;
         let iri = ProjectElements[id].iri;
-        this.props.handleChangeLoadingStatus(false, "", false);
         this.props.updateElementPanel();
         this.props.hideDetails();
         if (typeof id === "string") {
-            processTransaction(ProjectSettings.contextEndpoint,
-                updateProjectElement(VocabularyElements[iri],
-                    id)).then(result => {
-                if (!result) {
-                    this.props.handleChangeLoadingStatus(false, Locale[ProjectSettings.viewLanguage].errorUpdating, true);
-                } else {
-                    this.props.handleChangeLoadingStatus(false, "", false);
-                }
-            })
+            this.props.performTransaction(updateProjectElement(VocabularyElements[iri], id))
         }
     }
 
     updateConnections(sid: string, tid: string, linkID: string, type: number, iri: string) {
-        this.props.handleChangeLoadingStatus(true, Locale[ProjectSettings.viewLanguage].updating, false);
         addLink(linkID, iri, sid, tid, type);
         ProjectElements[sid].connections.push(linkID);
         this.props.updateElementPanel();
@@ -300,7 +265,6 @@ export default class DiagramCanvas extends React.Component<Props, State> {
         let removeButton = new joint.linkTools.Remove({
             distance: 5,
             action: ((evt, view) => {
-                this.props.handleChangeLoadingStatus(true, Locale[ProjectSettings.viewLanguage].updating, false);
                 if (ProjectSettings.representation === Representation.FULL) {
                     let sid = view.model.getSourceCell()?.id;
                     if (typeof sid === "string" && typeof id === "string") {
@@ -311,13 +275,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                         if (compactConn) {
                             transactions = mergeTransactions(transactions, this.deleteConnections(ProjectLinks[compactConn].source, compactConn));
                         }
-                        processTransaction(ProjectSettings.contextEndpoint, transactions).then(result => {
-                            if (!result) {
-                                this.props.handleChangeLoadingStatus(false, Locale[ProjectSettings.viewLanguage].errorUpdating, true);
-                            } else {
-                                this.props.handleChangeLoadingStatus(false, "", false);
-                            }
-                        });
+                        this.props.performTransaction(transactions);
                     }
                 } else {
                     let deleteLinks = getUnderlyingFullConnections(view.model);
@@ -341,13 +299,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                     ProjectLinks[view.model.id].active = false;
                     this.props.hideDetails();
                     ProjectSettings.selectedLink = "";
-                    processTransaction(ProjectSettings.contextEndpoint, transactions).then(result => {
-                        if (!result) {
-                            this.props.handleChangeLoadingStatus(false, Locale[ProjectSettings.viewLanguage].errorUpdating, true);
-                        } else {
-                            this.props.handleChangeLoadingStatus(false, "", false);
-                        }
-                    });
+                    this.props.performTransaction(transactions);
                 }
             })
         })
@@ -410,18 +362,13 @@ export default class DiagramCanvas extends React.Component<Props, State> {
             },
             'element:pointerup': (cellView) => {
                 if (!this.newLink) {
-                    ProjectElements[cellView.model.id].position[ProjectSettings.selectedDiagram] = cellView.model.position();
-                    this.props.handleChangeLoadingStatus(true, Locale[ProjectSettings.viewLanguage].updating, false);
-                    processTransaction(ProjectSettings.contextEndpoint,
-                        updateProjectElementDiagram(
-                            cellView.model.id,
-                            ProjectSettings.selectedDiagram)).then(result => {
-                        if (result) {
-                            this.props.handleChangeLoadingStatus(false, "", false);
-                        } else {
-                            this.props.handleChangeLoadingStatus(false, Locale[ProjectSettings.viewLanguage].errorUpdating, true);
-                        }
-                    });
+                    let pos = cellView.model.position();
+                    let id = cellView.model.id;
+                    if (pos.x !== ProjectElements[id].position[ProjectSettings.selectedDiagram].x ||
+                        pos.y !== ProjectElements[cellView.model.id].position[ProjectSettings.selectedDiagram].y) {
+                        ProjectElements[id].position[ProjectSettings.selectedDiagram] = pos;
+                        this.props.performTransaction(updateProjectElementDiagram(cellView.model.id, ProjectSettings.selectedDiagram));
+                    }
                 }
             },
             'element:pointerclick': (cellView) => {
@@ -492,14 +439,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                 let id = cellView.model.id;
                 let link = cellView.model;
                 link.findView(this.paper).removeRedundantLinearVertices();
-                this.props.handleChangeLoadingStatus(true, Locale[ProjectSettings.viewLanguage].updating, false);
-                processTransaction(ProjectSettings.contextEndpoint, this.updateVertices(id, ProjectLinks[id].vertices[ProjectSettings.selectedDiagram], link.vertices())).then(result => {
-                    if (result) {
-                        this.props.handleChangeLoadingStatus(false, "", false);
-                    } else {
-                        this.props.handleChangeLoadingStatus(false, Locale[ProjectSettings.viewLanguage].errorUpdating, true);
-                    }
-                });
+                this.props.performTransaction(this.updateVertices(id, ProjectLinks[id].vertices[ProjectSettings.selectedDiagram], link.vertices()));
             }
         });
     }
@@ -524,7 +464,6 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                 }
                 }
                 onDrop={(event) => {
-                    this.props.handleChangeLoadingStatus(true, Locale[ProjectSettings.viewLanguage].updating, false);
                     let transactions: { add: string[], delete: string[], update: string[] } = {
                         add: [],
                         delete: [],
@@ -562,13 +501,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                         updateProjectElement(
                             VocabularyElements[ProjectElements[id].iri], id)
                     )
-                    processTransaction(ProjectSettings.contextEndpoint, mergeTransactions(...map, transactions)).then(result => {
-                        if (result) {
-                            this.props.handleChangeLoadingStatus(false, "", false);
-                        } else {
-                            this.props.handleChangeLoadingStatus(false, Locale[ProjectSettings.viewLanguage].errorUpdating, true);
-                        }
-                    });
+                    this.props.performTransaction(mergeTransactions(...map, transactions));
                     if (ProjectSettings.representation === Representation.COMPACT) setRepresentation(ProjectSettings.representation);
                 }}
             />

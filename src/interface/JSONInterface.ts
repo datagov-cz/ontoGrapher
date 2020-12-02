@@ -10,12 +10,14 @@ export async function getVocabulariesFromRemoteJSON(pathToJSON: string): Promise
     if (isURL(pathToJSON)) {
         await fetch(pathToJSON).then(response => response.json()).then(
             async json => {
+                let results: boolean[] = [];
+                if (Object.keys(json).length === 0) return false;
                 for (const key of Object.keys(json)) {
                     let data = json[key];
                     if (data.type === "stereotype") {
-                        await getScheme(data.sourceIRI, data.endpoint, data.type === "model");
+                        results.push(await getScheme(data.sourceIRI, data.endpoint, data.type === "model"));
                         Schemes[data.sourceIRI].labels = initLanguageObject(key);
-                        await fetchConcepts(
+                        results.push(await fetchConcepts(
                             data.endpoint,
                             data.sourceIRI,
                             Stereotypes,
@@ -26,8 +28,8 @@ export async function getVocabulariesFromRemoteJSON(pathToJSON: string): Promise
                             true,
                             [data.classIRI],
                             data.values ? createValues(data.values, data.prefixes) : undefined
-                        );
-                        await fetchConcepts(
+                        ));
+                        results.push(await fetchConcepts(
                             data.endpoint,
                             data.sourceIRI,
                             Links,
@@ -38,7 +40,7 @@ export async function getVocabulariesFromRemoteJSON(pathToJSON: string): Promise
                             true,
                             [data.relationshipIRI],
                             data.values ? createValues(data.values, data.prefixes) : undefined
-                        );
+                        ));
                         checkLabels();
                         for (let link in Links) {
                             Links[link].typesDomain = [];
@@ -46,26 +48,27 @@ export async function getVocabulariesFromRemoteJSON(pathToJSON: string): Promise
                             Links[link].subClassOfDomain = [];
                             Links[link].subClassOfRange = [];
                         }
-                        await Promise.all(Object.keys(Stereotypes).map(stereotype =>
+                        results = results.concat(await Promise.all(Object.keys(Stereotypes).map(stereotype =>
                             getAllTypes(
                                 stereotype,
                                 data.endpoint,
                                 Stereotypes[stereotype].types,
-                                Stereotypes[stereotype].subClassOf)))
-                        await Promise.all(Object.keys(Links).map(link =>
+                                Stereotypes[stereotype].subClassOf))))
+                        results = results.concat(await Promise.all(Object.keys(Links).map(link =>
                             getAllTypes(
                                 Links[link].domain,
                                 data.endpoint,
                                 Links[link].typesDomain,
                                 Links[link].subClassOfDomain, true)
-                        ))
-                        await Promise.all(Object.keys(Links).map(link =>
+                        )))
+                        results = results.concat(await Promise.all(Object.keys(Links).map(link =>
                             getAllTypes(
                                 Links[link].range,
                                 data.endpoint,
                                 Links[link].typesRange,
                                 Links[link].subClassOfRange, true)
-                        ))
+                        )))
+                        return results.every(bool => bool);
                     }
                 }
             }

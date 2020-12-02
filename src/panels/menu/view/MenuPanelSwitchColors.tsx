@@ -4,13 +4,13 @@ import {ColorPool} from "../../../config/ColorPool";
 import {ProjectSettings} from "../../../config/Variables";
 import {graph} from "../../../graph/Graph";
 import {setSchemeColors} from "../../../function/FunctionGetVars";
-import {processTransaction, updateProjectSettings} from "../../../interface/TransactionInterface";
+import {updateProjectSettings} from "../../../interface/TransactionInterface";
 import {Locale} from "../../../config/Locale";
 import {drawGraphElement} from "../../../function/FunctionDraw";
 
 interface Props {
 	update: Function;
-	handleChangeLoadingStatus: Function;
+	performTransaction: (transaction: { add: string[], delete: string[], update: string[] }) => void;
 }
 
 interface State {
@@ -20,18 +20,11 @@ interface State {
 export default class MenuPanelSwitchColors extends React.Component<Props, State> {
 
 	switch(pool: string) {
-		this.props.handleChangeLoadingStatus(true, Locale[ProjectSettings.viewLanguage].updating, false);
 		ProjectSettings.viewColorPool = pool;
 		setSchemeColors(pool);
 		graph.getElements().forEach(elem =>
 			drawGraphElement(elem, ProjectSettings.selectedLanguage, ProjectSettings.representation));
-		processTransaction(ProjectSettings.contextEndpoint, updateProjectSettings(ProjectSettings.contextIRI)).then(result => {
-			if (result) {
-				this.props.handleChangeLoadingStatus(false, "", false);
-			} else {
-				this.props.handleChangeLoadingStatus(false, "", true);
-			}
-		});
+		this.props.performTransaction(updateProjectSettings(ProjectSettings.contextIRI))
 		this.props.update();
 		this.forceUpdate();
 	}
