@@ -18,47 +18,54 @@ interface Props {
 
 interface State {
 	newAltInput: string;
+	hover: number;
 }
 
 export default class AltLabelTable extends React.Component<Props, State> {
 	constructor(props: Props) {
 		super(props);
 		this.state = {
-			newAltInput: ""
+			newAltInput: "",
+			hover: -1,
 		}
 	}
 
 	render() {
 		return (<TableList>
 			{Object.keys(this.props.labels).map((entry, i) =>
-				<tr key={i}>
+				<tr key={i} onMouseEnter={() => {
+					this.setState({hover: i});
+				}} onMouseLeave={() => {
+					this.setState({hover: -1});
+				}}>
 					<th colSpan={this.props.readOnly ? 2 : 1} className={"stretch"}>
 						{this.props.readOnly ?
 							this.props.labels[i].label
 							: <RIEInput
 								className={"rieinput"}
 								value={this.props.labels[i].label}
-								change={(event: { textarea: string }) => {
-									if (this.props.onEdit) this.props.onEdit(event.textarea, this.props.labels[i].language, i);
-								}}
+								change={(event: { textarea: string }) =>
+									this.props.onEdit(event.textarea, this.props.labels[i].language, i)}
 								propName="textarea"
 							/>}
 						<span className={"right"}>
-                        {(this.props.labels[i].label !== this.props.default) &&
+                        {(this.props.labels[i].label !== this.props.default &&
+							ProjectSettings.selectedLanguage === this.props.labels[i].language &&
+							this.state.hover === i) &&
                         <OverlayTrigger
                             placement="left"
-                            delay={{show: 250, hide: 400}}
                             overlay={<Tooltip id="button-tooltip">
 								{Locale[ProjectSettings.viewLanguage].setAsDisplayName}
 							</Tooltip>}
                         >
                             <button className={"buttonlink"}
-                                    onClick={() => {
-										if (this.props.onEdit) this.props.selectAsDefault(this.props.labels[i].language, i);
-									}}><span role="img"
-                                             aria-label={""}>🏷️</span>
+                                    onClick={() => this.props.selectAsDefault(this.props.labels[i].language, i)}>
+                                <span role="img" aria-label={""}>🏷️</span>
                             </button>
                         </OverlayTrigger>}
+							{(this.props.labels[i].label === this.props.default) &&
+                            <span role="img" aria-label={""}>🏷️</span>
+							}
                         </span>
 					</th>
 					<td className={"short"}>
@@ -80,10 +87,9 @@ export default class AltLabelTable extends React.Component<Props, State> {
 					</td>
 					{(!this.props.readOnly) && <td className={"short"}>
                         <span className={"right"}><button className={"buttonlink"}
-                                                          onClick={() => {
-															  if (this.props.onEdit) this.props.onEdit("", this.props.labels[i].language, i);
-														  }}><span role="img"
-                                                                   aria-label={""}>❌</span></button></span></td>}
+                                                          onClick={() => this.props.onEdit("", this.props.labels[i].language, i)
+														  }><span role="img" aria-label={""}>❌</span></button></span>
+                    </td>}
 				</tr>
 			)}
 			{(!this.props.readOnly) && <tr>

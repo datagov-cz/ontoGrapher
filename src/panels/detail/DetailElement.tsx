@@ -29,7 +29,6 @@ import AltLabelTable from "./components/AltLabelTable";
 
 interface Props {
 	projectLanguage: string;
-	headers: { [key: string]: { [key: string]: string } }
 	save: Function;
 	performTransaction: (transaction: { add: string[], delete: string[], update: string[] }) => void;
 	handleWidth: Function;
@@ -126,7 +125,7 @@ export default class DetailElement extends React.Component<Props, State> {
 			this.props.save();
 			this.setState({changes: false});
 			this.prepareDetails(this.state.id);
-			this.props.performTransaction(updateProjectElement(oldVocabularyElement, this.state.id));
+			this.props.performTransaction(updateProjectElement(oldVocabularyElement, this.state.id, false));
 		}
 	}
 
@@ -178,7 +177,7 @@ export default class DetailElement extends React.Component<Props, State> {
 						</Card.Header>
 						<Accordion.Collapse eventKey={"0"}>
 							<Card.Body>
-								<h5>{<IRILink label={this.props.headers.labels[ProjectSettings.viewLanguage]}
+								<h5>{<IRILink label={Locale[ProjectSettings.viewLanguage].detailPanelPrefLabel}
 											  iri={"http://www.w3.org/2004/02/skos/core#prefLabel"}/>}</h5>
 								<LabelTable labels={this.state.inputLabels}
 											default={this.state.selectedLabel[this.props.projectLanguage]}
@@ -188,7 +187,7 @@ export default class DetailElement extends React.Component<Props, State> {
 													res[this.props.projectLanguage] = label;
 													this.setState({selectedLabel: res, changes: true})
 												}}/>
-								<h5>{<IRILink label={this.props.headers.altLabels[ProjectSettings.viewLanguage]}
+								<h5>{<IRILink label={Locale[ProjectSettings.viewLanguage].detailPanelAltLabel}
 											  iri={"http://www.w3.org/2004/02/skos/core#altLabel"}/>}</h5>
 								<AltLabelTable labels={this.state.inputAltLabels} readOnly={this.state.readOnly}
 											   onEdit={
@@ -224,7 +223,7 @@ export default class DetailElement extends React.Component<Props, State> {
 										this.setState({inputAltLabels: res, changes: true});
 									}
 								}}/>
-								<h5>{<IRILink label={this.props.headers.stereotype[ProjectSettings.viewLanguage]}
+								<h5>{<IRILink label={Locale[ProjectSettings.viewLanguage].detailPanelStereotype}
 											  iri={"http://www.w3.org/2000/01/rdf-schema#type"}/>}</h5>
 								<TableList>
 									<StereotypeOptions readonly={this.state.readOnly} content={true}
@@ -236,12 +235,12 @@ export default class DetailElement extends React.Component<Props, State> {
 													   onChange={(value: string) => this.updateStereotype(value, false)}
 													   value={this.state.inputTypeData}/>
 								</TableList>
-								<h5>{<IRILink label={this.props.headers.inScheme[ProjectSettings.viewLanguage]}
+								<h5>{<IRILink label={Locale[ProjectSettings.viewLanguage].detailPanelInScheme}
 											  iri={"http://www.w3.org/2004/02/skos/core#inScheme"}/>}</h5>
 								<LabelTable labels={this.state.inputSchemes}
 											iri={VocabularyElements[this.state.iri].inScheme}/>
 								{Object.keys(Languages).length > 0 ?
-									<h5>{<IRILink label={this.props.headers.definition[ProjectSettings.viewLanguage]}
+									<h5>{<IRILink label={Locale[ProjectSettings.viewLanguage].detailPanelDefinition}
 												  iri={"http://www.w3.org/2004/02/skos/core#definition"}/>}</h5> : ""}
 								<DescriptionTabs
 									descriptions={this.state.inputDefinitions}
