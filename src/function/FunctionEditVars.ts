@@ -151,13 +151,13 @@ export function deletePackageItem(id: string): { add: string[], delete: string[]
     for (let connection of ProjectElements[id].connections) {
         ProjectLinks[connection].active = false;
         triples = triples.concat(updateDeleteTriples(ProjectSettings.ontographerContext + "-" + connection,
-            ProjectSettings.ontographerContext));
+            ProjectSettings.ontographerContext, false, false));
     }
     let targets = Object.keys(ProjectLinks).filter(link => ProjectElements[ProjectLinks[link].target].iri === iri)
     for (let connection of targets) {
         ProjectLinks[connection].active = false;
         triples = triples.concat(updateDeleteTriples(ProjectSettings.ontographerContext + "-" + connection,
-            ProjectSettings.ontographerContext));
+            ProjectSettings.ontographerContext, false, false));
     }
     targets.forEach(target => {
         let elem = Object.keys(ProjectElements).find(elem => ProjectElements[elem].connections.includes(target));

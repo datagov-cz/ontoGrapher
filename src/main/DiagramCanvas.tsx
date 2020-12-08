@@ -185,6 +185,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
         this.tid = undefined;
         this.newLink = false;
         unHighlightSelected(this.highlightedCells);
+        this.highlightedCells = [];
     }
 
     resizeElem(id: string) {
@@ -357,7 +358,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                     this.props.prepareDetails(id);
                     unHighlightSelected(this.highlightedCells);
                     highlightCell(id);
-                    this.highlightedCells.push(id);
+                    this.highlightedCells = [id];
                 }
             },
             'element:pointerup': (cellView) => {
@@ -408,6 +409,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                 ProjectSettings.selectedLink = "";
                 this.props.hideDetails();
                 unHighlightSelected(this.highlightedCells);
+                this.highlightedCells = [];
                 this.drag = {x: x, y: y};
             },
             'blank:pointermove': function (evt, x, y) {
@@ -429,6 +431,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                 } else this.newLink = false;
                 this.props.hideDetails();
                 unHighlightSelected(this.highlightedCells);
+                this.highlightedCells = [];
                 ProjectSettings.selectedLink = "";
             },
             'link:pointerclick': (linkView) => {
@@ -516,6 +519,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                     else {
                         this.newLink = false;
                         unHighlightSelected(this.highlightedCells);
+                        this.highlightedCells = [];
                     }
                 }}/>
             <NewElemModal

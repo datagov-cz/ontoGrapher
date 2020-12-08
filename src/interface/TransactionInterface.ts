@@ -424,9 +424,6 @@ export async function processTransaction(contextEndpoint: string, transactions: 
 			abortTransaction(transactionID);
 		}, miliseconds);
 		let resultCommit = await fetch(transactionID + "?action=COMMIT", {
-			headers: {
-				'Content-Type': 'application/json'
-			},
 			method: "PUT",
 			signal
 		}).then(response => response.ok).catch(() => false);
