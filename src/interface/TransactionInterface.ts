@@ -58,21 +58,19 @@ export function updateProjectElement(
 			{
 				"@id": iri,
 				"@type": newVocabularyElement.types,
-				"skos:prefLabel": Object.keys(newVocabularyElement.labels).map((lang: string) => {
-					return {"@value": newVocabularyElement.labels[lang], "@language": lang}
-				}),
+				"skos:prefLabel": Object.keys(newVocabularyElement.labels)
+					.filter((lang: string) => newVocabularyElement.labels[lang]).map((lang: string) => {
+						return {"@value": newVocabularyElement.labels[lang], "@language": lang}
+					}),
 				"skos:altLabel": newVocabularyElement.altLabels.map(alt => {
 					return {"@value": alt.label, "@language": alt.language}
 				}),
-				"skos:definition": Object.keys(newVocabularyElement.definitions).map((lang: string) => {
-					return {"@value": newVocabularyElement.definitions[lang], "@language": lang}
-				}),
+				"skos:definition": Object.keys(newVocabularyElement.definitions)
+					.filter((lang) => newVocabularyElement.definitions[lang]).map((lang: string) => {
+						return {"@value": newVocabularyElement.definitions[lang], "@language": lang}
+					}),
 				"skos:inScheme": scheme,
 			},
-			(newVocabularyElement.topConcept && {
-				"@id": scheme,
-				"skos:hasTopConcept": iri
-			}),
 			{
 				"@id": iri + "/diagram",
 				"@type": "og:element",
@@ -100,6 +98,11 @@ export function updateProjectElement(
 			}
 		}),
 	)
+
+	if (newVocabularyElement.topConcept) addLD["@graph"].push({
+		"@id": scheme,
+		"skos:hasTopConcept": iri
+	});
 
 	let deleteLD = {
 		"@context": {
