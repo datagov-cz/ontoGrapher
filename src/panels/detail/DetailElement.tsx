@@ -200,8 +200,8 @@ export default class DetailElement extends React.Component<Props, State> {
 														   }
 														   res.splice(i, 1);
 													   } else {
-														   if (res[i].label === this.state.selectedLabel[lang]) {
-															   resL[this.props.projectLanguage] = textarea;
+														   if (res[i].label === this.state.selectedLabel[this.props.projectLanguage]) {
+															   resL[this.props.projectLanguage] = lang === this.props.projectLanguage ? textarea : "";
 														   }
 														   res[i] = {label: textarea, language: lang};
 													   }
