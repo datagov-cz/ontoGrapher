@@ -3,14 +3,6 @@ import DetailLink from "./detail/DetailLink";
 import {graph} from "../graph/Graph";
 import DetailElement from "./detail/DetailElement";
 
-const headers: { [key: string]: { [key: string]: string } } = {
-    labels: {"cs": "Název", "en": "Labels"},
-    altLabels: {"cs": "Synonyma", "en": "Synonyms"},
-    inScheme: {"cs": "Ze slovníku", "en": "In vocabulary"},
-    definition: {"cs": "Definice", "en": "Definition"},
-    stereotype: {"cs": "Stereotyp", "en": "Stereotype"}
-}
-
 interface Props {
     projectLanguage: string;
     resizeElem: Function;
@@ -88,7 +80,7 @@ export default class DetailPanel extends React.Component<Props, State> {
     render() {
         if (!this.state.hidden) {
             if (this.state.type === "elem") {
-                return (<DetailElement headers={headers} projectLanguage={this.props.projectLanguage}
+                return (<DetailElement projectLanguage={this.props.projectLanguage}
                                        save={this.save} ref={this.detailElem}
                                        handleWidth={this.props.handleWidth}
                                        performTransaction={this.props.performTransaction}
@@ -97,7 +89,7 @@ export default class DetailPanel extends React.Component<Props, State> {
                 return (<DetailLink
                     error={this.props.error}
                     handleWidth={this.props.handleWidth}
-                    projectLanguage={this.props.projectLanguage} headers={headers}
+                    projectLanguage={this.props.projectLanguage}
                     performTransaction={this.props.performTransaction}
                     save={this.save} ref={this.detailLink}/>);
             }
