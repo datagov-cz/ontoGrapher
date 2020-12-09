@@ -108,7 +108,8 @@ export default class DetailElement extends React.Component<Props, State> {
 			if (cell) {
 				return this.state.inputConnections.filter(conn => ProjectLinks[conn] && ProjectLinks[conn].active
 					&& getLinkOrVocabElem(ProjectLinks[conn].iri)).length !==
-					graph.getConnectedLinks(cell).length;
+					graph.getConnectedLinks(cell)
+						.filter(link => ProjectLinks[link.id] && ProjectLinks[link.id].source === this.state.id).length;
 			} else return false;
 		} else return false;
 	}
