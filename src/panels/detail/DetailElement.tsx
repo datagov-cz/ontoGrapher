@@ -3,6 +3,7 @@ import {ResizableBox} from "react-resizable";
 import {
 	Diagrams,
 	Languages,
+	Links,
 	ProjectElements,
 	ProjectLinks,
 	ProjectSettings,
@@ -16,7 +17,6 @@ import TableList from "../../components/TableList";
 import IRILink from "../../components/IRILink";
 import LabelTable from "./components/LabelTable";
 import DescriptionTabs from "./components/DescriptionTabs";
-import IRIlabel from "../../components/IRIlabel";
 import {spreadConnections} from "../../function/FunctionGraph";
 import {graph} from "../../graph/Graph";
 import {updateProjectElement} from "../../interface/TransactionInterface";
@@ -26,10 +26,11 @@ import {Shapes} from "../../config/Shapes";
 import {Locale} from "../../config/Locale";
 import {drawGraphElement, unHighlightAll} from "../../function/FunctionDraw";
 import AltLabelTable from "./components/AltLabelTable";
+import ConnectionTable from "./components/ConnectionTable";
+import {Representation} from "../../config/Enum";
 
 interface Props {
 	projectLanguage: string;
-	headers: { [key: string]: { [key: string]: string } }
 	save: Function;
 	performTransaction: (transaction: { add: string[], delete: string[], update: string[] }) => void;
 	handleWidth: Function;
@@ -102,13 +103,20 @@ export default class DetailElement extends React.Component<Props, State> {
 		});
 	}
 
-	checkSpreadConnections(): boolean {
+	checkSpreadConnections(to: boolean): boolean {
 		if (this.state) {
 			let cell = graph.getElements().find(elem => elem.id === this.state.id);
 			if (cell) {
-				return this.state.inputConnections.filter(conn => ProjectLinks[conn] && ProjectLinks[conn].active
+				return to ? this.state.inputConnections.filter(conn => ProjectLinks[conn] && ProjectLinks[conn].active &&
+					(ProjectSettings.representation === Representation.FULL ? ProjectLinks[conn].iri in Links : !(ProjectLinks[conn].iri in Links))
 					&& getLinkOrVocabElem(ProjectLinks[conn].iri)).length !==
-					graph.getConnectedLinks(cell).length;
+					(graph.getConnectedLinks(cell)
+						.filter(link => ProjectLinks[link.id] && ProjectLinks[link.id].source === this.state.id).length) :
+					Object.keys(ProjectLinks).filter(conn => ProjectLinks[conn] && ProjectLinks[conn].target === this.state.id &&
+						ProjectLinks[conn].active && getLinkOrVocabElem(ProjectLinks[conn].iri) &&
+						(ProjectSettings.representation === Representation.FULL ? ProjectLinks[conn].iri in Links : !(ProjectLinks[conn].iri in Links))).length !==
+					graph.getConnectedLinks(cell)
+						.filter(link => ProjectLinks[link.id] && ProjectLinks[link.id].target === this.state.id).length;
 			} else return false;
 		} else return false;
 	}
@@ -126,7 +134,7 @@ export default class DetailElement extends React.Component<Props, State> {
 			this.props.save();
 			this.setState({changes: false});
 			this.prepareDetails(this.state.id);
-			this.props.performTransaction(updateProjectElement(oldVocabularyElement, this.state.id));
+			this.props.performTransaction(updateProjectElement(oldVocabularyElement, this.state.id, false));
 		}
 	}
 
@@ -178,7 +186,7 @@ export default class DetailElement extends React.Component<Props, State> {
 						</Card.Header>
 						<Accordion.Collapse eventKey={"0"}>
 							<Card.Body>
-								<h5>{<IRILink label={this.props.headers.labels[ProjectSettings.viewLanguage]}
+								<h5>{<IRILink label={Locale[ProjectSettings.viewLanguage].detailPanelPrefLabel}
 											  iri={"http://www.w3.org/2004/02/skos/core#prefLabel"}/>}</h5>
 								<LabelTable labels={this.state.inputLabels}
 											default={this.state.selectedLabel[this.props.projectLanguage]}
@@ -188,7 +196,7 @@ export default class DetailElement extends React.Component<Props, State> {
 													res[this.props.projectLanguage] = label;
 													this.setState({selectedLabel: res, changes: true})
 												}}/>
-								<h5>{<IRILink label={this.props.headers.altLabels[ProjectSettings.viewLanguage]}
+								<h5>{<IRILink label={Locale[ProjectSettings.viewLanguage].detailPanelAltLabel}
 											  iri={"http://www.w3.org/2004/02/skos/core#altLabel"}/>}</h5>
 								<AltLabelTable labels={this.state.inputAltLabels} readOnly={this.state.readOnly}
 											   onEdit={
@@ -201,8 +209,8 @@ export default class DetailElement extends React.Component<Props, State> {
 														   }
 														   res.splice(i, 1);
 													   } else {
-														   if (res[i].label === this.state.selectedLabel[lang]) {
-															   resL[this.props.projectLanguage] = textarea;
+														   if (res[i].label === this.state.selectedLabel[this.props.projectLanguage]) {
+															   resL[this.props.projectLanguage] = lang === this.props.projectLanguage ? textarea : "";
 														   }
 														   res[i] = {label: textarea, language: lang};
 													   }
@@ -224,7 +232,7 @@ export default class DetailElement extends React.Component<Props, State> {
 										this.setState({inputAltLabels: res, changes: true});
 									}
 								}}/>
-								<h5>{<IRILink label={this.props.headers.stereotype[ProjectSettings.viewLanguage]}
+								<h5>{<IRILink label={Locale[ProjectSettings.viewLanguage].detailPanelStereotype}
 											  iri={"http://www.w3.org/2000/01/rdf-schema#type"}/>}</h5>
 								<TableList>
 									<StereotypeOptions readonly={this.state.readOnly} content={true}
@@ -236,12 +244,12 @@ export default class DetailElement extends React.Component<Props, State> {
 													   onChange={(value: string) => this.updateStereotype(value, false)}
 													   value={this.state.inputTypeData}/>
 								</TableList>
-								<h5>{<IRILink label={this.props.headers.inScheme[ProjectSettings.viewLanguage]}
+								<h5>{<IRILink label={Locale[ProjectSettings.viewLanguage].detailPanelInScheme}
 											  iri={"http://www.w3.org/2004/02/skos/core#inScheme"}/>}</h5>
 								<LabelTable labels={this.state.inputSchemes}
 											iri={VocabularyElements[this.state.iri].inScheme}/>
 								{Object.keys(Languages).length > 0 ?
-									<h5>{<IRILink label={this.props.headers.definition[ProjectSettings.viewLanguage]}
+									<h5>{<IRILink label={Locale[ProjectSettings.viewLanguage].detailPanelDefinition}
 												  iri={"http://www.w3.org/2004/02/skos/core#definition"}/>}</h5> : ""}
 								<DescriptionTabs
 									descriptions={this.state.inputDefinitions}
@@ -266,26 +274,31 @@ export default class DetailElement extends React.Component<Props, State> {
 						</Card.Header>
 						<Accordion.Collapse eventKey={"1"}>
 							<Card.Body>
-								<TableList
-									headings={[Locale[ProjectSettings.viewLanguage].connectionVia, Locale[ProjectSettings.viewLanguage].connectionTo]}>
-									{this.state.inputConnections.filter(conn => ProjectLinks[conn] &&
-										ProjectLinks[conn].active && getLinkOrVocabElem(ProjectLinks[conn].iri)).map((conn) =>
-										<tr key={conn}>
-											<IRIlabel
-												label={getLinkOrVocabElem(ProjectLinks[conn].iri).labels[this.props.projectLanguage]}
-												iri={ProjectLinks[conn].iri}/>
-											<td>{getLabelOrBlank(VocabularyElements[ProjectElements[ProjectLinks[conn].target].iri].labels, this.props.projectLanguage)}</td>
-										</tr>
-									)}
-								</TableList>
-								{this.checkSpreadConnections() &&
-                                <Button className={"buttonlink center"}
-                                        onClick={() => {
-											this.props.performTransaction(spreadConnections(this.state.id, false, false));
-											this.forceUpdate();
-										}}>
-									{Locale[ProjectSettings.viewLanguage].spreadConnections}
-                                </Button>}
+								<ConnectionTable
+									connections={this.state.inputConnections.filter(conn => ProjectLinks[conn] && ProjectLinks[conn].active &&
+									ProjectSettings.representation === Representation.FULL ? ProjectLinks[conn].iri in Links : !(ProjectLinks[conn].iri in Links))}
+									projectLanguage={this.props.projectLanguage} to={true}
+									button={<Button className={"buttonlink center"}
+													onClick={() => {
+														this.props.performTransaction(spreadConnections(this.state.id, true));
+														this.forceUpdate();
+													}}>
+										{Locale[ProjectSettings.viewLanguage].spreadConnections}
+									</Button>}
+									showButton={this.checkSpreadConnections(true)}/>
+								<ConnectionTable
+									connections={Object.keys(ProjectLinks).filter(conn => ProjectLinks[conn].target === this.state.id &&
+										ProjectLinks[conn] && ProjectLinks[conn].active &&
+										(ProjectSettings.representation === Representation.FULL ? ProjectLinks[conn].iri in Links : !(ProjectLinks[conn].iri in Links)))}
+									projectLanguage={this.props.projectLanguage} to={false}
+									button={<Button className={"buttonlink center"}
+													onClick={() => {
+														this.props.performTransaction(spreadConnections(this.state.id, false));
+														this.forceUpdate();
+													}}>
+										{Locale[ProjectSettings.viewLanguage].spreadConnections}
+									</Button>}
+									showButton={this.checkSpreadConnections(false)}/>
 							</Card.Body>
 						</Accordion.Collapse>
 					</Card>

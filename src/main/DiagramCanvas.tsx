@@ -52,10 +52,10 @@ interface State {
     modalAddLink: boolean;
 }
 
+export var paper: joint.dia.Paper;
+
 export default class DiagramCanvas extends React.Component<Props, State> {
     private readonly canvasRef: React.RefObject<HTMLDivElement>;
-    private paper: joint.dia.Paper | undefined;
-    private magnet: boolean;
     private drag: { x: any, y: any } | undefined;
     private newLink: boolean;
     private sid: string | undefined;
@@ -70,7 +70,6 @@ export default class DiagramCanvas extends React.Component<Props, State> {
             modalAddLink: false
         }
         this.canvasRef = React.createRef();
-        this.magnet = false;
         this.componentDidMount = this.componentDidMount.bind(this);
         this.drag = undefined;
         this.newLink = false;
@@ -84,7 +83,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
 
     createNewConcept(name: { [key: string]: string }, language: string, pkg: PackageNode) {
         let cls = new graphElement();
-        let point = this.paper?.clientToLocalPoint({x: this.newConceptEvent.x, y: this.newConceptEvent.y})
+        let point = paper.clientToLocalPoint({x: this.newConceptEvent.x, y: this.newConceptEvent.y})
         if (typeof cls.id === "string") {
             let iri = createNewElemIRI(pkg.scheme, name[language]);
             addVocabularyElement(iri, pkg.scheme, [parsePrefix("skos", "Concept")]);
@@ -96,7 +95,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
             }
             VocabularyElements[iri].labels = name;
             cls.addTo(graph);
-            let bbox = this.paper?.findViewByModel(cls).getBBox();
+            let bbox = paper.findViewByModel(cls).getBBox();
             if (bbox) cls.resize(bbox.width, bbox.height);
             drawGraphElement(cls, language, ProjectSettings.representation);
             this.props.updateElementPanel();
@@ -136,7 +135,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                 }
                 if (sid === tid) {
                     let coords = link.getSourcePoint();
-                    let bbox = this.paper?.findViewByModel(sid).getBBox();
+                    let bbox = paper.findViewByModel(sid).getBBox();
                     if (bbox) {
                         link.vertices([
                             new joint.g.Point(coords.x, coords.y + 100),
@@ -189,7 +188,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
     }
 
     resizeElem(id: string) {
-        let view = this.paper?.findViewByModel(id);
+        let view = paper.findViewByModel(id);
         if (view) {
             let bbox = view.getBBox();
             let cell = graph.getCell(id);
@@ -331,7 +330,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
     componentDidMount(): void {
         const node = (this.canvasRef.current! as HTMLElement);
 
-        this.paper = new joint.dia.Paper({
+        paper = new joint.dia.Paper({
             el: node,
             model: graph,
             width: "auto",
@@ -351,7 +350,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
             }
         });
 
-        this.paper.on({
+        paper.on({
             'cell:pointerclick': (cellView) => {
                 if (!this.newLink) {
                     let id = cellView.model.id;
@@ -441,7 +440,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
             'link:pointerup': (cellView) => {
                 let id = cellView.model.id;
                 let link = cellView.model;
-                link.findView(this.paper).removeRedundantLinearVertices();
+                link.findView(paper).removeRedundantLinearVertices();
                 this.props.performTransaction(this.updateVertices(id, ProjectLinks[id].vertices[ProjectSettings.selectedDiagram], link.vertices()));
             }
         });
@@ -462,7 +461,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                 }}
                 onMouseMove={(event) => {
                     if (this.drag && !(this.props.error)) {
-                        this.paper?.translate(event.nativeEvent.offsetX - this.drag.x, event.nativeEvent.offsetY - this.drag.y);
+                        paper.translate(event.nativeEvent.offsetX - this.drag.x, event.nativeEvent.offsetY - this.drag.y);
                     }
                 }
                 }
@@ -477,7 +476,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                     data.id.forEach((id: string, i: number) => {
                         let cls = new graphElement({id: id});
                         drawGraphElement(cls, ProjectSettings.selectedLanguage, ProjectSettings.representation);
-                        let point = this.paper?.clientToLocalPoint({x: event.clientX, y: event.clientY});
+                        let point = paper.clientToLocalPoint({x: event.clientX, y: event.clientY});
                         if (point) {
                             if (data.id.length > 1) {
                                 let x = i % matrixDimension;
@@ -498,7 +497,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                         cls.addTo(graph);
                         ProjectElements[id].hidden[ProjectSettings.selectedDiagram] = false;
                         this.props.updateElementPanel();
-                        transactions = mergeTransactions(transactions, restoreHiddenElem(id, cls, true));
+                        transactions = mergeTransactions(transactions, restoreHiddenElem(id, cls, true, true, true));
                     });
                     let map = data.id.map((id: string) =>
                         updateProjectElement(

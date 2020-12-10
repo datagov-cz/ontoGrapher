@@ -27,7 +27,6 @@ import {unHighlightAll} from "../../function/FunctionDraw";
 
 interface Props {
     projectLanguage: string;
-    headers: { [key: string]: { [key: string]: string } }
     save: Function;
     performTransaction: (transaction: { add: string[], delete: string[], update: string[] }) => void;
     handleWidth: Function;
@@ -246,7 +245,7 @@ export default class DetailLink extends React.Component<Props, State> {
                                             />}
                                     </tr>
                                 </TableList>}
-                                <h5>{<IRILink label={this.props.headers.labels[ProjectSettings.viewLanguage]}
+                                <h5>{<IRILink label={Locale[ProjectSettings.viewLanguage].detailPanelPrefLabel}
                                               iri={"http://www.w3.org/2004/02/skos/core#prefLabel"}/>}</h5>
                                 <TableList>
                                     {
@@ -258,7 +257,7 @@ export default class DetailLink extends React.Component<Props, State> {
                                         ))
                                     }
                                 </TableList>
-                                <h5>{<IRILink label={this.props.headers.inScheme[ProjectSettings.viewLanguage]}
+                                <h5>{<IRILink label={Locale[ProjectSettings.viewLanguage].detailPanelInScheme}
                                               iri={"http://www.w3.org/2004/02/skos/core#inScheme"}/>}</h5>
                                 <TableList>
                                     {Object.keys(Schemes[getLinkOrVocabElem(this.state.iri).inScheme].labels).map(lang => (
@@ -274,7 +273,7 @@ export default class DetailLink extends React.Component<Props, State> {
                                 {Object.keys(getLinkOrVocabElem(this.state.iri).definitions).length > 0 &&
                                 <div>
                                     <h5>{<IRILink
-                                        label={this.props.headers.definition[ProjectSettings.viewLanguage]}
+                                        label={Locale[ProjectSettings.viewLanguage].detailPanelDefinition}
                                         iri={"http://www.w3.org/2004/02/skos/core#definition"}/>}</h5>
                                     <DescriptionTabs descriptions={getLinkOrVocabElem(this.state.iri).definitions}
                                                      readOnly={true}/>

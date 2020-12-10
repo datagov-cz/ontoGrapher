@@ -1,11 +1,11 @@
-import {Diagrams, ProjectElements, ProjectLinks, ProjectSettings} from "../config/Variables";
-import * as joint from "jointjs";
+import {Diagrams, ProjectElements, ProjectSettings} from "../config/Variables";
 import {graphElement} from "../graph/GraphElement";
 import {graph} from "../graph/Graph";
 import {Locale} from "../config/Locale";
 import {drawGraphElement} from "./FunctionDraw";
 import {restoreHiddenElem, setRepresentation} from "./FunctionGraph";
 import {Representation} from "../config/Enum";
+import {paper} from "../main/DiagramCanvas";
 
 export function changeDiagrams(diagram: number = 0) {
     Diagrams[ProjectSettings.selectedDiagram].json = saveDiagram();
@@ -13,6 +13,7 @@ export function changeDiagrams(diagram: number = 0) {
     if (Object.keys(Diagrams[diagram].json).length > 0) {
         loadDiagram(Diagrams[diagram].json);
     } else graph.clear();
+    paper.translate(0, 0);
 }
 
 export function addDiagram() {
@@ -26,7 +27,6 @@ export function addDiagram() {
 export function saveDiagram() {
     let cells = graph.getCells();
     let elements = [];
-    let links = [];
     for (let cell of cells) {
         if (!(cell.isLink())) {
             elements.push({
@@ -36,18 +36,7 @@ export function saveDiagram() {
             });
         }
     }
-
-    for (let link of graph.getLinks()) {
-        links.push({
-            id: link.id,
-            source: link.getSourceCell()?.id,
-            target: link.getTargetCell()?.id,
-            vertices: link.vertices(),
-            labels: link.labels(),
-            type: ProjectLinks[link.id].type
-        });
-    }
-    return {elements: elements, links: links}
+    return {elements: elements}
 }
 
 export function loadDiagram(load: {
@@ -55,13 +44,6 @@ export function loadDiagram(load: {
         id: any;
         label: any;
         pos: any;
-    }[], links: {
-        id: string,
-        vertices: joint.dia.Link.Vertex[];
-        labels: joint.dia.Link.Label[];
-        target: string;
-        source: string;
-        type: number;
     }[]
 }) {
     graph.clear();
@@ -77,7 +59,7 @@ export function loadDiagram(load: {
         });
         cls.addTo(graph);
         drawGraphElement(cls, ProjectSettings.selectedLanguage, ProjectSettings.representation);
-        restoreHiddenElem(elem.id, cls, true);
+        restoreHiddenElem(elem.id, cls, true, false, false);
     }
     if (ProjectSettings.representation === Representation.COMPACT)
         setRepresentation(ProjectSettings.representation);

@@ -14,21 +14,39 @@ interface Props {
     selectAsDefault?: Function;
 }
 
-export default class LabelTable extends React.Component<Props> {
+interface State {
+    hover: { [key: number]: boolean };
+}
+
+export default class LabelTable extends React.Component<Props, State> {
+    constructor(props: Props) {
+        super(props);
+        this.state = {
+            hover: {}
+        }
+    }
 
     render() {
         return (<TableList>
             {Object.keys(this.props.labels).map((lang, i) =>
-                <tr key={i}>
+                <tr key={i} onMouseEnter={() => {
+                    let res = this.state.hover;
+                    res[i] = true;
+                    this.setState({hover: res});
+                }} onMouseLeave={() => {
+                    let res = this.state.hover;
+                    res[i] = false;
+                    this.setState({hover: res});
+                }}>
                     {this.props.iri ?
                         <IRIlabel label={getLabelOrBlank(this.props.labels, lang)} iri={this.props.iri}/> :
                         <td className={"stretch"}>
                             {getLabelOrBlank(this.props.labels, lang)}
-                            {(getLabelOrBlank(this.props.labels, lang) !== this.props.default &&
+                            <span className={"right"}>
+                            {((getLabelOrBlank(this.props.labels, lang) !== this.props.default &&
                                 (getLabelOrBlank(this.props.labels, lang) !== "<blank>")) &&
-                            <span className={"right"}><OverlayTrigger
+                                this.state.hover[i] && ProjectSettings.selectedLanguage === lang) && <OverlayTrigger
                                 placement="left"
-                                delay={{show: 250, hide: 400}}
                                 overlay={<Tooltip id="button-tooltip">
                                     {Locale[ProjectSettings.viewLanguage].setAsDisplayName}
                                 </Tooltip>}>
@@ -36,9 +54,11 @@ export default class LabelTable extends React.Component<Props> {
                                         onClick={() => {
                                             if (this.props.selectAsDefault)
                                                 this.props.selectAsDefault(getLabelOrBlank(this.props.labels, lang));
-                                        }}><span role="img"
-                                                 aria-label={""}>🏷️</span>
-                            </button></OverlayTrigger></span>}
+                                        }}><span role="img" aria-label={""}>🏷️</span>
+                                </button>
+                            </OverlayTrigger>}
+                                {(getLabelOrBlank(this.props.labels, lang) === this.props.default) &&
+                                <span role="img" aria-label={""}>🏷️</span>}</span>
                         </td>}
                     <td className={"short"}>{Languages[lang]}</td>
                 </tr>

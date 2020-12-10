@@ -232,8 +232,8 @@ export async function getElementsConfig(contextIRI: string, contextEndpoint: str
                     selectedName: initLanguageObject("")
                 }
             }
-            if (result.name && !(result.name['xml:lang'] in elements[iri].selectedName))
-                elements[iri].selectedName['xml:lang'] = result.name.value;
+            if (result.name && !(elements[iri].selectedName[result.name['xml:lang']]))
+                elements[iri].selectedName[result.name['xml:lang']] = result.name.value;
             if (!(elements[iri].diagramIRI.includes(result.diagram.value))) {
                 elements[iri].diagramIRI.push(result.diagram.value);
                 elements[iri].diagrams.push(parseInt(result.index.value));

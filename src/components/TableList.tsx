@@ -19,7 +19,7 @@ export default class TableList extends React.Component<Props> {
                 {this.props.headings &&
                     <thead>
                     <tr>
-                        {this.props.headings.map((head) => <th key={head}>{head}</th>)}
+                        {this.props.headings.map((head) => <th key={head}><strong>{head}</strong></th>)}
                     </tr>
                     </thead>
                 }
