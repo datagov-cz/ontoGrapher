@@ -9,7 +9,6 @@ import {initVars} from "../function/FunctionEditVars";
 import {getContext} from "../interface/ContextInterface";
 import {graph} from "../graph/Graph";
 import {nameGraphLink} from "../function/FunctionGraph";
-import {setupDiagrams} from "../function/FunctionCreateVars";
 import {getElementsConfig, getLinksConfig, getSettings} from "../interface/SPARQLInterface";
 import {initRestrictions} from "../function/FunctionRestriction";
 import {abortTransaction, processTransaction} from "../interface/TransactionInterface";
@@ -19,6 +18,7 @@ import {setSchemeColors} from "../function/FunctionGetVars";
 import {updateLinks} from "../function/FunctionConstruct";
 import {Locale} from "../config/Locale";
 import {drawGraphElement, unHighlightAll} from "../function/FunctionDraw";
+import {changeDiagrams} from "../function/FunctionDiagram";
 
 interface DiagramAppProps {
 	readOnly?: boolean;
@@ -165,7 +165,7 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 					setSchemeColors(ProjectSettings.viewColorPool);
 					res.push(await processTransaction(ProjectSettings.contextEndpoint, updateLinks()));
 					if (res.every(bool => bool)) {
-						setupDiagrams(diagram);
+						changeDiagrams(diagram);
 						this.forceUpdate();
 						this.itemPanel.current?.forceUpdate();
 						this.handleChangeLoadingStatus(false, Locale[ProjectSettings.viewLanguage].workspaceReady, false, false);

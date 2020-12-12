@@ -23,20 +23,12 @@ export function getLinkOrVocabElem(iri: string): { [key: string]: any } {
 	return iri in Links ? Links[iri] : VocabularyElements[iri];
 }
 
-export function isLinkElem(iri: string): boolean {
-    return iri in Links;
-}
-
 export function getLabelOrBlank(labels: { [key: string]: string }, language: string): string {
     return labels[language] && labels[language].length > 0 ? labels[language] : "<blank>";
 }
 
 export function getNameOrBlank(name: string) {
     return name ? name : "<blank>";
-}
-
-export function isElemReadOnlyByID(id: string): boolean {
-    return Schemes[VocabularyElements[ProjectElements[id].iri].inScheme].readOnly;
 }
 
 export function isElemReadOnlyByIRI(iri: string): boolean {
@@ -87,6 +79,10 @@ export function getElementShape(id: string | number): string {
 
 export function getNewLabel(iri: string, language: string) {
 	return "«" + getName(iri, language).toLowerCase() + "»\n" + Locale[ProjectSettings.viewLanguage].untitled + " " + getName(iri, language);
+}
+
+export function getActiveToConnections(id: string): string[] {
+	return ProjectElements[id].connections.filter(conn => ProjectLinks[conn].active);
 }
 
 export function getUnderlyingFullConnections(link: joint.dia.Link): { src: string, tgt: string } | undefined {

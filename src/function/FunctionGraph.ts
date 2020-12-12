@@ -1,7 +1,7 @@
 import {Links, ProjectElements, ProjectLinks, ProjectSettings, VocabularyElements} from "../config/Variables";
 import {parsePrefix} from "./FunctionEditVars";
 import {graph} from "../graph/Graph";
-import {getElementShape, getLinkOrVocabElem, getNewLink} from "./FunctionGetVars";
+import {getActiveToConnections, getElementShape, getLinkOrVocabElem, getNewLink} from "./FunctionGetVars";
 import * as joint from "jointjs";
 import {graphElement} from "../graph/GraphElement";
 import {addLink} from "./FunctionCreateVars";
@@ -16,8 +16,8 @@ import {
 import {drawGraphElement} from "./FunctionDraw";
 
 
-export var mvp1IRI = "https://slovník.gov.cz/základní/pojem/má-vztažený-prvek-1";
-export var mvp2IRI = "https://slovník.gov.cz/základní/pojem/má-vztažený-prvek-2";
+export const mvp1IRI = "https://slovník.gov.cz/základní/pojem/má-vztažený-prvek-1";
+export const mvp2IRI = "https://slovník.gov.cz/základní/pojem/má-vztažený-prvek-2";
 
 export function nameGraphLink(cell: joint.dia.Link, languageCode: string) {
     if (typeof cell.id === "string" && ProjectLinks[cell.id].type === LinkType.DEFAULT) {
@@ -104,7 +104,7 @@ export function setLabels(link: joint.dia.Link, centerLabel: string){
     }
 }
 
-function storeElement(elem: joint.dia.Element) {
+function storeElement(elem: joint.dia.Cell) {
     ProjectElements[elem.id].hidden[ProjectSettings.selectedDiagram] = true;
     elem.remove();
     if (typeof elem.id === "string") {
@@ -122,80 +122,82 @@ export function setRepresentation(representation: number): { result: boolean, tr
         let del = false;
         ProjectSettings.representation = Representation.COMPACT;
         ProjectSettings.selectedLink = "";
-        for (let elem of graph.getElements()) {
-            drawGraphElement(elem, ProjectSettings.selectedLanguage, representation);
+        for (let id of Object.keys(ProjectElements)) {
             if (
-                VocabularyElements[ProjectElements[elem.id].iri].types.includes(parsePrefix("z-sgov-pojem", "typ-vztahu"))
+                VocabularyElements[ProjectElements[id].iri].types.includes(parsePrefix("z-sgov-pojem", "typ-vztahu"))
             ) {
-                if (graph.getConnectedLinks(elem).length > 1) {
-                    let sourceLink = graph.getConnectedLinks(elem).find(src => ProjectLinks[src.id].iri === mvp1IRI);
-                    let targetLink = graph.getConnectedLinks(elem).find(src => ProjectLinks[src.id].iri === mvp2IRI);
+                let connections: string[] = getActiveToConnections(id);
+                if (connections.length > 1) {
+                    let sourceLink: string | undefined = connections.find(src => ProjectLinks[src].iri === mvp1IRI);
+                    let targetLink: string | undefined = connections.find(src => ProjectLinks[src].iri === mvp2IRI);
                     if (sourceLink && targetLink) {
-                        let source = sourceLink.getTargetCell()?.id;
-                        let target = targetLink.getTargetCell()?.id;
-                        if (typeof source === "string" && typeof target === "string") {
-                            let find = Object.keys(ProjectLinks).find(link => ProjectLinks[link].active &&
-                                ProjectLinks[link].iri === ProjectElements[elem.id].iri &&
-                                ProjectLinks[link].source === source && ProjectLinks[link].target === target
-                            )
-                            let newLink = typeof find === "string" ? getNewLink(LinkType.DEFAULT, find) : getNewLink();
-                            if (typeof newLink.id === "string") {
-                                newLink.source({
-                                    id: source,
-                                    connectionPoint: {name: 'boundary', args: {selector: getElementShape(source)}}
-                                });
-                                newLink.target({
-                                    id: target,
-                                    connectionPoint: {name: 'boundary', args: {selector: getElementShape(target)}}
-                                });
-                                newLink.addTo(graph);
-                                if (!(newLink.id in ProjectLinks))
-                                    addLink(newLink.id, ProjectElements[elem.id].iri, source, target);
-                                if (ProjectLinks[newLink.id].vertices[ProjectSettings.selectedDiagram])
-                                    newLink.vertices(ProjectLinks[newLink.id].vertices[ProjectSettings.selectedDiagram]);
-                                else if (source === target) {
-                                    let coords = newLink.getSourcePoint();
-                                    let bbox = sourceLink.getTargetCell()?.getBBox();
-                                    if (bbox) {
-                                        newLink.vertices([
-                                            new joint.g.Point(coords.x, coords.y + 100),
-                                            new joint.g.Point(coords.x + (bbox.width / 2) + 50, coords.y + 100),
-                                            new joint.g.Point(coords.x + (bbox.width / 2) + 50, coords.y),
-                                        ])
-                                    } else {
-                                        newLink.vertices([
-                                            new joint.g.Point(coords.x, coords.y + 100),
-                                            new joint.g.Point(coords.x + 300, coords.y + 100),
-                                            new joint.g.Point(coords.x + 300, coords.y),
-                                        ])
-                                    }
+                        let source = ProjectLinks[sourceLink].target;
+                        let target = ProjectLinks[targetLink].target;
+                        let sourceBox = graph.getElements().find(elem => elem.id === source);
+                        let targetBox = graph.getElements().find(elem => elem.id === target);
+                        let find = Object.keys(ProjectLinks).find(link => ProjectLinks[link].active &&
+                            ProjectLinks[link].iri === ProjectElements[id].iri &&
+                            ProjectLinks[link].source === source && ProjectLinks[link].target === target
+                        )
+                        let newLink = typeof find === "string" ? getNewLink(LinkType.DEFAULT, find) : getNewLink();
+                        if (typeof newLink.id === "string" && sourceBox && targetBox) {
+                            newLink.source({
+                                id: source,
+                                connectionPoint: {name: 'boundary', args: {selector: getElementShape(source)}}
+                            });
+                            newLink.target({
+                                id: target,
+                                connectionPoint: {name: 'boundary', args: {selector: getElementShape(target)}}
+                            });
+                            newLink.addTo(graph);
+                            if (!(newLink.id in ProjectLinks))
+                                addLink(newLink.id, ProjectElements[id].iri, source, target);
+                            if (ProjectLinks[newLink.id].vertices[ProjectSettings.selectedDiagram])
+                                newLink.vertices(ProjectLinks[newLink.id].vertices[ProjectSettings.selectedDiagram]);
+                            else if (source === target) {
+                                let coords = newLink.getSourcePoint();
+                                let bbox = sourceBox.getBBox();
+                                if (bbox) {
+                                    newLink.vertices([
+                                        new joint.g.Point(coords.x, coords.y + 100),
+                                        new joint.g.Point(coords.x + (bbox.width / 2) + 50, coords.y + 100),
+                                        new joint.g.Point(coords.x + (bbox.width / 2) + 50, coords.y),
+                                    ])
+                                } else {
+                                    newLink.vertices([
+                                        new joint.g.Point(coords.x, coords.y + 100),
+                                        new joint.g.Point(coords.x + 300, coords.y + 100),
+                                        new joint.g.Point(coords.x + 300, coords.y),
+                                    ])
                                 }
-                                ProjectLinks[newLink.id].vertices[ProjectSettings.selectedDiagram] = newLink.vertices();
-                                if (!find) {
-                                    ProjectLinks[newLink.id].sourceCardinality =
-                                        new Cardinality(
-                                            ProjectLinks[sourceLink.id].targetCardinality.getFirstCardinality(),
-                                            ProjectLinks[sourceLink.id].targetCardinality.getSecondCardinality());
-                                    ProjectLinks[newLink.id].targetCardinality =
-                                        new Cardinality(
-                                            ProjectLinks[sourceLink.id].sourceCardinality.getFirstCardinality(),
-                                            ProjectLinks[sourceLink.id].sourceCardinality.getSecondCardinality());
-                                    transactions = mergeTransactions(transactions, updateProjectLink(newLink.id));
-                                }
-                                setLabels(newLink, ProjectElements[elem.id].selectedLabel[ProjectSettings.selectedLanguage]);
                             }
+                            ProjectLinks[newLink.id].vertices[ProjectSettings.selectedDiagram] = newLink.vertices();
+                            if (!find) {
+                                ProjectLinks[newLink.id].sourceCardinality =
+                                    new Cardinality(
+                                        ProjectLinks[sourceLink].targetCardinality.getFirstCardinality(),
+                                        ProjectLinks[sourceLink].targetCardinality.getSecondCardinality());
+                                ProjectLinks[newLink.id].targetCardinality =
+                                    new Cardinality(
+                                        ProjectLinks[sourceLink].sourceCardinality.getFirstCardinality(),
+                                        ProjectLinks[sourceLink].sourceCardinality.getSecondCardinality());
+                                transactions = mergeTransactions(transactions, updateProjectLink(newLink.id));
+                            }
+                            setLabels(newLink, ProjectElements[id].selectedLabel[ProjectSettings.selectedLanguage]);
                         }
-                        sourceLink.remove();
-                        targetLink.remove();
                     }
                 }
-                if (graph.getConnectedLinks(elem).length < 2) {
-                    storeElement(elem);
+                let cell = graph.getCell(id);
+                if (cell) {
+                    storeElement(cell);
                     del = true;
                 }
-            } else if (VocabularyElements[ProjectElements[elem.id].iri].types.includes(parsePrefix("z-sgov-pojem", "typ-vlastnosti"))) {
-                storeElement(elem);
-                del = true;
+            } else if (VocabularyElements[ProjectElements[id].iri].types.includes(parsePrefix("z-sgov-pojem", "typ-vlastnosti"))) {
+                let cell = graph.getCell(id);
+                if (cell) {
+                    storeElement(cell);
+                    del = true;
+                }
             }
         }
         for (let link of graph.getLinks()) {
@@ -270,18 +272,6 @@ export function setupLink(link: string, restoreConnectionPosition: boolean = tru
         lnk.vertices(ProjectLinks[link].vertices[ProjectSettings.selectedDiagram]);
     } else
         ProjectLinks[link].vertices[ProjectSettings.selectedDiagram] = [];
-}
-
-export function restoreElems() {
-    for (let link of Object.keys(ProjectLinks).filter(link => ProjectLinks[link].active &&
-        (ProjectSettings.representation === Representation.FULL ?
-            ProjectLinks[link].iri in Links : !(ProjectLinks[link].iri in Links)))) {
-        let source = graph.getCell(ProjectLinks[link].source);
-        let target = graph.getCell(ProjectLinks[link].target);
-        if (source && target) {
-            setupLink(link);
-        }
-    }
 }
 
 export function restoreHiddenElem(id: string, cls: joint.dia.Element, restoreSimpleConnectionPosition: boolean,

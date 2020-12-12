@@ -38,7 +38,7 @@ export default class AltLabelTable extends React.Component<Props, State> {
 				}} onMouseLeave={() => {
 					this.setState({hover: -1});
 				}}>
-					<th colSpan={this.props.readOnly ? 2 : 1} className={"stretch"}>
+					<td colSpan={this.props.readOnly ? 2 : 1} className={"stretch"}>
 						{this.props.readOnly ?
 							this.props.labels[i].label
 							: <RIEInput
@@ -67,7 +67,7 @@ export default class AltLabelTable extends React.Component<Props, State> {
                             <span role="img" aria-label={""}>🏷️</span>
 							}
                         </span>
-					</th>
+					</td>
 					<td className={"short"}>
 						{(this.props.readOnly && this.props.labels[i].language in Languages) ? Languages[this.props.labels[i].language] :
 							<InlineEdit
@@ -93,7 +93,7 @@ export default class AltLabelTable extends React.Component<Props, State> {
 				</tr>
 			)}
 			{(!this.props.readOnly) && <tr>
-                <th colSpan={2}>
+                <td colSpan={2}>
                     <Form onSubmit={(event) => {
 						event.preventDefault();
 						this.props.addAltLabel(this.state.newAltInput);
@@ -104,7 +104,7 @@ export default class AltLabelTable extends React.Component<Props, State> {
                                       onChange={(event) =>
 										  this.setState({newAltInput: event.currentTarget.value})}/>
                     </Form>
-                </th>
+                </td>
                 <td className={"short"}>
                     <button className={"buttonlink"}
                             onClick={() => {

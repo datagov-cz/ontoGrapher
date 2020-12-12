@@ -6,7 +6,7 @@ import * as serviceWorker from './serviceWorker';
 ReactDOM.render(<DiagramApp
 	// contextIRI={"https://slovník.gov.cz/datový/pracovní-prostor/pojem/metadatový-kontext/instance1178651091"}
 	// contextIRI={"https://slovník.gov.cz/datový/pracovní-prostor/pojem/metadatový-kontext/instance1087289886"}
-	// contextEndpoint={"http://localhost:7200/repositories/kodi-uloziste-dev"}
+	// contextEndpoint={"http://localhost:7200/repositories/testOG"}
 	// contextEndpoint={"https://graphdb.onto.fel.cvut.cz/repositories/kodi-uloziste-dev"}
 />, document.getElementById('root'));
 

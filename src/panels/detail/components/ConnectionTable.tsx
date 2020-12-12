@@ -32,9 +32,11 @@ export default class ConnectionTable extends React.Component<Props, State> {
 						this.props.to ? ProjectLinks[conn].target : ProjectLinks[conn].source].iri].labels, this.props.projectLanguage)}</td>
 				</tr>
 			)}
-			{this.props.showButton && <th colSpan={2}>
-				{this.props.button}
-            </th>}
+			{this.props.showButton && <tr>
+                <td colSpan={2}>
+					{this.props.button}
+                </td>
+            </tr>}
 		</TableList>);
 	}
 }

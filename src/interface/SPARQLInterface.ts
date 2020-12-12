@@ -68,7 +68,7 @@ export async function fetchConcepts(
         graph && "}",
     ].join(" ");
     let q = endpoint + "?query=" + encodeURIComponent(query);
-    await fetch(q, {headers: {"Accept": "application/json"}}).then(
+    return await fetch(q, {headers: {"Accept": "application/json"}}).then(
         response => response.json()
     ).then(data => {
         if (data.results.bindings.length === 0) return false;
@@ -114,8 +114,11 @@ export async function fetchConcepts(
                 createRestriction(result, row.term.value, row.restrictionPred.value, row.onProperty.value, row.target);
         }
         Object.assign(sendTo, result);
-    }).catch(() => false);
-    return true;
+        return true;
+    }).catch((e) => {
+        console.log(e);
+        return false;
+    });
 }
 
 export async function getAllTypes(iri: string, endpoint: string, targetTypes: string[], targetSubClass: string[], init: boolean = false): Promise<boolean> {
@@ -134,7 +137,7 @@ export async function getAllTypes(iri: string, endpoint: string, targetTypes: st
                 "}",
             ].join(" ");
             let q = endpoint + "?query=" + encodeURIComponent(query);
-            await fetch(q, {headers: {'Accept': 'application/json'}}).then(response => {
+            let result = await fetch(q, {headers: {'Accept': 'application/json'}}).then(response => {
                 return response.json();
             }).then(data => {
                 for (let result of data.results.bindings) {
@@ -142,9 +145,12 @@ export async function getAllTypes(iri: string, endpoint: string, targetTypes: st
                     if (!(subClassOf.includes(result.subClass.value)) &&
                         result.subClass.type !== "bnode") subClassOf.push(result.subClass.value);
                 }
-            }).catch(() => {
+                return true;
+            }).catch((e) => {
+                console.log(e);
                 return false;
             });
+            if (!result) return false;
         } else break;
     }
     return true;
@@ -163,7 +169,7 @@ export async function getScheme(iri: string, endpoint: string, readOnly: boolean
         "}"
     ].join(" ");
     let q = endpoint + "?query=" + encodeURIComponent(query);
-    await fetch(q, {headers: {'Accept': 'application/json'}}).then(response => {
+    return await fetch(q, {headers: {'Accept': 'application/json'}}).then(response => {
         return response.json();
     }).then(data => {
         if (data.results.bindings.length === 0) return false;
@@ -179,17 +185,17 @@ export async function getScheme(iri: string, endpoint: string, readOnly: boolean
             if (result.graph) Schemes[iri].graph = result.graph.value;
             else if (graph) Schemes[iri].graph = graph;
         }
-    }).catch(() => {
+        return true;
+    }).catch((e) => {
+        console.log(e);
         return false;
     });
-    return true;
 }
 
 export async function getElementsConfig(contextIRI: string, contextEndpoint: string): Promise<boolean> {
     let elements: {
         [key: string]: {
             id: "",
-            diagramIRI: string[],
             active: boolean,
             diagramPosition: { [key: number]: { x: number, y: number } },
             hidden: { [key: number]: boolean },
@@ -216,7 +222,7 @@ export async function getElementsConfig(contextIRI: string, contextEndpoint: str
         "<" + contextIRI + "> <https://slovník.gov.cz/datový/pracovní-prostor/pojem/odkazuje-na-kontext> ?g.}"
     ].join(" ");
     let q = contextEndpoint + "?query=" + encodeURIComponent(query);
-    await fetch(q, {headers: {'Accept': 'application/json'}}).then(response => {
+    return await fetch(q, {headers: {'Accept': 'application/json'}}).then(response => {
         return response.json();
     }).then(data => {
         for (let result of data.results.bindings) {
@@ -224,7 +230,6 @@ export async function getElementsConfig(contextIRI: string, contextEndpoint: str
             if (!(iri in elements)) {
                 elements[iri] = {
                     id: result.id.value,
-                    diagramIRI: [],
                     diagrams: [],
                     active: result.active.value === "true",
                     diagramPosition: {},
@@ -234,8 +239,7 @@ export async function getElementsConfig(contextIRI: string, contextEndpoint: str
             }
             if (result.name && !(elements[iri].selectedName[result.name['xml:lang']]))
                 elements[iri].selectedName[result.name['xml:lang']] = result.name.value;
-            if (!(elements[iri].diagramIRI.includes(result.diagram.value))) {
-                elements[iri].diagramIRI.push(result.diagram.value);
+            if (result.index && !(elements[iri].diagrams.includes(parseInt(result.index.value)))) {
                 elements[iri].diagrams.push(parseInt(result.index.value));
                 elements[iri].diagramPosition[parseInt(result.index.value)] = {
                     x: parseInt(result.posX.value),
@@ -244,18 +248,20 @@ export async function getElementsConfig(contextIRI: string, contextEndpoint: str
                 elements[iri].hidden[parseInt(result.index.value)] = result.hidden.value === "true";
             }
         }
-    }).catch(() => false);
-
-    for (let id in ProjectElements) {
-        if (ProjectElements[id].iri in elements) {
-            ProjectElements[id].hidden = elements[ProjectElements[id].iri].hidden;
-            ProjectElements[id].diagrams = elements[ProjectElements[id].iri].diagrams;
-            ProjectElements[id].active = elements[ProjectElements[id].iri].active;
-            ProjectElements[id].position = elements[ProjectElements[id].iri].diagramPosition;
-            ProjectElements[id].selectedLabel = elements[ProjectElements[id].iri].selectedName;
+        for (let id in ProjectElements) {
+            if (ProjectElements[id].iri in elements) {
+                ProjectElements[id].hidden = elements[ProjectElements[id].iri].hidden;
+                ProjectElements[id].diagrams = elements[ProjectElements[id].iri].diagrams;
+                ProjectElements[id].active = elements[ProjectElements[id].iri].active;
+                ProjectElements[id].position = elements[ProjectElements[id].iri].diagramPosition;
+                ProjectElements[id].selectedLabel = elements[ProjectElements[id].iri].selectedName;
+            }
         }
-    }
-    return true;
+        return true;
+    }).catch((e) => {
+        console.log(e);
+        return false;
+    });
 }
 
 export async function getSettings(contextIRI: string, contextEndpoint: string): Promise<boolean> {
@@ -273,22 +279,24 @@ export async function getSettings(contextIRI: string, contextEndpoint: string): 
         "}"
     ].join(" ");
     let q = contextEndpoint + "?query=" + encodeURIComponent(query);
-    await fetch(q, {headers: {'Accept': 'application/json'}}).then(response => {
+    return await fetch(q, {headers: {'Accept': 'application/json'}}).then(response => {
         return response.json();
     }).then(data => {
         for (let result of data.results.bindings) {
             if (!(parseInt(result.index.value) in Diagrams)) {
                 Diagrams[parseInt(result.index.value)] = {
                     name: Locale[ProjectSettings.viewLanguage].untitled,
-                    json: {},
                     active: true
                 }
             }
             Diagrams[parseInt(result.index.value)].name = result.name.value;
             if (result.color) ProjectSettings.viewColorPool = result.color.value;
         }
-    }).catch(() => false);
-    return true;
+        return true;
+    }).catch((e) => {
+        console.log(e);
+        return false;
+    });
 }
 
 export async function getLinksConfig(contextIRI: string, contextEndpoint: string): Promise<boolean> {
@@ -341,7 +349,7 @@ export async function getLinksConfig(contextIRI: string, contextEndpoint: string
             type: number,
         }
     } = {};
-    await fetch(q, {headers: {'Accept': 'application/json'}}).then(response => {
+    return await fetch(q, {headers: {'Accept': 'application/json'}}).then(response => {
         return response.json();
     }).then(data => {
         for (let result of data.results.bindings) {
@@ -370,51 +378,53 @@ export async function getLinksConfig(contextIRI: string, contextEndpoint: string
                     diagram: result.diagram ? parseInt(result.diagram.value) : -1
                 };
         }
-    }).catch(() => false);
-
-    for (let link in links) {
-        let convert: { [key: number]: joint.dia.Link.Vertex[] } = {};
-        let keys = Object.keys(links[link].vertexIRI);
-        if (keys.length > 0) {
-            let skipDeprecated = keys.find((iri: string) => iri.includes("/diagram"));
-            for (let vertexIRI of keys) {
-                if (!vertexIRI.includes("/diagram") && skipDeprecated) continue;
-                let vertex = links[link].vertexIRI[vertexIRI];
-                let diagram: number = vertex.diagram !== -1 ? vertex.diagram : 0;
-                if (!(diagram in convert)) convert[diagram] = [];
-                convert[diagram][vertex.index] = {x: vertex.x, y: vertex.y};
+        for (let link in links) {
+            let convert: { [key: number]: joint.dia.Link.Vertex[] } = {};
+            let keys = Object.keys(links[link].vertexIRI);
+            if (keys.length > 0) {
+                let skipDeprecated = keys.find((iri: string) => iri.includes("/diagram"));
+                for (let vertexIRI of keys) {
+                    if (!vertexIRI.includes("/diagram") && skipDeprecated) continue;
+                    let vertex = links[link].vertexIRI[vertexIRI];
+                    let diagram: number = vertex.diagram !== -1 ? vertex.diagram : 0;
+                    if (!(diagram in convert)) convert[diagram] = [];
+                    convert[diagram][vertex.index] = {x: vertex.x, y: vertex.y};
+                }
             }
-        }
-        let sourceID, targetID;
-        for (let id in ProjectElements) {
-            if (ProjectElements[id].iri === links[link].source) sourceID = id;
-            if (ProjectElements[id].iri === links[link].target) targetID = id;
-            if (targetID && sourceID) break;
-        }
-
-        if (targetID && sourceID) {
-            let sourceCard = new Cardinality("", "");
-            let targetCard = new Cardinality("", "");
-            sourceCard.setFirstCardinality(links[link].sourceCardinality1);
-            sourceCard.setSecondCardinality(links[link].sourceCardinality2);
-            targetCard.setFirstCardinality(links[link].targetCardinality1);
-            targetCard.setSecondCardinality(links[link].targetCardinality2);
-            ProjectLinks[link] = {
-                iri: links[link].iri,
-                source: sourceID,
-                target: targetID,
-                sourceCardinality: sourceCard,
-                targetCardinality: targetCard,
-                type: links[link].type,
-                vertices: convert,
-                active: links[link].active,
+            let sourceID, targetID;
+            for (let id in ProjectElements) {
+                if (ProjectElements[id].iri === links[link].source) sourceID = id;
+                if (ProjectElements[id].iri === links[link].target) targetID = id;
+                if (targetID && sourceID) break;
             }
-            if (sourceID) {
-                if (!(ProjectElements[sourceID].connections.includes(link))) {
-                    ProjectElements[sourceID].connections.push(link);
+
+            if (targetID && sourceID) {
+                let sourceCard = new Cardinality("", "");
+                let targetCard = new Cardinality("", "");
+                sourceCard.setFirstCardinality(links[link].sourceCardinality1);
+                sourceCard.setSecondCardinality(links[link].sourceCardinality2);
+                targetCard.setFirstCardinality(links[link].targetCardinality1);
+                targetCard.setSecondCardinality(links[link].targetCardinality2);
+                ProjectLinks[link] = {
+                    iri: links[link].iri,
+                    source: sourceID,
+                    target: targetID,
+                    sourceCardinality: sourceCard,
+                    targetCardinality: targetCard,
+                    type: links[link].type,
+                    vertices: convert,
+                    active: links[link].active,
+                }
+                if (sourceID) {
+                    if (!(ProjectElements[sourceID].connections.includes(link))) {
+                        ProjectElements[sourceID].connections.push(link);
+                    }
                 }
             }
         }
-    }
-    return true;
+        return true;
+    }).catch((e) => {
+        console.log(e);
+        return false;
+    });
 }
