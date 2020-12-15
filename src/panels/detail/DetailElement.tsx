@@ -134,7 +134,7 @@ export default class DetailElement extends React.Component<Props, State> {
 			this.props.save();
 			this.setState({changes: false});
 			this.prepareDetails(this.state.id);
-			this.props.performTransaction(updateProjectElement(oldVocabularyElement, this.state.id, false));
+			this.props.performTransaction(updateProjectElement(oldVocabularyElement, this.state.id));
 		}
 	}
 

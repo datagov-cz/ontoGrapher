@@ -40,9 +40,7 @@ export function constructProjectLinkLD(contextEndpoint: string, id: string): {}[
 		"og:type": ProjectLinks[id].type === LinkType.DEFAULT ? "default" : "generalization",
 		...cardinalities,
 		"og:vertex": vertices.map(vert => vert["@id"])
-	},
-		...vertices
-	]
+	}]
 }
 
 export function updateLinks(): { add: string[], delete: string[], update: string[] } {

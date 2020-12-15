@@ -1,4 +1,5 @@
 import React from 'react';
+import * as _ from "lodash";
 import * as joint from 'jointjs';
 import {graphElement} from "../graph/GraphElement";
 import {
@@ -99,8 +100,10 @@ export default class DiagramCanvas extends React.Component<Props, State> {
             if (bbox) cls.resize(bbox.width, bbox.height);
             drawGraphElement(cls, language, ProjectSettings.representation);
             this.props.updateElementPanel();
-            this.props.performTransaction(updateProjectElement(
-                VocabularyElements[iri], cls.id));
+            this.props.performTransaction(mergeTransactions(updateProjectElement(
+                VocabularyElements[iri], cls.id),
+                updateProjectElementDiagram(cls.id, ProjectSettings.selectedDiagram,
+                    ProjectElements[cls.id].position[ProjectSettings.selectedDiagram], false)));
         }
     }
 
@@ -146,7 +149,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                 }
                 if (typeof link.id === "string" && typeof sid === "string" && typeof tid === "string") {
                     if (ProjectSettings.representation === Representation.FULL || type === LinkType.GENERALIZATION) {
-                        this.props.performTransaction(this.updateConnections(sid, tid, link.id, type, iri));
+                        this.props.performTransaction(this.updateConnection(sid, tid, link.id, type, iri));
                     } else if (ProjectSettings.representation === Representation.COMPACT) {
                         let mvp1IRI = "https://slovník.gov.cz/základní/pojem/má-vztažený-prvek-1";
                         let mvp2IRI = "https://slovník.gov.cz/základní/pojem/má-vztažený-prvek-2";
@@ -167,9 +170,9 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                             this.props.performTransaction(
                                 mergeTransactions(
                                     updateProjectElement(VocabularyElements[iri], property.id),
-                                    this.updateConnections(property.id, sid, source.id, type, mvp1IRI),
-                                    this.updateConnections(property.id, tid, target.id, type, mvp2IRI),
-                                    this.updateConnections(sid, tid, link.id, type, iri),
+                                    this.updateConnection(property.id, sid, source.id, type, mvp1IRI),
+                                    this.updateConnection(property.id, tid, target.id, type, mvp2IRI),
+                                    this.updateConnection(sid, tid, link.id, type, iri),
                                 )
                             )
                         }
@@ -218,15 +221,15 @@ export default class DiagramCanvas extends React.Component<Props, State> {
         let id = cell.id;
         cell.remove();
         ProjectElements[id].hidden[ProjectSettings.selectedDiagram] = true;
-        let iri = ProjectElements[id].iri;
         this.props.updateElementPanel();
         this.props.hideDetails();
         if (typeof id === "string") {
-            this.props.performTransaction(updateProjectElement(VocabularyElements[iri], id))
+            this.props.performTransaction(updateProjectElementDiagram(id, ProjectSettings.selectedDiagram,
+                ProjectElements[id].position[ProjectSettings.selectedDiagram], false))
         }
     }
 
-    updateConnections(sid: string, tid: string, linkID: string, type: number, iri: string) {
+    updateConnection(sid: string, tid: string, linkID: string, type: number, iri: string) {
         addLink(linkID, iri, sid, tid, type);
         ProjectElements[sid].connections.push(linkID);
         this.props.updateElementPanel();
@@ -236,24 +239,26 @@ export default class DiagramCanvas extends React.Component<Props, State> {
     deleteConnections(sid: string, id: string) {
         ProjectLinks[id].active = false;
         if (graph.getCell(id)) graph.getCell(id).remove();
-        return updateProjectLink(id);
+        return mergeTransactions(updateProjectLink(id));
     }
 
-    updateVertices(id: string, projVerts: joint.dia.Link.Vertex[], linkVerts: joint.dia.Link.Vertex[]) {
-        if (!projVerts) projVerts = [];
+    updateVertices(id: string, linkVerts: joint.dia.Link.Vertex[]) {
+        if (!ProjectLinks[id].vertices[ProjectSettings.selectedDiagram]) ProjectLinks[id].vertices[ProjectSettings.selectedDiagram] = [];
+        let oldVerts = _.cloneDeep(ProjectLinks[id].vertices[ProjectSettings.selectedDiagram]);
         let update = [];
         let del = -1;
-        for (let i = 0; i < Math.max(linkVerts.length, projVerts.length); i++) {
-            if (projVerts[i] && !(linkVerts[i])) {
+        for (let i = 0; i < Math.max(linkVerts.length, ProjectLinks[id].vertices[ProjectSettings.selectedDiagram].length); i++) {
+            if (ProjectLinks[id].vertices[ProjectSettings.selectedDiagram][i] && !(linkVerts[i])) {
                 del = i;
                 break;
             } else {
-                projVerts[i] = {x: linkVerts[i].x, y: linkVerts[i].y};
+                ProjectLinks[id].vertices[ProjectSettings.selectedDiagram][i] = {x: linkVerts[i].x, y: linkVerts[i].y};
                 update.push(i);
             }
         }
-        let transactions = updateProjectLinkVertex(id, update);
-        if (del !== -1) transactions = mergeTransactions(transactions, updateDeleteProjectLinkVertex(id, del, projVerts.length))
+        let transactions = updateProjectLinkVertex(id, update, oldVerts);
+        if (del !== -1) transactions = mergeTransactions(transactions,
+            updateDeleteProjectLinkVertex(id, del, ProjectLinks[id].vertices[ProjectSettings.selectedDiagram].length))
         ProjectLinks[id].vertices[ProjectSettings.selectedDiagram] = linkVerts;
         return transactions;
     }
@@ -366,8 +371,10 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                     let id = cellView.model.id;
                     if (pos.x !== ProjectElements[id].position[ProjectSettings.selectedDiagram].x ||
                         pos.y !== ProjectElements[cellView.model.id].position[ProjectSettings.selectedDiagram].y) {
+                        let oldPos = _.cloneDeep(ProjectElements[id].position[ProjectSettings.selectedDiagram]);
                         ProjectElements[id].position[ProjectSettings.selectedDiagram] = pos;
-                        this.props.performTransaction(updateProjectElementDiagram(cellView.model.id, ProjectSettings.selectedDiagram));
+                        this.props.performTransaction(
+                            updateProjectElementDiagram(cellView.model.id, ProjectSettings.selectedDiagram, oldPos, false));
                     }
                 }
             },
@@ -441,7 +448,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                 let id = cellView.model.id;
                 let link = cellView.model;
                 link.findView(paper).removeRedundantLinearVertices();
-                this.props.performTransaction(this.updateVertices(id, ProjectLinks[id].vertices[ProjectSettings.selectedDiagram], link.vertices()));
+                this.props.performTransaction(this.updateVertices(id, link.vertices()));
             }
         });
     }
@@ -473,10 +480,13 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                     }
                     const data = JSON.parse(event.dataTransfer.getData("newClass"));
                     let matrixDimension = Math.ceil(Math.sqrt(data.id.length));
+                    let map: { add: string[], delete: string[], update: string[] }[] = [];
                     data.id.forEach((id: string, i: number) => {
                         let cls = new graphElement({id: id});
                         drawGraphElement(cls, ProjectSettings.selectedLanguage, ProjectSettings.representation);
                         let point = paper.clientToLocalPoint({x: event.clientX, y: event.clientY});
+                        map.push(updateProjectElementDiagram(id, ProjectSettings.selectedDiagram,
+                            ProjectElements[id].position[ProjectSettings.selectedDiagram], true));
                         if (point) {
                             if (data.id.length > 1) {
                                 let x = i % matrixDimension;
@@ -498,11 +508,9 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                         ProjectElements[id].hidden[ProjectSettings.selectedDiagram] = false;
                         this.props.updateElementPanel();
                         transactions = mergeTransactions(transactions, restoreHiddenElem(id, cls, true, true, true));
+                        map.push(updateProjectElement(
+                            VocabularyElements[ProjectElements[id].iri], id));
                     });
-                    let map = data.id.map((id: string) =>
-                        updateProjectElement(
-                            VocabularyElements[ProjectElements[id].iri], id)
-                    )
                     this.props.performTransaction(mergeTransactions(...map, transactions));
                     if (ProjectSettings.representation === Representation.COMPACT) setRepresentation(ProjectSettings.representation);
                 }}
