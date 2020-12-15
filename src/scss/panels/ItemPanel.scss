@@ -39,6 +39,11 @@
       cursor: grabbing;
     }
 
+    .altLabel {
+      font-size: 12px;
+      font-style: italic;
+    }
+
     &:hover {
       background-color: #e9eaeb;
     }
