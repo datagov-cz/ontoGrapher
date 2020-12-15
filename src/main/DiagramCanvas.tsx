@@ -39,8 +39,6 @@ import {drawGraphElement, highlightCell, unHighlightCell, unHighlightSelected} f
 
 interface Props {
     projectLanguage: string;
-    prepareDetails: Function;
-    hideDetails: Function;
     updateElementPanel: Function;
     updateDetailPanel: Function;
     error: boolean;
@@ -220,7 +218,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
         ProjectElements[id].hidden[ProjectSettings.selectedDiagram] = true;
         let iri = ProjectElements[id].iri;
         this.props.updateElementPanel();
-        this.props.hideDetails();
+        this.props.updateDetailPanel();
         if (typeof id === "string") {
             this.props.performTransaction(updateProjectElement(VocabularyElements[iri], id))
         }
@@ -297,7 +295,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                     }
                     view.model.remove();
                     ProjectLinks[view.model.id].active = false;
-                    this.props.hideDetails();
+                    this.props.updateElementPanel();
                     ProjectSettings.selectedLink = "";
                     this.props.performTransaction(transactions);
                 }
@@ -354,7 +352,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
             'cell:pointerclick': (cellView) => {
                 if (!this.newLink) {
                     let id = cellView.model.id;
-                    this.props.prepareDetails(id);
+                    this.props.updateDetailPanel(id);
                     unHighlightSelected(this.highlightedCells);
                     highlightCell(id);
                     this.highlightedCells = [id];
@@ -406,7 +404,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
             },
             'blank:pointerdown': (evt, x, y) => {
                 ProjectSettings.selectedLink = "";
-                this.props.hideDetails();
+                this.props.updateDetailPanel();
                 unHighlightSelected(this.highlightedCells);
                 this.highlightedCells = [];
                 this.drag = {x: x, y: y};
@@ -428,7 +426,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                     this.setState({modalAddElem: true});
                     this.newConceptEvent = {x: evt.clientX, y: evt.clientY}
                 } else this.newLink = false;
-                this.props.hideDetails();
+                this.props.updateDetailPanel();
                 unHighlightSelected(this.highlightedCells);
                 this.highlightedCells = [];
                 ProjectSettings.selectedLink = "";

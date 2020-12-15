@@ -23,7 +23,7 @@ import {parsePrefix} from "../../function/FunctionEditVars";
 import {Cardinality} from "../../datatypes/Cardinality";
 import {LinkType, Representation} from "../../config/Enum";
 import {Locale} from "../../config/Locale";
-import {unHighlightAll} from "../../function/FunctionDraw";
+import {unHighlightCell} from "../../function/FunctionDraw";
 
 interface Props {
     projectLanguage: string;
@@ -31,10 +31,11 @@ interface Props {
     performTransaction: (transaction: { add: string[], delete: string[], update: string[] }) => void;
     handleWidth: Function;
     error: boolean;
+    id: string;
+    updateDetailPanel: Function;
 }
 
 interface State {
-    id: string,
     iri: string,
     sourceCardinality: string;
     targetCardinality: string;
@@ -46,7 +47,6 @@ export default class DetailLink extends React.Component<Props, State> {
     constructor(props: Props) {
         super(props);
         this.state = {
-            id: "",
             iri: Object.keys(Links)[0],
             sourceCardinality: "0",
             targetCardinality: "0",
@@ -96,7 +96,6 @@ export default class DetailLink extends React.Component<Props, State> {
             }
         })
         this.setState({
-            id: id,
             iri: ProjectLinks[id].iri,
             changes: false,
             readOnly: Schemes[VocabularyElements[ProjectElements[ProjectLinks[id].source].iri].inScheme].readOnly
@@ -104,27 +103,27 @@ export default class DetailLink extends React.Component<Props, State> {
     }
 
     save() {
-        if (this.state.id in ProjectLinks) {
+        if (this.props.id in ProjectLinks) {
             let transactions: { add: string[], delete: string[], update: string[] } = {
                 add: [],
                 delete: [],
                 update: []
             }
             if (ProjectSettings.representation === Representation.FULL) {
-                ProjectLinks[this.state.id].sourceCardinality = CardinalityPool[parseInt(this.state.sourceCardinality, 10)];
-                ProjectLinks[this.state.id].targetCardinality = CardinalityPool[parseInt(this.state.targetCardinality, 10)];
-                ProjectLinks[this.state.id].iri = this.state.iri;
-                let link = graph.getLinks().find(link => link.id === this.state.id);
+                ProjectLinks[this.props.id].sourceCardinality = CardinalityPool[parseInt(this.state.sourceCardinality, 10)];
+                ProjectLinks[this.props.id].targetCardinality = CardinalityPool[parseInt(this.state.targetCardinality, 10)];
+                ProjectLinks[this.props.id].iri = this.state.iri;
+                let link = graph.getLinks().find(link => link.id === this.props.id);
                 if (link) {
                     setLabels(link, getLinkOrVocabElem(this.state.iri).labels[this.props.projectLanguage])
                 }
                 this.setState({changes: false});
                 this.props.save();
-                transactions = mergeTransactions(transactions, updateProjectLink(this.state.id), updateConnections(this.state.id))
+                transactions = mergeTransactions(transactions, updateProjectLink(this.props.id), updateConnections(this.props.id))
             } else {
-                ProjectLinks[this.state.id].sourceCardinality = CardinalityPool[parseInt(this.state.sourceCardinality, 10)];
-                ProjectLinks[this.state.id].targetCardinality = CardinalityPool[parseInt(this.state.targetCardinality, 10)];
-                let link = graph.getLinks().find(link => link.id === this.state.id);
+                ProjectLinks[this.props.id].sourceCardinality = CardinalityPool[parseInt(this.state.sourceCardinality, 10)];
+                ProjectLinks[this.props.id].targetCardinality = CardinalityPool[parseInt(this.state.targetCardinality, 10)];
+                let link = graph.getLinks().find(link => link.id === this.props.id);
                 if (link) {
                     setLabels(link, getLinkOrVocabElem(this.state.iri).labels[this.props.projectLanguage])
                     let underlyingConnections = getUnderlyingFullConnections(link);
@@ -141,7 +140,7 @@ export default class DetailLink extends React.Component<Props, State> {
                             updateConnections(underlyingConnections.src),
                             updateConnections(underlyingConnections.tgt))
                     }
-                    transactions = mergeTransactions(transactions, updateProjectLink(this.state.id));
+                    transactions = mergeTransactions(transactions, updateProjectLink(this.props.id));
                 }
                 this.setState({changes: false});
                 this.props.save();
@@ -151,7 +150,7 @@ export default class DetailLink extends React.Component<Props, State> {
     }
 
     render() {
-        return this.state.id !== "" && (<ResizableBox
+        return this.props.id !== "" && (<ResizableBox
             width={300}
             height={1000}
             axis={"x"}
@@ -164,9 +163,8 @@ export default class DetailLink extends React.Component<Props, State> {
             className={"details" + (this.props.error ? " disabled" : "")}>
             <div className={(this.props.error ? " disabled" : "")}>
                 <button className={"buttonlink close nounderline"} onClick={() => {
-                    unHighlightAll();
-                    this.setState({id: ""});
-                    this.props.handleWidth(0);
+                    unHighlightCell(this.props.id);
+                    this.props.updateDetailPanel();
                 }}><span role="img" aria-label={""}>➖</span></button>
                 <h3><IRILink label={getLinkOrVocabElem(this.state.iri).labels[this.props.projectLanguage]}
                              iri={this.state.iri}/></h3>
@@ -179,7 +177,7 @@ export default class DetailLink extends React.Component<Props, State> {
                         </Card.Header>
                         <Accordion.Collapse eventKey={"0"}>
                             <Card.Body>
-                                {ProjectLinks[this.state.id].type === LinkType.DEFAULT &&
+                                {ProjectLinks[this.props.id].type === LinkType.DEFAULT &&
                                 <TableList>
                                     <tr>
                                         <td className={"first"}>
