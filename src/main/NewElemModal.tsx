@@ -33,10 +33,11 @@ export default class NewElemModal extends React.Component<Props, State> {
 	}
 
 	checkExists(name: string): boolean {
-		return (createNewElemIRI(this.state.selectedPackage.scheme, name) in VocabularyElements) ||
-			(Object.keys(VocabularyElements).find(iri =>
-				Object.values(VocabularyElements[iri].labels).find(
-					label => label.trim().toLowerCase() === name.trim().toLowerCase())) !== undefined);
+		let newIRI = createNewElemIRI(this.state.selectedPackage.scheme, name);
+		return (Object.keys(VocabularyElements)
+			.filter(iri => VocabularyElements[iri].inScheme === this.state.selectedPackage.scheme).find(iri =>
+				(iri === newIRI) || Object.values(VocabularyElements[iri].labels).find(
+				label => label.trim().toLowerCase() === name.trim().toLowerCase())) !== undefined);
 	}
 
 	handleChangeInput(event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>, language: string) {
@@ -89,12 +90,13 @@ export default class NewElemModal extends React.Component<Props, State> {
 			<Modal.Header>
 				<Modal.Title>{Locale[ProjectSettings.viewLanguage].modalNewElemTitle}</Modal.Title>
 			</Modal.Header>
-			<Modal.Body>
-				<p>{Locale[ProjectSettings.viewLanguage].modalNewElemDescription}</p>
-				<Form onSubmit={(event) => {
-					event.preventDefault();
-					this.save()
-				}}>
+			<Form onSubmit={(event) => {
+				event.preventDefault();
+				if (this.state.errorText === "")
+					this.save();
+			}}>
+				<Modal.Body>
+					<p>{Locale[ProjectSettings.viewLanguage].modalNewElemDescription}</p>
 					{Object.keys(Languages).map((lang) => <div key={lang}>
 						<InputGroup>
 							<InputGroup.Prepend>
@@ -116,17 +118,17 @@ export default class NewElemModal extends React.Component<Props, State> {
 										value={pkg.labels[this.props.projectLanguage]}>{pkg.labels[this.props.projectLanguage]}</option>)}
 						</Form.Control>
 					</Form.Group>
-				</Form>
-				<p className="red">{this.state.errorText}</p>
-			</Modal.Body>
-			<Modal.Footer>
-				<Button disabled={this.state.errorText !== ""} onClick={() => {
-					this.save()
-				}} variant="primary">{Locale[ProjectSettings.viewLanguage].confirm}</Button>
-				<Button onClick={() => {
-					this.props.close();
-				}} variant="secondary">{Locale[ProjectSettings.viewLanguage].cancel}</Button>
-			</Modal.Footer>
+					<p className="red">{this.state.errorText}</p>
+				</Modal.Body>
+				<Modal.Footer>
+					<Button type={"submit"} disabled={this.state.errorText !== ""} variant="primary">
+						{Locale[ProjectSettings.viewLanguage].confirm}
+					</Button>
+					<Button onClick={() => {
+						this.props.close();
+					}} variant="secondary">{Locale[ProjectSettings.viewLanguage].cancel}</Button>
+				</Modal.Footer>
+			</Form>
 		</Modal>);
 	}
 }

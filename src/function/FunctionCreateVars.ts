@@ -1,35 +1,7 @@
-import {
-    CardinalityPool,
-    Diagrams,
-    ProjectElements,
-    ProjectLinks,
-    ProjectSettings,
-    VocabularyElements
-} from "../config/Variables";
+import {CardinalityPool, ProjectElements, ProjectLinks, ProjectSettings, VocabularyElements} from "../config/Variables";
 import {initLanguageObject} from "./FunctionEditVars";
 import {PackageNode} from "../datatypes/PackageNode";
-import {graphElement} from "../graph/GraphElement";
-import {restoreElems} from "./FunctionGraph";
-import {changeDiagrams} from "./FunctionDiagram";
-import {graph} from "../graph/Graph";
-import {LinkType, Representation} from "../config/Enum";
-import {drawGraphElement} from "./FunctionDraw";
-
-export function setupDiagrams(diagram: number = 0) {
-    for (let i = 0; i < Diagrams.length; i++) {
-        changeDiagrams(i);
-        for (let id in ProjectElements) {
-            if (ProjectElements[id].hidden[i] === false && ProjectElements[id].position[i] && ProjectElements[id].active) {
-                let cls = new graphElement({id: id});
-                cls.position(ProjectElements[id].position[i].x, ProjectElements[id].position[i].y);
-                cls.addTo(graph);
-                drawGraphElement(cls, ProjectSettings.selectedLanguage, Representation.FULL);
-            }
-        }
-        restoreElems();
-    }
-    changeDiagrams(diagram);
-}
+import {LinkType} from "../config/Enum";
 
 export function createValues(values: { [key: string]: string[] }, prefixes: { [key: string]: string }) {
     let result: string[] = [];

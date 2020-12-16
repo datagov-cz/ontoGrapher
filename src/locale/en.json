@@ -303,6 +303,7 @@
   "modalEditDiagramTitle": "Rename diagram",
   "connectionVia": "using link",
   "connectionTo": "to",
+  "connectionFrom": "from",
   "diagram": "in diagram",
   "modalRemovePackageItemDescription": "Are you sure you want to remove the concept?",
   "projectSettings": "Project settings...",

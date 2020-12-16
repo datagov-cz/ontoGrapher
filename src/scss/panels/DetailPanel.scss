@@ -4,7 +4,7 @@
   background-color: white;
   float: right;
   padding: 5px;
-  height: calc(100vh - 56px) !important;
+  height: calc(100vh - 90px) !important;
   max-width: 600px;
 
   &.disabled {
@@ -33,7 +33,7 @@
 
   .close {
     position: absolute;
-    right: 20px;
+    right: 0;
     top: 0;
   }
 

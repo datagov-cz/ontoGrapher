@@ -116,8 +116,8 @@ export var Stereotypes: {
     }
 } = {};
 
-export var Diagrams: { name: string, json: any, active: boolean }[] = [
-    {name: "Untitled", json: {}, active: true}
+export var Diagrams: { name: string, active: boolean }[] = [
+    {name: "Untitled", active: true}
 ];
 
 export var ProjectSettings: {

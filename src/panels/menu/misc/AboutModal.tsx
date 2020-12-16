@@ -20,47 +20,61 @@ export default class AboutModal extends React.Component<Props, State> {
 				<Modal.Title>{Locale[ProjectSettings.viewLanguage].changelog}</Modal.Title>
 			</Modal.Header>
 			<Modal.Body>
-				<Tabs id={"changelog"}><Tab title={"November"} eventKey={"November"}>
-					<h6>27.11.</h6>
-					<ul>
-						<li>Bug fixing and stability improvements (especially in transaction management)</li>
-						<li>Startup without a workspace is unsupported, interaction is disabled until the workspace is
-							loaded
-						</li>
-						<li>skos:altLabel support: management is located in the detail panel</li>
-						<li>Display label support: the user can choose what pref/altLabel can be displayed on the canvas
-							(altLabel is default, then prefLabel) - this display is saved per workspace
-						</li>
-					</ul>
-					<h6>23.11.</h6>
-					<ul>
-						<li>Bug fixing and stability improvements</li>
-						<li>Loading should now be faster</li>
-						<li>Search function usage improved</li>
-						<li>Elements from the left panel can be multi-selected using shift-click as well</li>
-						<li>Only one Type and one UML stereotype can be selected in the right panel</li>
-					</ul>
-					<h6>17.11.</h6>
-					<ul>
-						<li>Bug fixing and stability improvements</li>
-						<li>Added ability to select multiple concepts in the left screen and visualize them at once via
-							checkboxes on the concepts
-						</li>
-						<li>Concepts are now sorted by "type" stereotypes</li>
-						<li>Concepts with "type" stereotypes have differing shapes</li>
-					</ul>
-					<h6>9.11.</h6>
-					<ul>
-						<li>Bug fixing and stability improvements</li>
-						<li>Relationships are now selected by clicking anywhere on the link</li>
-						<li>Deletion and modification of the relationship's shape is now available only on selection of
-							the given relationship
-						</li>
-						<li>Vocabulary color schemes are now saved for each workspace</li>
-					</ul>
-					<h6>2.11.</h6>
-					<ul>
-						<li>Bug fixing and stability improvements</li>
+				<Tabs id={"changelog"}>
+					<Tab title={"December"} eventKey={"December"}>
+						<h6>10.11.</h6>
+						<ul>
+							<li>Bug fixing and stability improvements</li>
+							<li>Connections section in detail panel also lists connections to given concept, as opposed
+								to just connection originating from the concept
+							</li>
+						</ul>
+					</Tab>
+					<Tab title={"November"} eventKey={"November"}>
+						<h6>27.11.</h6>
+						<ul>
+							<li>Bug fixing and stability improvements (especially in transaction management)</li>
+							<li>Startup without a workspace is unsupported, interaction is disabled until the workspace
+								is
+								loaded
+							</li>
+							<li>skos:altLabel support: management is located in the detail panel</li>
+							<li>Display label support: the user can choose what pref/altLabel can be displayed on the
+								canvas
+								(altLabel is default, then prefLabel) - this display is saved per workspace
+							</li>
+						</ul>
+						<h6>23.11.</h6>
+						<ul>
+							<li>Bug fixing and stability improvements</li>
+							<li>Loading should now be faster</li>
+							<li>Search function usage improved</li>
+							<li>Elements from the left panel can be multi-selected using shift-click as well</li>
+							<li>Only one Type and one UML stereotype can be selected in the right panel</li>
+						</ul>
+						<h6>17.11.</h6>
+						<ul>
+							<li>Bug fixing and stability improvements</li>
+							<li>Added ability to select multiple concepts in the left screen and visualize them at once
+								via
+								checkboxes on the concepts
+							</li>
+							<li>Concepts are now sorted by "type" stereotypes</li>
+							<li>Concepts with "type" stereotypes have differing shapes</li>
+						</ul>
+						<h6>9.11.</h6>
+						<ul>
+							<li>Bug fixing and stability improvements</li>
+							<li>Relationships are now selected by clicking anywhere on the link</li>
+							<li>Deletion and modification of the relationship's shape is now available only on selection
+								of
+								the given relationship
+							</li>
+							<li>Vocabulary color schemes are now saved for each workspace</li>
+						</ul>
+						<h6>2.11.</h6>
+						<ul>
+							<li>Bug fixing and stability improvements</li>
 						<li>Concept coloring is now organized in the View submenu</li>
 					</ul>
 				</Tab>

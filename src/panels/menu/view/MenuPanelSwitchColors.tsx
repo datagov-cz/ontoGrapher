@@ -36,7 +36,7 @@ export default class MenuPanelSwitchColors extends React.Component<Props, State>
 			</Dropdown.Toggle>
 			<Dropdown.Menu>
 				{Object.keys(ColorPool).map((pool) =>
-					<Dropdown.Item disabled={pool === ProjectSettings.viewColorPool}
+					<Dropdown.Item key={pool} disabled={pool === ProjectSettings.viewColorPool}
 								   onClick={() => this.switch(pool)}>{(pool === ProjectSettings.viewColorPool ? "✓ " : "") + ColorPool[pool].label}</Dropdown.Item>)}
 			</Dropdown.Menu>
 		</Dropdown>);

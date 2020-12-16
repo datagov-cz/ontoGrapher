@@ -3,6 +3,7 @@ import {ResizableBox} from "react-resizable";
 import {
 	Diagrams,
 	Languages,
+	Links,
 	ProjectElements,
 	ProjectLinks,
 	ProjectSettings,
@@ -16,7 +17,6 @@ import TableList from "../../components/TableList";
 import IRILink from "../../components/IRILink";
 import LabelTable from "./components/LabelTable";
 import DescriptionTabs from "./components/DescriptionTabs";
-import IRIlabel from "../../components/IRIlabel";
 import {spreadConnections} from "../../function/FunctionGraph";
 import {graph} from "../../graph/Graph";
 import {updateProjectElement} from "../../interface/TransactionInterface";
@@ -26,6 +26,8 @@ import {Shapes} from "../../config/Shapes";
 import {Locale} from "../../config/Locale";
 import {drawGraphElement, unHighlightAll} from "../../function/FunctionDraw";
 import AltLabelTable from "./components/AltLabelTable";
+import ConnectionTable from "./components/ConnectionTable";
+import {Representation} from "../../config/Enum";
 
 interface Props {
 	projectLanguage: string;
@@ -101,14 +103,20 @@ export default class DetailElement extends React.Component<Props, State> {
 		});
 	}
 
-	checkSpreadConnections(): boolean {
+	checkSpreadConnections(to: boolean): boolean {
 		if (this.state) {
 			let cell = graph.getElements().find(elem => elem.id === this.state.id);
 			if (cell) {
-				return this.state.inputConnections.filter(conn => ProjectLinks[conn] && ProjectLinks[conn].active
+				return to ? this.state.inputConnections.filter(conn => ProjectLinks[conn] && ProjectLinks[conn].active &&
+					(ProjectSettings.representation === Representation.FULL ? ProjectLinks[conn].iri in Links : !(ProjectLinks[conn].iri in Links))
 					&& getLinkOrVocabElem(ProjectLinks[conn].iri)).length !==
+					(graph.getConnectedLinks(cell)
+						.filter(link => ProjectLinks[link.id] && ProjectLinks[link.id].source === this.state.id).length) :
+					Object.keys(ProjectLinks).filter(conn => ProjectLinks[conn] && ProjectLinks[conn].target === this.state.id &&
+						ProjectLinks[conn].active && getLinkOrVocabElem(ProjectLinks[conn].iri) &&
+						(ProjectSettings.representation === Representation.FULL ? ProjectLinks[conn].iri in Links : !(ProjectLinks[conn].iri in Links))).length !==
 					graph.getConnectedLinks(cell)
-						.filter(link => ProjectLinks[link.id] && ProjectLinks[link.id].source === this.state.id).length;
+						.filter(link => ProjectLinks[link.id] && ProjectLinks[link.id].target === this.state.id).length;
 			} else return false;
 		} else return false;
 	}
@@ -266,26 +274,31 @@ export default class DetailElement extends React.Component<Props, State> {
 						</Card.Header>
 						<Accordion.Collapse eventKey={"1"}>
 							<Card.Body>
-								<TableList
-									headings={[Locale[ProjectSettings.viewLanguage].connectionVia, Locale[ProjectSettings.viewLanguage].connectionTo]}>
-									{this.state.inputConnections.filter(conn => ProjectLinks[conn] &&
-										ProjectLinks[conn].active && getLinkOrVocabElem(ProjectLinks[conn].iri)).map((conn) =>
-										<tr key={conn}>
-											<IRIlabel
-												label={getLinkOrVocabElem(ProjectLinks[conn].iri).labels[this.props.projectLanguage]}
-												iri={ProjectLinks[conn].iri}/>
-											<td>{getLabelOrBlank(VocabularyElements[ProjectElements[ProjectLinks[conn].target].iri].labels, this.props.projectLanguage)}</td>
-										</tr>
-									)}
-								</TableList>
-								{this.checkSpreadConnections() &&
-                                <Button className={"buttonlink center"}
-                                        onClick={() => {
-											this.props.performTransaction(spreadConnections(this.state.id, false, false));
-											this.forceUpdate();
-										}}>
-									{Locale[ProjectSettings.viewLanguage].spreadConnections}
-                                </Button>}
+								<ConnectionTable
+									connections={this.state.inputConnections.filter(conn => ProjectLinks[conn] && ProjectLinks[conn].active &&
+									ProjectSettings.representation === Representation.FULL ? ProjectLinks[conn].iri in Links : !(ProjectLinks[conn].iri in Links))}
+									projectLanguage={this.props.projectLanguage} to={true}
+									button={<Button className={"buttonlink center"}
+													onClick={() => {
+														this.props.performTransaction(spreadConnections(this.state.id, true));
+														this.forceUpdate();
+													}}>
+										{Locale[ProjectSettings.viewLanguage].spreadConnections}
+									</Button>}
+									showButton={this.checkSpreadConnections(true)}/>
+								<ConnectionTable
+									connections={Object.keys(ProjectLinks).filter(conn => ProjectLinks[conn].target === this.state.id &&
+										ProjectLinks[conn] && ProjectLinks[conn].active &&
+										(ProjectSettings.representation === Representation.FULL ? ProjectLinks[conn].iri in Links : !(ProjectLinks[conn].iri in Links)))}
+									projectLanguage={this.props.projectLanguage} to={false}
+									button={<Button className={"buttonlink center"}
+													onClick={() => {
+														this.props.performTransaction(spreadConnections(this.state.id, false));
+														this.forceUpdate();
+													}}>
+										{Locale[ProjectSettings.viewLanguage].spreadConnections}
+									</Button>}
+									showButton={this.checkSpreadConnections(false)}/>
 							</Card.Body>
 						</Accordion.Collapse>
 					</Card>
