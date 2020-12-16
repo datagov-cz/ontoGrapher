@@ -39,8 +39,13 @@
       cursor: grabbing;
     }
 
-    &:hover {
-      background-color: #e9eaeb;
+    &:hover, &.selected {
+      background-color: #dddddd;
+    }
+    
+    .altLabel {
+      font-size: 12px;
+      font-style: italic;
     }
 
     .category {
@@ -50,10 +55,6 @@
       border-radius: 4px;
       float: right;
       font-style: italic;
-    }
-
-    &.selected {
-      background-color: rgba(198, 200, 250, 0.5) !important;
     }
 
     .diagram {
