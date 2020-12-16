@@ -107,13 +107,20 @@ export default class ItemPanel extends React.Component<Props, State> {
 		return result;
 	}
 
+	search(id: string): boolean {
+		let search = this.state.search.normalize().trim().toLowerCase();
+		let name = getLabelOrBlank(VocabularyElements[ProjectElements[id].iri].labels, this.props.projectLanguage);
+		return name.normalize().trim().toLowerCase().includes(search) ||
+			VocabularyElements[ProjectElements[id].iri].altLabels
+				.find(alt => alt.language === this.props.projectLanguage && alt.label.normalize().trim().toLowerCase().includes(search)) !== undefined;
+	}
+
 	getFolders(): JSX.Element[] {
 		let result: JSX.Element[] = [];
 		for (let node of PackageRoot.children) {
 			let elements = node.elements.sort((a, b) => this.sort(a, b)).filter(id => {
-				let name = VocabularyElements[ProjectElements[id].iri] ? getLabelOrBlank(VocabularyElements[ProjectElements[id].iri].labels, this.props.projectLanguage) : "<blank>";
 				return (
-					name.toLowerCase().includes(this.state.search.toLowerCase()) &&
+					this.search(id) &&
 					(ProjectSettings.representation === Representation.FULL ||
 						(ProjectSettings.representation === Representation.COMPACT &&
 							(!(VocabularyElements[ProjectElements[id].iri].types.includes(parsePrefix("z-sgov-pojem", "typ-vztahu"))
@@ -145,12 +152,11 @@ export default class ItemPanel extends React.Component<Props, State> {
 					/>);
 				}
 				for (let id of categories[key]) {
-					let name = VocabularyElements[ProjectElements[id].iri] ? getLabelOrBlank(VocabularyElements[ProjectElements[id].iri].labels, this.props.projectLanguage) : "<blank>";
 					packageItems.push(<PackageItem
 						key={id}
-						label={name}
 						id={id}
 						selectedID={this.props.selectedID}
+						projectLanguage={this.props.projectLanguage}
 						readOnly={(node.scheme ? Schemes[node.scheme].readOnly : true)}
 						update={() => {
 							this.forceUpdate();

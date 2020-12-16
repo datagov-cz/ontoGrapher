@@ -1,8 +1,8 @@
 import React from 'react';
-import {ProjectElements, ProjectSettings} from "../../config/Variables";
+import {ProjectElements, ProjectSettings, VocabularyElements} from "../../config/Variables";
+import {getLabelOrBlank} from "../../function/FunctionGetVars";
 
 interface Props {
-	label: string;
 	id: string;
 	update: Function;
 	openRemoveItem: Function;
@@ -14,6 +14,7 @@ interface Props {
 	showDetails: Function;
 	selectedID: string;
 	readOnly: boolean;
+	projectLanguage: string;
 }
 
 interface State {
@@ -40,6 +41,18 @@ export default class PackageItem extends React.Component<Props, State> {
 	isHidden() {
 		return ProjectElements[this.props.id].hidden[ProjectSettings.selectedDiagram] ||
 			ProjectElements[this.props.id].hidden[ProjectSettings.selectedDiagram] === undefined
+	}
+
+	getLabel(): JSX.Element {
+		return <span className={"label"}>
+				{getLabelOrBlank(VocabularyElements[ProjectElements[this.props.id].iri].labels, this.props.projectLanguage)}
+			{VocabularyElements[ProjectElements[this.props.id].iri].altLabels.length > 0 &&
+            <span className={"altLabel"}>
+				&nbsp;{"(" + VocabularyElements[ProjectElements[this.props.id].iri].altLabels
+				.filter(alt => alt.language === this.props.projectLanguage)
+				.map(alt => alt.label).join(", ") + ")"}
+			</span>}
+		</span>
 	}
 
 	render() {
@@ -71,15 +84,15 @@ export default class PackageItem extends React.Component<Props, State> {
 				 }}
 				 className={"stereotypeElementItem" + (this.isHidden() ? " hidden" : "") + (this.props.id === this.props.selectedID ? " selected" : "")}>
 				{(this.props.showCheckbox || this.state.hover) &&
-                <input type="checkbox" checked={this.props.checkboxChecked}
-                       onClick={(event) => {
-						   event.stopPropagation();
-						   this.props.handleShowCheckbox()
-					   }}
-                       onChange={() => {
-					   }}
-                />}
-				&nbsp;<span className={"label"}>{this.props.label}</span>
+                <span><input type="checkbox" checked={this.props.checkboxChecked}
+                             onClick={(event) => {
+								 event.stopPropagation();
+								 this.props.handleShowCheckbox()
+							 }}
+                             onChange={() => {
+							 }}
+                />&nbsp;</span>}
+				{this.getLabel()}
 				{(this.isHidden() ? hiddenSVG : <span/>)}
 				{(this.props.showCheckbox || this.state.hover) &&
                 <span className={"packageOptions right"}>

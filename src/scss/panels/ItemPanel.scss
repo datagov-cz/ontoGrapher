@@ -42,6 +42,11 @@
     &:hover, &.selected {
       background-color: #dddddd;
     }
+    
+    .altLabel {
+      font-size: 12px;
+      font-style: italic;
+    }
 
     .category {
       padding: 0 2px;
