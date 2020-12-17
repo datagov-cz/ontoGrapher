@@ -12,11 +12,16 @@ import {Representation} from "../config/Enum";
 import PackageDivider from "./element/PackageDivider";
 import {Shapes} from "../config/Shapes";
 import {Locale} from "../config/Locale";
+import {graph} from "../graph/Graph";
+import {paper} from "../main/DiagramCanvas";
+import {unHighlightAll} from "../function/FunctionDraw";
 
 interface Props {
 	projectLanguage: string;
 	performTransaction: (transaction: { add: string[], delete: string[], update: string[] }) => void;
 	handleWidth: Function;
+	updateDetailPanel: Function;
+	selectedID: string;
 	error: boolean;
 	update: Function;
 }
@@ -150,6 +155,7 @@ export default class ItemPanel extends React.Component<Props, State> {
 					packageItems.push(<PackageItem
 						key={id}
 						id={id}
+						selectedID={this.props.selectedID}
 						projectLanguage={this.props.projectLanguage}
 						readOnly={(node.scheme ? Schemes[node.scheme].readOnly : true)}
 						update={() => {
@@ -175,6 +181,16 @@ export default class ItemPanel extends React.Component<Props, State> {
 						selectedItems={this.state.selectedItems}
 						clearSelection={() => {
 							this.setState({selectedItems: [], selectionMode: false})
+						}}
+						showDetails={() => {
+							unHighlightAll();
+							this.props.updateDetailPanel(id);
+							let elem = graph.getElements().find(elem => elem.id === id);
+							if (elem) {
+								paper.translate(0, 0);
+								paper.translate(-elem.position().x + (paper.getComputedSize().width - 300) / 2,
+									-elem.position().y + (paper.getComputedSize().height / 2) - elem.getBBox().height);
+							}
 						}}
 					/>)
 				}

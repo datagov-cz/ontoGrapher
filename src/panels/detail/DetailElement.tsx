@@ -24,7 +24,7 @@ import * as _ from "lodash";
 import StereotypeOptions from "./components/StereotypeOptions";
 import {Shapes} from "../../config/Shapes";
 import {Locale} from "../../config/Locale";
-import {drawGraphElement, unHighlightAll} from "../../function/FunctionDraw";
+import {drawGraphElement, unHighlightCell} from "../../function/FunctionDraw";
 import AltLabelTable from "./components/AltLabelTable";
 import ConnectionTable from "./components/ConnectionTable";
 import {Representation} from "../../config/Enum";
@@ -35,10 +35,11 @@ interface Props {
 	performTransaction: (transaction: { add: string[], delete: string[], update: string[] }) => void;
 	handleWidth: Function;
 	error: boolean;
+	id: string;
+	updateDetailPanel: Function;
 }
 
 interface State {
-	id: string,
 	iri: string,
 	inputConnections: string[];
 	inputDiagrams: number[];
@@ -51,7 +52,6 @@ interface State {
 	inputSchemes: { [key: string]: string };
 	selectedLabel: { [key: string]: string };
 	newAltInput: string;
-	formNewStereotype: string;
 	readOnly: boolean;
 	changes: boolean;
 }
@@ -61,7 +61,6 @@ export default class DetailElement extends React.Component<Props, State> {
 	constructor(props: Props) {
 		super(props);
 		this.state = {
-			id: "",
 			iri: Object.keys(VocabularyElements)[0],
 			inputConnections: [],
 			inputDiagrams: [],
@@ -72,7 +71,6 @@ export default class DetailElement extends React.Component<Props, State> {
 			inputAltLabels: [],
 			inputDefinitions: {},
 			inputSchemes: {},
-			formNewStereotype: "",
 			selectedLabel: {},
 			newAltInput: "",
 			readOnly: true,
@@ -84,19 +82,17 @@ export default class DetailElement extends React.Component<Props, State> {
 
 	prepareDetails(id: string) {
 		this.setState({
-			id: id,
 			iri: ProjectElements[id].iri,
-			inputConnections: _.cloneDeep(ProjectElements[id].connections),
-			inputDiagrams: _.cloneDeep(ProjectElements[id].diagrams),
-			selectedLabel: _.cloneDeep(ProjectElements[id].selectedLabel),
-			inputTypes: _.cloneDeep(VocabularyElements[ProjectElements[id].iri].types),
-			inputTypeType: _.cloneDeep(VocabularyElements[ProjectElements[id].iri].types.find(type => type in Stereotypes && type in Shapes) || ""),
-			inputTypeData: _.cloneDeep(VocabularyElements[ProjectElements[id].iri].types.find(type => type in Stereotypes && !(type in Shapes)) || ""),
-			inputLabels: _.cloneDeep(VocabularyElements[ProjectElements[id].iri].labels),
-			inputAltLabels: _.cloneDeep(VocabularyElements[ProjectElements[id].iri].altLabels),
-			inputDefinitions: _.cloneDeep(VocabularyElements[ProjectElements[id].iri].definitions),
-			inputSchemes: _.cloneDeep(Schemes[VocabularyElements[ProjectElements[id].iri].inScheme].labels),
-			formNewStereotype: Object.keys(Stereotypes)[0],
+			inputConnections: ProjectElements[id].connections,
+			inputDiagrams: ProjectElements[id].diagrams,
+			selectedLabel: ProjectElements[id].selectedLabel,
+			inputTypes: VocabularyElements[ProjectElements[id].iri].types,
+			inputTypeType: VocabularyElements[ProjectElements[id].iri].types.find(type => type in Stereotypes && type in Shapes) || "",
+			inputTypeData: VocabularyElements[ProjectElements[id].iri].types.find(type => type in Stereotypes && !(type in Shapes)) || "",
+			inputLabels: VocabularyElements[ProjectElements[id].iri].labels,
+			inputAltLabels: VocabularyElements[ProjectElements[id].iri].altLabels,
+			inputDefinitions: VocabularyElements[ProjectElements[id].iri].definitions,
+			inputSchemes: Schemes[VocabularyElements[ProjectElements[id].iri].inScheme].labels,
 			newAltInput: "",
 			readOnly: Schemes[VocabularyElements[ProjectElements[id].iri].inScheme].readOnly,
 			changes: false
@@ -105,36 +101,36 @@ export default class DetailElement extends React.Component<Props, State> {
 
 	checkSpreadConnections(to: boolean): boolean {
 		if (this.state) {
-			let cell = graph.getElements().find(elem => elem.id === this.state.id);
+			let cell = graph.getElements().find(elem => elem.id === this.props.id);
 			if (cell) {
 				return to ? this.state.inputConnections.filter(conn => ProjectLinks[conn] && ProjectLinks[conn].active &&
 					(ProjectSettings.representation === Representation.FULL ? ProjectLinks[conn].iri in Links : !(ProjectLinks[conn].iri in Links))
 					&& getLinkOrVocabElem(ProjectLinks[conn].iri)).length !==
 					(graph.getConnectedLinks(cell)
-						.filter(link => ProjectLinks[link.id] && ProjectLinks[link.id].source === this.state.id).length) :
-					Object.keys(ProjectLinks).filter(conn => ProjectLinks[conn] && ProjectLinks[conn].target === this.state.id &&
+						.filter(link => ProjectLinks[link.id] && ProjectLinks[link.id].source === this.props.id).length) :
+					Object.keys(ProjectLinks).filter(conn => ProjectLinks[conn] && ProjectLinks[conn].target === this.props.id &&
 						ProjectLinks[conn].active && getLinkOrVocabElem(ProjectLinks[conn].iri) &&
 						(ProjectSettings.representation === Representation.FULL ? ProjectLinks[conn].iri in Links : !(ProjectLinks[conn].iri in Links))).length !==
 					graph.getConnectedLinks(cell)
-						.filter(link => ProjectLinks[link.id] && ProjectLinks[link.id].target === this.state.id).length;
+						.filter(link => ProjectLinks[link.id] && ProjectLinks[link.id].target === this.props.id).length;
 			} else return false;
 		} else return false;
 	}
 
 	save() {
-		let elem = graph.getElements().find(elem => elem.id === (this.state.id));
-		if (this.state.id in ProjectElements && elem) {
-			let oldVocabularyElement = _.cloneDeep(VocabularyElements[ProjectElements[this.state.id].iri]);
-			VocabularyElements[ProjectElements[this.state.id].iri].types = this.state.inputTypes;
-			VocabularyElements[ProjectElements[this.state.id].iri].labels = this.state.inputLabels;
-			VocabularyElements[ProjectElements[this.state.id].iri].altLabels = this.state.inputAltLabels;
-			VocabularyElements[ProjectElements[this.state.id].iri].definitions = this.state.inputDefinitions;
-			ProjectElements[this.state.id].selectedLabel = this.state.selectedLabel;
-			drawGraphElement(elem, this.props.projectLanguage, ProjectSettings.representation);
+		let elem = graph.getElements().find(elem => elem.id === (this.props.id));
+		if (this.props.id in ProjectElements) {
+			let oldVocabularyElement = _.cloneDeep(VocabularyElements[ProjectElements[this.props.id].iri]);
+			VocabularyElements[ProjectElements[this.props.id].iri].types = this.state.inputTypes;
+			VocabularyElements[ProjectElements[this.props.id].iri].labels = this.state.inputLabels;
+			VocabularyElements[ProjectElements[this.props.id].iri].altLabels = this.state.inputAltLabels;
+			VocabularyElements[ProjectElements[this.props.id].iri].definitions = this.state.inputDefinitions;
+			ProjectElements[this.props.id].selectedLabel = this.state.selectedLabel;
+			if (elem) drawGraphElement(elem, this.props.projectLanguage, ProjectSettings.representation);
 			this.props.save();
 			this.setState({changes: false});
-			this.prepareDetails(this.state.id);
-			this.props.performTransaction(updateProjectElement(oldVocabularyElement, this.state.id, false));
+			this.prepareDetails(this.props.id);
+			this.props.performTransaction(updateProjectElement(oldVocabularyElement, this.props.id, false));
 		}
 	}
 
@@ -157,7 +153,7 @@ export default class DetailElement extends React.Component<Props, State> {
 	}
 
 	render() {
-		return this.state.id !== "" && (<ResizableBox
+		return this.props.id !== "" && (<ResizableBox
 			width={300}
 			height={1000}
 			axis={"x"}
@@ -170,13 +166,12 @@ export default class DetailElement extends React.Component<Props, State> {
 			className={"details" + (this.props.error ? " disabled" : "")}>
 			<div className={(this.props.error ? " disabled" : "")}>
 				<button className={"buttonlink close nounderline"} onClick={() => {
-					unHighlightAll();
-					this.setState({id: ""});
-					this.props.handleWidth(0);
+					unHighlightCell(this.props.id);
+					this.props.updateDetailPanel();
 				}}><span role="img" aria-label={""}>➖</span></button>
 				<h3><IRILink
-					label={this.state.id ? getLabelOrBlank(VocabularyElements[ProjectElements[this.state.id].iri].labels, this.props.projectLanguage) : ""}
-					iri={ProjectElements[this.state.id].iri}/></h3>
+					label={this.props.id ? getLabelOrBlank(VocabularyElements[ProjectElements[this.props.id].iri].labels, this.props.projectLanguage) : ""}
+					iri={ProjectElements[this.props.id].iri}/></h3>
 				<Accordion defaultActiveKey={"0"}>
 					<Card>
 						<Card.Header>
@@ -280,20 +275,20 @@ export default class DetailElement extends React.Component<Props, State> {
 									projectLanguage={this.props.projectLanguage} to={true}
 									button={<Button className={"buttonlink center"}
 													onClick={() => {
-														this.props.performTransaction(spreadConnections(this.state.id, true));
+														this.props.performTransaction(spreadConnections(this.props.id, true));
 														this.forceUpdate();
 													}}>
 										{Locale[ProjectSettings.viewLanguage].spreadConnections}
 									</Button>}
 									showButton={this.checkSpreadConnections(true)}/>
 								<ConnectionTable
-									connections={Object.keys(ProjectLinks).filter(conn => ProjectLinks[conn].target === this.state.id &&
+									connections={Object.keys(ProjectLinks).filter(conn => ProjectLinks[conn].target === this.props.id &&
 										ProjectLinks[conn] && ProjectLinks[conn].active &&
 										(ProjectSettings.representation === Representation.FULL ? ProjectLinks[conn].iri in Links : !(ProjectLinks[conn].iri in Links)))}
 									projectLanguage={this.props.projectLanguage} to={false}
 									button={<Button className={"buttonlink center"}
 													onClick={() => {
-														this.props.performTransaction(spreadConnections(this.state.id, false));
+														this.props.performTransaction(spreadConnections(this.props.id, false));
 														this.forceUpdate();
 													}}>
 										{Locale[ProjectSettings.viewLanguage].spreadConnections}

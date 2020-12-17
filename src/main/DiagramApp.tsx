@@ -29,6 +29,7 @@ interface DiagramAppProps {
 
 interface DiagramAppState {
 	detailPanelHidden: boolean;
+	selectedID: string;
 	projectLanguage: string;
 	viewLanguage: string,
 	loading: boolean;
@@ -79,6 +80,7 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 			widthRight: 0,
 			validation: false,
 			retry: false,
+			selectedID: "",
 		});
 		document.title = Locale[ProjectSettings.viewLanguage].ontoGrapher;
 		this.handleChangeLanguage = this.handleChangeLanguage.bind(this);
@@ -176,11 +178,21 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 				}
 			})
 			else this.handleChangeLoadingStatus(false, Locale[ProjectSettings.viewLanguage].pleaseReload, false);
-        });
+		});
 	}
 
 	validate() {
 		this.setState({validation: true});
+	}
+
+	handleUpdateDetailPanel(id: string) {
+		if (id) {
+			this.setState({selectedID: id, widthRight: 300});
+			this.detailPanel.current?.update();
+		} else {
+			this.detailPanel.current?.hide();
+			this.setState({selectedID: "", widthRight: 0});
+		}
 	}
 
 	render() {
@@ -216,6 +228,10 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 					unHighlightAll();
 				}}
 				performTransaction={this.performTransaction}
+				updateDetailPanel={(id: string) => {
+					this.handleUpdateDetailPanel(id);
+				}}
+				selectedID={this.state.selectedID}
 			/>
 			<DiagramPanel
 				error={this.state.error}
@@ -226,6 +242,7 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 				performTransaction={this.performTransaction}
 			/>
 			<DetailPanel
+				id={this.state.selectedID}
 				error={this.state.error}
 				ref={this.detailPanel}
 				projectLanguage={this.state.projectLanguage}
@@ -240,6 +257,9 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 					this.setState({widthRight: width})
 				}}
 				performTransaction={this.performTransaction}
+				updateDetailPanel={(id: string) => {
+					this.handleUpdateDetailPanel(id);
+				}}
 			/>
 			{this.state.validation && <ValidationPanel
                 widthLeft={this.state.widthLeft}
@@ -253,19 +273,11 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 			<DiagramCanvas
 				ref={this.canvas}
 				projectLanguage={this.state.projectLanguage}
-				prepareDetails={(id: string) => {
-					this.detailPanel.current?.prepareDetails(id);
-					this.setState({widthRight: 300});
-				}}
-				hideDetails={() => {
-					this.detailPanel.current?.hide();
-					this.setState({widthRight: 0});
-				}}
 				updateElementPanel={() => {
 					this.itemPanel.current?.update();
 				}}
-				updateDetailPanel={() => {
-					this.detailPanel.current?.update();
+				updateDetailPanel={(id: string) => {
+					this.handleUpdateDetailPanel(id);
 				}}
 				error={this.state.error}
 				performTransaction={this.performTransaction}

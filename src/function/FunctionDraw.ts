@@ -5,15 +5,19 @@ import {getStereotypeList, parsePrefix, setElementShape} from "./FunctionEditVar
 import {Representation} from "../config/Enum";
 import {getElementShape} from "./FunctionGetVars";
 
+export function setDisplayLabel(id: string, languageCode: string) {
+	if (ProjectElements[id].selectedLabel[languageCode] === "") {
+		let altLabel = VocabularyElements[ProjectElements[id].iri].altLabels.find(alt =>
+			alt.language === languageCode);
+		ProjectElements[id].selectedLabel[languageCode] = altLabel ? altLabel.label :
+			VocabularyElements[ProjectElements[id].iri].labels[languageCode];
+	}
+}
+
 export function drawGraphElement(elem: joint.dia.Element, languageCode: string, representation: number) {
 	if (typeof elem.id === "string") {
 		let types = VocabularyElements[ProjectElements[elem.id].iri].types;
-		if (ProjectElements[elem.id].selectedLabel[languageCode] === "") {
-			let altLabel = VocabularyElements[ProjectElements[elem.id].iri].altLabels.find(alt =>
-				alt.language === languageCode);
-			ProjectElements[elem.id].selectedLabel[languageCode] = altLabel ? altLabel.label :
-				VocabularyElements[ProjectElements[elem.id].iri].labels[languageCode];
-		}
+		setDisplayLabel(elem.id, languageCode);
 		let label = ProjectElements[elem.id].selectedLabel[languageCode];
 		let labels: string[] = [];
 		if (ProjectSettings.viewStereotypes)
@@ -61,12 +65,11 @@ export function highlightCell(id: string, color: string = '#0000FF') {
 
 export function unHighlightCell(id: string, color: string = '#000000') {
 	let cell = graph.getCell(id);
+	if (!cell) return;
 	if (cell.isLink()) {
 		cell.attr({line: {stroke: color}});
-	} else {
-		if (cell.id) {
-			drawGraphElement(cell as joint.dia.Element, ProjectSettings.selectedLanguage, ProjectSettings.representation)
-		}
+	} else if (cell.id) {
+		drawGraphElement(cell as joint.dia.Element, ProjectSettings.selectedLanguage, ProjectSettings.representation)
 	}
 }
 

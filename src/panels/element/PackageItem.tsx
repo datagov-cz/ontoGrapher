@@ -11,6 +11,8 @@ interface Props {
 	handleShowCheckbox: Function;
 	checkboxChecked: boolean;
 	clearSelection: Function;
+	showDetails: Function;
+	selectedID: string;
 	readOnly: boolean;
 	projectLanguage: string;
 }
@@ -70,6 +72,8 @@ export default class PackageItem extends React.Component<Props, State> {
 					 event.stopPropagation();
 					 if (event.shiftKey) {
 						 this.props.handleShowCheckbox();
+					 } else {
+						 this.props.showDetails(this.props.id);
 					 }
 				 }}
 				 onMouseOver={() => {
@@ -78,7 +82,7 @@ export default class PackageItem extends React.Component<Props, State> {
 				 onMouseLeave={() => {
 					 this.setState({hover: false})
 				 }}
-				 className={"stereotypeElementItem" + (this.isHidden() ? " hidden" : "")}>
+				 className={"stereotypeElementItem" + (this.isHidden() ? " hidden" : "") + (this.props.id === this.props.selectedID ? " selected" : "")}>
 				{(this.props.showCheckbox || this.state.hover) &&
                 <span><input type="checkbox" checked={this.props.checkboxChecked}
                              onClick={(event) => {

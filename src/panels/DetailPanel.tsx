@@ -2,6 +2,8 @@ import React from 'react';
 import DetailLink from "./detail/DetailLink";
 import {graph} from "../graph/Graph";
 import DetailElement from "./detail/DetailElement";
+import {highlightCell, setDisplayLabel, unHighlightAll, unHighlightCell} from "../function/FunctionDraw";
+import {ProjectElements, ProjectLinks} from "../config/Variables";
 
 interface Props {
     projectLanguage: string;
@@ -10,10 +12,11 @@ interface Props {
     handleWidth: Function;
     performTransaction: (transaction: { add: string[], delete: string[], update: string[] }) => void;
     error: boolean;
+    id: string;
+    updateDetailPanel: Function;
 }
 
 interface State {
-    id: any,
     hidden: boolean;
     type: string;
 }
@@ -26,7 +29,6 @@ export default class DetailPanel extends React.Component<Props, State> {
     constructor(props: Props) {
         super(props);
         this.state = {
-            id: undefined,
             hidden: true,
             type: "",
         };
@@ -37,39 +39,49 @@ export default class DetailPanel extends React.Component<Props, State> {
     }
 
     hide() {
+        if (this.props.id) unHighlightCell(this.props.id);
         this.setState({hidden: true});
     }
 
+    componentDidUpdate(prevProps: Readonly<Props>, prevState: Readonly<State>, snapshot?: any) {
+        if (prevProps !== this.props && this.props.id) {
+            this.prepareDetails(this.props.id);
+        }
+    }
+
     prepareDetails(id: string) {
-        if (graph.getCell(id)) {
-            if (graph.getCell(id).isElement()) {
-                this.setState({
-                    id: id,
-                    type: "elem",
-                    hidden: false
-                });
+        unHighlightAll();
+        if (graph.getCell(id)) highlightCell(this.props.id);
+        if (id in ProjectElements) {
+            setDisplayLabel(id, this.props.projectLanguage);
+            this.setState({
+                type: "elem",
+                hidden: false
+            }, () => {
                 this.detailElem.current?.prepareDetails(id);
-            } else if (graph.getCell(id).isLink()) {
-                this.setState({
-                    id: id,
-                    type: "link",
-                    hidden: false
-                });
+            });
+        } else if (id in ProjectLinks) {
+            this.setState({
+                type: "link",
+                hidden: false
+            }, () => {
                 this.detailLink.current?.prepareDetails(id);
-            }
+            });
         }
     }
 
     save() {
-        if (graph.getCell(this.state.id).isElement()) this.props.resizeElem(this.state.id);
+        let cell = graph.getCell(this.props.id);
+        if (cell && cell.isElement())
+            this.props.resizeElem(this.props.id);
         this.props.update();
     }
 
     update() {
         this.detailElem.current?.forceUpdate();
         this.detailLink.current?.forceUpdate();
-        if (this.detailElem.current?.state.id) {
-            this.prepareDetails(this.detailElem.current?.state.id);
+        if (this.props.id) {
+            this.prepareDetails(this.props.id);
         }
     }
 
@@ -84,14 +96,20 @@ export default class DetailPanel extends React.Component<Props, State> {
                                        save={this.save} ref={this.detailElem}
                                        handleWidth={this.props.handleWidth}
                                        performTransaction={this.props.performTransaction}
-                                       error={this.props.error}/>);
+                                       error={this.props.error}
+                                       id={this.props.id}
+                                       updateDetailPanel={this.props.updateDetailPanel}
+                />);
             } else if (this.state.type === "link") {
                 return (<DetailLink
                     error={this.props.error}
                     handleWidth={this.props.handleWidth}
                     projectLanguage={this.props.projectLanguage}
                     performTransaction={this.props.performTransaction}
-                    save={this.save} ref={this.detailLink}/>);
+                    save={this.save} ref={this.detailLink}
+                    id={this.props.id}
+                    updateDetailPanel={this.props.updateDetailPanel}
+                />);
             }
         } else {
             return (<div/>);
