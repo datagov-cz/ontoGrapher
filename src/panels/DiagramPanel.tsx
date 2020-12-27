@@ -26,20 +26,22 @@ export default class DiagramPanel extends React.Component<Props, State> {
 
 	render() {
 		return (<div className={"diagramPanel" + (this.props.error ? " disabled" : "")}>
-			{Diagrams.map((diag, i) => {
-				if (diag.active) return (<DiagramTab key={i} diagram={i} name={diag.name}
-													 error={this.props.error}
-													 update={() => {
-														 this.forceUpdate();
-														 this.props.update();
-													 }}
-													 performTransaction={this.props.performTransaction}/>)
-				else return "";
-			})}
+			{Diagrams.filter(diag => diag.active).map((diag, i) =>
+				<DiagramTab key={i}
+							diagram={i}
+							update={() => {
+								this.forceUpdate();
+								this.props.update();
+							}}
+							performTransaction={this.props.performTransaction}
+							deleteDiagram={(diag: number) => {
+								this.setState({selectedDiagram: diag, modalRemoveDiagram: true});
+							}}/>
+			)}
 			<DiagramAdd update={() => {
 				this.forceUpdate();
 				this.props.update();
-			}} error={this.props.error} performTransaction={this.props.performTransaction}/>
+			}} performTransaction={this.props.performTransaction}/>
 			<ModalRemoveDiagram
 				modal={this.state.modalRemoveDiagram}
 				diagram={this.state.selectedDiagram}
@@ -48,6 +50,7 @@ export default class DiagramPanel extends React.Component<Props, State> {
 				}}
 				update={() => {
 					this.forceUpdate();
+					this.props.update();
 				}}
 				performTransaction={this.props.performTransaction}
 			/>

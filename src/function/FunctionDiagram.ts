@@ -9,6 +9,7 @@ import {paper} from "../main/DiagramCanvas";
 
 export function changeDiagrams(diagram: number = 0) {
     graph.clear();
+    ProjectSettings.selectedLink = "";
     if (Diagrams[diagram]) {
         ProjectSettings.selectedDiagram = diagram;
         for (let id in ProjectElements) {

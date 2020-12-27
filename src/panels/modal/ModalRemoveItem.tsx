@@ -1,5 +1,5 @@
 import React from 'react';
-import {Button, Modal} from "react-bootstrap";
+import {Button, Form, Modal} from "react-bootstrap";
 import {deletePackageItem} from "../../function/FunctionEditVars";
 import {mergeTransactions, updateDeleteTriples} from "../../interface/TransactionInterface";
 import {ProjectElements, ProjectSettings, Schemes, VocabularyElements} from "../../config/Variables";
@@ -31,7 +31,7 @@ export default class ModalRemoveItem extends React.Component<Props, State> {
 
     render() {
         return (
-            <Modal centered show={this.props.modal}>
+            <Modal centered show={this.props.modal} keyboard onEscapeKeyDown={() => this.props.close()}>
                 <Modal.Header>
                     <Modal.Title>{Locale[ProjectSettings.viewLanguage].modalRemovePackageItemTitle}</Modal.Title>
                 </Modal.Header>
@@ -42,11 +42,14 @@ export default class ModalRemoveItem extends React.Component<Props, State> {
                     <Button onClick={() => {
                         this.props.close();
                     }} variant="secondary">{Locale[ProjectSettings.viewLanguage].cancel}</Button>
-                    <Button onClick={() => {
+                    <Form onSubmit={event => {
+                        event.preventDefault();
                         this.save();
                         this.props.close();
                         this.props.update();
-                    }}>{Locale[ProjectSettings.viewLanguage].confirm}</Button>
+                    }}>
+                    <Button>{Locale[ProjectSettings.viewLanguage].confirm}</Button>
+                    </Form>
                 </Modal.Footer>
             </Modal>
         );

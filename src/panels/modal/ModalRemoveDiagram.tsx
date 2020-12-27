@@ -1,5 +1,5 @@
 import React from 'react';
-import {Button, Modal} from "react-bootstrap";
+import {Button, Form, Modal} from "react-bootstrap";
 import {Diagrams, ProjectSettings} from "../../config/Variables";
 import {changeDiagrams} from "../../function/FunctionDiagram";
 import {updateProjectSettings} from "../../interface/TransactionInterface";
@@ -17,15 +17,15 @@ export default class ModalRemoveDiagram extends React.Component<Props> {
 
 	save() {
 		Diagrams[this.props.diagram].active = false;
-		if (ProjectSettings.selectedDiagram === this.props.diagram) {
-			changeDiagrams(0);
-		}
+		if (this.props.diagram < ProjectSettings.selectedDiagram) changeDiagrams(ProjectSettings.selectedDiagram - 1);
+		else if (this.props.diagram === ProjectSettings.selectedDiagram) changeDiagrams(0);
+		this.props.update();
 		this.props.performTransaction(updateProjectSettings(ProjectSettings.contextIRI));
 	}
 
 	render() {
 		return (
-			<Modal centered show={this.props.modal}>
+			<Modal centered show={this.props.modal} keyboard onEscapeKeyDown={() => this.props.close()}>
 				<Modal.Header>
 					<Modal.Title>{Locale[ProjectSettings.viewLanguage].modalRemoveDiagramTitle}</Modal.Title>
 				</Modal.Header>
@@ -36,11 +36,14 @@ export default class ModalRemoveDiagram extends React.Component<Props> {
 					<Button onClick={() => {
 						this.setState({modalRemove: false});
 					}} variant="secondary">{Locale[ProjectSettings.viewLanguage].cancel}</Button>
-					<Button onClick={() => {
+					<Form onSubmit={(event => {
+						event.preventDefault();
 						this.save();
 						this.props.update();
 						this.props.close();
-					}}>{Locale[ProjectSettings.viewLanguage].confirm}</Button>
+					})}>
+						<Button type={"submit"}>{Locale[ProjectSettings.viewLanguage].confirm}</Button>
+					</Form>
 				</Modal.Footer>
 			</Modal>
 		);
