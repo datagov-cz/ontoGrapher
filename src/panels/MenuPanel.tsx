@@ -5,9 +5,10 @@ import MenuPanelHelp from "./menu/MenuPanelHelp";
 import MenuPanelAbout from "./menu/MenuPanelAbout";
 import InterfaceNotification from "../components/InterfaceNotification";
 import MenuPanelValidate from "./menu/MenuPanelValidate";
-import MenuPanelSwitchRepresentation from "./menu/view/MenuPanelSwitchRepresentation";
+import MenuPanelSwitchRepresentation from "./menu/MenuPanelSwitchRepresentation";
 import InterfaceStatus from "../components/InterfaceStatus";
 import MenuPanelView from "./menu/MenuPanelView";
+import ZoomWidget from "./menu/widget/ZoomWidget";
 
 interface MenuPanelProps {
 	readOnly?: boolean;
@@ -70,6 +71,7 @@ export default class MenuPanel extends React.Component<MenuPanelProps, MenuPanel
 												   close={() => this.props.closeDetailPanel()}
 												   performTransaction={this.props.performTransaction}/>
 					<MenuPanelValidate validate={() => this.props.validate()}/>
+					<ZoomWidget/>
 					<div className={"right" + (this.props.error ? " nointeract" : "")}>
 						<MenuPanelHelp/>
 						<MenuPanelAbout/>

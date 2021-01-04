@@ -22,15 +22,8 @@ export function changeDiagrams(diagram: number = 0) {
         }
         if (ProjectSettings.representation === Representation.COMPACT)
             setRepresentation(ProjectSettings.representation);
-        paper.translate(0, 0);
-        let x = 0;
-        let y = 0;
-        for (let elem of graph.getElements()) {
-            x += elem.getBBox().x;
-            y += elem.getBBox().y;
-        }
-        paper.translate(-(x / graph.getElements().length) + (paper.getComputedSize().width / 2),
-            -(y / graph.getElements().length) + (paper.getComputedSize().height / 2));
+        paper.scale(1, 1);
+        centerDiagram();
     }
 }
 
@@ -39,5 +32,28 @@ export function addDiagram() {
     for (let key of Object.keys(ProjectElements)) {
         ProjectElements[key].hidden[Diagrams.length - 1] = false;
         ProjectElements[key].position[Diagrams.length - 1] = {x: 0, y: 0};
+    }
+}
+
+export function centerDiagram() {
+    paper.translate(0, 0);
+    let x = 0;
+    let y = 0;
+    for (let elem of graph.getElements()) {
+        x += elem.getBBox().x;
+        y += elem.getBBox().y;
+    }
+    paper.translate(-(x / graph.getElements().length) + (paper.getComputedSize().width / 2),
+        -(y / graph.getElements().length) + (paper.getComputedSize().height / 2));
+}
+
+export function zoomDiagram(x: number, y: number, delta: number) {
+    let oldTranslate = paper.translate();
+    let oldScale = paper.scale().sx;
+    let nextScale = (delta * 0.1) + oldScale;
+    if (nextScale >= 0.4 && nextScale <= 2.1) {
+        paper.translate(oldTranslate.tx + (x * (oldScale - nextScale)),
+            oldTranslate.ty + (y * (oldScale - nextScale)));
+        paper.scale(nextScale, nextScale);
     }
 }

@@ -109,7 +109,7 @@
   "modelPlaceholder": "Diagram name",
   "appName": "ontoGrapher",
   "menuPanelView": "View",
-  "menuPanelCenter": "Center view",
+  "menuPanelCenterView": "Center view",
   "menuPanelZoom": "Restore zoom",
   "contextMenuSecondCardinality": "Cardinality at head",
   "contextMenuFirstCardinality": "Cardinality at tail",
