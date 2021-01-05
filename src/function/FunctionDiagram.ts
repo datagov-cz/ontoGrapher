@@ -55,13 +55,11 @@ export function zoomDiagram(x: number, y: number, delta: number) {
     let oldTranslate = paper.translate();
     let oldScale = paper.scale().sx;
     let nextScale = (delta * 0.1) + oldScale;
-    if (nextScale >= 0.4 && nextScale <= 2.1) {
-        paper.translate(oldTranslate.tx + (x * (oldScale - nextScale)),
-            oldTranslate.ty + (y * (oldScale - nextScale)));
-        paper.scale(nextScale, nextScale);
-        Diagrams[ProjectSettings.selectedDiagram].origin = {
-            x: paper.translate().tx, y: paper.translate().ty
-        };
-        Diagrams[ProjectSettings.selectedDiagram].scale = nextScale;
-    }
+    paper.translate(oldTranslate.tx + (x * (oldScale - nextScale)),
+        oldTranslate.ty + (y * (oldScale - nextScale)));
+    paper.scale(nextScale, nextScale);
+    Diagrams[ProjectSettings.selectedDiagram].origin = {
+        x: paper.translate().tx, y: paper.translate().ty
+    };
+    Diagrams[ProjectSettings.selectedDiagram].scale = nextScale;
 }
