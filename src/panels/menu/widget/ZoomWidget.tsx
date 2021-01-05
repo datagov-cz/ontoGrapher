@@ -16,9 +16,6 @@ interface State {
 }
 
 export default class ZoomWidget extends React.Component<Props, State> {
-	constructor(props: Props) {
-		super(props);
-	}
 
 	render() {
 		return (<span>
