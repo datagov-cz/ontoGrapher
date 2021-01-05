@@ -6,6 +6,7 @@ import {Locale} from "../../config/Locale";
 import {ProjectSettings} from "../../config/Variables";
 import MenuPanelResetZoom from "./view/MenuPanelResetZoom";
 import MenuPanelCenterView from "./view/MenuPanelCenterView";
+import MenuPanelFitContent from "./view/MenuPanelFitContent";
 
 interface Props {
 	update: Function;
@@ -28,6 +29,7 @@ export default class MenuPanelView extends React.Component<Props, State> {
 				<Dropdown.Divider/>
 				<MenuPanelResetZoom/>
 				<MenuPanelCenterView/>
+				<MenuPanelFitContent/>
 				<Dropdown.Divider/>
 				<MenuPanelSwitchColors update={() => this.props.update()}
 									   performTransaction={this.props.performTransaction}/>

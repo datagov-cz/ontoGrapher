@@ -286,7 +286,9 @@ export async function getSettings(contextIRI: string, contextEndpoint: string): 
             if (!(parseInt(result.index.value) in Diagrams)) {
                 Diagrams[parseInt(result.index.value)] = {
                     name: Locale[ProjectSettings.viewLanguage].untitled,
-                    active: true
+                    active: true,
+                    origin: {x: 0, y: 0},
+                    scale: 1
                 }
             }
             Diagrams[parseInt(result.index.value)].name = result.name.value;

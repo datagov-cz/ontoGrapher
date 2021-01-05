@@ -2,6 +2,7 @@ import React from 'react';
 import * as joint from 'jointjs';
 import {graphElement} from "../graph/GraphElement";
 import {
+    Diagrams,
     Links,
     PackageRoot,
     ProjectElements,
@@ -424,6 +425,9 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                 }
             },
             'blank:pointerup': () => {
+                Diagrams[ProjectSettings.selectedDiagram].origin = {
+                    x: paper.translate().tx, y: paper.translate().ty
+                };
                 this.drag = undefined;
             },
             'blank:pointerclick': (evt) => {
