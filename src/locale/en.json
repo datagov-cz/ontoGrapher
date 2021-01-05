@@ -104,6 +104,8 @@
   "selectedLanguage": "Language",
   "menuPanelHelp": "Help",
   "addPackage": "Add",
+  "zoomIn": "Zoom in",
+  "zoomOut": "Zoom out",
   "removePackage": "Remove",
   "model": "Diagram",
   "modelPlaceholder": "Diagram name",
