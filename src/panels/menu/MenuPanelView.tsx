@@ -4,9 +4,6 @@ import MenuPanelSwitchStereotypes from "./view/MenuPanelSwitchStereotypes";
 import MenuPanelSwitchColors from "./view/MenuPanelSwitchColors";
 import {Locale} from "../../config/Locale";
 import {ProjectSettings} from "../../config/Variables";
-import MenuPanelResetZoom from "./view/MenuPanelResetZoom";
-import MenuPanelCenterView from "./view/MenuPanelCenterView";
-import MenuPanelFitContent from "./view/MenuPanelFitContent";
 
 interface Props {
 	update: Function;
@@ -26,10 +23,6 @@ export default class MenuPanelView extends React.Component<Props, State> {
 			</Dropdown.Toggle>
 			<Dropdown.Menu>
 				<MenuPanelSwitchStereotypes update={() => this.props.update()}/>
-				<Dropdown.Divider/>
-				<MenuPanelResetZoom/>
-				<MenuPanelCenterView/>
-				<MenuPanelFitContent/>
 				<Dropdown.Divider/>
 				<MenuPanelSwitchColors update={() => this.props.update()}
 									   performTransaction={this.props.performTransaction}/>

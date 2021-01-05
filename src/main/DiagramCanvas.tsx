@@ -413,6 +413,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                 this.drag = {x: x * scale.sx, y: y * scale.sy};
             },
             'blank:mousewheel': (evt, x, y, delta) => {
+                evt.preventDefault();
                 zoomDiagram(x, y, delta);
             },
             'blank:pointermove': function (evt, x, y) {

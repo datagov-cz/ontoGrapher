@@ -40,12 +40,13 @@ export function centerDiagram() {
     paper.translate(0, 0);
     let x = 0;
     let y = 0;
+    let scale = paper.scale().sx
     for (let elem of graph.getElements()) {
         x += elem.getBBox().x;
         y += elem.getBBox().y;
     }
-    paper.translate(-(x / graph.getElements().length) + (paper.getComputedSize().width / 2),
-        -(y / graph.getElements().length) + (paper.getComputedSize().height / 2));
+    paper.translate(-(x / graph.getElements().length * scale) + (paper.getComputedSize().width / 2),
+        -(y / graph.getElements().length * scale) + (paper.getComputedSize().height / 2));
     Diagrams[ProjectSettings.selectedDiagram].origin = {
         x: paper.translate().tx, y: paper.translate().ty
     };

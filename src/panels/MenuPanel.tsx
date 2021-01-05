@@ -9,6 +9,8 @@ import MenuPanelSwitchRepresentation from "./menu/MenuPanelSwitchRepresentation"
 import InterfaceStatus from "../components/InterfaceStatus";
 import MenuPanelView from "./menu/MenuPanelView";
 import ZoomWidget from "./menu/widget/ZoomWidget";
+import ViewWidget from "./menu/widget/ViewWidget";
+import FitContentWidget from "./menu/widget/FitContentWidget";
 
 interface MenuPanelProps {
 	readOnly?: boolean;
@@ -72,6 +74,8 @@ export default class MenuPanel extends React.Component<MenuPanelProps, MenuPanel
 												   performTransaction={this.props.performTransaction}/>
 					<MenuPanelValidate validate={() => this.props.validate()}/>
 					<ZoomWidget/>
+					<ViewWidget/>
+					<FitContentWidget/>
 					<div className={"right" + (this.props.error ? " nointeract" : "")}>
 						<MenuPanelHelp/>
 						<MenuPanelAbout/>
