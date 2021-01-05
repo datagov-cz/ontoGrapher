@@ -43,9 +43,6 @@ export default class ModalRemoveItem extends React.Component<Props, State> {
                     <p>{Locale[ProjectSettings.viewLanguage].modalRemovePackageItemDescription}</p>
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button onClick={() => {
-                        this.props.close();
-                    }} variant="secondary">{Locale[ProjectSettings.viewLanguage].cancel}</Button>
                     <Form onSubmit={event => {
                         event.preventDefault();
                         this.save();
@@ -55,6 +52,9 @@ export default class ModalRemoveItem extends React.Component<Props, State> {
                         <Button type={"submit"}
                                 id={"modalRemoveItemConfirm"}>{Locale[ProjectSettings.viewLanguage].confirm}</Button>
                     </Form>
+                    <Button onClick={() => {
+                        this.props.close();
+                    }} variant="secondary">{Locale[ProjectSettings.viewLanguage].cancel}</Button>
                 </Modal.Footer>
             </Modal>
         );
