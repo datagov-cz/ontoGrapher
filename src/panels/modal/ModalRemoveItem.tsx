@@ -31,7 +31,11 @@ export default class ModalRemoveItem extends React.Component<Props, State> {
 
     render() {
         return (
-            <Modal centered show={this.props.modal} keyboard onEscapeKeyDown={() => this.props.close()}>
+            <Modal centered show={this.props.modal} keyboard onEscapeKeyDown={() => this.props.close()}
+                   onEntering={() => {
+                       let elem = document.getElementById("modalRemoveItemConfirm");
+                       if (elem) elem.focus();
+                   }}>
                 <Modal.Header>
                     <Modal.Title>{Locale[ProjectSettings.viewLanguage].modalRemovePackageItemTitle}</Modal.Title>
                 </Modal.Header>
@@ -48,7 +52,8 @@ export default class ModalRemoveItem extends React.Component<Props, State> {
                         this.props.close();
                         this.props.update();
                     }}>
-                    <Button>{Locale[ProjectSettings.viewLanguage].confirm}</Button>
+                        <Button type={"submit"}
+                                id={"modalRemoveItemConfirm"}>{Locale[ProjectSettings.viewLanguage].confirm}</Button>
                     </Form>
                 </Modal.Footer>
             </Modal>

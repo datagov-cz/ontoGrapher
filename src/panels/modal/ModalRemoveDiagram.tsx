@@ -25,7 +25,11 @@ export default class ModalRemoveDiagram extends React.Component<Props> {
 
 	render() {
 		return (
-			<Modal centered show={this.props.modal} keyboard onEscapeKeyDown={() => this.props.close()}>
+			<Modal centered show={this.props.modal} keyboard onEscapeKeyDown={() => this.props.close()}
+				   onEntering={() => {
+					   let elem = document.getElementById("modalRemoveDiagramConfirm");
+					   if (elem) elem.focus();
+				   }}>
 				<Modal.Header>
 					<Modal.Title>{Locale[ProjectSettings.viewLanguage].modalRemoveDiagramTitle}</Modal.Title>
 				</Modal.Header>
@@ -42,7 +46,8 @@ export default class ModalRemoveDiagram extends React.Component<Props> {
 						this.props.update();
 						this.props.close();
 					})}>
-						<Button type={"submit"}>{Locale[ProjectSettings.viewLanguage].confirm}</Button>
+						<Button id={"modalRemoveDiagramConfirm"}
+								type={"submit"}>{Locale[ProjectSettings.viewLanguage].confirm}</Button>
 					</Form>
 				</Modal.Footer>
 			</Modal>
