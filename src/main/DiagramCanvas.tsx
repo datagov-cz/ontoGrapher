@@ -483,25 +483,23 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                         let cls = new graphElement({id: id});
                         drawGraphElement(cls, ProjectSettings.selectedLanguage, ProjectSettings.representation);
                         let point = paper.clientToLocalPoint({x: event.clientX, y: event.clientY});
+                        if (data.id.length > 1) {
+                            let x = i % matrixDimension;
+                            let y = Math.floor(i / matrixDimension);
+                            cls.set('position', {x: (point.x + (x * 200)), y: (point.y + (y * 200))});
+                            ProjectElements[id].position[ProjectSettings.selectedDiagram] = {
+                                x: (point.x + (x * 200)),
+                                y: (point.y + (y * 200))
+                            };
+                        } else {
+                            cls.set('position', {x: point.x, y: point.y});
+                            ProjectElements[id].position[ProjectSettings.selectedDiagram] = {
+                                x: point.x,
+                                y: point.y
+                            };
+                        }
                         map.push(updateProjectElementDiagram(id, ProjectSettings.selectedDiagram,
                             ProjectElements[id].position[ProjectSettings.selectedDiagram], true));
-                        if (point) {
-                            if (data.id.length > 1) {
-                                let x = i % matrixDimension;
-                                let y = Math.floor(i / matrixDimension);
-                                cls.set('position', {x: (point.x + (x * 200)), y: (point.y + (y * 200))});
-                                ProjectElements[id].position[ProjectSettings.selectedDiagram] = {
-                                    x: (point.x + (x * 200)),
-                                    y: (point.y + (y * 200))
-                                };
-                            } else {
-                                cls.set('position', {x: point.x, y: point.y});
-                                ProjectElements[id].position[ProjectSettings.selectedDiagram] = {
-                                    x: point.x,
-                                    y: point.y
-                                };
-                            }
-                        }
                         cls.addTo(graph);
                         ProjectElements[id].hidden[ProjectSettings.selectedDiagram] = false;
                         this.props.updateElementPanel();
