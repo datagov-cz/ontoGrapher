@@ -3,6 +3,7 @@ import {parsePrefix} from "./FunctionEditVars";
 import {graph} from "../graph/Graph";
 import {getActiveToConnections, getElementShape, getLinkOrVocabElem, getNewLink} from "./FunctionGetVars";
 import * as joint from "jointjs";
+import * as _ from "lodash";
 import {graphElement} from "../graph/GraphElement";
 import {addLink} from "./FunctionCreateVars";
 import {Cardinality} from "../datatypes/Cardinality";
@@ -10,6 +11,7 @@ import {LinkType, Representation} from "../config/Enum";
 import {
     mergeTransactions,
     updateDeleteProjectLinkVertex,
+    updateProjectElement,
     updateProjectElementDiagram,
     updateProjectLink
 } from "../interface/TransactionInterface";
@@ -69,12 +71,15 @@ export function spreadConnections(id: string, to: boolean = true) {
             let y = centerY + radius * Math.sin((i * 2 * Math.PI) / elems.length);
             let newElem = new graphElement({id: elemID});
             newElem.position(x, y);
+            let oldPos = _.cloneDeep(ProjectElements[elemID].position[ProjectSettings.selectedDiagram]);
             ProjectElements[elemID].position[ProjectSettings.selectedDiagram] = {x: x, y: y};
             ProjectElements[elemID].hidden[ProjectSettings.selectedDiagram] = false;
             newElem.addTo(graph);
             drawGraphElement(newElem, ProjectSettings.selectedLanguage, ProjectSettings.representation);
-            transactions = mergeTransactions(transactions, restoreHiddenElem(elemID, newElem, false, true, false));
-            transactions = mergeTransactions(transactions, updateProjectElementDiagram(elemID, ProjectSettings.selectedDiagram));
+            transactions = mergeTransactions(transactions,
+                restoreHiddenElem(elemID, newElem, false, true, false),
+                updateProjectElement(VocabularyElements[ProjectElements[elemID].iri], elemID),
+                updateProjectElementDiagram(elemID, ProjectSettings.selectedDiagram, oldPos, true));
         }
         if (ProjectSettings.representation === Representation.COMPACT)
             setRepresentation(ProjectSettings.representation);
@@ -270,8 +275,12 @@ export function setupLink(link: string, restoreConnectionPosition: boolean = tru
     }
     if (restoreConnectionPosition) {
         lnk.vertices(ProjectLinks[link].vertices[ProjectSettings.selectedDiagram]);
-    } else
+        return undefined;
+    } else {
+        let ret = _.cloneDeep(ProjectLinks[link].vertices[ProjectSettings.selectedDiagram]);
         ProjectLinks[link].vertices[ProjectSettings.selectedDiagram] = [];
+        return ret ? ret.length : undefined;
+    }
 }
 
 export function restoreHiddenElem(id: string, cls: joint.dia.Element, restoreSimpleConnectionPosition: boolean,
@@ -290,10 +299,9 @@ export function restoreHiddenElem(id: string, cls: joint.dia.Element, restoreSim
             && (graph.getCell(ProjectLinks[link].source) && graph.getCell(ProjectLinks[link].target)) && (
                 (ProjectSettings.representation === Representation.FULL ? ProjectLinks[link].iri in Links : (!(ProjectLinks[link].iri in Links))
                 ))) {
-            setupLink(link, restoreSimpleConnectionPosition);
-            if (!restoreSimpleConnectionPosition)
-                transactions = mergeTransactions(transactions, updateDeleteProjectLinkVertex(link, 0,
-                    ProjectLinks[link].vertices[ProjectSettings.selectedDiagram].length));
+            let oldPos = setupLink(link, restoreSimpleConnectionPosition);
+            if (oldPos)
+                transactions = mergeTransactions(transactions, updateDeleteProjectLinkVertex(link, 0, oldPos));
         } else if (restoreFull && ProjectSettings.representation === Representation.FULL &&
             ProjectLinks[link].target === id &&
             ProjectLinks[link].iri in Links &&
@@ -321,6 +329,8 @@ export function restoreHiddenElem(id: string, cls: joint.dia.Element, restoreSim
                         let posy = ((sourcepos.y + targetpos.y) / 2);
                         relationship.position(posx, posy);
                     }
+                    let oldPos = _.cloneDeep(ProjectElements[relID].position[ProjectSettings.selectedDiagram]);
+                    let oldHidden = _.cloneDeep(ProjectElements[relID].hidden[ProjectSettings.selectedDiagram]);
                     ProjectElements[relID].position[ProjectSettings.selectedDiagram] = relationship.position();
                     ProjectElements[relID].hidden[ProjectSettings.selectedDiagram] = false;
                     drawGraphElement(relationship, ProjectSettings.selectedLanguage, Representation.FULL);
@@ -353,7 +363,9 @@ export function restoreHiddenElem(id: string, cls: joint.dia.Element, restoreSim
                         domainLink.vertices(ProjectLinks[link].vertices[ProjectSettings.selectedDiagram]);
                         rangeLink.vertices(ProjectLinks[targetLink].vertices[ProjectSettings.selectedDiagram]);
                     } else {
-                        transactions = mergeTransactions(transactions, updateProjectElementDiagram(relID, ProjectSettings.selectedDiagram));
+                        transactions = mergeTransactions(transactions,
+                            updateProjectElement(VocabularyElements[ProjectElements[relID].iri], relID),
+                            updateProjectElementDiagram(relID, ProjectSettings.selectedDiagram, oldPos, oldHidden));
                         if (ProjectLinks[link].vertices[ProjectSettings.selectedDiagram])
                             transactions = mergeTransactions(transactions, updateDeleteProjectLinkVertex(link, 0,
                                 ProjectLinks[link].vertices[ProjectSettings.selectedDiagram].length));

@@ -28,7 +28,7 @@ export function updateProjectElement(
 			active: boolean,
 			topConcept: string | undefined
 		},
-	id: string, saveDiagrams: boolean = true): { add: string[], delete: string[], update: string[] } {
+	id: string): { add: string[], delete: string[], update: string[] } {
 	let iri = ProjectElements[id].iri;
 	let scheme = VocabularyElements[iri].inScheme;
 	let newVocabularyElement = VocabularyElements[iri];
@@ -86,19 +86,6 @@ export function updateProjectElement(
 		]
 	}
 
-	if (saveDiagrams) addLD["@graph"].push(
-		...ProjectElements[id].diagrams.map(diag => {
-			return {
-				"@id": iri + "/diagram-" + (diag + 1),
-				"@type": "og:elementDiagram",
-				"og:index": diag,
-				"og:position-x": Math.round(ProjectElements[id].position[diag].x),
-				"og:position-y": Math.round(ProjectElements[id].position[diag].y),
-				"og:hidden": ProjectElements[id].hidden[diag]
-			}
-		}),
-	)
-
 	if (newVocabularyElement.topConcept) addLD["@graph"].push({
 		"@id": scheme,
 		"skos:hasTopConcept": iri
@@ -137,12 +124,11 @@ export function updateProjectElement(
 	}
 
 	let updateStrings: string[] = updateDeleteTriples(iri + "/diagram", Schemes[scheme].graph, false, false)
-	if (saveDiagrams) updateStrings = updateStrings.concat(...ProjectElements[id].diagrams.map(diag =>
-		updateDeleteTriples(iri + "/diagram-" + (diag + 1), Schemes[scheme].graph, false, false)))
 	return {add: [JSON.stringify(addLD)], delete: [JSON.stringify(deleteLD)], update: updateStrings}
 }
 
-export function updateProjectElementDiagram(id: string, diagram: number): { add: string[], delete: string[], update: string[] } {
+export function updateProjectElementDiagram(id: string, diagram: number, oldPosition: { x: number, y: number }, oldHidden: boolean):
+	{ add: string[], delete: string[], update: string[] } {
 
 	let iri = ProjectElements[id].iri;
 	let scheme = VocabularyElements[iri].inScheme;
@@ -169,43 +155,97 @@ export function updateProjectElementDiagram(id: string, diagram: number): { add:
 		]
 	}
 
-	let updString: string[] = updateDeleteTriples(iri + "/diagram-" + (diagram + 1), Schemes[scheme].graph, false, false);
-	return {add: [JSON.stringify(addLD)], delete: [], update: updString}
+	if (!oldPosition && oldHidden === undefined)
+		return {add: [JSON.stringify(addLD)], delete: [], update: []}
+
+	let deleteLD = {
+		"@context": {
+			...Prefixes,
+			"og:diagram": {"@type": "@id"},
+		},
+		"@id": Schemes[scheme].graph,
+		"@graph": [
+			{
+				"@id": iri + "/diagram",
+				"og:diagram": iri + "/diagram-" + (diagram + 1),
+			},
+			{
+				"@id": iri + "/diagram-" + (diagram + 1),
+				"@type": "og:elementDiagram",
+				"og:index": diagram,
+				"og:position-x": oldPosition ? oldPosition.x : 0,
+				"og:position-y": oldPosition ? oldPosition.y : 0,
+				"og:hidden": oldHidden
+			}
+		]
+	}
+
+	return {add: [JSON.stringify(addLD)], delete: [JSON.stringify(deleteLD)], update: []}
 }
 
-export function updateProjectLinkVertex(id: string, vertices: number[]): { add: string[], delete: string[], update: string[] } {
+export function updateProjectLinkVertex(id: string, vertices: number[], oldVertices: { [key: number]: { x: number, y: number } }): { add: string[], delete: string[], update: string[] } {
 
 	let linkIRI = ProjectSettings.ontographerContext + "-" + id;
 
-	let updateStrings = vertices.map(i =>
-		("<" + (linkIRI + "/diagram-" + (ProjectSettings.selectedDiagram + 1) + "/vertex-" + (i + 1) + "> og:position-x ?x" + i + ". " +
-			"<" + linkIRI + "/diagram-" + (ProjectSettings.selectedDiagram + 1) + "/vertex-" + (i + 1) + "> og:position-y ?y" + i + ".")));
+	let addLD: { [key: string]: any } = {
+		"@context": {
+			...Prefixes,
+			"og:vertex": {"@type": "@id"},
+		},
+		"@id": ProjectSettings.ontographerContext,
+		"@graph": [
+			{
+				"@id": linkIRI,
+				"og:vertex": vertices.map(i => linkIRI + "/diagram-" + (ProjectSettings.selectedDiagram + 1) + "/vertex-" + (i + 1))
+			}
+		]
+	}
 
-	let update1 = [
-		"PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
-		"insert data { graph <" + ProjectSettings.ontographerContext + "> {",
-		...vertices.map(i => ("<" + linkIRI + "> og:vertex <" + linkIRI + "/diagram-" + (ProjectSettings.selectedDiagram + 1) + "/vertex-" + (i + 1) + ">.")),
-		...vertices.map(i => {
-			let vertexIRI = "<" + linkIRI + "/diagram-" + (ProjectSettings.selectedDiagram + 1) + "/vertex-" + (i + 1) + "> ";
-			return vertexIRI + "a og:vertex." +
-				vertexIRI + "og:index \"" + i + "\"." +
-				vertexIRI + "og:diagram \"" + ProjectSettings.selectedDiagram + "\"." +
-				vertexIRI + "og:position-x \"" + Math.round(ProjectLinks[id].vertices[ProjectSettings.selectedDiagram][i].x) + "\"." +
-				vertexIRI + "og:position-y \"" + Math.round(ProjectLinks[id].vertices[ProjectSettings.selectedDiagram][i].y) + "\".";
-		}),
-		"}}"
-	].join(" ");
+	for (let i of vertices) {
+		addLD["@graph"].push({
+			"@id": linkIRI + "/diagram-" + (ProjectSettings.selectedDiagram + 1) + "/vertex-" + (i + 1),
+			"@type": "og:vertexDiagram",
+			"og:index": i,
+			"og:diagram": ProjectSettings.selectedDiagram,
+			"og:position-x": Math.round(ProjectLinks[id].vertices[ProjectSettings.selectedDiagram][i].x),
+			"og:position-y": Math.round(ProjectLinks[id].vertices[ProjectSettings.selectedDiagram][i].y),
+		})
+	}
 
-	let update2 = [
-		"PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
-		"with <" + ProjectSettings.ontographerContext + "> delete {",
-		...updateStrings,
-		"} where {",
-		...updateStrings,
-		"}"
-	].join(" ");
+	let deleteLD: { [key: string]: any } = {
+		"@context": {
+			...Prefixes,
+			"og:vertex": {"@type": "@id"},
+		},
+		"@id": ProjectSettings.ontographerContext,
+		"@graph": [
+			{
+				"@id": linkIRI,
+				"og:vertex": Object.keys(oldVertices).map((i) => linkIRI + "/diagram-" + (ProjectSettings.selectedDiagram + 1) + "/vertex-" + (parseInt(i, 10) + 1)).concat(
+					Object.keys(oldVertices).map(i => linkIRI + "/vertex-" + (i + 1))
+				)
+			}
+		]
+	}
 
-	return {add: [], delete: [], update: [update2, update1]};
+	for (let i in oldVertices) {
+		deleteLD["@graph"].push({
+			"@id": (linkIRI + "/diagram-" + (ProjectSettings.selectedDiagram + 1) + "/vertex-" + (parseInt(i, 10) + 1)),
+			"og:index": i,
+			"og:diagram": ProjectSettings.selectedDiagram,
+			"og:position-x": oldVertices[i].x,
+			"og:position-y": oldVertices[i].y,
+		})
+		deleteLD["@graph"].push({
+			"@id": (linkIRI + "/vertex-" + (parseInt(i, 10) + 1)),
+			"og:index": i,
+			"og:diagram": ProjectSettings.selectedDiagram,
+			"og:position-x": oldVertices[i].x,
+			"og:position-y": oldVertices[i].y,
+		})
+	}
+
+	return {add: [JSON.stringify(addLD)], delete: [JSON.stringify(deleteLD)], update: []}
 }
 
 export function updateDeleteProjectLinkVertex(id: string, from: number, to: number): { add: string[], delete: string[], update: string[] } {
@@ -252,15 +292,6 @@ export function updateProjectLink(id: string): { add: string[], delete: string[]
 
 	let addStrings: string[] = [JSON.stringify(addLD)];
 	let updString: string[] = updateDeleteTriples(linkIRI, ProjectSettings.ontographerContext, false, false);
-
-
-	for (let diag in ProjectLinks[id].vertices) {
-		for (let vert of ProjectLinks[id].vertices[diag]) {
-			let i = ProjectLinks[id].vertices[diag].indexOf(vert);
-			updString.push(
-				...updateDeleteTriples(linkIRI + "/diagram-" + (diag + 1) + "/vertex-" + (i + 1), ProjectSettings.ontographerContext, false, false));
-		}
-	}
 
 	return {add: addStrings, delete: [], update: updString};
 }
