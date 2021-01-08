@@ -498,10 +498,10 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                                 y: point.y
                             };
                         }
+                        ProjectElements[id].hidden[ProjectSettings.selectedDiagram] = false;
                         map.push(updateProjectElementDiagram(id, ProjectSettings.selectedDiagram,
                             ProjectElements[id].position[ProjectSettings.selectedDiagram], true));
                         cls.addTo(graph);
-                        ProjectElements[id].hidden[ProjectSettings.selectedDiagram] = false;
                         this.props.updateElementPanel();
                         transactions = mergeTransactions(transactions, restoreHiddenElem(id, cls, true, true, true));
                         map.push(updateProjectElement(

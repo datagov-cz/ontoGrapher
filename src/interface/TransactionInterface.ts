@@ -131,6 +131,7 @@ export function updateProjectElementDiagram(id: string, diagram: number, oldPosi
 	{ add: string[], delete: string[], update: string[] } {
 
 	let iri = ProjectElements[id].iri;
+	let diagIRI = iri + "/diagram-" + (diagram + 1);
 	let scheme = VocabularyElements[iri].inScheme;
 
 	let addLD = {
@@ -158,29 +159,46 @@ export function updateProjectElementDiagram(id: string, diagram: number, oldPosi
 	if (!oldPosition && oldHidden === undefined)
 		return {add: [JSON.stringify(addLD)], delete: [], update: []}
 
-	let deleteLD = {
-		"@context": {
-			...Prefixes,
-			"og:diagram": {"@type": "@id"},
-		},
-		"@id": Schemes[scheme].graph,
-		"@graph": [
-			{
-				"@id": iri + "/diagram",
-				"og:diagram": iri + "/diagram-" + (diagram + 1),
-			},
-			{
-				"@id": iri + "/diagram-" + (diagram + 1),
-				"@type": "og:elementDiagram",
-				"og:index": diagram,
-				"og:position-x": oldPosition ? oldPosition.x : 0,
-				"og:position-y": oldPosition ? oldPosition.y : 0,
-				"og:hidden": oldHidden
-			}
-		]
-	}
+	// let deleteLD = {
+	// 	"@context": {
+	// 		...Prefixes,
+	// 		"og:diagram": {"@type": "@id"},
+	// 	},
+	// 	"@id": Schemes[scheme].graph,
+	// 	"@graph": [
+	// 		{
+	// 			"@id": iri + "/diagram",
+	// 			"og:diagram": iri + "/diagram-" + (diagram + 1),
+	// 		},
+	// 		{
+	// 			"@id": iri + "/diagram-" + (diagram + 1),
+	// 			"@type": "og:elementDiagram",
+	// 			"og:index": diagram,
+	// 			"og:position-x": oldPosition ? oldPosition.x : 0,
+	// 			"og:position-y": oldPosition ? oldPosition.y : 0,
+	// 			"og:hidden": oldHidden
+	// 		}
+	// 	]
+	// }
 
-	return {add: [JSON.stringify(addLD)], delete: [JSON.stringify(deleteLD)], update: []}
+	let update = [
+		"PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
+		"with <" + Schemes[scheme].graph + ">",
+		"delete {" +
+		"<" + diagIRI + "> og:position-x ?x.",
+		"<" + diagIRI + "> og:position-y ?y.",
+		"<" + diagIRI + "> og:index ?i.",
+		"<" + diagIRI + "> og:hidden ?h.",
+		"}",
+		"where {" +
+		"<" + diagIRI + "> og:position-x ?x.",
+		"<" + diagIRI + "> og:position-y ?y.",
+		"<" + diagIRI + "> og:index ?i.",
+		"<" + diagIRI + "> og:hidden ?h.",
+		"}"
+	].join(" ");
+
+	return {add: [JSON.stringify(addLD)], delete: [], update: [update]}
 }
 
 export function updateProjectLinkVertex(id: string, vertices: number[], oldVertices: { [key: number]: { x: number, y: number } }): { add: string[], delete: string[], update: string[] } {
