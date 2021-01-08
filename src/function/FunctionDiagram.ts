@@ -6,6 +6,7 @@ import {drawGraphElement} from "./FunctionDraw";
 import {restoreHiddenElem, setRepresentation} from "./FunctionGraph";
 import {Representation} from "../config/Enum";
 import {paper} from "../main/DiagramCanvas";
+import * as _ from 'lodash';
 
 export function changeDiagrams(diagram: number = 0) {
     graph.clear();
@@ -51,8 +52,8 @@ export function centerDiagram() {
 export function zoomDiagram(x: number, y: number, delta: number) {
     let oldTranslate = paper.translate();
     let oldScale = paper.scale().sx;
-    let nextScale = (delta * 0.1) + oldScale;
-    if (nextScale >= 0.4 && nextScale <= 2.1) {
+    let nextScale = _.round((delta * 0.1) + oldScale, 1);
+    if (nextScale >= 0.1 && nextScale <= 2.1) {
         paper.translate(oldTranslate.tx + (x * (oldScale - nextScale)),
             oldTranslate.ty + (y * (oldScale - nextScale)));
         paper.scale(nextScale, nextScale);
