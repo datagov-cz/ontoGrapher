@@ -10,6 +10,7 @@ import * as _ from 'lodash';
 
 export function changeDiagrams(diagram: number = 0) {
     graph.clear();
+    ProjectSettings.selectedLink = "";
     if (Diagrams[diagram]) {
         ProjectSettings.selectedDiagram = diagram;
         ProjectSettings.selectedLink = "";

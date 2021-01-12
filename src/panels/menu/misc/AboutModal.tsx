@@ -15,7 +15,7 @@ interface State {
 export default class AboutModal extends React.Component<Props, State> {
 
     render() {
-        return (<Modal centered scrollable show={this.props.modal}>
+        return (<Modal centered scrollable show={this.props.modal} keyboard onEscapeKeyDown={() => this.props.close()}>
 			<Modal.Header>
 				<Modal.Title>{Locale[ProjectSettings.viewLanguage].changelog}</Modal.Title>
 			</Modal.Header>
