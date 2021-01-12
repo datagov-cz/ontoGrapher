@@ -187,9 +187,10 @@ export default class ItemPanel extends React.Component<Props, State> {
 							this.props.updateDetailPanel(id);
 							let elem = graph.getElements().find(elem => elem.id === id);
 							if (elem) {
+								let scale = paper.scale().sx;
 								paper.translate(0, 0);
-								paper.translate(-elem.position().x + (paper.getComputedSize().width - 300) / 2,
-									-elem.position().y + (paper.getComputedSize().height / 2) - elem.getBBox().height);
+								paper.translate((-elem.position().x * scale) + (paper.getComputedSize().width / 2) - elem.getBBox().width,
+									(-elem.position().y * scale) + (paper.getComputedSize().height / 2) - elem.getBBox().height);
 							}
 						}}
 					/>)
