@@ -27,13 +27,21 @@ export default class FitContentWidget extends React.Component<Props, State> {
 				let origin = paper.translate();
 				let dimensions = paper.getComputedSize();
 				paper.scaleContentToFit({
-					padding: 5,
+					padding: {
+						top: 10,
+						bottom: 100,
+						right: 10,
+						left: 10
+					},
 					fittingBBox: {
 						x: origin.tx,
 						y: origin.ty,
 						width: dimensions.width,
-						height: dimensions.height
-					}
+						height: dimensions.height,
+					},
+					scaleGrid: 0.1,
+					maxScale: 2,
+					minScale: 0.1
 				})
 				Diagrams[ProjectSettings.selectedDiagram].origin = {
 					x: paper.translate().tx, y: paper.translate().ty
