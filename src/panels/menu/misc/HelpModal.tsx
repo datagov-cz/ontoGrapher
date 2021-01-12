@@ -15,7 +15,7 @@ interface State {
 export default class HelpModal extends React.Component<Props, State> {
 
     render() {
-        return (<Modal centered show={this.props.modal}>
+        return (<Modal centered show={this.props.modal} keyboard onEscapeKeyDown={() => this.props.close()}>
             <Modal.Header>
                 <Modal.Title>{Locale[ProjectSettings.viewLanguage].help}</Modal.Title>
             </Modal.Header>

@@ -40,7 +40,6 @@ export default class NewLinkModal extends React.Component<Props, State> {
 
 	handleChangeLink(event: React.ChangeEvent<HTMLSelectElement>) {
 		this.setState({selectedLink: event.currentTarget.value});
-		if (event.currentTarget.value !== "") this.props.close(event.currentTarget.value);
 	}
 
 	filtering(link: string): boolean {
@@ -110,9 +109,15 @@ export default class NewLinkModal extends React.Component<Props, State> {
 	}
 
 	render() {
+		let options = this.getLinks().sort();
 		return (<Modal centered scrollable show={this.props.modal}
 					   onHide={() => this.props.close}
-					   onEntering={() => this.setState({selectedLink: ""})}
+					   onEntering={() => {
+						   this.setState({selectedLink: options.length > 0 ? options[0] : ""});
+						   let input = document.getElementById("newLinkInputSelect");
+						   if (input) input.focus();
+					   }}
+					   keyboard onEscapeKeyDown={() => this.props.close()}
 		>
 			<Modal.Header>
 				<Modal.Title>{Locale[ProjectSettings.viewLanguage].modalNewLinkTitle}</Modal.Title>
@@ -132,13 +137,20 @@ export default class NewLinkModal extends React.Component<Props, State> {
                         htmlFor={"displayIncompatible"}>{Locale[ProjectSettings.viewLanguage].showIncompatibleLinks}</label>
 				</span>}
 				<br/>
-				<Form.Control htmlSize={Object.keys(Links).length} as="select" value={this.state.selectedLink}
-							  onChange={this.handleChangeLink}>
-					{this.getLinks().sort().map((link) => (
-						<option key={link}
-								onClick={() => this.setLink(link)}
-								value={link}>{getLabelOrBlank(getLinkOrVocabElem(link).labels, this.props.projectLanguage)}</option>))}
-				</Form.Control>
+				<Form onSubmit={event => {
+					event.preventDefault();
+					if (this.state.selectedLink !== "") this.props.close(this.state.selectedLink);
+				}}>
+					<Form.Control htmlSize={Object.keys(Links).length} as="select" value={this.state.selectedLink}
+								  onChange={this.handleChangeLink}
+									id={"newLinkInputSelect"}>
+						{options.map((link) => (
+							<option key={link}
+									onClick={() => this.setLink(link)}
+									value={link}>{getLabelOrBlank(getLinkOrVocabElem(link).labels, this.props.projectLanguage)}</option>))}
+					</Form.Control>
+					<button style={{display: "none"}}/>
+				</Form>
 			</Modal.Body>
 			<Modal.Footer>
 				<Button onClick={() => {
