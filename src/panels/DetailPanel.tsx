@@ -2,7 +2,7 @@ import React from 'react';
 import DetailLink from "./detail/DetailLink";
 import {graph} from "../graph/Graph";
 import DetailElement from "./detail/DetailElement";
-import {highlightCell, setDisplayLabel, unHighlightAll, unHighlightCell} from "../function/FunctionDraw";
+import {highlightCell, setDisplayLabel, unHighlightCell} from "../function/FunctionDraw";
 import {ProjectElements, ProjectLinks} from "../config/Variables";
 
 interface Props {
@@ -50,7 +50,6 @@ export default class DetailPanel extends React.Component<Props, State> {
     }
 
     prepareDetails(id: string) {
-        unHighlightAll();
         if (graph.getCell(id)) highlightCell(this.props.id);
         if (id in ProjectElements) {
             setDisplayLabel(id, this.props.projectLanguage);
