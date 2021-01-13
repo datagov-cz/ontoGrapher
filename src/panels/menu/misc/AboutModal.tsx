@@ -24,6 +24,16 @@ export default class AboutModal extends React.Component<Props, State> {
 					<Tab title={"2021"} eventKey={"2021"}>
 						<Tabs id={"changelog-2021"}>
 							<Tab title={"January"} eventKey={"january-2021"}>
+								<h6>13.1.</h6>
+								<ul>
+									<li><b>Changed controls:</b></li>
+									<ul>
+										<li>Double-click to add new term</li>
+										<li>Click + drag / Click + Ctrl to select</li>
+										<li>Middle click to pan</li>
+									</ul>
+									<li>Added selecting and moving multiple concepts at once</li>
+								</ul>
 								<h6>4.1.</h6>
 								<ul>
 									<li>Scrolling now (un)zooms the canvas</li>
