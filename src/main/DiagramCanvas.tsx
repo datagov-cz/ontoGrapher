@@ -37,6 +37,7 @@ import NewElemModal from "./NewElemModal";
 import {PackageNode} from "../datatypes/PackageNode";
 import {LinkType, Representation} from "../config/Enum";
 import {drawGraphElement, highlightCell, unHighlightCell, unHighlightSelected} from "../function/FunctionDraw";
+import {zoomDiagram} from "../function/FunctionDiagram";
 
 interface Props {
     projectLanguage: string;
@@ -414,7 +415,12 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                 this.props.updateDetailPanel();
                 unHighlightSelected(this.highlightedCells);
                 this.highlightedCells = [];
-                this.drag = {x: x, y: y};
+                let scale = paper.scale();
+                this.drag = {x: x * scale.sx, y: y * scale.sy};
+            },
+            'blank:mousewheel': (evt, x, y, delta) => {
+                evt.preventDefault();
+                zoomDiagram(x, y, delta);
             },
             'blank:pointermove': function (evt, x, y) {
                 const data = evt.data;

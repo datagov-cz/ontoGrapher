@@ -1,9 +1,9 @@
 import React from 'react';
 import {Nav, OverlayTrigger, Tooltip} from "react-bootstrap";
-import {setRepresentation} from "../../../function/FunctionGraph";
-import {ProjectSettings} from "../../../config/Variables";
-import {Representation} from "../../../config/Enum";
-import {Locale} from "../../../config/Locale";
+import {setRepresentation} from "../../function/FunctionGraph";
+import {ProjectSettings} from "../../config/Variables";
+import {Representation} from "../../config/Enum";
+import {Locale} from "../../config/Locale";
 
 interface Props {
 	update: Function;
