@@ -42,32 +42,29 @@ export async function getVocabulariesFromRemoteJSON(pathToJSON: string): Promise
                             data.values ? createValues(data.values, data.prefixes) : undefined
                         ));
                         checkLabels();
-                        for (let link in Links) {
-                            Links[link].typesDomain = [];
-                            Links[link].typesRange = [];
-                            Links[link].subClassOfDomain = [];
-                            Links[link].subClassOfRange = [];
-                        }
                         results = results.concat(await Promise.all(Object.keys(Stereotypes).map(stereotype =>
                             getAllTypes(
                                 stereotype,
                                 data.endpoint,
                                 Stereotypes[stereotype].types,
-                                Stereotypes[stereotype].subClassOf))))
+                                Stereotypes[stereotype].subClassOf))), results)
                         results = results.concat(await Promise.all(Object.keys(Links).map(link =>
                             getAllTypes(
                                 Links[link].domain,
                                 data.endpoint,
                                 Links[link].typesDomain,
-                                Links[link].subClassOfDomain, true)
-                        )))
+                                Links[link].subClassOfDomain,
+                                true, link, true)
+                        )), results)
                         results = results.concat(await Promise.all(Object.keys(Links).map(link =>
                             getAllTypes(
                                 Links[link].range,
                                 data.endpoint,
                                 Links[link].typesRange,
-                                Links[link].subClassOfRange, true)
-                        )))
+                                Links[link].subClassOfRange,
+                                true, link, false)
+                        )), results)
+                        console.log(Links);
                         return results.every(bool => bool);
                     }
                 }

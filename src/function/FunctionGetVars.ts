@@ -37,11 +37,17 @@ export function isElemReadOnlyByIRI(iri: string): boolean {
 
 export function checkLabels() {
     for (let link in Links) {
-        if (!(Links[link].labels[Object.keys(Languages)[0]])) {
-            let label = link.lastIndexOf('/');
-            Links[link].labels = initLanguageObject(link.substring(label + 1));
-        }
-    }
+		if (!(Links[link].labels[Object.keys(Languages)[0]])) {
+			let label = link.lastIndexOf('/');
+			Links[link].labels = initLanguageObject(link.substring(label + 1));
+		}
+		Links[link].typesDomain = [];
+		Links[link].typesRange = [];
+		Links[link].subClassOfDomain = [];
+		Links[link].subClassOfRange = [];
+		Links[link].defaultSourceCardinality = ProjectSettings.defaultCardinality;
+		Links[link].defaultTargetCardinality = ProjectSettings.defaultCardinality;
+	}
 }
 
 export function setSchemeColors(pool: string) {
