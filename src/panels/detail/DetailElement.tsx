@@ -153,7 +153,7 @@ export default class DetailElement extends React.Component<Props, State> {
 	}
 
 	render() {
-		return this.props.id !== "" && (<ResizableBox
+		return (this.props.id !== "" && this.props.id in ProjectElements) && (<ResizableBox
 			width={300}
 			height={1000}
 			axis={"x"}

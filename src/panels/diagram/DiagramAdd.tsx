@@ -15,7 +15,12 @@ interface State {
 export default class DiagramAdd extends React.Component<Props, State> {
 
 	addDiagram() {
-		let index = Diagrams.push({name: Locale[ProjectSettings.viewLanguage].untitled, active: true}) - 1;
+		let index = Diagrams.push({
+			name: Locale[ProjectSettings.viewLanguage].untitled,
+			active: true,
+			origin: {x: 0, y: 0},
+			scale: 1
+		}) - 1;
 		Object.keys(ProjectElements).forEach(elem => ProjectElements[elem].hidden[index] = true);
 		Object.keys(ProjectLinks).forEach(link => ProjectLinks[link].vertices[index] = []);
 		this.props.performTransaction(updateProjectSettings(ProjectSettings.contextIRI));

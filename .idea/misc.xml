@@ -5,6 +5,7 @@
   </component>
   <component name="ProjectPlainTextFileTypeManager">
     <file url="file://$PROJECT_DIR$/src/svg/centerView.svg" />
+    <file url="file://$PROJECT_DIR$/src/svg/fitContent.svg" />
     <file url="file://$PROJECT_DIR$/src/svg/restoreZoom.svg" />
     <file url="file://$PROJECT_DIR$/src/svg/zoomIn.svg" />
     <file url="file://$PROJECT_DIR$/src/svg/zoomOut.svg" />
