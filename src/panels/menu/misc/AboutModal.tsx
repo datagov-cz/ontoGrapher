@@ -28,9 +28,9 @@ export default class AboutModal extends React.Component<Props, State> {
 								<ul>
 									<li><b>Changed controls:</b></li>
 									<ul>
-										<li>Double-click to add new term</li>
+										<li>Right click to add new term</li>
 										<li>Click + drag / Click + Ctrl to select</li>
-										<li>Middle click to pan</li>
+										<li>Middle click / Click + Shift to pan</li>
 									</ul>
 									<li>Added selecting and moving multiple concepts at once</li>
 								</ul>

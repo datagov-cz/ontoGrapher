@@ -224,6 +224,9 @@ export default class DiagramCanvas extends React.Component<Props, State> {
 
     updateElement(cell: joint.dia.Cell) {
         let id = cell.id;
+        let find = this.selectedCells.findIndex(elem => elem.id === id);
+        if (find !== -1)
+            this.selectedCells.splice(find, 1);
         cell.remove();
         ProjectElements[id].hidden[ProjectSettings.selectedDiagram] = true;
         this.props.updateElementPanel();
@@ -361,6 +364,20 @@ export default class DiagramCanvas extends React.Component<Props, State> {
         });
 
         paper.on({
+            'blank:contextmenu': (evt) => {
+                evt.preventDefault();
+                if (!this.newLink && PackageRoot.children.find(pkg => !(Schemes[pkg.scheme].readOnly))) {
+                    this.setState({modalAddElem: true});
+                    this.newConceptEvent = {x: evt.clientX, y: evt.clientY}
+                } else this.newLink = false;
+                this.props.updateDetailPanel();
+                unHighlightSelected(this.highlightedCells);
+                this.highlightedCells = [];
+                ProjectSettings.selectedLink = "";
+            },
+            'cell:contextmenu': (cellView, evt) => {
+                evt.preventDefault();
+            },
             'cell:pointerclick': (cellView, evt) => {
                 if (!this.newLink && !evt.ctrlKey) {
                     let id = cellView.model.id;
@@ -458,7 +475,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                 cellView.removeTools();
             },
             'blank:pointerdown': (evt, x, y) => {
-                if (evt.button === 0) {
+                if (evt.button === 0 && (!(evt.shiftKey))) {
                     ProjectSettings.selectedLink = "";
                     this.props.updateDetailPanel();
                     unHighlightSelected(this.highlightedCells);
@@ -483,7 +500,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                         oy: point.y,
                         bbox
                     };
-                } else if (evt.button === 1) {
+                } else if (evt.button === 1 || (evt.button === 0 && evt.shiftKey)) {
                     let scale = paper.scale();
                     this.drag = {x: x * scale.sx, y: y * scale.sy};
                 }
@@ -493,12 +510,12 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                 zoomDiagram(x, y, delta);
             },
             'blank:pointermove': function (evt, x, y) {
-                if (evt.buttons === 1) {
-                    const {
-                        ox,
-                        oy,
-                        rect
-                    } = evt.data;
+                const {
+                    ox,
+                    oy,
+                    rect
+                } = evt.data;
+                if (evt.buttons === 1 && (!(evt.shiftKey))) {
                     const bbox = new joint.g.Rect(ox, oy,
                         (x * Diagrams[ProjectSettings.selectedDiagram].scale - ox) + Diagrams[ProjectSettings.selectedDiagram].origin.x,
                         ((y * Diagrams[ProjectSettings.selectedDiagram].scale) - oy) + Diagrams[ProjectSettings.selectedDiagram].origin.y);
@@ -507,6 +524,8 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                     bbox.normalize();
                     rect.attr(bbox.toJSON());
                     evt.data.bbox = bbox;
+                } else if (evt.buttons === 1 && (evt.shiftKey) && rect) {
+                    rect.remove();
                 }
             },
             'element:pointerdown': (cellView, evt) => {
@@ -534,7 +553,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                         };
                     }
                 } else if (!(evt.ctrlKey)) {
-                    unHighlightSelected(this.highlightedCells);
+                    unHighlightSelected(this.selectedCells.map(cell => cell.id as string));
                     this.selectedCells = [];
                     this.highlightedCells = [];
                 }
@@ -560,37 +579,29 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                     x: paper.translate().tx, y: paper.translate().ty
                 };
                 this.drag = undefined;
-                if (evt.button === 0) {
+                if (evt.button === 0 && (!(evt.shiftKey))) {
                     const {
                         rect,
                         bbox
                     } = evt.data;
-                    rect.remove();
-                    let area = new joint.g.Rect(
-                        ((bbox.x) - Diagrams[ProjectSettings.selectedDiagram].origin.x)
-                        / Diagrams[ProjectSettings.selectedDiagram].scale,
-                        ((bbox.y) - Diagrams[ProjectSettings.selectedDiagram].origin.y)
-                        / Diagrams[ProjectSettings.selectedDiagram].scale,
-                        bbox.width / Diagrams[ProjectSettings.selectedDiagram].scale,
-                        bbox.height / Diagrams[ProjectSettings.selectedDiagram].scale);
-                    paper.findViewsInArea(area).forEach((elem) => {
-                        this.selectedCells.push(elem.model);
-                        if (typeof elem.model.id === "string") {
-                            this.highlightedCells.push(elem.model.id);
-                            highlightCell(elem.model.id, '#ff9037');
-                        }
-                    });
+                    if (rect && bbox) {
+                        rect.remove();
+                        let area = new joint.g.Rect(
+                            ((bbox.x) - Diagrams[ProjectSettings.selectedDiagram].origin.x)
+                            / Diagrams[ProjectSettings.selectedDiagram].scale,
+                            ((bbox.y) - Diagrams[ProjectSettings.selectedDiagram].origin.y)
+                            / Diagrams[ProjectSettings.selectedDiagram].scale,
+                            bbox.width / Diagrams[ProjectSettings.selectedDiagram].scale,
+                            bbox.height / Diagrams[ProjectSettings.selectedDiagram].scale);
+                        paper.findViewsInArea(area).forEach((elem) => {
+                            this.selectedCells.push(elem.model);
+                            if (typeof elem.model.id === "string") {
+                                this.highlightedCells.push(elem.model.id);
+                                highlightCell(elem.model.id, '#ff9037');
+                            }
+                        });
+                    }
                 }
-            },
-            'blank:pointerdblclick': (evt) => {
-                if (!this.newLink && PackageRoot.children.find(pkg => !(Schemes[pkg.scheme].readOnly))) {
-                    this.setState({modalAddElem: true});
-                    this.newConceptEvent = {x: evt.clientX, y: evt.clientY}
-                } else this.newLink = false;
-                this.props.updateDetailPanel();
-                unHighlightSelected(this.highlightedCells);
-                this.highlightedCells = [];
-                ProjectSettings.selectedLink = "";
             },
             'link:pointerclick': (linkView) => {
                 ProjectSettings.selectedLink = linkView.model.id;
