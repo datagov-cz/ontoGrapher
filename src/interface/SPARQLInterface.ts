@@ -151,25 +151,18 @@ export async function getAllTypes(iri: string, endpoint: string, targetTypes: st
             let result = await fetch(q, {headers: {'Accept': 'application/json'}}).then(response => {
                 return response.json();
             }).then(data => {
+                let newCardinality = new Cardinality(
+                    ProjectSettings.defaultCardinality.getFirstCardinality(),
+                    ProjectSettings.defaultCardinality.getSecondCardinality());
                 for (let result of data.results.bindings) {
                     if (!(targetTypes.includes(result.type.value))) targetTypes.push(result.type.value);
                     if (!(subClassOf.includes(result.subClass.value)) &&
                         result.subClass.type !== "bnode") subClassOf.push(result.subClass.value);
-                    //TODO before PR: refactor
                     if (result.restriction && link && source !== undefined && result.onProperty.value === link) {
-                        if (result.restrictionPred.value === parsePrefix("owl", "minQualifiedCardinality")) {
-                            if (source) {
-                                Links[link].defaultSourceCardinality = new Cardinality(result.target.value, Links[link].defaultSourceCardinality.getSecondCardinality());
-                            } else {
-                                Links[link].defaultTargetCardinality = new Cardinality(result.target.value, Links[link].defaultTargetCardinality.getSecondCardinality());
-                            }
-                        } else if (result.restrictionPred.value === parsePrefix("owl", "maxQualifiedCardinality")) {
-                            if (source) {
-                                Links[link].defaultSourceCardinality = new Cardinality(Links[link].defaultSourceCardinality.getFirstCardinality(), result.target.value);
-                            } else {
-                                Links[link].defaultTargetCardinality = new Cardinality(Links[link].defaultTargetCardinality.getFirstCardinality(), result.target.value);
-                            }
-                        }
+                        result.restrictionPred.value === parsePrefix("owl", "minQualifiedCardinality") ?
+                            newCardinality.setFirstCardinality(result.target.value) :
+                            newCardinality.setSecondCardinality(result.target.value);
+                        source ? Links[link].defaultSourceCardinality = newCardinality : Links[link].defaultTargetCardinality = newCardinality;
                     }
                 }
                 if (link && Links[link].inverseOf && Links[link].inverseOf in Links) {

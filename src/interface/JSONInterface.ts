@@ -64,7 +64,6 @@ export async function getVocabulariesFromRemoteJSON(pathToJSON: string): Promise
                                 Links[link].subClassOfRange,
                                 true, link, false)
                         )), results)
-                        console.log(Links);
                         return results.every(bool => bool);
                     }
                 }
