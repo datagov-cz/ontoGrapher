@@ -5,7 +5,6 @@ import {Locale} from "../../config/Locale";
 
 interface Props {
 	update: Function;
-	error: boolean;
 	performTransaction: (transaction: { add: string[], delete: string[], update: string[] }) => void;
 }
 
@@ -29,7 +28,7 @@ export default class DiagramAdd extends React.Component<Props, State> {
 	}
 
 	render() {
-		return (<div className={"diagramTab" + (this.props.error ? " disabled" : "")}>
+		return (<div className={"diagramTab"}>
 			<button className={"buttonlink nounderline"} onClick={() => {
 				this.addDiagram();
 			}}>
