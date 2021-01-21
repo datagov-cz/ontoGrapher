@@ -39,6 +39,7 @@ import {PackageNode} from "../datatypes/PackageNode";
 import {LinkType, Representation} from "../config/Enum";
 import {drawGraphElement, highlightCell, unHighlightCell, unHighlightSelected} from "../function/FunctionDraw";
 import {zoomDiagram} from "../function/FunctionDiagram";
+import {constructProjectElementDiagramLD, constructProjectLinkVertex} from "../function/FunctionConstruct";
 
 interface Props {
     projectLanguage: string;
@@ -63,6 +64,8 @@ export default class DiagramCanvas extends React.Component<Props, State> {
     private tid: string | undefined;
     private newConceptEvent: { x: number, y: number };
     private highlightedCells: string[];
+    private selectedCells: joint.dia.Element[];
+    private drawStart: joint.g.Rect | undefined;
 
     constructor(props: Props) {
         super(props);
@@ -78,6 +81,8 @@ export default class DiagramCanvas extends React.Component<Props, State> {
         this.tid = undefined;
         this.newConceptEvent = {x: 0, y: 0}
         this.highlightedCells = [];
+        this.selectedCells = [];
+        this.drawStart = undefined;
         this.createNewConcept = this.createNewConcept.bind(this);
         this.createNewLink = this.createNewLink.bind(this);
     }
@@ -220,6 +225,9 @@ export default class DiagramCanvas extends React.Component<Props, State> {
 
     updateElement(cell: joint.dia.Cell) {
         let id = cell.id;
+        let find = this.selectedCells.findIndex(elem => elem.id === id);
+        if (find !== -1)
+            this.selectedCells.splice(find, 1);
         cell.remove();
         ProjectElements[id].hidden[ProjectSettings.selectedDiagram] = true;
         this.props.updateElementPanel();
@@ -365,33 +373,88 @@ export default class DiagramCanvas extends React.Component<Props, State> {
         });
 
         paper.on({
-            'cell:pointerclick': (cellView) => {
-                if (!this.newLink) {
+            'blank:contextmenu': (evt) => {
+                evt.preventDefault();
+                if (!this.newLink && PackageRoot.children.find(pkg => !(Schemes[pkg.scheme].readOnly))) {
+                    this.setState({modalAddElem: true});
+                    this.newConceptEvent = {x: evt.clientX, y: evt.clientY}
+                } else this.newLink = false;
+                this.props.updateDetailPanel();
+                unHighlightSelected(this.highlightedCells);
+                this.highlightedCells = [];
+                ProjectSettings.selectedLink = "";
+            },
+            'cell:contextmenu': (cellView, evt) => {
+                evt.preventDefault();
+            },
+            'cell:pointerclick': (cellView, evt) => {
+                if (!this.newLink && !evt.ctrlKey) {
                     let id = cellView.model.id;
                     this.props.updateDetailPanel(id);
+                    this.selectedCells = [];
                     unHighlightSelected(this.highlightedCells);
                     highlightCell(id);
                     this.highlightedCells = [id];
                 }
             },
-            'element:pointerup': (cellView) => {
-                if (!this.newLink) {
-                    let pos = cellView.model.position();
-                    let id = cellView.model.id;
-                    if (pos.x !== ProjectElements[id].position[ProjectSettings.selectedDiagram].x ||
-                        pos.y !== ProjectElements[cellView.model.id].position[ProjectSettings.selectedDiagram].y) {
-                        let oldPos = _.cloneDeep(ProjectElements[id].position[ProjectSettings.selectedDiagram]);
-                        ProjectElements[id].position[ProjectSettings.selectedDiagram] = pos;
-                        this.props.performTransaction(
-                            updateProjectElementDiagram(cellView.model.id, ProjectSettings.selectedDiagram, oldPos, false));
-                    }
+            'element:pointerup': (cellView, evt) => {
+                if (!this.newLink && !(evt.ctrlKey)) {
+                    let iter = this.selectedCells.length > 0 ? this.selectedCells : [cellView.model];
+                    let {
+                        rect, bbox, ox, oy
+                    } = evt.data;
+                    if (rect) rect.remove();
+                    let movedLinks: string[] = [];
+                    let movedElems: string[] = [];
+                    iter.forEach(elem => {
+                        let id = elem.id;
+                        let oldPos = elem.position();
+                        if (bbox && ox && oy && id !== cellView.model.id) {
+                            let diff = new joint.g.Point(bbox.x, bbox.y).difference(ox, oy);
+                            elem.position(oldPos.x + diff.x / Diagrams[ProjectSettings.selectedDiagram].scale, oldPos.y + diff.y / Diagrams[ProjectSettings.selectedDiagram].scale);
+                            for (let link of graph.getConnectedLinks(elem)) {
+                                if (typeof link.id === "string" && !(movedLinks.includes(link.id)) && link.vertices().length > 0) {
+                                    movedLinks.push(link.id);
+                                    link.vertices().forEach((vert, i) => {
+                                        link.vertex(i, {
+                                            x: vert.x + diff.x / Diagrams[ProjectSettings.selectedDiagram].scale,
+                                            y: vert.y + diff.y / Diagrams[ProjectSettings.selectedDiagram].scale
+                                        })
+                                    })
+                                    ProjectLinks[link.id].vertices[ProjectSettings.selectedDiagram] = link.vertices();
+                                }
+                            }
+                        }
+                        let pos = elem.position();
+                        if (pos.x !== ProjectElements[id].position[ProjectSettings.selectedDiagram].x ||
+                            pos.y !== ProjectElements[cellView.model.id].position[ProjectSettings.selectedDiagram].y) {
+                            ProjectElements[id].position[ProjectSettings.selectedDiagram] = pos;
+                            movedElems.push(id);
+                        }
+                    })
+                    if (movedLinks.length > 0 || movedElems.length > 0)
+                        this.props.performTransaction(mergeTransactions(
+                            constructProjectElementDiagramLD(ProjectSettings.contextEndpoint, iter.map(elem => elem.id), ProjectSettings.selectedDiagram),
+                            constructProjectLinkVertex(movedLinks, ProjectSettings.selectedDiagram)));
                 }
             },
-            'element:pointerclick': (cellView) => {
+            'element:pointerclick': (cellView, evt) => {
                 ProjectSettings.selectedLink = "";
                 if (this.newLink) {
                     this.tid = cellView.model.id;
                     this.setState({modalAddLink: true});
+                } else if (evt.ctrlKey) {
+                    this.props.updateDetailPanel();
+                    let find = this.selectedCells.findIndex(elem => elem.id === cellView.model.id);
+                    if (find !== -1) {
+                        this.selectedCells.splice(this.selectedCells.indexOf(cellView.model), 1);
+                        this.highlightedCells.splice(this.highlightedCells.indexOf(cellView.model), 1);
+                        unHighlightCell(cellView.model.id);
+                    } else {
+                        this.selectedCells.push(cellView.model);
+                        this.highlightedCells.push(cellView.model);
+                        highlightCell(cellView.model.id, '#ff9037');
+                    }
                 }
             },
             'element:mouseenter': (elementView) => {
@@ -421,41 +484,133 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                 cellView.removeTools();
             },
             'blank:pointerdown': (evt, x, y) => {
-                ProjectSettings.selectedLink = "";
-                this.props.updateDetailPanel();
-                unHighlightSelected(this.highlightedCells);
-                this.highlightedCells = [];
-                let scale = paper.scale();
-                this.drag = {x: x * scale.sx, y: y * scale.sy};
+                if (evt.button === 0 && (!(evt.shiftKey))) {
+                    ProjectSettings.selectedLink = "";
+                    this.props.updateDetailPanel();
+                    unHighlightSelected(this.highlightedCells);
+                    this.highlightedCells = [];
+                    this.selectedCells = [];
+                    let translate = paper.translate();
+                    let point = {
+                        x: (x * Diagrams[ProjectSettings.selectedDiagram].scale + translate.tx),
+                        y: (y * Diagrams[ProjectSettings.selectedDiagram].scale + translate.ty)
+                    }
+                    const bbox = new joint.g.Rect(point.x, point.y, 1, 1);
+                    const rect = joint.V('rect', {
+                        'stroke': 'blue',
+                        'fill': 'blue',
+                        'fill-opacity': 0.1,
+                    });
+                    rect.attr(bbox.toJSON());
+                    rect.appendTo(paper.svg);
+                    evt.data = {
+                        rect,
+                        ox: point.x,
+                        oy: point.y,
+                        bbox
+                    };
+                } else if (evt.button === 1 || (evt.button === 0 && evt.shiftKey)) {
+                    let scale = paper.scale();
+                    this.drag = {x: x * scale.sx, y: y * scale.sy};
+                }
             },
             'blank:mousewheel': (evt, x, y, delta) => {
                 evt.preventDefault();
                 zoomDiagram(x, y, delta);
             },
             'blank:pointermove': function (evt, x, y) {
-                const data = evt.data;
-                const cell = data.cell;
-                if (cell !== undefined) {
-                    if (cell.isLink()) {
-                        cell.target({x: x, y: y});
+                const {
+                    ox,
+                    oy,
+                    rect
+                } = evt.data;
+                if (evt.buttons === 1 && (!(evt.shiftKey))) {
+                    const bbox = new joint.g.Rect(ox, oy,
+                        (x * Diagrams[ProjectSettings.selectedDiagram].scale - ox) + Diagrams[ProjectSettings.selectedDiagram].origin.x,
+                        ((y * Diagrams[ProjectSettings.selectedDiagram].scale) - oy) + Diagrams[ProjectSettings.selectedDiagram].origin.y);
+                    if (bbox.width === 0) bbox.width = 1;
+                    if (bbox.height === 0) bbox.height = 1;
+                    bbox.normalize();
+                    rect.attr(bbox.toJSON());
+                    evt.data.bbox = bbox;
+                } else if (evt.buttons === 1 && (evt.shiftKey) && rect) {
+                    rect.remove();
+                }
+            },
+            'element:pointerdown': (cellView, evt) => {
+                if (evt.button === 0 && this.selectedCells.length > 1 && this.selectedCells.find(elem => elem.id === cellView.model.id) && !(evt.ctrlKey)) {
+                    const cells = graph.getCellsBBox(this.selectedCells);
+                    if (cells) {
+                        const bbox = new joint.g.Rect(
+                            cells.x * Diagrams[ProjectSettings.selectedDiagram].scale + Diagrams[ProjectSettings.selectedDiagram].origin.x,
+                            cells.y * Diagrams[ProjectSettings.selectedDiagram].scale + Diagrams[ProjectSettings.selectedDiagram].origin.y,
+                            cells.width * Diagrams[ProjectSettings.selectedDiagram].scale,
+                            cells.height * Diagrams[ProjectSettings.selectedDiagram].scale
+                        )
+                        const rect = joint.V('rect', {
+                            'stroke': 'orange',
+                            'fill': 'none',
+                            'stroke-width': 3
+                        });
+                        rect.attr(bbox.toJSON());
+                        rect.appendTo(paper.svg);
+                        evt.data = {
+                            rect,
+                            bbox,
+                            ox: bbox.x,
+                            oy: bbox.y
+                        };
+                    }
+                } else if (!(evt.ctrlKey)) {
+                    unHighlightSelected(this.selectedCells.map(cell => cell.id as string));
+                    this.selectedCells = [];
+                    this.highlightedCells = [];
+                }
+            },
+            'element:pointermove': (cellView, evt) => {
+                if (evt.button === 0 && this.selectedCells.length !== 0 && this.selectedCells.find(elem => elem.id === cellView.model.id)) {
+                    const {rect, bbox, ox, oy} = evt.data;
+                    if (rect && bbox && ox && oy) {
+                        const newBbox = new joint.g.Rect(
+                            (bbox.x + evt.originalEvent.movementX),
+                            (bbox.y + evt.originalEvent.movementY),
+                            bbox.width,
+                            bbox.height,
+                        )
+                        newBbox.normalize();
+                        rect.attr(newBbox.toJSON());
+                        evt.data.bbox = newBbox;
                     }
                 }
             },
-            'blank:pointerup': () => {
+            'blank:pointerup': (evt) => {
                 Diagrams[ProjectSettings.selectedDiagram].origin = {
                     x: paper.translate().tx, y: paper.translate().ty
                 };
                 this.drag = undefined;
-            },
-            'blank:pointerclick': (evt) => {
-                if (!this.newLink && PackageRoot.children.find(pkg => !(Schemes[pkg.scheme].readOnly))) {
-                    this.setState({modalAddElem: true});
-                    this.newConceptEvent = {x: evt.clientX, y: evt.clientY}
-                } else this.newLink = false;
-                this.props.updateDetailPanel();
-                unHighlightSelected(this.highlightedCells);
-                this.highlightedCells = [];
-                ProjectSettings.selectedLink = "";
+                if (evt.button === 0 && (!(evt.shiftKey))) {
+                    const {
+                        rect,
+                        bbox
+                    } = evt.data;
+                    if (rect && bbox) {
+                        rect.remove();
+                        let area = new joint.g.Rect(
+                            ((bbox.x) - Diagrams[ProjectSettings.selectedDiagram].origin.x)
+                            / Diagrams[ProjectSettings.selectedDiagram].scale,
+                            ((bbox.y) - Diagrams[ProjectSettings.selectedDiagram].origin.y)
+                            / Diagrams[ProjectSettings.selectedDiagram].scale,
+                            bbox.width / Diagrams[ProjectSettings.selectedDiagram].scale,
+                            bbox.height / Diagrams[ProjectSettings.selectedDiagram].scale);
+                        paper.findViewsInArea(area).forEach((elem) => {
+                            this.selectedCells.push(elem.model);
+                            if (typeof elem.model.id === "string") {
+                                this.highlightedCells.push(elem.model.id);
+                                highlightCell(elem.model.id, '#ff9037');
+                            }
+                        });
+                    }
+                }
             },
             'link:pointerclick': (linkView) => {
                 ProjectSettings.selectedLink = linkView.model.id;
