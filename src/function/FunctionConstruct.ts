@@ -1,4 +1,11 @@
-import {Prefixes, ProjectElements, ProjectLinks, ProjectSettings} from "../config/Variables";
+import {
+	Prefixes,
+	ProjectElements,
+	ProjectLinks,
+	ProjectSettings,
+	Schemes,
+	VocabularyElements
+} from "../config/Variables";
 import {LinkType} from "../config/Enum";
 import {initConnections} from "./FunctionRestriction";
 import {addRelationships} from "./FunctionEditVars";
@@ -62,4 +69,94 @@ export function updateLinks(): { add: string[], delete: string[], update: string
 		"@graph": graph
 	}
 	return {add: linksToPush.length > 0 ? [JSON.stringify(addLD)] : [], delete: [], update: []};
+}
+
+export function constructProjectElementDiagramLD(contextEndpoint: string, ids: string[], diagram: number): { add: string[], delete: string[], update: string[] } {
+	let graph: { [key: string]: {}[] } = {};
+	ids.forEach((id) => {
+		let iri = ProjectElements[id].iri;
+		let scheme = VocabularyElements[iri].inScheme;
+		if (!(scheme in graph))
+			graph[scheme] = [];
+		graph[scheme].push({
+			"@id": iri + "/diagram",
+			"og:diagram": iri + "/diagram-" + (diagram + 1),
+		});
+		graph[scheme].push({
+			"@id": iri + "/diagram-" + (diagram + 1),
+			"@type": "og:elementDiagram",
+			"og:index": diagram,
+			"og:position-x": Math.round(ProjectElements[id].position[diagram].x),
+			"og:position-y": Math.round(ProjectElements[id].position[diagram].y),
+			"og:hidden": ProjectElements[id].hidden[diagram]
+		});
+	})
+	let adds: string[] = [];
+
+	for (let scheme in graph) {
+		adds.push(JSON.stringify(
+			{
+				"@context": {
+					...Prefixes,
+					"og:diagram": {"@type": "@id"},
+				},
+				"@id": Schemes[scheme].graph,
+				"@graph": graph[scheme]
+			}
+		));
+	}
+
+	let updates = ids.map((id, i) =>
+		`
+			with <${Schemes[VocabularyElements[ProjectElements[id].iri].inScheme].graph}>
+			delete{<${ProjectElements[id].iri}/diagram-${diagram + 1}> ?p${i} ?o${i}.}
+			where{<${ProjectElements[id].iri}/diagram-${diagram + 1}> ?p${i} ?o${i}.};
+		`
+	).join("")
+
+	return {add: adds, delete: [], update: [updates]}
+}
+
+export function constructProjectLinkVertex(ids: string[], diagram: number): { add: string[], delete: string[], update: string[] } {
+	let graph: {}[] = [];
+	let updates: string[] = [];
+	let counter = 0;
+	ids.forEach((id) => {
+		let linkIRI = ProjectSettings.ontographerContext + "-" + id;
+		let vertices = ProjectLinks[id].vertices[diagram];
+		graph.push({
+			"@id": linkIRI,
+			"og:vertex":
+				vertices.map((vert, i) =>
+					linkIRI + "/diagram-" + (diagram + 1) + "/vertex-" + (i + 1))
+		});
+		graph.push(...vertices.map((vert, i) => {
+			return {
+				"@id": linkIRI + "/diagram-" + (diagram + 1) + "/vertex-" + (i + 1),
+				"@type": "og:vertexDiagram",
+				"og:index": i,
+				"og:diagram": ProjectSettings.selectedDiagram,
+				"og:position-x": Math.round(vert.x),
+				"og:position-y": Math.round(vert.y),
+			}
+		}));
+		updates.push(...vertices.map((vert, i) =>
+			(`
+				with <${ProjectSettings.ontographerContext}>
+				delete{<${linkIRI}/diagram-${diagram + 1}/vertex-${i + 1}> ?p${counter} ?o${counter}.}
+				where{<${linkIRI}/diagram-${diagram + 1}/vertex-${i + 1}> ?p${counter} ?o${counter++}.};
+			`)
+		))
+	})
+
+	let addLD = {
+		"@context": {
+			...Prefixes,
+			"og:vertex": {"@type": "@id"},
+		},
+		"@id": ProjectSettings.ontographerContext,
+		"@graph": graph
+	};
+
+	return {add: [JSON.stringify(addLD)], delete: [], update: [updates.join("")]}
 }

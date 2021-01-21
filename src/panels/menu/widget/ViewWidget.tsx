@@ -1,9 +1,8 @@
 import React from 'react';
 import {OverlayTrigger, Tooltip} from "react-bootstrap";
 import {Locale} from "../../../config/Locale";
-import {ProjectSettings} from "../../../config/Variables";
-import {paper} from "../../../main/DiagramCanvas";
-import {centerDiagram} from "../../../function/FunctionDiagram";
+import {Diagrams, ProjectSettings} from "../../../config/Variables";
+import {centerDiagram, zoomDiagram} from "../../../function/FunctionDiagram";
 import {ReactComponent as CenterSVG} from "../../../svg/centerView.svg";
 import {ReactComponent as RestoreZoomSVG} from "../../../svg/restoreZoom.svg";
 
@@ -35,7 +34,7 @@ export default class ViewWidget extends React.Component<Props, State> {
 				</Tooltip>}
 			>
 			<button onClick={() => {
-				paper.scale(1, 1);
+				zoomDiagram(Diagrams[ProjectSettings.selectedDiagram].origin.x, Diagrams[ProjectSettings.selectedDiagram].origin.y, 0);
 			}}><RestoreZoomSVG/></button></OverlayTrigger>
 		</span>);
 	}

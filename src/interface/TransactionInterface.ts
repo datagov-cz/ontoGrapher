@@ -407,7 +407,7 @@ export async function processTransaction(contextEndpoint: string, transactions: 
 				}, miliseconds);
 				let resultUpdate = await fetch(transactionID + "?action=UPDATE", {
 					headers: {
-						'Content-Type': 'application/sparql-update'
+						'Content-Type': 'application/sparql-update; charset=UTF-8'
 					},
 					method: "PUT",
 					body: upd,
@@ -430,7 +430,7 @@ export async function processTransaction(contextEndpoint: string, transactions: 
 				}, miliseconds);
 				let resultDelete = await fetch(transactionID + "?action=DELETE", {
 					headers: {
-						'Content-Type': 'application/ld+json'
+						'Content-Type': 'application/ld+json; charset=UTF-8'
 					},
 					method: "PUT",
 					body: del,
@@ -453,7 +453,7 @@ export async function processTransaction(contextEndpoint: string, transactions: 
 				}, miliseconds);
 				let resultAdd = await fetch(transactionID + "?action=ADD", {
 					headers: {
-						'Content-Type': 'application/ld+json'
+						'Content-Type': 'application/ld+json; charset=UTF-8'
 					},
 					method: "PUT",
 					body: add,
