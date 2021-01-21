@@ -14,7 +14,7 @@ import {
 } from "../config/Variables";
 import {addClass, addLink, addVocabularyElement, createNewElemIRI} from "../function/FunctionCreateVars";
 import {graph} from "../graph/Graph";
-import {restoreHiddenElem, setRepresentation} from "../function/FunctionGraph";
+import {restoreHiddenElem, setLabels, setRepresentation} from "../function/FunctionGraph";
 import {HideButton} from "../graph/elementTool/ElemHide";
 import {ElemCreateLink} from "../graph/elementTool/ElemCreateLink";
 import {parsePrefix} from "../function/FunctionEditVars";
@@ -154,7 +154,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                 }
                 if (typeof link.id === "string" && typeof sid === "string" && typeof tid === "string") {
                     if (ProjectSettings.representation === Representation.FULL || type === LinkType.GENERALIZATION) {
-                        this.props.performTransaction(this.updateConnection(sid, tid, link.id, type, iri));
+                        this.props.performTransaction(this.updateConnection(sid, tid, link.id, type, iri, true));
                     } else if (ProjectSettings.representation === Representation.COMPACT) {
                         let mvp1IRI = "https://slovník.gov.cz/základní/pojem/má-vztažený-prvek-1";
                         let mvp2IRI = "https://slovník.gov.cz/základní/pojem/má-vztažený-prvek-2";
@@ -185,7 +185,8 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                     this.props.updateElementPanel();
                     this.props.updateDetailPanel();
                 }
-                if (type === LinkType.DEFAULT) link.appendLabel({attrs: {text: {text: getLinkOrVocabElem(iri).labels[this.props.projectLanguage]}}});
+                if (type === LinkType.DEFAULT)
+                    setLabels(link, getLinkOrVocabElem(iri).labels[this.props.projectLanguage]);
             } else link.remove();
         }
         this.sid = undefined;
@@ -237,8 +238,16 @@ export default class DiagramCanvas extends React.Component<Props, State> {
         }
     }
 
-    updateConnection(sid: string, tid: string, linkID: string, type: number, iri: string) {
+    updateConnection(sid: string, tid: string, linkID: string, type: number, iri: string, setCardinality: boolean = false) {
         addLink(linkID, iri, sid, tid, type);
+        if (iri in Links && type === LinkType.DEFAULT && setCardinality) {
+            ProjectLinks[linkID].sourceCardinality =
+                Links[iri].defaultSourceCardinality.isCardinalityNone() ?
+                    ProjectSettings.defaultCardinality : Links[iri].defaultSourceCardinality;
+            ProjectLinks[linkID].targetCardinality =
+                Links[iri].defaultTargetCardinality.isCardinalityNone() ?
+                    ProjectSettings.defaultCardinality : Links[iri].defaultTargetCardinality;
+        }
         ProjectElements[sid].connections.push(linkID);
         this.props.updateElementPanel();
         return mergeTransactions(updateConnections(linkID), updateProjectLink(linkID));

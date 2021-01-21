@@ -101,7 +101,10 @@ export var Links: {
         typesDomain: string[],
         subClassOfDomain: string[]
         typesRange: string[],
-        subClassOfRange: string[]
+        subClassOfRange: string[];
+        inverseOf: string;
+        defaultSourceCardinality: Cardinality;
+        defaultTargetCardinality: Cardinality;
     }
 } = {};
 
@@ -138,6 +141,7 @@ export var ProjectSettings: {
     viewColorPool: string,
     viewItemPanelTypes: boolean,
     viewLanguage: string,
+    defaultCardinality: Cardinality
 } = {
     name: {},
     description: {},
@@ -159,7 +163,8 @@ export var ProjectSettings: {
     viewZoom: 1,
     viewColorPool: "pastelLow",
     viewItemPanelTypes: true,
-    viewLanguage: "en"
+    viewLanguage: "en",
+    defaultCardinality: new Cardinality("0", "*")
 };
 
 export var CardinalityPool: Cardinality[] = [
@@ -170,4 +175,8 @@ export var CardinalityPool: Cardinality[] = [
     new Cardinality("0", "1"),
     new Cardinality("1", "1"),
     new Cardinality("1", "*"),
+    new Cardinality("0", "2"),
+    new Cardinality("1", "2"),
+    new Cardinality("2", "2"),
+    new Cardinality("2", "*"),
 ];

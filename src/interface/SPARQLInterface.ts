@@ -1,5 +1,5 @@
 import {Diagrams, Links, ProjectElements, ProjectLinks, ProjectSettings, Schemes} from "../config/Variables";
-import {initLanguageObject} from "../function/FunctionEditVars";
+import {initLanguageObject, parsePrefix} from "../function/FunctionEditVars";
 import * as joint from "jointjs";
 import {Cardinality} from "../datatypes/Cardinality";
 import * as _ from "lodash";
@@ -35,6 +35,7 @@ export async function fetchConcepts(
             type: number,
             topConcept?: string;
             character?: string;
+            inverseOf?: string;
         }
     } = {};
 
@@ -43,7 +44,7 @@ export async function fetchConcepts(
         "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>",
         "PREFIX a-popis-dat-pojem: <http://onto.fel.cvut.cz/ontologies/slovník/agendový/popis-dat/pojem/>",
         "PREFIX z-sgov-pojem: <https://slovník.gov.cz/základní/pojem/>",
-        "SELECT DISTINCT ?term ?termLabel ?termAltLabel ?termType ?termDefinition ?termDomain ?termRange ?topConcept ?character ?restriction ?restrictionPred ?onProperty ?target ?subClassOf",
+        "SELECT DISTINCT ?term ?termLabel ?termAltLabel ?termType ?termDefinition ?termDomain ?termRange ?topConcept ?inverseOf ?character ?restriction ?restrictionPred ?onProperty ?target ?subClassOf",
         "WHERE {",
         graph && "GRAPH <" + graph + "> {",
         !subPropertyOf && "?term skos:inScheme <" + source + ">.",
@@ -58,6 +59,7 @@ export async function fetchConcepts(
         "OPTIONAL {?term rdfs:domain ?termDomain.}",
         "OPTIONAL {?term rdfs:range ?termRange.}",
         "OPTIONAL {?term rdfs:subClassOf ?subClassOf. }",
+        "OPTIONAL {?term owl:inverseOf ?inverseOf. }",
         "OPTIONAL {?topConcept skos:hasTopConcept ?term. }",
         "OPTIONAL {?term rdfs:subClassOf ?restriction. ",
         "?restriction a owl:Restriction .",
@@ -112,6 +114,8 @@ export async function fetchConcepts(
                 result[row.term.value].subClassOf.push(row.subClassOf.value);
             if (row.restriction && Object.keys(Links).includes(row.onProperty.value))
                 createRestriction(result, row.term.value, row.restrictionPred.value, row.onProperty.value, row.target);
+            if (row.inverseOf)
+                result[row.term.value].inverseOf = row.inverseOf.value;
         }
         Object.assign(sendTo, result);
         return true;
@@ -121,7 +125,7 @@ export async function fetchConcepts(
     });
 }
 
-export async function getAllTypes(iri: string, endpoint: string, targetTypes: string[], targetSubClass: string[], init: boolean = false): Promise<boolean> {
+export async function getAllTypes(iri: string, endpoint: string, targetTypes: string[], targetSubClass: string[], init: boolean = false, link?: string, source?: boolean): Promise<boolean> {
     let subClassOf: string[] = init ? [iri] : _.cloneDeep(targetSubClass);
     while (subClassOf.length > 0) {
         let subc = subClassOf.pop();
@@ -130,20 +134,40 @@ export async function getAllTypes(iri: string, endpoint: string, targetTypes: st
             let query = [
                 "PREFIX skos: <http://www.w3.org/2004/02/skos/core#>",
                 "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>",
-                "SELECT ?type ?subClass",
+                "PREFIX owl: <http://www.w3.org/2002/07/owl#>",
+                "SELECT DISTINCT ?type ?subClass ?restriction ?onProperty ?onClass ?target ?restrictionPred",
                 "WHERE {",
                 "<" + subc + "> a ?type.",
                 "<" + subc + "> rdfs:subClassOf ?subClass.",
+                "OPTIONAL {<" + subc + "> rdfs:subClassOf ?restriction. ",
+                "?restriction a owl:Restriction .",
+                "?restriction owl:onProperty ?onProperty.",
+                "?restriction owl:onClass ?onClass.",
+                "?restriction ?restrictionPred ?target.",
+                "filter (?restrictionPred in (owl:minQualifiedCardinality, owl:maxQualifiedCardinality))}",
                 "}",
             ].join(" ");
             let q = endpoint + "?query=" + encodeURIComponent(query);
             let result = await fetch(q, {headers: {'Accept': 'application/json'}}).then(response => {
                 return response.json();
             }).then(data => {
+                let newCardinality = new Cardinality(
+                    ProjectSettings.defaultCardinality.getFirstCardinality(),
+                    ProjectSettings.defaultCardinality.getSecondCardinality());
                 for (let result of data.results.bindings) {
                     if (!(targetTypes.includes(result.type.value))) targetTypes.push(result.type.value);
                     if (!(subClassOf.includes(result.subClass.value)) &&
                         result.subClass.type !== "bnode") subClassOf.push(result.subClass.value);
+                    if (result.restriction && link && source !== undefined && result.onProperty.value === link) {
+                        result.restrictionPred.value === parsePrefix("owl", "minQualifiedCardinality") ?
+                            newCardinality.setFirstCardinality(result.target.value) :
+                            newCardinality.setSecondCardinality(result.target.value);
+                        source ? Links[link].defaultSourceCardinality = newCardinality : Links[link].defaultTargetCardinality = newCardinality;
+                    }
+                }
+                if (link && Links[link].inverseOf && Links[link].inverseOf in Links) {
+                    Links[Links[link].inverseOf].defaultSourceCardinality = Links[link].defaultTargetCardinality;
+                    Links[Links[link].inverseOf].defaultTargetCardinality = Links[link].defaultSourceCardinality;
                 }
                 return true;
             }).catch((e) => {

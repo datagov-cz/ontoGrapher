@@ -56,12 +56,16 @@ export class Cardinality {
     setFirstCardinality(cardinalityPart: string) {
         if (this.checkCardinality(cardinalityPart)) {
             this.first = cardinalityPart;
+        } else {
+            throw new Error(Locale[ProjectSettings.viewLanguage].errorInvalidCardinality);
         }
     }
 
     setSecondCardinality(cardinalityPart: string) {
         if (this.checkCardinality(cardinalityPart)) {
             this.second = cardinalityPart;
+        } else {
+            throw new Error(Locale[ProjectSettings.viewLanguage].errorInvalidCardinality);
         }
     }
 
@@ -71,5 +75,9 @@ export class Cardinality {
 
     getSecondCardinality() {
         return this.second;
+    }
+
+    isCardinalityNone(): boolean {
+        return this.getString() === ""
     }
 }

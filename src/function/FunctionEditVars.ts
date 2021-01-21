@@ -16,6 +16,7 @@ import {updateDeleteTriples} from "../interface/TransactionInterface";
 import {LinkType} from "../config/Enum";
 import {Locale} from "../config/Locale";
 import {getNewLink} from "./FunctionGetVars";
+import {Cardinality} from "../datatypes/Cardinality";
 
 export function getName(element: string, language: string): string {
     if (element in Stereotypes) {
@@ -62,7 +63,10 @@ export function loadUML() {
                 inScheme: scheme,
                 type: intType,
                 domain: "",
-                range: ""
+                range: "",
+                inverseOf: "",
+                defaultSourceCardinality: new Cardinality("", ""),
+                defaultTargetCardinality: new Cardinality("", "")
             }
         }
     }
