@@ -57,10 +57,12 @@ export function spreadConnections(id: string, to: boolean = true) {
         let elems = (to ?
             ProjectElements[id].connections.filter(conn => ProjectLinks[conn].active &&
                 !(graph.getCell(ProjectLinks[conn].target)) &&
-                (ProjectSettings.representation === Representation.FULL ? ProjectLinks[conn].iri in Links : !(ProjectLinks[conn].iri in Links)))
+                (ProjectSettings.representation === Representation.FULL ? ProjectLinks[conn].iri in Links : (!(ProjectLinks[conn].iri in Links) ||
+                    (ProjectLinks[conn].iri in Links && Links[ProjectLinks[conn].iri].inScheme.startsWith(ProjectSettings.ontographerContext)))))
                 .map(conn => ProjectLinks[conn].target) :
             Object.keys(ProjectLinks).filter(conn => ProjectLinks[conn].active &&
-                (ProjectSettings.representation === Representation.FULL ? ProjectLinks[conn].iri in Links : !(ProjectLinks[conn].iri in Links)) &&
+                (ProjectSettings.representation === Representation.FULL ? ProjectLinks[conn].iri in Links : (!(ProjectLinks[conn].iri in Links) ||
+                    (ProjectLinks[conn].iri in Links && Links[ProjectLinks[conn].iri].inScheme.startsWith(ProjectSettings.ontographerContext)))) &&
                 ProjectLinks[conn].target === id &&
                 !(graph.getCell(ProjectLinks[conn].source)))
                 .map(conn => ProjectLinks[conn].source));
@@ -188,7 +190,8 @@ export function setRepresentation(representation: number): { result: boolean, tr
                                         ProjectLinks[sourceLink].sourceCardinality.getSecondCardinality());
                                 transactions = mergeTransactions(transactions, updateProjectLink(newLink.id));
                             }
-                            setLabels(newLink, ProjectElements[id].selectedLabel[ProjectSettings.selectedLanguage]);
+                            setLabels(newLink, ProjectElements[id].selectedLabel[ProjectSettings.selectedLanguage] ||
+                                VocabularyElements[ProjectElements[id].iri].labels[ProjectSettings.selectedLanguage]);
                         }
                     }
                 }
@@ -297,7 +300,8 @@ export function restoreHiddenElem(id: string, cls: joint.dia.Element, restoreSim
     for (let link of Object.keys(ProjectLinks).filter(link => ProjectLinks[link].active)) {
         if ((ProjectLinks[link].source === id || ProjectLinks[link].target === id)
             && (graph.getCell(ProjectLinks[link].source) && graph.getCell(ProjectLinks[link].target)) && (
-                (ProjectSettings.representation === Representation.FULL ? ProjectLinks[link].iri in Links : (!(ProjectLinks[link].iri in Links))
+                (ProjectSettings.representation === Representation.FULL ? ProjectLinks[link].iri in Links : (!(ProjectLinks[link].iri in Links) ||
+                        (ProjectLinks[link].iri in Links && Links[ProjectLinks[link].iri].inScheme.startsWith(ProjectSettings.ontographerContext)))
                 ))) {
             let oldPos = setupLink(link, restoreSimpleConnectionPosition);
             if (oldPos)
