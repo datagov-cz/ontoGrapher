@@ -19,8 +19,6 @@ import LabelTable from "./components/LabelTable";
 import DescriptionTabs from "./components/DescriptionTabs";
 import {spreadConnections} from "../../function/FunctionGraph";
 import {graph} from "../../graph/Graph";
-import {updateProjectElement} from "../../interface/TransactionInterface";
-import * as _ from "lodash";
 import StereotypeOptions from "./components/StereotypeOptions";
 import {Shapes} from "../../config/Shapes";
 import {Locale} from "../../config/Locale";
@@ -28,11 +26,12 @@ import {drawGraphElement, unHighlightCell} from "../../function/FunctionDraw";
 import AltLabelTable from "./components/AltLabelTable";
 import ConnectionTable from "./components/ConnectionTable";
 import {Representation} from "../../config/Enum";
+import {updateProjectElement} from "../../queries/UpdateElementQueries";
 
 interface Props {
 	projectLanguage: string;
 	save: Function;
-	performTransaction: (transaction: { add: string[], delete: string[], update: string[] }) => void;
+	performTransaction: (...queries: string[]) => void;
 	handleWidth: Function;
 	error: boolean;
 	id: string;
@@ -120,7 +119,6 @@ export default class DetailElement extends React.Component<Props, State> {
 	save() {
 		let elem = graph.getElements().find(elem => elem.id === (this.props.id));
 		if (this.props.id in ProjectElements) {
-			let oldVocabularyElement = _.cloneDeep(VocabularyElements[ProjectElements[this.props.id].iri]);
 			VocabularyElements[ProjectElements[this.props.id].iri].types = this.state.inputTypes;
 			VocabularyElements[ProjectElements[this.props.id].iri].labels = this.state.inputLabels;
 			VocabularyElements[ProjectElements[this.props.id].iri].altLabels = this.state.inputAltLabels;
@@ -130,7 +128,7 @@ export default class DetailElement extends React.Component<Props, State> {
 			this.props.save();
 			this.setState({changes: false});
 			this.prepareDetails(this.props.id);
-			this.props.performTransaction(updateProjectElement(oldVocabularyElement, this.props.id));
+			this.props.performTransaction(updateProjectElement(true, this.props.id));
 		}
 	}
 
@@ -275,7 +273,7 @@ export default class DetailElement extends React.Component<Props, State> {
 									projectLanguage={this.props.projectLanguage} to={true}
 									button={<Button className={"buttonlink center"}
 													onClick={() => {
-														this.props.performTransaction(spreadConnections(this.props.id, true));
+														this.props.performTransaction(...spreadConnections(this.props.id, true));
 														this.forceUpdate();
 													}}>
 										{Locale[ProjectSettings.viewLanguage].spreadConnections}
@@ -288,7 +286,7 @@ export default class DetailElement extends React.Component<Props, State> {
 									projectLanguage={this.props.projectLanguage} to={false}
 									button={<Button className={"buttonlink center"}
 													onClick={() => {
-														this.props.performTransaction(spreadConnections(this.props.id, false));
+														this.props.performTransaction(...spreadConnections(this.props.id, false));
 														this.forceUpdate();
 													}}>
 										{Locale[ProjectSettings.viewLanguage].spreadConnections}
@@ -306,7 +304,7 @@ export default class DetailElement extends React.Component<Props, State> {
 						<Accordion.Collapse eventKey={"2"}>
 							<Card.Body>
 								<TableList headings={[Locale[ProjectSettings.viewLanguage].diagram]}>
-									{this.state.inputDiagrams.filter(diag => Diagrams[diag]).map((diag, i) =>
+									{this.state.inputDiagrams.filter(diag => Diagrams[diag] && Diagrams[diag].active).map((diag, i) =>
 										<tr key={i}>
 											<td>{Diagrams[diag].name}</td>
 										</tr>

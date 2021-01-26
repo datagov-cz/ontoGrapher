@@ -1,6 +1,7 @@
 import {
     Languages,
     Links,
+    PackageRoot,
     Prefixes,
     ProjectElements,
     ProjectLinks,
@@ -10,13 +11,14 @@ import {
     VocabularyElements
 } from "../config/Variables";
 import {graph} from "../graph/Graph";
-import {addLink} from "./FunctionCreateVars";
+import {addClass, addLink} from "./FunctionCreateVars";
 import {LinkConfig} from "../config/LinkConfig";
-import {updateDeleteTriples} from "../interface/TransactionInterface";
 import {LinkType} from "../config/Enum";
 import {Locale} from "../config/Locale";
 import {getNewLink} from "./FunctionGetVars";
+import {updateDeleteTriples} from "../queries/UpdateMiscQueries";
 import {Cardinality} from "../datatypes/Cardinality";
+import {graphElement} from "../graph/GraphElement";
 
 export function getName(element: string, language: string): string {
     if (element in Stereotypes) {
@@ -147,21 +149,21 @@ export function addRelationships(): string[] {
     return linksToPush;
 }
 
-export function deletePackageItem(id: string): { add: string[], delete: string[], update: string[] } {
+export function deletePackageItem(id: string): string[] {
     let folder = ProjectElements[id].package;
     let iri = ProjectElements[id].iri;
-    let triples: string[] = [];
+    let queries: string[] = [];
     folder.elements.splice(folder.elements.indexOf(id), 1);
     for (let connection of ProjectElements[id].connections) {
         ProjectLinks[connection].active = false;
-        triples = triples.concat(updateDeleteTriples(ProjectSettings.ontographerContext + "-" + connection,
-            ProjectSettings.ontographerContext, false, false));
+        queries.push(updateDeleteTriples(ProjectSettings.ontographerContext + "-" + connection,
+            ProjectSettings.ontographerContext, true, false, false));
     }
     let targets = Object.keys(ProjectLinks).filter(link => ProjectElements[ProjectLinks[link].target].iri === iri)
     for (let connection of targets) {
         ProjectLinks[connection].active = false;
-        triples = triples.concat(updateDeleteTriples(ProjectSettings.ontographerContext + "-" + connection,
-            ProjectSettings.ontographerContext, false, false));
+        queries.push(updateDeleteTriples(ProjectSettings.ontographerContext + "-" + connection,
+            ProjectSettings.ontographerContext, true, false, false));
     }
     targets.forEach(target => {
         let elem = Object.keys(ProjectElements).find(elem => ProjectElements[elem].connections.includes(target));
@@ -172,7 +174,7 @@ export function deletePackageItem(id: string): { add: string[], delete: string[]
         graph.removeCells([graph.getCell(id)]);
     }
     ProjectElements[id].active = false;
-    return {add: [], delete: [], update: triples};
+    return queries;
 }
 
 export function setElementShape(elem: joint.dia.Element, width: number, height: number) {
@@ -238,4 +240,19 @@ export function setElementShape(elem: joint.dia.Element, width: number, height: 
             label: {color: 'grey'}
         });
     }
+}
+
+export function initElements() {
+    let ids: string[] = [];
+    for (let iri in VocabularyElements) {
+        if (!(Object.keys(ProjectElements).find(id => ProjectElements[id].iri === iri))) {
+            let pkg = PackageRoot.children.find(pkg => pkg.scheme === VocabularyElements[iri].inScheme);
+            let id = new graphElement().id as string;
+            if (pkg) {
+                addClass(id, iri, pkg);
+                ids.push(id);
+            }
+        }
+    }
+    return ids;
 }

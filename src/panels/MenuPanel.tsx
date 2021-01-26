@@ -23,7 +23,7 @@ interface MenuPanelProps {
 	validate: Function;
 	closeDetailPanel: Function;
 	handleChangeLoadingStatus: Function;
-	performTransaction: (transaction: { add: string[], delete: string[], update: string[] }) => void;
+	performTransaction: (...queries: string[]) => void;
 	retry: boolean;
 }
 

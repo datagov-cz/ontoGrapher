@@ -1,4 +1,12 @@
-import {Diagrams, Links, ProjectElements, ProjectLinks, ProjectSettings, Schemes} from "../config/Variables";
+import {
+    Diagrams,
+    Links,
+    PackageRoot,
+    ProjectElements,
+    ProjectLinks,
+    ProjectSettings,
+    Schemes
+} from "../config/Variables";
 import {initLanguageObject, parsePrefix} from "../function/FunctionEditVars";
 import * as joint from "jointjs";
 import {Cardinality} from "../datatypes/Cardinality";
@@ -6,6 +14,7 @@ import * as _ from "lodash";
 import {createRestriction} from "../function/FunctionRestriction";
 import {LinkType} from "../config/Enum";
 import {Locale} from "../config/Locale";
+import {setSchemeColors} from "../function/FunctionGetVars";
 
 export async function fetchConcepts(
     endpoint: string,
@@ -225,12 +234,13 @@ export async function getElementsConfig(contextIRI: string, contextEndpoint: str
             hidden: { [key: number]: boolean },
             diagrams: number[],
             selectedName: { [key: string]: string },
+            graph: string
         }
     } = {}
     let query = [
         "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
-        "select ?id ?iri ?active ?diagram ?index ?hidden ?posX ?posY ?name where {",
-        "graph ?g {",
+        "select ?id ?iri ?active ?diagram ?index ?hidden ?posX ?posY ?name ?graph where {",
+        "graph ?graph {",
         "?elem a og:element .",
         "?elem og:context <" + contextIRI + ">.",
         "?elem og:iri ?iri .",
@@ -243,7 +253,7 @@ export async function getElementsConfig(contextIRI: string, contextEndpoint: str
         "?diagram og:position-x ?posX.",
         "?diagram og:position-y ?posY.",
         "}}",
-        "<" + contextIRI + "> <https://slovník.gov.cz/datový/pracovní-prostor/pojem/odkazuje-na-kontext> ?g.}"
+        "<" + contextIRI + "> <https://slovník.gov.cz/datový/pracovní-prostor/pojem/odkazuje-na-kontext> ?graph.}"
     ].join(" ");
     let q = contextEndpoint + "?query=" + encodeURIComponent(query);
     return await fetch(q, {headers: {'Accept': 'application/json'}}).then(response => {
@@ -258,7 +268,8 @@ export async function getElementsConfig(contextIRI: string, contextEndpoint: str
                     active: result.active.value === "true",
                     diagramPosition: {},
                     hidden: {},
-                    selectedName: initLanguageObject("")
+                    selectedName: initLanguageObject(""),
+                    graph: result.graph.value
                 }
             }
             if (result.name && !(elements[iri].selectedName[result.name['xml:lang']]))
@@ -272,13 +283,21 @@ export async function getElementsConfig(contextIRI: string, contextEndpoint: str
                 elements[iri].hidden[parseInt(result.index.value)] = result.hidden.value === "true";
             }
         }
-        for (let id in ProjectElements) {
-            if (ProjectElements[id].iri in elements) {
-                ProjectElements[id].hidden = elements[ProjectElements[id].iri].hidden;
-                ProjectElements[id].diagrams = elements[ProjectElements[id].iri].diagrams;
-                ProjectElements[id].active = elements[ProjectElements[id].iri].active;
-                ProjectElements[id].position = elements[ProjectElements[id].iri].diagramPosition;
-                ProjectElements[id].selectedLabel = elements[ProjectElements[id].iri].selectedName;
+        for (let iri in elements) {
+            let id = elements[iri].id;
+            let pkg = PackageRoot.children.find(pkg => Schemes[pkg.scheme].graph === elements[iri].graph);
+            if (pkg) {
+                ProjectElements[id] = {
+                    iri: iri,
+                    connections: [],
+                    diagrams: elements[iri].diagrams,
+                    hidden: elements[iri].hidden,
+                    position: elements[iri].diagramPosition,
+                    package: pkg,
+                    active: elements[iri].active,
+                    selectedLabel: elements[iri].selectedName
+                }
+                pkg.elements.push(id);
             }
         }
         return true;
@@ -292,12 +311,13 @@ export async function getSettings(contextIRI: string, contextEndpoint: string): 
     let contextInstance = ProjectSettings.contextIRI.substring(ProjectSettings.contextIRI.lastIndexOf("/"));
     let query = [
         "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
-        "select ?diagram ?index ?name ?color where {",
+        "select ?diagram ?index ?name ?color ?active where {",
         "BIND(<" + ProjectSettings.ontographerContext + "> as ?ogContext).",
         "graph ?ogContext {",
         "?diagram og:context <" + contextIRI + "> .",
         "?diagram og:index ?index .",
         "?diagram og:name ?name .",
+        "optional {?diagram og:active ?active}",
         "optional {<" + ProjectSettings.ontographerContext + contextInstance + "> og:viewColor ?color}",
         "}",
         "}"
@@ -310,13 +330,14 @@ export async function getSettings(contextIRI: string, contextEndpoint: string): 
             if (!(parseInt(result.index.value) in Diagrams)) {
                 Diagrams[parseInt(result.index.value)] = {
                     name: Locale[ProjectSettings.viewLanguage].untitled,
-                    active: true,
+                    active: result.active ? result.active.value === "true" : true,
                     origin: {x: 0, y: 0},
                     scale: 1
                 }
             }
             Diagrams[parseInt(result.index.value)].name = result.name.value;
             if (result.color) ProjectSettings.viewColorPool = result.color.value;
+            setSchemeColors(ProjectSettings.viewColorPool);
         }
         return true;
     }).catch((e) => {

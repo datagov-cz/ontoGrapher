@@ -17,18 +17,19 @@ import {ResizableBox} from "react-resizable";
 import {graph} from "../../graph/Graph";
 import DescriptionTabs from "./components/DescriptionTabs";
 import {getLabelOrBlank, getLinkOrVocabElem, getUnderlyingFullConnections} from "../../function/FunctionGetVars";
-import {mergeTransactions, updateConnections, updateProjectLink} from "../../interface/TransactionInterface";
 import {setLabels} from "../../function/FunctionGraph";
 import {parsePrefix} from "../../function/FunctionEditVars";
 import {Cardinality} from "../../datatypes/Cardinality";
 import {LinkType, Representation} from "../../config/Enum";
 import {Locale} from "../../config/Locale";
 import {unHighlightCell} from "../../function/FunctionDraw";
+import {updateProjectLink} from "../../queries/UpdateLinkQueries";
+import {updateConnections} from "../../queries/UpdateConnectionQueries";
 
 interface Props {
     projectLanguage: string;
     save: Function;
-    performTransaction: (transaction: { add: string[], delete: string[], update: string[] }) => void;
+    performTransaction: (...queries: string[]) => void;
     handleWidth: Function;
     error: boolean;
     id: string;
@@ -104,11 +105,7 @@ export default class DetailLink extends React.Component<Props, State> {
 
     save() {
         if (this.props.id in ProjectLinks) {
-            let transactions: { add: string[], delete: string[], update: string[] } = {
-                add: [],
-                delete: [],
-                update: []
-            }
+            let queries: string[] = [];
             if (ProjectSettings.representation === Representation.FULL) {
                 ProjectLinks[this.props.id].sourceCardinality = CardinalityPool[parseInt(this.state.sourceCardinality, 10)];
                 ProjectLinks[this.props.id].targetCardinality = CardinalityPool[parseInt(this.state.targetCardinality, 10)];
@@ -119,7 +116,7 @@ export default class DetailLink extends React.Component<Props, State> {
                 }
                 this.setState({changes: false});
                 this.props.save();
-                transactions = mergeTransactions(transactions, updateProjectLink(this.props.id), updateConnections(this.props.id))
+                queries.push(updateProjectLink(true, this.props.id), updateConnections(this.props.id));
             } else {
                 ProjectLinks[this.props.id].sourceCardinality = CardinalityPool[parseInt(this.state.sourceCardinality, 10)];
                 ProjectLinks[this.props.id].targetCardinality = CardinalityPool[parseInt(this.state.targetCardinality, 10)];
@@ -134,18 +131,16 @@ export default class DetailLink extends React.Component<Props, State> {
                         ProjectLinks[underlyingConnections.src].targetCardinality = new Cardinality(sourceCard.getSecondCardinality(), sourceCard.getSecondCardinality());
                         ProjectLinks[underlyingConnections.tgt].sourceCardinality = new Cardinality(targetCard.getFirstCardinality(), targetCard.getFirstCardinality());
                         ProjectLinks[underlyingConnections.tgt].targetCardinality = new Cardinality(targetCard.getSecondCardinality(), targetCard.getSecondCardinality());
-                        transactions = mergeTransactions(transactions,
-                            updateProjectLink(underlyingConnections.src),
-                            updateProjectLink(underlyingConnections.tgt),
+                        queries.push(updateProjectLink(true, underlyingConnections.src, underlyingConnections.tgt),
                             updateConnections(underlyingConnections.src),
                             updateConnections(underlyingConnections.tgt))
                     }
-                    transactions = mergeTransactions(transactions, updateProjectLink(this.props.id));
+                    queries.push(updateProjectLink(true, this.props.id));
                 }
                 this.setState({changes: false});
                 this.props.save();
             }
-            this.props.performTransaction(transactions);
+            this.props.performTransaction(...queries);
         }
     }
 

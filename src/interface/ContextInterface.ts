@@ -1,8 +1,6 @@
 import {PackageRoot, ProjectSettings, Schemes, VocabularyElements} from "../config/Variables";
-import {graphElement} from '../graph/GraphElement';
 import {fetchConcepts, getScheme} from "./SPARQLInterface";
 import {PackageNode} from "../datatypes/PackageNode";
-import {addClass} from "../function/FunctionCreateVars";
 
 export async function getContext(
 	contextIRI: string,
@@ -61,13 +59,7 @@ export async function getContext(
 		await fetchConcepts(contextEndpoint, vocab, vocabularies[vocab].terms, vocabularies[vocab].readOnly, Schemes[vocab].graph).catch(() => false);
 		Schemes[vocab].readOnly = vocabularies[vocab].readOnly;
 		Object.assign(VocabularyElements, vocabularies[vocab].terms);
-		let pkg = new PackageNode(Schemes[vocab].labels, PackageRoot, false, vocab);
-		for (let elem in vocabularies[vocab].terms) {
-			let id = new graphElement().id;
-			if (typeof id === "string") {
-				addClass(id, elem, pkg);
-			}
-		}
+		new PackageNode(Schemes[vocab].labels, PackageRoot, false, vocab);
 	}
 	return true;
 }

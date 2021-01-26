@@ -1,6 +1,13 @@
 import React from 'react';
 import {ResizableBox} from "react-resizable";
-import {PackageRoot, ProjectElements, ProjectSettings, Schemes, VocabularyElements} from "../config/Variables";
+import {
+	Diagrams,
+	PackageRoot,
+	ProjectElements,
+	ProjectSettings,
+	Schemes,
+	VocabularyElements
+} from "../config/Variables";
 import PackageFolder from "./element/PackageFolder";
 import {PackageNode} from "../datatypes/PackageNode";
 import PackageItem from "./element/PackageItem";
@@ -18,7 +25,7 @@ import {unHighlightAll} from "../function/FunctionDraw";
 
 interface Props {
 	projectLanguage: string;
-	performTransaction: (transaction: { add: string[], delete: string[], update: string[] }) => void;
+	performTransaction: (...queries: string[]) => void;
 	handleWidth: Function;
 	updateDetailPanel: Function;
 	selectedID: string;
@@ -184,6 +191,7 @@ export default class ItemPanel extends React.Component<Props, State> {
 						}}
 						showDetails={() => {
 							unHighlightAll();
+							ProjectSettings.selectedCells = [];
 							this.props.updateDetailPanel(id);
 							let elem = graph.getElements().find(elem => elem.id === id);
 							if (elem) {
@@ -191,6 +199,11 @@ export default class ItemPanel extends React.Component<Props, State> {
 								paper.translate(0, 0);
 								paper.translate((-elem.position().x * scale) + (paper.getComputedSize().width / 2) - elem.getBBox().width,
 									(-elem.position().y * scale) + (paper.getComputedSize().height / 2) - elem.getBBox().height);
+								Diagrams[ProjectSettings.selectedDiagram].origin = {
+									x: paper.translate().tx,
+									y: paper.translate().ty
+								};
+								Diagrams[ProjectSettings.selectedDiagram].scale = paper.scale().sx;
 							}
 						}}
 					/>)

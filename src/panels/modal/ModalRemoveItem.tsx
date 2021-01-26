@@ -1,16 +1,16 @@
 import React from 'react';
 import {Button, Form, Modal} from "react-bootstrap";
 import {deletePackageItem} from "../../function/FunctionEditVars";
-import {mergeTransactions, updateDeleteTriples} from "../../interface/TransactionInterface";
 import {ProjectElements, ProjectSettings, Schemes, VocabularyElements} from "../../config/Variables";
 import {Locale} from "../../config/Locale";
+import {updateDeleteTriples} from "../../queries/UpdateMiscQueries";
 
 interface Props {
     modal: boolean;
     id: string;
     close: Function;
     update: Function;
-    performTransaction: (transaction: { add: string[], delete: string[], update: string[] }) => void;
+    performTransaction: (...queries: string[]) => void;
 }
 
 interface State {
@@ -20,13 +20,11 @@ interface State {
 export default class ModalRemoveItem extends React.Component<Props, State> {
 
     save() {
-        this.props.performTransaction(mergeTransactions(
-            deletePackageItem(this.props.id), {
-                add: [],
-                delete: [],
-                update: updateDeleteTriples(ProjectElements[this.props.id].iri,
-                    Schemes[VocabularyElements[ProjectElements[this.props.id].iri].inScheme].graph, true, true)
-            }));
+        this.props.performTransaction(...deletePackageItem(this.props.id),
+            updateDeleteTriples(ProjectElements[this.props.id].iri + "/diagram",
+                Schemes[VocabularyElements[ProjectElements[this.props.id].iri].inScheme].graph, true, false, false),
+            updateDeleteTriples(ProjectElements[this.props.id].iri,
+                Schemes[VocabularyElements[ProjectElements[this.props.id].iri].inScheme].graph, true, true, true));
     }
 
     render() {

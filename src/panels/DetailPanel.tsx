@@ -4,13 +4,13 @@ import {graph} from "../graph/Graph";
 import DetailElement from "./detail/DetailElement";
 import {highlightCell, setDisplayLabel, unHighlightCell} from "../function/FunctionDraw";
 import {ProjectElements, ProjectLinks} from "../config/Variables";
+import {resizeElem} from "../function/FunctionElem";
 
 interface Props {
     projectLanguage: string;
-    resizeElem: Function;
     update: Function;
     handleWidth: Function;
-    performTransaction: (transaction: { add: string[], delete: string[], update: string[] }) => void;
+    performTransaction: (...queries: string[]) => void;
     error: boolean;
     id: string;
     updateDetailPanel: Function;
@@ -44,7 +44,7 @@ export default class DetailPanel extends React.Component<Props, State> {
     }
 
     componentDidUpdate(prevProps: Readonly<Props>, prevState: Readonly<State>, snapshot?: any) {
-        if (prevProps !== this.props && this.props.id) {
+        if (prevProps.id !== this.props.id) {
             this.prepareDetails(this.props.id);
         }
     }
@@ -72,7 +72,7 @@ export default class DetailPanel extends React.Component<Props, State> {
     save() {
         let cell = graph.getCell(this.props.id);
         if (cell && cell.isElement())
-            this.props.resizeElem(this.props.id);
+            resizeElem(this.props.id);
         this.props.update();
     }
 

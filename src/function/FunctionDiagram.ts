@@ -1,4 +1,4 @@
-import {Diagrams, ProjectElements, ProjectSettings} from "../config/Variables";
+import {Diagrams, ProjectElements, ProjectLinks, ProjectSettings} from "../config/Variables";
 import {graphElement} from "../graph/GraphElement";
 import {graph} from "../graph/Graph";
 import {drawGraphElement} from "./FunctionDraw";
@@ -34,12 +34,15 @@ export function changeDiagrams(diagram: number = 0) {
     }
 }
 
-export function addDiagram() {
-    Diagrams.push({name: Locale[ProjectSettings.viewLanguage].untitled, active: true, scale: 1, origin: {x: 0, y: 0}});
+export function addDiagram(): number {
+    let index = Diagrams.length;
+    Diagrams.push({name: Locale[ProjectSettings.viewLanguage].untitled, active: true, scale: 1, origin: {x: 0, y: 0}})
     for (let key of Object.keys(ProjectElements)) {
-        ProjectElements[key].hidden[Diagrams.length - 1] = false;
-        ProjectElements[key].position[Diagrams.length - 1] = {x: 0, y: 0};
+        ProjectElements[key].hidden[index] = true;
+        ProjectElements[key].position[index] = {x: 0, y: 0};
     }
+    Object.keys(ProjectLinks).forEach(link => ProjectLinks[link].vertices[index] = []);
+    return index;
 }
 
 export function centerDiagram() {

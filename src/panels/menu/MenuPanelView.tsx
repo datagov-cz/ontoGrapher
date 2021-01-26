@@ -7,7 +7,7 @@ import {ProjectSettings} from "../../config/Variables";
 
 interface Props {
 	update: Function;
-	performTransaction: (transaction: { add: string[], delete: string[], update: string[] }) => void;
+	performTransaction: (...queries: string[]) => void;
 }
 
 interface State {

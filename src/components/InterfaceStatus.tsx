@@ -50,10 +50,9 @@ export default class InterfaceStatus extends React.Component<Props, State> {
 			let timeout = window.setTimeout(() => controller.abort(), miliseconds);
 			return await fetch(ProjectSettings.contextEndpoint + "?query=select%20*%20where%20%7B%3Fs%20%3Fp%20%3Fo.%7D%20limit%201", {
 				headers: {'Accept': 'application/json'}, method: "GET", signal
-			}).then(response => {
-				window.clearTimeout(timeout);
-				return response.ok;
-			}).catch(() => false);
+			}).then(response => response.ok)
+				.catch(() => false)
+				.finally(() => window.clearTimeout(timeout));
 		}
 	}
 

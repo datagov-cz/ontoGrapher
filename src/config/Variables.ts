@@ -4,6 +4,7 @@ import {initLanguageObject} from "../function/FunctionEditVars";
 import {RestrictionObject} from "../datatypes/RestrictionObject";
 import {ConnectionObject} from "../datatypes/ConnectionObject";
 import {Representation} from "./Enum";
+import * as joint from "jointjs";
 
 // language code : language label
 export var Languages: { [key: string]: string } = {};
@@ -65,6 +66,7 @@ export var Prefixes: { [key: string]: string } = {
     rdf: "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
     rdfs: "http://www.w3.org/2000/01/rdf-schema#",
     og: "http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/",
+    xsd: "http://www.w3.org/2001/XMLSchema#",
     "d-sgov-pracovní-prostor-pojem": "https://slovník.gov.cz/datový/pracovní-prostor/pojem/",
     "z-sgov-pojem": "https://slovník.gov.cz/základní/pojem/",
     "v-sgov-pojem": "https://slovník.gov.cz/veřejný-sektor/pojem/"
@@ -133,7 +135,7 @@ export var ProjectSettings: {
     contextEndpoint: string,
     ontographerContext: string,
     representation: number,
-    lastTransaction: { add: string[], delete: string[], update: string[] },
+    lastTransaction: string,
     lastTransactionID: string,
     switchElements: string[],
     viewStereotypes: boolean,
@@ -141,7 +143,8 @@ export var ProjectSettings: {
     viewColorPool: string,
     viewItemPanelTypes: boolean,
     viewLanguage: string,
-    defaultCardinality: Cardinality
+    defaultCardinality: Cardinality,
+    selectedCells: joint.dia.Element[];
 } = {
     name: {},
     description: {},
@@ -152,11 +155,7 @@ export var ProjectSettings: {
     contextEndpoint: "",
     ontographerContext: "http://onto.fel.cvut.cz/ontologies/application/ontoGrapher",
     representation: Representation.FULL,
-    lastTransaction: {
-        add: [],
-        delete: [],
-        update: []
-    },
+    lastTransaction: "",
     lastTransactionID: "",
     switchElements: [],
     viewStereotypes: true,
@@ -164,7 +163,8 @@ export var ProjectSettings: {
     viewColorPool: "pastelLow",
     viewItemPanelTypes: true,
     viewLanguage: "en",
-    defaultCardinality: new Cardinality("0", "*")
+    defaultCardinality: new Cardinality("0", "*"),
+    selectedCells: []
 };
 
 export var CardinalityPool: Cardinality[] = [

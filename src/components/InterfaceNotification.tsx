@@ -8,7 +8,7 @@ interface Props {
 	message: string;
 	error: boolean;
 	retry: boolean;
-	performTransaction: (transaction: { add: string[], delete: string[], update: string[] }) => void;
+	performTransaction: (...queries: string[]) => void;
 }
 
 export default class InterfaceNotification extends React.Component<Props> {

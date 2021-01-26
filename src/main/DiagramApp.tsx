@@ -5,20 +5,21 @@ import DiagramCanvas from "./DiagramCanvas";
 import {Languages, ProjectElements, ProjectLinks, ProjectSettings} from "../config/Variables";
 import DetailPanel from "../panels/DetailPanel";
 import {getVocabulariesFromRemoteJSON} from "../interface/JSONInterface";
-import {initVars} from "../function/FunctionEditVars";
+import {addRelationships, initElements, initVars} from "../function/FunctionEditVars";
 import {getContext} from "../interface/ContextInterface";
 import {graph} from "../graph/Graph";
 import {nameGraphLink} from "../function/FunctionGraph";
 import {getElementsConfig, getLinksConfig, getSettings} from "../interface/SPARQLInterface";
-import {initRestrictions} from "../function/FunctionRestriction";
+import {initConnections, initRestrictions} from "../function/FunctionRestriction";
 import {abortTransaction, processTransaction} from "../interface/TransactionInterface";
 import ValidationPanel from "../panels/ValidationPanel";
 import DiagramPanel from "../panels/DiagramPanel";
-import {setSchemeColors} from "../function/FunctionGetVars";
-import {updateLinks} from "../function/FunctionConstruct";
 import {Locale} from "../config/Locale";
 import {drawGraphElement, unHighlightAll} from "../function/FunctionDraw";
 import {changeDiagrams} from "../function/FunctionDiagram";
+import {qb} from "../queries/QueryBuilder";
+import {updateProjectLink} from "../queries/UpdateLinkQueries";
+import {updateProjectElement} from "../queries/UpdateElementQueries";
 
 interface DiagramAppProps {
 	readOnly?: boolean;
@@ -126,7 +127,9 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 		})
 	}
 
-	performTransaction(transaction: { add: string[], delete: string[], update: string[] }) {
+	performTransaction(...queries: string[]) {
+		let transaction = qb.constructQuery(...queries);
+		if (!transaction) return;
 		this.handleChangeLoadingStatus(true, Locale[ProjectSettings.viewLanguage].updating, false);
 		processTransaction(ProjectSettings.contextEndpoint, transaction).then(result => {
 			if (result) {
@@ -159,20 +162,18 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 					ProjectSettings.contextEndpoint = contextEndpoint;
 					ProjectSettings.contextIRI = contextIRI;
 					this.handleChangeLanguage(Object.keys(Languages)[0]);
-					let res = await Promise.all([
-						getElementsConfig(ProjectSettings.contextIRI, ProjectSettings.contextEndpoint),
-						getLinksConfig(ProjectSettings.contextIRI, ProjectSettings.contextEndpoint),
-						getSettings(ProjectSettings.contextIRI, ProjectSettings.contextEndpoint)]);
 					initRestrictions();
-					setSchemeColors(ProjectSettings.viewColorPool);
-					res.push(await processTransaction(ProjectSettings.contextEndpoint, updateLinks()));
-					if (res.every(bool => bool)) {
-						changeDiagrams(diagram);
-						this.forceUpdate();
-						this.itemPanel.current?.forceUpdate();
-						this.handleChangeLoadingStatus(false, Locale[ProjectSettings.viewLanguage].workspaceReady, false, false);
-					} else
-						this.handleChangeLoadingStatus(false, Locale[ProjectSettings.viewLanguage].pleaseReloadError, false)
+					await getElementsConfig(ProjectSettings.contextIRI, ProjectSettings.contextEndpoint);
+					await processTransaction(ProjectSettings.contextEndpoint,
+						qb.constructQuery(updateProjectElement(false, ...initElements())));
+					await getLinksConfig(ProjectSettings.contextIRI, ProjectSettings.contextEndpoint);
+					await processTransaction(ProjectSettings.contextEndpoint,
+						qb.constructQuery(updateProjectLink(false, ...initConnections(), ...addRelationships())));
+					await getSettings(ProjectSettings.contextIRI, ProjectSettings.contextEndpoint);
+					changeDiagrams(diagram);
+					this.forceUpdate();
+					this.itemPanel.current?.forceUpdate();
+					this.handleChangeLoadingStatus(false, Locale[ProjectSettings.viewLanguage].workspaceReady, false, false);
 				} else {
 					this.handleChangeLoadingStatus(false, Locale[ProjectSettings.viewLanguage].pleaseReload, false)
 				}
@@ -249,9 +250,6 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 				update={() => {
 					this.itemPanel.current?.forceUpdate();
 					this.detailPanel.current?.forceUpdate();
-				}}
-				resizeElem={(id: string) => {
-					this.canvas.current?.resizeElem(id);
 				}}
 				handleWidth={(width: number) => {
 					this.setState({widthRight: width})
