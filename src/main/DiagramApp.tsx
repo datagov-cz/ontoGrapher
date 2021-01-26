@@ -20,6 +20,7 @@ import {changeDiagrams} from "../function/FunctionDiagram";
 import {qb} from "../queries/QueryBuilder";
 import {updateProjectLink} from "../queries/UpdateLinkQueries";
 import {updateProjectElement} from "../queries/UpdateElementQueries";
+import {keycloak} from "../config/Keycloak";
 
 interface DiagramAppProps {
 	readOnly?: boolean;
@@ -92,6 +93,16 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 	}
 
 	componentDidMount(): void {
+		keycloak.onTokenExpired = () =>
+			this.handleChangeLoadingStatus(false, Locale[ProjectSettings.viewLanguage].authenticationExpired, true, false);
+		keycloak.init({onLoad: "check-sso", flow: "implicit"}).then(auth => {
+			if (auth) this.loadWorkspace();
+			else keycloak.login();
+		}).catch(() =>
+			this.handleChangeLoadingStatus(false, Locale[ProjectSettings.viewLanguage].authenticationError, true, false));
+	}
+
+	loadWorkspace() {
 		const isURL = require('is-url');
 		let urlParams = new URLSearchParams(window.location.search);
 		let contextIRI = urlParams.get('workspace');
@@ -154,8 +165,7 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 		getVocabulariesFromRemoteJSON("https://raw.githubusercontent.com/opendata-mvcr/ontoGrapher/master/src/config/Vocabularies.json").then((result) => {
 			if (result) getContext(
 				contextIRI,
-				contextEndpoint,
-				"application/json"
+				contextEndpoint
 			).then(async (result) => {
 				if (result) {
 					document.title = ProjectSettings.name[this.state.projectLanguage] + " | " + Locale.ontoGrapher;
