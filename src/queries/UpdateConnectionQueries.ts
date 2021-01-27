@@ -1,0 +1,103 @@
+import {Links, ProjectElements, ProjectLinks, Schemes, VocabularyElements} from "../config/Variables";
+import {LinkType} from "../config/Enum";
+import {parsePrefix} from "../function/FunctionEditVars";
+import {qb} from "./QueryBuilder";
+import {LinkConfig} from "../config/LinkConfig";
+import {DELETE, INSERT} from "@tpluscode/sparql-builder";
+
+export function updateDefaultLink(id: string): string {
+	let iri = ProjectElements[ProjectLinks[id].source].iri;
+	let contextIRI = Schemes[VocabularyElements[iri].inScheme].graph;
+
+	let del: string = DELETE`${qb.g(contextIRI, [
+		qb.s(qb.i(iri), 'rdfs:subClassOf', qb.v('b')),
+		qb.s(qb.v('b'), '?p', '?o')
+	])}
+	`.WHERE`
+		${qb.g(contextIRI, [
+		qb.s(qb.i(iri), 'rdfs:subClassOf', qb.v('b')),
+		qb.s(qb.v('b'), '?p', '?o'),
+		"filter(isBlank(?b))."
+	])}`.build();
+
+	let insert: string = INSERT.DATA`${qb.g(contextIRI, [
+		...ProjectElements[ProjectLinks[id].source].connections.filter(linkID =>
+			linkID in ProjectLinks &&
+			ProjectElements[ProjectLinks[linkID].target] &&
+			ProjectLinks[linkID].active &&
+			ProjectLinks[linkID].iri in Links &&
+			ProjectLinks[linkID].type === LinkType.DEFAULT).map(linkID => [
+			qb.s(qb.i(iri), 'rdfs:subClassOf', qb.b([
+				qb.po('rdf:type', 'owl:Restriction'),
+				qb.po('owl:onProperty', qb.i(ProjectLinks[linkID].iri)),
+				qb.po('owl:someValuesFrom', qb.i(ProjectElements[ProjectLinks[linkID].target].iri)),
+			])),
+			qb.s(qb.i(iri), 'rdfs:subClassOf', qb.b([
+				qb.po('rdf:type', 'owl:Restriction'),
+				qb.po('owl:onProperty', qb.i(ProjectLinks[linkID].iri)),
+				qb.po('owl:allValuesFrom', qb.i(ProjectElements[ProjectLinks[linkID].target].iri)),
+			])),
+			(((VocabularyElements[iri].types.includes(parsePrefix("z-sgov-pojem", "typ-vlastnosti")) ||
+				VocabularyElements[iri].types.includes(parsePrefix("z-sgov-pojem", "typ-vztahu"))) &&
+				ProjectLinks[id].targetCardinality.getString() !== "") ?
+				[!(["", "*"].includes(ProjectLinks[linkID].targetCardinality.getFirstCardinality())) ?
+					qb.s(qb.i(iri), 'rdfs:subClassOf', qb.b([
+						qb.po('rdf:type', 'owl:Restriction'),
+						qb.po('owl:onProperty', qb.i(ProjectLinks[linkID].iri)),
+						qb.po('owl:onClass', qb.i(ProjectElements[ProjectLinks[linkID].target].iri)),
+						qb.po('owl:minQualifiedCardinality',
+							qb.lt(ProjectLinks[linkID].targetCardinality.getFirstCardinality(), 'xsd:nonNegativeInteger'))
+					])) : '',
+					!(["", "*"].includes(ProjectLinks[linkID].targetCardinality.getSecondCardinality())) ?
+						qb.s(qb.i(iri), 'rdfs:subClassOf', qb.b([
+							qb.po('rdf:type', 'owl:Restriction'),
+							qb.po('owl:onProperty', qb.i(ProjectLinks[linkID].iri)),
+							qb.po('owl:onClass', qb.i(ProjectElements[ProjectLinks[linkID].target].iri)),
+							qb.po('owl:maxQualifiedCardinality',
+								qb.lt(ProjectLinks[linkID].targetCardinality.getSecondCardinality(), 'xsd:nonNegativeInteger'))
+						])) : ''].join(`
+				`) : '')
+		].join(`
+		`)),
+		...VocabularyElements[iri].restrictions.filter(rest => !(rest.target in VocabularyElements)).map(rest => [
+				qb.s(qb.i(iri), 'rdfs:subClassOf', qb.b([
+					qb.po('rdf:type', 'owl:Restriction'),
+					qb.po('owl:onProperty', qb.i(rest.onProperty)),
+					qb.po(qb.i(rest.restriction), qb.i(rest.target)),
+				]))
+			].join(`
+			`)
+		)
+	])}`.build();
+
+	return qb.combineQueries(del, insert);
+}
+
+export function updateGeneralizationLink(id: string): string {
+	let iri = ProjectElements[ProjectLinks[id].source].iri;
+	let contextIRI = Schemes[VocabularyElements[iri].inScheme].graph
+
+	let subClassOf: string[] = ProjectElements[ProjectLinks[id].source].connections.filter(conn =>
+		ProjectLinks[conn].type === LinkType.GENERALIZATION && ProjectLinks[conn].active).map(conn =>
+		qb.i(ProjectElements[ProjectLinks[conn].target].iri));
+	let list = VocabularyElements[iri].subClassOf.filter(superClass => !(superClass in VocabularyElements)).map(superClass =>
+		qb.i(superClass)
+	)
+
+	let del = DELETE`${qb.g(contextIRI, [
+		qb.s(qb.i(iri), 'rdfs:subClassOf', '?b'),
+	])}`.WHERE`${qb.g(contextIRI, [
+		qb.s(qb.i(iri), 'rdfs:subClassOf', '?b'),
+		"filter(!isBlank(?b))."
+	])}`.build();
+
+	let insert = INSERT.DATA`${qb.g(contextIRI, [
+		qb.s(qb.i(iri), 'rdfs:subClassOf', qb.a(subClassOf.concat(list)))
+	])}`.build();
+
+	return qb.combineQueries(del, insert);
+}
+
+export function updateConnections(id: string): string {
+	return LinkConfig[ProjectLinks[id].type].update(id);
+}

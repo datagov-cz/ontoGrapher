@@ -3,13 +3,13 @@ import {Diagrams, ProjectSettings} from "../../config/Variables";
 import {changeDiagrams} from "../../function/FunctionDiagram";
 // @ts-ignore
 import {RIEInput} from "riek";
-import {updateProjectSettings} from "../../interface/TransactionInterface";
+import {updateProjectSettings} from "../../queries/UpdateMiscQueries";
 
 interface Props {
 	diagram: number;
 	update: Function;
 	deleteDiagram: Function;
-	performTransaction: (transaction: { add: string[], delete: string[], update: string[] }) => void;
+	performTransaction: (...queries: string[]) => void;
 }
 
 interface State {
@@ -21,12 +21,13 @@ export default class DiagramTab extends React.Component<Props, State> {
 	changeDiagram() {
 		changeDiagrams(this.props.diagram);
 		this.props.update();
+		ProjectSettings.selectedLink = "";
 	}
 
 	handleChangeDiagramName(event: { textarea: string }) {
-		if (event.textarea.length > 0){
+		if (event.textarea.length > 0) {
 			Diagrams[this.props.diagram].name = event.textarea;
-			this.props.performTransaction(updateProjectSettings(ProjectSettings.contextIRI));
+			this.props.performTransaction(updateProjectSettings(ProjectSettings.contextIRI, this.props.diagram));
 			this.forceUpdate();
 			this.props.update();
 		}
@@ -39,7 +40,7 @@ export default class DiagramTab extends React.Component<Props, State> {
 				onClick={() => this.changeDiagram()}>
 				{this.props.diagram === ProjectSettings.selectedDiagram ? <RIEInput
 					className={"rieinput"}
-					value={Diagrams[this.props.diagram].name}
+					value={Diagrams[this.props.diagram].name.length > 0 ? Diagrams[this.props.diagram].name : "<blank>"}
 					change={(event: { textarea: string }) => {
 						this.handleChangeDiagramName(event);
 					}}

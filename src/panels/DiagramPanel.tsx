@@ -5,7 +5,7 @@ import DiagramTab from "./diagram/DiagramTab";
 import ModalRemoveDiagram from "./modal/ModalRemoveDiagram";
 
 interface Props {
-	performTransaction: (transaction: { add: string[], delete: string[], update: string[] }) => void;
+	performTransaction: (...queries: string[]) => void;
 	error: boolean;
 	update: Function;
 }
@@ -28,7 +28,7 @@ export default class DiagramPanel extends React.Component<Props, State> {
 		return (<div className={"diagramPanel" + (this.props.error ? " disabled" : "")}>
 			{Diagrams.filter(diag => diag.active).map((diag, i) =>
 				<DiagramTab key={i}
-							diagram={i}
+							diagram={Diagrams.indexOf(diag)}
 							update={() => {
 								this.forceUpdate();
 								this.props.update();

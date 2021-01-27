@@ -8,7 +8,7 @@ import {Locale} from "../../config/Locale";
 interface Props {
 	update: Function;
 	close: Function;
-	performTransaction: (transaction: { add: string[], delete: string[], update: string[] }) => void;
+	performTransaction: (...queries: string[]) => void;
 }
 
 interface State {
@@ -33,7 +33,7 @@ export default class MenuPanelSwitchRepresentation extends React.Component<Props
 		setTimeout(() => {
 			this.setState({alert: false})
 		}, 3000)
-		this.props.performTransaction(result.transactions);
+		this.props.performTransaction(...result.transaction);
 		this.props.close();
 		this.props.update();
 		this.forceUpdate();

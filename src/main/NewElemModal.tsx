@@ -48,6 +48,8 @@ export default class NewElemModal extends React.Component<Props, State> {
 			this.setState({errorText: Locale[ProjectSettings.viewLanguage].modalNewElemError});
 		} else if (this.checkExists(event.currentTarget.value)) {
 			this.setState({errorText: Locale[ProjectSettings.viewLanguage].modalNewElemExistsError});
+		} else if (/[~`!#$%^&*+=\-[\]\\';,./{}|":<>?]/.test(event.target.value)) {
+			this.setState({errorText: Locale[ProjectSettings.viewLanguage].modalNewElemRegexError});
 		} else {
 			this.setState({errorText: ""});
 		}
