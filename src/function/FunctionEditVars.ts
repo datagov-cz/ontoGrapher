@@ -169,6 +169,7 @@ export function deletePackageItem(id: string): string[] {
         let elem = Object.keys(ProjectElements).find(elem => ProjectElements[elem].connections.includes(target));
         if (elem) ProjectElements[elem].connections.splice(ProjectElements[elem].connections.indexOf(target), 1);
     })
+    VocabularyElements[ProjectElements[id].iri].labels = initLanguageObject("");
     ProjectElements[id].connections = [];
     if (graph.getCell(id)) {
         graph.removeCells([graph.getCell(id)]);
