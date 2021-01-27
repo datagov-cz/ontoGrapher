@@ -77,7 +77,7 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 			detailPanelHidden: false,
 			loading: true,
 			status: Locale[ProjectSettings.viewLanguage].loading,
-			error: false,
+			error: true,
 			widthLeft: 300,
 			widthRight: 0,
 			validation: false,

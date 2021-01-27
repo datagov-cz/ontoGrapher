@@ -11,6 +11,7 @@ import MenuPanelView from "./menu/MenuPanelView";
 import ZoomWidget from "./menu/widget/ZoomWidget";
 import ViewWidget from "./menu/widget/ViewWidget";
 import FitContentWidget from "./menu/widget/FitContentWidget";
+import MenuPanelLogout from "./menu/MenuPanelLogout";
 
 interface MenuPanelProps {
 	readOnly?: boolean;
@@ -73,6 +74,7 @@ export default class MenuPanel extends React.Component<MenuPanelProps, MenuPanel
 												   close={() => this.props.closeDetailPanel()}
 												   performTransaction={this.props.performTransaction}/>
 					<MenuPanelValidate validate={() => this.props.validate()}/>
+					<MenuPanelLogout/>
 					<ZoomWidget/>
 					<ViewWidget/>
 					<FitContentWidget/>

@@ -13,6 +13,7 @@
   "authenticationError": "Authentication error. Please contact the server administrator.",
   "authenticationUpdateError": "Authentication error. Please refresh the page.",
   "authenticationExpired": "Authentication expired. Please refresh the page.",
+  "logout": "Logout",
   "createPackage": "Create new package",
   "untitledPackage": "Untitled Package",
   "addNewPackage": "Create new package >",

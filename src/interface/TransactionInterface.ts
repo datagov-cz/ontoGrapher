@@ -76,9 +76,9 @@ export async function abortTransaction(transaction: string): Promise<boolean> {
 	}).catch(() => false);
 }
 
-export async function processQuery(endpoint: string, query: string, auth: boolean = endpoint === ProjectSettings.contextEndpoint): Promise<Response> {
+export function processQuery(endpoint: string, query: string, auth: boolean = endpoint === ProjectSettings.contextEndpoint): Promise<Response> {
 	let q = endpoint + "?query=" + encodeURIComponent(query);
-	return await fetch(q, {
+	return fetch(q, {
 		headers: auth ? {
 			"Accept": "application/json",
 			'Authorization': `Bearer ${keycloak.token}`

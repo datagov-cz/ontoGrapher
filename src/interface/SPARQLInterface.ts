@@ -367,7 +367,6 @@ export async function getLinksConfig(contextIRI: string, contextEndpoint: string
         "optional {?vertex og:diagram ?diagram.}",
         "}}"
     ].join(" ");
-    let q = contextEndpoint + "?query=" + encodeURIComponent(query);
     let links: {
         [key: string]: {
             iri: string,
@@ -392,7 +391,7 @@ export async function getLinksConfig(contextIRI: string, contextEndpoint: string
             type: number,
         }
     } = {};
-    return await processQuery(contextEndpoint, q).then(response => {
+    return await processQuery(contextEndpoint, query).then(response => {
         return response.json();
     }).then(data => {
         for (let result of data.results.bindings) {
