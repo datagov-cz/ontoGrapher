@@ -74,11 +74,11 @@ export default class MenuPanel extends React.Component<MenuPanelProps, MenuPanel
 												   close={() => this.props.closeDetailPanel()}
 												   performTransaction={this.props.performTransaction}/>
 					<MenuPanelValidate validate={() => this.props.validate()}/>
-					<MenuPanelLogout/>
 					<ZoomWidget/>
 					<ViewWidget/>
 					<FitContentWidget/>
 					<div className={"right" + (this.props.error ? " nointeract" : "")}>
+						<MenuPanelLogout/>
 						<MenuPanelHelp/>
 						<MenuPanelAbout/>
 					</div>

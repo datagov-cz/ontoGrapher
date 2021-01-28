@@ -93,12 +93,21 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 	}
 
 	componentDidMount(): void {
-		keycloak.onTokenExpired = () =>
-			this.handleChangeLoadingStatus(false, Locale[ProjectSettings.viewLanguage].authenticationExpired, true, false);
-		keycloak.init({onLoad: "check-sso", flow: "implicit"}).then(auth => {
-			if (auth) this.loadWorkspace();
-			else keycloak.login();
-		}).catch(() =>
+		keycloak.onTokenExpired = () => keycloak.updateToken(30).catch(() =>
+			this.handleChangeLoadingStatus(false, Locale[ProjectSettings.viewLanguage].authenticationExpired, true, false)
+		);
+		keycloak.onAuthError = (error) =>
+			console.error(error);
+		Promise.race([keycloak.init({onLoad: "check-sso", flow: "implicit"}),
+			new Promise((resolve, reject) => setTimeout(() => {
+				if (!keycloak.authenticated)
+					reject(console.error(Locale[ProjectSettings.viewLanguage].authenticationTimeout))
+			}, 15000))
+		])
+			.then(auth => {
+				if (auth) this.loadWorkspace();
+				else keycloak.login();
+			}).catch(() =>
 			this.handleChangeLoadingStatus(false, Locale[ProjectSettings.viewLanguage].authenticationError, true, false));
 	}
 
