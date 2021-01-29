@@ -98,18 +98,26 @@ export default class DetailElement extends React.Component<Props, State> {
 		});
 	}
 
+	getConnections(to: boolean): string[] {
+		return to ? this.state.inputConnections.filter(conn => ProjectLinks[conn] && ProjectLinks[conn].active &&
+			(ProjectSettings.representation === Representation.FULL ? ProjectLinks[conn].iri in Links : (!(ProjectLinks[conn].iri in Links)) ||
+				(ProjectLinks[conn].iri in Links && Links[ProjectLinks[conn].iri].inScheme.startsWith(ProjectSettings.ontographerContext)))
+			&& getLinkOrVocabElem(ProjectLinks[conn].iri)) :
+			Object.keys(ProjectLinks).filter(conn => ProjectLinks[conn] && ProjectLinks[conn].target === this.props.id &&
+				ProjectLinks[conn].active && getLinkOrVocabElem(ProjectLinks[conn].iri) &&
+				(ProjectSettings.representation === Representation.FULL ? ProjectLinks[conn].iri in Links : (!(ProjectLinks[conn].iri in Links) ||
+					(ProjectLinks[conn].iri in Links && Links[ProjectLinks[conn].iri].inScheme.startsWith(ProjectSettings.ontographerContext)))));
+	}
+
 	checkSpreadConnections(to: boolean): boolean {
 		if (this.state) {
 			let cell = graph.getElements().find(elem => elem.id === this.props.id);
 			if (cell) {
-				return to ? this.state.inputConnections.filter(conn => ProjectLinks[conn] && ProjectLinks[conn].active &&
-					(ProjectSettings.representation === Representation.FULL ? ProjectLinks[conn].iri in Links : !(ProjectLinks[conn].iri in Links))
-					&& getLinkOrVocabElem(ProjectLinks[conn].iri)).length !==
+				let connections = this.getConnections(to);
+				return to ? connections.length !==
 					(graph.getConnectedLinks(cell)
 						.filter(link => ProjectLinks[link.id] && ProjectLinks[link.id].source === this.props.id).length) :
-					Object.keys(ProjectLinks).filter(conn => ProjectLinks[conn] && ProjectLinks[conn].target === this.props.id &&
-						ProjectLinks[conn].active && getLinkOrVocabElem(ProjectLinks[conn].iri) &&
-						(ProjectSettings.representation === Representation.FULL ? ProjectLinks[conn].iri in Links : !(ProjectLinks[conn].iri in Links))).length !==
+					connections.length !==
 					graph.getConnectedLinks(cell)
 						.filter(link => ProjectLinks[link.id] && ProjectLinks[link.id].target === this.props.id).length;
 			} else return false;
@@ -268,8 +276,7 @@ export default class DetailElement extends React.Component<Props, State> {
 						<Accordion.Collapse eventKey={"1"}>
 							<Card.Body>
 								<ConnectionTable
-									connections={this.state.inputConnections.filter(conn => ProjectLinks[conn] && ProjectLinks[conn].active &&
-									ProjectSettings.representation === Representation.FULL ? ProjectLinks[conn].iri in Links : !(ProjectLinks[conn].iri in Links))}
+									connections={this.getConnections(true)}
 									projectLanguage={this.props.projectLanguage} to={true}
 									button={<Button className={"buttonlink center"}
 													onClick={() => {
@@ -280,9 +287,7 @@ export default class DetailElement extends React.Component<Props, State> {
 									</Button>}
 									showButton={this.checkSpreadConnections(true)}/>
 								<ConnectionTable
-									connections={Object.keys(ProjectLinks).filter(conn => ProjectLinks[conn].target === this.props.id &&
-										ProjectLinks[conn] && ProjectLinks[conn].active &&
-										(ProjectSettings.representation === Representation.FULL ? ProjectLinks[conn].iri in Links : !(ProjectLinks[conn].iri in Links)))}
+									connections={this.getConnections(false)}
 									projectLanguage={this.props.projectLanguage} to={false}
 									button={<Button className={"buttonlink center"}
 													onClick={() => {

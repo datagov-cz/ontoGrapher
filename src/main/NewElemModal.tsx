@@ -1,7 +1,14 @@
 import React from 'react';
 import {Button, Form, InputGroup, Modal} from "react-bootstrap";
 import {PackageNode} from "../datatypes/PackageNode";
-import {Languages, PackageRoot, ProjectSettings, Schemes, VocabularyElements} from "../config/Variables";
+import {
+	Languages,
+	PackageRoot,
+	ProjectElements,
+	ProjectSettings,
+	Schemes,
+	VocabularyElements
+} from "../config/Variables";
 import {Locale} from "../config/Locale";
 import {createNewElemIRI} from "../function/FunctionCreateVars";
 import {initLanguageObject} from "../function/FunctionEditVars";
@@ -36,7 +43,8 @@ export default class NewElemModal extends React.Component<Props, State> {
 		let newIRI = createNewElemIRI(this.state.selectedPackage.scheme, name);
 		return (Object.keys(VocabularyElements)
 			.filter(iri => VocabularyElements[iri].inScheme === this.state.selectedPackage.scheme).find(iri =>
-				(iri === newIRI) || Object.values(VocabularyElements[iri].labels).find(
+				(iri === newIRI && Object.keys(ProjectElements).find(elem => ProjectElements[elem].active &&
+					ProjectElements[elem].iri === iri)) || Object.values(VocabularyElements[iri].labels).find(
 				label => label.trim().toLowerCase() === name.trim().toLowerCase())) !== undefined);
 	}
 

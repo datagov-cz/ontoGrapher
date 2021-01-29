@@ -46,7 +46,8 @@ export default class PackageItem extends React.Component<Props, State> {
 	getLabel(): JSX.Element {
 		return <span className={"label"}>
 				{getLabelOrBlank(VocabularyElements[ProjectElements[this.props.id].iri].labels, this.props.projectLanguage)}
-			{VocabularyElements[ProjectElements[this.props.id].iri].altLabels.length > 0 &&
+			{VocabularyElements[ProjectElements[this.props.id].iri].altLabels
+				.filter(alt => alt.language === this.props.projectLanguage).length > 0 &&
             <span className={"altLabel"}>
 				&nbsp;{"(" + VocabularyElements[ProjectElements[this.props.id].iri].altLabels
 				.filter(alt => alt.language === this.props.projectLanguage)
