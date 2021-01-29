@@ -1,4 +1,5 @@
 import {ProjectSettings} from "../config/Variables";
+import {keycloak} from "../config/Keycloak";
 
 export async function processTransaction(contextEndpoint: string, transaction: string): Promise<boolean> {
 	if (!transaction)
@@ -13,6 +14,9 @@ export async function processTransaction(contextEndpoint: string, transaction: s
 
 	const transactionID = await fetch(transactionUrl, {
 		method: "POST",
+		headers: {
+			'Authorization': `Bearer ${keycloak.token}`
+		},
 		signal
 	}).then(response => response.headers).then(
 		headers => {
@@ -32,7 +36,8 @@ export async function processTransaction(contextEndpoint: string, transaction: s
 		}, miliseconds);
 		let resultUpdate = await fetch(transactionID + "?action=UPDATE", {
 			headers: {
-				'Content-Type': 'application/sparql-update; charset=UTF-8'
+				'Content-Type': 'application/sparql-update; charset=UTF-8',
+				'Authorization': `Bearer ${keycloak.token}`
 			},
 			method: "PUT",
 			body: transaction,
@@ -46,6 +51,7 @@ export async function processTransaction(contextEndpoint: string, transaction: s
 
 		let resultCommit = await fetch(transactionID + "?action=COMMIT", {
 			method: "PUT",
+			headers: {'Authorization': `Bearer ${keycloak.token}`},
 			signal
 		}).then(response => response.ok).catch(() => false);
 		window.clearTimeout(timeout);
@@ -59,12 +65,23 @@ export async function processTransaction(contextEndpoint: string, transaction: s
 	} else return false;
 }
 
-export async function abortTransaction(transaction: string) {
+export async function abortTransaction(transaction: string): Promise<boolean> {
 	return await fetch(transaction, {
 		method: "DELETE",
+		headers: {'Authorization': `Bearer ${keycloak.token}`},
 		keepalive: true
 	}).then(response => {
 		ProjectSettings.lastTransactionID = "";
 		return response.ok;
 	}).catch(() => false);
+}
+
+export function processQuery(endpoint: string, query: string, auth: boolean = endpoint === ProjectSettings.contextEndpoint): Promise<Response> {
+	let q = endpoint + "?query=" + encodeURIComponent(query);
+	return fetch(q, {
+		headers: auth ? {
+			"Accept": "application/json",
+			'Authorization': `Bearer ${keycloak.token}`
+		} : {"Accept": "application/json"}
+	});
 }

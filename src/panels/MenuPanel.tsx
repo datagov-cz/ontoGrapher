@@ -11,6 +11,7 @@ import MenuPanelView from "./menu/MenuPanelView";
 import ZoomWidget from "./menu/widget/ZoomWidget";
 import ViewWidget from "./menu/widget/ViewWidget";
 import FitContentWidget from "./menu/widget/FitContentWidget";
+import MenuPanelLogout from "./menu/MenuPanelLogout";
 
 interface MenuPanelProps {
 	readOnly?: boolean;
@@ -77,6 +78,7 @@ export default class MenuPanel extends React.Component<MenuPanelProps, MenuPanel
 					<ViewWidget/>
 					<FitContentWidget/>
 					<div className={"right" + (this.props.error ? " nointeract" : "")}>
+						<MenuPanelLogout/>
 						<MenuPanelHelp/>
 						<MenuPanelAbout/>
 					</div>

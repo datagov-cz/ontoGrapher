@@ -1,11 +1,11 @@
 import {PackageRoot, ProjectSettings, Schemes, VocabularyElements} from "../config/Variables";
 import {fetchConcepts, getScheme} from "./SPARQLInterface";
 import {PackageNode} from "../datatypes/PackageNode";
+import {processQuery} from "./TransactionInterface";
 
 export async function getContext(
 	contextIRI: string,
-	contextEndpoint: string,
-	acceptType: string): Promise<boolean> {
+	contextEndpoint: string): Promise<boolean> {
 	let vocabularyQ = [
 		"PREFIX owl: <http://www.w3.org/2002/07/owl#> ",
 		"PREFIX skos: <http://www.w3.org/2004/02/skos/core#> ",
@@ -32,9 +32,7 @@ export async function getContext(
 		"OPTIONAL{ ?vocab a  ?ro . FILTER(?ro = <https://slovník.gov.cz/datový/pracovní-prostor/pojem/slovníkový-kontext-pouze-pro-čtení>) .  } ",
 		"}",
 	].join(" ");
-	let vocabularyQurl = contextEndpoint + "?query=" + encodeURIComponent(vocabularyQ);
-	let responseInit: { [key: string]: any }[] = await fetch(vocabularyQurl,
-		{headers: {'Accept': acceptType}})
+	let responseInit: { [key: string]: any }[] = await processQuery(contextEndpoint, vocabularyQ)
 		.then((response) => response.json())
 		.then((data) => {
 			return data.results.bindings;

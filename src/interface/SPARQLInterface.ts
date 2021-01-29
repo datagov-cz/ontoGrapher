@@ -15,6 +15,7 @@ import {createRestriction} from "../function/FunctionRestriction";
 import {LinkType} from "../config/Enum";
 import {Locale} from "../config/Locale";
 import {setSchemeColors} from "../function/FunctionGetVars";
+import {processQuery} from "./TransactionInterface";
 
 export async function fetchConcepts(
     endpoint: string,
@@ -78,8 +79,7 @@ export async function fetchConcepts(
         "}",
         graph && "}",
     ].join(" ");
-    let q = endpoint + "?query=" + encodeURIComponent(query);
-    return await fetch(q, {headers: {"Accept": "application/json"}}).then(
+    return await processQuery(endpoint, query).then(
         response => response.json()
     ).then(data => {
         if (data.results.bindings.length === 0) return false;
@@ -156,8 +156,7 @@ export async function getAllTypes(iri: string, endpoint: string, targetTypes: st
                 "filter (?restrictionPred in (owl:minQualifiedCardinality, owl:maxQualifiedCardinality))}",
                 "}",
             ].join(" ");
-            let q = endpoint + "?query=" + encodeURIComponent(query);
-            let result = await fetch(q, {headers: {'Accept': 'application/json'}}).then(response => {
+            let result = await processQuery(endpoint, query).then(response => {
                 return response.json();
             }).then(data => {
                 let newCardinality = new Cardinality(
@@ -201,8 +200,7 @@ export async function getScheme(iri: string, endpoint: string, readOnly: boolean
         "}",
         "}"
     ].join(" ");
-    let q = endpoint + "?query=" + encodeURIComponent(query);
-    return await fetch(q, {headers: {'Accept': 'application/json'}}).then(response => {
+    return await processQuery(endpoint, query).then(response => {
         return response.json();
     }).then(data => {
         if (data.results.bindings.length === 0) return false;
@@ -255,8 +253,7 @@ export async function getElementsConfig(contextIRI: string, contextEndpoint: str
         "}}",
         "<" + contextIRI + "> <https://slovník.gov.cz/datový/pracovní-prostor/pojem/odkazuje-na-kontext> ?graph.}"
     ].join(" ");
-    let q = contextEndpoint + "?query=" + encodeURIComponent(query);
-    return await fetch(q, {headers: {'Accept': 'application/json'}}).then(response => {
+    return await processQuery(contextEndpoint, query).then(response => {
         return response.json();
     }).then(data => {
         for (let result of data.results.bindings) {
@@ -322,8 +319,7 @@ export async function getSettings(contextIRI: string, contextEndpoint: string): 
         "}",
         "}"
     ].join(" ");
-    let q = contextEndpoint + "?query=" + encodeURIComponent(query);
-    return await fetch(q, {headers: {'Accept': 'application/json'}}).then(response => {
+    return await processQuery(contextEndpoint, query).then(response => {
         return response.json();
     }).then(data => {
         for (let result of data.results.bindings) {
@@ -371,7 +367,6 @@ export async function getLinksConfig(contextIRI: string, contextEndpoint: string
         "optional {?vertex og:diagram ?diagram.}",
         "}}"
     ].join(" ");
-    let q = contextEndpoint + "?query=" + encodeURIComponent(query);
     let links: {
         [key: string]: {
             iri: string,
@@ -396,7 +391,7 @@ export async function getLinksConfig(contextIRI: string, contextEndpoint: string
             type: number,
         }
     } = {};
-    return await fetch(q, {headers: {'Accept': 'application/json'}}).then(response => {
+    return await processQuery(contextEndpoint, query).then(response => {
         return response.json();
     }).then(data => {
         for (let result of data.results.bindings) {
