@@ -8,8 +8,6 @@ export class Cardinality {
     constructor(first: string, second: string) {
         this.first = first;
         this.second = second;
-        this.setFirstCardinality(first);
-        this.setSecondCardinality(second);
         if (!this.checkCardinalities()) {
             throw new Error(Locale[ProjectSettings.viewLanguage].errorInvalidCardinality);
         }
@@ -37,6 +35,7 @@ export class Cardinality {
     }
 
     checkCardinalities() {
+        if (this.isCardinalityNone()) return true;
         if (!this.checkFirstCardinality()) return false;
         if (!this.checkSecondCardinality()) return false;
         if (this.getFirstCardinality() === "" && this.getSecondCardinality() === "") return true;

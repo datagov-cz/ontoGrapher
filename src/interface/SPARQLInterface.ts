@@ -16,6 +16,7 @@ import {LinkType} from "../config/Enum";
 import {Locale} from "../config/Locale";
 import {setSchemeColors} from "../function/FunctionGetVars";
 import {processQuery} from "./TransactionInterface";
+import {RestrictionConfig} from "../config/RestrictionConfig";
 
 export async function fetchConcepts(
     endpoint: string,
@@ -41,7 +42,6 @@ export async function fetchConcepts(
             range?: string,
             subClassOf: string[],
             restrictions: [],
-            connections: []
             type: number,
             topConcept?: string;
             character?: string;
@@ -54,7 +54,7 @@ export async function fetchConcepts(
         "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>",
         "PREFIX a-popis-dat-pojem: <http://onto.fel.cvut.cz/ontologies/slovník/agendový/popis-dat/pojem/>",
         "PREFIX z-sgov-pojem: <https://slovník.gov.cz/základní/pojem/>",
-        "SELECT DISTINCT ?term ?termLabel ?termAltLabel ?termType ?termDefinition ?termDomain ?termRange ?topConcept ?inverseOf ?character ?restriction ?restrictionPred ?onProperty ?target ?subClassOf",
+        "SELECT DISTINCT ?term ?termLabel ?termAltLabel ?termType ?termDefinition ?termDomain ?termRange ?topConcept ?inverseOf ?character ?restriction ?restrictionPred ?onProperty ?onClass ?target ?subClassOf",
         "WHERE {",
         graph && "GRAPH <" + graph + "> {",
         !subPropertyOf && "?term skos:inScheme <" + source + ">.",
@@ -74,8 +74,9 @@ export async function fetchConcepts(
         "OPTIONAL {?term rdfs:subClassOf ?restriction. ",
         "?restriction a owl:Restriction .",
         "?restriction owl:onProperty ?onProperty.",
+        "OPTIONAL {?restriction owl:onClass ?onClass.}",
         "?restriction ?restrictionPred ?target.",
-        "filter (?restrictionPred not in (owl:onProperty, rdf:type))}",
+        "filter (?restrictionPred in (<" + Object.keys(RestrictionConfig).join(">, <") + ">))}",
         "}",
         graph && "}",
     ].join(" ");
@@ -94,7 +95,6 @@ export async function fetchConcepts(
                     inScheme: source,
                     subClassOf: [],
                     restrictions: [],
-                    connections: [],
                     type: LinkType.DEFAULT
                 }
             }
@@ -122,7 +122,8 @@ export async function fetchConcepts(
             if (row.subClassOf && row.subClassOf.type !== "bnode" && !(result[row.term.value].subClassOf.includes(row.subClassOf.value)))
                 result[row.term.value].subClassOf.push(row.subClassOf.value);
             if (row.restriction && Object.keys(Links).includes(row.onProperty.value))
-                createRestriction(result, row.term.value, row.restrictionPred.value, row.onProperty.value, row.target);
+                createRestriction(result, row.term.value, row.restrictionPred.value, row.onProperty.value, row.target,
+                    row.onClass ? row.onClass.value : undefined);
             if (row.inverseOf)
                 result[row.term.value].inverseOf = row.inverseOf.value;
         }
@@ -333,8 +334,8 @@ export async function getSettings(contextIRI: string, contextEndpoint: string): 
             }
             Diagrams[parseInt(result.index.value)].name = result.name.value;
             if (result.color) ProjectSettings.viewColorPool = result.color.value;
-            setSchemeColors(ProjectSettings.viewColorPool);
         }
+        setSchemeColors(ProjectSettings.viewColorPool);
         return true;
     }).catch((e) => {
         console.log(e);

@@ -42,7 +42,6 @@ export function addVocabularyElement(iri: string, scheme: string, types?: string
         types: types ? types : [],
         subClassOf: [],
         restrictions: [],
-        connections: [],
         active: true,
         topConcept: scheme
     }
