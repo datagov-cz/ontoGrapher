@@ -152,7 +152,7 @@ export var ProjectSettings: {
     selectedLanguage: Object.keys(Languages)[0],
     selectedLink: "",
     contextIRI: "",
-    contextEndpoint: "",
+    contextEndpoint: process.env.REACT_APP_CONTEXT_ENDPOINT,
     ontographerContext: "http://onto.fel.cvut.cz/ontologies/application/ontoGrapher",
     representation: Representation.FULL,
     lastTransaction: "",
