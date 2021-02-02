@@ -34,12 +34,12 @@ ${statements.join(`
 	//literal with language
 	ll: (literal: string | boolean | number, lang?: string) => {
 		return `"${typeof literal === "string" ?
-			literal.replace(/(["'\\])/g, '\\$1').replace(/\\n/g, " ") : literal}"${lang ? `@${lang}` : ''}`;
+			literal.replace(/(["'\\])/g, '\\$1').replace(/[\n\r]/g, " ") : literal}"${lang ? `@${lang}` : ''}`;
 	},
 	//literal with type
 	lt: (literal: string | boolean | number, type?: string) => {
 		return `"${typeof literal === "string" ?
-			literal.replace(/(["'\\])/g, '\\$1').replace(/\\n/g, " ") : literal}"${type ? `^^${type}` : ''}`;
+			literal.replace(/(["'\\])/g, '\\$1').replace(/[\n\r]/g, " ") : literal}"${type ? `^^${type}` : ''}`;
 	},
 	//iri
 	i: (iri: string) => {

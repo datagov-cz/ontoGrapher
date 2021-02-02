@@ -432,12 +432,11 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                             };
                         }
                         ProjectElements[id].hidden[ProjectSettings.selectedDiagram] = false;
-                        queries.push(updateProjectElementDiagram(ProjectSettings.selectedDiagram, id));
                         cls.addTo(graph);
                         this.props.updateElementPanel();
                         queries.push(
                             ...restoreHiddenElem(id, cls, true, true, true),
-                            updateProjectElement(true, id));
+                            updateProjectElementDiagram(ProjectSettings.selectedDiagram, id));
                     });
                     this.props.performTransaction(...queries);
                     if (ProjectSettings.representation === Representation.COMPACT) setRepresentation(ProjectSettings.representation);

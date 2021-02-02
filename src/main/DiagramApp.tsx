@@ -122,8 +122,8 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 				let match = diagram.match(/(\d+)/);
 				let diagramNumber;
 				if (match) diagramNumber = parseInt(match[0], 10);
-				this.loadVocabularies(contextIRI, "https://graphdb.onto.fel.cvut.cz/repositories/kodi-uloziste-dev", diagramNumber ? diagramNumber : 0);
-			} else this.loadVocabularies(contextIRI, "https://graphdb.onto.fel.cvut.cz/repositories/kodi-uloziste-dev", 0);
+				this.loadVocabularies(contextIRI, ProjectSettings.contextEndpoint, diagramNumber ? diagramNumber : 0);
+			} else this.loadVocabularies(contextIRI, ProjectSettings.contextEndpoint, 0);
 		} else if (this.props.contextIRI && this.props.contextEndpoint) {
 			this.loadVocabularies(this.props.contextIRI, this.props.contextEndpoint);
 		} else {
