@@ -4,16 +4,16 @@ import {getElemFromIRI, getNewLink} from "./FunctionGetVars";
 import {LinkType} from "../config/Enum";
 import {addLink} from "./FunctionCreateVars";
 
-export function createRestriction(obj: { [key: string]: any }, iri: string, restriction: string, onProperty: string, target: { type: string, value: string }, onClass?: string) {
+export function createRestriction(restrictions: Restriction[], iri: string, restriction: string, onProperty: string, target: { type: string, value: string }, onClass?: string) {
 	if (target.type !== "bnode") {
 		const newRestriction = new Restriction(restriction, onProperty, target.value, onClass);
-		for (const rest of obj[iri].restrictions) {
+		for (const rest of restrictions) {
 			if (rest.compare(newRestriction)) {
 				return;
 			}
 		}
-		obj[iri].restrictions.push(newRestriction);
-		obj[iri].restrictions.sort((a: Restriction, b: Restriction) => a.restriction.localeCompare(b.restriction));
+		restrictions.push(newRestriction);
+		restrictions.sort((a: Restriction, b: Restriction) => a.restriction.localeCompare(b.restriction));
 	}
 }
 

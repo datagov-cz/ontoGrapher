@@ -122,7 +122,7 @@ export async function fetchConcepts(
             if (row.subClassOf && row.subClassOf.type !== "bnode" && !(result[row.term.value].subClassOf.includes(row.subClassOf.value)))
                 result[row.term.value].subClassOf.push(row.subClassOf.value);
             if (row.restriction && Object.keys(Links).includes(row.onProperty.value))
-                createRestriction(result, row.term.value, row.restrictionPred.value, row.onProperty.value, row.target,
+                createRestriction(result[row.term.value].restrictions, row.term.value, row.restrictionPred.value, row.onProperty.value, row.target,
                     row.onClass ? row.onClass.value : undefined);
             if (row.inverseOf)
                 result[row.term.value].inverseOf = row.inverseOf.value;
