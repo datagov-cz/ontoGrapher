@@ -64,7 +64,7 @@ export const cs = {
 	"validate": "Validovat",
 	"modalRemovePackageItemTitle": "Smazat koncept?",
 	"modalRemoveDiagramTitle": "Smazat diagram?",
-	"modalRemoveDiagramDescription": "Opravdu chcete smazat diagram? Jeho rozložení bude ztraceno!",
+	"modalRemoveDiagramDescription": "Opravdu chcete smazat diagram?",
 	"connectionVia": "přes vztah",
 	"connectionTo": "ke",
 	"connectionFrom": "od",

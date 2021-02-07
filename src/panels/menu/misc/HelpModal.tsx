@@ -1,9 +1,8 @@
 import React from 'react';
 import {Button, Modal} from "react-bootstrap";
 import {ProjectSettings} from "../../../config/Variables";
-import {Locale} from "../../../config/Locale";
+import {Locale, LocaleHelp} from "../../../config/Locale";
 import HelpMain from "../help/HelpMain";
-import {helpModal} from "../../../locale/help";
 
 interface Props {
     modal: boolean;
@@ -23,7 +22,7 @@ export default class HelpModal extends React.Component<Props, State> {
             topic: "main"
         }
         this.topics = {
-            "main": {title: helpModal[ProjectSettings.viewLanguage].intro.title, page: <HelpMain/>}
+            "main": {title: LocaleHelp[ProjectSettings.viewLanguage].intro.title, page: <HelpMain/>}
         }
     }
 

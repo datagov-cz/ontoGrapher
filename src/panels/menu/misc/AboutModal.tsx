@@ -23,6 +23,14 @@ export default class AboutModal extends React.Component<Props, State> {
 				<Tabs id={"changelog-years"}>
 					<Tab title={"2021"} eventKey={"2021"}>
 						<Tabs id={"changelog-2021"}>
+							<Tab title={"February"} eventKey={"february-2021"}>
+								<h6>7.2.</h6>
+								<ul>
+									<li>Formally added Czech language</li>
+									<li>Added a Report button</li>
+									<li>Changed the Help section to include a cheat sheet</li>
+								</ul>
+							</Tab>
 							<Tab title={"January"} eventKey={"january-2021"}>
 								<h6>13.1.</h6>
 								<ul>

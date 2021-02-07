@@ -1,6 +1,6 @@
-export var ColorPool: { [key: string]: { label: string, colors: string[] } } = {
+export var ColorPool: { [key: string]: { label: { [key: string]: string }, colors: string[] } } = {
 	off: {
-		label: "Off",
+		label: {cs: "Vypnout", en: "Off"},
 		colors: [
 			"#FFF",
 			"#FFF",
@@ -27,7 +27,7 @@ export var ColorPool: { [key: string]: { label: string, colors: string[] } } = {
 		]
 	},
 	pastelLow: {
-		label: "Light pastel",
+		label: {cs: "Světlé pastely", en: "Light pastely"},
 		colors: [
 			"#ffcdd2",
 			"#e1bee7",
@@ -48,7 +48,7 @@ export var ColorPool: { [key: string]: { label: string, colors: string[] } } = {
 		]
 	},
 	pastelHigh: {
-		label: "Dark pastel",
+		label: {cs: "Tmavé pastely", en: "Dark pastel"},
 		colors: [
 			"#ff8a80",
 			"#ea80fc",
