@@ -13,7 +13,7 @@ export async function getVocabulariesFromRemoteJSON(pathToJSON: string): Promise
                 let results: boolean[] = [];
                 if (Object.keys(json).length === 0) return false;
                 for (const key of Object.keys(json)) {
-                    let data = json[key];
+                    const data = json[key];
                     if (data.type === "stereotype") {
                         results.push(await getScheme(data.sourceIRI, data.endpoint, data.type === "model"));
                         Schemes[data.sourceIRI].labels = initLanguageObject(key);

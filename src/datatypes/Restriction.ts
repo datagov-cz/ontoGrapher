@@ -18,4 +18,11 @@ export class Restriction {
 			return RestrictionConfig[this.restriction](iri, this);
 		}
 	}
+
+	compare(other: Restriction) {
+		return this.target === other.target
+			&& this.restriction === other.restriction
+			&& this.onProperty === other.onProperty
+			&& this.onClass === other.onClass
+	}
 }

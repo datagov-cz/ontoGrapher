@@ -47,14 +47,14 @@ export default class ValidationPanel extends React.Component<Props, State> {
 		let width = window.innerWidth;
 		width -= this.props.widthLeft;
 		width -= this.props.widthRight;
-		let elem = document.querySelector(".validation") as HTMLElement;
+		const elem = document.querySelector(".validation") as HTMLElement;
 		if (elem) elem.style.left = this.props.widthLeft + "px";
 		return width;
 	}
 
 	async validate() {
 		this.setState({loading: true, error: false});
-		let results = await validateWorkspace(ProjectSettings.contextIRI, ProjectSettings.selectedLanguage).catch(() => {
+		const results = await validateWorkspace(ProjectSettings.contextIRI, ProjectSettings.selectedLanguage).catch(() => {
 			return false;
 		});
 		if (results) {
@@ -70,7 +70,7 @@ export default class ValidationPanel extends React.Component<Props, State> {
 	}
 
 	focus(node: string) {
-		let cellElem = graph.getElements().find(element => ProjectElements[element.id].iri === node);
+		const cellElem = graph.getElements().find(element => ProjectElements[element.id].iri === node);
 		let cellLink = graph.getLinks().find(element => ProjectLinks[element.id].iri === node);
 		if (cellElem) if (typeof cellElem.id === "string") {
 			highlightCell(cellElem.id, '#FFFF00');

@@ -113,13 +113,13 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 
 	loadWorkspace() {
 		const isURL = require('is-url');
-		let urlParams = new URLSearchParams(window.location.search);
+		const urlParams = new URLSearchParams(window.location.search);
 		let contextIRI = urlParams.get('workspace');
 		if (contextIRI && isURL(contextIRI)) {
 			contextIRI = decodeURIComponent(contextIRI);
 			if (contextIRI.includes("/diagram-")) {
-				let diagram = contextIRI.substring(contextIRI.lastIndexOf("/"));
-				let match = diagram.match(/(\d+)/);
+				const diagram = contextIRI.substring(contextIRI.lastIndexOf("/"));
+				const match = diagram.match(/(\d+)/);
 				let diagramNumber;
 				if (match) diagramNumber = parseInt(match[0], 10);
 				this.loadVocabularies(contextIRI, "https://graphdb.onto.fel.cvut.cz/repositories/kodi-uloziste-dev", diagramNumber ? diagramNumber : 0);

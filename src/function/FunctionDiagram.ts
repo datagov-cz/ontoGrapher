@@ -14,7 +14,7 @@ export function changeDiagrams(diagram: number = 0) {
     if (Diagrams[diagram]) {
         ProjectSettings.selectedDiagram = diagram;
         ProjectSettings.selectedLink = "";
-        for (let id in ProjectElements) {
+        for (const id in ProjectElements) {
             if (ProjectElements[id].hidden[diagram] === false && ProjectElements[id].position[diagram] && ProjectElements[id].active) {
                 let cls = new graphElement({id: id});
                 cls.position(ProjectElements[id].position[diagram].x, ProjectElements[id].position[diagram].y);
@@ -35,9 +35,9 @@ export function changeDiagrams(diagram: number = 0) {
 }
 
 export function addDiagram(): number {
-    let index = Diagrams.length;
+    const index = Diagrams.length;
     Diagrams.push({name: Locale[ProjectSettings.viewLanguage].untitled, active: true, scale: 1, origin: {x: 0, y: 0}})
-    for (let key of Object.keys(ProjectElements)) {
+    for (const key of Object.keys(ProjectElements)) {
         ProjectElements[key].hidden[index] = true;
         ProjectElements[key].position[index] = {x: 0, y: 0};
     }
@@ -49,8 +49,8 @@ export function centerDiagram() {
     paper.translate(0, 0);
     let x = 0;
     let y = 0;
-    let scale = paper.scale().sx
-    for (let elem of graph.getElements()) {
+    const scale = paper.scale().sx
+    for (const elem of graph.getElements()) {
         x += elem.getBBox().x;
         y += elem.getBBox().y;
     }
@@ -63,9 +63,9 @@ export function centerDiagram() {
 }
 
 export function zoomDiagram(x: number, y: number, delta: number) {
-    let oldTranslate = paper.translate();
-    let oldScale = paper.scale().sx;
-    let nextScale = delta === 0 ? 1 : _.round((delta * 0.1) + oldScale, 1);
+    const oldTranslate = paper.translate();
+    const oldScale = paper.scale().sx;
+    const nextScale = delta === 0 ? 1 : _.round((delta * 0.1) + oldScale, 1);
     if (nextScale >= 0.1 && nextScale <= 2.1) {
         paper.translate(oldTranslate.tx + (x * (oldScale - nextScale)),
             oldTranslate.ty + (y * (oldScale - nextScale)));

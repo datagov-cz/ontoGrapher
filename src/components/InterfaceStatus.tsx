@@ -44,8 +44,8 @@ export default class InterfaceStatus extends React.Component<Props, State> {
 	async checkStatus(): Promise<boolean> {
 		if (!(navigator.onLine)) return false;
 		else {
-			let miliseconds = 5000;
-			let controller = new AbortController();
+			const miliseconds = 5000;
+			const controller = new AbortController();
 			const signal = controller.signal;
 			let timeout = window.setTimeout(() => controller.abort(), miliseconds);
 			return await fetch(ProjectSettings.contextEndpoint + "?query=select%20*%20where%20%7B%3Fs%20%3Fp%20%3Fo.%7D%20limit%201", {

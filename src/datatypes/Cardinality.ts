@@ -22,7 +22,7 @@ export class Cardinality {
     }
 
     checkCardinality(cardinalityPart: string) {
-        let regexp = new RegExp("(^\\d+$|^[*]$)");
+        const regexp = new RegExp("(^\\d+$|^[*]$)");
         return cardinalityPart.length !== 1 || regexp.test(cardinalityPart) || cardinalityPart === "";
     }
 
@@ -39,11 +39,11 @@ export class Cardinality {
         if (!this.checkFirstCardinality()) return false;
         if (!this.checkSecondCardinality()) return false;
         if (this.getFirstCardinality() === "" && this.getSecondCardinality() === "") return true;
-        let regexpNumbers = new RegExp("^\\d+$");
-        let regexpStar = new RegExp("^[*]$");
+        const regexpNumbers = new RegExp("^\\d+$");
+        const regexpStar = new RegExp("^[*]$");
         if (regexpNumbers.test(this.getFirstCardinality()) && regexpNumbers.test(this.getSecondCardinality())) {
-            let parseIntFirst = parseInt(this.getFirstCardinality());
-            let parseIntSecond = parseInt(this.getSecondCardinality());
+            const parseIntFirst = parseInt(this.getFirstCardinality());
+            const parseIntSecond = parseInt(this.getSecondCardinality());
             return parseIntFirst <= parseIntSecond;
         }
         if (regexpStar.test(this.getFirstCardinality()) && regexpStar.test(this.getSecondCardinality())) return true;

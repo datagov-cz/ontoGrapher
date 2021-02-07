@@ -28,7 +28,7 @@ export default class MenuPanelSwitchRepresentation extends React.Component<Props
 	}
 
 	switch() {
-		let result = setRepresentation(ProjectSettings.representation === Representation.FULL ? Representation.COMPACT : Representation.FULL);
+		const result = setRepresentation(ProjectSettings.representation === Representation.FULL ? Representation.COMPACT : Representation.FULL);
 		if (result) this.setState({alert: result.result});
 		setTimeout(() => {
 			this.setState({alert: false})

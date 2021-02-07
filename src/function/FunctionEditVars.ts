@@ -18,6 +18,7 @@ import {Locale} from "../config/Locale";
 import {updateDeleteTriples} from "../queries/UpdateMiscQueries";
 import {Cardinality} from "../datatypes/Cardinality";
 import {graphElement} from "../graph/GraphElement";
+import {getElemFromIRI} from "./FunctionGetVars";
 
 export function getName(element: string, language: string): string {
     if (element in Stereotypes) {
@@ -45,7 +46,7 @@ export function initVars() {
 }
 
 export function loadUML() {
-    let scheme = ProjectSettings.ontographerContext + "/uml";
+    const scheme = ProjectSettings.ontographerContext + "/uml";
 
     Schemes[scheme] = {
         labels: initLanguageObject("UML"),
@@ -54,8 +55,8 @@ export function loadUML() {
         color: "#FFF"
     }
 
-    for (let type in LinkConfig) {
-        let intType = parseInt(type, 10);
+    for (const type in LinkConfig) {
+        const intType = parseInt(type, 10);
         if (intType !== LinkType.DEFAULT) {
             Links[scheme + "/" + LinkConfig[type].labels["en"]] = {
                 subClassOfDomain: [], subClassOfRange: [], typesDomain: [], typesRange: [],
@@ -75,7 +76,7 @@ export function loadUML() {
 
 export function loadLanguages() {
     const json = require('../config/Languages.json');
-    for (let code in json) {
+    for (const code in json) {
         if (json.hasOwnProperty(code)) Languages[code] = json[code];
     }
 }
@@ -88,7 +89,7 @@ export function initProjectSettings() {
 
 export function initLanguageObject(def: any) {
     let result: { [key: string]: any } = {};
-    for (let code in Languages) {
+    for (const code in Languages) {
         result[code] = def;
     }
     return result;
@@ -99,23 +100,23 @@ export function parsePrefix(prefix: string, name: string): string {
 }
 
 export function deletePackageItem(id: string): string[] {
-    let folder = ProjectElements[id].package;
-    let iri = ProjectElements[id].iri;
+    const folder = ProjectElements[id].package;
+    const iri = ProjectElements[id].iri;
     let queries: string[] = [];
     folder.elements.splice(folder.elements.indexOf(id), 1);
-    for (let connection of ProjectElements[id].connections) {
+    for (const connection of ProjectElements[id].connections) {
         ProjectLinks[connection].active = false;
         queries.push(updateDeleteTriples(ProjectSettings.ontographerContext + "-" + connection,
             ProjectSettings.ontographerContext, true, false, false));
     }
-    let targets = Object.keys(ProjectLinks).filter(link => ProjectElements[ProjectLinks[link].target].iri === iri)
-    for (let connection of targets) {
+    const targets = Object.keys(ProjectLinks).filter(link => ProjectElements[ProjectLinks[link].target].iri === iri)
+    for (const connection of targets) {
         ProjectLinks[connection].active = false;
         queries.push(updateDeleteTriples(ProjectSettings.ontographerContext + "-" + connection,
             ProjectSettings.ontographerContext, true, false, false));
     }
     targets.forEach(target => {
-        let elem = Object.keys(ProjectElements).find(elem => ProjectElements[elem].connections.includes(target));
+        const elem = Object.keys(ProjectElements).find(elem => ProjectElements[elem].connections.includes(target));
         if (elem) ProjectElements[elem].connections.splice(ProjectElements[elem].connections.indexOf(target), 1);
     })
     VocabularyElements[ProjectElements[id].iri].labels = initLanguageObject("");
@@ -128,7 +129,7 @@ export function deletePackageItem(id: string): string[] {
 }
 
 export function setElementShape(elem: joint.dia.Element, width: number, height: number) {
-    let types = VocabularyElements[ProjectElements[elem.id].iri].types;
+    const types = VocabularyElements[ProjectElements[elem.id].iri].types;
     elem.attr({
         bodyBox: {display: 'none'},
         bodyEllipse: {display: 'none'},
@@ -194,10 +195,10 @@ export function setElementShape(elem: joint.dia.Element, width: number, height: 
 
 export function initElements() {
     let ids: string[] = [];
-    for (let iri in VocabularyElements) {
-        if (!(Object.keys(ProjectElements).find(id => ProjectElements[id].iri === iri))) {
+    for (const iri in VocabularyElements) {
+        if (!(getElemFromIRI(iri))) {
             let pkg = PackageRoot.children.find(pkg => pkg.scheme === VocabularyElements[iri].inScheme);
-            let id = new graphElement().id as string;
+            const id = new graphElement().id as string;
             if (pkg) {
                 addClass(id, iri, pkg);
                 ids.push(id);
