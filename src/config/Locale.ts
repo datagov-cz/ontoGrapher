@@ -1,3 +1,7 @@
+import {en} from "../locale/en";
+import {cs} from "../locale/cs";
+
 export var Locale: { [key: string]: { [key: string]: string } } = {
-	en: require("../locale/en.json")
+	en: en,
+	cs: cs
 }

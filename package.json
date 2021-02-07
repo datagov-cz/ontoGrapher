@@ -33,7 +33,7 @@
     "n3": "^1.4.0",
     "node-sass": "^4.14.1",
     "react": "^16.13.1",
-    "react-bootstrap": "^1.2.2",
+    "react-bootstrap": "^1.4.0",
     "react-contextmenu": "^2.14.0",
     "react-dom": "^16.13.1",
     "react-resizable": "^1.10.1",

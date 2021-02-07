@@ -2,8 +2,6 @@ export const helpModal: { [key: string]: any } = {
 	en: {
 		"intro": {
 			"title": "Help",
-			"t1": "Welcome to the help section. Please select a topic you wish to learn about.",
-			"t2": "If you want to report a problem with ontoGrapher, click on the following link:"
 		},
 		"cheatSheet": {
 			"title": "Cheat sheet",
@@ -37,6 +35,46 @@ export const helpModal: { [key: string]: any } = {
 					"Select diagram:": "Click on the diagram tab",
 					"Rename diagram:": "When selected, click on the selected tab name",
 					"Delete diagram:": "When selected, click ❌ on the selected tab"
+				}
+			}
+		}
+	},
+	cs: {
+		"intro": {
+			"title": "Nápověda",
+		},
+		"cheatSheet": {
+			"title": "Tahák",
+			"t1": "Tento \"tahák\" popisuje všechny interakce myši či klávesnice.",
+			"interactions": {
+				"Plátno": {
+					"Posouvat plátno:": "Táhněte s tlačítkem kolečka myši / Shift + táhněte s levým tlačítkem myši",
+					"Přibližovat/oddalovat v plátně:": "Použijte kolečko myši"
+				},
+				"Koncepty": {
+					"Vytvořit koncept:": "Klikněte pravým tlačítkem myši na plátno",
+					"Najít koncept na plátně (pokud na něm je):": "Klikněte na koncept v levém panelu",
+					"Přesunout existující/schovaný koncept na plátno:": "Přetáhněte koncept s levým tlačítkem myši z levého panelu na plátno",
+					"Přesunout existující/schované koncepty na plátno:": "Vyberte koncepty z levého panelu pomocí zaškrtávacích políček / Shift + levé tlačítko myši, poté přetáhněte z levého panelu na plátno",
+					"Vybrat/editovat/zobrazit detaily konceptu:": "Klikněte na koncept v levém panelu nebo na plátně",
+					"Vybrat koncepty:": "Ctrl + levé tlačítko myši na každý koncept / Táhněte s levým tlačítkem myši",
+					"Přesunout koncept:": "Táhněte konceptem levým tlačíkem myši",
+					"Přesunout koncepty:": "Táhněte jeden z vybraných konceptů levým tlačíkem myši",
+					"Schovat koncept:": "Přesuňte myš na koncept na plátně + klikněte na škrtlé oko",
+					"Smazat koncept:": "Přesuňte myš na koncept v levém panelu + klikněte na ❌"
+				},
+				"Vztahy": {
+					"Vytvořit vztah": "Přesuňte myš na koncept na plátně + klikněte na šipku. Klikněte na další koncept na plátně a vyberte vztah.",
+					"Vybrat/editovat/zobrazit detaily vztahu:": "Klikněte na vztah.",
+					"Smazat vztah:": "Přesuňte myš na vybraný koncept + klikněte na ❌.",
+					"Vytvořit \"bod zlomu\" ve vztahu:": "Klikněte na vybraný koncept.",
+					"Smazat \"bod zlomu\" ve vztahu:": "Táhněte bod ve vybraném konceptu levým tlačítkem myši ."
+				},
+				"Diagramy": {
+					"Vytvořit diagram:": "Klikněte na kartu ➕ vedle všech ostatních karet",
+					"Vybrat diagram:": "Klikněte na kartu diagramu",
+					"Přejmenovat diagram:": "Klikněte na jméno vybraného diagramu",
+					"Smazat diagram:": "Klikněte na ❌ na vybraném diagramu"
 				}
 			}
 		}

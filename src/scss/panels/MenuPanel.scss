@@ -23,6 +23,37 @@
     }
   }
 
+  .report {
+    a, button {
+      font-size: 14px;
+      box-shadow: none;
+      transition: none;
+      border: none;
+      padding: 0 5px;
+      margin-bottom: 4px;
+
+      &:hover {
+        cursor: default;
+      }
+    }
+
+    a {
+      margin: 2px;
+
+      &:hover {
+        background-color: lightgray !important;
+      }
+    }
+
+    div {
+      padding: 0;
+    }
+  }
+
+  #reportIssueSplitButton {
+    margin-right: 4px;
+  }
+
   .lower {
     font-size: 14px;
 

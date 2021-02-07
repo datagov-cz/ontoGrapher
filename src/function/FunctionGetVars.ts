@@ -7,12 +7,11 @@ import {
 	Schemes,
 	VocabularyElements
 } from "../config/Variables";
-import {getName, initLanguageObject, parsePrefix} from "./FunctionEditVars";
+import {initLanguageObject, parsePrefix} from "./FunctionEditVars";
 import {ColorPool} from "../config/ColorPool";
 import {Shapes} from "../config/Shapes";
 import * as joint from "jointjs";
 import {LinkConfig} from "../config/LinkConfig";
-import {Locale} from "../config/Locale";
 import {mvp1IRI, mvp2IRI} from "./FunctionGraph";
 
 export function getVocabElementByElementID(id: string): { [key: string]: any } {
@@ -81,10 +80,6 @@ export function getElementShape(id: string | number): string {
 		if (types.includes(type)) return Shapes[type].body;
 	}
 	return Shapes["default"].body;
-}
-
-export function getNewLabel(iri: string, language: string) {
-	return "«" + getName(iri, language).toLowerCase() + "»\n" + Locale[ProjectSettings.viewLanguage].untitled + " " + getName(iri, language);
 }
 
 export function getActiveToConnections(id: string): string[] {
