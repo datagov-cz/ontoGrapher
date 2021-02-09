@@ -68,7 +68,8 @@ export async function fetchConcepts(
         "OPTIONAL {?term z-sgov-pojem:charakterizuje ?character.}",
         "OPTIONAL {?term rdfs:domain ?termDomain.}",
         "OPTIONAL {?term rdfs:range ?termRange.}",
-        "OPTIONAL {?term rdfs:subClassOf ?subClassOf. }",
+        "OPTIONAL {?term rdfs:subClassOf ?subClassOf. ",
+        "filter (!isBlank(?subClassOf)) }",
         "OPTIONAL {?term owl:inverseOf ?inverseOf. }",
         "OPTIONAL {?topConcept skos:hasTopConcept ?term. }",
         "OPTIONAL {?term rdfs:subClassOf ?restriction. ",
@@ -148,6 +149,7 @@ export async function getAllTypes(iri: string, endpoint: string, targetTypes: st
                 "WHERE {",
                 "<" + subc + "> a ?type.",
                 "<" + subc + "> rdfs:subClassOf ?subClass.",
+                "filter (!isBlank(?subClassOf))",
                 "OPTIONAL {<" + subc + "> rdfs:subClassOf ?restriction. ",
                 "?restriction a owl:Restriction .",
                 "?restriction owl:onProperty ?onProperty.",
@@ -333,8 +335,8 @@ export async function getSettings(contextIRI: string, contextEndpoint: string): 
             }
             Diagrams[parseInt(result.index.value)].name = result.name.value;
             if (result.color) ProjectSettings.viewColorPool = result.color.value;
-            setSchemeColors(ProjectSettings.viewColorPool);
         }
+        setSchemeColors(ProjectSettings.viewColorPool);
         return true;
     }).catch((e) => {
         console.log(e);

@@ -2,9 +2,9 @@
 
 A React web component for graphical manipulation and display of ontoUML diagrams.
 
-[Latest deployed version](https://ontographer.netlify.app/)
+[Latest deployed version](https://slovník.gov.cz/modelujeme/v-nástroji/ontographer)
 * Note the changelog on the menu bar.
-* You need to have a workspace to use ontoGrapher. To manage workspaces, use [Mission Control](https://mission-control.netlify.app/).
+* You need to have a workspace to use ontoGrapher. To manage workspaces, use [Mission Control](https://slovník.gov.cz/modelujeme).
 
 [Link to wiki](https://github.com/opendata-mvcr/ontoGrapher/wiki)
 
