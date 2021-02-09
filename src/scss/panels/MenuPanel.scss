@@ -5,6 +5,7 @@
   .upper {
     display: inline-flex;
     padding-left: 5px;
+    margin-bottom: 4px;
 
     .interfaceNotification {
       margin-left: 5px;
@@ -24,34 +25,28 @@
   }
 
   .report {
+    margin-right: 4px;
+    margin-bottom: 4px;
+
     a, button {
       font-size: 14px;
       box-shadow: none;
       transition: none;
       border: none;
       padding: 0 5px;
-      margin-bottom: 4px;
+      background-color: #ffc107;
 
-      &:hover {
+      &:hover, &:active {
         cursor: default;
-      }
-    }
-
-    a {
-      margin: 2px;
-
-      &:hover {
-        background-color: lightgray !important;
+        color: black;
+        background-color: #d39e00;
       }
     }
 
     div {
       padding: 0;
+      min-width: 0;
     }
-  }
-
-  #reportIssueSplitButton {
-    margin-right: 4px;
   }
 
   .lower {

@@ -11,6 +11,9 @@ interface State {
 
 }
 
+const issueURL = "https://github.com/opendata-mvcr/sgov-assembly-line/issues/new?labels=bug&template=po-adavek-na-opravu.md&title=";
+const enhancementURL = "https://github.com/opendata-mvcr/sgov-assembly-line/issues/new?labels=enhancement&template=po-adavek-na-novou-funkcionalitu.md&title=";
+
 export default class MenuPanelReport extends React.Component<Props, State> {
 
 	render() {
@@ -20,20 +23,13 @@ export default class MenuPanelReport extends React.Component<Props, State> {
 				className={"inert report"}
 				title={Locale[ProjectSettings.viewLanguage].reportIssue}
 				variant={"warning"}
-				onClick={() => this.openReportURL(true)}>
-				<Dropdown.Item eventKey="1"
-							   onClick={() => this.openReportURL(false)}>
+				href={issueURL}
+				menuAlign={{sm: "left"}}
+				target={"_blank"}>
+				<Dropdown.Item href={enhancementURL} target={"_blank"}>
 					{Locale[ProjectSettings.viewLanguage].reportEnhancement}
 				</Dropdown.Item>
 			</SplitButton>
 		</span>);
-	}
-
-	openReportURL(issue: boolean) {
-		window.open(`https://github.com/opendata-mvcr/sgov-assembly-line/issues/new${
-			issue ?
-				"?labels=bug&template=po-adavek-na-opravu.md" :
-				"?labels=enhancement&template=po-adavek-na-novou-funkcionalitu.md"
-		}&title=`, "_blank");
 	}
 }
