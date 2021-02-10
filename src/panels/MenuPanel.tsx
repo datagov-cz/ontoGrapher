@@ -12,6 +12,7 @@ import ZoomWidget from "./menu/widget/ZoomWidget";
 import ViewWidget from "./menu/widget/ViewWidget";
 import FitContentWidget from "./menu/widget/FitContentWidget";
 import MenuPanelLogout from "./menu/MenuPanelLogout";
+import MenuPanelReport from "./menu/MenuPanelReport";
 
 interface MenuPanelProps {
 	readOnly?: boolean;
@@ -52,6 +53,7 @@ export default class MenuPanel extends React.Component<MenuPanelProps, MenuPanel
 										   retry={this.props.retry}/>
 					<div className={"right" + (this.props.error ? " nointeract" : "")}>
 						<Form inline>
+							<MenuPanelReport/>
 							<InterfaceStatus
 								handleChangeLoadingStatus={this.props.handleChangeLoadingStatus}
 								error={this.props.error}

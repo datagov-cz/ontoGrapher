@@ -15,10 +15,6 @@ interface State {
 	alert: boolean;
 }
 
-const tooltipNew = (
-	<Tooltip id="tooltipC">{Locale[ProjectSettings.viewLanguage].deletedRelationships}</Tooltip>
-);
-
 export default class MenuPanelSwitchRepresentation extends React.Component<Props, State> {
 	constructor(props: Props) {
 		super(props);
@@ -40,7 +36,8 @@ export default class MenuPanelSwitchRepresentation extends React.Component<Props
 	}
 
 	render() {
-		return (<OverlayTrigger show={this.state.alert} placement="right" overlay={tooltipNew}>
+		return (<OverlayTrigger show={this.state.alert} placement="right" overlay={
+			<Tooltip id="tooltipC">{Locale[ProjectSettings.viewLanguage].deletedRelationships}</Tooltip>}>
 			<div className={"inert"}><Nav.Link onClick={() => this.switch()}>
 				{ProjectSettings.representation === Representation.FULL ? Locale[ProjectSettings.viewLanguage].representationCompact : Locale[ProjectSettings.viewLanguage].representationFull}
 			</Nav.Link>

@@ -1,4 +1,5 @@
 import {
+    Diagrams,
     Languages,
     Links,
     PackageRoot,
@@ -79,6 +80,9 @@ export function loadLanguages() {
     for (let code in json) {
         if (json.hasOwnProperty(code)) Languages[code] = json[code];
     }
+    const language = navigator.language.slice(0, 2);
+    ProjectSettings.viewLanguage = language in Languages ? language : "en";
+    Diagrams[0].name = Locale[ProjectSettings.viewLanguage].untitled;
 }
 
 export function initProjectSettings() {
