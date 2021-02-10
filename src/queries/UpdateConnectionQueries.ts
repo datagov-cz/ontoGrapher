@@ -40,7 +40,7 @@ export function updateDefaultLink(id: string): string {
 			(((VocabularyElements[iri].types.includes(parsePrefix("z-sgov-pojem", "typ-vlastnosti")) ||
 				VocabularyElements[iri].types.includes(parsePrefix("z-sgov-pojem", "typ-vztahu"))) &&
 				ProjectLinks[id].targetCardinality.getString() !== "") ?
-				[!(["", "*"].includes(ProjectLinks[linkID].targetCardinality.getFirstCardinality())) ?
+				[checkNumber(ProjectLinks[linkID].targetCardinality.getFirstCardinality()) ?
 					qb.s(qb.i(iri), 'rdfs:subClassOf', qb.b([
 						qb.po('rdf:type', 'owl:Restriction'),
 						qb.po('owl:onProperty', qb.i(ProjectLinks[linkID].iri)),
@@ -48,7 +48,7 @@ export function updateDefaultLink(id: string): string {
 						qb.po('owl:minQualifiedCardinality',
 							qb.lt(ProjectLinks[linkID].targetCardinality.getFirstCardinality(), 'xsd:nonNegativeInteger'))
 					])) : '',
-					!(["", "*"].includes(ProjectLinks[linkID].targetCardinality.getSecondCardinality())) ?
+					checkNumber(ProjectLinks[linkID].targetCardinality.getSecondCardinality()) ?
 						qb.s(qb.i(iri), 'rdfs:subClassOf', qb.b([
 							qb.po('rdf:type', 'owl:Restriction'),
 							qb.po('owl:onProperty', qb.i(ProjectLinks[linkID].iri)),
@@ -100,4 +100,8 @@ export function updateGeneralizationLink(id: string): string {
 
 export function updateConnections(id: string): string {
 	return LinkConfig[ProjectLinks[id].type].update(id);
+}
+
+function checkNumber(str: string) {
+	return /^[0-9]$/.test(str);
 }
