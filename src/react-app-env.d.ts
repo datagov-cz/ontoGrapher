@@ -3,10 +3,10 @@ declare namespace NodeJS {
 	interface ProcessEnv {
 		NODE_ENV: 'development' | 'production' | 'test'
 		PUBLIC_URL: string
-		REACT_APP_KEYCLOAK_URL: string
-		REACT_APP_KEYCLOAK_REALM: string
-		REACT_APP_KEYCLOAK_CLIENT: string
-		REACT_APP_CONTEXT_ENDPOINT: string
+		REACT_APP_URL: string
+		REACT_APP_ID: string
+		REACT_APP_COMPONENT: string
+		REACT_APP_CONTEXT: string
 	}
 }
 

@@ -13,6 +13,7 @@ import {Shapes} from "../config/Shapes";
 import * as joint from "jointjs";
 import {LinkConfig} from "../config/LinkConfig";
 import {mvp1IRI, mvp2IRI} from "./FunctionGraph";
+import {Components} from "../datatypes/Components";
 
 export function getVocabElementByElementID(id: string): { [key: string]: any } {
 	return VocabularyElements[ProjectElements[id].iri];
@@ -110,6 +111,30 @@ export function getUnderlyingFullConnections(link: joint.dia.Link): { src: strin
 			if (sourceLink && targetLink) return {src: sourceLink, tgt: targetLink};
 		}
 		return;
+	}
+}
+
+/**
+ * Checks if the given environment variable exists.
+ * @param variableKey The environment variable to get
+ */
+export function getEnvironmentVariable(variableKey: string): string {
+	const variable = process.env[variableKey];
+	if (variable) return variable;
+	else throw new Error(`Error: environment variable ${variableKey} not found`);
+}
+
+/**
+ * Attempts to retrieve the Components JSON from the environment variable.
+ * @param variableKey The environment variable to get
+ */
+export function getComponentsEnvironmentVariable(variableKey: string): Components {
+	try {
+		const componentString = getEnvironmentVariable(variableKey);
+		const componentDecoded = atob(componentString);
+		return JSON.parse(componentDecoded);
+	} catch (e) {
+		throw new Error(e);
 	}
 }
 

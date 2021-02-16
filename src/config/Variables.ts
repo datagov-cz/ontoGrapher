@@ -5,6 +5,8 @@ import {RestrictionObject} from "../datatypes/RestrictionObject";
 import {ConnectionObject} from "../datatypes/ConnectionObject";
 import {Representation} from "./Enum";
 import * as joint from "jointjs";
+import {Components} from "../datatypes/Components";
+import {getComponentsEnvironmentVariable, getEnvironmentVariable} from "../function/FunctionGetVars";
 
 // language code : language label
 export var Languages: { [key: string]: string } = {};
@@ -125,6 +127,22 @@ export var Diagrams: { name: string, active: boolean, origin: { x: number, y: nu
     {name: "Untitled", active: true, origin: {x: 0, y: 0}, scale: 1}
 ];
 
+export const Environment: {
+    // JSON object of other components in the vocabulary development pipeline software kit
+    components: Components
+    // Production / development context
+    context: string,
+    // ID of the application (for identification and authentication)
+    id: string,
+    // URL of the deployment
+    url: string
+} = {
+    components: getComponentsEnvironmentVariable('REACT_APP_COMPONENTS'),
+    context: getEnvironmentVariable('REACT_APP_CONTEXT'),
+    id: getEnvironmentVariable('REACT_APP_ID'),
+    url: getEnvironmentVariable('REACT_APP_URL'),
+}
+
 export var ProjectSettings: {
     name: { [key: string]: string },
     description: { [key: string]: string },
@@ -152,7 +170,7 @@ export var ProjectSettings: {
     selectedLanguage: Object.keys(Languages)[0],
     selectedLink: "",
     contextIRI: "",
-    contextEndpoint: process.env.REACT_APP_CONTEXT_ENDPOINT,
+    contextEndpoint: Environment.components.dbServer.url + Environment.components.dbServer.meta.repositoryPath,
     ontographerContext: "http://onto.fel.cvut.cz/ontologies/application/ontoGrapher",
     representation: Representation.FULL,
     lastTransaction: "",
