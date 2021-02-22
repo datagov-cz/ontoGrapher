@@ -94,17 +94,15 @@ export default class DiagramCanvas extends React.Component<Props, State> {
     }
 
     updateElement(cell: joint.dia.Cell) {
-        let id = cell.id;
-        let find = ProjectSettings.selectedCells.findIndex(elem => elem.id === id);
+        const id = cell.id as string;
+        const find = ProjectSettings.selectedCells.findIndex(elem => elem.id === id);
         if (find !== -1)
             ProjectSettings.selectedCells.splice(find, 1);
         cell.remove();
         ProjectElements[id].hidden[ProjectSettings.selectedDiagram] = true;
         this.props.updateElementPanel();
         this.props.updateDetailPanel();
-        if (typeof id === "string") {
-            this.props.performTransaction(updateProjectElementDiagram(ProjectSettings.selectedDiagram, id))
-        }
+        this.props.performTransaction(updateProjectElementDiagram(ProjectSettings.selectedDiagram, id));
     }
 
     componentDidMount(): void {
@@ -147,7 +145,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
             },
             'cell:pointerclick': (cellView, evt) => {
                 if (!this.newLink && !evt.ctrlKey) {
-                    let id = cellView.model.id;
+                    const id = cellView.model.id;
                     this.props.updateDetailPanel(id);
                     ProjectSettings.selectedCells = [];
                     unHighlightSelected(this.highlightedCells);
@@ -157,20 +155,20 @@ export default class DiagramCanvas extends React.Component<Props, State> {
             },
             'element:pointerup': (cellView, evt) => {
                 if (!this.newLink && !(evt.ctrlKey)) {
-                    let iter = ProjectSettings.selectedCells.length > 0 ? ProjectSettings.selectedCells : [cellView.model];
-                    let {
+                    const iter = ProjectSettings.selectedCells.length > 0 ? ProjectSettings.selectedCells : [cellView.model];
+                    const {
                         rect, bbox, ox, oy
                     } = evt.data;
                     if (rect) rect.remove();
                     let movedLinks: string[] = [];
                     let movedElems: string[] = [];
                     iter.forEach(elem => {
-                        let id = elem.id;
-                        let oldPos = elem.position();
+                        const id = elem.id;
+                        const oldPos = elem.position();
                         if (bbox && ox && oy && id !== cellView.model.id) {
-                            let diff = new joint.g.Point(bbox.x, bbox.y).difference(ox, oy);
+                            const diff = new joint.g.Point(bbox.x, bbox.y).difference(ox, oy);
                             elem.position(oldPos.x + diff.x / Diagrams[ProjectSettings.selectedDiagram].scale, oldPos.y + diff.y / Diagrams[ProjectSettings.selectedDiagram].scale);
-                            for (let link of graph.getConnectedLinks(elem)) {
+                            for (const link of graph.getConnectedLinks(elem)) {
                                 if (typeof link.id === "string" && !(movedLinks.includes(link.id)) && link.vertices().length > 0) {
                                     movedLinks.push(link.id);
                                     link.vertices().forEach((vert, i) => {
@@ -183,7 +181,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                                 }
                             }
                         }
-                        let pos = elem.position();
+                        const pos = elem.position();
                         if (pos.x !== ProjectElements[id].position[ProjectSettings.selectedDiagram].x ||
                             pos.y !== ProjectElements[cellView.model.id].position[ProjectSettings.selectedDiagram].y) {
                             ProjectElements[id].position[ProjectSettings.selectedDiagram] = pos;
@@ -205,7 +203,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                     this.setState({modalAddLink: true});
                 } else if (evt.ctrlKey) {
                     this.props.updateDetailPanel();
-                    let find = ProjectSettings.selectedCells.findIndex(elem => elem.id === cellView.model.id);
+                    const find = ProjectSettings.selectedCells.findIndex(elem => elem.id === cellView.model.id);
                     if (find !== -1) {
                         ProjectSettings.selectedCells.splice(ProjectSettings.selectedCells.indexOf(cellView.model), 1);
                         this.highlightedCells.splice(this.highlightedCells.indexOf(cellView.model), 1);
@@ -223,8 +221,8 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                 }
             },
             'element:mouseenter': (elementView) => {
-                let id = elementView.model.id;
-                let tool = new HideButton({
+                const id = elementView.model.id;
+                const tool = new HideButton({
                     useModelGeometry: false,
                     ...getElementToolPosition(id, true),
                     offset: {x: getElementShape(id) === "bodyTrapezoid" ? -20 : 0, y: 0},
@@ -256,8 +254,8 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                     unHighlightSelected(this.highlightedCells);
                     this.highlightedCells = [];
                     ProjectSettings.selectedCells = [];
-                    let translate = paper.translate();
-                    let point = {
+                    const translate = paper.translate();
+                    const point = {
                         x: (x * Diagrams[ProjectSettings.selectedDiagram].scale + translate.tx),
                         y: (y * Diagrams[ProjectSettings.selectedDiagram].scale + translate.ty)
                     }
@@ -276,7 +274,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                         bbox
                     };
                 } else if (evt.button === 1 || (evt.button === 0 && evt.shiftKey)) {
-                    let scale = paper.scale();
+                    const scale = paper.scale();
                     this.drag = {x: x * scale.sx, y: y * scale.sy};
                 }
             },
@@ -358,7 +356,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                     } = evt.data;
                     if (rect && bbox) {
                         rect.remove();
-                        let area = new joint.g.Rect(
+                        const area = new joint.g.Rect(
                             ((bbox.x) - Diagrams[ProjectSettings.selectedDiagram].origin.x)
                             / Diagrams[ProjectSettings.selectedDiagram].scale,
                             ((bbox.y) - Diagrams[ProjectSettings.selectedDiagram].origin.y)
@@ -381,7 +379,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                     this.props.performTransaction, this.props.updateElementPanel);
             },
             'link:pointerup': (cellView) => {
-                let id = cellView.model.id;
+                const id = cellView.model.id;
                 let link = cellView.model;
                 link.findView(paper).removeRedundantLinearVertices();
                 this.props.performTransaction(...updateVertices(id, link.vertices()));
@@ -411,14 +409,14 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                 onDrop={(event) => {
                     let queries: string[] = [];
                     const data = JSON.parse(event.dataTransfer.getData("newClass"));
-                    let matrixDimension = Math.ceil(Math.sqrt(data.id.length));
+                    const matrixDimension = Math.ceil(Math.sqrt(data.id.length));
                     data.id.forEach((id: string, i: number) => {
                         let cls = new graphElement({id: id});
                         drawGraphElement(cls, ProjectSettings.selectedLanguage, ProjectSettings.representation);
-                        let point = paper.clientToLocalPoint({x: event.clientX, y: event.clientY});
+                        const point = paper.clientToLocalPoint({x: event.clientX, y: event.clientY});
                         if (data.id.length > 1) {
-                            let x = i % matrixDimension;
-                            let y = Math.floor(i / matrixDimension);
+                            const x = i % matrixDimension;
+                            const y = Math.floor(i / matrixDimension);
                             cls.set('position', {x: (point.x + (x * 200)), y: (point.y + (y * 200))});
                             ProjectElements[id].position[ProjectSettings.selectedDiagram] = {
                                 x: (point.x + (x * 200)),
@@ -462,7 +460,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                 close={(conceptName: { [key: string]: string }, pkg: PackageNode) => {
                     this.setState({modalAddElem: false});
                     if (conceptName && pkg) {
-                        let id = createNewConcept(this.newConceptEvent, conceptName, this.props.projectLanguage, pkg);
+                        const id = createNewConcept(this.newConceptEvent, conceptName, this.props.projectLanguage, pkg);
                         this.props.updateElementPanel();
                         this.props.performTransaction(updateProjectElement(true, id),
                             updateProjectElementDiagram(ProjectSettings.selectedDiagram, id));

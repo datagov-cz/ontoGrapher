@@ -18,7 +18,7 @@ export const mvp2IRI = "https://slovník.gov.cz/základní/pojem/má-vztažený-
 
 export function nameGraphLink(cell: joint.dia.Link, languageCode: string) {
     if (typeof cell.id === "string" && ProjectLinks[cell.id].type === LinkType.DEFAULT) {
-        let label = getLinkOrVocabElem(ProjectLinks[cell.id].iri).labels[languageCode];
+        const label = getLinkOrVocabElem(ProjectLinks[cell.id].iri).labels[languageCode];
         if (label) {
             let labels = cell.labels()
             labels.forEach((linkLabel, i) => {
@@ -40,12 +40,12 @@ export function nameGraphLink(cell: joint.dia.Link, languageCode: string) {
 }
 
 export function spreadConnections(id: string, to: boolean = true): string[] {
-    let elem = graph.getElements().find(elem => elem.id === id);
+    const elem = graph.getElements().find(elem => elem.id === id);
     let queries: string[] = [];
     if (elem) {
-        let centerX = elem.position().x + (elem.size().width / 2);
-        let centerY = elem.position().y + (elem.size().height / 2);
-        let elems = (to ?
+        const centerX = elem.position().x + (elem.size().width / 2);
+        const centerY = elem.position().y + (elem.size().height / 2);
+        const elems = (to ?
             ProjectElements[id].connections.filter(conn => ProjectLinks[conn].active &&
                 !(graph.getCell(ProjectLinks[conn].target)) &&
                 (ProjectSettings.representation === Representation.FULL ? ProjectLinks[conn].iri in Links : (!(ProjectLinks[conn].iri in Links) ||
@@ -57,11 +57,11 @@ export function spreadConnections(id: string, to: boolean = true): string[] {
                 ProjectLinks[conn].target === id &&
                 !(graph.getCell(ProjectLinks[conn].source)))
                 .map(conn => ProjectLinks[conn].source));
-        let radius = 200 + (elems.length * 50);
+        const radius = 200 + (elems.length * 50);
         for (let i = 0; i < elems.length; i++) {
-            let elemID: string = elems[i];
-            let x = centerX + radius * Math.cos((i * 2 * Math.PI) / elems.length);
-            let y = centerY + radius * Math.sin((i * 2 * Math.PI) / elems.length);
+            const elemID: string = elems[i];
+            const x = centerX + radius * Math.cos((i * 2 * Math.PI) / elems.length);
+            const y = centerY + radius * Math.sin((i * 2 * Math.PI) / elems.length);
             let newElem = new graphElement({id: elemID});
             newElem.position(x, y);
             ProjectElements[elemID].position[ProjectSettings.selectedDiagram] = {x: x, y: y};
@@ -115,20 +115,20 @@ export function setRepresentation(representation: number): { result: boolean, tr
         let del = false;
         ProjectSettings.representation = Representation.COMPACT;
         ProjectSettings.selectedLink = "";
-        for (let id of Object.keys(ProjectElements)) {
+        for (const id of Object.keys(ProjectElements)) {
             if (
                 VocabularyElements[ProjectElements[id].iri].types.includes(parsePrefix("z-sgov-pojem", "typ-vztahu"))
             ) {
                 let connections: string[] = getActiveToConnections(id);
                 if (connections.length > 1) {
-                    let sourceLink: string | undefined = connections.find(src => ProjectLinks[src].iri === mvp1IRI);
-                    let targetLink: string | undefined = connections.find(src => ProjectLinks[src].iri === mvp2IRI);
+                    const sourceLink: string | undefined = connections.find(src => ProjectLinks[src].iri === mvp1IRI);
+                    const targetLink: string | undefined = connections.find(src => ProjectLinks[src].iri === mvp2IRI);
                     if (sourceLink && targetLink) {
-                        let source = ProjectLinks[sourceLink].target;
-                        let target = ProjectLinks[targetLink].target;
-                        let sourceBox = graph.getElements().find(elem => elem.id === source);
-                        let targetBox = graph.getElements().find(elem => elem.id === target);
-                        let find = Object.keys(ProjectLinks).find(link => ProjectLinks[link].active &&
+                        const source = ProjectLinks[sourceLink].target;
+                        const target = ProjectLinks[targetLink].target;
+                        const sourceBox = graph.getElements().find(elem => elem.id === source);
+                        const targetBox = graph.getElements().find(elem => elem.id === target);
+                        const find = Object.keys(ProjectLinks).find(link => ProjectLinks[link].active &&
                             ProjectLinks[link].iri === ProjectElements[id].iri &&
                             ProjectLinks[link].source === source && ProjectLinks[link].target === target
                         )
@@ -148,8 +148,8 @@ export function setRepresentation(representation: number): { result: boolean, tr
                             if (ProjectLinks[newLink.id].vertices[ProjectSettings.selectedDiagram])
                                 newLink.vertices(ProjectLinks[newLink.id].vertices[ProjectSettings.selectedDiagram]);
                             else if (source === target) {
-                                let coords = newLink.getSourcePoint();
-                                let bbox = sourceBox.getBBox();
+                                const coords = newLink.getSourcePoint();
+                                const bbox = sourceBox.getBBox();
                                 if (bbox) {
                                     newLink.vertices([
                                         new joint.g.Point(coords.x, coords.y + 100),
@@ -181,20 +181,20 @@ export function setRepresentation(representation: number): { result: boolean, tr
                         }
                     }
                 }
-                let cell = graph.getCell(id);
+                const cell = graph.getCell(id);
                 if (cell) {
                     storeElement(cell);
                     del = true;
                 }
             } else if (VocabularyElements[ProjectElements[id].iri].types.includes(parsePrefix("z-sgov-pojem", "typ-vlastnosti"))) {
-                let cell = graph.getCell(id);
+                const cell = graph.getCell(id);
                 if (cell) {
                     storeElement(cell);
                     del = true;
                 }
             }
         }
-        for (let link of graph.getLinks()) {
+        for (const link of graph.getLinks()) {
             if (ProjectLinks[link.id].iri in Links && Links[ProjectLinks[link.id].iri].type === LinkType.DEFAULT) {
                 link.remove();
                 del = true;
@@ -204,9 +204,9 @@ export function setRepresentation(representation: number): { result: boolean, tr
     } else {
         ProjectSettings.representation = Representation.FULL;
         ProjectSettings.selectedLink = "";
-        for (let elem of ProjectSettings.switchElements) {
+        for (const elem of ProjectSettings.switchElements) {
             if (ProjectElements[elem].position[ProjectSettings.selectedDiagram]) {
-                let find = graph.getElements().find(cell => cell.id === elem &&
+                const find = graph.getElements().find(cell => cell.id === elem &&
                     ProjectElements[elem].active && ProjectElements[elem].hidden[ProjectSettings.selectedDiagram]);
                 let cell = find || new graphElement({id: elem})
                 cell.addTo(graph);
@@ -246,7 +246,7 @@ export function setupLink(link: string, restoreConnectionPosition: boolean = tru
     lnk.addTo(graph);
     if (ProjectLinks[link].source === ProjectLinks[link].target && (!(ProjectLinks[link].vertices[ProjectSettings.selectedDiagram]) ||
         ProjectLinks[link].vertices[ProjectSettings.selectedDiagram] === [])) {
-        let coords = lnk.getSourcePoint();
+        const coords = lnk.getSourcePoint();
         let bbox = lnk.getSourceCell()?.getBBox();
         if (bbox) {
             ProjectLinks[link].vertices[ProjectSettings.selectedDiagram] = [
@@ -308,10 +308,10 @@ export function restoreHiddenElem(id: string, cls: joint.dia.Element, restoreSim
                         relationship.position(ProjectElements[relID].position[ProjectSettings.selectedDiagram].x,
                             ProjectElements[relID].position[ProjectSettings.selectedDiagram].y);
                     } else {
-                        let sourcepos = graph.getCell(ProjectLinks[link].target).get('position');
-                        let targetpos = graph.getCell(ProjectLinks[targetLink].target).get('position');
-                        let posx = ((sourcepos.x + targetpos.x) / 2);
-                        let posy = ((sourcepos.y + targetpos.y) / 2);
+                        const sourcepos = graph.getCell(ProjectLinks[link].target).get('position');
+                        const targetpos = graph.getCell(ProjectLinks[targetLink].target).get('position');
+                        const posx = ((sourcepos.x + targetpos.x) / 2);
+                        const posy = ((sourcepos.y + targetpos.y) / 2);
                         relationship.position(posx, posy);
                     }
                     ProjectElements[relID].position[ProjectSettings.selectedDiagram] = relationship.position();

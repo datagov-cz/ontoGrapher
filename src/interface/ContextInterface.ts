@@ -6,7 +6,7 @@ import {processQuery} from "./TransactionInterface";
 export async function getContext(
 	contextIRI: string,
 	contextEndpoint: string): Promise<boolean> {
-	let vocabularyQ = [
+	const vocabularyQ = [
 		"PREFIX owl: <http://www.w3.org/2002/07/owl#> ",
 		"PREFIX skos: <http://www.w3.org/2004/02/skos/core#> ",
 		"PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> ",
@@ -32,7 +32,7 @@ export async function getContext(
 		"OPTIONAL{ ?vocab a  ?ro . FILTER(?ro = <https://slovník.gov.cz/datový/pracovní-prostor/pojem/slovníkový-kontext-pouze-pro-čtení>) .  } ",
 		"}",
 	].join(" ");
-	let responseInit: { [key: string]: any }[] = await processQuery(contextEndpoint, vocabularyQ)
+	const responseInit: { [key: string]: any }[] = await processQuery(contextEndpoint, vocabularyQ)
 		.then((response) => response.json())
 		.then((data) => {
 			return data.results.bindings;
@@ -52,7 +52,7 @@ export async function getContext(
 		if (result.label) ProjectSettings.name[result.label["xml:lang"]] = result.label.value;
 		if (result.title) ProjectSettings.name[result.title["xml:lang"]] = result.title.value;
 	}
-	for (let vocab in vocabularies) {
+	for (const vocab in vocabularies) {
 		await getScheme(vocab, contextEndpoint, vocabularies[vocab].readOnly, vocabularies[vocab].graph).catch(() => false);
 		await fetchConcepts(contextEndpoint, vocab, vocabularies[vocab].terms, vocabularies[vocab].readOnly, Schemes[vocab].graph).catch(() => false);
 		Schemes[vocab].readOnly = vocabularies[vocab].readOnly;

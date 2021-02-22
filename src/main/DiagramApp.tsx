@@ -5,12 +5,12 @@ import DiagramCanvas from "./DiagramCanvas";
 import {Languages, ProjectElements, ProjectLinks, ProjectSettings} from "../config/Variables";
 import DetailPanel from "../panels/DetailPanel";
 import {getVocabulariesFromRemoteJSON} from "../interface/JSONInterface";
-import {addRelationships, initElements, initVars} from "../function/FunctionEditVars";
+import {initElements, initVars} from "../function/FunctionEditVars";
 import {getContext} from "../interface/ContextInterface";
 import {graph} from "../graph/Graph";
 import {nameGraphLink} from "../function/FunctionGraph";
 import {getElementsConfig, getLinksConfig, getSettings} from "../interface/SPARQLInterface";
-import {initConnections, initRestrictions} from "../function/FunctionRestriction";
+import {initConnections} from "../function/FunctionRestriction";
 import {abortTransaction, processTransaction} from "../interface/TransactionInterface";
 import ValidationPanel from "../panels/ValidationPanel";
 import DiagramPanel from "../panels/DiagramPanel";
@@ -115,13 +115,13 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 
 	loadWorkspace() {
 		const isURL = require('is-url');
-		let urlParams = new URLSearchParams(window.location.search);
+		const urlParams = new URLSearchParams(window.location.search);
 		let contextIRI = urlParams.get('workspace');
 		if (contextIRI && isURL(contextIRI)) {
 			contextIRI = decodeURIComponent(contextIRI);
 			if (contextIRI.includes("/diagram-")) {
-				let diagram = contextIRI.substring(contextIRI.lastIndexOf("/"));
-				let match = diagram.match(/(\d+)/);
+				const diagram = contextIRI.substring(contextIRI.lastIndexOf("/"));
+				const match = diagram.match(/(\d+)/);
 				let diagramNumber;
 				if (match) diagramNumber = parseInt(match[0], 10);
 				this.loadVocabularies(contextIRI, ProjectSettings.contextEndpoint, diagramNumber ? diagramNumber : 0);
@@ -183,13 +183,12 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 					ProjectSettings.contextEndpoint = contextEndpoint;
 					ProjectSettings.contextIRI = contextIRI;
 					this.handleChangeLanguage(Object.keys(Languages)[0]);
-					initRestrictions();
 					await getElementsConfig(ProjectSettings.contextIRI, ProjectSettings.contextEndpoint);
 					await processTransaction(ProjectSettings.contextEndpoint,
 						qb.constructQuery(updateProjectElement(false, ...initElements())));
 					await getLinksConfig(ProjectSettings.contextIRI, ProjectSettings.contextEndpoint);
 					await processTransaction(ProjectSettings.contextEndpoint,
-						qb.constructQuery(updateProjectLink(false, ...initConnections(), ...addRelationships())));
+						qb.constructQuery(updateProjectLink(false, ...initConnections())));
 					await getSettings(ProjectSettings.contextIRI, ProjectSettings.contextEndpoint);
 					changeDiagrams(diagram);
 					this.forceUpdate();

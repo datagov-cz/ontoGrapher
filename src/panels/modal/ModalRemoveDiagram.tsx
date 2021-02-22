@@ -28,7 +28,7 @@ export default class ModalRemoveDiagram extends React.Component<Props> {
 		return (
 			<Modal centered show={this.props.modal} keyboard onEscapeKeyDown={() => this.props.close()}
 				   onEntering={() => {
-					   let elem = document.getElementById("modalRemoveDiagramConfirm");
+					   const elem = document.getElementById("modalRemoveDiagramConfirm");
 					   if (elem) elem.focus();
 				   }}>
 				<Modal.Header>

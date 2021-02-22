@@ -1,8 +1,7 @@
 import {Cardinality} from "../datatypes/Cardinality";
 import {PackageNode} from "../datatypes/PackageNode";
 import {initLanguageObject} from "../function/FunctionEditVars";
-import {RestrictionObject} from "../datatypes/RestrictionObject";
-import {ConnectionObject} from "../datatypes/ConnectionObject";
+import {Restriction} from "../datatypes/Restriction";
 import {Representation} from "./Enum";
 import * as joint from "jointjs";
 
@@ -85,8 +84,7 @@ export var VocabularyElements: {
             range: string | undefined,
             types: string[],
             subClassOf: string[],
-            restrictions: RestrictionObject[],
-            connections: ConnectionObject[],
+            restrictions: Restriction[],
             active: boolean,
             topConcept: string | undefined
         }

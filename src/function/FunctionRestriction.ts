@@ -1,63 +1,44 @@
-import {Restrictions} from "../config/Restrictions";
-import {ProjectElements, ProjectLinks, VocabularyElements} from "../config/Variables";
-import {RestrictionObject} from "../datatypes/RestrictionObject";
-import {parsePrefix} from "./FunctionEditVars";
-import {ConnectionObject} from "../datatypes/ConnectionObject";
+import {ProjectElements, ProjectLinks, ProjectSettings, VocabularyElements} from "../config/Variables";
+import {Restriction} from "../datatypes/Restriction";
+import {getElemFromIRI, getNewLink} from "./FunctionGetVars";
+import {LinkType} from "../config/Enum";
+import {addLink} from "./FunctionCreateVars";
 
-export function createRestriction(obj: { [key: string]: any }, iri: string, restriction: string, onProperty: string, target: { type: string, value: string }) {
-	if (target.type !== "bnode" && (restriction in Restrictions)) {
-		let newRestriction = new RestrictionObject(restriction, onProperty, target.value);
-		for (let rest of obj[iri].restrictions) {
-			if (rest.target === newRestriction.target
-				&& rest.restriction === newRestriction.restriction
-				&& rest.onProperty === newRestriction.onProperty) {
+export function createRestriction(restrictions: Restriction[], iri: string, restriction: string, onProperty: string, target: { type: string, value: string }, onClass?: string) {
+	if (target.type !== "bnode") {
+		const newRestriction = new Restriction(restriction, onProperty, target.value, onClass);
+		for (const rest of restrictions) {
+			if (rest.compare(newRestriction)) {
 				return;
 			}
 		}
-		obj[iri].restrictions.push(newRestriction);
-	}
-}
-
-export function initRestrictions() {
-	for (let iri in VocabularyElements) {
-		for (let restriction of VocabularyElements[iri].restrictions) {
-			restriction.initRestriction(iri);
-		}
-		let domain = VocabularyElements[iri].domain;
-		let range = VocabularyElements[iri].range;
-		if (typeof domain === "string" && typeof range === "string" && VocabularyElements[domain]) {
-			VocabularyElements[domain].connections.push(new ConnectionObject(iri, range, false));
-		}
+		restrictions.push(newRestriction);
+		restrictions.sort((a: Restriction, b: Restriction) => a.restriction.localeCompare(b.restriction));
 	}
 }
 
 export function initConnections(): string[] {
-	let result: string[] = [];
-	for (let iri in VocabularyElements) {
-		for (let connection of VocabularyElements[iri].connections) {
-			let conn = connection.initConnection(iri);
-			if (conn) result.push(conn);
+	const linksToPush = [];
+	for (const iri in VocabularyElements) {
+		for (const restriction of VocabularyElements[iri].restrictions) {
+			const newLink = restriction.initRestriction(iri);
+			if (newLink) linksToPush.push(newLink);
 		}
-	}
-	return result;
-}
 
-export function getRestrictionsAsJSON(iri: string) {
-	let result: {}[] = [];
-	for (let restriction of VocabularyElements[iri].restrictions) {
-		for (let id in ProjectLinks) {
-			if (ProjectLinks[id].iri === iri && ProjectElements[ProjectLinks[id].source].iri) {
-				restriction.saveRestriction(ProjectElements[ProjectLinks[id].source].iri);
-				break;
+		for (const subClassOf of VocabularyElements[iri].subClassOf) {
+			if (subClassOf in VocabularyElements) {
+				const domainID = getElemFromIRI(iri);
+				const rangeID = Object.keys(ProjectElements).find(element => ProjectElements[element].iri === subClassOf);
+				if (domainID && rangeID && !(ProjectElements[domainID].connections.find(conn =>
+					ProjectElements[ProjectLinks[conn].target].iri === subClassOf))) {
+					let linkGeneralization = getNewLink(LinkType.GENERALIZATION);
+					const id = linkGeneralization.id as string;
+					addLink(id, ProjectSettings.ontographerContext + "/uml/generalization", domainID, rangeID, LinkType.GENERALIZATION);
+					ProjectElements[domainID].connections.push(id);
+					linksToPush.push(id);
+				}
 			}
 		}
-		let i = VocabularyElements[iri].restrictions.indexOf(restriction);
-		result.push({
-			"@id": iri + "/restriction-" + (i + 1),
-			"@type": parsePrefix("owl", "Restriction"),
-			[parsePrefix("owl", "onProperty")]: restriction.onProperty,
-			[restriction.restriction]: restriction.target
-		})
 	}
-	return result;
+	return linksToPush;
 }

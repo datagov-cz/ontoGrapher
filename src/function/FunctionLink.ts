@@ -20,20 +20,20 @@ import {updateConnections} from "../queries/UpdateConnectionQueries";
 import {updateDeleteProjectLinkVertex, updateProjectLink, updateProjectLinkVertex} from "../queries/UpdateLinkQueries";
 
 export function saveNewLink(iri: string, sid: string, tid: string): string[] {
-	let type = iri in Links ? Links[iri].type : LinkType.DEFAULT;
+	const type = iri in Links ? Links[iri].type : LinkType.DEFAULT;
 	let link = getNewLink(type);
 	link.source({id: sid, connectionPoint: {name: 'boundary', args: {selector: getElementShape(sid)}}});
 	link.target({id: tid, connectionPoint: {name: 'boundary', args: {selector: getElementShape(tid)}}});
 	link.addTo(graph);
-	let s = link.getSourceElement();
-	let t = link.getTargetElement();
+	const s = link.getSourceElement();
+	const t = link.getTargetElement();
 	if (s && t) {
-		let id = link.id as string;
-		let sid = s.id as string;
-		let tid = t.id as string;
+		const id = link.id as string;
+		const sid = s.id as string;
+		const tid = t.id as string;
 		if (sid === tid) {
-			let coords = link.getSourcePoint();
-			let bbox = paper.findViewByModel(sid).getBBox();
+			const coords = link.getSourcePoint();
+			const bbox = paper.findViewByModel(sid).getBBox();
 			if (bbox) {
 				link.vertices([
 					new joint.g.Point(coords.x, coords.y + 100),
@@ -48,15 +48,15 @@ export function saveNewLink(iri: string, sid: string, tid: string): string[] {
 		if (ProjectSettings.representation === Representation.FULL || type === LinkType.GENERALIZATION) {
 			queries.push(...updateConnection(sid, tid, id, type, iri, true));
 		} else {
-			let find = Object.keys(ProjectElements).find(elem =>
+			const find = Object.keys(ProjectElements).find(elem =>
 				ProjectElements[elem].active && ProjectElements[elem].iri === iri);
 			let property = find ? new graphElement({id: find}) : new graphElement();
 			let source = getNewLink();
 			let target = getNewLink();
-			let sourceId = source.id as string;
-			let propertyId = property.id as string;
-			let targetId = target.id as string;
-			let pkg = PackageRoot.children.find(pkg =>
+			const sourceId = source.id as string;
+			const propertyId = property.id as string;
+			const targetId = target.id as string;
+			const pkg = PackageRoot.children.find(pkg =>
 				pkg.scheme === VocabularyElements[ProjectElements[sid].iri].inScheme) || PackageRoot;
 			if (!find) addClass(propertyId, iri, pkg);
 			ProjectElements[property.id].connections.push(sourceId);
@@ -118,24 +118,22 @@ export function deleteConnections(sid: string, id: string): string {
 }
 
 export function addLinkTools(linkView: joint.dia.LinkView, transaction: Function, update: Function) {
-	let id = linkView.model.id;
-	let verticesTool = new joint.linkTools.Vertices({stopPropagation: false});
-	let segmentsTool = new joint.linkTools.Segments({stopPropagation: false});
-	let removeButton = new joint.linkTools.Remove({
+	const id = linkView.model.id as string;
+	const verticesTool = new joint.linkTools.Vertices({stopPropagation: false});
+	const segmentsTool = new joint.linkTools.Segments({stopPropagation: false});
+	const removeButton = new joint.linkTools.Remove({
 		distance: 5,
 		action: ((evt, view) => {
 			if (ProjectSettings.representation === Representation.FULL) {
-				let sid = view.model.getSourceCell()?.id;
-				if (typeof sid === "string" && typeof id === "string") {
-					let queries = [deleteConnections(sid, id)];
-					let compactConn = Object.keys(ProjectLinks).find(link => ProjectLinks[link].active &&
-						ProjectLinks[link].iri === ProjectElements[ProjectLinks[id].source].iri &&
-						ProjectLinks[link].target === ProjectLinks[id].target);
-					if (compactConn) {
-						queries.push(deleteConnections(ProjectLinks[compactConn].source, compactConn));
-					}
-					transaction(...queries);
+				const sid = view.model.getSourceCell()?.id as string;
+				let queries = [deleteConnections(sid, id)];
+				const compactConn = Object.keys(ProjectLinks).find(link => ProjectLinks[link].active &&
+					ProjectLinks[link].iri === ProjectElements[ProjectLinks[id].source].iri &&
+					ProjectLinks[link].target === ProjectLinks[id].target);
+				if (compactConn) {
+					queries.push(deleteConnections(ProjectLinks[compactConn].source, compactConn));
 				}
+				transaction(...queries);
 			} else {
 				let deleteLinks = getUnderlyingFullConnections(view.model);
 				let queries: string[] = []
@@ -146,10 +144,8 @@ export function addLinkTools(linkView: joint.dia.LinkView, transaction: Function
 						deleteConnections(ProjectLinks[deleteLinks.src].source, deleteLinks.src),
 						deleteConnections(ProjectLinks[deleteLinks.src].source, deleteLinks.tgt));
 				}
-				let sid = view.model.getSourceCell()?.id;
-				if (typeof sid === "string" && typeof id === "string") {
-					queries.push(deleteConnections(sid, id));
-				}
+				const sid = view.model.getSourceCell()?.id as string;
+				queries.push(deleteConnections(sid, id));
 				view.model.remove();
 				ProjectLinks[view.model.id].active = false;
 				update();

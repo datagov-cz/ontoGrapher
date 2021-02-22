@@ -35,9 +35,9 @@ export function isElemReadOnlyByIRI(iri: string): boolean {
 }
 
 export function checkLabels() {
-    for (let link in Links) {
+    for (const link in Links) {
 		if (!(Links[link].labels[Object.keys(Languages)[0]])) {
-			let label = link.lastIndexOf('/');
+			const label = link.lastIndexOf('/');
 			Links[link].labels = initLanguageObject(link.substring(label + 1));
 		}
 		Links[link].typesDomain = [];
@@ -75,8 +75,8 @@ export function getNewLink(type?: number, id?: string): joint.dia.Link {
 }
 
 export function getElementShape(id: string | number): string {
-	let types = VocabularyElements[ProjectElements[id].iri].types;
-	for (let type in Shapes) {
+	const types = VocabularyElements[ProjectElements[id].iri].types;
+	for (const type in Shapes) {
 		if (types.includes(type)) return Shapes[type].body;
 	}
 	return Shapes["default"].body;
@@ -87,21 +87,21 @@ export function getActiveToConnections(id: string): string[] {
 }
 
 export function getUnderlyingFullConnections(link: joint.dia.Link): { src: string, tgt: string } | undefined {
-	let id = link.id;
-	let iri = ProjectLinks[id].iri;
+	const id = link.id;
+	const iri = ProjectLinks[id].iri;
 	if (!(iri in VocabularyElements)) return;
-	let sourceElem = link.getSourceCell()?.id;
-	let targetElem = link.getTargetCell()?.id;
+	const sourceElem = link.getSourceCell()?.id;
+	const targetElem = link.getTargetCell()?.id;
 	if (sourceElem && targetElem) {
-		let preds = Object.keys(ProjectElements).filter(id => ProjectElements[id].iri === iri);
-		for (let pred of preds) {
-			let sourceLink = Object.keys(ProjectLinks).find(id =>
+		const preds = Object.keys(ProjectElements).filter(id => ProjectElements[id].iri === iri);
+		for (const pred of preds) {
+			const sourceLink = Object.keys(ProjectLinks).find(id =>
 				ProjectElements[pred].connections.includes(id) &&
 				ProjectLinks[id].iri === mvp1IRI &&
 				ProjectLinks[id].target === sourceElem &&
 				ProjectLinks[id].active
 			);
-			let targetLink = Object.keys(ProjectLinks).find(id =>
+			const targetLink = Object.keys(ProjectLinks).find(id =>
 				ProjectElements[pred].connections.includes(id) &&
 				ProjectLinks[id].iri === mvp2IRI &&
 				ProjectLinks[id].target === targetElem &&
@@ -119,4 +119,8 @@ export function getFullConnections(id: string): string[] {
 		ProjectElements[elem].connections.find(link => ProjectLinks[link].active &&
 			(ProjectLinks[link].iri === mvp1IRI || ProjectLinks[link].iri === mvp2IRI) &&
 			ProjectLinks[link].target === id));
+}
+
+export function getElemFromIRI(iri: string) {
+	return Object.keys(ProjectElements).find(elem => ProjectElements[elem].iri === iri);
 }

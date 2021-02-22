@@ -16,6 +16,7 @@ import {LinkType} from "../config/Enum";
 import {Locale} from "../config/Locale";
 import {setSchemeColors} from "../function/FunctionGetVars";
 import {processQuery} from "./TransactionInterface";
+import {RestrictionConfig} from "../config/RestrictionConfig";
 
 export async function fetchConcepts(
     endpoint: string,
@@ -41,7 +42,6 @@ export async function fetchConcepts(
             range?: string,
             subClassOf: string[],
             restrictions: [],
-            connections: []
             type: number,
             topConcept?: string;
             character?: string;
@@ -49,12 +49,12 @@ export async function fetchConcepts(
         }
     } = {};
 
-    let query = [
+    const query = [
         "PREFIX skos: <http://www.w3.org/2004/02/skos/core#>",
         "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>",
         "PREFIX a-popis-dat-pojem: <http://onto.fel.cvut.cz/ontologies/slovník/agendový/popis-dat/pojem/>",
         "PREFIX z-sgov-pojem: <https://slovník.gov.cz/základní/pojem/>",
-        "SELECT DISTINCT ?term ?termLabel ?termAltLabel ?termType ?termDefinition ?termDomain ?termRange ?topConcept ?inverseOf ?character ?restriction ?restrictionPred ?onProperty ?target ?subClassOf",
+        "SELECT DISTINCT ?term ?termLabel ?termAltLabel ?termType ?termDefinition ?termDomain ?termRange ?topConcept ?inverseOf ?character ?restriction ?restrictionPred ?onProperty ?onClass ?target ?subClassOf",
         "WHERE {",
         graph && "GRAPH <" + graph + "> {",
         !subPropertyOf && "?term skos:inScheme <" + source + ">.",
@@ -75,8 +75,9 @@ export async function fetchConcepts(
         "OPTIONAL {?term rdfs:subClassOf ?restriction. ",
         "?restriction a owl:Restriction .",
         "?restriction owl:onProperty ?onProperty.",
+        "OPTIONAL {?restriction owl:onClass ?onClass.}",
         "?restriction ?restrictionPred ?target.",
-        "filter (?restrictionPred not in (owl:onProperty, rdf:type))}",
+        "filter (?restrictionPred in (<" + Object.keys(RestrictionConfig).join(">, <") + ">))}",
         "}",
         graph && "}",
     ].join(" ");
@@ -84,7 +85,7 @@ export async function fetchConcepts(
         response => response.json()
     ).then(data => {
         if (data.results.bindings.length === 0) return false;
-        for (let row of data.results.bindings) {
+        for (const row of data.results.bindings) {
             if (!(row.term.value in result)) {
                 if (getSubProperties) fetchConcepts(endpoint, source, sendTo, readOnly, graph, getSubProperties, row.term.value, requiredType, requiredTypes, requiredValues);
                 result[row.term.value] = {
@@ -95,7 +96,6 @@ export async function fetchConcepts(
                     inScheme: source,
                     subClassOf: [],
                     restrictions: [],
-                    connections: [],
                     type: LinkType.DEFAULT
                 }
             }
@@ -123,7 +123,8 @@ export async function fetchConcepts(
             if (row.subClassOf && row.subClassOf.type !== "bnode" && !(result[row.term.value].subClassOf.includes(row.subClassOf.value)))
                 result[row.term.value].subClassOf.push(row.subClassOf.value);
             if (row.restriction && Object.keys(Links).includes(row.onProperty.value))
-                createRestriction(result, row.term.value, row.restrictionPred.value, row.onProperty.value, row.target);
+                createRestriction(result[row.term.value].restrictions, row.term.value, row.restrictionPred.value, row.onProperty.value, row.target,
+                    row.onClass ? row.onClass.value : undefined);
             if (row.inverseOf)
                 result[row.term.value].inverseOf = row.inverseOf.value;
         }
@@ -138,10 +139,10 @@ export async function fetchConcepts(
 export async function getAllTypes(iri: string, endpoint: string, targetTypes: string[], targetSubClass: string[], init: boolean = false, link?: string, source?: boolean): Promise<boolean> {
     let subClassOf: string[] = init ? [iri] : _.cloneDeep(targetSubClass);
     while (subClassOf.length > 0) {
-        let subc = subClassOf.pop();
+        const subc = subClassOf.pop();
         if (subc) {
             if (!(targetSubClass.includes(subc))) targetSubClass.push(subc);
-            let query = [
+            const query = [
                 "PREFIX skos: <http://www.w3.org/2004/02/skos/core#>",
                 "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>",
                 "PREFIX owl: <http://www.w3.org/2002/07/owl#>",
@@ -158,13 +159,13 @@ export async function getAllTypes(iri: string, endpoint: string, targetTypes: st
                 "filter (?restrictionPred in (owl:minQualifiedCardinality, owl:maxQualifiedCardinality))}",
                 "}",
             ].join(" ");
-            let result = await processQuery(endpoint, query).then(response => {
+            const result = await processQuery(endpoint, query).then(response => {
                 return response.json();
             }).then(data => {
                 let newCardinality = new Cardinality(
                     ProjectSettings.defaultCardinality.getFirstCardinality(),
                     ProjectSettings.defaultCardinality.getSecondCardinality());
-                for (let result of data.results.bindings) {
+                for (const result of data.results.bindings) {
                     if (!(targetTypes.includes(result.type.value))) targetTypes.push(result.type.value);
                     if (!(subClassOf.includes(result.subClass.value)) &&
                         result.subClass.type !== "bnode") subClassOf.push(result.subClass.value);
@@ -191,7 +192,7 @@ export async function getAllTypes(iri: string, endpoint: string, targetTypes: st
 }
 
 export async function getScheme(iri: string, endpoint: string, readOnly: boolean, graph?: string): Promise<boolean> {
-    let query = [
+    const query = [
         "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>",
         "PREFIX dct: <http://purl.org/dc/terms/>",
         "SELECT DISTINCT ?termLabel ?termTitle ?graph",
@@ -206,7 +207,7 @@ export async function getScheme(iri: string, endpoint: string, readOnly: boolean
         return response.json();
     }).then(data => {
         if (data.results.bindings.length === 0) return false;
-        for (let result of data.results.bindings) {
+        for (const result of data.results.bindings) {
             if (!(iri in Schemes)) Schemes[iri] = {
                 labels: {},
                 readOnly: readOnly,
@@ -237,7 +238,7 @@ export async function getElementsConfig(contextIRI: string, contextEndpoint: str
             graph: string
         }
     } = {}
-    let query = [
+    const query = [
         "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
         "select ?id ?iri ?active ?diagram ?index ?hidden ?posX ?posY ?name ?graph where {",
         "graph ?graph {",
@@ -258,8 +259,8 @@ export async function getElementsConfig(contextIRI: string, contextEndpoint: str
     return await processQuery(contextEndpoint, query).then(response => {
         return response.json();
     }).then(data => {
-        for (let result of data.results.bindings) {
-            let iri = result.iri.value;
+        for (const result of data.results.bindings) {
+            const iri = result.iri.value;
             if (!(iri in elements)) {
                 elements[iri] = {
                     id: result.id.value,
