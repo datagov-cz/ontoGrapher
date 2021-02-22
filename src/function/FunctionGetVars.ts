@@ -1,4 +1,6 @@
 import {
+	ENV,
+	Environment,
 	Languages,
 	Links,
 	ProjectElements,
@@ -14,6 +16,9 @@ import * as joint from "jointjs";
 import {LinkConfig} from "../config/LinkConfig";
 import {mvp1IRI, mvp2IRI} from "./FunctionGraph";
 import {Components} from "../datatypes/Components";
+import {Locale} from "../config/Locale";
+import isUrl from "is-url";
+import yaml from 'yaml';
 
 export function getVocabElementByElementID(id: string): { [key: string]: any } {
 	return VocabularyElements[ProjectElements[id].iri];
@@ -36,7 +41,7 @@ export function isElemReadOnlyByIRI(iri: string): boolean {
 }
 
 export function checkLabels() {
-    for (let link in Links) {
+    for (const link in Links) {
 		if (!(Links[link].labels[Object.keys(Languages)[0]])) {
 			let label = link.lastIndexOf('/');
 			Links[link].labels = initLanguageObject(link.substring(label + 1));
@@ -76,8 +81,8 @@ export function getNewLink(type?: number, id?: string): joint.dia.Link {
 }
 
 export function getElementShape(id: string | number): string {
-	let types = VocabularyElements[ProjectElements[id].iri].types;
-	for (let type in Shapes) {
+	const types = VocabularyElements[ProjectElements[id].iri].types;
+	for (const type in Shapes) {
 		if (types.includes(type)) return Shapes[type].body;
 	}
 	return Shapes["default"].body;
@@ -88,21 +93,21 @@ export function getActiveToConnections(id: string): string[] {
 }
 
 export function getUnderlyingFullConnections(link: joint.dia.Link): { src: string, tgt: string } | undefined {
-	let id = link.id;
-	let iri = ProjectLinks[id].iri;
+	const id = link.id;
+	const iri = ProjectLinks[id].iri;
 	if (!(iri in VocabularyElements)) return;
-	let sourceElem = link.getSourceCell()?.id;
-	let targetElem = link.getTargetCell()?.id;
+	const sourceElem = link.getSourceCell()?.id;
+	const targetElem = link.getTargetCell()?.id;
 	if (sourceElem && targetElem) {
-		let preds = Object.keys(ProjectElements).filter(id => ProjectElements[id].iri === iri);
-		for (let pred of preds) {
-			let sourceLink = Object.keys(ProjectLinks).find(id =>
+		const preds = Object.keys(ProjectElements).filter(id => ProjectElements[id].iri === iri);
+		for (const pred of preds) {
+			const sourceLink = Object.keys(ProjectLinks).find(id =>
 				ProjectElements[pred].connections.includes(id) &&
 				ProjectLinks[id].iri === mvp1IRI &&
 				ProjectLinks[id].target === sourceElem &&
 				ProjectLinks[id].active
 			);
-			let targetLink = Object.keys(ProjectLinks).find(id =>
+			const targetLink = Object.keys(ProjectLinks).find(id =>
 				ProjectElements[pred].connections.includes(id) &&
 				ProjectLinks[id].iri === mvp2IRI &&
 				ProjectLinks[id].target === targetElem &&
@@ -119,23 +124,48 @@ export function getUnderlyingFullConnections(link: joint.dia.Link): { src: strin
  * @param variableKey The environment variable to get
  */
 export function getEnvironmentVariable(variableKey: string): string {
-	const variable = process.env[variableKey];
+	const variable = ENV[variableKey];
 	if (variable) return variable;
 	else throw new Error(`Error: environment variable ${variableKey} not found`);
 }
 
 /**
  * Attempts to retrieve the Components JSON from the environment variable.
+ * Expects a YAML format encoded in a base64 string, which is then parsed as an object.
  * @param variableKey The environment variable to get
  */
-export function getComponentsEnvironmentVariable(variableKey: string): Components {
+export function getComponentsVariable(variableKey: string): Components {
 	try {
 		const componentString = getEnvironmentVariable(variableKey);
-		const componentDecoded = atob(componentString);
-		return JSON.parse(componentDecoded);
+		const componentDecoded = new TextDecoder('utf-8').decode(
+			Uint8Array.from(atob(componentString), (c) => c.charCodeAt(0))
+		)
+		return yaml.parse(componentDecoded);
 	} catch (e) {
+		console.error(Locale[ProjectSettings.viewLanguage].errorParsingEnvironmentVariable);
 		throw new Error(e);
 	}
+}
+
+/**
+ * Parses the keycloak realm from the OIDC URL.
+ * @param url OIDC endpoint
+ */
+export function getKeycloakRealm(url: string): string {
+	const keycloakRealm = Environment.components.authServer.url.split("/").filter(str => str !== "").pop();
+	if (keycloakRealm !== undefined && keycloakRealm !== "") return keycloakRealm;
+	else throw new Error(Locale[ProjectSettings.viewLanguage].errorParsingKeycloakRealm);
+}
+
+/**
+ * Parses the keycloak authentication URL from the OIDC URL.
+ * @param url OIDC endpoint
+ */
+export function getKeycloakAuthenticationURL(url: string): string {
+	const searchString = "/auth";
+	const keycloakURL = Environment.components.authServer.url.substring(0, Environment.components.authServer.url.indexOf(searchString) + searchString.length);
+	if (keycloakURL !== undefined && isUrl(keycloakURL)) return keycloakURL;
+	else throw new Error(Locale[ProjectSettings.viewLanguage].errorParsingKeycloakURL);
 }
 
 export function getFullConnections(id: string): string[] {

@@ -6,10 +6,8 @@ type Component<T = {}> = {
 
 export type Components = {
 	sgovServer: Component
-	// repositoryPath: relative path to the repository (e.g. /repositories/testOG)
-	dbServer: Component<{ repositoryPath: string }>
-	// realm: Keycloak realm
-	authServer: Component<{ realm: string }>
+	dbServer: Component
+	authServer: Component
 	ontographer: Component<{ workspacePath: string }>
 	termitServer: Component
 	termit: Component<{ workspacePath: string }>

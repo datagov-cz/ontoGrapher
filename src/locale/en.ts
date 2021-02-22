@@ -91,5 +91,8 @@ export const en = {
 	"switchColors": "Vocabulary color scheme",
 	"reportIssue": "Report an issue",
 	"reportEnhancement": "Suggest an improvement",
-	"changelogButton": "Changelog"
+	"changelogButton": "Changelog",
+	"errorParsingEnvironmentVariable": "Unable to parse variable from the environment",
+	"errorParsingKeycloakURL": "Unable to parse Keycloak URL from the OIDC endpoint",
+	"errorParsingKeycloakRealm": "Unable to parse Keycloak Realm from the OIDC endpoint"
 }

@@ -2,15 +2,10 @@ version: '3.9'
 services:
   ontographer:
     container_name: ontographer
-    env_file:
-      - .env.development
     build:
       context: .
       dockerfile: Dockerfile
       args:
-        CONTEXT: ${CONTEXT}
-        ID: ${ID}
-        URL: ${URL}
-        COMPONENTS: ${COMPONENTS}
+        PUBLIC_PATH: /
     ports:
       - 80:80
