@@ -5,12 +5,12 @@ import {
     ProjectElements,
     ProjectLinks,
     ProjectSettings,
-    Schemes
+    Schemes,
+    Stereotypes
 } from "../config/Variables";
 import {initLanguageObject, parsePrefix} from "../function/FunctionEditVars";
 import * as joint from "jointjs";
 import {Cardinality} from "../datatypes/Cardinality";
-import * as _ from "lodash";
 import {createRestriction} from "../function/FunctionRestriction";
 import {LinkType} from "../config/Enum";
 import {Locale} from "../config/Locale";
@@ -29,7 +29,7 @@ export async function fetchConcepts(
     requiredType?: boolean,
     requiredTypes?: string[],
     requiredValues?: string[]): Promise<boolean> {
-    if (!(source in Schemes)) await getScheme(source, endpoint, readOnly);
+    if (!(source in Schemes)) await getScheme([source], endpoint);
 
     let result: {
         [key: string]: {
@@ -136,71 +136,77 @@ export async function fetchConcepts(
     });
 }
 
-export async function getAllTypes(iri: string, endpoint: string, targetTypes: string[], targetSubClass: string[], init: boolean = false, link?: string, source?: boolean): Promise<boolean> {
-    let subClassOf: string[] = init ? [iri] : _.cloneDeep(targetSubClass);
-    while (subClassOf.length > 0) {
-        const subc = subClassOf.pop();
-        if (subc) {
-            if (!(targetSubClass.includes(subc))) targetSubClass.push(subc);
-            const query = [
-                "PREFIX skos: <http://www.w3.org/2004/02/skos/core#>",
-                "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>",
-                "PREFIX owl: <http://www.w3.org/2002/07/owl#>",
-                "SELECT DISTINCT ?type ?subClass ?restriction ?onProperty ?onClass ?target ?restrictionPred",
-                "WHERE {",
-                "<" + subc + "> a ?type.",
-                "<" + subc + "> rdfs:subClassOf ?subClass.",
-                "filter (!isBlank(?subClassOf))",
-                "OPTIONAL {<" + subc + "> rdfs:subClassOf ?restriction. ",
-                "?restriction a owl:Restriction .",
-                "?restriction owl:onProperty ?onProperty.",
-                "?restriction owl:onClass ?onClass.",
-                "?restriction ?restrictionPred ?target.",
-                "filter (?restrictionPred in (owl:minQualifiedCardinality, owl:maxQualifiedCardinality))}",
-                "}",
-            ].join(" ");
-            const result = await processQuery(endpoint, query).then(response => {
-                return response.json();
-            }).then(data => {
-                let newCardinality = new Cardinality(
-                    ProjectSettings.defaultCardinality.getFirstCardinality(),
-                    ProjectSettings.defaultCardinality.getSecondCardinality());
-                for (const result of data.results.bindings) {
-                    if (!(targetTypes.includes(result.type.value))) targetTypes.push(result.type.value);
-                    if (!(subClassOf.includes(result.subClass.value)) &&
-                        result.subClass.type !== "bnode") subClassOf.push(result.subClass.value);
-                    if (result.restriction && link && source !== undefined && result.onProperty.value === link) {
-                        result.restrictionPred.value === parsePrefix("owl", "minQualifiedCardinality") ?
-                            newCardinality.setFirstCardinality(result.target.value) :
-                            newCardinality.setSecondCardinality(result.target.value);
-                        source ? Links[link].defaultSourceCardinality = newCardinality : Links[link].defaultTargetCardinality = newCardinality;
-                    }
+/**
+ * Gets subclasses of terms and cardinality restrictions of terms which are on certain properties.
+ * @param endpoint SPARQL endpoint
+ * @param scheme skos:inScheme of the terms
+ * @param stereotypeList List of term IRIs to query
+ * @param linkList List of term IRIs to restrict the restriction onProperty search to
+ */
+export async function getSubClassesAndCardinalities(endpoint: string, scheme: string, stereotypeList: string[], linkList: string[]): Promise<boolean> {
+    let query = [
+        "PREFIX skos: <http://www.w3.org/2004/02/skos/core#>",
+        "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>",
+        "PREFIX owl: <http://www.w3.org/2002/07/owl#>",
+        "SELECT DISTINCT ?term ?subClass ?onProperty ?predicate ?object",
+        "WHERE {",
+        "?term rdfs:subClassOf+ ?subClass.",
+        "values ?term {<" + stereotypeList.join("> <") + ">}",
+        "?subClass skos:inScheme <" + scheme + ">.",
+        "filter (!isBlank(?subClass)).",
+        "OPTIONAL {",
+        "?superClass rdfs:subClassOf ?restriction.",
+        "?superClass skos:inScheme <" + scheme + ">.",
+        "?restriction a owl:Restriction.",
+        "?restriction owl:onClass ?subClass.",
+        "?restriction owl:onProperty ?onProperty.",
+        "?restriction ?predicate ?object.",
+        "values ?predicate {owl:minQualifiedCardinality owl:maxQualifiedCardinality}",
+        "values ?onProperty {<" + linkList.join("> <") + ">}",
+        "}",
+        "}",
+    ].join(" ");
+    return await processQuery(endpoint, query).then(response => {
+        return response.json();
+    }).then(data => {
+        for (const result of data.results.bindings) {
+            if (result.term.value in Stereotypes && !(Stereotypes[result.term.value].subClassOf.includes(result.subClass.value)))
+                Stereotypes[result.term.value].subClassOf.push(result.subClass.value);
+            if (result.onProperty && result.onProperty.value in Links) {
+                const domain = Object.keys(Links).find(link => Links[link].domain === result.subClass.value);
+                const range = Object.keys(Links).find(link => Links[link].range === result.subClass.value);
+                if (domain) {
+                    result.predicate.value === parsePrefix("owl", "minQualifiedCardinality") ?
+                        Links[domain].defaultSourceCardinality.setFirstCardinality(result.object.value) :
+                        Links[domain].defaultSourceCardinality.setSecondCardinality(result.object.value);
                 }
-                if (link && Links[link].inverseOf && Links[link].inverseOf in Links) {
-                    Links[Links[link].inverseOf].defaultSourceCardinality = Links[link].defaultTargetCardinality;
-                    Links[Links[link].inverseOf].defaultTargetCardinality = Links[link].defaultSourceCardinality;
+                if (range) {
+                    result.predicate.value === parsePrefix("owl", "minQualifiedCardinality") ?
+                        Links[range].defaultTargetCardinality.setFirstCardinality(result.object.value) :
+                        Links[range].defaultTargetCardinality.setSecondCardinality(result.object.value);
                 }
-                return true;
-            }).catch((e) => {
-                console.log(e);
-                return false;
-            });
-            if (!result) return false;
-        } else break;
-    }
-    return true;
+            }
+        }
+        return true;
+    }).catch((e) => {
+        console.log(e);
+        return false;
+    });
 }
 
-export async function getScheme(iri: string, endpoint: string, readOnly: boolean, graph?: string): Promise<boolean> {
-    const query = [
+/**
+ * Gets scheme name info.
+ * @param iris The scheme IRIs to query
+ * @param endpoint SPARQL endpoint
+ */
+export async function getScheme(iris: string[], endpoint: string): Promise<boolean> {
+    let query = [
         "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>",
         "PREFIX dct: <http://purl.org/dc/terms/>",
-        "SELECT DISTINCT ?termLabel ?termTitle ?graph",
+        "SELECT DISTINCT ?scheme ?termTitle",
         "WHERE {",
-        "GRAPH " + (graph ? ("<" + graph + ">") : ("?graph")) + " {",
-        "OPTIONAL { <" + iri + "> dct:title ?termTitle . }",
-        "OPTIONAL { <" + iri + "> rdfs:label ?termLabel . }",
-        "}",
+        "?scheme dct:title ?termTitle." +
+        "filter(?scheme in (<" + iris.join(">, <") + ">))",
         "}"
     ].join(" ");
     return await processQuery(endpoint, query).then(response => {
@@ -208,16 +214,16 @@ export async function getScheme(iri: string, endpoint: string, readOnly: boolean
     }).then(data => {
         if (data.results.bindings.length === 0) return false;
         for (const result of data.results.bindings) {
-            if (!(iri in Schemes)) Schemes[iri] = {
-                labels: {},
-                readOnly: readOnly,
-                graph: "",
-                color: "#FFF",
+            if (result.scheme) {
+                const iri = result.scheme.value;
+                if (!(iri in Schemes)) Schemes[iri] = {
+                    labels: {},
+                    readOnly: false,
+                    graph: "",
+                    color: "#FFF",
+                }
+                if (result.termTitle) Schemes[iri].labels[result.termTitle['xml:lang']] = result.termTitle.value;
             }
-            if (result.termLabel) Schemes[iri].labels[result.termLabel['xml:lang']] = result.termLabel.value;
-            if (result.termTitle) Schemes[iri].labels[result.termTitle['xml:lang']] = result.termTitle.value;
-            if (result.graph) Schemes[iri].graph = result.graph.value;
-            else if (graph) Schemes[iri].graph = graph;
         }
         return true;
     }).catch((e) => {

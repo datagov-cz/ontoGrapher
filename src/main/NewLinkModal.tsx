@@ -56,10 +56,9 @@ export default class NewLinkModal extends React.Component<Props, State> {
 
 		for (const type of sourceTypes) {
 			if (type in Stereotypes) {
-				const types = Stereotypes[type].types;
 				const subClasses = Stereotypes[type].subClassOf;
 				const character = Stereotypes[type].character;
-				if (character === domain || types.includes(domain) || subClasses.includes(domain)) {
+				if (character === domain || subClasses.includes(domain)) {
 					source = true;
 					break;
 				}
@@ -70,10 +69,9 @@ export default class NewLinkModal extends React.Component<Props, State> {
 
 		for (const type of targetTypes) {
 			if (type in Stereotypes) {
-				const types = Stereotypes[type].types;
 				const subClasses = Stereotypes[type].subClassOf;
 				const character = Stereotypes[type].character;
-				if (character === range || types.includes(range) || subClasses.includes(range)) {
+				if (character === range || subClasses.includes(range)) {
 					target = true;
 					break;
 				}

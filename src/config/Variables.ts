@@ -98,9 +98,7 @@ export var Links: {
         type: number,
         domain: string;
         range: string;
-        typesDomain: string[],
         subClassOfDomain: string[]
-        typesRange: string[],
         subClassOfRange: string[];
         inverseOf: string;
         defaultSourceCardinality: Cardinality;

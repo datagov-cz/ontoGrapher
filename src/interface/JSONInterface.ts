@@ -1,5 +1,5 @@
 import {Links, ProjectSettings, Schemes, Stereotypes} from "../config/Variables";
-import {fetchConcepts, getAllTypes, getScheme} from "./SPARQLInterface";
+import {fetchConcepts, getScheme, getSubClassesAndCardinalities} from "./SPARQLInterface";
 import {createValues} from "../function/FunctionCreateVars";
 import {initLanguageObject} from "../function/FunctionEditVars";
 import {checkLabels} from "../function/FunctionGetVars";
@@ -15,7 +15,7 @@ export async function getVocabulariesFromRemoteJSON(pathToJSON: string): Promise
                 for (const key of Object.keys(json)) {
                     const data = json[key];
                     if (data.type === "stereotype") {
-                        results.push(await getScheme(data.sourceIRI, data.endpoint, data.type === "model"));
+                        results.push(await getScheme([data.sourceIRI], data.endpoint));
                         Schemes[data.sourceIRI].labels = initLanguageObject(key);
                         results.push(await fetchConcepts(
                             data.endpoint,
@@ -42,28 +42,12 @@ export async function getVocabulariesFromRemoteJSON(pathToJSON: string): Promise
                             data.values ? createValues(data.values, data.prefixes) : undefined
                         ));
                         checkLabels();
-                        results = results.concat(await Promise.all(Object.keys(Stereotypes).map(stereotype =>
-                            getAllTypes(
-                                stereotype,
+                        results.push(
+                            await getSubClassesAndCardinalities(
                                 data.endpoint,
-                                Stereotypes[stereotype].types,
-                                Stereotypes[stereotype].subClassOf))), results)
-                        results = results.concat(await Promise.all(Object.keys(Links).map(link =>
-                            getAllTypes(
-                                Links[link].domain,
-                                data.endpoint,
-                                Links[link].typesDomain,
-                                Links[link].subClassOfDomain,
-                                true, link, true)
-                        )), results)
-                        results = results.concat(await Promise.all(Object.keys(Links).map(link =>
-                            getAllTypes(
-                                Links[link].range,
-                                data.endpoint,
-                                Links[link].typesRange,
-                                Links[link].subClassOfRange,
-                                true, link, false)
-                        )), results)
+                                data.sourceIRI,
+                                Object.keys(Stereotypes),
+                                Object.keys(Links)))
                         return results.every(bool => bool);
                     }
                 }

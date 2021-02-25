@@ -40,8 +40,6 @@ export function checkLabels() {
 			const label = link.lastIndexOf('/');
 			Links[link].labels = initLanguageObject(link.substring(label + 1));
 		}
-		Links[link].typesDomain = [];
-		Links[link].typesRange = [];
 		Links[link].subClassOfDomain = [];
 		Links[link].subClassOfRange = [];
 		Links[link].defaultSourceCardinality = ProjectSettings.defaultCardinality;
