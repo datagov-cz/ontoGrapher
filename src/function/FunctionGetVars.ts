@@ -43,7 +43,7 @@ export function isElemReadOnlyByIRI(iri: string): boolean {
 export function checkLabels() {
     for (const link in Links) {
 		if (!(Links[link].labels[Object.keys(Languages)[0]])) {
-			let label = link.lastIndexOf('/');
+			const label = link.lastIndexOf('/');
 			Links[link].labels = initLanguageObject(link.substring(label + 1));
 		}
 		Links[link].typesDomain = [];
@@ -149,9 +149,8 @@ export function getComponentsVariable(variableKey: string): Components {
 
 /**
  * Parses the keycloak realm from the OIDC URL.
- * @param url OIDC endpoint
  */
-export function getKeycloakRealm(url: string): string {
+export function getKeycloakRealm(): string {
 	const keycloakRealm = Environment.components.authServer.url.split("/").filter(str => str !== "").pop();
 	if (keycloakRealm !== undefined && keycloakRealm !== "") return keycloakRealm;
 	else throw new Error(Locale[ProjectSettings.viewLanguage].errorParsingKeycloakRealm);
@@ -159,9 +158,8 @@ export function getKeycloakRealm(url: string): string {
 
 /**
  * Parses the keycloak authentication URL from the OIDC URL.
- * @param url OIDC endpoint
  */
-export function getKeycloakAuthenticationURL(url: string): string {
+export function getKeycloakAuthenticationURL(): string {
 	const searchString = "/auth";
 	const keycloakURL = Environment.components.authServer.url.substring(0, Environment.components.authServer.url.indexOf(searchString) + searchString.length);
 	if (keycloakURL !== undefined && isUrl(keycloakURL)) return keycloakURL;
