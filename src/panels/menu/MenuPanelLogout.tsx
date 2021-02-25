@@ -8,7 +8,6 @@ interface Props {
 }
 
 interface State {
-	alert: boolean;
 }
 
 export default class MenuPanelLogout extends React.Component<Props, State> {

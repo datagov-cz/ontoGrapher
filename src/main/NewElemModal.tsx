@@ -28,7 +28,7 @@ interface State {
 export default class NewElemModal extends React.Component<Props, State> {
 	constructor(props: Props) {
 		super(props);
-		let pkg = PackageRoot.children.find(pkg => (!(Schemes[pkg.scheme].readOnly)))
+		const pkg = PackageRoot.children.find(pkg => (!(Schemes[pkg.scheme].readOnly)))
 		if (!pkg) this.props.close();
 		this.state = {
 			conceptName: initLanguageObject(""),
@@ -40,7 +40,7 @@ export default class NewElemModal extends React.Component<Props, State> {
 	}
 
 	checkExists(name: string): boolean {
-		let newIRI = createNewElemIRI(this.state.selectedPackage.scheme, name);
+		const newIRI = createNewElemIRI(this.state.selectedPackage.scheme, name);
 		return (Object.keys(VocabularyElements)
 			.filter(iri => VocabularyElements[iri].inScheme === this.state.selectedPackage.scheme).find(iri =>
 				(iri === newIRI && Object.keys(ProjectElements).find(elem => ProjectElements[elem].active &&
@@ -49,7 +49,7 @@ export default class NewElemModal extends React.Component<Props, State> {
 	}
 
 	handleChangeInput(event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>, language: string) {
-		let res = this.state.conceptName;
+		const res = this.state.conceptName;
 		res[language] = event.currentTarget.value;
 		this.setState({conceptName: res});
 		if (res["cs"] === "") {
@@ -64,7 +64,7 @@ export default class NewElemModal extends React.Component<Props, State> {
 	}
 
 	handleChangeSelect(event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) {
-		let pkg = PackageRoot.children.find(pkg => pkg.labels[this.props.projectLanguage] === event.currentTarget.value);
+		const pkg = PackageRoot.children.find(pkg => pkg.labels[this.props.projectLanguage] === event.currentTarget.value);
 		if (pkg) this.setState({selectedPackage: pkg});
 		if (this.checkExists(event.currentTarget.value)) {
 			this.setState({errorText: Locale[ProjectSettings.viewLanguage].modalNewElemExistsError});
@@ -82,7 +82,7 @@ export default class NewElemModal extends React.Component<Props, State> {
 					   onHide={() => this.props.close}
 					   onEntering={() => {
 						   if (this.state.selectedPackage === PackageRoot) {
-							   let pkg = PackageRoot.children.find(pkg => (!(Schemes[pkg.scheme].readOnly)))
+							   const pkg = PackageRoot.children.find(pkg => (!(Schemes[pkg.scheme].readOnly)))
 							   if (!pkg) this.props.close();
 							   else this.setState({
 								   conceptName: initLanguageObject(""),
@@ -93,7 +93,7 @@ export default class NewElemModal extends React.Component<Props, State> {
 							   conceptName: initLanguageObject(""),
 							   errorText: Locale[ProjectSettings.viewLanguage].modalNewElemError
 						   })
-						   let input = document.getElementById("newElemLabelInputcs");
+						   const input = document.getElementById("newElemLabelInputcs");
 						   if (input) input.focus();
 					   }}
 		>

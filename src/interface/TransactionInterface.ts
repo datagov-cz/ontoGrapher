@@ -5,12 +5,12 @@ export async function processTransaction(contextEndpoint: string, transaction: s
 	if (!transaction)
 		return true;
 	ProjectSettings.lastTransaction = transaction;
-	let miliseconds = 15000;
-	let controller = new AbortController();
+	const miliseconds = 15000;
+	const controller = new AbortController();
 	const signal = controller.signal;
 	let timeout = window.setTimeout(() => controller.abort(), miliseconds);
 
-	let transactionUrl = contextEndpoint + "/transactions";
+	const transactionUrl = contextEndpoint + "/transactions";
 
 	const transactionID = await fetch(transactionUrl, {
 		method: "POST",
@@ -34,7 +34,7 @@ export async function processTransaction(contextEndpoint: string, transaction: s
 			controller.abort();
 			abortTransaction(transactionID);
 		}, miliseconds);
-		let resultUpdate = await fetch(transactionID + "?action=UPDATE", {
+		const resultUpdate = await fetch(transactionID + "?action=UPDATE", {
 			headers: {
 				'Content-Type': 'application/sparql-update; charset=UTF-8',
 				'Authorization': `Bearer ${keycloak.token}`
@@ -49,7 +49,7 @@ export async function processTransaction(contextEndpoint: string, transaction: s
 			return false;
 		}
 
-		let resultCommit = await fetch(transactionID + "?action=COMMIT", {
+		const resultCommit = await fetch(transactionID + "?action=COMMIT", {
 			method: "PUT",
 			headers: {'Authorization': `Bearer ${keycloak.token}`},
 			signal
@@ -77,7 +77,7 @@ export async function abortTransaction(transaction: string): Promise<boolean> {
 }
 
 export function processQuery(endpoint: string, query: string, auth: boolean = endpoint === ProjectSettings.contextEndpoint): Promise<Response> {
-	let q = endpoint + "?query=" + encodeURIComponent(query);
+	const q = endpoint + "?query=" + encodeURIComponent(query);
 	return fetch(q, {
 		headers: auth ? {
 			"Accept": "application/json",

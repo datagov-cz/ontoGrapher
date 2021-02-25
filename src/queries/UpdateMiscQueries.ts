@@ -4,10 +4,10 @@ import {DELETE, INSERT} from "@tpluscode/sparql-builder";
 
 export function updateProjectSettings(contextIRI: string, diagram: number): string {
 
-	let projIRI = ProjectSettings.ontographerContext + ProjectSettings.contextIRI.substring(ProjectSettings.contextIRI.lastIndexOf("/"));
-	let diagramIRI = qb.i(projIRI + "/diagram-" + (diagram + 1));
+	const projIRI = ProjectSettings.ontographerContext + ProjectSettings.contextIRI.substring(ProjectSettings.contextIRI.lastIndexOf("/"));
+	const diagramIRI = qb.i(projIRI + "/diagram-" + (diagram + 1));
 
-	let insert = INSERT.DATA`${qb.g(ProjectSettings.ontographerContext, [
+	const insert = INSERT.DATA`${qb.g(ProjectSettings.ontographerContext, [
 		qb.s(qb.i(projIRI), 'og:context', qb.i(contextIRI)),
 		qb.s(qb.i(projIRI), 'og:viewColor', qb.ll(ProjectSettings.viewColorPool)),
 		qb.s(qb.i(projIRI), 'og:diagram', diagramIRI),

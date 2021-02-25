@@ -92,17 +92,17 @@ export default class ItemPanel extends React.Component<Props, State> {
 	}
 
 	sort(a: string, b: string): number {
-		let aLabel = VocabularyElements[ProjectElements[a].iri].labels[this.props.projectLanguage];
-		let bLabel = VocabularyElements[ProjectElements[b].iri].labels[this.props.projectLanguage];
+		const aLabel = VocabularyElements[ProjectElements[a].iri].labels[this.props.projectLanguage];
+		const bLabel = VocabularyElements[ProjectElements[b].iri].labels[this.props.projectLanguage];
 		return aLabel.localeCompare(bLabel);
 	}
 
 	categorizeTypes(elements: string[]): { [key: string]: string[] } {
 		let result: { [key: string]: string[] } = {'unsorted': []};
 		Object.keys(Shapes).forEach(type => result[type] = []);
-		for (let elem of elements) {
-			let types = VocabularyElements[ProjectElements[elem].iri].types;
-			for (let key in Shapes) {
+		for (const elem of elements) {
+			const types = VocabularyElements[ProjectElements[elem].iri].types;
+			for (const key in Shapes) {
 				if (types.includes(key)) {
 					result[key].push(elem);
 					break;
@@ -115,8 +115,8 @@ export default class ItemPanel extends React.Component<Props, State> {
 	}
 
 	search(id: string): boolean {
-		let search = this.state.search.normalize().trim().toLowerCase();
-		let name = getLabelOrBlank(VocabularyElements[ProjectElements[id].iri].labels, this.props.projectLanguage);
+		const search = this.state.search.normalize().trim().toLowerCase();
+		const name = getLabelOrBlank(VocabularyElements[ProjectElements[id].iri].labels, this.props.projectLanguage);
 		return name.normalize().trim().toLowerCase().includes(search) ||
 			VocabularyElements[ProjectElements[id].iri].altLabels
 				.find(alt => alt.language === this.props.projectLanguage && alt.label.normalize().trim().toLowerCase().includes(search)) !== undefined;
@@ -124,8 +124,8 @@ export default class ItemPanel extends React.Component<Props, State> {
 
 	getFolders(): JSX.Element[] {
 		let result: JSX.Element[] = [];
-		for (let node of PackageRoot.children) {
-			let elements = node.elements.sort((a, b) => this.sort(a, b)).filter(id => {
+		for (const node of PackageRoot.children) {
+			const elements = node.elements.sort((a, b) => this.sort(a, b)).filter(id => {
 				return (
 					this.search(id) &&
 					(ProjectSettings.representation === Representation.FULL ||
@@ -136,17 +136,17 @@ export default class ItemPanel extends React.Component<Props, State> {
 			});
 			let packageItems: JSX.Element[] = [];
 			let categories = this.categorizeTypes(elements);
-			for (let key in categories) {
+			for (const key in categories) {
 				if (categories[key].length === 0) continue;
 				if (ProjectSettings.viewItemPanelTypes) {
-					let slice = elements.filter(elem => categories[key].includes(elem))
+					const slice = elements.filter(elem => categories[key].includes(elem))
 					packageItems.push(<PackageDivider
 						key={Object.keys(Shapes).includes(key) ? key : ""}
 						iri={Object.keys(Shapes).includes(key) ? key : ""}
 						projectLanguage={this.props.projectLanguage}
 						checkboxChecked={slice.every(elem => this.state.selectedItems.includes(elem))}
 						handleShowCheckbox={() => {
-							let items = this.state.selectedItems;
+							const items = this.state.selectedItems;
 							if (slice.every(elem => this.state.selectedItems.includes(elem))) {
 								slice.forEach(elem =>
 									items.splice(this.state.selectedItems.indexOf(elem), 1))
@@ -158,7 +158,7 @@ export default class ItemPanel extends React.Component<Props, State> {
 						showCheckbox={this.state.selectionMode}
 					/>);
 				}
-				for (let id of categories[key]) {
+				for (const id of categories[key]) {
 					packageItems.push(<PackageItem
 						key={id}
 						id={id}
@@ -195,7 +195,7 @@ export default class ItemPanel extends React.Component<Props, State> {
 							this.props.updateDetailPanel(id);
 							let elem = graph.getElements().find(elem => elem.id === id);
 							if (elem) {
-								let scale = paper.scale().sx;
+								const scale = paper.scale().sx;
 								paper.translate(0, 0);
 								paper.translate((-elem.position().x * scale) + (paper.getComputedSize().width / 2) - elem.getBBox().width,
 									(-elem.position().y * scale) + (paper.getComputedSize().height / 2) - elem.getBBox().height);

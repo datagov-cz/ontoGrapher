@@ -26,7 +26,7 @@ export default class ZoomWidget extends React.Component<Props, State> {
 				</Tooltip>}
 			>
 			<button onClick={() => {
-				let origin = paper.clientToLocalPoint(window.innerWidth / 2, window.innerHeight / 2);
+				const origin = paper.clientToLocalPoint(window.innerWidth / 2, window.innerHeight / 2);
 				zoomDiagram(origin.x, origin.y, 1);
 			}}><ZoomInSVG/></button></OverlayTrigger>
 			<OverlayTrigger
@@ -36,7 +36,7 @@ export default class ZoomWidget extends React.Component<Props, State> {
 				</Tooltip>}
 			>
 			<button onClick={() => {
-				let origin = paper.clientToLocalPoint(window.innerWidth / 2, window.innerHeight / 2);
+				const origin = paper.clientToLocalPoint(window.innerWidth / 2, window.innerHeight / 2);
 				zoomDiagram(origin.x, origin.y, -1);
 			}}><ZoomOutSVG/></button></OverlayTrigger>
 		</span>);

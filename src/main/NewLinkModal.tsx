@@ -44,21 +44,21 @@ export default class NewLinkModal extends React.Component<Props, State> {
 
 	filtering(link: string): boolean {
 		if (!this.props.sid || !this.props.tid) return false;
-		let sourceTypes = VocabularyElements[ProjectElements[this.props.sid].iri].types
+		const sourceTypes = VocabularyElements[ProjectElements[this.props.sid].iri].types
 			.filter(type => type.startsWith(Prefixes["z-sgov-pojem"]))
-		let targetTypes = VocabularyElements[ProjectElements[this.props.tid].iri].types
+		const targetTypes = VocabularyElements[ProjectElements[this.props.tid].iri].types
 			.filter(type => type.startsWith(Prefixes["z-sgov-pojem"]))
 		if (sourceTypes.length === 0 || targetTypes.length === 0) return false;
-		let domain = Links[link].domain;
-		let range = Links[link].range;
+		const domain = Links[link].domain;
+		const range = Links[link].range;
 		let source = false;
 		let target = false;
 
-		for (let type of sourceTypes) {
+		for (const type of sourceTypes) {
 			if (type in Stereotypes) {
-				let types = Stereotypes[type].types;
-				let subClasses = Stereotypes[type].subClassOf;
-				let character = Stereotypes[type].character;
+				const types = Stereotypes[type].types;
+				const subClasses = Stereotypes[type].subClassOf;
+				const character = Stereotypes[type].character;
 				if (character === domain || types.includes(domain) || subClasses.includes(domain)) {
 					source = true;
 					break;
@@ -68,11 +68,11 @@ export default class NewLinkModal extends React.Component<Props, State> {
 
 		if (!source) return false;
 
-		for (let type of targetTypes) {
-			if (type in Stereotypes){
-				let types = Stereotypes[type].types;
-				let subClasses = Stereotypes[type].subClassOf;
-				let character = Stereotypes[type].character;
+		for (const type of targetTypes) {
+			if (type in Stereotypes) {
+				const types = Stereotypes[type].types;
+				const subClasses = Stereotypes[type].subClassOf;
+				const character = Stereotypes[type].character;
 				if (character === range || types.includes(range) || subClasses.includes(range)) {
 					target = true;
 					break;
@@ -114,7 +114,7 @@ export default class NewLinkModal extends React.Component<Props, State> {
 					   onHide={() => this.props.close}
 					   onEntering={() => {
 						   this.setState({selectedLink: options.length > 0 ? options[0] : ""});
-						   let input = document.getElementById("newLinkInputSelect");
+						   const input = document.getElementById("newLinkInputSelect");
 						   if (input) input.focus();
 					   }}
 					   keyboard onEscapeKeyDown={() => this.props.close()}

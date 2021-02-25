@@ -5,9 +5,9 @@ import {LinkType} from "../config/Enum";
 
 export function createValues(values: { [key: string]: string[] }, prefixes: { [key: string]: string }) {
     let result: string[] = [];
-    for (let key in values) {
-        let prefix = prefixes[key];
-        for (let val of values[key]) {
+    for (const key in values) {
+        const prefix = prefixes[key];
+        for (const val of values[key]) {
             result.push(prefix + val);
         }
     }
@@ -21,7 +21,7 @@ export function createNewElemIRI(scheme: string, name: string): string {
 
 export function getDomainOf(iriElem: string): string[] {
     let result = [];
-    for (let iri in VocabularyElements) {
+    for (const iri in VocabularyElements) {
         if (VocabularyElements[iri].domain) {
             if (VocabularyElements[iri].domain === iriElem) {
                 result.push(iri);
@@ -42,7 +42,6 @@ export function addVocabularyElement(iri: string, scheme: string, types?: string
         types: types ? types : [],
         subClassOf: [],
         restrictions: [],
-        connections: [],
         active: true,
         topConcept: scheme
     }

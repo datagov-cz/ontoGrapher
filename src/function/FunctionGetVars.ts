@@ -173,3 +173,7 @@ export function getFullConnections(id: string): string[] {
 			(ProjectLinks[link].iri === mvp1IRI || ProjectLinks[link].iri === mvp2IRI) &&
 			ProjectLinks[link].target === id));
 }
+
+export function getElemFromIRI(iri: string) {
+	return Object.keys(ProjectElements).find(elem => ProjectElements[elem].iri === iri);
+}

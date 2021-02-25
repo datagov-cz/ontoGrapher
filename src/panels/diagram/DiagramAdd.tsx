@@ -15,7 +15,7 @@ interface State {
 export default class DiagramAdd extends React.Component<Props, State> {
 
 	addDiagram() {
-		let index = Diagrams.push({
+		const index = Diagrams.push({
 			name: Locale[ProjectSettings.viewLanguage].untitled,
 			active: true,
 			origin: {x: 0, y: 0},

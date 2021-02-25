@@ -36,7 +36,7 @@ export default class PackageFolder extends React.Component<Props, State> {
     }
 
     movePackageItem(parse: any) {
-        let id = parse.id;
+        const id = parse.id;
         let oldpkg = ProjectElements[id].package;
         oldpkg.elements.splice(oldpkg.elements.indexOf(id), 1);
         ProjectElements[id].package = this.props.node;

@@ -31,7 +31,7 @@ export default class ModalRemoveItem extends React.Component<Props, State> {
         return (
             <Modal centered show={this.props.modal} keyboard onEscapeKeyDown={() => this.props.close()}
                    onEntering={() => {
-                       let elem = document.getElementById("modalRemoveItemConfirm");
+                       const elem = document.getElementById("modalRemoveItemConfirm");
                        if (elem) elem.focus();
                    }}>
                 <Modal.Header>

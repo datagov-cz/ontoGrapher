@@ -6,10 +6,10 @@ import {LinkConfig} from "../config/LinkConfig";
 import {DELETE, INSERT} from "@tpluscode/sparql-builder";
 
 export function updateDefaultLink(id: string): string {
-	let iri = ProjectElements[ProjectLinks[id].source].iri;
-	let contextIRI = Schemes[VocabularyElements[iri].inScheme].graph;
+	const iri = ProjectElements[ProjectLinks[id].source].iri;
+	const contextIRI = Schemes[VocabularyElements[iri].inScheme].graph;
 
-	let del: string = DELETE`${qb.g(contextIRI, [
+	const del: string = DELETE`${qb.g(contextIRI, [
 		qb.s(qb.i(iri), 'rdfs:subClassOf', qb.v('b')),
 		qb.s(qb.v('b'), '?p', '?o')
 	])}
@@ -20,7 +20,7 @@ export function updateDefaultLink(id: string): string {
 		"filter(isBlank(?b))."
 	])}`.build();
 
-	let insert: string = INSERT.DATA`${qb.g(contextIRI, [
+	const insert: string = INSERT.DATA`${qb.g(contextIRI, [
 		...ProjectElements[ProjectLinks[id].source].connections.filter(linkID =>
 			linkID in ProjectLinks &&
 			ProjectElements[ProjectLinks[linkID].target] &&
@@ -74,13 +74,13 @@ export function updateDefaultLink(id: string): string {
 }
 
 export function updateGeneralizationLink(id: string): string {
-	let iri = ProjectElements[ProjectLinks[id].source].iri;
-	let contextIRI = Schemes[VocabularyElements[iri].inScheme].graph
+	const iri = ProjectElements[ProjectLinks[id].source].iri;
+	const contextIRI = Schemes[VocabularyElements[iri].inScheme].graph
 
-	let subClassOf: string[] = ProjectElements[ProjectLinks[id].source].connections.filter(conn =>
+	const subClassOf: string[] = ProjectElements[ProjectLinks[id].source].connections.filter(conn =>
 		ProjectLinks[conn].type === LinkType.GENERALIZATION && ProjectLinks[conn].active).map(conn =>
 		qb.i(ProjectElements[ProjectLinks[conn].target].iri));
-	let list = VocabularyElements[iri].subClassOf.filter(superClass => !(superClass in VocabularyElements)).map(superClass =>
+	const list = VocabularyElements[iri].subClassOf.filter(superClass => !(superClass in VocabularyElements)).map(superClass =>
 		qb.i(superClass)
 	)
 
