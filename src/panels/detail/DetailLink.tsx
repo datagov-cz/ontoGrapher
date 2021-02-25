@@ -28,15 +28,15 @@ import {updateConnections} from "../../queries/UpdateConnectionQueries";
 
 interface Props {
     projectLanguage: string;
-    save: Function;
+    save: (id: string) => void;
     performTransaction: (...queries: string[]) => void;
     handleWidth: Function;
     error: boolean;
-    id: string;
     updateDetailPanel: Function;
 }
 
 interface State {
+    id: string
     iri: string,
     sourceCardinality: string;
     targetCardinality: string;
@@ -48,6 +48,7 @@ export default class DetailLink extends React.Component<Props, State> {
     constructor(props: Props) {
         super(props);
         this.state = {
+            id: "",
             iri: Object.keys(Links)[0],
             sourceCardinality: "0",
             targetCardinality: "0",
@@ -81,46 +82,50 @@ export default class DetailLink extends React.Component<Props, State> {
         return result;
     }
 
-    prepareDetails(id: string) {
-        let sourceCard = ProjectLinks[id].sourceCardinality;
-        let targetCard = ProjectLinks[id].targetCardinality;
-        this.setState({
-            sourceCardinality: "0",
-            targetCardinality: "0"
-        });
-        CardinalityPool.forEach((card, i) => {
-            if (sourceCard.getString() === card.getString()) {
-                this.setState({sourceCardinality: i.toString(10)});
-            }
-            if (targetCard.getString() === card.getString()) {
-                this.setState({targetCardinality: i.toString(10)});
-            }
-        })
-        this.setState({
-            iri: ProjectLinks[id].iri,
-            changes: false,
-            readOnly: Schemes[VocabularyElements[ProjectElements[ProjectLinks[id].source].iri].inScheme].readOnly
-        });
+    prepareDetails(id?: string) {
+        if (id) {
+            let sourceCard = ProjectLinks[id].sourceCardinality;
+            let targetCard = ProjectLinks[id].targetCardinality;
+            this.setState({
+                sourceCardinality: "0",
+                targetCardinality: "0"
+            });
+            CardinalityPool.forEach((card, i) => {
+                if (sourceCard.getString() === card.getString()) {
+                    this.setState({sourceCardinality: i.toString(10)});
+                }
+                if (targetCard.getString() === card.getString()) {
+                    this.setState({targetCardinality: i.toString(10)});
+                }
+            })
+            this.setState({
+                id: id,
+                iri: ProjectLinks[id].iri,
+                changes: false,
+                readOnly: Schemes[VocabularyElements[ProjectElements[ProjectLinks[id].source].iri].inScheme].readOnly
+            });
+        } else this.setState({id: ""});
+
     }
 
     save() {
-        if (this.props.id in ProjectLinks) {
+        if (this.state.id in ProjectLinks) {
             let queries: string[] = [];
             if (ProjectSettings.representation === Representation.FULL) {
-                ProjectLinks[this.props.id].sourceCardinality = CardinalityPool[parseInt(this.state.sourceCardinality, 10)];
-                ProjectLinks[this.props.id].targetCardinality = CardinalityPool[parseInt(this.state.targetCardinality, 10)];
-                ProjectLinks[this.props.id].iri = this.state.iri;
-                let link = graph.getLinks().find(link => link.id === this.props.id);
+                ProjectLinks[this.state.id].sourceCardinality = CardinalityPool[parseInt(this.state.sourceCardinality, 10)];
+                ProjectLinks[this.state.id].targetCardinality = CardinalityPool[parseInt(this.state.targetCardinality, 10)];
+                ProjectLinks[this.state.id].iri = this.state.iri;
+                let link = graph.getLinks().find(link => link.id === this.state.id);
                 if (link) {
                     setLabels(link, getLinkOrVocabElem(this.state.iri).labels[this.props.projectLanguage])
                 }
                 this.setState({changes: false});
-                this.props.save();
-                queries.push(updateProjectLink(true, this.props.id), updateConnections(this.props.id));
+                this.props.save(this.state.id);
+                queries.push(updateProjectLink(true, this.state.id), updateConnections(this.state.id));
             } else {
-                ProjectLinks[this.props.id].sourceCardinality = CardinalityPool[parseInt(this.state.sourceCardinality, 10)];
-                ProjectLinks[this.props.id].targetCardinality = CardinalityPool[parseInt(this.state.targetCardinality, 10)];
-                let link = graph.getLinks().find(link => link.id === this.props.id);
+                ProjectLinks[this.state.id].sourceCardinality = CardinalityPool[parseInt(this.state.sourceCardinality, 10)];
+                ProjectLinks[this.state.id].targetCardinality = CardinalityPool[parseInt(this.state.targetCardinality, 10)];
+                let link = graph.getLinks().find(link => link.id === this.state.id);
                 if (link) {
                     setLabels(link, getLinkOrVocabElem(this.state.iri).labels[this.props.projectLanguage])
                     let underlyingConnections = getUnderlyingFullConnections(link);
@@ -135,17 +140,17 @@ export default class DetailLink extends React.Component<Props, State> {
                             updateConnections(underlyingConnections.src),
                             updateConnections(underlyingConnections.tgt))
                     }
-                    queries.push(updateProjectLink(true, this.props.id));
+                    queries.push(updateProjectLink(true, this.state.id));
                 }
                 this.setState({changes: false});
-                this.props.save();
+                this.props.save(this.state.id);
             }
             this.props.performTransaction(...queries);
         }
     }
 
     render() {
-        return (this.props.id !== "" && this.props.id in ProjectLinks) && (<ResizableBox
+        return (this.state.id !== "" && this.state.id in ProjectLinks) && (<ResizableBox
             width={300}
             height={1000}
             axis={"x"}
@@ -158,7 +163,7 @@ export default class DetailLink extends React.Component<Props, State> {
             className={"details" + (this.props.error ? " disabled" : "")}>
             <div className={(this.props.error ? " disabled" : "")}>
                 <button className={"buttonlink close nounderline"} onClick={() => {
-                    unHighlightCell(this.props.id);
+                    unHighlightCell(this.state.id);
                     this.props.updateDetailPanel();
                 }}><span role="img" aria-label={""}>➖</span></button>
                 <h3><IRILink label={getLinkOrVocabElem(this.state.iri).labels[this.props.projectLanguage]}
@@ -172,7 +177,7 @@ export default class DetailLink extends React.Component<Props, State> {
                         </Card.Header>
                         <Accordion.Collapse eventKey={"0"}>
                             <Card.Body>
-                                {ProjectLinks[this.props.id].type === LinkType.DEFAULT &&
+                                {ProjectLinks[this.state.id].type === LinkType.DEFAULT &&
                                 <TableList>
                                     <tr>
                                         <td className={"first"}>

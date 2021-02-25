@@ -15,8 +15,8 @@ import {abortTransaction, processTransaction} from "../interface/TransactionInte
 import ValidationPanel from "../panels/ValidationPanel";
 import DiagramPanel from "../panels/DiagramPanel";
 import {Locale} from "../config/Locale";
-import {drawGraphElement, unHighlightAll} from "../function/FunctionDraw";
-import {changeDiagrams} from "../function/FunctionDiagram";
+import {drawGraphElement} from "../function/FunctionDraw";
+import {changeDiagrams, resetDiagramSelection} from "../function/FunctionDiagram";
 import {qb} from "../queries/QueryBuilder";
 import {updateProjectLink} from "../queries/UpdateLinkQueries";
 import {updateProjectElement} from "../queries/UpdateElementQueries";
@@ -31,7 +31,6 @@ interface DiagramAppProps {
 
 interface DiagramAppState {
 	detailPanelHidden: boolean;
-	selectedID: string;
 	projectLanguage: string;
 	viewLanguage: string,
 	loading: boolean;
@@ -82,7 +81,6 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 			widthRight: 0,
 			validation: false,
 			retry: false,
-			selectedID: "",
 		});
 		document.title = Locale[ProjectSettings.viewLanguage].ontoGrapher;
 		this.handleChangeLanguage = this.handleChangeLanguage.bind(this);
@@ -206,14 +204,9 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 		this.setState({validation: true});
 	}
 
-	handleUpdateDetailPanel(id: string) {
-		if (id) {
-			this.setState({selectedID: id, widthRight: 300});
-			this.detailPanel.current?.update();
-		} else {
-			this.detailPanel.current?.hide();
-			this.setState({selectedID: "", widthRight: 0});
-		}
+	handleUpdateDetailPanel(id?: string) {
+		if (id) this.detailPanel.current?.update(id);
+		else this.detailPanel.current?.hide();
 	}
 
 	render() {
@@ -230,7 +223,7 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 				}}
 				closeDetailPanel={() => {
 					this.detailPanel.current?.hide();
-					unHighlightAll();
+					resetDiagramSelection();
 				}}
 				error={this.state.error}
 				validate={this.validate}
@@ -246,13 +239,12 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 				error={this.state.error}
 				update={() => {
 					this.detailPanel.current?.hide();
-					unHighlightAll();
+					resetDiagramSelection();
 				}}
 				performTransaction={this.performTransaction}
 				updateDetailPanel={(id: string) => {
 					this.handleUpdateDetailPanel(id);
 				}}
-				selectedID={this.state.selectedID}
 			/>
 			<DiagramPanel
 				error={this.state.error}
@@ -263,7 +255,6 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
 				performTransaction={this.performTransaction}
 			/>
 			<DetailPanel
-				id={this.state.selectedID}
 				error={this.state.error}
 				ref={this.detailPanel}
 				projectLanguage={this.state.projectLanguage}
@@ -284,17 +275,17 @@ export default class DiagramApp extends React.Component<DiagramAppProps, Diagram
                 widthRight={this.state.widthRight}
                 close={() => {
 					this.setState({validation: false});
-					unHighlightAll();
+					resetDiagramSelection();
 				}}
                 projectLanguage={this.state.projectLanguage}
             />}
 			<DiagramCanvas
 				ref={this.canvas}
 				projectLanguage={this.state.projectLanguage}
-				updateElementPanel={() => {
-					this.itemPanel.current?.update();
+				updateElementPanel={(id?: string) => {
+					this.itemPanel.current?.update(id);
 				}}
-				updateDetailPanel={(id: string) => {
+				updateDetailPanel={(id?: string) => {
 					this.handleUpdateDetailPanel(id);
 				}}
 				error={this.state.error}

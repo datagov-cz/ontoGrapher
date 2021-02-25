@@ -5,9 +5,9 @@ import {Locale} from "../../config/Locale";
 interface Props {
 	iri: string;
 	projectLanguage: string;
-	showCheckbox: boolean;
-	handleShowCheckbox: Function;
-	checkboxChecked: boolean;
+	handleSelect: Function;
+	items: string[];
+	visible: boolean;
 }
 
 interface State {
@@ -23,7 +23,8 @@ export default class PackageDivider extends React.Component<Props, State> {
 	}
 
 	render() {
-		return (<div className={"packageDivider"}
+		return (<div className={"packageDivider" + (this.props.visible ? "" : " closed") +
+		(this.props.items.every(elem => ProjectSettings.selectedElements.includes(elem)) ? " selected" : "")}
 					 onMouseOver={() => {
 						 this.setState({hover: true})
 					 }}
@@ -32,21 +33,13 @@ export default class PackageDivider extends React.Component<Props, State> {
 					 }}
 					 onClick={(event) => {
 						 event.stopPropagation();
-						 if (event.shiftKey) {
-							 this.props.handleShowCheckbox();
+						 if (event.ctrlKey) {
+							 this.props.handleSelect();
+							 this.forceUpdate();
 						 }
 					 }}
 		>
-			{(this.props.showCheckbox || this.state.hover) && <span className={"packageOptions"}>
-				<input type="checkbox" checked={this.props.checkboxChecked}
-                       onClick={(event) => {
-						   event.stopPropagation();
-						   this.props.handleShowCheckbox();
-					   }}
-                       onChange={() => {
-					   }}/>
-			</span>}
-			&nbsp;{this.props.iri in Stereotypes ? Stereotypes[this.props.iri].labels[this.props.projectLanguage] : Locale[ProjectSettings.viewLanguage].unsorted}
+			{this.props.iri in Stereotypes ? Stereotypes[this.props.iri].labels[this.props.projectLanguage] : Locale[ProjectSettings.viewLanguage].unsorted}
 		</div>);
 	}
 }

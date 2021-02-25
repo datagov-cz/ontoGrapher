@@ -1,4 +1,4 @@
-import {RestrictionConfig} from "../config/RestrictionConfig";
+import {RestrictionConfig} from "../config/logic/RestrictionConfig";
 
 export class Restriction {
 	public onProperty: string;

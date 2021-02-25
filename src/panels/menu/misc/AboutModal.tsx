@@ -24,7 +24,7 @@ export default class AboutModal extends React.Component<Props, State> {
 						<Tab title={year} key={key++} eventKey={year}>
 							{Object.keys(LocaleChangelog[ProjectSettings.viewLanguage][year]).map((month) =>
 								<div key={key++}>
-									{Object.keys(LocaleChangelog[ProjectSettings.viewLanguage][year][month]).map((day) =>
+									{Object.keys(LocaleChangelog[ProjectSettings.viewLanguage][year][month]).reverse().map((day) =>
 										<div key={key++}>
 											<h6 key={key++}>{`${day}. ${month}.`}</h6>
 											<ul key={key++}>

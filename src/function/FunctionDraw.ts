@@ -4,6 +4,7 @@ import {ProjectElements, ProjectLinks, ProjectSettings, VocabularyElements} from
 import {getStereotypeList, parsePrefix, setElementShape} from "./FunctionEditVars";
 import {Representation} from "../config/Enum";
 import {getElementShape} from "./FunctionGetVars";
+import {ElementColors} from "../config/visual/ElementColors";
 
 export function setDisplayLabel(id: string, languageCode: string) {
 	if (ProjectElements[id].selectedLabel[languageCode] === "") {
@@ -54,16 +55,22 @@ export function drawGraphElement(elem: joint.dia.Element, languageCode: string, 
 	}
 }
 
-export function highlightCell(id: string, color: string = '#0000FF') {
+/**
+ * Colors the cell (link or element border).
+ * @param id ID of colored cell
+ * @param color Color to be used
+ */
+export function highlightCell(id: string, color: string = ElementColors.detail) {
 	let cell = graph.getCell(id);
+	if (!cell) return;
 	if (cell.isLink()) {
 		cell.attr({line: {stroke: color}});
-	} else {
-		if (cell.id) cell.attr({[getElementShape(cell.id)]: {stroke: color}});
+	} else if (cell.id) {
+		cell.attr({[getElementShape(cell.id)]: {stroke: color}});
 	}
 }
 
-export function unHighlightCell(id: string, color: string = '#000000') {
+export function unHighlightCell(id: string, color: string = ElementColors.default) {
 	let cell = graph.getCell(id);
 	if (!cell) return;
 	if (cell.isLink()) {

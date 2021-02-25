@@ -5,7 +5,6 @@ import {
     Diagrams,
     PackageRoot,
     ProjectElements,
-    ProjectLinks,
     ProjectSettings,
     Schemes,
     VocabularyElements
@@ -19,17 +18,28 @@ import {getElementShape, getNewLink} from "../function/FunctionGetVars";
 import NewElemModal from "./NewElemModal";
 import {PackageNode} from "../datatypes/PackageNode";
 import {Representation} from "../config/Enum";
-import {drawGraphElement, highlightCell, unHighlightCell, unHighlightSelected} from "../function/FunctionDraw";
-import {zoomDiagram} from "../function/FunctionDiagram";
-import {updateProjectLinkVertices} from "../queries/UpdateLinkQueries";
+import {drawGraphElement, highlightCell} from "../function/FunctionDraw";
+import {
+    highlightElement,
+    resetDiagramSelection,
+    unhighlightElement,
+    updateDiagramPosition,
+    zoomDiagram
+} from "../function/FunctionDiagram";
 import {updateProjectElement, updateProjectElementDiagram} from "../queries/UpdateElementQueries";
-import {createNewConcept, getElementToolPosition} from "../function/FunctionElem";
+import {
+    createNewConcept,
+    getElementToolPosition,
+    isElementPositionOutdated,
+    moveElements
+} from "../function/FunctionElem";
 import {addLinkTools, saveNewLink, updateVertices} from "../function/FunctionLink";
+import {ElementColors} from "../config/visual/ElementColors";
 
 interface Props {
     projectLanguage: string;
-    updateElementPanel: Function;
-    updateDetailPanel: Function;
+    updateElementPanel: (id?: string) => void;
+    updateDetailPanel: (id?: string) => void;
     error: boolean;
     performTransaction: (...queries: string[]) => void;
 }
@@ -48,7 +58,6 @@ export default class DiagramCanvas extends React.Component<Props, State> {
     private sid: string | undefined;
     private tid: string | undefined;
     private newConceptEvent: { x: number, y: number };
-    private highlightedCells: string[];
     private drawStart: joint.g.Rect | undefined;
 
     constructor(props: Props) {
@@ -64,7 +73,6 @@ export default class DiagramCanvas extends React.Component<Props, State> {
         this.sid = undefined;
         this.tid = undefined;
         this.newConceptEvent = {x: 0, y: 0}
-        this.highlightedCells = [];
         this.drawStart = undefined;
         this.createNewLink = this.createNewLink.bind(this);
     }
@@ -74,8 +82,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
         this.sid = id;
         graph.getElements().forEach(element => {
             if (typeof element.id === "string") {
-                highlightCell(element.id, '#ff7800');
-                this.highlightedCells.push(element.id);
+                highlightElement(element.id, ElementColors.select);
             }
         });
     }
@@ -88,16 +95,13 @@ export default class DiagramCanvas extends React.Component<Props, State> {
             this.sid = undefined;
             this.tid = undefined;
             this.newLink = false;
-            unHighlightSelected(this.highlightedCells);
-            this.highlightedCells = [];
+            resetDiagramSelection();
         }
     }
 
-    updateElement(cell: joint.dia.Cell) {
+    hideElement(cell: joint.dia.Cell) {
         const id = cell.id as string;
-        const find = ProjectSettings.selectedCells.findIndex(elem => elem.id === id);
-        if (find !== -1)
-            ProjectSettings.selectedCells.splice(find, 1);
+        if (ProjectSettings.selectedElements.find(elem => elem === id)) unhighlightElement(id);
         cell.remove();
         ProjectElements[id].hidden[ProjectSettings.selectedDiagram] = true;
         this.props.updateElementPanel();
@@ -128,105 +132,63 @@ export default class DiagramCanvas extends React.Component<Props, State> {
             }
         });
 
+        /**
+         * This handles all the various mouse events on the canvas and the elements within.
+         * For more information on JointJS events visit https://resources.jointjs.com/docs/jointjs/v3.2/joint.html#dia.Paper.events
+         */
         paper.on({
+            /**
+             * Right click on canvas:
+             * open the New Term Modal
+             */
             'blank:contextmenu': (evt) => {
                 evt.preventDefault();
                 if (!this.newLink && PackageRoot.children.find(pkg => !(Schemes[pkg.scheme].readOnly))) {
                     this.setState({modalAddElem: true});
                     this.newConceptEvent = {x: evt.clientX, y: evt.clientY}
                 } else this.newLink = false;
+                resetDiagramSelection();
                 this.props.updateDetailPanel();
-                unHighlightSelected(this.highlightedCells);
-                this.highlightedCells = [];
-                ProjectSettings.selectedLink = "";
             },
             'cell:contextmenu': (cellView, evt) => {
                 evt.preventDefault();
             },
-            'cell:pointerclick': (cellView, evt) => {
-                if (!this.newLink && !evt.ctrlKey) {
-                    const id = cellView.model.id;
-                    this.props.updateDetailPanel(id);
-                    ProjectSettings.selectedCells = [];
-                    unHighlightSelected(this.highlightedCells);
-                    highlightCell(id);
-                    this.highlightedCells = [id];
-                }
-            },
+            /**
+             * Pointer up on element:
+             * If the Control key is held, open the Detail Panel and add it to the selection array
+             * If in relationship creation mode, open the New Relationship Modal
+             * Otherwise if the element position(s) changed, save the change, else open the Detail Panel
+             */
             'element:pointerup': (cellView, evt) => {
                 if (!this.newLink && !(evt.ctrlKey)) {
-                    const iter = ProjectSettings.selectedCells.length > 0 ? ProjectSettings.selectedCells : [cellView.model];
-                    const {
-                        rect, bbox, ox, oy
-                    } = evt.data;
-                    if (rect) rect.remove();
-                    let movedLinks: string[] = [];
-                    let movedElems: string[] = [];
-                    iter.forEach(elem => {
-                        const id = elem.id;
-                        const oldPos = elem.position();
-                        if (bbox && ox && oy && id !== cellView.model.id) {
-                            const diff = new joint.g.Point(bbox.x, bbox.y).difference(ox, oy);
-                            elem.position(oldPos.x + diff.x / Diagrams[ProjectSettings.selectedDiagram].scale, oldPos.y + diff.y / Diagrams[ProjectSettings.selectedDiagram].scale);
-                            for (const link of graph.getConnectedLinks(elem)) {
-                                if (typeof link.id === "string" && !(movedLinks.includes(link.id)) && link.vertices().length > 0) {
-                                    movedLinks.push(link.id);
-                                    link.vertices().forEach((vert, i) => {
-                                        link.vertex(i, {
-                                            x: vert.x + diff.x / Diagrams[ProjectSettings.selectedDiagram].scale,
-                                            y: vert.y + diff.y / Diagrams[ProjectSettings.selectedDiagram].scale
-                                        })
-                                    })
-                                    ProjectLinks[link.id].vertices[ProjectSettings.selectedDiagram] = link.vertices();
-                                }
-                            }
-                        }
-                        const pos = elem.position();
-                        if (pos.x !== ProjectElements[id].position[ProjectSettings.selectedDiagram].x ||
-                            pos.y !== ProjectElements[cellView.model.id].position[ProjectSettings.selectedDiagram].y) {
-                            ProjectElements[id].position[ProjectSettings.selectedDiagram] = pos;
-                            movedElems.push(id);
-                        }
-                    })
-                    let queries: string[] = [];
-                    if (movedElems.length > 0)
-                        queries.push(updateProjectElementDiagram(ProjectSettings.selectedDiagram, ...movedElems));
-                    if (movedLinks.length > 0)
-                        queries.push(updateProjectLinkVertices(ProjectSettings.selectedDiagram, ...movedLinks));
-                    this.props.performTransaction(...queries);
-                }
-            },
-            'element:pointerclick': (cellView, evt) => {
-                ProjectSettings.selectedLink = "";
-                if (this.newLink) {
-                    this.tid = cellView.model.id;
-                    this.setState({modalAddLink: true});
+                    if (isElementPositionOutdated(cellView.model)) {
+                        this.props.performTransaction(...moveElements(cellView.model, evt));
+                    } else {
+                        resetDiagramSelection();
+                        highlightElement(cellView.model.id);
+                        this.props.updateElementPanel(cellView.model.id);
+                        this.props.updateDetailPanel(cellView.model.id);
+                    }
                 } else if (evt.ctrlKey) {
                     this.props.updateDetailPanel();
-                    const find = ProjectSettings.selectedCells.findIndex(elem => elem.id === cellView.model.id);
-                    if (find !== -1) {
-                        ProjectSettings.selectedCells.splice(ProjectSettings.selectedCells.indexOf(cellView.model), 1);
-                        this.highlightedCells.splice(this.highlightedCells.indexOf(cellView.model), 1);
-                        unHighlightCell(cellView.model.id);
-                    } else {
-                        ProjectSettings.selectedCells.push(cellView.model);
-                        this.highlightedCells.push(cellView.model);
-                        highlightCell(cellView.model.id, '#ff9037');
-                    }
-                } else {
-                    unHighlightSelected(ProjectSettings.selectedCells.map(cell => cell.id as string).concat(this.highlightedCells));
-                    highlightCell(cellView.model.id);
-                    ProjectSettings.selectedCells = [];
-                    this.highlightedCells = [cellView.model];
+                    const find = ProjectSettings.selectedElements.findIndex(elem => elem === cellView.model.id);
+                    find !== -1 ? unhighlightElement(cellView.model.id) : highlightElement(cellView.model.id);
+                } else if (this.newLink) {
+                    this.tid = cellView.model.id;
+                    this.setState({modalAddLink: true});
                 }
             },
+            /**
+             * Mouse enter on element:
+             * Show the hide and new relationship buttons (if applicable)
+             */
             'element:mouseenter': (elementView) => {
                 const id = elementView.model.id;
                 const tool = new HideButton({
                     useModelGeometry: false,
                     ...getElementToolPosition(id, true),
                     offset: {x: getElementShape(id) === "bodyTrapezoid" ? -20 : 0, y: 0},
-                    action: () => this.updateElement(elementView.model)
+                    action: () => this.hideElement(elementView.model)
                 })
                 elementView.addTools(new joint.dia.ToolsView({
                     tools: [
@@ -240,20 +202,28 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                         tool]
                 }));
             },
+            /**
+             * Mouse enter on link:
+             * If link is selected, show the delete button (if applicable) and the vertex manipulation tools
+             */
             'link:mouseenter': (linkView) => {
                 if (ProjectSettings.selectedLink === linkView.model.id) addLinkTools(linkView,
                     this.props.performTransaction, this.props.updateElementPanel);
             },
+            /**
+             * Mouse leave on cell:
+             * Remove buttons and tools of cell from view
+             */
             'cell:mouseleave': function (cellView) {
                 cellView.removeTools();
             },
+            /**
+             * Pointer down on canvas:
+             * If the left mouse button is held down: reate the blue selection rectangle
+             * If the middle mouse button or left mouse button + shift key is held down: prepare for canvas panning
+             */
             'blank:pointerdown': (evt, x, y) => {
                 if (evt.button === 0 && (!(evt.shiftKey))) {
-                    ProjectSettings.selectedLink = "";
-                    this.props.updateDetailPanel();
-                    unHighlightSelected(this.highlightedCells);
-                    this.highlightedCells = [];
-                    ProjectSettings.selectedCells = [];
                     const translate = paper.translate();
                     const point = {
                         x: (x * Diagrams[ProjectSettings.selectedDiagram].scale + translate.tx),
@@ -278,10 +248,17 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                     this.drag = {x: x * scale.sx, y: y * scale.sy};
                 }
             },
+            /**
+             * Mouse wheel on canvas: zoom the canvas
+             */
             'blank:mousewheel': (evt, x, y, delta) => {
                 evt.preventDefault();
                 zoomDiagram(x, y, delta);
             },
+            /**
+             * Pointer move on canvas:
+             * Resize the selection box or remove it
+             */
             'blank:pointermove': function (evt, x, y) {
                 const {
                     ox,
@@ -301,9 +278,13 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                     rect.remove();
                 }
             },
+            /**
+             * Pointer down on element:
+             * If applicable, create a box encompassing the currently selected elements
+             */
             'element:pointerdown': (cellView, evt) => {
-                if (evt.button === 0 && ProjectSettings.selectedCells.length > 1 && ProjectSettings.selectedCells.find(elem => elem.id === cellView.model.id) && !(evt.ctrlKey)) {
-                    const cells = graph.getCellsBBox(ProjectSettings.selectedCells);
+                if (evt.button === 0 && ProjectSettings.selectedElements.length > 1 && ProjectSettings.selectedElements.find(elem => elem === cellView.model.id) && !(evt.ctrlKey)) {
+                    const cells = graph.getCellsBBox(ProjectSettings.selectedElements.map(elem => graph.getCell(elem)).filter(cell => cell));
                     if (cells) {
                         const bbox = new joint.g.Rect(
                             cells.x * Diagrams[ProjectSettings.selectedDiagram].scale + Diagrams[ProjectSettings.selectedDiagram].origin.x,
@@ -327,9 +308,13 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                     }
                 }
             },
+            /**
+             * Pointer move on element:
+             * If applicable, change the move selection box
+             */
             'element:pointermove': (cellView, evt) => {
-                if (evt.button === 0 && ProjectSettings.selectedCells.length !== 0 &&
-                    ProjectSettings.selectedCells.find(elem => elem.id === cellView.model.id)) {
+                if (evt.button === 0 && ProjectSettings.selectedElements.length > 1 &&
+                    ProjectSettings.selectedElements.find(elem => elem === cellView.model.id)) {
                     const {rect, bbox, ox, oy} = evt.data;
                     if (rect && bbox && ox && oy) {
                         const newBbox = new joint.g.Rect(
@@ -344,12 +329,17 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                     }
                 }
             },
+            /**
+             * Pointer up on canvas:
+             * If panning, save the diagram position
+             * Perform selection based on the selection box
+             */
             'blank:pointerup': (evt) => {
-                Diagrams[ProjectSettings.selectedDiagram].origin = {
-                    x: paper.translate().tx, y: paper.translate().ty
-                };
+                updateDiagramPosition(ProjectSettings.selectedDiagram);
                 this.drag = undefined;
                 if (evt.button === 0 && (!(evt.shiftKey))) {
+                    this.props.updateDetailPanel();
+                    resetDiagramSelection();
                     const {
                         rect,
                         bbox
@@ -364,22 +354,31 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                             bbox.width / Diagrams[ProjectSettings.selectedDiagram].scale,
                             bbox.height / Diagrams[ProjectSettings.selectedDiagram].scale);
                         paper.findViewsInArea(area).forEach((elem) => {
-                            ProjectSettings.selectedCells.push(elem.model);
-                            if (typeof elem.model.id === "string") {
-                                this.highlightedCells.push(elem.model.id);
-                                highlightCell(elem.model.id, '#ff9037');
-                            }
+                            const id = elem.model.id as string;
+                            highlightElement(id);
                         });
+                        this.props.updateElementPanel();
                     }
                 }
             },
+            /**
+             * Pointer click on link:
+             * Highlight link and open the Detail panel
+             */
             'link:pointerclick': (linkView) => {
+                resetDiagramSelection();
                 ProjectSettings.selectedLink = linkView.model.id;
                 addLinkTools(linkView,
                     this.props.performTransaction, this.props.updateElementPanel);
+                highlightCell(linkView.model.id);
+                this.props.updateDetailPanel(linkView.model.id);
             },
+            /**
+             * Pointer up on link:
+             * Save changes of link vertices
+             */
             'link:pointerup': (cellView) => {
-                const id = cellView.model.id;
+                let id = cellView.model.id;
                 let link = cellView.model;
                 link.findView(paper).removeRedundantLinearVertices();
                 this.props.performTransaction(...updateVertices(id, link.vertices()));
@@ -410,7 +409,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                     let queries: string[] = [];
                     const data = JSON.parse(event.dataTransfer.getData("newClass"));
                     const matrixDimension = Math.ceil(Math.sqrt(data.id.length));
-                    data.id.forEach((id: string, i: number) => {
+                    data.id.filter((id: string) => !(graph.getCell(id))).forEach((id: string, i: number) => {
                         let cls = new graphElement({id: id});
                         drawGraphElement(cls, ProjectSettings.selectedLanguage, ProjectSettings.representation);
                         const point = paper.clientToLocalPoint({x: event.clientX, y: event.clientY});
@@ -450,8 +449,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                     if (selectedLink && this.sid && this.tid) this.saveNewLink(selectedLink);
                     else {
                         this.newLink = false;
-                        unHighlightSelected(this.highlightedCells);
-                        this.highlightedCells = [];
+                        resetDiagramSelection();
                     }
                 }}/>
             <NewElemModal

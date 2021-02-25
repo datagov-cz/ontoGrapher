@@ -6,15 +6,12 @@ interface Props {
 	id: string;
 	update: Function;
 	openRemoveItem: Function;
-	selectedItems: string[];
-	showCheckbox: boolean;
-	handleShowCheckbox: Function;
-	checkboxChecked: boolean;
+	handleSelect: Function;
 	clearSelection: Function;
 	showDetails: Function;
-	selectedID: string;
 	readOnly: boolean;
 	projectLanguage: string;
+	visible: boolean;
 }
 
 interface State {
@@ -62,8 +59,8 @@ export default class PackageItem extends React.Component<Props, State> {
 				 onDragStart={(event) => {
 					 event.dataTransfer.setData("newClass", JSON.stringify({
 						 type: "existing",
-						 id: this.props.selectedItems.length > 0 ? this.props.selectedItems : [this.props.id],
-						 iri: this.props.selectedItems.length > 0 ? this.props.selectedItems.map(id => ProjectElements[id].iri) : [ProjectElements[this.props.id].iri]
+						 id: ProjectSettings.selectedElements.length > 0 ? ProjectSettings.selectedElements : [this.props.id],
+						 iri: ProjectSettings.selectedElements.length > 0 ? ProjectSettings.selectedElements.map(id => ProjectElements[id].iri) : [ProjectElements[this.props.id].iri]
 					 }));
 				 }}
 				 onDragEnd={() => {
@@ -71,11 +68,9 @@ export default class PackageItem extends React.Component<Props, State> {
 				 }}
 				 onClick={(event) => {
 					 event.stopPropagation();
-					 if (event.shiftKey) {
-						 this.props.handleShowCheckbox();
-					 } else {
-						 this.props.showDetails(this.props.id);
-					 }
+					 if (event.ctrlKey) this.props.handleSelect();
+					 else this.props.clearSelection();
+					 this.props.showDetails(this.props.id);
 				 }}
 				 onMouseOver={() => {
 					 this.setState({hover: true})
@@ -83,27 +78,21 @@ export default class PackageItem extends React.Component<Props, State> {
 				 onMouseLeave={() => {
 					 this.setState({hover: false})
 				 }}
-				 className={"stereotypeElementItem" + (this.isHidden() ? " hidden" : "") + (this.props.id === this.props.selectedID ? " selected" : "")}>
-				{(this.props.showCheckbox || this.state.hover) &&
-                <span><input type="checkbox" checked={this.props.checkboxChecked}
-                             onClick={(event) => {
-								 event.stopPropagation();
-								 this.props.handleShowCheckbox()
-							 }}
-                             onChange={() => {
-							 }}
-                />&nbsp;</span>}
+				 id={this.props.id}
+				 className={"stereotypeElementItem" + (this.isHidden() ? " hidden" : "") + (this.props.visible ? "" : " closed") +
+				 (ProjectSettings.selectedElements.includes(this.props.id) ? " selected" : "")}
+			>
 				{this.getLabel()}
 				{(this.isHidden() ? hiddenSVG : <span/>)}
-				{(this.props.showCheckbox || this.state.hover) &&
+				{(this.state.hover && !(this.props.readOnly)) &&
                 <span className={"packageOptions right"}>
-						{(this.state.hover && !(this.props.readOnly)) && <button className={"buttonlink"}
-                                                                                 onClick={(event) => {
-																					 event.stopPropagation();
-																					 this.props.openRemoveItem();
-																				 }}><span role="img"
-                                                                                          aria-label={""}>❌</span>
-                        </button>}
+						<button className={"buttonlink"}
+                                onClick={(event) => {
+									event.stopPropagation();
+									this.props.openRemoveItem();
+								}}><span role="img"
+                                         aria-label={""}>❌</span>
+                        </button>
                     </span>
 				}
 			</div>

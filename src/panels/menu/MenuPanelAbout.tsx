@@ -24,7 +24,7 @@ export default class MenuPanelAbout extends React.Component<Props, State> {
     getLastChangeDay() {
         const year: string = Object.keys(enChangelog)[0];
         const month: string = Object.keys(enChangelog[year])[0];
-        const day: string = Object.keys(enChangelog[year][month])[0];
+        const day: string = Object.keys(enChangelog[year][month]).reverse()[0];
         return `${day}. ${month}.`
     }
 

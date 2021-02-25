@@ -2,7 +2,7 @@ import {Links, ProjectElements, ProjectLinks, Schemes, VocabularyElements} from 
 import {LinkType} from "../config/Enum";
 import {parsePrefix} from "../function/FunctionEditVars";
 import {qb} from "./QueryBuilder";
-import {LinkConfig} from "../config/LinkConfig";
+import {LinkConfig} from "../config/logic/LinkConfig";
 import {DELETE, INSERT} from "@tpluscode/sparql-builder";
 
 export function updateDefaultLink(id: string): string {

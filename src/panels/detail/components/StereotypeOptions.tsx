@@ -2,7 +2,7 @@ import React from 'react';
 import {Form} from "react-bootstrap";
 import {ProjectSettings, Stereotypes} from "../../../config/Variables";
 import {getName} from "../../../function/FunctionEditVars";
-import {Shapes} from "../../../config/Shapes";
+import {Shapes} from "../../../config/visual/Shapes";
 import {Locale} from "../../../config/Locale";
 
 interface Props {

@@ -1,6 +1,6 @@
 import React from 'react';
 import {Dropdown} from 'react-bootstrap';
-import {ColorPool} from "../../../config/ColorPool";
+import {ColorPool} from "../../../config/visual/ColorPool";
 import {ProjectSettings} from "../../../config/Variables";
 import {graph} from "../../../graph/Graph";
 import {setSchemeColors} from "../../../function/FunctionGetVars";

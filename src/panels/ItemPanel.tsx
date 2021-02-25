@@ -1,15 +1,7 @@
 import React from 'react';
 import {ResizableBox} from "react-resizable";
-import {
-	Diagrams,
-	PackageRoot,
-	ProjectElements,
-	ProjectSettings,
-	Schemes,
-	VocabularyElements
-} from "../config/Variables";
+import {PackageRoot, ProjectElements, ProjectSettings, Schemes, VocabularyElements} from "../config/Variables";
 import PackageFolder from "./element/PackageFolder";
-import {PackageNode} from "../datatypes/PackageNode";
 import PackageItem from "./element/PackageItem";
 import {getLabelOrBlank} from "../function/FunctionGetVars";
 import ModalRemoveItem from "./modal/ModalRemoveItem";
@@ -17,18 +9,22 @@ import {Form, InputGroup} from 'react-bootstrap';
 import {parsePrefix} from "../function/FunctionEditVars";
 import {Representation} from "../config/Enum";
 import PackageDivider from "./element/PackageDivider";
-import {Shapes} from "../config/Shapes";
 import {Locale} from "../config/Locale";
 import {graph} from "../graph/Graph";
 import {paper} from "../main/DiagramCanvas";
-import {unHighlightAll} from "../function/FunctionDraw";
+import {
+	highlightElement,
+	resetDiagramSelection,
+	unhighlightElement,
+	updateDiagramPosition
+} from "../function/FunctionDiagram";
+import {Shapes} from "../config/visual/Shapes";
 
 interface Props {
 	projectLanguage: string;
 	performTransaction: (...queries: string[]) => void;
 	handleWidth: Function;
 	updateDetailPanel: Function;
-	selectedID: string;
 	error: boolean;
 	update: Function;
 }
@@ -36,16 +32,8 @@ interface Props {
 interface State {
 	filter: string[];
 	search: string;
-	modalEditPackage: boolean;
-	modalRemoveDiagram: boolean;
 	modalRemoveItem: boolean;
-	modalRemovePackage: boolean;
-	modalRenameDiagram: boolean;
 	selectedID: string;
-	selectedDiagram: number;
-	selectedNode: PackageNode;
-	selectionMode: boolean;
-	selectedItems: string[];
 }
 
 export default class ItemPanel extends React.Component<Props, State> {
@@ -55,37 +43,31 @@ export default class ItemPanel extends React.Component<Props, State> {
 		this.state = {
 			filter: [],
 			search: "",
-			modalEditPackage: false,
-			modalRemoveDiagram: false,
 			modalRemoveItem: false,
-			modalRemovePackage: false,
-			modalRenameDiagram: false,
 			selectedID: "",
-			selectedDiagram: 0,
-			selectedNode: PackageRoot,
-			selectionMode: false,
-			selectedItems: []
 		};
-		this.handleChangeSelect = this.handleChangeSelect.bind(this);
 		this.handleChangeSearch = this.handleChangeSearch.bind(this);
 	}
 
-	update() {
+	showItem(id: string) {
+		PackageRoot.children.forEach(pkg => {
+			if (!(pkg.open))
+				pkg.open = pkg.elements.includes(id);
+		});
+		this.setState({selectedID: id}, () => {
+			const itemElement = document.getElementById(this.state.selectedID);
+			if (itemElement) {
+				itemElement.scrollIntoView({behavior: "smooth", block: "center"});
+			}
+		});
+	}
+
+	update(id?: string) {
+		if (id) this.showItem(id);
 		this.forceUpdate();
 	}
 
-	handleChangeSelect(event: any) {
-		let result = [];
-		if (Array.isArray(event)) {
-			for (let e of event) {
-				result.push(e.value);
-			}
-		}
-		this.setState({filter: result});
-		this.forceUpdate();
-    }
-
-    handleChangeSearch(event: React.ChangeEvent<HTMLSelectElement>) {
+	handleChangeSearch(event: React.ChangeEvent<HTMLSelectElement>) {
 		PackageRoot.children.forEach(pkg => pkg.open = !(event.currentTarget.value === ""));
 		this.setState({search: event.currentTarget.value});
 		this.forceUpdate();
@@ -143,26 +125,24 @@ export default class ItemPanel extends React.Component<Props, State> {
 					packageItems.push(<PackageDivider
 						key={Object.keys(Shapes).includes(key) ? key : ""}
 						iri={Object.keys(Shapes).includes(key) ? key : ""}
+						items={slice}
+						visible={node.open}
 						projectLanguage={this.props.projectLanguage}
-						checkboxChecked={slice.every(elem => this.state.selectedItems.includes(elem))}
-						handleShowCheckbox={() => {
-							const items = this.state.selectedItems;
-							if (slice.every(elem => this.state.selectedItems.includes(elem))) {
-								slice.forEach(elem =>
-									items.splice(this.state.selectedItems.indexOf(elem), 1))
-							} else {
-								slice.forEach(elem => items.push(elem))
-							}
-							this.setState({selectedItems: items, selectionMode: items.length > 0});
+						handleSelect={() => {
+							if (slice.every(id => ProjectSettings.selectedElements.includes(id)))
+								ProjectSettings.selectedElements
+									.filter(elem => (slice.includes(elem)))
+									.forEach(elem => unhighlightElement(elem));
+							else slice.forEach(elem => highlightElement(elem));
+							this.forceUpdate();
 						}}
-						showCheckbox={this.state.selectionMode}
 					/>);
 				}
 				for (const id of categories[key]) {
 					packageItems.push(<PackageItem
 						key={id}
 						id={id}
-						selectedID={this.props.selectedID}
+						visible={node.open}
 						projectLanguage={this.props.projectLanguage}
 						readOnly={(node.scheme ? Schemes[node.scheme].readOnly : true)}
 						update={() => {
@@ -174,24 +154,18 @@ export default class ItemPanel extends React.Component<Props, State> {
 								modalRemoveItem: true
 							})
 						}}
-						checkboxChecked={this.state.selectedItems.includes(id)}
-						handleShowCheckbox={() => {
-							let items = this.state.selectedItems
-							if (items.includes(id)) {
-								items.splice(items.indexOf(id), 1)
-							} else {
-								items.push(id);
-							}
-							this.setState({selectedItems: items, selectionMode: (items.length > 0)})
+						handleSelect={() => {
+							if (ProjectSettings.selectedElements.includes(id))
+								unhighlightElement(id)
+							else highlightElement(id);
+							this.forceUpdate();
 						}}
-						showCheckbox={this.state.selectionMode}
-						selectedItems={this.state.selectedItems}
 						clearSelection={() => {
-							this.setState({selectedItems: [], selectionMode: false})
+							resetDiagramSelection();
+							this.forceUpdate();
 						}}
 						showDetails={() => {
-							unHighlightAll();
-							ProjectSettings.selectedCells = [];
+							highlightElement(id);
 							this.props.updateDetailPanel(id);
 							let elem = graph.getElements().find(elem => elem.id === id);
 							if (elem) {
@@ -199,12 +173,9 @@ export default class ItemPanel extends React.Component<Props, State> {
 								paper.translate(0, 0);
 								paper.translate((-elem.position().x * scale) + (paper.getComputedSize().width / 2) - elem.getBBox().width,
 									(-elem.position().y * scale) + (paper.getComputedSize().height / 2) - elem.getBBox().height);
-								Diagrams[ProjectSettings.selectedDiagram].origin = {
-									x: paper.translate().tx,
-									y: paper.translate().ty
-								};
-								Diagrams[ProjectSettings.selectedDiagram].scale = paper.scale().sx;
+								updateDiagramPosition(ProjectSettings.selectedDiagram);
 							}
+							this.forceUpdate();
 						}}
 					/>)
 				}
@@ -217,35 +188,15 @@ export default class ItemPanel extends React.Component<Props, State> {
 					update={() => {
 						this.forceUpdate();
 					}}
-					openEditPackage={() => {
-						this.setState({
-							selectedNode: node,
-							modalEditPackage: true
-						})
-					}}
-					openRemovePackage={() => {
-						this.setState({
-							selectedNode: node,
-							modalRemovePackage: true
-						})
-					}}
 					readOnly={node.scheme ? Schemes[node.scheme].readOnly : false}
-					checkboxChecked={node.elements.every(elem => this.state.selectedItems.includes(elem))}
-					handleShowCheckbox={() => {
-						let items = this.state.selectedItems;
-						if (node.elements.every(elem => this.state.selectedItems.includes(elem))) {
-							node.elements.forEach(elem =>
-								items.splice(this.state.selectedItems.indexOf(elem), 1)
-							)
-							this.setState({selectedItems: items});
-						} else {
-							node.elements.forEach(elem =>
-								items.push(elem)
-							)
-						}
-						this.setState({selectedItems: items, selectionMode: items.length > 0});
+					handleSelect={() => {
+						if (node.elements.every(id => ProjectSettings.selectedElements.includes(id)))
+							ProjectSettings.selectedElements
+								.filter(elem => (node.elements.includes(elem)))
+								.forEach(elem => unhighlightElement(elem));
+						else node.elements.forEach(elem => highlightElement(elem));
+						this.forceUpdate();
 					}}
-					showCheckbox={this.state.selectionMode}
 				>{packageItems}</PackageFolder>);
 		}
 		return result;
@@ -260,39 +211,39 @@ export default class ItemPanel extends React.Component<Props, State> {
 				handleSize={[8, 8]}
 				onResizeStop={(e, d) => this.props.handleWidth(d.size.width)}
 			>
-				<InputGroup>
-					<InputGroup.Prepend>
-						<InputGroup.Text id="inputGroupPrepend">
-							<span role="img"
-								  aria-label={Locale[ProjectSettings.viewLanguage].searchStereotypes}>🔎</span></InputGroup.Text>
-					</InputGroup.Prepend>
-					<Form.Control
-						type="search"
-						id={"searchInput"}
-						placeholder={Locale[ProjectSettings.viewLanguage].searchStereotypes}
-						aria-describedby="inputGroupPrepend"
-						value={this.state.search}
-						onChange={this.handleChangeSearch}
+				<div>
+					<InputGroup>
+						<InputGroup.Prepend>
+							<InputGroup.Text id="inputGroupPrepend">
+								<span role="img"
+									  aria-label={Locale[ProjectSettings.viewLanguage].searchStereotypes}>🔎</span></InputGroup.Text>
+						</InputGroup.Prepend>
+						<Form.Control
+							type="search"
+							id={"searchInput"}
+							placeholder={Locale[ProjectSettings.viewLanguage].searchStereotypes}
+							aria-describedby="inputGroupPrepend"
+							value={this.state.search}
+							onChange={this.handleChangeSearch}
+						/>
+					</InputGroup>
+					<div className={"elementLinkList"}>
+						{this.getFolders()}
+					</div>
+					<ModalRemoveItem
+						modal={this.state.modalRemoveItem}
+						id={this.state.selectedID}
+						close={() => {
+							this.setState({modalRemoveItem: false});
+						}}
+						update={() => {
+							this.forceUpdate();
+							this.props.update();
+						}}
+						performTransaction={this.props.performTransaction}
 					/>
-				</InputGroup>
-				<div className={"elementLinkList" + (this.props.error ? " disabled" : "")}>
-					{this.getFolders()}
 				</div>
-
-				<ModalRemoveItem
-					modal={this.state.modalRemoveItem}
-					id={this.state.selectedID}
-					close={() => {
-						this.setState({modalRemoveItem: false});
-					}}
-					update={() => {
-						this.forceUpdate();
-						this.props.update();
-					}}
-					performTransaction={this.props.performTransaction}
-				/>
-
 			</ResizableBox>
-        );
-    }
+		);
+	}
 }

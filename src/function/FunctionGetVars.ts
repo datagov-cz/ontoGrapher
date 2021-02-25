@@ -8,10 +8,10 @@ import {
 	VocabularyElements
 } from "../config/Variables";
 import {initLanguageObject, parsePrefix} from "./FunctionEditVars";
-import {ColorPool} from "../config/ColorPool";
-import {Shapes} from "../config/Shapes";
+import {ColorPool} from "../config/visual/ColorPool";
+import {Shapes} from "../config/visual/Shapes";
 import * as joint from "jointjs";
-import {LinkConfig} from "../config/LinkConfig";
+import {LinkConfig} from "../config/logic/LinkConfig";
 import {mvp1IRI, mvp2IRI} from "./FunctionGraph";
 
 export function getVocabElementByElementID(id: string): { [key: string]: any } {
@@ -35,7 +35,7 @@ export function isElemReadOnlyByIRI(iri: string): boolean {
 }
 
 export function checkLabels() {
-    for (const link in Links) {
+	for (const link in Links) {
 		if (!(Links[link].labels[Object.keys(Languages)[0]])) {
 			const label = link.lastIndexOf('/');
 			Links[link].labels = initLanguageObject(link.substring(label + 1));

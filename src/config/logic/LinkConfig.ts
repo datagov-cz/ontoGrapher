@@ -1,10 +1,10 @@
 import * as joint from 'jointjs';
-import {initLanguageObject} from "../function/FunctionEditVars"
-import {generalizationLink} from "../graph/uml/GeneralizationLink";
-import {LinkType} from "./Enum";
-import {updateDefaultLink, updateGeneralizationLink} from "../queries/UpdateConnectionQueries";
+import {initLanguageObject} from "../../function/FunctionEditVars"
+import {generalizationLink} from "../../graph/uml/GeneralizationLink";
+import {LinkType} from "../Enum";
+import {updateDefaultLink, updateGeneralizationLink} from "../../queries/UpdateConnectionQueries";
 
-export var LinkConfig: {
+export const LinkConfig: {
 	[key: number]: {
 		id: string,
 		update: (id: string) => string,
@@ -31,3 +31,5 @@ export var LinkConfig: {
 		update: (id: string) => updateGeneralizationLink(id)
 	}
 };
+
+Object.freeze(LinkConfig);

@@ -6,7 +6,10 @@ import {PackageNode} from "../datatypes/PackageNode";
 import {graphElement} from "../graph/GraphElement";
 import {addClass, addVocabularyElement, createNewElemIRI} from "./FunctionCreateVars";
 import {parsePrefix} from "./FunctionEditVars";
-import {ProjectElements, ProjectSettings, VocabularyElements} from "../config/Variables";
+import {Diagrams, ProjectElements, ProjectLinks, ProjectSettings, VocabularyElements} from "../config/Variables";
+import * as joint from "jointjs";
+import {updateProjectElementDiagram} from "../queries/UpdateElementQueries";
+import {updateProjectLinkVertices} from "../queries/UpdateLinkQueries";
 
 export function resizeElem(id: string) {
 	let view = paper.findViewByModel(id);
@@ -68,4 +71,69 @@ export function getElementToolPosition(id: string | number, topRight: boolean = 
 		default:
 			return topRight ? {x: '100%', y: 0} : {x: 0, y: 0};
 	}
+}
+
+/**
+ * Checks if the position of the element on the canvas differs from the position saved in the model.
+ * @param elem The element to check
+ */
+export function isElementPositionOutdated(elem: joint.dia.Element) {
+	const position = elem.position();
+	const id = elem.id;
+	return position.x !== ProjectElements[id].position[ProjectSettings.selectedDiagram].x ||
+		position.y !== ProjectElements[id].position[ProjectSettings.selectedDiagram].y
+}
+
+/**
+ * Moves elements on the canvas along with affected links (if applicable).
+ * This function is to be called on a 'element:pointerup' event.
+ * Returns update queries (to be pushed into the remote DB).
+ * @param sourceElem ID of event source.
+ * @param evt Mouse event.
+ */
+export function moveElements(sourceElem: joint.dia.Element, evt: JQuery.MouseUpEvent): string[] {
+	// get the selection rectangle data
+	const {
+		rect, bbox, ox, oy
+	} = evt.data;
+	const sourceID = sourceElem.id as string;
+	if (rect) rect.remove();
+	const movedLinks: string[] = [];
+	const movedElems: string[] = [sourceID];
+	ProjectElements[sourceID].position[ProjectSettings.selectedDiagram] = sourceElem.position();
+	for (const id of ProjectSettings.selectedElements) {
+		const elem = graph.getElements().find(elem => elem.id === id);
+		if (elem && id !== sourceID && bbox && ox && oy) {
+			// calculate and save the new element positions
+			const oldPos = elem.position();
+			const diff = new joint.g.Point(bbox.x, bbox.y).difference(ox, oy);
+			elem.position(oldPos.x + diff.x / Diagrams[ProjectSettings.selectedDiagram].scale,
+				oldPos.y + diff.y / Diagrams[ProjectSettings.selectedDiagram].scale);
+			// generate queries only if the position changed
+			if (isElementPositionOutdated(elem)) {
+				ProjectElements[id].position[ProjectSettings.selectedDiagram] = elem.position();
+				movedElems.push(id);
+				for (const link of graph.getConnectedLinks(elem)) {
+					// if there are any connected links with vertices, calculate and save the new vertex positions
+					const linkID = link.id as string;
+					if (!(movedLinks.includes(linkID)) && link.vertices().length > 0) {
+						movedLinks.push(linkID);
+						link.vertices().forEach((vert, i) => {
+							link.vertex(i, {
+								x: vert.x + diff.x / Diagrams[ProjectSettings.selectedDiagram].scale,
+								y: vert.y + diff.y / Diagrams[ProjectSettings.selectedDiagram].scale
+							})
+						})
+						ProjectLinks[linkID].vertices[ProjectSettings.selectedDiagram] = link.vertices();
+					}
+				}
+			}
+		}
+	}
+	const queries: string[] = [];
+	if (movedElems.length > 0)
+		queries.push(updateProjectElementDiagram(ProjectSettings.selectedDiagram, ...movedElems));
+	if (movedLinks.length > 0)
+		queries.push(updateProjectLinkVertices(ProjectSettings.selectedDiagram, ...movedLinks));
+	return queries;
 }

@@ -142,7 +142,7 @@ export var ProjectSettings: {
     viewItemPanelTypes: boolean,
     viewLanguage: string,
     defaultCardinality: Cardinality,
-    selectedCells: joint.dia.Element[];
+    selectedElements: string[];
 } = {
     name: {},
     description: {},
@@ -162,7 +162,7 @@ export var ProjectSettings: {
     viewItemPanelTypes: true,
     viewLanguage: "en",
     defaultCardinality: new Cardinality("0", "*"),
-    selectedCells: []
+    selectedElements: []
 };
 
 export var CardinalityPool: Cardinality[] = [

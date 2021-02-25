@@ -1,7 +1,7 @@
 import {Diagrams, ProjectElements, ProjectLinks, ProjectSettings} from "../config/Variables";
 import {graphElement} from "../graph/GraphElement";
 import {graph} from "../graph/Graph";
-import {drawGraphElement} from "./FunctionDraw";
+import {drawGraphElement, highlightCell, unHighlightCell, unHighlightSelected} from "./FunctionDraw";
 import {restoreHiddenElem, setRepresentation} from "./FunctionGraph";
 import {Representation} from "../config/Enum";
 import {paper} from "../main/DiagramCanvas";
@@ -56,10 +56,7 @@ export function centerDiagram() {
     }
     paper.translate(-(x / graph.getElements().length * scale) + (paper.getComputedSize().width / 2),
         -(y / graph.getElements().length * scale) + (paper.getComputedSize().height / 2));
-    Diagrams[ProjectSettings.selectedDiagram].origin = {
-        x: -(x / graph.getElements().length * scale) + (paper.getComputedSize().width / 2),
-        y: -(y / graph.getElements().length * scale) + (paper.getComputedSize().height / 2)
-    };
+    updateDiagramPosition(ProjectSettings.selectedDiagram);
 }
 
 export function zoomDiagram(x: number, y: number, delta: number) {
@@ -70,10 +67,49 @@ export function zoomDiagram(x: number, y: number, delta: number) {
         paper.translate(oldTranslate.tx + (x * (oldScale - nextScale)),
             oldTranslate.ty + (y * (oldScale - nextScale)));
         paper.scale(nextScale, nextScale);
-        Diagrams[ProjectSettings.selectedDiagram].origin = {
-            x: oldTranslate.tx + (x * (oldScale - nextScale)),
-            y: oldTranslate.ty + (y * (oldScale - nextScale))
-        };
-        Diagrams[ProjectSettings.selectedDiagram].scale = nextScale;
+        updateDiagramPosition(ProjectSettings.selectedDiagram);
     }
+}
+
+/**
+ * Saves the diagram position and scale information.
+ * @param diagram The diagram to be updated
+ */
+export function updateDiagramPosition(diagram: number) {
+    Diagrams[diagram].origin = {
+        x: paper.translate().tx,
+        y: paper.translate().ty
+    };
+    Diagrams[diagram].scale = paper.scale().sx;
+}
+
+/**
+ *  Resets the diagram's selections (deselects the link and/or the elements selected).
+ */
+export function resetDiagramSelection() {
+    unHighlightCell(ProjectSettings.selectedLink);
+    unHighlightSelected(ProjectSettings.selectedElements);
+    ProjectSettings.selectedLink = "";
+    ProjectSettings.selectedElements = [];
+}
+
+/**
+ * Higlights the element (colors the border of it and adds it to the list of selected elements).
+ * @param id ID of the element to highlight
+ * @param color (optional) Color with which to paint the border of the element
+ */
+export function highlightElement(id: string, color?: string) {
+    if (!(ProjectSettings.selectedElements.includes(id)))
+        ProjectSettings.selectedElements.push(id);
+    highlightCell(id, color);
+}
+
+/**
+ * Unhighlights the element (restores the original border color and removes it from the list of selected elements).
+ * @param id ID of the element to unhighlight
+ */
+export function unhighlightElement(id: string) {
+    const index = ProjectSettings.selectedElements.indexOf(id);
+    if (index !== -1) ProjectSettings.selectedElements.splice(index, 1);
+    unHighlightCell(id);
 }

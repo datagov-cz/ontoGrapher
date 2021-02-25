@@ -1,6 +1,6 @@
 import {ProjectElements, ProjectLinks, ProjectSettings} from "../config/Variables";
 import {qb} from "./QueryBuilder";
-import {LinkConfig} from "../config/LinkConfig";
+import {LinkConfig} from "../config/logic/LinkConfig";
 import {DELETE, INSERT} from "@tpluscode/sparql-builder";
 
 export function updateProjectLinkVertex(id: string, vertices: number[], diagram: number): string {
