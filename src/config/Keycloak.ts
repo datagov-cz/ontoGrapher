@@ -1,6 +1,5 @@
 import Keycloak from 'keycloak-js';
-import {Environment} from "./Variables";
-import {getKeycloakAuthenticationURL, getKeycloakRealm} from "../function/FunctionGetVars";
+import {Environment, getKeycloakAuthenticationURL, getKeycloakRealm} from "./Environment";
 
 const keycloakConfig = {
 	url: getKeycloakAuthenticationURL(),

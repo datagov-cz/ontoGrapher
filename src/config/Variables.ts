@@ -4,8 +4,7 @@ import {initLanguageObject} from "../function/FunctionEditVars";
 import {Restriction} from "../datatypes/Restriction";
 import {Representation} from "./Enum";
 import * as joint from "jointjs";
-import {Components} from "../datatypes/Components";
-import {getComponentsVariable, getEnvironmentVariable} from "../function/FunctionGetVars";
+import {Environment} from "./Environment";
 
 // language code : language label
 export var Languages: { [key: string]: string } = {};
@@ -124,31 +123,6 @@ export var Stereotypes: {
 export var Diagrams: { name: string, active: boolean, origin: { x: number, y: number }, scale: number }[] = [
     {name: "Untitled", active: true, origin: {x: 0, y: 0}, scale: 1}
 ];
-
-export const ENV = {
-    ...Object.keys(process.env).reduce<Record<string, string>>((acc, key) => {
-        const strippedKey = key.replace('REACT_APP_', '')
-        acc[strippedKey] = process.env[key]!
-        return acc
-    }, {}),
-    ...(window as any).__config__,
-}
-
-export const Environment: {
-    // JSON object of other components in the vocabulary development pipeline software kit
-    components: Components
-    // Production / development context
-    context: string,
-    // ID of the application (for identification and authentication)
-    id: string,
-    // URL of the deployment
-    url: string
-} = {
-    components: getComponentsVariable('COMPONENTS'),
-    context: getEnvironmentVariable('CONTEXT'),
-    id: getEnvironmentVariable('ID'),
-    url: getEnvironmentVariable('URL'),
-}
 
 export var ProjectSettings: {
     name: { [key: string]: string },

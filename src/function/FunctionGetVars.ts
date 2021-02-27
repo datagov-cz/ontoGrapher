@@ -1,6 +1,4 @@
 import {
-	ENV,
-	Environment,
 	Languages,
 	Links,
 	ProjectElements,
@@ -15,10 +13,6 @@ import {Shapes} from "../config/Shapes";
 import * as joint from "jointjs";
 import {LinkConfig} from "../config/LinkConfig";
 import {mvp1IRI, mvp2IRI} from "./FunctionGraph";
-import {Components} from "../datatypes/Components";
-import {Locale} from "../config/Locale";
-import isUrl from "is-url";
-import yaml from 'yaml';
 
 export function getVocabElementByElementID(id: string): { [key: string]: any } {
 	return VocabularyElements[ProjectElements[id].iri];
@@ -117,53 +111,6 @@ export function getUnderlyingFullConnections(link: joint.dia.Link): { src: strin
 		}
 		return;
 	}
-}
-
-/**
- * Checks if the given environment variable exists.
- * @param variableKey The environment variable to get
- */
-export function getEnvironmentVariable(variableKey: string): string {
-	const variable = ENV[variableKey];
-	if (variable) return variable;
-	else throw new Error(`Error: environment variable ${variableKey} not found`);
-}
-
-/**
- * Attempts to retrieve the Components JSON from the environment variable.
- * Expects a YAML format encoded in a base64 string, which is then parsed as an object.
- * @param variableKey The environment variable to get
- */
-export function getComponentsVariable(variableKey: string): Components {
-	try {
-		const componentString = getEnvironmentVariable(variableKey);
-		const componentDecoded = new TextDecoder('utf-8').decode(
-			Uint8Array.from(atob(componentString), (c) => c.charCodeAt(0))
-		)
-		return yaml.parse(componentDecoded);
-	} catch (e) {
-		console.error(Locale[ProjectSettings.viewLanguage].errorParsingEnvironmentVariable);
-		throw new Error(e);
-	}
-}
-
-/**
- * Parses the keycloak realm from the OIDC URL.
- */
-export function getKeycloakRealm(): string {
-	const keycloakRealm = Environment.components.authServer.url.split("/").filter(str => str !== "").pop();
-	if (keycloakRealm !== undefined && keycloakRealm !== "") return keycloakRealm;
-	else throw new Error(Locale[ProjectSettings.viewLanguage].errorParsingKeycloakRealm);
-}
-
-/**
- * Parses the keycloak authentication URL from the OIDC URL.
- */
-export function getKeycloakAuthenticationURL(): string {
-	const searchString = "/auth";
-	const keycloakURL = Environment.components.authServer.url.substring(0, Environment.components.authServer.url.indexOf(searchString) + searchString.length);
-	if (keycloakURL !== undefined && isUrl(keycloakURL)) return keycloakURL;
-	else throw new Error(Locale[ProjectSettings.viewLanguage].errorParsingKeycloakURL);
 }
 
 export function getFullConnections(id: string): string[] {

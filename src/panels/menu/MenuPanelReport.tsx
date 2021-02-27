@@ -1,7 +1,8 @@
 import React from 'react';
 import {Dropdown, SplitButton} from 'react-bootstrap';
-import {Environment, ProjectSettings} from "../../config/Variables";
+import {ProjectSettings} from "../../config/Variables";
 import {Locale} from "../../config/Locale";
+import {Environment} from "../../config/Environment";
 
 interface Props {
 

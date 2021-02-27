@@ -1,4 +1,4 @@
-import {Environment} from "../config/Variables";
+import {Environment} from "../config/Environment";
 
 export async function validateWorkspace(context: string, language: string) {
 	const namespace = context.substring(0, context.lastIndexOf("/") + 1);
