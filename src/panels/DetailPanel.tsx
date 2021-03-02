@@ -79,13 +79,12 @@ export default class DetailPanel extends React.Component<Props, State> {
                            error={this.props.error}
                            updateDetailPanel={this.props.updateDetailPanel}
             />
-            <DetailLink
-                error={this.props.error}
-                handleWidth={this.props.handleWidth}
-                projectLanguage={this.props.projectLanguage}
-                performTransaction={this.props.performTransaction}
-                save={this.save} ref={this.detailLink}
-                updateDetailPanel={this.props.updateDetailPanel}
+            <DetailLink error={this.props.error}
+                        handleWidth={this.props.handleWidth}
+                        projectLanguage={this.props.projectLanguage}
+                        performTransaction={this.props.performTransaction}
+                        save={this.save} ref={this.detailLink}
+                        updateDetailPanel={this.props.updateDetailPanel}
             />
         </div>);
     }

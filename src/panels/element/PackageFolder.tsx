@@ -2,13 +2,13 @@ import React from 'react';
 import {PackageNode} from "../../datatypes/PackageNode";
 import {ProjectSettings, Schemes} from "../../config/Variables";
 import {getLabelOrBlank} from "../../function/FunctionGetVars";
+import {highlightElement, unhighlightElement} from "../../function/FunctionDiagram";
 
 interface Props {
     node: PackageNode;
     update: Function;
     projectLanguage: string;
     readOnly: boolean;
-    handleSelect: Function;
 }
 
 interface State {
@@ -31,6 +31,21 @@ export default class PackageFolder extends React.Component<Props, State> {
         }
     }
 
+    handleClick(event: React.MouseEvent<HTMLDivElement, MouseEvent>) {
+        event.stopPropagation();
+        if (event.ctrlKey) {
+            if (this.props.node.elements.every(id => ProjectSettings.selectedElements.includes(id)))
+                ProjectSettings.selectedElements
+                    .filter(elem => (this.props.node.elements.includes(elem)))
+                    .forEach(elem => unhighlightElement(elem));
+            else this.props.node.elements.forEach(elem => highlightElement(elem));
+        } else {
+            this.setState({open: !this.state.open});
+            this.props.node.open = !this.props.node.open;
+        }
+        this.props.update();
+    }
+
     render() {
         return (
             <div
@@ -40,16 +55,7 @@ export default class PackageFolder extends React.Component<Props, State> {
                 onMouseLeave={() => {
                     this.setState({hover: false})
                 }}
-                onClick={(event) => {
-                    event.stopPropagation();
-                    if (event.ctrlKey) {
-                        this.props.handleSelect();
-                    } else {
-                        this.setState({open: !this.state.open});
-                        this.props.node.open = !this.props.node.open;
-                        this.props.update();
-                    }
-                }}
+                onClick={(event) => this.handleClick(event)}
                 className={"packageFolder" + (this.state.open ? " open" : "") +
                 (this.props.node.elements.every(elem => ProjectSettings.selectedElements.includes(elem)) ? " selected" : "")}
                 style={{

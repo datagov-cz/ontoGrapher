@@ -283,7 +283,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
              * If applicable, create a box encompassing the currently selected elements
              */
             'element:pointerdown': (cellView, evt) => {
-                if (evt.button === 0 && ProjectSettings.selectedElements.length > 1 && ProjectSettings.selectedElements.find(elem => elem === cellView.model.id) && !(evt.ctrlKey)) {
+                if (evt.button === 0 && ProjectSettings.selectedElements.length > 1 && ProjectSettings.selectedElements.find(elem => elem === cellView.model.id) && !(evt.ctrlKey) && !this.newLink) {
                     const cells = graph.getCellsBBox(ProjectSettings.selectedElements.map(elem => graph.getCell(elem)).filter(cell => cell));
                     if (cells) {
                         const bbox = new joint.g.Rect(

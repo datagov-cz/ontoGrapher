@@ -84,21 +84,11 @@ export default class DetailLink extends React.Component<Props, State> {
 
     prepareDetails(id?: string) {
         if (id) {
-            let sourceCard = ProjectLinks[id].sourceCardinality;
-            let targetCard = ProjectLinks[id].targetCardinality;
+            const sourceCardinality = CardinalityPool.findIndex(card => card.getString() === ProjectLinks[id].sourceCardinality.getString());
+            const targetCardinality = CardinalityPool.findIndex(card => card.getString() === ProjectLinks[id].targetCardinality.getString());
             this.setState({
-                sourceCardinality: "0",
-                targetCardinality: "0"
-            });
-            CardinalityPool.forEach((card, i) => {
-                if (sourceCard.getString() === card.getString()) {
-                    this.setState({sourceCardinality: i.toString(10)});
-                }
-                if (targetCard.getString() === card.getString()) {
-                    this.setState({targetCardinality: i.toString(10)});
-                }
-            })
-            this.setState({
+                sourceCardinality: sourceCardinality === -1 ? sourceCardinality.toString(10) : "0",
+                targetCardinality: targetCardinality === -1 ? targetCardinality.toString(10) : "0",
                 id: id,
                 iri: ProjectLinks[id].iri,
                 changes: false,

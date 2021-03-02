@@ -10,14 +10,6 @@ import {parsePrefix} from "../function/FunctionEditVars";
 import {Representation} from "../config/Enum";
 import PackageDivider from "./element/PackageDivider";
 import {Locale} from "../config/Locale";
-import {graph} from "../graph/Graph";
-import {paper} from "../main/DiagramCanvas";
-import {
-	highlightElement,
-	resetDiagramSelection,
-	unhighlightElement,
-	updateDiagramPosition
-} from "../function/FunctionDiagram";
 import {Shapes} from "../config/visual/Shapes";
 
 interface Props {
@@ -33,10 +25,13 @@ interface State {
 	filter: string[];
 	search: string;
 	modalRemoveItem: boolean;
+	selectedElements: string[];
+	shownElements: { [key: string]: { [key: string]: string[] } };
 	selectedID: string;
 }
 
 export default class ItemPanel extends React.Component<Props, State> {
+	private searchTimeout: number = 0;
 
 	constructor(props: Props) {
 		super(props);
@@ -44,9 +39,12 @@ export default class ItemPanel extends React.Component<Props, State> {
 			filter: [],
 			search: "",
 			modalRemoveItem: false,
+			selectedElements: ProjectSettings.selectedElements,
+			shownElements: {},
 			selectedID: "",
 		};
 		this.handleChangeSearch = this.handleChangeSearch.bind(this);
+		this.updateElements = this.updateElements.bind(this);
 	}
 
 	showItem(id: string) {
@@ -54,7 +52,7 @@ export default class ItemPanel extends React.Component<Props, State> {
 			if (!(pkg.open))
 				pkg.open = pkg.elements.includes(id);
 		});
-		this.setState({selectedID: id}, () => {
+		this.setState({shownElements: this.updateShownElements(), selectedID: id}, () => {
 			const itemElement = document.getElementById(this.state.selectedID);
 			if (itemElement) {
 				itemElement.scrollIntoView({behavior: "smooth", block: "center"});
@@ -64,36 +62,24 @@ export default class ItemPanel extends React.Component<Props, State> {
 
 	update(id?: string) {
 		if (id) this.showItem(id);
-		this.forceUpdate();
+		else this.forceUpdate();
+	}
+
+	updateElements() {
+		this.setState({selectedElements: ProjectSettings.selectedElements, shownElements: this.updateShownElements()});
 	}
 
 	handleChangeSearch(event: React.ChangeEvent<HTMLSelectElement>) {
 		PackageRoot.children.forEach(pkg => pkg.open = !(event.currentTarget.value === ""));
 		this.setState({search: event.currentTarget.value});
-		this.forceUpdate();
+		window.clearTimeout(this.searchTimeout);
+		this.searchTimeout = window.setTimeout(() => this.setState({shownElements: this.updateShownElements()}), 100)
 	}
 
 	sort(a: string, b: string): number {
 		const aLabel = VocabularyElements[ProjectElements[a].iri].labels[this.props.projectLanguage];
 		const bLabel = VocabularyElements[ProjectElements[b].iri].labels[this.props.projectLanguage];
 		return aLabel.localeCompare(bLabel);
-	}
-
-	categorizeTypes(elements: string[]): { [key: string]: string[] } {
-		let result: { [key: string]: string[] } = {'unsorted': []};
-		Object.keys(Shapes).forEach(type => result[type] = []);
-		for (const elem of elements) {
-			const types = VocabularyElements[ProjectElements[elem].iri].types;
-			for (const key in Shapes) {
-				if (types.includes(key)) {
-					result[key].push(elem);
-					break;
-				}
-			}
-			if (!Object.values(result).find(arr => arr.includes(elem)))
-				result['unsorted'].push(elem);
-		}
-		return result;
 	}
 
 	search(id: string): boolean {
@@ -104,79 +90,65 @@ export default class ItemPanel extends React.Component<Props, State> {
 				.find(alt => alt.language === this.props.projectLanguage && alt.label.normalize().trim().toLowerCase().includes(search)) !== undefined;
 	}
 
-	getFolders(): JSX.Element[] {
-		let result: JSX.Element[] = [];
-		for (const node of PackageRoot.children) {
-			const elements = node.elements.sort((a, b) => this.sort(a, b)).filter(id => {
-				return (
+	updateShownElements() {
+		const result: { [key: string]: { [key: string]: string[] } } = {};
+		PackageRoot.children.forEach(node => {
+			result[node.scheme] = {};
+			Object.keys(Shapes).concat("unsorted").forEach(type => result[node.scheme][type] = []);
+			if (node.open) {
+				node.elements.sort((a, b) => this.sort(a, b)).filter(id =>
 					this.search(id) &&
 					(ProjectSettings.representation === Representation.FULL ||
 						(ProjectSettings.representation === Representation.COMPACT &&
 							(!(VocabularyElements[ProjectElements[id].iri].types.includes(parsePrefix("z-sgov-pojem", "typ-vztahu"))
 									|| VocabularyElements[ProjectElements[id].iri].types.includes(parsePrefix("z-sgov-pojem", "typ-vlastnosti")))
-							))))
-			});
-			let packageItems: JSX.Element[] = [];
-			let categories = this.categorizeTypes(elements);
-			for (const key in categories) {
-				if (categories[key].length === 0) continue;
-				if (ProjectSettings.viewItemPanelTypes) {
-					const slice = elements.filter(elem => categories[key].includes(elem))
-					packageItems.push(<PackageDivider
-						key={Object.keys(Shapes).includes(key) ? key : ""}
-						iri={Object.keys(Shapes).includes(key) ? key : ""}
-						items={slice}
-						visible={node.open}
-						projectLanguage={this.props.projectLanguage}
-						handleSelect={() => {
-							if (slice.every(id => ProjectSettings.selectedElements.includes(id)))
-								ProjectSettings.selectedElements
-									.filter(elem => (slice.includes(elem)))
-									.forEach(elem => unhighlightElement(elem));
-							else slice.forEach(elem => highlightElement(elem));
-							this.forceUpdate();
-						}}
-					/>);
-				}
-				for (const id of categories[key]) {
+							)))).forEach(elem => {
+					const types = VocabularyElements[ProjectElements[elem].iri].types;
+					for (const key in Shapes) {
+						if (types.includes(key)) {
+							result[node.scheme][key].push(elem);
+							break;
+						}
+					}
+					if (!Object.values(result[node.scheme]).find(arr => arr.includes(elem)))
+						result[node.scheme]['unsorted'].push(elem);
+				});
+			}
+		});
+		return result;
+	}
+
+	handleOpenRemoveItemModal(id: string) {
+		this.setState({
+			selectedID: id,
+			modalRemoveItem: true
+		})
+	}
+
+	getFolders(): JSX.Element[] {
+		let result: JSX.Element[] = [];
+		for (const node of PackageRoot.children) {
+			const packageItems: JSX.Element[] = [];
+			for (const iri in this.state.shownElements[node.scheme]) {
+				if (this.state.shownElements[node.scheme][iri].length === 0) continue;
+				packageItems.push(<PackageDivider
+					key={iri}
+					iri={iri}
+					items={this.state.shownElements[node.scheme][iri]}
+					visible={node.open}
+					projectLanguage={this.props.projectLanguage}
+					update={this.updateElements}
+				/>);
+				for (const id of this.state.shownElements[node.scheme][iri]) {
 					packageItems.push(<PackageItem
 						key={id}
 						id={id}
 						visible={node.open}
 						projectLanguage={this.props.projectLanguage}
 						readOnly={(node.scheme ? Schemes[node.scheme].readOnly : true)}
-						update={() => {
-							this.forceUpdate();
-						}}
-						openRemoveItem={() => {
-							this.setState({
-								selectedID: id,
-								modalRemoveItem: true
-							})
-						}}
-						handleSelect={() => {
-							if (ProjectSettings.selectedElements.includes(id))
-								unhighlightElement(id)
-							else highlightElement(id);
-							this.forceUpdate();
-						}}
-						clearSelection={() => {
-							resetDiagramSelection();
-							this.forceUpdate();
-						}}
-						showDetails={() => {
-							highlightElement(id);
-							this.props.updateDetailPanel(id);
-							let elem = graph.getElements().find(elem => elem.id === id);
-							if (elem) {
-								const scale = paper.scale().sx;
-								paper.translate(0, 0);
-								paper.translate((-elem.position().x * scale) + (paper.getComputedSize().width / 2) - elem.getBBox().width,
-									(-elem.position().y * scale) + (paper.getComputedSize().height / 2) - elem.getBBox().height);
-								updateDiagramPosition(ProjectSettings.selectedDiagram);
-							}
-							this.forceUpdate();
-						}}
+						update={this.updateElements}
+						openRemoveItem={this.handleOpenRemoveItemModal}
+						showDetails={this.props.updateDetailPanel}
 					/>)
 				}
 			}
@@ -185,18 +157,8 @@ export default class ItemPanel extends React.Component<Props, State> {
 					key={node.scheme}
 					projectLanguage={this.props.projectLanguage}
 					node={node}
-					update={() => {
-						this.forceUpdate();
-					}}
+					update={this.updateElements}
 					readOnly={node.scheme ? Schemes[node.scheme].readOnly : false}
-					handleSelect={() => {
-						if (node.elements.every(id => ProjectSettings.selectedElements.includes(id)))
-							ProjectSettings.selectedElements
-								.filter(elem => (node.elements.includes(elem)))
-								.forEach(elem => unhighlightElement(elem));
-						else node.elements.forEach(elem => highlightElement(elem));
-						this.forceUpdate();
-					}}
 				>{packageItems}</PackageFolder>);
 		}
 		return result;
@@ -237,7 +199,8 @@ export default class ItemPanel extends React.Component<Props, State> {
 							this.setState({modalRemoveItem: false});
 						}}
 						update={() => {
-							this.forceUpdate();
+							this.updateElements();
+							this.updateShownElements();
 							this.props.update();
 						}}
 						performTransaction={this.props.performTransaction}

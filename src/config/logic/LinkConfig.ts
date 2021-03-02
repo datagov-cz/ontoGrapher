@@ -15,7 +15,7 @@ export const LinkConfig: {
 	[LinkType.DEFAULT]: {
 		id: "default",
 		labels: initLanguageObject(""),
-		newLink: (id) => {
+		newLink: (id?: string) => {
 			if (id) return new joint.shapes.standard.Link({id: id});
 			else return new joint.shapes.standard.Link();
 		},
@@ -24,12 +24,10 @@ export const LinkConfig: {
 	[LinkType.GENERALIZATION]: {
 		id: "generalization",
 		labels: {"cs": "generalizace", "en": "generalization"},
-		newLink: (id) => {
+		newLink: (id?: string) => {
 			if (id) return new generalizationLink({id: id});
 			else return new generalizationLink();
 		},
 		update: (id: string) => updateGeneralizationLink(id)
 	}
-};
-
-Object.freeze(LinkConfig);
+} as const;
