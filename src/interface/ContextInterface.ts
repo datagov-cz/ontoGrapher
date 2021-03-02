@@ -52,10 +52,11 @@ export async function getContext(
 		if (result.label) ProjectSettings.name[result.label["xml:lang"]] = result.label.value;
 		if (result.title) ProjectSettings.name[result.title["xml:lang"]] = result.title.value;
 	}
+	await getScheme(Object.keys(vocabularies), contextEndpoint).catch(() => false);
 	for (const vocab in vocabularies) {
-		await getScheme(vocab, contextEndpoint, vocabularies[vocab].readOnly, vocabularies[vocab].graph).catch(() => false);
-		await fetchConcepts(contextEndpoint, vocab, vocabularies[vocab].terms, vocabularies[vocab].readOnly, Schemes[vocab].graph).catch(() => false);
+		await fetchConcepts(contextEndpoint, vocab, vocabularies[vocab].terms, vocabularies[vocab].readOnly, vocabularies[vocab].graph).catch(() => false);
 		Schemes[vocab].readOnly = vocabularies[vocab].readOnly;
+		Schemes[vocab].graph = vocabularies[vocab].graph;
 		Object.assign(VocabularyElements, vocabularies[vocab].terms);
 		new PackageNode(Schemes[vocab].labels, PackageRoot, false, vocab);
 	}

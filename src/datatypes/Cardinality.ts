@@ -9,7 +9,8 @@ export class Cardinality {
         this.first = first;
         this.second = second;
         if (!this.checkCardinalities()) {
-            throw new Error(Locale[ProjectSettings.viewLanguage].errorInvalidCardinality);
+            this.first = ProjectSettings.defaultCardinality.first;
+            this.second = ProjectSettings.defaultCardinality.second;
         }
     }
 
