@@ -1,0 +1,11 @@
+version: '3.9'
+services:
+  ontographer:
+    container_name: ontographer
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        PUBLIC_PATH: /
+    ports:
+      - 80:80

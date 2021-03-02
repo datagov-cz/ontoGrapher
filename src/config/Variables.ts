@@ -4,6 +4,7 @@ import {initLanguageObject} from "../function/FunctionEditVars";
 import {Restriction} from "../datatypes/Restriction";
 import {Representation} from "./Enum";
 import * as joint from "jointjs";
+import {Environment} from "./Environment";
 
 // language code : language label
 export var Languages: { [key: string]: string } = {};
@@ -150,7 +151,7 @@ export var ProjectSettings: {
     selectedLanguage: Object.keys(Languages)[0],
     selectedLink: "",
     contextIRI: "",
-    contextEndpoint: process.env.REACT_APP_CONTEXT_ENDPOINT,
+    contextEndpoint: Environment.components.dbServer.url,
     ontographerContext: "http://onto.fel.cvut.cz/ontologies/application/ontoGrapher",
     representation: Representation.FULL,
     lastTransaction: "",

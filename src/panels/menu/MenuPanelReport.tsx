@@ -2,6 +2,7 @@ import React from 'react';
 import {Dropdown, SplitButton} from 'react-bootstrap';
 import {ProjectSettings} from "../../config/Variables";
 import {Locale} from "../../config/Locale";
+import {Environment} from "../../config/Environment";
 
 interface Props {
 
@@ -10,9 +11,6 @@ interface Props {
 interface State {
 
 }
-
-const issueURL = "https://github.com/opendata-mvcr/sgov-assembly-line/issues/new?labels=bug&template=po-adavek-na-opravu.md&title=";
-const enhancementURL = "https://github.com/opendata-mvcr/sgov-assembly-line/issues/new?labels=enhancement&template=po-adavek-na-novou-funkcionalitu.md&title=";
 
 export default class MenuPanelReport extends React.Component<Props, State> {
 
@@ -23,10 +21,10 @@ export default class MenuPanelReport extends React.Component<Props, State> {
 				className={"inert report"}
 				title={Locale[ProjectSettings.viewLanguage].reportIssue}
 				variant={"warning"}
-				href={issueURL}
+				href={Environment.components.issueTracker.meta.newBug}
 				menuAlign={{sm: "left"}}
 				target={"_blank"}>
-				<Dropdown.Item href={enhancementURL} target={"_blank"}>
+				<Dropdown.Item href={Environment.components.issueTracker.meta.newFeature} target={"_blank"}>
 					{Locale[ProjectSettings.viewLanguage].reportEnhancement}
 				</Dropdown.Item>
 			</SplitButton>

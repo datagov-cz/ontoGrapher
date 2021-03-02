@@ -9,7 +9,7 @@ export const cs = {
 	"authenticationError": "Chyba autentikace. Prosím, kontaktujte serverového administrátora.",
 	"authenticationUpdateError": "Chyba autentikace. Prosím, načtěte stránku znovu.",
 	"authenticationExpired": "Autentikace vypršela. Prosím, načtěte stránku znovu.",
-	"authenticationTimeout": "Request to authentication service timed out.",
+	"authenticationTimeout": "Dotaz na autentikační server vypršel.",
 	"logout": "Odhlásit",
 	"detailPanelPrefLabel": "Jméno",
 	"detailPanelAltLabel": "Synonyma",
@@ -17,7 +17,7 @@ export const cs = {
 	"detailPanelDefinition": "Definice",
 	"detailPanelStereotype": "Stereotyp",
 	"ontoGrapher": "ontoGrapher",
-	"errorMissingRestriction": "Restriction not found",
+	"errorMissingRestriction": "Restrikce nebyla nalezena",
 	"validationNumber": "#",
 	"deletedRelationships": "Některé vztahy jsou v kompaktním pohledu skryty. Přepněte zpět na úplný pohled pro jejich obnovení.",
 	"validationName": "Pojem",
@@ -91,5 +91,8 @@ export const cs = {
 	"switchColors": "Barvy slovníků",
 	"reportIssue": "Nahlásit chybu",
 	"reportEnhancement": "Navrhnout úpravu",
-	"changelogButton": "Změny"
+	"changelogButton": "Změny",
+	"errorParsingEnvironmentVariable": "Z promměného prostředí se nepodařila přečíst požadovaná proměnná",
+	"errorParsingKeycloakURL": "Z OIDC endpointu se nepodařilo přečíst Keycloak URL",
+	"errorParsingKeycloakRealm": "Z OIDC endpointu se nepodařilo přečíst Keycloak Realm"
 }
