@@ -2,7 +2,7 @@
   word-wrap: break-word;
   background-color: white;
   float: left;
-  height: calc(100vh - 55px) !important;
+  height: calc(100vh - 75px) !important;
   width: 100%;
   max-width: 600px;
   border-radius: 0;
@@ -21,6 +21,10 @@
     &:hover {
       background-color: #e9eaeb;
     }
+
+    &.closed {
+      display: none;
+    }
   }
 
   .stereotypeElementItem {
@@ -34,6 +38,7 @@
     border-color: rgba(0, 0, 0, 0.30);
     user-select: none;
     cursor: grab;
+    display: block;
 
     &:active {
       cursor: grabbing;
@@ -42,7 +47,11 @@
     &:hover, &.selected {
       background-color: #dddddd;
     }
-    
+
+    &.closed {
+      display: none;
+    }
+
     .altLabel {
       font-size: 12px;
       font-style: italic;
@@ -63,14 +72,15 @@
   }
 
   .elementList {
-    height: calc(100vh - 100px) !important;
+    height: calc(100vh - 108px) !important;
     overflow: auto;
   }
 
   .elementLinkList {
-    height: calc(100vh - 100px) !important;
+    height: calc(100vh - 108px) !important;
     overflow-y: auto;
     overflow-x: hidden;
+
     &.disabled {
       pointer-events: none;
     }
@@ -100,10 +110,10 @@
     border-color: rgba(0, 0, 0, 0.30);
     min-width: 100%;
     border-left-width: 4px;
-    transition: background-color ease-out 0.5s;
+    transition: border-left-width ease-out 0.3s;
 
     &:hover {
-      background-color: #e9eaeb;
+      border-left-width: 10px;
     }
   }
 

@@ -13,7 +13,7 @@ import {
 } from "../config/Variables";
 import {graph} from "../graph/Graph";
 import {addClass} from "./FunctionCreateVars";
-import {LinkConfig} from "../config/LinkConfig";
+import {LinkConfig} from "../config/logic/LinkConfig";
 import {LinkType} from "../config/Enum";
 import {Locale} from "../config/Locale";
 import {updateDeleteTriples} from "../queries/UpdateMiscQueries";

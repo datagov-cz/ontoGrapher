@@ -16,7 +16,7 @@ import {LinkType} from "../config/Enum";
 import {Locale} from "../config/Locale";
 import {setSchemeColors} from "../function/FunctionGetVars";
 import {processQuery} from "./TransactionInterface";
-import {RestrictionConfig} from "../config/RestrictionConfig";
+import {RestrictionConfig} from "../config/logic/RestrictionConfig";
 
 export async function fetchConcepts(
     endpoint: string,

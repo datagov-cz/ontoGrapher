@@ -1,34 +1,32 @@
-import {Restriction} from "../datatypes/Restriction";
-import {ProjectElements, ProjectLinks, ProjectSettings, VocabularyElements} from "./Variables";
-import {parsePrefix} from "../function/FunctionEditVars";
-import {addLink} from "../function/FunctionCreateVars";
-import {getElemFromIRI, getNewLink} from "../function/FunctionGetVars";
-import {LinkType} from "./Enum";
-import {Cardinality} from "../datatypes/Cardinality";
+import {Restriction} from "../../datatypes/Restriction";
+import {ProjectElements, ProjectLinks, ProjectSettings, VocabularyElements} from "../Variables";
+import {parsePrefix} from "../../function/FunctionEditVars";
+import {addLink} from "../../function/FunctionCreateVars";
+import {getElemFromIRI, getNewLink} from "../../function/FunctionGetVars";
+import {LinkType} from "../Enum";
+import {Cardinality} from "../../datatypes/Cardinality";
+import _ from "underscore";
 
-export var RestrictionConfig: {
+export const RestrictionConfig: {
 	[key: string]: (iri: string, restriction: Restriction) => string | void
-} = {};
+} = {
+	"http://www.w3.org/2002/07/owl#someValuesFrom": (iri: string, restriction: Restriction) =>
+		createConnection(iri, restriction, parsePrefix("owl", "allValuesFrom")),
+	"http://www.w3.org/2002/07/owl#allValuesFrom": (iri: string, restriction: Restriction) =>
+		createConnection(iri, restriction, parsePrefix("owl", "someValuesFrom")),
+	"http://www.w3.org/2002/07/owl#minQualifiedCardinality": (iri: string, restriction: Restriction) =>
+		createCardinality(iri, restriction),
+	"http://www.w3.org/2002/07/owl#maxQualifiedCardinality": (iri: string, restriction: Restriction) =>
+		createCardinality(iri, restriction),
 
-RestrictionConfig["http://www.w3.org/2002/07/owl#someValuesFrom"] = (iri, restriction) => {
-	return createConnection(iri, restriction, parsePrefix("owl", "allValuesFrom"));
-}
-
-RestrictionConfig["http://www.w3.org/2002/07/owl#allValuesFrom"] = (iri, restriction) => {
-	return createConnection(iri, restriction, parsePrefix("owl", "someValuesFrom"));
-}
-
-RestrictionConfig["http://www.w3.org/2002/07/owl#minQualifiedCardinality"] = (iri, restriction) => {
-	createCardinality(iri, restriction);
-}
-
-RestrictionConfig["http://www.w3.org/2002/07/owl#maxQualifiedCardinality"] = (iri, restriction) => {
-	createCardinality(iri, restriction);
-}
+} as const;
 
 function createConnection(iri: string, restriction: Restriction, pred: string) {
-	if (VocabularyElements[iri].restrictions.find(r => r.restriction === pred
-		&& r.onProperty === restriction.onProperty && r.target === restriction.target)) {
+	if (_.find(VocabularyElements[iri].restrictions, {
+		restriction: pred,
+		onProperty: restriction.onProperty,
+		target: restriction.target
+	})) {
 		const id = getElemFromIRI(iri);
 		const target = getElemFromIRI(restriction.target);
 		if (id && target && !(ProjectElements[id].connections.find(conn =>

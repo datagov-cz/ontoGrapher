@@ -1,13 +1,14 @@
 import React from 'react';
 import {ProjectSettings, Stereotypes} from "../../config/Variables";
 import {Locale} from "../../config/Locale";
+import {highlightElement, unhighlightElement} from "../../function/FunctionDiagram";
 
 interface Props {
 	iri: string;
 	projectLanguage: string;
-	showCheckbox: boolean;
-	handleShowCheckbox: Function;
-	checkboxChecked: boolean;
+	items: string[];
+	visible: boolean;
+	update: () => void;
 }
 
 interface State {
@@ -22,31 +23,30 @@ export default class PackageDivider extends React.Component<Props, State> {
 		}
 	}
 
+	handleClick(event: React.MouseEvent<HTMLDivElement>) {
+		event.stopPropagation();
+		if (event.ctrlKey) {
+			if (this.props.items.every(id => ProjectSettings.selectedElements.includes(id)))
+				ProjectSettings.selectedElements
+					.filter(elem => (this.props.items.includes(elem)))
+					.forEach(elem => unhighlightElement(elem));
+			else this.props.items.forEach(elem => highlightElement(elem));
+			this.props.update();
+		}
+	}
+
 	render() {
-		return (<div className={"packageDivider"}
+		return (<div className={"packageDivider" + (this.props.visible ? "" : " closed") +
+		(this.props.items.every(elem => ProjectSettings.selectedElements.includes(elem)) ? " selected" : "")}
 					 onMouseOver={() => {
 						 this.setState({hover: true})
 					 }}
 					 onMouseLeave={() => {
 						 this.setState({hover: false})
 					 }}
-					 onClick={(event) => {
-						 event.stopPropagation();
-						 if (event.shiftKey) {
-							 this.props.handleShowCheckbox();
-						 }
-					 }}
+					 onClick={(event) => this.handleClick(event)}
 		>
-			{(this.props.showCheckbox || this.state.hover) && <span className={"packageOptions"}>
-				<input type="checkbox" checked={this.props.checkboxChecked}
-                       onClick={(event) => {
-						   event.stopPropagation();
-						   this.props.handleShowCheckbox();
-					   }}
-                       onChange={() => {
-					   }}/>
-			</span>}
-			&nbsp;{this.props.iri in Stereotypes ? Stereotypes[this.props.iri].labels[this.props.projectLanguage] : Locale[ProjectSettings.viewLanguage].unsorted}
+			{this.props.iri in Stereotypes ? Stereotypes[this.props.iri].labels[this.props.projectLanguage] : Locale[ProjectSettings.viewLanguage].unsorted}
 		</div>);
 	}
 }

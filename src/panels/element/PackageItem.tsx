@@ -1,20 +1,23 @@
 import React from 'react';
 import {ProjectElements, ProjectSettings, VocabularyElements} from "../../config/Variables";
 import {getLabelOrBlank} from "../../function/FunctionGetVars";
+import {
+	highlightElement,
+	resetDiagramSelection,
+	unhighlightElement,
+	updateDiagramPosition
+} from "../../function/FunctionDiagram";
+import {graph} from "../../graph/Graph";
+import {paper} from "../../main/DiagramCanvas";
 
 interface Props {
 	id: string;
-	update: Function;
-	openRemoveItem: Function;
-	selectedItems: string[];
-	showCheckbox: boolean;
-	handleShowCheckbox: Function;
-	checkboxChecked: boolean;
-	clearSelection: Function;
+	openRemoveItem: (id: string) => void;
 	showDetails: Function;
-	selectedID: string;
 	readOnly: boolean;
 	projectLanguage: string;
+	visible: boolean;
+	update: () => void;
 }
 
 interface State {
@@ -56,54 +59,62 @@ export default class PackageItem extends React.Component<Props, State> {
 		</span>
 	}
 
+	handleClick(event: React.MouseEvent<HTMLDivElement>) {
+		event.stopPropagation();
+		if (event.ctrlKey) {
+			if (ProjectSettings.selectedElements.includes(this.props.id))
+				unhighlightElement(this.props.id)
+			else highlightElement(this.props.id);
+		} else resetDiagramSelection();
+		highlightElement(this.props.id);
+		let elem = graph.getElements().find(elem => elem.id === this.props.id);
+		if (elem) {
+			const scale = paper.scale().sx;
+			paper.translate(0, 0);
+			paper.translate((-elem.position().x * scale) + (paper.getComputedSize().width / 2) - elem.getBBox().width,
+				(-elem.position().y * scale) + (paper.getComputedSize().height / 2) - elem.getBBox().height);
+			updateDiagramPosition(ProjectSettings.selectedDiagram);
+		}
+		this.props.update();
+		this.props.showDetails(this.props.id);
+	}
+
 	render() {
 		return (
 			<div draggable
 				 onDragStart={(event) => {
 					 event.dataTransfer.setData("newClass", JSON.stringify({
 						 type: "existing",
-						 id: this.props.selectedItems.length > 0 ? this.props.selectedItems : [this.props.id],
-						 iri: this.props.selectedItems.length > 0 ? this.props.selectedItems.map(id => ProjectElements[id].iri) : [ProjectElements[this.props.id].iri]
+						 id: ProjectSettings.selectedElements.length > 0 ? ProjectSettings.selectedElements : [this.props.id],
+						 iri: ProjectSettings.selectedElements.length > 0 ? ProjectSettings.selectedElements.map(id => ProjectElements[id].iri) : [ProjectElements[this.props.id].iri]
 					 }));
 				 }}
 				 onDragEnd={() => {
-					 this.props.clearSelection()
+					 resetDiagramSelection();
+					 this.props.update();
 				 }}
-				 onClick={(event) => {
-					 event.stopPropagation();
-					 if (event.shiftKey) {
-						 this.props.handleShowCheckbox();
-					 } else {
-						 this.props.showDetails(this.props.id);
-					 }
-				 }}
+				 onClick={(event) => this.handleClick(event)}
 				 onMouseOver={() => {
 					 this.setState({hover: true})
 				 }}
 				 onMouseLeave={() => {
 					 this.setState({hover: false})
 				 }}
-				 className={"stereotypeElementItem" + (this.isHidden() ? " hidden" : "") + (this.props.id === this.props.selectedID ? " selected" : "")}>
-				{(this.props.showCheckbox || this.state.hover) &&
-                <span><input type="checkbox" checked={this.props.checkboxChecked}
-                             onClick={(event) => {
-								 event.stopPropagation();
-								 this.props.handleShowCheckbox()
-							 }}
-                             onChange={() => {
-							 }}
-                />&nbsp;</span>}
+				 id={this.props.id}
+				 className={"stereotypeElementItem" + (this.isHidden() ? " hidden" : "") + (this.props.visible ? "" : " closed") +
+				 (ProjectSettings.selectedElements.includes(this.props.id) ? " selected" : "")}
+			>
 				{this.getLabel()}
 				{(this.isHidden() ? hiddenSVG : <span/>)}
-				{(this.props.showCheckbox || this.state.hover) &&
+				{(this.state.hover && !(this.props.readOnly)) &&
                 <span className={"packageOptions right"}>
-						{(this.state.hover && !(this.props.readOnly)) && <button className={"buttonlink"}
-                                                                                 onClick={(event) => {
-																					 event.stopPropagation();
-																					 this.props.openRemoveItem();
-																				 }}><span role="img"
-                                                                                          aria-label={""}>❌</span>
-                        </button>}
+						<button className={"buttonlink"}
+                                onClick={(event) => {
+									event.stopPropagation();
+									this.props.openRemoveItem(this.props.id);
+								}}><span role="img"
+                                         aria-label={""}>❌</span>
+                        </button>
                     </span>
 				}
 			</div>

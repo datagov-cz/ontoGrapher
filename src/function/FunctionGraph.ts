@@ -342,13 +342,12 @@ export function restoreHiddenElem(id: string, cls: joint.dia.Element, restoreSim
                     setLabels(domainLink, getLinkOrVocabElem(ProjectLinks[link].iri).labels[ProjectSettings.selectedLanguage]);
                     setLabels(rangeLink, getLinkOrVocabElem(ProjectLinks[targetLink].iri).labels[ProjectSettings.selectedLanguage]);
                     relationship.addTo(graph);
+                    queries.push(updateProjectElementDiagram(ProjectSettings.selectedDiagram, relID));
                     if (restoreFullConnectionPosition) {
                         domainLink.vertices(ProjectLinks[link].vertices[ProjectSettings.selectedDiagram]);
                         rangeLink.vertices(ProjectLinks[targetLink].vertices[ProjectSettings.selectedDiagram]);
                     } else {
-                        queries.push(
-                            updateProjectElement(true, relID),
-                            updateProjectElementDiagram(ProjectSettings.selectedDiagram, relID));
+                        queries.push(updateProjectElement(true, relID));
                         if (ProjectLinks[link].vertices[ProjectSettings.selectedDiagram])
                             queries.push(updateDeleteProjectLinkVertex(link, 0,
                                 ProjectLinks[link].vertices[ProjectSettings.selectedDiagram].length,
