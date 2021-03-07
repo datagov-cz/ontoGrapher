@@ -44,6 +44,7 @@ export default class ItemPanel extends React.Component<Props, State> {
 			selectedID: "",
 		};
 		this.handleChangeSearch = this.handleChangeSearch.bind(this);
+		this.handleOpenRemoveItemModal = this.handleOpenRemoveItemModal.bind(this);
 		this.updateElements = this.updateElements.bind(this);
 	}
 
@@ -77,8 +78,8 @@ export default class ItemPanel extends React.Component<Props, State> {
 	}
 
 	sort(a: string, b: string): number {
-		const aLabel = VocabularyElements[ProjectElements[a].iri].labels[this.props.projectLanguage];
-		const bLabel = VocabularyElements[ProjectElements[b].iri].labels[this.props.projectLanguage];
+		const aLabel = getLabelOrBlank(VocabularyElements[ProjectElements[a].iri].labels, this.props.projectLanguage);
+		const bLabel = getLabelOrBlank(VocabularyElements[ProjectElements[b].iri].labels, this.props.projectLanguage);
 		return aLabel.localeCompare(bLabel);
 	}
 

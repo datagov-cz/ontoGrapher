@@ -16,7 +16,10 @@ export function createValues(values: { [key: string]: string[] }, prefixes: { [k
 
 export function createNewElemIRI(scheme: string, name: string): string {
     return (scheme.substring(0, scheme.lastIndexOf("/") + 1) + "pojem/" + name)
-        .trim().replace(/\s/g, '-').toLowerCase();
+        .trim()
+        .replace(/\s/g, '-')
+        .replace(/(?![a-zA-Z0-9À-ž-._~:/?#\[\]@!$&'()*+,;=])./g, "")
+        .toLowerCase();
 }
 
 export function getDomainOf(iriElem: string): string[] {

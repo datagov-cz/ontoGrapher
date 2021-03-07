@@ -1,5 +1,5 @@
 import React from 'react';
-import {Button, Form, InputGroup, Modal} from "react-bootstrap";
+import {Alert, Button, Form, InputGroup, Modal} from "react-bootstrap";
 import {PackageNode} from "../datatypes/PackageNode";
 import {
 	Languages,
@@ -12,10 +12,11 @@ import {
 import {Locale} from "../config/Locale";
 import {createNewElemIRI} from "../function/FunctionCreateVars";
 import {initLanguageObject} from "../function/FunctionEditVars";
+import _ from 'lodash';
 
 interface Props {
 	modal: boolean;
-	close: Function;
+	close: (names?: State["conceptName"], pkg?: PackageNode) => void;
 	projectLanguage: string;
 }
 
@@ -39,41 +40,45 @@ export default class NewElemModal extends React.Component<Props, State> {
 		this.checkExists = this.checkExists.bind(this);
 	}
 
-	checkExists(name: string): boolean {
-		const newIRI = createNewElemIRI(this.state.selectedPackage.scheme, name);
+	checkExists(scheme: string, name: string): boolean {
+		const newIRI = createNewElemIRI(scheme, name);
 		return (Object.keys(VocabularyElements)
-			.filter(iri => VocabularyElements[iri].inScheme === this.state.selectedPackage.scheme).find(iri =>
+			.filter(iri => VocabularyElements[iri].inScheme === scheme).find(iri =>
 				(iri === newIRI && Object.keys(ProjectElements).find(elem => ProjectElements[elem].active &&
 					ProjectElements[elem].iri === iri)) || Object.values(VocabularyElements[iri].labels).find(
 				label => label.trim().toLowerCase() === name.trim().toLowerCase())) !== undefined);
 	}
 
 	handleChangeInput(event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>, language: string) {
-		const res = this.state.conceptName;
-		res[language] = event.currentTarget.value;
-		this.setState({conceptName: res});
-		if (res["cs"] === "") {
-			this.setState({errorText: Locale[ProjectSettings.viewLanguage].modalNewElemError});
-		} else if (this.checkExists(event.currentTarget.value)) {
-			this.setState({errorText: Locale[ProjectSettings.viewLanguage].modalNewElemExistsError});
-		} else if (/[~`!#$%^&*+=\-[\]\\';,./{}|":<>?]/.test(event.target.value)) {
-			this.setState({errorText: Locale[ProjectSettings.viewLanguage].modalNewElemRegexError});
-		} else {
-			this.setState({errorText: ""});
+		const names = this.state.conceptName;
+		names[language] = event.currentTarget.value;
+		this.setState({conceptName: names, errorText: this.checkNames(this.state.selectedPackage.scheme, names)});
+	}
+
+	checkNames(scheme: string, names: State["conceptName"]) {
+		let errorText = "";
+		if (names[ProjectSettings.defaultLanguage] === "") {
+			errorText = Locale[ProjectSettings.viewLanguage].modalNewElemError;
+		} else if (Object.values(names).find(name => this.checkExists(scheme, name))) {
+			errorText = Locale[ProjectSettings.viewLanguage].modalNewElemExistsError;
+		} else if (Object.values(names).find(name => /["]/.test(name))) {
+			errorText = Locale[ProjectSettings.viewLanguage].modalNewElemRegexError;
+		} else if (Object.values(names).find(name => name && (name.length < 2 || name.length > 150))) {
+			errorText = Locale[ProjectSettings.viewLanguage].modalNewElemLengthError;
 		}
+		return errorText;
 	}
 
 	handleChangeSelect(event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) {
 		const pkg = PackageRoot.children.find(pkg => pkg.labels[this.props.projectLanguage] === event.currentTarget.value);
-		if (pkg) this.setState({selectedPackage: pkg});
-		if (this.checkExists(event.currentTarget.value)) {
-			this.setState({errorText: Locale[ProjectSettings.viewLanguage].modalNewElemExistsError});
-		}
+		if (pkg) this.setState({selectedPackage: pkg, errorText: this.checkNames(pkg.scheme, this.state.conceptName)});
 	}
 
 	save() {
-		if (this.state.errorText === "")
-			this.props.close(this.state.conceptName, this.state.selectedPackage);
+		if (this.state.errorText === "") {
+			const names = _.mapValues(this.state.conceptName, name => name.trim())
+			this.props.close(names, this.state.selectedPackage);
+		}
 	}
 
 	render() {
@@ -111,10 +116,11 @@ export default class NewElemModal extends React.Component<Props, State> {
 						<InputGroup>
 							<InputGroup.Prepend>
 								<InputGroup.Text
-									id={"inputGroupPrepend" + lang}>{Languages[lang] + (lang === "cs" ? "*" : "")}</InputGroup.Text>
+									id={"inputGroupPrepend" + lang}>{Languages[lang] + (lang === ProjectSettings.defaultLanguage ? "*" : "")}</InputGroup.Text>
 							</InputGroup.Prepend>
 							<Form.Control id={"newElemLabelInput" + lang} type="text"
-										  value={this.state.conceptName[lang]} required={lang === "cs"}
+										  value={this.state.conceptName[lang]}
+										  required={lang === ProjectSettings.defaultLanguage}
 										  onChange={(event) => this.handleChangeInput(event, lang)}/>
 						</InputGroup>
 					</div>)}
@@ -128,7 +134,10 @@ export default class NewElemModal extends React.Component<Props, State> {
 										value={pkg.labels[this.props.projectLanguage]}>{pkg.labels[this.props.projectLanguage]}</option>)}
 						</Form.Control>
 					</Form.Group>
-					<p className="red">{this.state.errorText}</p>
+					{!this.state.errorText &&
+					<Alert variant={"primary"}>{`${Locale[ProjectSettings.viewLanguage].modalNewElemIRI}
+					${createNewElemIRI(this.state.selectedPackage.scheme, this.state.conceptName[ProjectSettings.defaultLanguage])}`}</Alert>}
+					{this.state.errorText && <Alert variant="danger">{this.state.errorText}</Alert>}
 				</Modal.Body>
 				<Modal.Footer>
 					<Button type={"submit"} disabled={this.state.errorText !== ""} variant="primary">
