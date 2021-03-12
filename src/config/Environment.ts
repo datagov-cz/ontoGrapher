@@ -54,22 +54,3 @@ export function getComponentsVariable(variableKey: string): Components {
 		throw new Error(e);
 	}
 }
-
-/**
- * Parses the keycloak realm from the OIDC URL.
- */
-export function getKeycloakRealm(): string {
-	const keycloakRealm = Environment.components.authServer.url.split("/").filter(str => str !== "").pop();
-	if (keycloakRealm !== undefined && keycloakRealm !== "") return keycloakRealm;
-	else throw new Error(Locale.en.errorParsingKeycloakRealm);
-}
-
-/**
- * Parses the keycloak authentication URL from the OIDC URL.
- */
-export function getKeycloakAuthenticationURL(): string {
-	const searchString = "/auth";
-	const keycloakURL = Environment.components.authServer.url.substring(0, Environment.components.authServer.url.indexOf(searchString) + searchString.length);
-	if (keycloakURL !== undefined && isUrl(keycloakURL)) return keycloakURL;
-	else throw new Error(Locale.en.errorParsingKeycloakURL);
-}
