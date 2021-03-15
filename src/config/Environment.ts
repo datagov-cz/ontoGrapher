@@ -1,4 +1,3 @@
-import isUrl from "is-url";
 import {Locale} from "./Locale";
 import {Components} from "../datatypes/Components";
 import yaml from "yaml";
