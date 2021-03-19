@@ -8,7 +8,13 @@ import {
 	VocabularyElements
 } from "../config/Variables";
 import {LinkType, Representation} from "../config/Enum";
-import {getElementShape, getLinkOrVocabElem, getNewLink, getUnderlyingFullConnections} from "./FunctionGetVars";
+import {
+	getDefaultCardinality,
+	getElementShape,
+	getLinkOrVocabElem,
+	getNewLink,
+	getUnderlyingFullConnections
+} from "./FunctionGetVars";
 import {graph} from "../graph/Graph";
 import * as joint from "jointjs";
 import {graphElement} from "../graph/GraphElement";
@@ -75,15 +81,24 @@ export function saveNewLink(iri: string, sid: string, tid: string): string[] {
 	}
 }
 
+export function checkDefaultCardinality(link: string) {
+	if (!(Links[link].defaultSourceCardinality.checkCardinalities())) {
+		Links[link].defaultSourceCardinality = getDefaultCardinality();
+	}
+	if (!(Links[link].defaultTargetCardinality.checkCardinalities())) {
+		Links[link].defaultTargetCardinality = getDefaultCardinality();
+	}
+}
+
 export function updateConnection(sid: string, tid: string, linkID: string, type: number, iri: string, setCardinality: boolean = false): string[] {
 	addLink(linkID, iri, sid, tid, type);
 	if (iri in Links && type === LinkType.DEFAULT && setCardinality) {
 		ProjectLinks[linkID].sourceCardinality =
 			Links[iri].defaultSourceCardinality.isCardinalityNone() ?
-				ProjectSettings.defaultCardinality : Links[iri].defaultSourceCardinality;
+				getDefaultCardinality() : Links[iri].defaultSourceCardinality;
 		ProjectLinks[linkID].targetCardinality =
 			Links[iri].defaultTargetCardinality.isCardinalityNone() ?
-				ProjectSettings.defaultCardinality : Links[iri].defaultTargetCardinality;
+				getDefaultCardinality() : Links[iri].defaultTargetCardinality;
 	}
 	ProjectElements[sid].connections.push(linkID);
 	return [updateConnections(linkID), updateProjectLink(true, linkID)];

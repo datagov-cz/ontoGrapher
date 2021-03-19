@@ -9,8 +9,8 @@ export class Cardinality {
         this.first = first;
         this.second = second;
         if (!this.checkCardinalities()) {
-            this.first = ProjectSettings.defaultCardinality.first;
-            this.second = ProjectSettings.defaultCardinality.second;
+            this.first = ProjectSettings.defaultCardinality1;
+            this.second = ProjectSettings.defaultCardinality2;
         }
     }
 

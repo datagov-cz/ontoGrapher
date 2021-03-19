@@ -102,8 +102,8 @@ export default class DetailLink extends React.Component<Props, State> {
         if (this.state.id in ProjectLinks) {
             let queries: string[] = [];
             if (ProjectSettings.representation === Representation.FULL) {
-                ProjectLinks[this.state.id].sourceCardinality = CardinalityPool[parseInt(this.state.sourceCardinality, 10)];
-                ProjectLinks[this.state.id].targetCardinality = CardinalityPool[parseInt(this.state.targetCardinality, 10)];
+                ProjectLinks[this.state.id].sourceCardinality = CardinalityPool[parseInt(this.state.sourceCardinality, 10)] || new Cardinality("", "");
+                ProjectLinks[this.state.id].targetCardinality = CardinalityPool[parseInt(this.state.targetCardinality, 10)] || new Cardinality("", "");
                 ProjectLinks[this.state.id].iri = this.state.iri;
                 let link = graph.getLinks().find(link => link.id === this.state.id);
                 if (link) {

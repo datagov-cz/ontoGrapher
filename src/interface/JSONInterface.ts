@@ -4,6 +4,7 @@ import {createValues} from "../function/FunctionCreateVars";
 import {initLanguageObject} from "../function/FunctionEditVars";
 import {checkLabels} from "../function/FunctionGetVars";
 import {Locale} from "../config/Locale";
+import {checkDefaultCardinality} from "../function/FunctionLink";
 
 export async function getVocabulariesFromRemoteJSON(pathToJSON: string): Promise<boolean> {
     const isURL = require('is-url');
@@ -48,6 +49,10 @@ export async function getVocabulariesFromRemoteJSON(pathToJSON: string): Promise
                                 data.sourceIRI,
                                 Object.keys(Stereotypes),
                                 Object.keys(Links)))
+                        Object.keys(Links).forEach(link => {
+                            checkDefaultCardinality(link);
+                            console.log(link, Links[link]);
+                        });
                         return results.every(bool => bool);
                     }
                 }
