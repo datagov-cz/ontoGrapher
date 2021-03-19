@@ -63,7 +63,8 @@ export function updateDefaultLink(id: string): string {
 				qb.s(qb.i(iri), 'rdfs:subClassOf', qb.b([
 					qb.po('rdf:type', 'owl:Restriction'),
 					qb.po('owl:onProperty', qb.i(rest.onProperty)),
-					qb.po(qb.i(rest.restriction), qb.i(rest.target)),
+					qb.po(qb.i(rest.restriction),
+						parseInt(rest.target, 10) ? qb.lt(rest.target, 'xsd:nonNegativeInteger') : qb.i(rest.target)),
 				]))
 			].join(`
 			`)
