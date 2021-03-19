@@ -101,11 +101,13 @@ export default class DiagramCanvas extends React.Component<Props, State> {
 
     hideElement(cell: joint.dia.Cell) {
         const id = cell.id as string;
-        if (ProjectSettings.selectedElements.find(elem => elem === id)) unhighlightElement(id);
+        if (ProjectSettings.selectedElements.find(elem => elem === id)) {
+            this.props.updateDetailPanel();
+            unhighlightElement(id);
+        }
         cell.remove();
         ProjectElements[id].hidden[ProjectSettings.selectedDiagram] = true;
         this.props.updateElementPanel();
-        this.props.updateDetailPanel();
         this.props.performTransaction(updateProjectElementDiagram(ProjectSettings.selectedDiagram, id));
     }
 

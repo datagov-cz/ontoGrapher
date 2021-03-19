@@ -23,7 +23,7 @@ export default class MenuPanelAbout extends React.Component<Props, State> {
     //Retrieves the day and month of the last entry in the changelog to display in the button.
     getLastChangeDay() {
         const year: string = Object.keys(enChangelog)[0];
-        const month: string = Object.keys(enChangelog[year])[0];
+        const month: string = Object.keys(enChangelog[year]).reverse()[0];
         const day: string = Object.keys(enChangelog[year][month]).reverse()[0];
         return `${day}. ${month}.`
     }

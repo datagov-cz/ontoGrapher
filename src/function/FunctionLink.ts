@@ -19,6 +19,14 @@ import {paper} from "../main/DiagramCanvas";
 import {updateConnections} from "../queries/UpdateConnectionQueries";
 import {updateDeleteProjectLinkVertex, updateProjectLink, updateProjectLinkVertex} from "../queries/UpdateLinkQueries";
 
+export function getOtherConnectionElementID(linkID: string, elemID: string): string {
+	return ProjectLinks[linkID].source === elemID ? ProjectLinks[linkID].target : ProjectLinks[linkID].source
+}
+
+export function getConnectionElementID(linkID: string, elemID: string): string {
+	return ProjectLinks[linkID].target === elemID ? ProjectLinks[linkID].target : ProjectLinks[linkID].source
+}
+
 export function saveNewLink(iri: string, sid: string, tid: string): string[] {
 	const type = iri in Links ? Links[iri].type : LinkType.DEFAULT;
 	let link = getNewLink(type);

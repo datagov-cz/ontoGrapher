@@ -15,6 +15,12 @@ export function setDisplayLabel(id: string, languageCode: string) {
 	}
 }
 
+export function getDisplayLabel(id: string, languageCode: string): string {
+	if (!(ProjectElements[id].selectedLabel[languageCode]))
+		setDisplayLabel(id, languageCode);
+	return ProjectElements[id].selectedLabel[languageCode];
+}
+
 export function drawGraphElement(elem: joint.dia.Element, languageCode: string, representation: number) {
 	if (typeof elem.id === "string") {
 		const types = VocabularyElements[ProjectElements[elem.id].iri].types;
