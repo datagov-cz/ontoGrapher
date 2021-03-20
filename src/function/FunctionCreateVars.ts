@@ -18,7 +18,7 @@ export function createNewElemIRI(scheme: string, name: string): string {
     return (scheme.substring(0, scheme.lastIndexOf("/") + 1) + "pojem/" + name)
         .trim()
         .replace(/\s/g, '-')
-        .replace(/(?![a-zA-Z0-9À-ž-._~:/?#\[\]@!$&'()*+,;=])./g, "")
+        .replace(/(?![a-zA-Z0-9À-ž-._~:/?#[\]@!$&'()*+,;=])./g, "")
         .toLowerCase();
 }
 
