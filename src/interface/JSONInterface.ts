@@ -51,7 +51,6 @@ export async function getVocabulariesFromRemoteJSON(pathToJSON: string): Promise
                                 Object.keys(Links)))
                         Object.keys(Links).forEach(link => {
                             checkDefaultCardinality(link);
-                            console.log(link, Links[link]);
                         });
                         return results.every(bool => bool);
                     }
