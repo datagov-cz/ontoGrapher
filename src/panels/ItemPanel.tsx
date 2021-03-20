@@ -54,8 +54,9 @@ export default class ItemPanel extends React.Component<Props, State> {
 		});
 		this.setState({shownElements: this.updateShownElements(), selectedID: id}, () => {
 			const itemElement = document.getElementById(this.state.selectedID);
-			if (itemElement) {
-				itemElement.scrollIntoView({behavior: "smooth", block: "center"});
+			const parent = document.getElementById('elementList');
+			if (itemElement && parent) {
+				parent.scrollTo({top: itemElement.offsetTop - parent.offsetHeight / 2, left: 0, behavior: "smooth"})
 			}
 		});
 	}
@@ -189,7 +190,7 @@ export default class ItemPanel extends React.Component<Props, State> {
 							onChange={this.handleChangeSearch}
 						/>
 					</InputGroup>
-					<div className={"elementLinkList"}>
+					<div id={'elementList'} className={"elementLinkList"}>
 						{this.getFolders()}
 					</div>
 					<ModalRemoveItem
