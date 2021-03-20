@@ -42,7 +42,7 @@ export default class Connection extends React.Component<Props, State> {
                             id: _.uniq(this.props.selection.map(link =>
                                 getOtherConnectionElementID(link, this.props.elemID)).concat(elemID))
                         }));
-                        this.props.updateSelection(this.props.selection);
+                        this.props.updateSelection(_.uniq(this.props.selection.concat(this.props.linkID)));
                     }}
                     className={classNames('connectionComponent', 'connection', {selected: this.props.selected})}
                     onClick={() => this.props.updateSelection([this.props.linkID])}>
