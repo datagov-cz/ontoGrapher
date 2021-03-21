@@ -4,10 +4,10 @@ on:
   push:
     # Publish `master` as Docker `latest` image.
     branches:
-      - master
+      - main
 
 env:
-  IMAGE_NAME: ontographer
+  IMAGE_NAME: al-ontographer
 
 jobs:
 
