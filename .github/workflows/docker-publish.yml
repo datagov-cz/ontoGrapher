@@ -7,7 +7,7 @@ on:
       - master
 
 env:
-  IMAGE_NAME: ontographer
+  IMAGE_NAME: al-ontographer
 
 jobs:
 

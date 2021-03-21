@@ -3,7 +3,7 @@ import {Environment} from "./Environment";
 import {Locale} from "./Locale";
 
 // Extract Keycloak URL and realm from generic OIDC auth URL
-const OIDC_URL = Environment.components.authServer.url;
+const OIDC_URL = Environment.components['al-auth-server'].url;
 const match = /^(.+)\/realms\/(.+)$/.exec(OIDC_URL)
 if (!match) {
   throw new Error(Locale.en.errorParsingKeycloakURL)

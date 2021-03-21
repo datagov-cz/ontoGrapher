@@ -149,7 +149,7 @@ export var ProjectSettings: {
     selectedLanguage: Object.keys(Languages)[0],
     selectedLink: "",
     contextIRI: "",
-    contextEndpoint: Environment.components.dbServer.url,
+    contextEndpoint: Environment.components['al-db-server'].url,
     ontographerContext: "http://onto.fel.cvut.cz/ontologies/application/ontoGrapher",
     representation: Representation.FULL,
     lastTransaction: "",

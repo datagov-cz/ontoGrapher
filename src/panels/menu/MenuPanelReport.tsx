@@ -21,10 +21,10 @@ export default class MenuPanelReport extends React.Component<Props, State> {
 				className={"inert report"}
 				title={Locale[ProjectSettings.viewLanguage].reportIssue}
 				variant={"warning"}
-				href={Environment.components.issueTracker.meta.newBug}
+				href={Environment.components['al-issue-tracker'].meta['new-bug']}
 				menuAlign={{sm: "left"}}
 				target={"_blank"}>
-				<Dropdown.Item href={Environment.components.issueTracker.meta.newFeature} target={"_blank"}>
+				<Dropdown.Item href={Environment.components['al-issue-tracker'].meta['new-feature']} target={"_blank"}>
 					{Locale[ProjectSettings.viewLanguage].reportEnhancement}
 				</Dropdown.Item>
 			</SplitButton>
