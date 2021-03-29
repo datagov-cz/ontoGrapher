@@ -86,13 +86,13 @@ export function setLabels(link: joint.dia.Link, centerLabel: string){
             attrs: {text: {text: centerLabel}},
             position: {distance: 0.5}
         });
-        if (ProjectLinks[link.id].sourceCardinality.getString() !== "") {
+        if (ProjectLinks[link.id].sourceCardinality && ProjectLinks[link.id].sourceCardinality.getString() !== "") {
             link.appendLabel({
                 attrs: {text: {text: ProjectLinks[link.id].sourceCardinality.getString()}},
                 position: {distance: 20}
             });
         }
-        if (ProjectLinks[link.id].targetCardinality.getString() !== "") {
+        if (ProjectLinks[link.id].targetCardinality && ProjectLinks[link.id].targetCardinality.getString() !== "") {
             link.appendLabel({
                 attrs: {text: {text: ProjectLinks[link.id].targetCardinality.getString()}},
                 position: {distance: -20}

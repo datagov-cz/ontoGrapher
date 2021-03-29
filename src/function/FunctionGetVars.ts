@@ -13,6 +13,7 @@ import {Shapes} from "../config/visual/Shapes";
 import * as joint from "jointjs";
 import {LinkConfig} from "../config/logic/LinkConfig";
 import {mvp1IRI, mvp2IRI} from "./FunctionGraph";
+import {Cardinality} from "../datatypes/Cardinality";
 
 export function getVocabElementByElementID(id: string): { [key: string]: any } {
 	return VocabularyElements[ProjectElements[id].iri];
@@ -42,15 +43,19 @@ export function checkLabels() {
 		}
 		Links[link].subClassOfDomain = [];
 		Links[link].subClassOfRange = [];
-		Links[link].defaultSourceCardinality = ProjectSettings.defaultCardinality;
-		Links[link].defaultTargetCardinality = ProjectSettings.defaultCardinality;
+		Links[link].defaultSourceCardinality = getDefaultCardinality();
+		Links[link].defaultTargetCardinality = getDefaultCardinality();
 	}
 }
 
+export function getDefaultCardinality() {
+	return new Cardinality(ProjectSettings.defaultCardinality1, ProjectSettings.defaultCardinality2);
+}
+
 export function setSchemeColors(pool: string) {
-    Object.keys(Schemes).forEach((scheme, i) => {
-        Schemes[scheme].color = ColorPool[pool].colors[i];
-    })
+	Object.keys(Schemes).forEach((scheme, i) => {
+		Schemes[scheme].color = ColorPool[pool].colors[i];
+	})
 }
 
 export function isConnectionWithTrope(link: string, id: string): boolean {
