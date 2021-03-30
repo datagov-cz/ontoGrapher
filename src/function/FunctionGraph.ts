@@ -86,13 +86,13 @@ export function setLabels(link: joint.dia.Link, centerLabel: string){
             attrs: {text: {text: centerLabel}},
             position: {distance: 0.5}
         });
-        if (ProjectLinks[link.id].sourceCardinality.getString() !== "") {
+        if (ProjectLinks[link.id].sourceCardinality && ProjectLinks[link.id].sourceCardinality.getString() !== "") {
             link.appendLabel({
                 attrs: {text: {text: ProjectLinks[link.id].sourceCardinality.getString()}},
                 position: {distance: 20}
             });
         }
-        if (ProjectLinks[link.id].targetCardinality.getString() !== "") {
+        if (ProjectLinks[link.id].targetCardinality && ProjectLinks[link.id].targetCardinality.getString() !== "") {
             link.appendLabel({
                 attrs: {text: {text: ProjectLinks[link.id].targetCardinality.getString()}},
                 position: {distance: -20}
@@ -232,6 +232,29 @@ export function setRepresentation(representation: number): { result: boolean, tr
     }
 }
 
+export function checkLinkSelfLoop(link: joint.dia.Link) {
+    const id = link.id as string;
+    if (ProjectLinks[id].source === ProjectLinks[id].target &&
+        (!(ProjectLinks[id].vertices[ProjectSettings.selectedDiagram]) ||
+            ProjectLinks[id].vertices[ProjectSettings.selectedDiagram].length === 0)) {
+        const coords = link.getSourcePoint();
+        const bbox = link.getSourceCell()?.getBBox();
+        if (bbox) {
+            return [
+                new joint.g.Point(coords.x, coords.y + 100),
+                new joint.g.Point(coords.x + (bbox.width / 2) + 50, coords.y + 100),
+                new joint.g.Point(coords.x + (bbox.width / 2) + 50, coords.y),
+            ]
+        } else {
+            return [
+                new joint.g.Point(coords.x, coords.y + 100),
+                new joint.g.Point(coords.x + 300, coords.y + 100),
+                new joint.g.Point(coords.x + 300, coords.y),
+            ]
+        }
+    } else return [];
+}
+
 export function setupLink(link: string, restoreConnectionPosition: boolean = true) {
     let lnk = getNewLink(ProjectLinks[link].type, link);
     setLabels(lnk, getLinkOrVocabElem(ProjectLinks[link].iri).labels[ProjectSettings.selectedLanguage])
@@ -244,30 +267,18 @@ export function setupLink(link: string, restoreConnectionPosition: boolean = tru
         connectionPoint: {name: 'boundary', args: {selector: getElementShape(ProjectLinks[link].target)}}
     });
     lnk.addTo(graph);
-    if (ProjectLinks[link].source === ProjectLinks[link].target && (!(ProjectLinks[link].vertices[ProjectSettings.selectedDiagram]) ||
-        ProjectLinks[link].vertices[ProjectSettings.selectedDiagram] === [])) {
-        const coords = lnk.getSourcePoint();
-        let bbox = lnk.getSourceCell()?.getBBox();
-        if (bbox) {
-            ProjectLinks[link].vertices[ProjectSettings.selectedDiagram] = [
-                new joint.g.Point(coords.x, coords.y + 100),
-                new joint.g.Point(coords.x + (bbox.width / 2) + 50, coords.y + 100),
-                new joint.g.Point(coords.x + (bbox.width / 2) + 50, coords.y),
-            ]
-        } else {
-            ProjectLinks[link].vertices[ProjectSettings.selectedDiagram] = [
-                new joint.g.Point(coords.x, coords.y + 100),
-                new joint.g.Point(coords.x + 300, coords.y + 100),
-                new joint.g.Point(coords.x + 300, coords.y),
-            ]
-        }
-    }
+    if (!(ProjectLinks[link].vertices[ProjectSettings.selectedDiagram]))
+        ProjectLinks[link].vertices[ProjectSettings.selectedDiagram] = [];
     if (restoreConnectionPosition) {
-        lnk.vertices(ProjectLinks[link].vertices[ProjectSettings.selectedDiagram]);
+        lnk.vertices(
+            ProjectLinks[link].vertices[ProjectSettings.selectedDiagram].length > 0 ?
+                ProjectLinks[link].vertices[ProjectSettings.selectedDiagram] : checkLinkSelfLoop(lnk));
         return undefined;
     } else {
         let ret = _.cloneDeep(ProjectLinks[link].vertices[ProjectSettings.selectedDiagram]);
-        ProjectLinks[link].vertices[ProjectSettings.selectedDiagram] = [];
+        ProjectLinks[link].vertices[ProjectSettings.selectedDiagram] = checkLinkSelfLoop(lnk);
+        if (ProjectLinks[link].vertices[ProjectSettings.selectedDiagram].length > 0)
+            lnk.vertices(ProjectLinks[link].vertices[ProjectSettings.selectedDiagram]);
         return ret ? ret.length : undefined;
     }
 }

@@ -2,7 +2,7 @@ import {Restriction} from "../../datatypes/Restriction";
 import {ProjectElements, ProjectLinks, ProjectSettings, VocabularyElements} from "../Variables";
 import {parsePrefix} from "../../function/FunctionEditVars";
 import {addLink} from "../../function/FunctionCreateVars";
-import {getElemFromIRI, getNewLink} from "../../function/FunctionGetVars";
+import {getDefaultCardinality, getElemFromIRI, getNewLink} from "../../function/FunctionGetVars";
 import {LinkType} from "../Enum";
 import {Cardinality} from "../../datatypes/Cardinality";
 import _ from "underscore";
@@ -50,11 +50,12 @@ function createCardinality(iri: string, restriction: Restriction) {
 		if (linkID) {
 			const pos = restriction.restriction.includes("max");
 			ProjectLinks[linkID].targetCardinality = pos ? new Cardinality(
-				ProjectLinks[linkID].targetCardinality.getFirstCardinality() || ProjectSettings.defaultCardinality.getFirstCardinality(),
+				ProjectLinks[linkID].targetCardinality.getFirstCardinality() || ProjectSettings.defaultCardinality1,
 				restriction.target) :
 				new Cardinality(
 					restriction.target,
-					ProjectLinks[linkID].targetCardinality.getSecondCardinality() || ProjectSettings.defaultCardinality.getSecondCardinality());
+					ProjectLinks[linkID].targetCardinality.getSecondCardinality() || ProjectSettings.defaultCardinality2);
+			if (!(ProjectLinks[linkID].targetCardinality).checkCardinalities()) ProjectLinks[linkID].targetCardinality = getDefaultCardinality();
 		}
 	}
 }

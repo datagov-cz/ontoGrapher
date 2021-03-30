@@ -12,7 +12,7 @@ import {
 import {getLabelOrBlank, getLinkOrVocabElem} from "../function/FunctionGetVars";
 import {graph} from "../graph/Graph";
 import {parsePrefix} from "../function/FunctionEditVars";
-import {Representation} from "../config/Enum";
+import {LinkType, Representation} from "../config/Enum";
 import {Locale} from "../config/Locale";
 
 interface Props {
@@ -44,6 +44,8 @@ export default class NewLinkModal extends React.Component<Props, State> {
 
 	filtering(link: string): boolean {
 		if (!this.props.sid || !this.props.tid) return false;
+		if (Links[link].type === LinkType.GENERALIZATION)
+			return this.props.sid !== this.props.tid;
 		const sourceTypes = VocabularyElements[ProjectElements[this.props.sid].iri].types
 			.filter(type => type.startsWith(Prefixes["z-sgov-pojem"]))
 		const targetTypes = VocabularyElements[ProjectElements[this.props.tid].iri].types
@@ -89,7 +91,7 @@ export default class NewLinkModal extends React.Component<Props, State> {
 				return Object.keys(Links).filter(link => !conns.find(conn => ProjectLinks[conn].iri === link &&
 					ProjectLinks[conn].target === this.props.tid &&
 					ProjectLinks[conn].active) && (this.state.displayIncompatible ? true :
-					(this.filtering(link) || Links[link].inScheme === (ProjectSettings.ontographerContext + "/uml"))));
+					(this.filtering(link))));
 			} else if (ProjectSettings.representation === Representation.COMPACT) {
 				return Object.keys(VocabularyElements).filter(link =>
 					!conns.find(

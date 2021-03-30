@@ -132,6 +132,8 @@ export var ProjectSettings: {
     contextEndpoint: string,
     ontographerContext: string,
     representation: number,
+    defaultCardinality1: string,
+    defaultCardinality2: string,
     lastTransaction: string,
     lastTransactionID: string,
     switchElements: string[],
@@ -140,7 +142,6 @@ export var ProjectSettings: {
     viewColorPool: string,
     viewItemPanelTypes: boolean,
     viewLanguage: string,
-    defaultCardinality: Cardinality,
     selectedElements: string[];
 } = {
     name: {},
@@ -152,6 +153,8 @@ export var ProjectSettings: {
     contextEndpoint: Environment.components['al-db-server'].url,
     ontographerContext: "http://onto.fel.cvut.cz/ontologies/application/ontoGrapher",
     representation: Representation.FULL,
+    defaultCardinality1: "0",
+    defaultCardinality2: "*",
     lastTransaction: "",
     lastTransactionID: "",
     switchElements: [],
@@ -160,7 +163,6 @@ export var ProjectSettings: {
     viewColorPool: "pastelLow",
     viewItemPanelTypes: true,
     viewLanguage: "en",
-    defaultCardinality: new Cardinality("0", "*"),
     selectedElements: []
 };
 
