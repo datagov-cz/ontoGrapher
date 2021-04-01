@@ -5,7 +5,7 @@ import {csHelp} from "../locale/cshelp";
 import {enChangelog} from "../locale/enchangelog";
 import {csChangelog} from "../locale/cschangelog";
 
-export const Locale: { [key: string]: { [key: string]: string } } = {
+export const Locale: { [key: string]: { [Property in keyof typeof en]: string } } = {
 	en, cs
 }
 

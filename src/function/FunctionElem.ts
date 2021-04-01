@@ -73,6 +73,11 @@ export function getElementToolPosition(id: string | number, topRight: boolean = 
 	}
 }
 
+export function isElementHidden(id: string, diagram: number) {
+	return ProjectElements[id].hidden[diagram] ||
+		ProjectElements[id].hidden[diagram] === undefined
+}
+
 /**
  * Checks if the position of the element on the canvas differs from the position saved in the model.
  * @param elem The element to check

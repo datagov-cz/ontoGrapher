@@ -7,6 +7,10 @@
   max-width: 600px;
   border-radius: 0;
 
+  svg {
+    transform: scale(0.7);
+  }
+
   &.disabled {
     cursor: not-allowed;
     opacity: 0.5;

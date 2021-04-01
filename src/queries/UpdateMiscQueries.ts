@@ -10,7 +10,7 @@ export function updateProjectSettings(contextIRI: string, diagram: number): stri
 	const insert = INSERT.DATA`${qb.g(ProjectSettings.ontographerContext, [
 		qb.s(qb.i(projIRI), 'og:context', qb.i(contextIRI)),
 		qb.s(qb.i(projIRI), 'og:viewColor', qb.ll(ProjectSettings.viewColorPool)),
-		qb.s(qb.i(projIRI), 'og:diagram', diagramIRI),
+		qb.s(qb.i(projIRI), 'og:diagram', qb.a(Diagrams.map((diag, i) => qb.i(projIRI + "/diagram-" + (i + 1))))),
 		qb.s(diagramIRI, 'og:index', qb.ll(diagram)),
 		qb.s(diagramIRI, 'og:context', qb.i(contextIRI)),
 		qb.s(diagramIRI, 'og:name', qb.ll(Diagrams[diagram].name)),
