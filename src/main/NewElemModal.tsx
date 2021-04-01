@@ -61,10 +61,10 @@ export default class NewElemModal extends React.Component<Props, State> {
 			errorText = Locale[ProjectSettings.viewLanguage].modalNewElemError;
 		} else if (Object.values(names).find(name => this.checkExists(scheme, name))) {
 			errorText = Locale[ProjectSettings.viewLanguage].modalNewElemExistsError;
-		} else if (Object.values(names).find(name => /["]/.test(name))) {
-			errorText = Locale[ProjectSettings.viewLanguage].modalNewElemRegexError;
 		} else if (Object.values(names).find(name => name && (name.length < 2 || name.length > 150))) {
 			errorText = Locale[ProjectSettings.viewLanguage].modalNewElemLengthError;
+		} else if (createNewElemIRI(scheme, names[ProjectSettings.defaultLanguage]) === Schemes[scheme].namespace) {
+			errorText = Locale[ProjectSettings.viewLanguage].modalNewElemCharacterError;
 		}
 		return errorText;
 	}

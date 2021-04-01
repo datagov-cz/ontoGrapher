@@ -1,7 +1,15 @@
-import {CardinalityPool, ProjectElements, ProjectLinks, ProjectSettings, VocabularyElements} from "../config/Variables";
+import {
+    CardinalityPool,
+    ProjectElements,
+    ProjectLinks,
+    ProjectSettings,
+    Schemes,
+    VocabularyElements
+} from "../config/Variables";
 import {initLanguageObject} from "./FunctionEditVars";
 import {PackageNode} from "../datatypes/PackageNode";
 import {LinkType} from "../config/Enum";
+import {Locale} from "../config/Locale";
 
 export function createValues(values: { [key: string]: string[] }, prefixes: { [key: string]: string }) {
     let result: string[] = [];
@@ -15,11 +23,12 @@ export function createValues(values: { [key: string]: string[] }, prefixes: { [k
 }
 
 export function createNewElemIRI(scheme: string, name: string): string {
-    return (scheme.substring(0, scheme.lastIndexOf("/") + 1) + "pojem/" + name)
+    return (Schemes[scheme].namespace || `${scheme}/${Locale[ProjectSettings.defaultLanguage].terms}/`) + name
+        .toLowerCase()
         .trim()
-        .replace(/\s/g, '-')
-        .replace(/(?![a-zA-Z0-9À-ž-._~:/?#[\]@!$&'()*+,;=])./g, "")
-        .toLowerCase();
+        .normalize()
+        .replace(/[\s\\]/g, '-')
+        .replace(/[(?&)"^<>]/g, "");
 }
 
 export function getDomainOf(iriElem: string): string[] {
