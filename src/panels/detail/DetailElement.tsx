@@ -3,29 +3,25 @@ import {ResizableBox} from "react-resizable";
 import {
 	Diagrams,
 	Languages,
-	Links,
 	ProjectElements,
-	ProjectLinks,
 	ProjectSettings,
 	Schemes,
 	Stereotypes,
 	VocabularyElements
 } from "../../config/Variables";
-import {getLabelOrBlank, getLinkOrVocabElem} from "../../function/FunctionGetVars";
+import {getLabelOrBlank} from "../../function/FunctionGetVars";
 import {Accordion, Button, Card} from "react-bootstrap";
 import TableList from "../../components/TableList";
 import IRILink from "../../components/IRILink";
 import LabelTable from "./components/LabelTable";
 import DescriptionTabs from "./components/DescriptionTabs";
-import {spreadConnections} from "../../function/FunctionGraph";
 import {graph} from "../../graph/Graph";
 import StereotypeOptions from "./components/StereotypeOptions";
 import {Shapes} from "../../config/visual/Shapes";
 import {Locale} from "../../config/Locale";
 import {drawGraphElement, unHighlightCell} from "../../function/FunctionDraw";
 import AltLabelTable from "./components/AltLabelTable";
-import ConnectionTable from "./components/ConnectionTable";
-import {Representation} from "../../config/Enum";
+import ConnectionList from "./components/connections/ConnectionList";
 import {updateProjectElement} from "../../queries/UpdateElementQueries";
 
 interface Props {
@@ -62,7 +58,6 @@ export default class DetailElement extends React.Component<Props, State> {
 			newAltInput: "",
 			changes: false
 		}
-		this.checkSpreadConnections = this.checkSpreadConnections.bind(this);
 		this.updateStereotype = this.updateStereotype.bind(this);
 	}
 
@@ -77,32 +72,6 @@ export default class DetailElement extends React.Component<Props, State> {
 			newAltInput: "",
 			changes: false
 		}) : this.setState({id: ""});
-	}
-
-	getConnections(to: boolean): string[] {
-		return to ? ProjectElements[this.state.id].connections.filter(conn => ProjectLinks[conn] && ProjectLinks[conn].active &&
-			(ProjectSettings.representation === Representation.FULL ? ProjectLinks[conn].iri in Links : (!(ProjectLinks[conn].iri in Links)) ||
-				(ProjectLinks[conn].iri in Links && Links[ProjectLinks[conn].iri].inScheme.startsWith(ProjectSettings.ontographerContext)))
-			&& getLinkOrVocabElem(ProjectLinks[conn].iri)) :
-			Object.keys(ProjectLinks).filter(conn => ProjectLinks[conn] && ProjectLinks[conn].target === this.state.id &&
-				ProjectLinks[conn].active && getLinkOrVocabElem(ProjectLinks[conn].iri) &&
-				(ProjectSettings.representation === Representation.FULL ? ProjectLinks[conn].iri in Links : (!(ProjectLinks[conn].iri in Links) ||
-					(ProjectLinks[conn].iri in Links && Links[ProjectLinks[conn].iri].inScheme.startsWith(ProjectSettings.ontographerContext)))));
-	}
-
-	checkSpreadConnections(to: boolean): boolean {
-		if (this.state) {
-			let cell = graph.getElements().find(elem => elem.id === this.state.id);
-			if (cell) {
-				let connections = this.getConnections(to);
-				return to ? connections.length !==
-					(graph.getConnectedLinks(cell)
-						.filter(link => ProjectLinks[link.id] && ProjectLinks[link.id].source === this.state.id).length) :
-					connections.length !==
-					graph.getConnectedLinks(cell)
-						.filter(link => ProjectLinks[link.id] && ProjectLinks[link.id].target === this.state.id).length;
-			} else return false;
-		} else return false;
 	}
 
 	save() {
@@ -261,28 +230,7 @@ export default class DetailElement extends React.Component<Props, State> {
 						</Card.Header>
 						<Accordion.Collapse eventKey={"1"}>
 							<Card.Body>
-								<ConnectionTable
-									connections={this.getConnections(true)}
-									projectLanguage={this.props.projectLanguage} to={true}
-									button={<Button className={"buttonlink center"}
-													onClick={() => {
-														this.props.performTransaction(...spreadConnections(this.state.id, true));
-														this.forceUpdate();
-													}}>
-										{Locale[ProjectSettings.viewLanguage].spreadConnections}
-									</Button>}
-									showButton={this.checkSpreadConnections(true)}/>
-								<ConnectionTable
-									connections={this.getConnections(false)}
-									projectLanguage={this.props.projectLanguage} to={false}
-									button={<Button className={"buttonlink center"}
-													onClick={() => {
-														this.props.performTransaction(...spreadConnections(this.state.id, false));
-														this.forceUpdate();
-													}}>
-										{Locale[ProjectSettings.viewLanguage].spreadConnections}
-									</Button>}
-									showButton={this.checkSpreadConnections(false)}/>
+								<ConnectionList id={this.state.id} projectLanguage={this.props.projectLanguage}/>
 							</Card.Body>
 						</Accordion.Collapse>
 					</Card>

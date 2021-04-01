@@ -1,0 +1,161 @@
+.connectionList {
+
+  .connection {
+    &.selected {
+      background-color: skyblue;
+    }
+
+    .link {
+      position: relative;
+      vertical-align: middle;
+      width: 50%;
+
+      svg {
+        position: absolute;
+        left: 0;
+        bottom: calc(50% - (25px / 2));
+        z-index: 0;
+      }
+
+      .text {
+        position: relative;
+        z-index: 1;
+        display: inline-block;
+        max-width: 80%;
+        left: 10%;
+        font-size: 14px;
+        background-color: #ffffff;
+        padding: 0 4px;
+        border-radius: 4px;
+      }
+    }
+
+    .element {
+      border: solid 2px black;
+      text-align: center;
+      font-size: 14px;
+      width: 100%;
+      height: 100%;
+      vertical-align: middle;
+
+      svg {
+        transform: scale(0.8);
+      }
+    }
+  }
+
+  .filter {
+    border: 1px black solid;
+    border-radius: 4px;
+    padding: 5px 0;
+    margin-top: 4px;
+    margin-bottom: 4px;
+    position: relative;
+    font-size: 14px;
+
+    .hidden {
+      position: absolute;
+      right: 5px;
+
+      button {
+        padding: 0;
+        border: none;
+        border-radius: 4px;
+
+        &:hover {
+          background: lightgrey;
+        }
+
+        &.selected {
+          background: lightgrey;
+        }
+      }
+
+      svg {
+        transform: scale(0.8);
+      }
+    }
+
+    .element {
+      border: 2px solid black;
+      width: fit-content;
+      max-width: 87%;
+      text-align: center;
+      padding: 8px 24px;
+      margin: 2px 2px 0;
+      overflow-wrap: anywhere;
+      line-height: 1 !important;
+      position: relative;
+
+      select, input {
+        position: relative;
+        z-index: 1;
+      }
+
+      option {
+        font-size: 14px;
+      }
+
+      .schemeSelect select {
+        background: transparent;
+        border: none;
+        width: 20px;
+        position: absolute;
+        right: 0;
+        top: 0;
+        z-index: 0;
+      }
+    }
+
+    .connection {
+      width: 100%;
+      margin-top: 6px;
+      position: relative;
+
+      .line {
+        width: 100%;
+        position: absolute;
+        bottom: 20%;
+        z-index: 0;
+      }
+
+      span {
+        display: flex;
+        justify-content: space-evenly;
+        position: relative;
+        z-index: 1;
+
+        button {
+          padding: 0 2px;
+          border: none;
+
+          &:hover, &.selected {
+            background: lightgrey;
+            border-radius: 4px;
+          }
+        }
+
+        select {
+          display: inline;
+          width: fit-content;
+        }
+      }
+    }
+  }
+
+  .buttons {
+    margin: 4px;
+    background-color: lightgrey;
+    display: flex;
+    justify-content: space-around;
+    border-radius: 5px;
+    border: 1px solid black;
+
+    button {
+      font-size: 18px;
+      vertical-align: middle;
+      line-height: 2;
+      color: black;
+    }
+  }
+}

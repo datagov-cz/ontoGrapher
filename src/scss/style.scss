@@ -1,6 +1,7 @@
 @import "diagram/DiagramApp";
 @import "panels/ItemPanel";
 @import "components/TableList";
+@import "components/ConnectionList";
 @import "panels/MenuPanel";
 @import "panels/DetailPanel";
 @import "panels/ValidationPanel";
@@ -8,6 +9,7 @@
 
 body {
   overflow: hidden;
+  word-break: break-word;
 }
 
 .inert {

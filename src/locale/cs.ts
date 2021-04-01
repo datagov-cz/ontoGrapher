@@ -1,11 +1,16 @@
-export const cs = {
+import {en} from "./en";
+
+export const cs: { [Property in keyof typeof en]: string } = {
 	"untitledProject": "Nový pracovní prostor",
 	"unsorted": "Neřazeno",
 	"updating": "Ukládání...",
 	"retry": "Zopakovat akci?",
 	"errorUpdating": "❌ Chyba: ukládání se nezdařilo.",
 	"workspaceReady": "✔ Pracovní prostor je připraven.",
-	"modalNewElemRegexError": "Ve jménu nesmí být speciální znaky.",
+	"modalNewElemLengthError": "Jméno musí mít mezi 2 a 150 znaky.",
+	"modalNewElemCharacterError": "Jméno nemůže mít jenom speciální znaky.",
+	"modalNewElemIRI": "Pojem bude vytvořen s tímto IRI:",
+	"terms": "pojmy",
 	"authenticationError": "Chyba autentikace. Prosím, kontaktujte serverového administrátora.",
 	"authenticationUpdateError": "Chyba autentikace. Prosím, načtěte stránku znovu.",
 	"authenticationExpired": "Autentikace vypršela. Prosím, načtěte stránku znovu.",
@@ -35,6 +40,11 @@ export const cs = {
 	"setStereotypeData": "Nastavit OntoUML stereotyp",
 	"noStereotypeUML": "Žádný typový stereotyp",
 	"noStereotypeData": "Žádný OntoUML stereotyp",
+	"anyStereotypeType": "Všechny typové stereotypy",
+	"anyStereotypeOnto": "Všechny OntoUML stereotypy",
+	"anyConnection": "Všechny vztahy",
+	"anyVocabulary": "Všechny slovníky",
+	"filterSearchPlaceholder": "Název/synonym pojmu",
 	"sourceCardinality": "Kardinalita u zdroje",
 	"targetCardinality": "Kardinalita u cíle",
 	"loading": "Načítání...",
@@ -92,7 +102,13 @@ export const cs = {
 	"reportIssue": "Nahlásit chybu",
 	"reportEnhancement": "Navrhnout úpravu",
 	"changelogButton": "Změny",
+	"errorInvalidCardinality": "Nastavená kardinalita není validní",
 	"errorParsingEnvironmentVariable": "Z promměného prostředí se nepodařila přečíst požadovaná proměnná",
 	"errorParsingKeycloakURL": "Z OIDC endpointu se nepodařilo přečíst Keycloak URL",
-	"errorParsingKeycloakRealm": "Z OIDC endpointu se nepodařilo přečíst Keycloak Realm"
-}
+	"errorParsingKeycloakRealm": "Z OIDC endpointu se nepodařilo přečíst Keycloak Realm",
+	"connectionListAddSelection": "Přidat výběr na plátno",
+	"connectionListEmptySelection": "Vyprázdnit výběr",
+	"connectionListShowSelection": "Vybrat zobrazené",
+	"connectionListShowFilter": "Zobrazit/skrýt filtr",
+	"connectionListEmptyFilter": "Zrušit filtr",
+} as const;

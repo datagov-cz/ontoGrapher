@@ -39,24 +39,12 @@ export function nameGraphLink(cell: joint.dia.Link, languageCode: string) {
     }
 }
 
-export function spreadConnections(id: string, to: boolean = true): string[] {
+export function spreadConnections(id: string, elems: string[]): string[] {
     const elem = graph.getElements().find(elem => elem.id === id);
     let queries: string[] = [];
     if (elem) {
         const centerX = elem.position().x + (elem.size().width / 2);
         const centerY = elem.position().y + (elem.size().height / 2);
-        const elems = (to ?
-            ProjectElements[id].connections.filter(conn => ProjectLinks[conn].active &&
-                !(graph.getCell(ProjectLinks[conn].target)) &&
-                (ProjectSettings.representation === Representation.FULL ? ProjectLinks[conn].iri in Links : (!(ProjectLinks[conn].iri in Links) ||
-                    (ProjectLinks[conn].iri in Links && Links[ProjectLinks[conn].iri].inScheme.startsWith(ProjectSettings.ontographerContext)))))
-                .map(conn => ProjectLinks[conn].target) :
-            Object.keys(ProjectLinks).filter(conn => ProjectLinks[conn].active &&
-                (ProjectSettings.representation === Representation.FULL ? ProjectLinks[conn].iri in Links : (!(ProjectLinks[conn].iri in Links) ||
-                    (ProjectLinks[conn].iri in Links && Links[ProjectLinks[conn].iri].inScheme.startsWith(ProjectSettings.ontographerContext)))) &&
-                ProjectLinks[conn].target === id &&
-                !(graph.getCell(ProjectLinks[conn].source)))
-                .map(conn => ProjectLinks[conn].source));
         const radius = 200 + (elems.length * 50);
         for (let i = 0; i < elems.length; i++) {
             const elemID: string = elems[i];

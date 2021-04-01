@@ -6,7 +6,8 @@ import {
     ProjectLinks,
     ProjectSettings,
     Schemes,
-    Stereotypes
+    Stereotypes,
+    VocabularyElements
 } from "../config/Variables";
 import {initLanguageObject, parsePrefix} from "../function/FunctionEditVars";
 import * as joint from "jointjs";
@@ -203,9 +204,11 @@ export async function getScheme(iris: string[], endpoint: string): Promise<boole
     let query = [
         "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>",
         "PREFIX dct: <http://purl.org/dc/terms/>",
-        "SELECT DISTINCT ?scheme ?termTitle",
+        "SELECT DISTINCT ?scheme ?namespace ?title",
         "WHERE {",
-        "?scheme dct:title ?termTitle." +
+        "?scheme dct:title ?title.",
+        "OPTIONAL {?vocabulary <http://onto.fel.cvut.cz/ontologies/slovník/agendový/popis-dat/pojem/má-glosář> ?scheme.",
+        "?vocabulary <http://purl.org/vocab/vann/preferredNamespaceUri> ?namespace.}",
         "filter(?scheme in (<" + iris.join(">, <") + ">))",
         "}"
     ].join(" ");
@@ -219,10 +222,12 @@ export async function getScheme(iris: string[], endpoint: string): Promise<boole
                 if (!(iri in Schemes)) Schemes[iri] = {
                     labels: {},
                     readOnly: false,
+                    namespace: "",
                     graph: "",
                     color: "#FFF",
                 }
-                if (result.termTitle) Schemes[iri].labels[result.termTitle['xml:lang']] = result.termTitle.value;
+                if (result.title) Schemes[iri].labels[result.title['xml:lang']] = result.title.value;
+                if (result.namespace) Schemes[iri].namespace = result.namespace.value;
             }
         }
         return true;
@@ -267,6 +272,7 @@ export async function getElementsConfig(contextIRI: string, contextEndpoint: str
     }).then(data => {
         for (const result of data.results.bindings) {
             const iri = result.iri.value;
+            if (!(iri in VocabularyElements)) continue;
             if (!(iri in elements)) {
                 elements[iri] = {
                     id: result.id.value,

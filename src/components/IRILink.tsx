@@ -27,7 +27,7 @@ export default class IRILink extends React.Component<Props, State> {
             }}
         >
             {this.props.label}<a target="_blank" rel="noopener noreferrer"
-                                 style={{display: this.state.hover ? "inline" : "none"}}
+                                 style={{visibility: this.state.hover ? "visible" : "hidden"}}
                                  href={this.props.iri}>↱</a>
         </span>);
     }

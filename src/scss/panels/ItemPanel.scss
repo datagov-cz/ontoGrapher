@@ -1,11 +1,16 @@
 .elements {
   word-wrap: break-word;
+  word-break: break-word;
   background-color: white;
   float: left;
   height: calc(100vh - 75px) !important;
   width: 100%;
   max-width: 600px;
   border-radius: 0;
+
+  svg {
+    transform: scale(0.7);
+  }
 
   &.disabled {
     cursor: not-allowed;

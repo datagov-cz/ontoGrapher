@@ -52,6 +52,7 @@ export function loadUML() {
     Schemes[scheme] = {
         labels: initLanguageObject("UML"),
         readOnly: false,
+        namespace: "",
         graph: ProjectSettings.ontographerContext,
         color: "#FFF"
     }

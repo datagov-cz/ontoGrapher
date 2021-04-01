@@ -101,11 +101,13 @@ export default class DiagramCanvas extends React.Component<Props, State> {
 
     hideElement(cell: joint.dia.Cell) {
         const id = cell.id as string;
-        if (ProjectSettings.selectedElements.find(elem => elem === id)) unhighlightElement(id);
+        if (ProjectSettings.selectedElements.find(elem => elem === id)) {
+            this.props.updateDetailPanel();
+            unhighlightElement(id);
+        }
         cell.remove();
         ProjectElements[id].hidden[ProjectSettings.selectedDiagram] = true;
         this.props.updateElementPanel();
-        this.props.updateDetailPanel();
         this.props.performTransaction(updateProjectElementDiagram(ProjectSettings.selectedDiagram, id));
     }
 
@@ -455,13 +457,13 @@ export default class DiagramCanvas extends React.Component<Props, State> {
             <NewElemModal
                 projectLanguage={this.props.projectLanguage}
                 modal={this.state.modalAddElem}
-                close={(conceptName: { [key: string]: string }, pkg: PackageNode) => {
+                close={(conceptName?: { [key: string]: string }, pkg?: PackageNode) => {
                     this.setState({modalAddElem: false});
                     if (conceptName && pkg) {
-                        const id = createNewConcept(this.newConceptEvent, conceptName, this.props.projectLanguage, pkg);
+                        const iri = createNewConcept(this.newConceptEvent, conceptName, ProjectSettings.defaultLanguage, pkg);
                         this.props.updateElementPanel();
-                        this.props.performTransaction(updateProjectElement(true, id),
-                            updateProjectElementDiagram(ProjectSettings.selectedDiagram, id));
+                        this.props.performTransaction(updateProjectElement(true, iri),
+                            updateProjectElementDiagram(ProjectSettings.selectedDiagram, iri));
                     } else {
                         this.newConceptEvent = {x: 0, y: 0}
                     }

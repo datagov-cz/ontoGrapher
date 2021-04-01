@@ -55,6 +55,7 @@ export var Schemes: {
     [key: string]: {
         labels: { [key: string]: string },
         readOnly: boolean,
+        namespace: string,
         graph: string,
         color: string,
     }
@@ -137,6 +138,7 @@ export var ProjectSettings: {
     lastTransaction: string,
     lastTransactionID: string,
     switchElements: string[],
+    defaultLanguage: string,
     viewStereotypes: boolean,
     viewZoom: number,
     viewColorPool: string,
@@ -158,6 +160,7 @@ export var ProjectSettings: {
     lastTransaction: "",
     lastTransactionID: "",
     switchElements: [],
+    defaultLanguage: "cs",
     viewStereotypes: true,
     viewZoom: 1,
     viewColorPool: "pastelLow",
