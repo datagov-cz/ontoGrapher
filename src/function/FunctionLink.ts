@@ -24,6 +24,7 @@ import {mvp1IRI, mvp2IRI, setLabels} from "./FunctionGraph";
 import {paper} from "../main/DiagramCanvas";
 import {updateConnections} from "../queries/UpdateConnectionQueries";
 import {updateDeleteProjectLinkVertex, updateProjectLink, updateProjectLinkVertex} from "../queries/UpdateLinkQueries";
+import {LinkConfig} from "../config/logic/LinkConfig";
 
 export function getOtherConnectionElementID(linkID: string, elemID: string): string {
 	return ProjectLinks[linkID].source === elemID ? ProjectLinks[linkID].target : ProjectLinks[linkID].source
@@ -137,7 +138,7 @@ export function updateVertices(id: string, linkVerts: joint.dia.Link.Vertex[]): 
 export function deleteConnections(sid: string, id: string): string {
 	ProjectLinks[id].active = false;
 	if (graph.getCell(id)) graph.getCell(id).remove();
-	return updateProjectLink(true, id);
+	return LinkConfig[ProjectLinks[id].type].update(id);
 }
 
 export function addLinkTools(linkView: joint.dia.LinkView, transaction: Function, update: Function) {
