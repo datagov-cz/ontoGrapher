@@ -380,8 +380,18 @@ export default class DiagramCanvas extends React.Component<Props, State> {
              * Save changes of link vertices
              */
             'link:pointerup': (cellView) => {
-                let id = cellView.model.id;
-                let link = cellView.model;
+                const id = cellView.model.id;
+                const link = cellView.model;
+                link.findView(paper).removeRedundantLinearVertices();
+                this.props.performTransaction(...updateVertices(id, link.vertices()));
+            },
+            /**
+             * Pointer double click on link:
+             * Save changes of link vertices
+             */
+            'link:pointerdblclick': (cellView) => {
+                const id = cellView.model.id;
+                const link = cellView.model;
                 link.findView(paper).removeRedundantLinearVertices();
                 this.props.performTransaction(...updateVertices(id, link.vertices()));
             }
