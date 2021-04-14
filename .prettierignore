@@ -1,6 +1,6 @@
 .github
 .netlify
-.build
+build
 node_modules
 public
 package-lock.json
