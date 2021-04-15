@@ -1,0 +1,6 @@
+.github
+.netlify
+build
+node_modules
+public
+package-lock.json
