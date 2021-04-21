@@ -12,6 +12,12 @@ body {
   word-break: break-word;
 }
 
+
+.wrap {
+  display: inline-block;
+  white-space: normal;
+}
+
 .inert {
   display: inline-flex;
 }
@@ -47,6 +53,11 @@ body {
   margin: 0;
   padding: 0;
   color: #007bff;
+
+  &.vocab {
+    border-radius: 4px;
+    background-color: lightgray;
+  }
 
   &:hover {
     color: blue;

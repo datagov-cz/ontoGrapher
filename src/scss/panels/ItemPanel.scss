@@ -3,13 +3,47 @@
   word-break: break-word;
   background-color: white;
   float: left;
-  height: calc(100vh - 75px) !important;
   width: 100%;
   max-width: 600px;
   border-radius: 0;
 
   svg {
     transform: scale(0.7);
+  }
+
+  .lucene {
+    font-size: 14px;
+    overflow: hidden;
+    text-align: center;
+  }
+
+  .lucene:before,
+  .lucene:after {
+    background-color: #000;
+    content: "";
+    display: inline-block;
+    height: 1px;
+    position: relative;
+    vertical-align: middle;
+    width: 50%;
+  }
+
+  .luceneSelect {
+    width: 270px;
+  }
+
+  .hiddenLucene {
+    transition: max-height 0.5s;
+  }
+
+  .lucene:before {
+    right: 0.5em;
+    margin-left: -50%;
+  }
+
+  .lucene:after {
+    left: 0.5em;
+    margin-right: -50%;
   }
 
   &.disabled {
@@ -77,12 +111,10 @@
   }
 
   .elementList {
-    height: calc(100vh - 108px) !important;
     overflow: auto;
   }
 
   .elementLinkList {
-    height: calc(100vh - 108px) !important;
     overflow-y: auto;
     overflow-x: hidden;
 
@@ -117,7 +149,11 @@
     border-left-width: 4px;
     transition: border-left-width ease-out 0.3s;
 
-    &:hover {
+    .vocabularyLabel {
+      font-size: 16px;
+    }
+
+    &.open {
       border-left-width: 10px;
     }
   }
