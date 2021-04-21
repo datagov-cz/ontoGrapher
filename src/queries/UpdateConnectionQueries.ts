@@ -40,7 +40,7 @@ export function updateDefaultLink(id: string): string {
 			(((VocabularyElements[iri].types.includes(parsePrefix("z-sgov-pojem", "typ-vlastnosti")) ||
 				VocabularyElements[iri].types.includes(parsePrefix("z-sgov-pojem", "typ-vztahu"))) &&
 				ProjectLinks[id].targetCardinality.getString() !== "") ?
-				[checkNumber(ProjectLinks[linkID].targetCardinality.getFirstCardinality()) ?
+				[isNumber(ProjectLinks[linkID].targetCardinality.getFirstCardinality()) ?
 					qb.s(qb.i(iri), 'rdfs:subClassOf', qb.b([
 						qb.po('rdf:type', 'owl:Restriction'),
 						qb.po('owl:onProperty', qb.i(ProjectLinks[linkID].iri)),
@@ -48,7 +48,7 @@ export function updateDefaultLink(id: string): string {
 						qb.po('owl:minQualifiedCardinality',
 							qb.lt(ProjectLinks[linkID].targetCardinality.getFirstCardinality(), 'xsd:nonNegativeInteger'))
 					])) : '',
-					checkNumber(ProjectLinks[linkID].targetCardinality.getSecondCardinality()) ?
+					isNumber(ProjectLinks[linkID].targetCardinality.getSecondCardinality()) ?
 						qb.s(qb.i(iri), 'rdfs:subClassOf', qb.b([
 							qb.po('rdf:type', 'owl:Restriction'),
 							qb.po('owl:onProperty', qb.i(ProjectLinks[linkID].iri)),
@@ -64,7 +64,7 @@ export function updateDefaultLink(id: string): string {
 					qb.po('rdf:type', 'owl:Restriction'),
 					qb.po('owl:onProperty', qb.i(rest.onProperty)),
 					qb.po(qb.i(rest.restriction),
-						parseInt(rest.target, 10) ? qb.lt(rest.target, 'xsd:nonNegativeInteger') : qb.i(rest.target)),
+						isNumber(rest.target) ? qb.lt(rest.target, 'xsd:nonNegativeInteger') : qb.i(rest.target)),
 				]))
 			].join(`
 			`)
@@ -103,6 +103,6 @@ export function updateConnections(id: string): string {
 	return LinkConfig[ProjectLinks[id].type].update(id);
 }
 
-function checkNumber(str: string) {
-	return /^[0-9]$/.test(str);
+function isNumber(str: string) {
+	return !isNaN(parseInt(str, 10));
 }
