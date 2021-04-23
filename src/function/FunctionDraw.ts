@@ -26,25 +26,19 @@ export function drawGraphElement(elem: joint.dia.Element, languageCode: string, 
 		const types = VocabularyElements[ProjectElements[elem.id].iri].types;
 		setDisplayLabel(elem.id, languageCode);
 		const label = ProjectElements[elem.id].selectedLabel[languageCode];
-		let labels: string[] = [];
+		const labels: string[] = [];
 		if (ProjectSettings.viewStereotypes)
 			getStereotypeList(types, languageCode).forEach((str) => labels.push("«" + str.toLowerCase() + "»"));
 		labels.push(label === "" ? "<blank>" : label);
 		elem.prop('attrs/label/text', labels.join("\n"));
-		let text = [];
+		const text: string[] = [];
 		if (representation === Representation.COMPACT) {
-			for (const link in ProjectLinks) {
-				if ((ProjectLinks[link].source === elem.id || ProjectLinks[link].target === elem.id) &&
-					ProjectLinks[link].active) {
-					if (ProjectLinks[link].iri === parsePrefix("z-sgov-pojem", "má-vlastnost") &&
-						ProjectLinks[link].source === elem.id && ProjectLinks[link].active) {
-						text.push(VocabularyElements[ProjectElements[ProjectLinks[link].target].iri].labels[languageCode])
-					} else if (ProjectLinks[link].iri === parsePrefix("z-sgov-pojem", "je-vlastností") &&
-						ProjectLinks[link].target === elem.id && ProjectLinks[link].active) {
-						text.push(VocabularyElements[ProjectElements[ProjectLinks[link].source].iri].labels[languageCode])
-					}
-				}
-			}
+			Object.keys(ProjectLinks).filter(link => ProjectLinks[link].active &&
+				(ProjectLinks[link].source === elem.id && ProjectLinks[link].iri === parsePrefix("z-sgov-pojem", "má-vlastnost")))
+				.forEach(link => text.push(VocabularyElements[ProjectElements[ProjectLinks[link].target].iri].labels[languageCode]))
+			Object.keys(ProjectLinks).filter(link => ProjectLinks[link].active &&
+				(ProjectLinks[link].target === elem.id && ProjectLinks[link].iri === parsePrefix("z-sgov-pojem", "je-vlastností")))
+				.forEach(link => text.push(VocabularyElements[ProjectElements[ProjectLinks[link].source].iri].labels[languageCode]))
 		}
 		elem.prop("attrs/labelAttrs/text", text.join("\n"));
 		const width = representation === Representation.COMPACT ?

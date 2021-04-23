@@ -188,6 +188,9 @@ export function setRepresentation(representation: number): { result: boolean, tr
                 del = true;
             }
         }
+        for (const elem of graph.getElements()) {
+            drawGraphElement(elem, ProjectSettings.selectedLanguage, Representation.COMPACT);
+        }
         return {result: del, transaction: queries};
     } else {
         ProjectSettings.representation = Representation.FULL;
