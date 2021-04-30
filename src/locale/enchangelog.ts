@@ -5,8 +5,15 @@ export const enChangelog: {
     "4": {
       "30": [
         "Implemented the SSP cache",
-        "For more information, check out the user guide for this update:",
-        "https://boguswebsite.com/text.md",
+        "The search function now also searches the SSP cache and displays results below the usual workspace vocabularies",
+        "The 📚 button can be used to group results by vocabularies",
+        "The select can be used to filter results by vocabulary or vocabularies. If a vocabulary is selected and the search field is empty, the whole vocabulary is shown",
+        "Hovering over a term reveals additional information about the term",
+        "A ⭐ symbol next to the term signifies that the term is already in the workspace",
+        "To add a term to the workspace, drag it onto the canvas as with any other term",
+        "You can also ctrl + click onto terms to select multiple terms and ctrl + click on vocabularies to select all terms in the group",
+        "The terms added can be read only",
+        "The terms are added under a new read-only vocabulary. A counter is displayed if the vocabulary is not fully represented in the workspace. Clicking on this counter displays all the terms of the vocabulary",
       ],
     },
     "3": {

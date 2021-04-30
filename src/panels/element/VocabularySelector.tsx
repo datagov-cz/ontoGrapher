@@ -4,8 +4,13 @@ import {
   getLabelOrBlank,
   getVocabularyFromScheme,
 } from "../../function/FunctionGetVars";
-import { PackageRoot, WorkspaceVocabularies } from "../../config/Variables";
+import {
+  AppSettings,
+  PackageRoot,
+  WorkspaceVocabularies,
+} from "../../config/Variables";
 import { CacheSearchVocabularies } from "../../datatypes/CacheSearchResults";
+import { Locale } from "../../config/Locale";
 
 interface Props {
   filter: (schemes: string[]) => void;
@@ -56,7 +61,9 @@ export class VocabularySelector extends React.Component<Props, State> {
         isSearchable={true}
         className={"luceneSelect"}
         options={this.buildOptions()}
-        placeholder={"Vybrat slovník(y)..."}
+        placeholder={
+          Locale[AppSettings.viewLanguage].filterVocabulariesPlaceholder
+        }
         value={this.props.values}
         onChange={(value) =>
           // @ts-ignore

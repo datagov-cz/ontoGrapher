@@ -7,6 +7,7 @@ export const en = {
   retry: "Retry?",
   errorUpdating: "❌ Error: update unsuccessful.",
   workspaceReady: "✔ Workspace ready.",
+  filterVocabulariesPlaceholder: "Pick vocabularies...",
   modalNewElemLengthError: "The name must have between 2 and 150 characters.",
   modalNewElemCharacterError: "The name has to have non-special characters.",
   modalNewElemIRI: "The term will be created using IRI:",

@@ -9,6 +9,7 @@ export const cs: { [Property in keyof typeof en]: string } = {
   retry: "Zopakovat akci?",
   errorUpdating: "❌ Chyba: ukládání se nezdařilo.",
   workspaceReady: "✔ Pracovní prostor je připraven.",
+  filterVocabulariesPlaceholder: "Vybrat slovník(y)...",
   modalNewElemLengthError: "Jméno musí mít mezi 2 a 150 znaky.",
   modalNewElemCharacterError: "Jméno nemůže mít jenom speciální znaky.",
   modalNewElemIRI: "Pojem bude vytvořen s tímto IRI:",
