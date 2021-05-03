@@ -438,8 +438,8 @@ export default class ItemPanel extends React.Component<Props, State> {
                   }}
                   className="buttonlink"
                 >
-                  {this.state.showLucene ? "ᐯ " : "ᐱ "}Pojmy z ostatních
-                  slovníků
+                  {(this.state.showLucene ? "ᐯ " : "ᐱ ") +
+                    Locale[AppSettings.viewLanguage].termsFromOtherLanguages}
                 </button>
               </div>
               <div className={"hiddenLucene"}>
