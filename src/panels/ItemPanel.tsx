@@ -104,7 +104,7 @@ export default class ItemPanel extends React.Component<Props, State> {
 
   update(id?: string) {
     if (id) this.showItem(id);
-    else this.forceUpdate();
+    else this.updateElements();
   }
 
   updateElements() {

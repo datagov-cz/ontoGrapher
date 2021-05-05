@@ -30,7 +30,7 @@ import {
   updateProjectLink,
   updateProjectLinkVertices,
 } from "../queries/update/UpdateLinkQueries";
-import { CanvasTerm, Representation } from "../config/Enum";
+import { Representation } from "../config/Enum";
 import { Locale } from "../config/Locale";
 import {
   fetchReadOnlyTerms,
@@ -223,8 +223,8 @@ export async function putElementsOnCanvas(
   if (event.dataTransfer) {
     const data = JSON.parse(event.dataTransfer.getData("newClass"));
     const iris = data.iri.filter((iri: string) => !(iri in WorkspaceTerms));
-    let ids = data.id;
-    if (data.type === CanvasTerm.NEW) {
+    const ids = data.id;
+    if (iris.length > 0) {
       handleStatus(
         true,
         Locale[AppSettings.viewLanguage].downloadingTerms,
@@ -233,9 +233,10 @@ export async function putElementsOnCanvas(
       );
       await fetchReadOnlyTerms(AppSettings.contextEndpoint, iris);
       await fetchRelationships(AppSettings.contextEndpoint, iris);
-      ids = initElements();
-      await queries.push(updateProjectElement(false, ...ids));
+      const newIDs = initElements();
+      await queries.push(updateProjectElement(false, ...newIDs));
       await queries.push(updateProjectLink(false, ...initConnections()));
+      ids.push(...newIDs);
     }
     const matrixLength = Math.max(ids.length, iris.length);
     const matrixDimension = Math.ceil(Math.sqrt(matrixLength));

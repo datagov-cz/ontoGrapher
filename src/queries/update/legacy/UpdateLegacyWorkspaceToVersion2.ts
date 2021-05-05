@@ -379,7 +379,7 @@ async function getScheme(iris: string[], endpoint: string): Promise<void> {
       }
     })
     .catch((e) => {
-      console.log(e);
+      console.error(e);
     });
 }
 

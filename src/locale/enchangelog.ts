@@ -2,6 +2,14 @@ export const enChangelog: {
   [key: string]: { [key: string]: { [key: string]: string[] } };
 } = {
   "2021": {
+    "5": {
+      "12": [
+        "Implemented the SSP cache for the Connections card in the Detail panel",
+        "Under the ordinary list of connections within the workspace, you can now optionally see other connections to your selected term not currently represented in the workspace",
+        'To view them, click the "Terms outside the workspace" link in the Connections card of the Detail panel',
+        "All connection actions (dragging onto canvas, multiselection...) work for these connections as well",
+      ],
+    },
     "4": {
       "30": [
         "Implemented the SSP cache",

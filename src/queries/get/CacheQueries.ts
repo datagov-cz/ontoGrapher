@@ -3,7 +3,10 @@ import {
   CacheSearchResults,
   CacheSearchVocabularies,
 } from "../../datatypes/CacheSearchResults";
-import { initLanguageObject } from "../../function/FunctionEditVars";
+import {
+  initLanguageObject,
+  parsePrefix,
+} from "../../function/FunctionEditVars";
 import {
   AppSettings,
   Links,
@@ -16,6 +19,7 @@ import { createRestriction } from "../../function/FunctionRestriction";
 import { LinkType } from "../../config/Enum";
 import { setSchemeColors } from "../../function/FunctionGetVars";
 import { PackageNode } from "../../datatypes/PackageNode";
+import { Restriction } from "../../datatypes/Restriction";
 
 export async function fetchVocabularies(
   endpoint: string,
@@ -67,40 +71,97 @@ export async function fetchVocabularies(
     });
 }
 
+export async function fetchSubClasses(
+  endpoint: string,
+  term: string
+): Promise<string[]> {
+  const query = [
+    "SELECT ?term WHERE {",
+    "graph ?graph {",
+    "?term rdfs:subClassOf ?subClass.",
+    "values ?subClass {<" + term + ">}.",
+    "}",
+    "<" +
+      AppSettings.cacheContext +
+      "> <https://slovník.gov.cz/datový/pracovní-prostor/pojem/odkazuje-na-kontext> ?graph.",
+    "}",
+  ].join(" ");
+  return await processQuery(endpoint, query)
+    .then((response) => response.json())
+    .then((data) => {
+      const result: string[] = [];
+      for (const row of data.results.bindings) {
+        if (!result.includes(row.term.value)) {
+          result.push(row.term.value);
+        }
+      }
+      return result;
+    })
+    .catch((e) => {
+      console.error(e);
+      return [];
+    });
+}
+
 export async function fetchRelationships(
   endpoint: string,
-  terms: string[]
+  terms: string[],
+  sendTo?: { [key: string]: Restriction[] }
 ): Promise<boolean> {
   for (let i = 0; i < Math.ceil(terms.length / 25); i++) {
     const termSlice = terms.slice(i * 25, (i + 1) * 25);
     const query = [
-      "SELECT ?term ?restriction ?restrictionPred ?target ?onProperty ?onClass WHERE {",
-      "graph <" + AppSettings.cacheContext + "> {",
+      "SELECT ?graph ?term ?restriction ?restrictionPred ?target ?onProperty ?onClass WHERE {",
+      "graph ?graph {",
       "?term rdfs:subClassOf ?restriction.",
+      "filter(isBlank(?restriction))",
       "?restriction a owl:Restriction.",
       "?restriction owl:onProperty ?onProperty.",
       "values ?onProperty {<" + Object.keys(Links).join("> <") + ">}",
       "?restriction ?restrictionPred ?target.",
       "values ?restrictionPred {<" +
-      Object.keys(RestrictionConfig).join("> <") +
-      ">}",
+        Object.keys(RestrictionConfig).join("> <") +
+        ">}",
       "values ?target {<" + termSlice.join("> <") + ">}",
       "optional {?restriction owl:onClass ?onClass.}",
-      "}}"
-    ].join(" ");
+      "}",
+      "<" +
+        AppSettings.cacheContext +
+        "> <https://slovník.gov.cz/datový/pracovní-prostor/pojem/odkazuje-na-kontext> ?graph.",
+      "}",
+    ].join(`
+    `);
     await processQuery(endpoint, query)
       .then((response) => response.json())
       .then((data) => {
         for (const row of data.results.bindings) {
-          if (row.term.value in WorkspaceTerms) {
-            createRestriction(
-              WorkspaceTerms[row.term.value].restrictions,
-              row.term.value,
-              row.restrictionPred.value,
-              row.onProperty.value,
-              row.target,
-              row.onClass ? row.onClass.value : undefined
-            );
+          if (row.term && (sendTo || row.term.value in WorkspaceTerms)) {
+            if (!sendTo) {
+              if (row.restriction) {
+                createRestriction(
+                  WorkspaceTerms[row.term.value].restrictions,
+                  row.term.value,
+                  row.restrictionPred.value,
+                  row.onProperty.value,
+                  row.target,
+                  row.onClass ? row.onClass.value : undefined
+                );
+              }
+            } else {
+              if (!(row.term.value in sendTo)) {
+                sendTo[row.term.value] = [];
+              }
+              if (row.restriction) {
+                sendTo[row.term.value].push(
+                  new Restriction(
+                    row.restrictionPred.value,
+                    row.onProperty.value,
+                    row.target,
+                    row.onClass ? row.onClass.value : undefined
+                  )
+                );
+              }
+            }
           }
         }
       })
@@ -131,7 +192,7 @@ export async function searchCache(
     "PREFIX skos: <http://www.w3.org/2004/02/skos/core#> ",
     "SELECT ?entity ?label ?definition ?vocabulary {",
     "[] a con-inst:" + lucene + " ;",
-    "con:query \"" + term + "\" ;",
+    'con:query "' + term + '" ;',
     "con:entities ?entity .",
     "?entity skos:prefLabel ?label.",
     "optional {?entity skos:definition ?definition.}",
@@ -140,7 +201,7 @@ export async function searchCache(
     limitToVocabularies && limitToVocabularies.length > 0
       ? "VALUES ?vocabulary {<" + limitToVocabularies.join("> <") + ">}"
       : "",
-    "}"
+    "}",
   ].join(" ");
   return await processQuery(endpoint, query)
     .then((response) => response.json())
@@ -171,7 +232,8 @@ export async function searchCache(
 
 export async function fetchReadOnlyTerms(
   contextEndpoint: string,
-  terms: string[]
+  terms: string[],
+  sendTo?: { [key: string]: any }
 ): Promise<boolean> {
   const result: {
     [key: string]: {
@@ -216,12 +278,12 @@ export async function fetchReadOnlyTerms(
       "OPTIONAL {?restriction owl:onClass ?onClass.}",
       "?restriction ?restrictionPred ?target.",
       "filter (?restrictionPred in (<" +
-      Object.keys(RestrictionConfig).join(">, <") +
-      ">))}}",
+        Object.keys(RestrictionConfig).join(">, <") +
+        ">))}}",
       "<" +
-      AppSettings.cacheContext +
-      "> <https://slovník.gov.cz/datový/pracovní-prostor/pojem/odkazuje-na-kontext> ?graph.",
-      "}"
+        AppSettings.cacheContext +
+        "> <https://slovník.gov.cz/datový/pracovní-prostor/pojem/odkazuje-na-kontext> ?graph.",
+      "}",
     ].join(" ");
     await processQuery(contextEndpoint, query)
       .then((response) => response.json())
@@ -236,7 +298,7 @@ export async function fetchReadOnlyTerms(
               inScheme: row.scheme.value,
               subClassOf: [],
               restrictions: [],
-              type: LinkType.DEFAULT
+              type: LinkType.DEFAULT,
             };
           }
           if (
@@ -257,11 +319,12 @@ export async function fetchReadOnlyTerms(
                   alt.label === row.termAltLabel.value &&
                   alt.language === row.termAltLabel["xml:lang"]
               )
-            )
+            ) {
               result[row.term.value].altLabels.push({
                 label: row.termAltLabel.value,
-                language: row.termAltLabel["xml:ang"]
+                language: row.termAltLabel["xml:lang"],
               });
+            }
           }
           if (row.termDefinition) {
             if (
@@ -272,7 +335,7 @@ export async function fetchReadOnlyTerms(
             )
               result[row.term.value].definitions[
                 row.termDefinition["xml:lang"]
-                ] = "";
+              ] = "";
             result[row.term.value].definitions[row.termDefinition["xml:lang"]] =
               row.termDefinition.value;
           }
@@ -292,7 +355,7 @@ export async function fetchReadOnlyTerms(
           if (
             row.restriction &&
             Object.keys(Links).includes(row.onProperty.value)
-          )
+          ) {
             createRestriction(
               result[row.term.value].restrictions,
               row.term.value,
@@ -301,6 +364,7 @@ export async function fetchReadOnlyTerms(
               row.target,
               row.onClass ? row.onClass.value : undefined
             );
+          }
           if (row.inverseOf)
             result[row.term.value].inverseOf = row.inverseOf.value;
           const vocab = Object.keys(CacheSearchVocabularies).find(
@@ -308,6 +372,7 @@ export async function fetchReadOnlyTerms(
               CacheSearchVocabularies[vocab].glossary === row.scheme.value
           );
           if (
+            sendTo === undefined &&
             !Object.keys(WorkspaceVocabularies).find(
               (vocab) =>
                 WorkspaceVocabularies[vocab].glossary === row.scheme.value
@@ -321,7 +386,7 @@ export async function fetchReadOnlyTerms(
                 glossary: CacheSearchVocabularies[vocab].glossary,
                 graph: vocab,
                 color: "#FFF",
-                count: 0
+                count: 0,
               };
               new PackageNode(
                 CacheSearchVocabularies[vocab].labels,
@@ -331,22 +396,85 @@ export async function fetchReadOnlyTerms(
               );
               setSchemeColors(AppSettings.viewColorPool);
             }
-          }
+          } else if (sendTo) Object.assign(sendTo, result);
         }
       })
       .catch((e) => {
         console.error(e);
       });
   }
-  Object.assign(WorkspaceTerms, result);
-  for (const term in result) {
-    const vocab = Object.keys(WorkspaceVocabularies).find(
-      (vocab) =>
-        WorkspaceVocabularies[vocab].glossary === WorkspaceTerms[term].inScheme
-    );
-    if (vocab) {
-      WorkspaceVocabularies[vocab].count++;
+  if (!sendTo) {
+    Object.assign(WorkspaceTerms, result);
+    for (const term in result) {
+      const vocab = Object.keys(WorkspaceVocabularies).find(
+        (vocab) =>
+          WorkspaceVocabularies[vocab].glossary ===
+          WorkspaceTerms[term].inScheme
+      );
+      if (vocab) {
+        WorkspaceVocabularies[vocab].count++;
+      }
     }
   }
   return true;
+}
+
+export async function fetchFullRelationships(
+  contextEndpoint: string,
+  term: string,
+  relationships: {
+    relation: string;
+    target: string;
+    labels: { [key: string]: string };
+  }[]
+): Promise<boolean> {
+  const query = [
+    "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>",
+    "PREFIX owl: <http://www.w3.org/2002/07/owl#>",
+    "PREFIX skos: <http://www.w3.org/2004/02/skos/core#> ",
+    "select ?term2 ?label ?relation ?graph where {",
+    "graph ?graph {",
+    "values ?term {<" + term + ">}.",
+    "?relation a <" + parsePrefix("z-sgov-pojem", "typ-vztahu") + ">.",
+    "?relation rdfs:subClassOf ?restriction1.",
+    "?relation rdfs:subClassOf ?restriction2.",
+    "?relation skos:prefLabel ?label.",
+    "filter(isBlank(?restriction1)).",
+    "filter(isBlank(?restriction2)).",
+    "?restriction1 a owl:Restriction.",
+    "?restriction1 owl:someValuesFrom ?term.",
+    "?restriction2 a owl:Restriction.",
+    "?restriction2 owl:someValuesFrom ?term2.",
+    "filter(?term != ?term2).",
+    "}",
+    "<" +
+      AppSettings.cacheContext +
+      "> <https://slovník.gov.cz/datový/pracovní-prostor/pojem/odkazuje-na-kontext> ?graph.",
+    "}",
+  ].join(" ");
+  return await processQuery(contextEndpoint, query)
+    .then((response) => response.json())
+    .then((data) => {
+      for (const row of data.results.bindings) {
+        let find = relationships.find(
+          (conn) =>
+            conn.relation === row.relation.value &&
+            conn.target === row.term2.value
+        );
+        if (!find) {
+          find = {
+            relation: row.relation.value,
+            target: row.term2.value,
+            labels: initLanguageObject(""),
+          };
+          relationships.push(find);
+        }
+        find.labels[row.label["xml:lang"]] = row.label.value;
+      }
+      return true;
+    })
+    .catch((e) => {
+      console.error(e);
+      return false;
+    });
 }

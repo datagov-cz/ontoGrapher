@@ -1,13 +1,16 @@
 import React from "react";
 import { Badge, OverlayTrigger, Popover } from "react-bootstrap";
 import { getLabelOrBlank } from "../../function/FunctionGetVars";
-import { AppSettings, WorkspaceTerms } from "../../config/Variables";
+import {
+  AppSettings,
+  WorkspaceElements,
+  WorkspaceTerms,
+} from "../../config/Variables";
 import { getVocabularyShortLabel } from "@opendata-mvcr/assembly-line-shared";
 import {
   CacheSearchResults,
   CacheSearchVocabularies,
 } from "../../datatypes/CacheSearchResults";
-import { CanvasTerm } from "../../config/Enum";
 import classNames from "classnames";
 
 interface Props {
@@ -24,19 +27,21 @@ export class SearchTerm extends React.Component<Props, State> {
   handleClick(event: React.MouseEvent<HTMLDivElement>) {
     event.stopPropagation();
     if (event.ctrlKey) {
-      if (AppSettings.selectedLucene.includes(this.props.iri)) {
-        const index = AppSettings.selectedLucene.indexOf(this.props.iri);
-        if (index !== -1) AppSettings.selectedLucene.splice(index, 1);
-      } else AppSettings.selectedLucene.push(this.props.iri);
-    } else AppSettings.selectedLucene = [];
+      if (AppSettings.selectedElements.includes(this.props.iri)) {
+        const index = AppSettings.selectedElements.indexOf(this.props.iri);
+        if (index !== -1) AppSettings.selectedElements.splice(index, 1);
+      } else AppSettings.selectedElements.push(this.props.iri);
+    } else AppSettings.selectedElements = [];
     this.props.update();
   }
 
   checkVocabulary(vocabulary: string) {
-    return vocabulary in CacheSearchVocabularies ? getLabelOrBlank(
-      CacheSearchVocabularies[vocabulary].labels,
-      this.props.projectLanguage
-    ) : "";
+    return vocabulary in CacheSearchVocabularies
+      ? getLabelOrBlank(
+          CacheSearchVocabularies[vocabulary].labels,
+          this.props.projectLanguage
+        )
+      : "";
   }
 
   render() {
@@ -64,23 +69,29 @@ export class SearchTerm extends React.Component<Props, State> {
         <div
           draggable
           className={classNames("stereotypeElementItem", {
-            selected: AppSettings.selectedLucene.includes(this.props.iri),
+            selected: AppSettings.selectedElements.includes(this.props.iri),
           })}
           onDragStart={(event) => {
             event.dataTransfer.setData(
               "newClass",
               JSON.stringify({
-                type: CanvasTerm.NEW,
-                id: [],
+                id:
+                  AppSettings.selectedElements.length > 0
+                    ? AppSettings.selectedElements.filter(
+                        (elem) => elem in WorkspaceElements
+                      )
+                    : [],
                 iri:
-                  AppSettings.selectedLucene.length > 0
-                    ? AppSettings.selectedLucene
+                  AppSettings.selectedElements.length > 0
+                    ? AppSettings.selectedElements.filter(
+                        (elem) => !(elem in WorkspaceElements)
+                      )
                     : [this.props.iri],
               })
             );
           }}
           onDragEnd={() => {
-            AppSettings.selectedLucene = [];
+            AppSettings.selectedElements = [];
             this.props.update();
           }}
           onClick={(event) => this.handleClick(event)}

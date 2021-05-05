@@ -160,7 +160,6 @@ export var AppSettings: {
   viewItemPanelTypes: boolean;
   viewLanguage: string;
   selectedElements: string[];
-  selectedLucene: string[];
 } = {
   name: {},
   description: {},
@@ -189,7 +188,6 @@ export var AppSettings: {
   viewItemPanelTypes: true,
   viewLanguage: "en",
   selectedElements: [],
-  selectedLucene: [],
 };
 
 export var CardinalityPool: Cardinality[] = [

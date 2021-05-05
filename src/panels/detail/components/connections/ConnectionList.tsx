@@ -1,6 +1,6 @@
 import React from "react";
 import ConnectionFilter from "./ConnectionFilter";
-import Connection from "./Connection";
+import ConnectionWorkspace from "./ConnectionWorkspace";
 import {
   AppSettings,
   Links,
@@ -11,7 +11,10 @@ import {
 import { Representation } from "../../../../config/Enum";
 import { getLabelOrBlank } from "../../../../function/FunctionGetVars";
 import TableList from "../../../../components/TableList";
-import { getOtherConnectionElementID } from "../../../../function/FunctionLink";
+import {
+  getCacheConnections,
+  getOtherConnectionElementID,
+} from "../../../../function/FunctionLink";
 import { Button, OverlayTrigger, Tooltip } from "react-bootstrap";
 import { spreadConnections } from "../../../../function/FunctionGraph";
 import classNames from "classnames";
@@ -19,11 +22,14 @@ import _ from "underscore";
 import { isElementHidden } from "../../../../function/FunctionElem";
 import { ElementFilter } from "../../../../datatypes/ElementFilter";
 import { Locale } from "../../../../config/Locale";
+import ConnectionCache from "./ConnectionCache";
 
 interface Props {
   //Element ID from DetailElement
   id: string;
   projectLanguage: string;
+  update: Function;
+  performTransaction: (...queries: string[]) => void;
 }
 
 interface State {
@@ -31,6 +37,18 @@ interface State {
   selected: string[];
   shownConnections: string[];
   showFilter: boolean;
+  showLucene: boolean;
+  shownLucene: {
+    link: string;
+    linkLabels: { [key: string]: string };
+    target: {
+      iri: string;
+      labels: { [key: string]: string };
+      description: { [key: string]: string };
+      vocabulary: string;
+    };
+    direction: string;
+  }[];
 }
 
 export default class ConnectionList extends React.Component<Props, State> {
@@ -49,6 +67,8 @@ export default class ConnectionList extends React.Component<Props, State> {
       selected: [],
       shownConnections: [],
       showFilter: false,
+      showLucene: false,
+      shownLucene: [],
     };
     this.updateFilter = this.updateFilter.bind(this);
     this.updateSelection = this.updateSelection.bind(this);
@@ -70,15 +90,27 @@ export default class ConnectionList extends React.Component<Props, State> {
     );
   }
 
+  getConnectionsFromOtherVocabularies() {
+    getCacheConnections(WorkspaceElements[this.props.id].iri).then(
+      (connections) =>
+        this.setState(
+          {
+            shownLucene: connections,
+          },
+          () => this.setState({ shownConnections: this.filter() })
+        )
+    );
+  }
+
   sort(a: string, b: string): number {
     const aLabel =
       WorkspaceTerms[
         WorkspaceElements[getOtherConnectionElementID(a, this.props.id)].iri
-        ].labels[this.props.projectLanguage];
+      ].labels[this.props.projectLanguage];
     const bLabel =
       WorkspaceTerms[
         WorkspaceElements[getOtherConnectionElementID(b, this.props.id)].iri
-        ].labels[this.props.projectLanguage];
+      ].labels[this.props.projectLanguage];
     return aLabel.localeCompare(bLabel);
   }
 
@@ -95,7 +127,7 @@ export default class ConnectionList extends React.Component<Props, State> {
         if (
           this.state.filter.scheme &&
           WorkspaceTerms[WorkspaceElements[otherElement].iri].inScheme !==
-          this.state.filter.scheme
+            this.state.filter.scheme
         )
           return false;
         if (
@@ -132,10 +164,10 @@ export default class ConnectionList extends React.Component<Props, State> {
         return AppSettings.representation === Representation.FULL
           ? WorkspaceLinks[link].iri in Links
           : !(WorkspaceLinks[link].iri in Links) ||
-          (WorkspaceLinks[link].iri in Links &&
-            Links[WorkspaceLinks[link].iri].inScheme.startsWith(
-              AppSettings.ontographerContext
-            ));
+              (WorkspaceLinks[link].iri in Links &&
+                Links[WorkspaceLinks[link].iri].inScheme.startsWith(
+                  AppSettings.ontographerContext
+                ));
       })
       .sort((a, b) => this.sort(a, b));
   }
@@ -190,14 +222,20 @@ export default class ConnectionList extends React.Component<Props, State> {
                 selected: this.state.selected.length > 0,
               })}
               onClick={() => {
-                spreadConnections(this.props.id, this.getElements());
-                this.setState({ selected: [] });
+                spreadConnections(this.props.id, this.state.selected).then(
+                  (queries) => {
+                    this.props.performTransaction(...queries);
+                    this.getConnectionsFromOtherVocabularies();
+                    this.props.update(this.props.id);
+                    this.setState({ selected: [] });
+                  }
+                );
               }}
             >
               {"➕" +
-              (this.state.selected.length > 0
-                ? ` ${this.state.selected.length}`
-                : "")}
+                (this.state.selected.length > 0
+                  ? ` ${this.state.selected.length}`
+                  : "")}
             </Button>
           </OverlayTrigger>
 
@@ -230,7 +268,7 @@ export default class ConnectionList extends React.Component<Props, State> {
                 this.setState((prevState) => ({
                   selected: _.uniq(
                     prevState.selected.concat(this.state.shownConnections)
-                  )
+                  ),
                 }))
               }
             >
@@ -274,8 +312,8 @@ export default class ConnectionList extends React.Component<Props, State> {
                       search: "",
                       direction: "",
                       connection: "",
-                      scheme: ""
-                    }
+                      scheme: "",
+                    },
                   },
                   () => this.setState({ shownConnections: this.filter() })
                 )
@@ -295,7 +333,7 @@ export default class ConnectionList extends React.Component<Props, State> {
         )}
         <TableList>
           {this.state.shownConnections.map((linkID) => (
-            <Connection
+            <ConnectionWorkspace
               key={linkID}
               selected={this.state.selected.includes(linkID)}
               linkID={linkID}
@@ -306,6 +344,50 @@ export default class ConnectionList extends React.Component<Props, State> {
             />
           ))}
         </TableList>
+        <div className={"lucene"}>
+          <button
+            onClick={() => {
+              this.setState({ showLucene: !this.state.showLucene }, () => {
+                if (this.state.showLucene)
+                  this.getConnectionsFromOtherVocabularies();
+              });
+            }}
+            className="buttonlink"
+          >
+            {(this.state.showLucene ? "ᐯ " : "ᐱ ") +
+              Locale[AppSettings.viewLanguage].termsFromOtherLanguages}
+          </button>
+        </div>
+        {this.state.showLucene && (
+          <TableList>
+            {this.state.shownLucene
+              .filter((connection) =>
+                getLabelOrBlank(
+                  connection.target.labels,
+                  this.props.projectLanguage
+                )
+                  .toLowerCase()
+                  .trim()
+                  .includes(this.state.filter.search)
+              )
+              .map((connection) => (
+                <ConnectionCache
+                  key={`${connection.link}->${connection.target.iri}`}
+                  connection={connection}
+                  projectLanguage={this.props.projectLanguage}
+                  update={() => {
+                    this.getConnectionsFromOtherVocabularies();
+                    this.props.update(this.props.id);
+                    this.setState({ selected: [] });
+                  }}
+                  elemID={this.props.id}
+                  selected={this.state.selected.includes(connection.target.iri)}
+                  selection={this.state.selected}
+                  updateSelection={this.updateSelection}
+                />
+              ))}
+          </TableList>
+        )}
       </div>
     );
   }
