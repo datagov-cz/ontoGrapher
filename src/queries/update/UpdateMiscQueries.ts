@@ -34,7 +34,7 @@ export function updateProjectSettings(
     qb.s(diagramIRI, "?p1", "?o1"),
   ])}`.WHERE`${qb.g(getWorkspaceContextIRI(), [
     qb.s(qb.i(projIRI), "?p", "?o"),
-    qb.s(diagramIRI, "?p1", "?o1")
+    qb.s(diagramIRI, "?p1", "?o1"),
   ])}`.build();
 
   return qb.combineQueries(del, insert);
@@ -52,11 +52,11 @@ export function updateDeleteTriples(
     deletes.push(
       DELETE`${qb.g(context, [
         qb.s(qb.i(iri), "rdfs:subClassOf", "?b"),
-        qb.s("?b", "?p", "?o")
+        qb.s("?b", "?p", "?o"),
       ])}`.WHERE`${qb.g(context, [
         qb.s(qb.i(iri), "rdfs:subClassOf", "?b"),
         qb.s("?b", "?p", "?o"),
-        "filter(isBlank(?b))."
+        "filter(isBlank(?b)).",
       ])}`.build()
     );
   if (subject)
@@ -84,24 +84,21 @@ export function updateAddTermsToWorkspace(ids: string[]) {
     ),
     ...ids.map((id) =>
       qb.s(qb.i(WorkspaceElements[id].iri), "og:id", qb.ll(id))
-    )
+    ),
   ])}`.build();
   return qb.combineQueries(insert);
 }
 
 export function updateRemoveTermsFromWorkspace(ids: string[]) {
-  const projIRI =
-    AppSettings.ontographerContext +
-    AppSettings.contextIRI.substring(AppSettings.contextIRI.lastIndexOf("/"));
-  const del = DELETE.DATA`${qb.g(projIRI, [
+  const del = DELETE.DATA`${qb.g(getWorkspaceContextIRI(), [
     qb.s(
-      qb.i(projIRI),
+      qb.i(getWorkspaceContextIRI()),
       "og:element",
       qb.a(ids.map((id) => qb.i(WorkspaceElements[id].iri)))
     ),
     ...ids.map((id) =>
       qb.s(qb.i(WorkspaceElements[id].iri), "og:id", qb.ll(id))
-    )
+    ),
   ])}`.build();
   return qb.combineQueries(del);
 }
