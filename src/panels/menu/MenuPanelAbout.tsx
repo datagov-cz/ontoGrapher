@@ -1,42 +1,57 @@
-import React from 'react';
-import {Nav} from 'react-bootstrap';
+import React from "react";
+import { Nav, OverlayTrigger, Tooltip } from "react-bootstrap";
 import AboutModal from "./misc/AboutModal";
-import {Locale} from "../../config/Locale";
-import {ProjectSettings} from "../../config/Variables";
-import {enChangelog} from "../../locale/enchangelog";
+import { Locale } from "../../config/Locale";
+import { AppSettings } from "../../config/Variables";
+import { getLastChangeDay } from "../../function/FunctionGetVars";
 
 interface Props {
+  tooltip: boolean;
 }
 
 interface State {
-    modal: boolean;
+  modal: boolean;
 }
 
 export default class MenuPanelAbout extends React.Component<Props, State> {
-    constructor(props: Props) {
-        super(props);
-        this.state = {
-            modal: false
-        };
-    }
+  constructor(props: Props) {
+    super(props);
+    this.state = {
+      modal: false,
+    };
+  }
 
-    //Retrieves the day and month of the last entry in the changelog to display in the button.
-    getLastChangeDay() {
-        const year: string = Object.keys(enChangelog)[0];
-        const month: string = Object.keys(enChangelog[year]).reverse()[0];
-        const day: string = Object.keys(enChangelog[year][month]).reverse()[0];
-        return `${day}. ${month}.`
-    }
-
-    render() {
-        return (<div className={"inert"}><Nav.Link onClick={() => {
-            this.setState({modal: true});
-        }}>
-            {`${this.getLastChangeDay()} - ${Locale[ProjectSettings.viewLanguage].changelogButton}`}
-        </Nav.Link>
-            <AboutModal modal={this.state.modal} close={() => {
-                this.setState({modal: false})
-            }}/>
-        </div>);
-    }
+  render() {
+    return (
+      <div className={"inert"}>
+        <OverlayTrigger
+          trigger={[]}
+          placement="bottom"
+          delay={10000}
+          show={this.props.tooltip}
+          overlay={
+            <Tooltip id={"newVersionTooltip"}>
+              {Locale[AppSettings.viewLanguage].newVersion}
+            </Tooltip>
+          }
+        >
+          <Nav.Link
+            onClick={() => {
+              this.setState({ modal: true });
+            }}
+          >
+            {`${getLastChangeDay()} - ${
+              Locale[AppSettings.viewLanguage].changelogButton
+            }`}
+          </Nav.Link>
+        </OverlayTrigger>
+        <AboutModal
+          modal={this.state.modal}
+          close={() => {
+            this.setState({ modal: false });
+          }}
+        />
+      </div>
+    );
+  }
 }

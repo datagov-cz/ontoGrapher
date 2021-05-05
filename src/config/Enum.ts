@@ -1,9 +1,14 @@
 export enum Representation {
-	FULL,
-	COMPACT
+  FULL,
+  COMPACT,
 }
 
 export enum LinkType {
-	DEFAULT,
-	GENERALIZATION
+  DEFAULT,
+  GENERALIZATION,
+}
+
+export enum CanvasTerm {
+  NEW,
+  EXISTING,
 }

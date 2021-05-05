@@ -1,36 +1,53 @@
-import React from 'react';
-import {Dropdown} from "react-bootstrap";
-import {ProjectSettings} from "../../../config/Variables";
-import {graph} from "../../../graph/Graph";
-import {Locale} from "../../../config/Locale";
-import {drawGraphElement} from "../../../function/FunctionDraw";
+import React from "react";
+import { Dropdown } from "react-bootstrap";
+import { AppSettings } from "../../../config/Variables";
+import { graph } from "../../../graph/Graph";
+import { Locale } from "../../../config/Locale";
+import { drawGraphElement } from "../../../function/FunctionDraw";
 
 interface Props {
-	update: Function;
+  update: Function;
 }
 
-interface State {
+interface State {}
 
-}
+export default class MenuPanelSwitchStereotypes extends React.Component<
+  Props,
+  State
+> {
+  switch() {
+    AppSettings.viewStereotypes = !AppSettings.viewStereotypes;
+    graph
+      .getElements()
+      .forEach((elem) =>
+        drawGraphElement(
+          elem,
+          AppSettings.selectedLanguage,
+          AppSettings.representation
+        )
+      );
+    this.props.update();
+    this.forceUpdate();
+  }
 
-export default class MenuPanelSwitchStereotypes extends React.Component<Props, State> {
-
-	switch() {
-		ProjectSettings.viewStereotypes = !ProjectSettings.viewStereotypes;
-		graph.getElements().forEach(elem =>
-			drawGraphElement(elem, ProjectSettings.selectedLanguage, ProjectSettings.representation));
-		this.props.update();
-		this.forceUpdate();
-	}
-
-	render() {
-		return (<div>
-			<Dropdown.Item onClick={() => this.switch()} disabled={!ProjectSettings.viewStereotypes}>
-				{(!ProjectSettings.viewStereotypes ? "✓ " : "") + Locale[ProjectSettings.viewLanguage].hideStereotypes}
-			</Dropdown.Item>
-			<Dropdown.Item onClick={() => this.switch()} disabled={ProjectSettings.viewStereotypes}>
-				{(ProjectSettings.viewStereotypes ? "✓ " : "") + Locale[ProjectSettings.viewLanguage].showStereotypes}
-			</Dropdown.Item>
-		</div>);
-	}
+  render() {
+    return (
+      <div>
+        <Dropdown.Item
+          onClick={() => this.switch()}
+          disabled={!AppSettings.viewStereotypes}
+        >
+          {(!AppSettings.viewStereotypes ? "✓ " : "") +
+            Locale[AppSettings.viewLanguage].hideStereotypes}
+        </Dropdown.Item>
+        <Dropdown.Item
+          onClick={() => this.switch()}
+          disabled={AppSettings.viewStereotypes}
+        >
+          {(AppSettings.viewStereotypes ? "✓ " : "") +
+            Locale[AppSettings.viewLanguage].showStereotypes}
+        </Dropdown.Item>
+      </div>
+    );
+  }
 }
