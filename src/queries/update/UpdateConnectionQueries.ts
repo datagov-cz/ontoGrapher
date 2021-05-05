@@ -190,7 +190,7 @@ export function updateGeneralizationLink(id: string): string {
     qb.s(qb.i(iri), "rdfs:subClassOf", "?b"),
   ])}`.WHERE`${qb.g(contextIRI, [
     qb.s(qb.i(iri), "rdfs:subClassOf", "?b"),
-    "filter(!isBank(?b)).",
+    "filter(!isBlank(?b)).",
   ])}`.build();
 
   let insert = INSERT.DATA`${qb.g(contextIRI, [
