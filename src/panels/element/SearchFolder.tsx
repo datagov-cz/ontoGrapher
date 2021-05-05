@@ -28,16 +28,16 @@ export default class SearchFolder extends React.Component<Props, State> {
     if (event.ctrlKey) {
       if (
         this.props.terms.every((iri) =>
-          AppSettings.selectedLucene.includes(iri)
+          AppSettings.selectedElements.includes(iri)
         )
       )
-        AppSettings.selectedLucene
+        AppSettings.selectedElements
           .filter((iri) => this.props.terms.includes(iri))
           .forEach((iri) => {
-            const index = AppSettings.selectedLucene.indexOf(iri);
-            AppSettings.selectedLucene.splice(index, 1);
+            const index = AppSettings.selectedElements.indexOf(iri);
+            AppSettings.selectedElements.splice(index, 1);
           });
-      else AppSettings.selectedLucene.push(...this.props.terms);
+      else AppSettings.selectedElements.push(...this.props.terms);
     } else {
       this.setState({ open: !this.state.open });
     }

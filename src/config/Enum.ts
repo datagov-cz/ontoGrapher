@@ -7,8 +7,3 @@ export enum LinkType {
   DEFAULT,
   GENERALIZATION,
 }
-
-export enum CanvasTerm {
-  NEW,
-  EXISTING,
-}

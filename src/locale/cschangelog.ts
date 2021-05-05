@@ -2,6 +2,14 @@ export const csChangelog: {
   [key: string]: { [key: string]: { [key: string]: string[] } };
 } = {
   "2021": {
+    "5": {
+      "12": [
+        'Implementována SSP cache pro kartu "Vztahy" v panelu detailu pojmu',
+        "Pod obvyklým seznamem vztahů v pracovním prostoru si můžete nyní prohlédnout i vztahy mimo pracovní prostor.",
+        'Pro jejich zobrazení klikněte na "Pojmy mimo pracovní prostor" na kartě "Vztahy" v detailu pojmu.',
+        "Všechny akce pro vztahy (přetáhnutí na plátno, multiselekce...) fungují i pro tyto vztahy",
+      ],
+    },
     "4": {
       "30": [
         "Implementována SSP cache",
