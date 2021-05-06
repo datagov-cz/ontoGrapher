@@ -27,7 +27,10 @@ export async function processTransaction(
       if (location) return location;
       else return undefined;
     })
-    .catch(() => undefined);
+    .catch((e) => {
+      console.error(e);
+      return undefined;
+    });
 
   if (transactionID) {
     AppSettings.lastTransactionID = transactionID;
@@ -47,7 +50,10 @@ export async function processTransaction(
       signal,
     })
       .then((response) => response.ok)
-      .catch(() => false);
+      .catch((e) => {
+        console.error(e);
+        return false;
+      });
     if (!resultUpdate) {
       console.error(transaction);
       await abortTransaction(transactionID);
@@ -60,7 +66,10 @@ export async function processTransaction(
       signal,
     })
       .then((response) => response.ok)
-      .catch(() => false);
+      .catch((e) => {
+        console.error(e);
+        return false;
+      });
     window.clearTimeout(timeout);
     if (resultCommit) {
       AppSettings.lastTransactionID = "";
@@ -82,7 +91,10 @@ export async function abortTransaction(transaction: string): Promise<boolean> {
       AppSettings.lastTransactionID = "";
       return response.ok;
     })
-    .catch(() => false);
+    .catch((e) => {
+      console.error(e);
+      return false;
+    });
 }
 
 export function processQuery(
