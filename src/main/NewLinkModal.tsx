@@ -159,7 +159,7 @@ export default class NewLinkModal extends React.Component<Props, State> {
                 defaultChecked={this.state.displayIncompatible}
                 onClick={(event: any) => {
                   this.setState({
-                    displayIncompatible: event.currentTarget.checke,
+                    displayIncompatible: event.currentTarget.checked,
                   });
                 }}
                 type="checkbox"
