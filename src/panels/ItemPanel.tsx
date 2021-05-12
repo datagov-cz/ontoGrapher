@@ -425,23 +425,25 @@ export default class ItemPanel extends React.Component<Props, State> {
           >
             {this.getFolders()}
             <div>
-              <div className={"lucene"}>
-                <button
-                  onClick={() => {
-                    this.setState(
-                      { showLucene: !this.state.showLucene },
-                      () => {
-                        if (this.state.showLucene)
-                          this.getSearchResults(this.state.search);
-                      }
-                    );
-                  }}
-                  className="buttonlink"
-                >
-                  {(this.state.showLucene ? "ᐯ " : "ᐱ ") +
-                    Locale[AppSettings.viewLanguage].termsFromOtherLanguages}
-                </button>
-              </div>
+              {Object.keys(this.state.shownLucene).length > 0 && (
+                <div className={"lucene"}>
+                  <button
+                    onClick={() => {
+                      this.setState(
+                        { showLucene: !this.state.showLucene },
+                        () => {
+                          if (this.state.showLucene)
+                            this.getSearchResults(this.state.search);
+                        }
+                      );
+                    }}
+                    className="buttonlink"
+                  >
+                    {(this.state.showLucene ? "ᐯ " : "ᐱ ") +
+                      Locale[AppSettings.viewLanguage].termsFromOtherLanguages}
+                  </button>
+                </div>
+              )}
               <div className={"hiddenLucene"}>
                 {(this.state.search.length > 0 ||
                   this.state.vocabs.length > 0) &&
