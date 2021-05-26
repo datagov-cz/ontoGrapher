@@ -192,3 +192,15 @@ export function getWorkspaceContextIRI() {
     AppSettings.contextIRI.substring(AppSettings.contextIRI.lastIndexOf("/"))
   );
 }
+
+export function isLabelBlank(label: string) {
+  return label === "<blank>";
+}
+
+export function isTermReadOnly(iri: string) {
+  return (
+    iri in WorkspaceTerms &&
+    WorkspaceVocabularies[getVocabularyFromScheme(WorkspaceTerms[iri].inScheme)]
+      .readOnly
+  );
+}

@@ -74,6 +74,7 @@ export function updateProjectElement(del: boolean, ...ids: string[]): string {
       deletes.push(
         ...[
           qb.s(qb.i(iri), "rdf:type", "?type"),
+          qb.s(qb.i(iri), "skos:prefLabel", "?labels"),
           qb.s(qb.i(iri), "skos:altLabel", "?alt"),
           qb.s(qb.i(iri), "skos:definition", "?definition"),
         ].map((stmt) =>
@@ -84,8 +85,10 @@ export function updateProjectElement(del: boolean, ...ids: string[]): string {
           qb.s(qb.i(iri), "og:diagram", "?diagram"),
           qb.s(qb.i(iri), "og:active", "?active"),
         ].map((stmt) =>
-          DELETE`${qb.g(getWorkspaceContextIRI(), [stmt])}`
-            .WHERE`${qb.g(getWorkspaceContextIRI(), [stmt])}`.build()
+          DELETE`${qb.g(getWorkspaceContextIRI(), [stmt])}`.WHERE`${qb.g(
+            getWorkspaceContextIRI(),
+            [stmt]
+          )}`.build()
         )
       );
   }
@@ -93,7 +96,6 @@ export function updateProjectElement(del: boolean, ...ids: string[]): string {
   for (const graph in data) {
     inserts.push(INSERT.DATA`${qb.g(graph, data[graph])}`.build());
   }
-
   return qb.combineQueries(...deletes, ...inserts);
 }
 

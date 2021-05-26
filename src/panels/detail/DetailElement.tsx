@@ -40,6 +40,7 @@ interface State {
   id: string;
   inputTypeType: string;
   inputTypeData: string;
+  inputLabels: { [key: string]: string };
   inputAltLabels: { label: string; language: string }[];
   inputDefinitions: { [key: string]: string };
   selectedLabel: { [key: string]: string };
@@ -54,6 +55,7 @@ export default class DetailElement extends React.Component<Props, State> {
       id: "",
       inputTypeType: "",
       inputTypeData: "",
+      inputLabels: {},
       inputAltLabels: [],
       inputDefinitions: {},
       selectedLabel: {},
@@ -76,6 +78,7 @@ export default class DetailElement extends React.Component<Props, State> {
             WorkspaceTerms[WorkspaceElements[id].iri].types.find(
               (type) => type in Stereotypes && !(type in Shapes)
             ) || "",
+          inputLabels: WorkspaceTerms[WorkspaceElements[id].iri].labels,
           inputAltLabels: WorkspaceTerms[WorkspaceElements[id].iri].altLabels,
           inputDefinitions:
             WorkspaceTerms[WorkspaceElements[id].iri].definitions,
@@ -95,6 +98,8 @@ export default class DetailElement extends React.Component<Props, State> {
         WorkspaceElements[this.state.id].iri
       ].definitions = this.state.inputDefinitions;
       WorkspaceElements[this.state.id].selectedLabel = this.state.selectedLabel;
+      WorkspaceTerms[WorkspaceElements[this.state.id].iri].labels =
+        this.state.inputLabels;
       if (elem)
         drawGraphElement(
           elem,
@@ -203,6 +208,7 @@ export default class DetailElement extends React.Component<Props, State> {
                       }
                     </h5>
                     <LabelTable
+                      iri={WorkspaceElements[this.state.id].iri}
                       labels={
                         WorkspaceTerms[WorkspaceElements[this.state.id].iri]
                           .labels
@@ -215,6 +221,15 @@ export default class DetailElement extends React.Component<Props, State> {
                         res[this.props.projectLanguage] = label;
                         this.setState({ selectedLabel: res, changes: true });
                       }}
+                      onEdit={(label: string, lang: string) =>
+                        this.setState((prevState) => ({
+                          inputLabels: {
+                            ...prevState.inputLabels,
+                            [lang]: label,
+                          },
+                          changes: true,
+                        }))
+                      }
                     />
                     <h5>
                       {
@@ -273,9 +288,8 @@ export default class DetailElement extends React.Component<Props, State> {
                       }
                       selectAsDefault={(lang: string, i: number) => {
                         let res = this.state.selectedLabel;
-                        res[
-                          this.props.projectLanguage
-                        ] = this.state.inputAltLabels[i].label;
+                        res[this.props.projectLanguage] =
+                          this.state.inputAltLabels[i].label;
                         this.setState({ selectedLabel: res, changes: true });
                       }}
                       addAltLabel={(label: string) => {
