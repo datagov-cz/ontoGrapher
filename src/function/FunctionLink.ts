@@ -30,6 +30,14 @@ import {
 } from "../queries/update/UpdateLinkQueries";
 import { LinkConfig } from "../config/logic/LinkConfig";
 import { updateConnections } from "../queries/update/UpdateConnectionQueries";
+import { Restriction } from "../datatypes/Restriction";
+import {
+  fetchFullRelationships,
+  fetchReadOnlyTerms,
+  fetchRelationships,
+  fetchSubClasses,
+} from "../queries/get/CacheQueries";
+import isUrl from "is-url";
 
 export function getOtherConnectionElementID(
   linkID: string,
@@ -305,4 +313,172 @@ export function addLinkTools(
     tools: tools,
   });
   linkView.addTools(toolsView);
+}
+
+export async function getCacheConnections(iri: string) {
+  const terms: { [key: string]: any } = {};
+  const restrictions: { [key: string]: Restriction[] } = {};
+  const subClass: string[] = await fetchSubClasses(
+    AppSettings.contextEndpoint,
+    iri
+  );
+  const subClasses = subClass
+    .filter((subClass) => !(subClass in WorkspaceTerms))
+    .concat(
+      WorkspaceTerms[iri].subClassOf.filter(
+        (subClass) => !(subClass in WorkspaceTerms)
+      )
+    );
+  const relationships: {
+    relation: string;
+    target: string;
+    labels: { [key: string]: string };
+  }[] = [];
+  const connections: {
+    link: string;
+    linkLabels: { [key: string]: string };
+    target: {
+      iri: string;
+      labels: { [key: string]: string };
+      description: { [key: string]: string };
+      vocabulary: string;
+    };
+    direction: string;
+  }[] = [];
+
+  if (AppSettings.representation === Representation.FULL) {
+    await fetchRelationships(AppSettings.contextEndpoint, [iri], restrictions);
+    await fetchReadOnlyTerms(
+      AppSettings.contextEndpoint,
+      Object.keys(restrictions)
+        .filter((restriction) => !(restriction in WorkspaceTerms))
+        .concat(subClasses)
+        .concat(
+          WorkspaceTerms[iri].restrictions
+            .filter(
+              (restr) =>
+                isUrl(restr.target) && !(restr.target in WorkspaceTerms)
+            )
+            .map((restr) => restr.target)
+        ),
+      terms
+    );
+    for (const restriction of WorkspaceTerms[iri].restrictions) {
+      if (restriction.target in terms) {
+        const newConnection = {
+          link: restriction.onProperty,
+          linkLabels: Links[restriction.onProperty].labels,
+          target: {
+            iri: restriction.target,
+            labels: terms[restriction.target].labels,
+            description: terms[restriction.target].definitions,
+            vocabulary: getVocabularyFromScheme(
+              terms[restriction.target].inScheme
+            ),
+          },
+          direction: "source",
+        };
+        if (
+          !connections.find(
+            (conn) => JSON.stringify(conn) === JSON.stringify(newConnection)
+          )
+        )
+          connections.push(newConnection);
+      }
+    }
+  } else if (AppSettings.representation === Representation.COMPACT) {
+    await fetchFullRelationships(
+      AppSettings.contextEndpoint,
+      iri,
+      relationships
+    );
+    await fetchReadOnlyTerms(
+      AppSettings.contextEndpoint,
+      relationships.map((rel) => rel.target).concat(subClasses),
+      terms
+    );
+    for (const relationship of relationships.filter(
+      (relationship) =>
+        !(relationship.relation in WorkspaceTerms) &&
+        !(relationship.target in WorkspaceTerms)
+    )) {
+      const newConnection = {
+        link: relationship.relation,
+        linkLabels: relationship.labels,
+        target: {
+          iri: relationship.target,
+          labels: terms[relationship.target].labels,
+          description: terms[relationship.target].definitions,
+          vocabulary: getVocabularyFromScheme(
+            terms[relationship.target].inScheme
+          ),
+        },
+        direction: "target",
+      };
+      connections.push(newConnection);
+    }
+  }
+  for (const term of Object.keys(restrictions).filter(
+    (subClass) => !(subClass in WorkspaceTerms)
+  )) {
+    for (const restriction of restrictions[term]) {
+      const newConnection = {
+        link: restriction.onProperty,
+        linkLabels: Links[restriction.onProperty].labels,
+        target: {
+          iri: term,
+          labels: terms[term].labels,
+          description: terms[term].definitions,
+          vocabulary: getVocabularyFromScheme(terms[term].inScheme),
+        },
+        direction: "target",
+      };
+      if (
+        !connections.find(
+          (conn) => JSON.stringify(conn) === JSON.stringify(newConnection)
+        ) &&
+        !Object.keys(WorkspaceLinks).find(
+          (link) =>
+            WorkspaceLinks[link].iri === restriction.onProperty &&
+            WorkspaceElements[WorkspaceLinks[link].source].iri === term &&
+            WorkspaceElements[WorkspaceLinks[link].target].iri === iri
+        )
+      )
+        connections.push(newConnection);
+    }
+  }
+  const subClassIRI = LinkConfig[LinkType.GENERALIZATION].iri;
+  for (const subC of subClass.filter(
+    (subClass) => !(subClass in WorkspaceTerms)
+  )) {
+    const newConnection = {
+      link: subClassIRI,
+      linkLabels: Links[subClassIRI].labels,
+      target: {
+        iri: subC,
+        labels: terms[subC].labels,
+        description: terms[subC].definitions,
+        vocabulary: getVocabularyFromScheme(terms[subC].inScheme),
+      },
+      direction: "target",
+    };
+    connections.push(newConnection);
+  }
+  for (const subC of WorkspaceTerms[iri].subClassOf.filter(
+    (subClass) => !(subClass in WorkspaceTerms) && subClass in terms
+  )) {
+    const newConnection = {
+      link: subClassIRI,
+      linkLabels: Links[subClassIRI].labels,
+      target: {
+        iri: subC,
+        labels: terms[subC].labels,
+        description: terms[subC].definitions,
+        vocabulary: getVocabularyFromScheme(terms[subC].inScheme),
+      },
+      direction: "source",
+    };
+    connections.push(newConnection);
+  }
+  return connections;
 }
