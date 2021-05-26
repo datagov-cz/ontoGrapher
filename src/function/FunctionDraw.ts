@@ -14,6 +14,7 @@ import {
 import { Representation } from "../config/Enum";
 import { getElementShape } from "./FunctionGetVars";
 import { ElementColors } from "../config/visual/ElementColors";
+import _ from "underscore";
 
 export function setDisplayLabel(id: string, languageCode: string) {
   if (WorkspaceElements[id].selectedLabel[languageCode] === "") {
@@ -79,7 +80,7 @@ export function drawGraphElement(
           )
         );
     }
-    elem.prop("attrs/labelAttrs/text", text.join("\n"));
+    elem.prop("attrs/labelAttrs/text", _.uniq(text).join("\n"));
     const width =
       representation === Representation.COMPACT
         ? Math.max(
