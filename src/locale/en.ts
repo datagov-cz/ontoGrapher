@@ -55,7 +55,7 @@ export const en = {
   targetCardinality: "Target cardinality",
   loading: "Loading...",
   validationLoadingError:
-    "ConnectionWorkspace to validation server unsuccessful. Please reload to try again.",
+    "Connection to validation server unsuccessful. Please reload to try again.",
   pleaseReload: "Error: workspace not found. Please check the workspace IRI.",
   spreadConnections: "Explode connections",
   connections: "Connections",
