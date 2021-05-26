@@ -1,17 +1,23 @@
 import React from "react";
 import TableList from "../../../components/TableList";
 // @ts-ignore
-import { getLabelOrBlank } from "../../../function/FunctionGetVars";
+import {
+  getLabelOrBlank,
+  isLabelBlank,
+  isTermReadOnly,
+} from "../../../function/FunctionGetVars";
 import { AppSettings, Languages } from "../../../config/Variables";
 import IRIlabel from "../../../components/IRIlabel";
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
 import { Locale } from "../../../config/Locale";
+import InlineEdit, { InputType } from "riec";
 
 interface Props {
   labels: { [key: string]: string };
   iri?: string;
   default?: string;
   selectAsDefault?: Function;
+  onEdit?: Function;
 }
 
 interface State {
@@ -44,10 +50,26 @@ export default class LabelTable extends React.Component<Props, State> {
             }}
           >
             {this.props.iri ? (
-              <IRIlabel
-                label={getLabelOrBlank(this.props.labels, lang)}
-                iri={this.props.iri}
-              />
+              isLabelBlank(getLabelOrBlank(this.props.labels, lang)) &&
+              !isTermReadOnly(this.props.iri) ? (
+                <td className={"stretch"}>
+                  <InlineEdit
+                    type={InputType.Text}
+                    value={getLabelOrBlank(this.props.labels, lang)}
+                    onChange={(label) => {
+                      if (this.props.onEdit) this.props.onEdit(label, lang);
+                    }}
+                    valueKey="id"
+                    labelKey="name"
+                    viewClass={"rieinput"}
+                  />
+                </td>
+              ) : (
+                <IRIlabel
+                  label={getLabelOrBlank(this.props.labels, lang)}
+                  iri={this.props.iri}
+                />
+              )
             ) : (
               <td className={"stretch"}>
                 {getLabelOrBlank(this.props.labels, lang)}
