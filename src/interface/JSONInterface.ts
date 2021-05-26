@@ -31,9 +31,8 @@ export async function getVocabulariesFromRemoteJSON(
             results.push(
               await fetchVocabulary([data.sourceIRI], true, data.endpoint)
             );
-            WorkspaceVocabularies[data.sourceIRI].labels = initLanguageObject(
-              key
-            );
+            WorkspaceVocabularies[data.sourceIRI].labels =
+              initLanguageObject(key);
             results.push(
               await fetchConcepts(
                 data.endpoint,

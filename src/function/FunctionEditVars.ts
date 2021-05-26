@@ -184,12 +184,11 @@ export function setElementShape(
         height: height,
         strokeDasharray: "none",
         stroke: "black",
-        fill:
-          WorkspaceVocabularies[
-            getVocabularyFromScheme(
-              WorkspaceTerms[WorkspaceElements[elem.id].iri].inScheme
-            )
-          ].color,
+        fill: WorkspaceVocabularies[
+          getVocabularyFromScheme(
+            WorkspaceTerms[WorkspaceElements[elem.id].iri].inScheme
+          )
+        ].color,
       },
     });
   } else if (types.includes(parsePrefix("z-sgov-pojem", "typ-vlastnosti"))) {
@@ -201,12 +200,11 @@ export function setElementShape(
         cx: width / 2,
         cy: height / 2,
         stroke: "black",
-        fill:
-          WorkspaceVocabularies[
-            getVocabularyFromScheme(
-              WorkspaceTerms[WorkspaceElements[elem.id].iri].inScheme
-            )
-          ].color,
+        fill: WorkspaceVocabularies[
+          getVocabularyFromScheme(
+            WorkspaceTerms[WorkspaceElements[elem.id].iri].inScheme
+          )
+        ].color,
       },
     });
   } else if (types.includes(parsePrefix("z-sgov-pojem", "typ-vztahu"))) {
@@ -217,12 +215,11 @@ export function setElementShape(
           height / 2
         } ${width / 2},${height * (3 / 2)} ${-(width / 8)},${height / 2}`,
         stroke: "black",
-        fill:
-          WorkspaceVocabularies[
-            getVocabularyFromScheme(
-              WorkspaceTerms[WorkspaceElements[elem.id].iri].inScheme
-            )
-          ].color,
+        fill: WorkspaceVocabularies[
+          getVocabularyFromScheme(
+            WorkspaceTerms[WorkspaceElements[elem.id].iri].inScheme
+          )
+        ].color,
       },
     });
   } else if (types.includes(parsePrefix("z-sgov-pojem", "typ-události"))) {
@@ -231,12 +228,11 @@ export function setElementShape(
         display: "block",
         points: `20,0 ${width - 20},0 ${width},${height} 0,${height}`,
         stroke: "black",
-        fill:
-          WorkspaceVocabularies[
-            getVocabularyFromScheme(
-              WorkspaceTerms[WorkspaceElements[elem.id].iri].inScheme
-            )
-          ].color,
+        fill: WorkspaceVocabularies[
+          getVocabularyFromScheme(
+            WorkspaceTerms[WorkspaceElements[elem.id].iri].inScheme
+          )
+        ].color,
       },
     });
   } else {
@@ -247,12 +243,11 @@ export function setElementShape(
         height: height,
         strokeDasharray: "10,10",
         stroke: "grey",
-        fill:
-          WorkspaceVocabularies[
-            getVocabularyFromScheme(
-              WorkspaceTerms[WorkspaceElements[elem.id].iri].inScheme
-            )
-          ].color,
+        fill: WorkspaceVocabularies[
+          getVocabularyFromScheme(
+            WorkspaceTerms[WorkspaceElements[elem.id].iri].inScheme
+          )
+        ].color,
       },
       label: { color: "grey" },
     });

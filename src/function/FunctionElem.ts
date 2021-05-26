@@ -39,6 +39,7 @@ import {
 import { initConnections } from "./FunctionRestriction";
 import { restoreHiddenElem, setRepresentation } from "./FunctionGraph";
 import React from "react";
+import { insertNewCacheTerms, insertNewRestrictions } from "./FunctionCache";
 
 export function resizeElem(id: string) {
   let view = paper.findViewByModel(id);
@@ -163,9 +164,8 @@ export function moveElements(
   if (rect) rect.remove();
   const movedLinks: string[] = [];
   const movedElems: string[] = [sourceID];
-  WorkspaceElements[sourceID].position[
-    AppSettings.selectedDiagram
-  ] = sourceElem.position();
+  WorkspaceElements[sourceID].position[AppSettings.selectedDiagram] =
+    sourceElem.position();
   for (const id of AppSettings.selectedElements) {
     const elem = graph.getElements().find((elem) => elem.id === id);
     if (elem && id !== sourceID && bbox && ox && oy) {
@@ -178,9 +178,8 @@ export function moveElements(
       );
       // generate queries only if the position changed
       if (isElementPositionOutdated(elem)) {
-        WorkspaceElements[id].position[
-          AppSettings.selectedDiagram
-        ] = elem.position();
+        WorkspaceElements[id].position[AppSettings.selectedDiagram] =
+          elem.position();
         movedElems.push(id);
         for (const link of graph.getConnectedLinks(elem)) {
           // if there are any connected links with vertices, calculate and save the new vertex positions
@@ -195,9 +194,8 @@ export function moveElements(
                   vert.y + diff.y / Diagrams[AppSettings.selectedDiagram].scale,
               });
             });
-            WorkspaceLinks[linkID].vertices[
-              AppSettings.selectedDiagram
-            ] = link.vertices();
+            WorkspaceLinks[linkID].vertices[AppSettings.selectedDiagram] =
+              link.vertices();
           }
         }
       }
@@ -231,8 +229,12 @@ export async function putElementsOnCanvas(
         true,
         false
       );
-      await fetchReadOnlyTerms(AppSettings.contextEndpoint, iris);
-      await fetchRelationships(AppSettings.contextEndpoint, iris);
+      insertNewCacheTerms(
+        await fetchReadOnlyTerms(AppSettings.contextEndpoint, iris)
+      );
+      insertNewRestrictions(
+        await fetchRelationships(AppSettings.contextEndpoint, iris)
+      );
       const newIDs = initElements();
       await queries.push(updateProjectElement(false, ...newIDs));
       await queries.push(updateProjectLink(false, ...initConnections()));

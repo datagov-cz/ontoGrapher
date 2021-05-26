@@ -84,8 +84,10 @@ export function updateProjectElement(del: boolean, ...ids: string[]): string {
           qb.s(qb.i(iri), "og:diagram", "?diagram"),
           qb.s(qb.i(iri), "og:active", "?active"),
         ].map((stmt) =>
-          DELETE`${qb.g(getWorkspaceContextIRI(), [stmt])}`
-            .WHERE`${qb.g(getWorkspaceContextIRI(), [stmt])}`.build()
+          DELETE`${qb.g(getWorkspaceContextIRI(), [stmt])}`.WHERE`${qb.g(
+            getWorkspaceContextIRI(),
+            [stmt]
+          )}`.build()
         )
       );
   }

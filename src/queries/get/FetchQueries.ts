@@ -1,6 +1,13 @@
 import { processQuery } from "../../interface/TransactionInterface";
-import { initLanguageObject, parsePrefix } from "../../function/FunctionEditVars";
-import { Links, Stereotypes, WorkspaceVocabularies } from "../../config/Variables";
+import {
+  initLanguageObject,
+  parsePrefix,
+} from "../../function/FunctionEditVars";
+import {
+  Links,
+  Stereotypes,
+  WorkspaceVocabularies,
+} from "../../config/Variables";
 import { RestrictionConfig } from "../../config/logic/RestrictionConfig";
 import { LinkType } from "../../config/Enum";
 import { createRestriction } from "../../function/FunctionRestriction";
@@ -108,10 +115,14 @@ export async function fetchConcepts(
     "SELECT DISTINCT ?term ?termLabel ?termAltLabel ?termType ?termDefinition ?termDomain ?termRange ?topConcept ?inverseOf ?character ?restriction ?restrictionPred ?onProperty ?onClass ?target ?subClassOf",
     "WHERE {",
     graph && "GRAPH <" + graph + "> {",
-    vocabulary ? [
-      "?term skos:inScheme ?scheme.",
-      "<" + vocabulary + "> <http://onto.fel.cvut.cz/ontologies/slovník/agendový/popis-dat/pojem/má-glosář> ?scheme."
-    ].join(" ") : "?term skos:inScheme <" + scheme + ">.",
+    vocabulary
+      ? [
+          "?term skos:inScheme ?scheme.",
+          "<" +
+            vocabulary +
+            "> <http://onto.fel.cvut.cz/ontologies/slovník/agendový/popis-dat/pojem/má-glosář> ?scheme.",
+        ].join(" ")
+      : "?term skos:inScheme <" + scheme + ">.",
     requiredType ? "?term a ?termType." : "OPTIONAL {?term a ?termType.}",
     requiredTypes && "VALUES ?termType {<" + requiredTypes.join("> <") + ">}",
     requiredValues && "VALUES ?term {<" + requiredValues.join("> <") + ">}",

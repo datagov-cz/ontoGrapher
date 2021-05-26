@@ -29,8 +29,7 @@ export const LinkConfig: {
   [LinkType.GENERALIZATION]: {
     id: "generalization",
     labels: { cs: "generalizace", en: "generalization" },
-    iri:
-      "http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/uml/generalization",
+    iri: "http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/uml/generalization",
     newLink: (id?: string) => {
       if (id) return new generalizationLink({ id: id });
       else return new generalizationLink();

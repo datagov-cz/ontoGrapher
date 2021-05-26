@@ -89,12 +89,10 @@ export default class DetailElement extends React.Component<Props, State> {
   save() {
     let elem = graph.getElements().find((elem) => elem.id === this.state.id);
     if (this.state.id in WorkspaceElements) {
-      WorkspaceTerms[
-        WorkspaceElements[this.state.id].iri
-      ].altLabels = this.state.inputAltLabels;
-      WorkspaceTerms[
-        WorkspaceElements[this.state.id].iri
-      ].definitions = this.state.inputDefinitions;
+      WorkspaceTerms[WorkspaceElements[this.state.id].iri].altLabels =
+        this.state.inputAltLabels;
+      WorkspaceTerms[WorkspaceElements[this.state.id].iri].definitions =
+        this.state.inputDefinitions;
       WorkspaceElements[this.state.id].selectedLabel = this.state.selectedLabel;
       if (elem)
         drawGraphElement(
@@ -274,9 +272,8 @@ export default class DetailElement extends React.Component<Props, State> {
                       }
                       selectAsDefault={(lang: string, i: number) => {
                         let res = this.state.selectedLabel;
-                        res[
-                          this.props.projectLanguage
-                        ] = this.state.inputAltLabels[i].label;
+                        res[this.props.projectLanguage] =
+                          this.state.inputAltLabels[i].label;
                         this.setState({ selectedLabel: res, changes: true });
                       }}
                       addAltLabel={(label: string) => {

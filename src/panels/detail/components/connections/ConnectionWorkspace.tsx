@@ -34,6 +34,21 @@ export default class ConnectionWorkspace extends React.Component<Props, State> {
     return WorkspaceLinks[this.props.linkID].source === id;
   }
 
+  transferConnectionToEvent(event: DragEvent, elemID: string) {
+    event?.dataTransfer?.setData(
+      "newClass",
+      JSON.stringify({
+        id: _.uniq(
+          this.props.selection
+            .filter((link) => link in WorkspaceLinks)
+            .map((link) => getOtherConnectionElementID(link, this.props.elemID))
+            .concat(elemID)
+        ),
+        iri: this.props.selection.filter((link) => !(link in WorkspaceLinks)),
+      })
+    );
+  }
+
   render() {
     const elemID = getOtherConnectionElementID(
       this.props.linkID,
@@ -41,24 +56,9 @@ export default class ConnectionWorkspace extends React.Component<Props, State> {
     );
     return (
       <Connection
-        onDragStart={(event: DragEvent) => {
-          event?.dataTransfer?.setData(
-            "newClass",
-            JSON.stringify({
-              id: _.uniq(
-                this.props.selection
-                  .filter((link) => link in WorkspaceLinks)
-                  .map((link) =>
-                    getOtherConnectionElementID(link, this.props.elemID)
-                  )
-                  .concat(elemID)
-              ),
-              iri: this.props.selection.filter(
-                (link) => !(link in WorkspaceLinks)
-              ),
-            })
-          );
-        }}
+        onDragStart={(event: DragEvent) =>
+          this.transferConnectionToEvent(event, elemID)
+        }
         onDragEnd={() => {
           this.props.updateSelection(this.props.selection);
         }}

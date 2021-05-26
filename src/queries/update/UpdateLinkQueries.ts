@@ -168,7 +168,7 @@ export function updateProjectLinkVertices(
             vertIRI,
             "og:position-y",
             qb.ll(Math.round(WorkspaceLinks[id].vertices[diagram][i].y))
-          )
+          ),
         ].join(`
 			`)
       )

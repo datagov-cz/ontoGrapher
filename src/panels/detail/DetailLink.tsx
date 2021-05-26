@@ -174,30 +174,26 @@ export default class DetailLink extends React.Component<Props, State> {
               CardinalityPool[parseInt(this.state.sourceCardinality, 10)];
             const targetCard =
               CardinalityPool[parseInt(this.state.targetCardinality, 10)];
-            WorkspaceLinks[
-              underlyingConnections.src
-            ].sourceCardinality = new Cardinality(
-              sourceCard.getFirstCardinality(),
-              sourceCard.getFirstCardinality()
-            );
-            WorkspaceLinks[
-              underlyingConnections.src
-            ].targetCardinality = new Cardinality(
-              sourceCard.getSecondCardinality(),
-              sourceCard.getSecondCardinality()
-            );
-            WorkspaceLinks[
-              underlyingConnections.tgt
-            ].sourceCardinality = new Cardinality(
-              targetCard.getFirstCardinality(),
-              targetCard.getFirstCardinality()
-            );
-            WorkspaceLinks[
-              underlyingConnections.tgt
-            ].targetCardinality = new Cardinality(
-              targetCard.getSecondCardinality(),
-              targetCard.getSecondCardinality()
-            );
+            WorkspaceLinks[underlyingConnections.src].sourceCardinality =
+              new Cardinality(
+                sourceCard.getFirstCardinality(),
+                sourceCard.getFirstCardinality()
+              );
+            WorkspaceLinks[underlyingConnections.src].targetCardinality =
+              new Cardinality(
+                sourceCard.getSecondCardinality(),
+                sourceCard.getSecondCardinality()
+              );
+            WorkspaceLinks[underlyingConnections.tgt].sourceCardinality =
+              new Cardinality(
+                targetCard.getFirstCardinality(),
+                targetCard.getFirstCardinality()
+              );
+            WorkspaceLinks[underlyingConnections.tgt].targetCardinality =
+              new Cardinality(
+                targetCard.getSecondCardinality(),
+                targetCard.getSecondCardinality()
+              );
             queries.push(
               updateProjectLink(
                 true,

@@ -74,9 +74,8 @@ export default class ItemPanel extends React.Component<Props, State> {
     };
     this.handleChangeSearch = this.handleChangeSearch.bind(this);
     this.handleOpenRemoveItemModal = this.handleOpenRemoveItemModal.bind(this);
-    this.handleOpenRemoveReadOnlyItemModal = this.handleOpenRemoveReadOnlyItemModal.bind(
-      this
-    );
+    this.handleOpenRemoveReadOnlyItemModal =
+      this.handleOpenRemoveReadOnlyItemModal.bind(this);
     this.updateElements = this.updateElements.bind(this);
     this.filter = this.filter.bind(this);
     this.update = this.update.bind(this);

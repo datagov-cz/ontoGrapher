@@ -18,6 +18,7 @@ import { updateProjectElement } from "../queries/update/UpdateElementQueries";
 import { initElements } from "../function/FunctionEditVars";
 import { updateProjectLink } from "../queries/update/UpdateLinkQueries";
 import { initConnections } from "../function/FunctionRestriction";
+import { insertNewCacheTerms } from "../function/FunctionCache";
 
 export async function getContext(
   contextIRI: string,
@@ -114,7 +115,9 @@ export async function getContext(
   const missingTerms: string[] = Object.keys(WorkspaceElements)
     .filter((id) => !(WorkspaceElements[id].iri in WorkspaceTerms))
     .map((id) => WorkspaceElements[id].iri);
-  await fetchReadOnlyTerms(contextEndpoint, missingTerms);
+  insertNewCacheTerms(
+    await fetchReadOnlyTerms(AppSettings.contextEndpoint, missingTerms)
+  );
   await processTransaction(
     AppSettings.contextEndpoint,
     qb.constructQuery(updateProjectElement(false, ...initElements()))

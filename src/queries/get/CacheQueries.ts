@@ -7,18 +7,9 @@ import {
   initLanguageObject,
   parsePrefix,
 } from "../../function/FunctionEditVars";
-import {
-  AppSettings,
-  Links,
-  PackageRoot,
-  WorkspaceTerms,
-  WorkspaceVocabularies,
-} from "../../config/Variables";
+import { AppSettings, Links, WorkspaceTerms } from "../../config/Variables";
 import { RestrictionConfig } from "../../config/logic/RestrictionConfig";
 import { createRestriction } from "../../function/FunctionRestriction";
-import { LinkType } from "../../config/Enum";
-import { setSchemeColors } from "../../function/FunctionGetVars";
-import { PackageNode } from "../../datatypes/PackageNode";
 import { Restriction } from "../../datatypes/Restriction";
 
 export async function fetchVocabularies(
@@ -105,9 +96,9 @@ export async function fetchSubClasses(
 
 export async function fetchRelationships(
   endpoint: string,
-  terms: string[],
-  sendTo?: { [key: string]: Restriction[] }
-): Promise<boolean> {
+  terms: string[]
+): Promise<{ [key: string]: Restriction[] }> {
+  const result: { [key: string]: Restriction[] } = {};
   for (let i = 0; i < Math.ceil(terms.length / 25); i++) {
     const termSlice = terms.slice(i * 25, (i + 1) * 25);
     const query = [
@@ -135,33 +126,18 @@ export async function fetchRelationships(
       .then((response) => response.json())
       .then((data) => {
         for (const row of data.results.bindings) {
-          if (row.term && (sendTo || row.term.value in WorkspaceTerms)) {
-            if (!sendTo) {
-              if (row.restriction) {
-                createRestriction(
-                  WorkspaceTerms[row.term.value].restrictions,
-                  row.term.value,
-                  row.restrictionPred.value,
-                  row.onProperty.value,
-                  row.target,
-                  row.onClass ? row.onClass.value : undefined
-                );
-              }
-            } else {
-              if (!(row.term.value in sendTo)) {
-                sendTo[row.term.value] = [];
-              }
-              if (row.restriction) {
-                sendTo[row.term.value].push(
-                  new Restriction(
-                    row.restrictionPred.value,
-                    row.onProperty.value,
-                    row.target,
-                    row.onClass ? row.onClass.value : undefined
-                  )
-                );
-              }
-            }
+          if (!(row.term.value in result)) {
+            result[row.term.value] = [];
+          }
+          if (row.restriction) {
+            result[row.term.value].push(
+              new Restriction(
+                row.restrictionPred.value,
+                row.onProperty.value,
+                row.target,
+                row.onClass ? row.onClass.value : undefined
+              )
+            );
           }
         }
       })
@@ -170,7 +146,7 @@ export async function fetchRelationships(
         return false;
       });
   }
-  return true;
+  return result;
 }
 
 export async function searchCache(
@@ -232,26 +208,9 @@ export async function searchCache(
 
 export async function fetchReadOnlyTerms(
   contextEndpoint: string,
-  terms: string[],
-  sendTo?: { [key: string]: any }
-): Promise<boolean> {
-  const result: {
-    [key: string]: {
-      labels: { [key: string]: string };
-      definitions: { [key: string]: string };
-      altLabels: { label: string; language: string }[];
-      types: string[];
-      inScheme: string;
-      domain?: string;
-      range?: string;
-      subClassOf: string[];
-      restrictions: [];
-      type: number;
-      topConcept?: string;
-      character?: string;
-      inverseOf?: string;
-    };
-  } = {};
+  terms: string[]
+): Promise<typeof WorkspaceTerms> {
+  const result: typeof WorkspaceTerms = {};
   for (let i = 0; i < Math.ceil(terms.length / 25); i++) {
     const termSlice = terms.slice(i * 25, (i + 1) * 25);
     const query = [
@@ -291,6 +250,10 @@ export async function fetchReadOnlyTerms(
         for (const row of data.results.bindings) {
           if (!(row.term.value in result)) {
             result[row.term.value] = {
+              active: true,
+              domain: undefined,
+              range: undefined,
+              topConcept: undefined,
               labels: initLanguageObject(""),
               definitions: initLanguageObject(""),
               altLabels: [],
@@ -298,7 +261,6 @@ export async function fetchReadOnlyTerms(
               inScheme: row.scheme.value,
               subClassOf: [],
               restrictions: [],
-              type: LinkType.DEFAULT,
             };
           }
           if (
@@ -342,8 +304,6 @@ export async function fetchReadOnlyTerms(
           if (row.termDomain)
             result[row.term.value].domain = row.termDomain.value;
           if (row.termRange) result[row.term.value].range = row.termRange.value;
-          if (row.character)
-            result[row.term.value].character = row.character.value;
           if (row.topConcept)
             result[row.term.value].topConcept = row.topConcept.value;
           if (
@@ -365,69 +325,25 @@ export async function fetchReadOnlyTerms(
               row.onClass ? row.onClass.value : undefined
             );
           }
-          if (row.inverseOf)
-            result[row.term.value].inverseOf = row.inverseOf.value;
-          const vocab = Object.keys(CacheSearchVocabularies).find(
-            (vocab) =>
-              CacheSearchVocabularies[vocab].glossary === row.scheme.value
-          );
-          if (
-            sendTo === undefined &&
-            !Object.keys(WorkspaceVocabularies).find(
-              (vocab) =>
-                WorkspaceVocabularies[vocab].glossary === row.scheme.value
-            )
-          ) {
-            if (vocab) {
-              WorkspaceVocabularies[vocab] = {
-                labels: CacheSearchVocabularies[vocab].labels,
-                readOnly: true,
-                namespace: CacheSearchVocabularies[vocab].namespace,
-                glossary: CacheSearchVocabularies[vocab].glossary,
-                graph: vocab,
-                color: "#FFF",
-                count: 0,
-              };
-              new PackageNode(
-                CacheSearchVocabularies[vocab].labels,
-                PackageRoot,
-                false,
-                row.scheme.value
-              );
-              setSchemeColors(AppSettings.viewColorPool);
-            }
-          } else if (sendTo) Object.assign(sendTo, result);
         }
       })
       .catch((e) => {
         console.error(e);
       });
   }
-  if (!sendTo) {
-    Object.assign(WorkspaceTerms, result);
-    for (const term in result) {
-      const vocab = Object.keys(WorkspaceVocabularies).find(
-        (vocab) =>
-          WorkspaceVocabularies[vocab].glossary ===
-          WorkspaceTerms[term].inScheme
-      );
-      if (vocab) {
-        WorkspaceVocabularies[vocab].count++;
-      }
-    }
-  }
-  return true;
+  return result;
 }
 
 export async function fetchFullRelationships(
   contextEndpoint: string,
-  term: string,
-  relationships: {
+  term: string
+): Promise<
+  {
     relation: string;
     target: string;
     labels: { [key: string]: string };
   }[]
-): Promise<boolean> {
+> {
   const query = [
     "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>",
     "PREFIX owl: <http://www.w3.org/2002/07/owl#>",
@@ -452,6 +368,11 @@ export async function fetchFullRelationships(
       "> <https://slovník.gov.cz/datový/pracovní-prostor/pojem/odkazuje-na-kontext> ?graph.",
     "}",
   ].join(" ");
+  const relationships: {
+    relation: string;
+    target: string;
+    labels: { [key: string]: string };
+  }[] = [];
   return await processQuery(contextEndpoint, query)
     .then((response) => response.json())
     .then((data) => {
@@ -471,10 +392,10 @@ export async function fetchFullRelationships(
         }
         find.labels[row.label["xml:lang"]] = row.label.value;
       }
-      return true;
+      return relationships;
     })
     .catch((e) => {
       console.error(e);
-      return false;
+      return [];
     });
 }

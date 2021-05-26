@@ -11,10 +11,7 @@ import {
 import { Representation } from "../../../../config/Enum";
 import { getLabelOrBlank } from "../../../../function/FunctionGetVars";
 import TableList from "../../../../components/TableList";
-import {
-  getCacheConnections,
-  getOtherConnectionElementID,
-} from "../../../../function/FunctionLink";
+import { getOtherConnectionElementID } from "../../../../function/FunctionLink";
 import { Button, OverlayTrigger, Tooltip } from "react-bootstrap";
 import { spreadConnections } from "../../../../function/FunctionGraph";
 import classNames from "classnames";
@@ -23,6 +20,8 @@ import { isElementHidden } from "../../../../function/FunctionElem";
 import { ElementFilter } from "../../../../datatypes/ElementFilter";
 import { Locale } from "../../../../config/Locale";
 import ConnectionCache from "./ConnectionCache";
+import { CacheConnection } from "../../../../types/CacheConnection";
+import { getCacheConnections } from "../../../../function/FunctionCache";
 
 interface Props {
   //Element ID from DetailElement
@@ -38,17 +37,7 @@ interface State {
   shownConnections: string[];
   showFilter: boolean;
   showLucene: boolean;
-  shownLucene: {
-    link: string;
-    linkLabels: { [key: string]: string };
-    target: {
-      iri: string;
-      labels: { [key: string]: string };
-      description: { [key: string]: string };
-      vocabulary: string;
-    };
-    direction: string;
-  }[];
+  shownLucene: CacheConnection[];
 }
 
 export default class ConnectionList extends React.Component<Props, State> {

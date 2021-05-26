@@ -35,6 +35,7 @@ import {
 import { initConnections } from "./FunctionRestriction";
 import isUrl from "is-url";
 import { getOtherConnectionElementID } from "./FunctionLink";
+import { insertNewCacheTerms, insertNewRestrictions } from "./FunctionCache";
 
 export const mvp1IRI =
   "https://slovník.gov.cz/základní/pojem/má-vztažený-prvek-1";
@@ -79,8 +80,12 @@ export async function spreadConnections(
   const iris = elements.filter((iri) => isUrl(iri));
   let queries: string[] = [];
   if (iris.length > 0) {
-    await fetchReadOnlyTerms(AppSettings.contextEndpoint, iris);
-    await fetchRelationships(AppSettings.contextEndpoint, iris);
+    insertNewCacheTerms(
+      await fetchReadOnlyTerms(AppSettings.contextEndpoint, iris)
+    );
+    insertNewRestrictions(
+      await fetchRelationships(AppSettings.contextEndpoint, iris)
+    );
     const newIDs = initElements();
     queries.push(updateProjectElement(false, ...newIDs));
     queries.push(updateProjectLink(false, ...initConnections()));
@@ -160,9 +165,10 @@ function storeElement(elem: joint.dia.Cell) {
   }
 }
 
-export function setRepresentation(
-  representation: number
-): { result: boolean; transaction: string[] } {
+export function setRepresentation(representation: number): {
+  result: boolean;
+  transaction: string[];
+} {
   let queries: string[] = [];
   if (representation === Representation.COMPACT) {
     let del = false;
@@ -248,9 +254,8 @@ export function setRepresentation(
                   ]);
                 }
               }
-              WorkspaceLinks[newLink.id].vertices[
-                AppSettings.selectedDiagram
-              ] = newLink.vertices();
+              WorkspaceLinks[newLink.id].vertices[AppSettings.selectedDiagram] =
+                newLink.vertices();
               if (!find) {
                 WorkspaceLinks[newLink.id].sourceCardinality = new Cardinality(
                   WorkspaceLinks[
@@ -359,7 +364,7 @@ export function setRepresentation(
   }
 }
 
-export function checkLinkSelfLoop(link: joint.dia.Link) {
+export function findLinkSelfLoop(link: joint.dia.Link) {
   const id = link.id as string;
   if (
     WorkspaceLinks[id].source === WorkspaceLinks[id].target &&
@@ -416,16 +421,15 @@ export function setupLink(
     lnk.vertices(
       WorkspaceLinks[link].vertices[AppSettings.selectedDiagram].length > 0
         ? WorkspaceLinks[link].vertices[AppSettings.selectedDiagram]
-        : checkLinkSelfLoop(lnk)
+        : findLinkSelfLoop(lnk)
     );
     return undefined;
   } else {
     let ret = _.cloneDeep(
       WorkspaceLinks[link].vertices[AppSettings.selectedDiagram]
     );
-    WorkspaceLinks[link].vertices[
-      AppSettings.selectedDiagram
-    ] = checkLinkSelfLoop(lnk);
+    WorkspaceLinks[link].vertices[AppSettings.selectedDiagram] =
+      findLinkSelfLoop(lnk);
     if (WorkspaceLinks[link].vertices[AppSettings.selectedDiagram].length > 0)
       lnk.vertices(WorkspaceLinks[link].vertices[AppSettings.selectedDiagram]);
     return ret ? ret.length : undefined;
@@ -518,9 +522,8 @@ export function restoreHiddenElem(
             const posy = (sourcepos.y + targetpos.y) / 2;
             relationship.position(posx, posy);
           }
-          WorkspaceElements[relID].position[
-            AppSettings.selectedDiagram
-          ] = relationship.position();
+          WorkspaceElements[relID].position[AppSettings.selectedDiagram] =
+            relationship.position();
           WorkspaceElements[relID].hidden[AppSettings.selectedDiagram] = false;
           drawGraphElement(
             relationship,
@@ -606,9 +609,8 @@ export function restoreHiddenElem(
                 )
               );
             WorkspaceLinks[link].vertices[AppSettings.selectedDiagram] = [];
-            WorkspaceLinks[targetLink].vertices[
-              AppSettings.selectedDiagram
-            ] = [];
+            WorkspaceLinks[targetLink].vertices[AppSettings.selectedDiagram] =
+              [];
           }
           domainLink.addTo(graph);
           rangeLink.addTo(graph);

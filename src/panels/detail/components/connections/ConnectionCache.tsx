@@ -8,19 +8,10 @@ import _ from "underscore";
 import { getOtherConnectionElementID } from "../../../../function/FunctionLink";
 import { Representation } from "../../../../config/Enum";
 import Connection from "./Connection";
+import { CacheConnection } from "../../../../types/CacheConnection";
 
 interface Props {
-  connection: {
-    link: string;
-    linkLabels: { [key: string]: string };
-    target: {
-      iri: string;
-      labels: { [key: string]: string };
-      description: { [key: string]: string };
-      vocabulary: string;
-    };
-    direction: string;
-  };
+  connection: CacheConnection;
   projectLanguage: string;
   update: Function;
   elemID: string;
@@ -32,13 +23,35 @@ interface Props {
 interface State {}
 
 export default class ConnectionCache extends React.Component<Props, State> {
-  checkVocabulary(vocabulary: string) {
+  getVocabularyLabel(vocabulary: string): string {
     return vocabulary in CacheSearchVocabularies
       ? getLabelOrBlank(
           CacheSearchVocabularies[vocabulary].labels,
           this.props.projectLanguage
         )
       : "";
+  }
+
+  transferConnectionToEvent(event: DragEvent) {
+    const add =
+      AppSettings.representation === Representation.FULL
+        ? [this.props.connection.target.iri]
+        : [this.props.connection.target.iri, this.props.connection.link];
+    event?.dataTransfer?.setData(
+      "newClass",
+      JSON.stringify({
+        id: _.uniq(
+          this.props.selection
+            .filter((link) => link in WorkspaceLinks)
+            .map((link) => getOtherConnectionElementID(link, this.props.elemID))
+        ),
+        iri: _.uniq(
+          this.props.selection
+            .filter((link) => !(link in WorkspaceLinks))
+            .concat(...add)
+        ),
+      })
+    );
   }
 
   render() {
@@ -54,12 +67,14 @@ export default class ConnectionCache extends React.Component<Props, State> {
               )}
               &nbsp;
               <Badge className={"wrap"} variant={"secondary"}>
-                {this.checkVocabulary(this.props.connection.target.vocabulary)}
+                {this.getVocabularyLabel(
+                  this.props.connection.target.vocabulary
+                )}
               </Badge>
             </Popover.Title>
             <Popover.Content>
               {
-                this.props.connection.target.description[
+                this.props.connection.target.definitions[
                   this.props.projectLanguage
                 ]
               }
@@ -68,32 +83,9 @@ export default class ConnectionCache extends React.Component<Props, State> {
         }
       >
         <Connection
-          onDragStart={(event: DragEvent) => {
-            const add =
-              AppSettings.representation === Representation.FULL
-                ? [this.props.connection.target.iri]
-                : [
-                    this.props.connection.target.iri,
-                    this.props.connection.link,
-                  ];
-            event?.dataTransfer?.setData(
-              "newClass",
-              JSON.stringify({
-                id: _.uniq(
-                  this.props.selection
-                    .filter((link) => link in WorkspaceLinks)
-                    .map((link) =>
-                      getOtherConnectionElementID(link, this.props.elemID)
-                    )
-                ),
-                iri: _.uniq(
-                  this.props.selection
-                    .filter((link) => !(link in WorkspaceLinks))
-                    .concat(...add)
-                ),
-              })
-            );
-          }}
+          onDragStart={(event: DragEvent) =>
+            this.transferConnectionToEvent(event)
+          }
           onDragEnd={() => this.props.update()}
           onClick={() =>
             this.props.updateSelection(

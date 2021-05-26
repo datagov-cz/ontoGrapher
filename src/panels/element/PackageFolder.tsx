@@ -86,66 +86,72 @@ export default class PackageFolder extends React.Component<Props, State> {
         style={{
           backgroundColor: this.props.node.scheme
             ? WorkspaceVocabularies[
-              getVocabularyFromScheme(this.props.node.scheme)
+                getVocabularyFromScheme(this.props.node.scheme)
               ].color
-            : "#FFF"
+            : "#FFF",
         }}
       >
         <span className={"vocabularyLabel"}>
           {(this.props.readOnly ? "📑" : "✏") +
-          getLabelOrBlank(this.props.node.labels, this.props.projectLanguage)}
+            getLabelOrBlank(this.props.node.labels, this.props.projectLanguage)}
         </span>
-        {this.props.readOnly && getVocabularyFromScheme(this.props.node.scheme) in CacheSearchVocabularies &&
-        CacheSearchVocabularies[
-          getVocabularyFromScheme(this.props.node.scheme)
+        {this.props.readOnly &&
+          getVocabularyFromScheme(this.props.node.scheme) in
+            CacheSearchVocabularies &&
+          CacheSearchVocabularies[
+            getVocabularyFromScheme(this.props.node.scheme)
           ].count !==
-        WorkspaceVocabularies[
-          getVocabularyFromScheme(this.props.node.scheme)
-          ].count && (
-          <span>
+            WorkspaceVocabularies[
+              getVocabularyFromScheme(this.props.node.scheme)
+            ].count && (
+            <span>
               &nbsp;
-            <OverlayTrigger
-              placement="right"
-              overlay={
-                <Tooltip id="button-tooltip">
-                  {Locale[AppSettings.viewLanguage].vocabularyNotFullyRepresented
-                  }
-                </Tooltip>
-              }
-            >
+              <OverlayTrigger
+                placement="right"
+                overlay={
+                  <Tooltip id="button-tooltip">
+                    {
+                      Locale[AppSettings.viewLanguage]
+                        .vocabularyNotFullyRepresented
+                    }
+                  </Tooltip>
+                }
+              >
                 <button
                   className={"buttonlink"}
                   onClick={() =>
                     this.props.filter([
-                      getVocabularyFromScheme(this.props.node.scheme)
+                      getVocabularyFromScheme(this.props.node.scheme),
                     ])
                   }
                 >
                   <h6>
                     <Badge variant={"secondary"}>
-                      {this.props.readOnly && getVocabularyFromScheme(this.props.node.scheme) in CacheSearchVocabularies &&
+                      {this.props.readOnly &&
+                      getVocabularyFromScheme(this.props.node.scheme) in
+                        CacheSearchVocabularies &&
                       CacheSearchVocabularies[
                         getVocabularyFromScheme(this.props.node.scheme)
-                        ].count !==
-                      WorkspaceVocabularies[
-                        getVocabularyFromScheme(this.props.node.scheme)
+                      ].count !==
+                        WorkspaceVocabularies[
+                          getVocabularyFromScheme(this.props.node.scheme)
                         ].count
                         ? `${
-                          WorkspaceVocabularies[
-                            getVocabularyFromScheme(this.props.node.scheme)
+                            WorkspaceVocabularies[
+                              getVocabularyFromScheme(this.props.node.scheme)
                             ].count
-                        }/${
-                          CacheSearchVocabularies[
-                            getVocabularyFromScheme(this.props.node.scheme)
+                          }/${
+                            CacheSearchVocabularies[
+                              getVocabularyFromScheme(this.props.node.scheme)
                             ].count
-                        } ${Locale[AppSettings.viewLanguage].termsCase}`
+                          } ${Locale[AppSettings.viewLanguage].termsCase}`
                         : ""}
                     </Badge>
                   </h6>
                 </button>
               </OverlayTrigger>
             </span>
-        )}
+          )}
         {this.props.children}
       </div>
     );
