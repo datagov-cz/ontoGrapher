@@ -13,10 +13,12 @@ export const LinkConfig: {
     update: (id: string) => string;
     newLink: (id?: string) => joint.dia.Link;
     labels: { [key: string]: string };
+    iri: string;
   };
 } = {
   [LinkType.DEFAULT]: {
     id: "default",
+    iri: "",
     labels: initLanguageObject(""),
     newLink: (id?: string) => {
       if (id) return new joint.shapes.standard.Link({ id: id });
@@ -27,6 +29,7 @@ export const LinkConfig: {
   [LinkType.GENERALIZATION]: {
     id: "generalization",
     labels: { cs: "generalizace", en: "generalization" },
+    iri: "http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/uml/generalization",
     newLink: (id?: string) => {
       if (id) return new generalizationLink({ id: id });
       else return new generalizationLink();

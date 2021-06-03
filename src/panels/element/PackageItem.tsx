@@ -98,17 +98,18 @@ export default class PackageItem extends React.Component<Props, State> {
           event.dataTransfer.setData(
             "newClass",
             JSON.stringify({
-              type: "existing",
               id:
                 AppSettings.selectedElements.length > 0
-                  ? AppSettings.selectedElements
+                  ? AppSettings.selectedElements.filter(
+                      (elem) => elem in WorkspaceElements
+                    )
                   : [this.props.id],
               iri:
                 AppSettings.selectedElements.length > 0
-                  ? AppSettings.selectedElements.map(
-                      (id) => WorkspaceElements[id].iri
+                  ? AppSettings.selectedElements.filter(
+                      (elem) => !(elem in WorkspaceElements)
                     )
-                  : [WorkspaceElements[this.props.id].iri],
+                  : [],
             })
           );
         }}

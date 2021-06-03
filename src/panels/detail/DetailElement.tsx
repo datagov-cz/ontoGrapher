@@ -63,6 +63,7 @@ export default class DetailElement extends React.Component<Props, State> {
       changes: false,
     };
     this.updateStereotype = this.updateStereotype.bind(this);
+    this.prepareDetails = this.prepareDetails.bind(this);
   }
 
   prepareDetails(id?: string) {
@@ -91,12 +92,10 @@ export default class DetailElement extends React.Component<Props, State> {
   save() {
     let elem = graph.getElements().find((elem) => elem.id === this.state.id);
     if (this.state.id in WorkspaceElements) {
-      WorkspaceTerms[
-        WorkspaceElements[this.state.id].iri
-      ].altLabels = this.state.inputAltLabels;
-      WorkspaceTerms[
-        WorkspaceElements[this.state.id].iri
-      ].definitions = this.state.inputDefinitions;
+      WorkspaceTerms[WorkspaceElements[this.state.id].iri].altLabels =
+        this.state.inputAltLabels;
+      WorkspaceTerms[WorkspaceElements[this.state.id].iri].definitions =
+        this.state.inputDefinitions;
       WorkspaceElements[this.state.id].selectedLabel = this.state.selectedLabel;
       WorkspaceTerms[WorkspaceElements[this.state.id].iri].labels =
         this.state.inputLabels;
@@ -432,6 +431,8 @@ export default class DetailElement extends React.Component<Props, State> {
                     <ConnectionList
                       id={this.state.id}
                       projectLanguage={this.props.projectLanguage}
+                      update={(id?: string) => this.prepareDetails(id)}
+                      performTransaction={this.props.performTransaction}
                     />
                   </Card.Body>
                 </Accordion.Collapse>

@@ -227,7 +227,7 @@ export function deleteConnections(sid: string, id: string): string[] {
   if (graph.getCell(id)) graph.getCell(id).remove();
   return [
     updateProjectLink(true, id),
-    LinkConfig[WorkspaceLinks[id].type].update(id)
+    LinkConfig[WorkspaceLinks[id].type].update(id),
   ];
 }
 
@@ -249,7 +249,7 @@ export function addLinkTools(
           (link) =>
             WorkspaceLinks[link].active &&
             WorkspaceLinks[link].iri ===
-            WorkspaceElements[WorkspaceLinks[id].source].iri &&
+              WorkspaceElements[WorkspaceLinks[id].source].iri &&
             WorkspaceLinks[link].target === WorkspaceLinks[id].target
         );
         if (compactConn) {
@@ -298,11 +298,11 @@ export function addLinkTools(
         WorkspaceTerms[WorkspaceElements[WorkspaceLinks[id].source].iri]
           .inScheme
       )
-      ].readOnly;
+    ].readOnly;
   let tools = [verticesTool, segmentsTool];
   if (!readOnly) tools.push(removeButton);
   let toolsView = new joint.dia.ToolsView({
-    tools: tools
+    tools: tools,
   });
   linkView.addTools(toolsView);
 }

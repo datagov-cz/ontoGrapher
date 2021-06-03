@@ -1,89 +1,45 @@
 import React from "react";
 import classNames from "classnames";
-import { ReactComponent as HiddenElementSVG } from "../../../../svg/hiddenElement.svg";
-import {
-  AppSettings,
-  WorkspaceElements,
-  WorkspaceLinks,
-  WorkspaceTerms,
-  WorkspaceVocabularies,
-} from "../../../../config/Variables";
-import { getDisplayLabel } from "../../../../function/FunctionDraw";
-import _ from "underscore";
-import { getOtherConnectionElementID } from "../../../../function/FunctionLink";
-import { isElementHidden } from "../../../../function/FunctionElem";
-import {
-  getLabelOrBlank,
-  getLinkOrVocabElem,
-  getVocabularyFromScheme,
-} from "../../../../function/FunctionGetVars";
 
 interface Props {
-  linkID: string;
-  elemID: string;
-  projectLanguage: string;
+  onDragStart: Function;
+  onDragEnd: Function;
+  onClick: Function;
   selected: boolean;
-  selection: string[];
-  updateSelection: (ids: string[]) => void;
+  linkLabel: string;
+  direction: boolean;
+  markerID: string;
+  backgroundColor: string;
+  elementLabel: JSX.Element;
 }
 
 interface State {}
 
 export default class Connection extends React.Component<Props, State> {
-  getConnectionDirection(id: string): boolean {
-    return WorkspaceLinks[this.props.linkID].source === id;
-  }
-
   render() {
-    const elemID = getOtherConnectionElementID(
-      this.props.linkID,
-      this.props.elemID
-    );
     return (
       <tr
         draggable
-        onDragStart={(event) => {
-          event.dataTransfer.setData(
-            "newClass",
-            JSON.stringify({
-              type: "existing",
-              id: _.uniq(
-                this.props.selection
-                  .map((link) =>
-                    getOtherConnectionElementID(link, this.props.elemID)
-                  )
-                  .concat(elemID)
-              ),
-              iri: [],
-            })
-          );
-          this.props.updateSelection(
-            _.uniq(this.props.selection.concat(this.props.linkID))
-          );
-        }}
+        onDragStart={(event) => this.props.onDragStart(event)}
+        onDragEnd={() => this.props.onDragEnd}
+        onClick={() => this.props.onClick}
         className={classNames("connectionComponent", "connection", {
           selected: this.props.selected,
         })}
-        onClick={() => this.props.updateSelection([this.props.linkID])}
       >
         <td className={"link"}>
-          <span className={"text"}>
-            {getLabelOrBlank(
-              getLinkOrVocabElem(WorkspaceLinks[this.props.linkID].iri).labels,
-              this.props.projectLanguage
-            )}
-          </span>
+          <span className={"text"}>{this.props.linkLabel}</span>
           <svg width="100%" height="25px" preserveAspectRatio="none">
             <defs>
               <marker
-                id={this.props.linkID}
+                id={this.props.markerID}
                 viewBox="0 0 10 10"
                 refX="10"
                 refY="5"
                 markerUnits="strokeWidth"
                 markerWidth="8"
                 markerHeight="10"
-                orient={this.getConnectionDirection(elemID) ? "180" : "0"}
+                orient={this.props.direction ? "180" : "0"}
               >
                 <path d="M 0 0 L 10 5 L 0 10 z" fill="#333333" />
               </marker>
@@ -95,30 +51,21 @@ export default class Connection extends React.Component<Props, State> {
               y2="50%"
               strokeWidth="2"
               stroke="#333333"
-              {...(this.getConnectionDirection(elemID)
-                ? { markerStart: `url(#${this.props.linkID})` }
-                : { markerEnd: `url(#${this.props.linkID})` })}
+              {...(this.props.direction
+                ? {
+                    markerStart: `url(#${this.props.markerID})`,
+                  }
+                : {
+                    markerEnd: `url(#${this.props.markerID})`,
+                  })}
             />
           </svg>
         </td>
         <td
           className={"element"}
-          style={{
-            backgroundColor:
-              WorkspaceVocabularies[
-                getVocabularyFromScheme(
-                  WorkspaceTerms[WorkspaceElements[elemID].iri].inScheme
-                )
-              ].color,
-          }}
+          style={{ backgroundColor: this.props.backgroundColor }}
         >
-          {getDisplayLabel(elemID, this.props.projectLanguage)}
-          {isElementHidden(elemID, AppSettings.selectedDiagram) && (
-            <span className={"hidden"}>
-              &nbsp;
-              <HiddenElementSVG />
-            </span>
-          )}
+          {this.props.elementLabel}
         </td>
       </tr>
     );

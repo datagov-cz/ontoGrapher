@@ -61,13 +61,17 @@ export function updateDeleteTriples(
     );
   if (subject)
     deletes.push(
-      DELETE`${qb.g(context, [qb.s(qb.i(iri), "?p", "?o")])}`
-        .WHERE`${qb.g(context, [qb.s(qb.i(iri), "?p", "?o")])}`.build()
+      DELETE`${qb.g(context, [qb.s(qb.i(iri), "?p", "?o")])}`.WHERE`${qb.g(
+        context,
+        [qb.s(qb.i(iri), "?p", "?o")]
+      )}`.build()
     );
   if (object)
     deletes.push(
-      DELETE`${qb.g(context, [qb.s("?s", "?p", qb.i(iri))])}`
-        .WHERE`${qb.g(context, [qb.s("?s", "?p", qb.i(iri))])}`.build()
+      DELETE`${qb.g(context, [qb.s("?s", "?p", qb.i(iri))])}`.WHERE`${qb.g(
+        context,
+        [qb.s("?s", "?p", qb.i(iri))]
+      )}`.build()
     );
   return qb.combineQueries(...deletes);
 }
