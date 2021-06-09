@@ -7,7 +7,6 @@ import {
   WorkspaceVocabularies,
 } from "../../config/Variables";
 import { processQuery } from "../../interface/TransactionInterface";
-import { Locale } from "../../config/Locale";
 import { getWorkspaceContextIRI } from "../../function/FunctionGetVars";
 import { LinkType } from "../../config/Enum";
 import * as joint from "jointjs";
@@ -15,6 +14,7 @@ import { Cardinality } from "../../datatypes/Cardinality";
 import { initLanguageObject } from "../../function/FunctionEditVars";
 import { CacheSearchVocabularies } from "../../datatypes/CacheSearchResults";
 import { PackageNode } from "../../datatypes/PackageNode";
+import { addDiagram } from "../../function/FunctionCreateVars";
 
 export async function getElementsConfig(
   contextEndpoint: string
@@ -140,11 +140,12 @@ export async function getElementsConfig(
 export async function getSettings(contextEndpoint: string): Promise<boolean> {
   let query = [
     "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
-    "select ?diagram ?index ?name ?color ?active ?context where {",
+    "select ?diagram ?index ?name ?color ?representation ?active ?context where {",
     "BIND(<" + getWorkspaceContextIRI() + "> as ?ogContext).",
     "graph ?ogContext {",
     "?diagram og:index ?index .",
     "?diagram og:name ?name .",
+    "optional {?diagram og:representation ?representation .}",
     "optional {?diagram og:active ?active}",
     "optional {?ogContext og:viewColor ?color}",
     "optional {?ogContext og:contextVersion ?context}",
@@ -158,16 +159,16 @@ export async function getSettings(contextEndpoint: string): Promise<boolean> {
     .then((data) => {
       if (data.results.bindings.length === 0) AppSettings.initWorkspace = true;
       for (const result of data.results.bindings) {
-        if (!(parseInt(result.index.value) in Diagrams)) {
-          Diagrams[parseInt(result.index.value)] = {
-            name: Locale[AppSettings.viewLanguage].untitled,
-            active: result.active ? result.active.value === "true" : true,
-            origin: { x: 0, y: 0 },
-            scale: 1,
-          };
-        }
-        Diagrams[parseInt(result.index.value)].name = result.name.value;
+        const index = parseInt(result.index.value);
+        Diagrams[index] = addDiagram(result.name.value);
+        if (result.active)
+          Diagrams[index].active = result.active.value === "true";
         if (result.color) AppSettings.viewColorPool = result.color.value;
+        if (result.representation)
+          Diagrams[index].representation = parseInt(
+            result.representation.value,
+            10
+          );
         AppSettings.contextVersion = result.context
           ? parseInt(result.context.value, 10)
           : 1;

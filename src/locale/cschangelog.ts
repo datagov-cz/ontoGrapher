@@ -2,6 +2,11 @@ export const csChangelog: {
   [key: string]: { [key: string]: { [key: string]: string[] } };
 } = {
   "2021": {
+    "6": {
+      "9": [
+        "Úplný/kompaktní pohled se nyní udržuje pro každý diagram, tj. pokud nastavíte pohled diagramu na kompakní, tak bude kompaktní i poté, co se k němu vrátíte",
+      ],
+    },
     "5": {
       "12": [
         'Implementována SSP cache pro kartu "Vztahy" v panelu detailu pojmu',

@@ -27,6 +27,11 @@ export function updateProjectSettings(
     qb.s(diagramIRI, "og:index", qb.ll(diagram)),
     qb.s(diagramIRI, "og:name", qb.ll(Diagrams[diagram].name)),
     qb.s(diagramIRI, "og:active", qb.ll(Diagrams[diagram].active)),
+    qb.s(
+      diagramIRI,
+      "og:representation",
+      qb.ll(Diagrams[diagram].representation)
+    ),
   ])}`.build();
 
   const del = DELETE`${qb.g(getWorkspaceContextIRI(), [

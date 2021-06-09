@@ -1,6 +1,7 @@
 import {
   AppSettings,
   CardinalityPool,
+  Diagrams,
   WorkspaceElements,
   WorkspaceLinks,
   WorkspaceTerms,
@@ -8,7 +9,7 @@ import {
 } from "../config/Variables";
 import { initLanguageObject } from "./FunctionEditVars";
 import { PackageNode } from "../datatypes/PackageNode";
-import { LinkType } from "../config/Enum";
+import { LinkType, Representation } from "../config/Enum";
 import { Locale } from "../config/Locale";
 import { getVocabularyFromScheme } from "./FunctionGetVars";
 
@@ -88,6 +89,20 @@ export function addClass(
     selectedLabel: initLanguageObject(""),
   };
   pkg.elements.push(id);
+}
+
+export function addDiagram(
+  name: string,
+  active: boolean = true,
+  representation: Representation = Representation.FULL
+): typeof Diagrams[number] {
+  return {
+    name: name,
+    active: active,
+    origin: { x: 0, y: 0 },
+    scale: 1,
+    representation: representation,
+  };
 }
 
 export function addLink(

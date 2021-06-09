@@ -15,6 +15,7 @@ import { fetchConcepts } from "../../get/FetchQueries";
 import { qb } from "../../QueryBuilder";
 import { getWorkspaceContextIRI } from "../../../function/FunctionGetVars";
 import { LinkConfig } from "../../../config/logic/LinkConfig";
+import { addDiagram } from "../../../function/FunctionCreateVars";
 
 export async function updateLegacyWorkspaceToVersion2(
   contextIRI: string,
@@ -325,12 +326,10 @@ async function getLegacyDiagrams(
     .then((data) => {
       for (let result of data.results.bindings) {
         if (!(parseInt(result.index.value) in diagrams)) {
-          diagrams[parseInt(result.index.value)] = {
-            name: Locale[AppSettings.viewLanguage].untitled,
-            active: result.active ? result.active.value === "true" : true,
-            origin: { x: 0, y: 0 },
-            scale: 1,
-          };
+          diagrams[parseInt(result.index.value)] = addDiagram(
+            Locale[AppSettings.viewLanguage].untitled,
+            result.active ? result.active.value === "true" : true
+          );
         }
         diagrams[parseInt(result.index.value)].name = result.name.value;
       }

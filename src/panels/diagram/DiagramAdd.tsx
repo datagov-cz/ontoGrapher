@@ -7,6 +7,7 @@ import {
 } from "../../config/Variables";
 import { Locale } from "../../config/Locale";
 import { updateProjectSettings } from "../../queries/update/UpdateMiscQueries";
+import { addDiagram } from "../../function/FunctionCreateVars";
 
 interface Props {
   update: Function;
@@ -18,12 +19,7 @@ interface State {}
 export default class DiagramAdd extends React.Component<Props, State> {
   addDiagram() {
     const index =
-      Diagrams.push({
-        name: Locale[AppSettings.viewLanguage].untitled,
-        active: true,
-        origin: { x: 0, y: 0 },
-        scale: 1,
-      }) - 1;
+      Diagrams.push(addDiagram(Locale[AppSettings.viewLanguage].untitled)) - 1;
     Object.keys(WorkspaceElements).forEach(
       (elem) => (WorkspaceElements[elem].hidden[index] = true)
     );

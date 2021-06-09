@@ -32,10 +32,12 @@ export default class MenuPanelSwitchRepresentation extends React.Component<
         ? Representation.COMPACT
         : Representation.FULL
     );
-    if (result) this.setState({ alert: result.result });
-    setTimeout(() => {
-      this.setState({ alert: false });
-    }, 3000);
+    if (result) {
+      this.setState({ alert: result.result });
+      setTimeout(() => {
+        this.setState({ alert: false });
+      }, 3000);
+    }
     this.props.performTransaction(...result.transaction);
     this.props.close();
     this.props.update();
