@@ -9,7 +9,10 @@ import {
 } from "../../config/Variables";
 import { Locale } from "../../config/Locale";
 import { updateDeleteTriples } from "../../queries/update/UpdateMiscQueries";
-import { getVocabularyFromScheme } from "../../function/FunctionGetVars";
+import {
+  getVocabularyFromScheme,
+  getWorkspaceContextIRI,
+} from "../../function/FunctionGetVars";
 
 interface Props {
   modal: boolean;
@@ -26,12 +29,8 @@ export default class ModalRemoveItem extends React.Component<Props, State> {
     this.props.performTransaction(
       ...deletePackageItem(this.props.id),
       updateDeleteTriples(
-        WorkspaceElements[this.props.id].iri + "/diagram",
-        WorkspaceVocabularies[
-          getVocabularyFromScheme(
-            WorkspaceTerms[WorkspaceElements[this.props.id].iri].inScheme
-          )
-        ].graph,
+        WorkspaceElements[this.props.id].iri,
+        getWorkspaceContextIRI(),
         true,
         false,
         false
