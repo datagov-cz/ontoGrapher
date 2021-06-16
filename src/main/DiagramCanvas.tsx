@@ -44,6 +44,8 @@ import {
   updateVertices,
 } from "../function/FunctionLink";
 import { ElementColors } from "../config/visual/ElementColors";
+import hotkeys from "hotkeys-js";
+import * as _ from "lodash";
 
 interface Props {
   projectLanguage: string;
@@ -109,17 +111,18 @@ export default class DiagramCanvas extends React.Component<Props, State> {
     }
   }
 
-  hideElement(cell: joint.dia.Cell) {
-    const id = cell.id as string;
-    if (AppSettings.selectedElements.find((elem) => elem === id)) {
+  hideElements(cells: joint.dia.Cell[]) {
+    const ids = cells.map((cell) => cell.id as string);
+    cells.forEach((cell) => cell.remove());
+    ids.forEach(
+      (id) => (WorkspaceElements[id].hidden[AppSettings.selectedDiagram] = true)
+    );
+    if (_.intersection(AppSettings.selectedElements, ids).length > 0)
       this.props.updateDetailPanel();
-      unhighlightElement(id);
-    }
-    cell.remove();
-    WorkspaceElements[id].hidden[AppSettings.selectedDiagram] = true;
+    _.pull(AppSettings.selectedElements, ...ids);
     this.props.updateElementPanel();
     this.props.performTransaction(
-      updateProjectElementDiagram(AppSettings.selectedDiagram, id)
+      updateProjectElementDiagram(AppSettings.selectedDiagram, ...ids)
     );
   }
 
@@ -219,7 +222,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
             x: getElementShape(id) === "bodyTrapezoid" ? -20 : 0,
             y: 0,
           },
-          action: () => this.hideElement(elementView.model),
+          action: () => this.hideElements([elementView.model]),
         });
         elementView.addTools(
           new joint.dia.ToolsView({
@@ -267,7 +270,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
       },
       /**
        * Pointer down on canvas:
-       * If the left mouse button is held down: reate the blue selection rectangle
+       * If the left mouse button is held down: create the blue selection rectangle
        * If the middle mouse button or left mouse button + shift key is held down: prepare for canvas panning
        */
       "blank:pointerdown": (evt, x, y) => {
@@ -464,6 +467,34 @@ export default class DiagramCanvas extends React.Component<Props, State> {
         link.findView(paper).removeRedundantLinearVertices();
         this.props.performTransaction(...updateVertices(id, link.vertices()));
       },
+    });
+
+    /*
+     * Keyboard events
+     */
+
+    /**
+     * Delete key: Hide selected elements
+     */
+    hotkeys("delete", () => {
+      this.hideElements(
+        graph
+          .getElements()
+          .filter((elem) =>
+            AppSettings.selectedElements.includes(elem.id as string)
+          )
+      );
+    });
+
+    /**
+     * Ctrl + A: Select all elements on canvas
+     */
+    hotkeys("ctrl+a", (event) => {
+      event.preventDefault();
+      _.pull(
+        graph.getElements().map((elem) => elem.id as string),
+        ...AppSettings.selectedElements
+      ).forEach((id) => highlightElement(id));
     });
   }
 

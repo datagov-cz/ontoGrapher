@@ -29,6 +29,7 @@
     "dagre": "^0.8.5",
     "fibers": "^5.0.0",
     "graphlib": "^2.1.8",
+    "hotkeys-js": "^3.8.5",
     "is-url": "^1.2.4",
     "jointjs": "^3.3.1",
     "jquery": "^3.6.0",
