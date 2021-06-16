@@ -1,5 +1,6 @@
 import {
   AppSettings,
+  Diagrams,
   Links,
   WorkspaceElements,
   WorkspaceLinks,
@@ -36,6 +37,7 @@ import { initConnections } from "./FunctionRestriction";
 import isUrl from "is-url";
 import { getOtherConnectionElementID } from "./FunctionLink";
 import { insertNewCacheTerms, insertNewRestrictions } from "./FunctionCache";
+import { updateProjectSettings } from "../queries/update/UpdateMiscQueries";
 
 export const mvp1IRI =
   "https://slovník.gov.cz/základní/pojem/má-vztažený-prvek-1";
@@ -170,10 +172,14 @@ export function setRepresentation(representation: number): {
   transaction: string[];
 } {
   let queries: string[] = [];
+  AppSettings.representation = representation;
+  Diagrams[AppSettings.selectedDiagram].representation = representation;
+  queries.push(
+    updateProjectSettings(AppSettings.contextIRI, AppSettings.selectedDiagram)
+  );
+  AppSettings.selectedLink = "";
+  let del = false;
   if (representation === Representation.COMPACT) {
-    let del = false;
-    AppSettings.representation = Representation.COMPACT;
-    AppSettings.selectedLink = "";
     for (const id of Object.keys(WorkspaceElements)) {
       if (
         WorkspaceTerms[WorkspaceElements[id].iri].types.includes(
@@ -322,8 +328,6 @@ export function setRepresentation(representation: number): {
     }
     return { result: del, transaction: queries };
   } else {
-    AppSettings.representation = Representation.FULL;
-    AppSettings.selectedLink = "";
     for (const elem of AppSettings.switchElements) {
       if (WorkspaceElements[elem].position[AppSettings.selectedDiagram]) {
         const find = graph

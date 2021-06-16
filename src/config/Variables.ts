@@ -5,6 +5,7 @@ import { Restriction } from "../datatypes/Restriction";
 import { Representation } from "./Enum";
 import * as joint from "jointjs";
 import { Environment } from "./Environment";
+import { addDiagram } from "../function/FunctionCreateVars";
 
 // language code : language label
 export var Languages: { [key: string]: string } = {};
@@ -131,7 +132,8 @@ export var Diagrams: {
   active: boolean;
   origin: { x: number; y: number };
   scale: number;
-}[] = [{ name: "Untitled", active: true, origin: { x: 0, y: 0 }, scale: 1 }];
+  representation: Representation;
+}[] = [addDiagram("Untitled")];
 
 export var AppSettings: {
   name: { [key: string]: string };

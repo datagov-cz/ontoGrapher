@@ -367,6 +367,7 @@ export default class DiagramApp extends React.Component<
           update={() => {
             this.itemPanel.current?.update();
             this.detailPanel.current?.hide();
+            this.menuPanel.current?.update();
           }}
           performTransaction={this.performTransaction}
         />

@@ -51,6 +51,10 @@ export default class MenuPanel extends React.Component<
     this.props.handleChangeLanguage(event.currentTarget.value);
   }
 
+  update() {
+    this.forceUpdate();
+  }
+
   render() {
     return (
       <nav className={"menuPanel"}>

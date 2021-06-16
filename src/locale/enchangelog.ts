@@ -2,6 +2,11 @@ export const enChangelog: {
   [key: string]: { [key: string]: { [key: string]: string[] } };
 } = {
   "2021": {
+    "6": {
+      "9": [
+        "Full/Compact view is now remembered for each diagram, i.e. if you set the view of a diagram to Compact and come back to it later, the view will still be be Compact",
+      ],
+    },
     "5": {
       "12": [
         "Implemented the SSP cache for the Connections card in the Detail panel",

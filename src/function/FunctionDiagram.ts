@@ -1,9 +1,4 @@
-import {
-  AppSettings,
-  Diagrams,
-  WorkspaceElements,
-  WorkspaceLinks,
-} from "../config/Variables";
+import { AppSettings, Diagrams, WorkspaceElements } from "../config/Variables";
 import { graphElement } from "../graph/GraphElement";
 import { graph } from "../graph/Graph";
 import {
@@ -15,7 +10,6 @@ import {
 import { restoreHiddenElem, setRepresentation } from "./FunctionGraph";
 import { Representation } from "../config/Enum";
 import { paper } from "../main/DiagramCanvas";
-import { Locale } from "../config/Locale";
 import * as _ from "lodash";
 
 export function changeDiagrams(diagram: number = 0) {
@@ -44,8 +38,7 @@ export function changeDiagrams(diagram: number = 0) {
         restoreHiddenElem(id, cls, true, false, false);
       }
     }
-    if (AppSettings.representation === Representation.COMPACT)
-      setRepresentation(AppSettings.representation);
+    setRepresentation(Diagrams[diagram].representation);
     if (Diagrams[diagram].origin.x === 0 && Diagrams[diagram].origin.y === 0) {
       centerDiagram();
     } else {
@@ -53,24 +46,6 @@ export function changeDiagrams(diagram: number = 0) {
       paper.translate(Diagrams[diagram].origin.x, Diagrams[diagram].origin.y);
     }
   }
-}
-
-export function addDiagram(): number {
-  const index = Diagrams.length;
-  Diagrams.push({
-    name: Locale[AppSettings.viewLanguage].untitled,
-    active: true,
-    scale: 1,
-    origin: { x: 0, y: 0 },
-  });
-  for (const key of Object.keys(WorkspaceElements)) {
-    WorkspaceElements[key].hidden[index] = true;
-    WorkspaceElements[key].position[index] = { x: 0, y: 0 };
-  }
-  Object.keys(WorkspaceLinks).forEach(
-    (link) => (WorkspaceLinks[link].vertices[index] = [])
-  );
-  return index;
 }
 
 export function centerDiagram() {
