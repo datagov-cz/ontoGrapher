@@ -1,9 +1,15 @@
 import React from "react";
 import ReactDOM from "react-dom";
-import DiagramApp from "./main/DiagramApp";
 import * as serviceWorker from "./serviceWorker";
+import { Auth } from "@opendata-mvcr/assembly-line-shared";
+import App from "./main/App";
 
-ReactDOM.render(<DiagramApp />, document.getElementById("root"));
+ReactDOM.render(
+  <Auth>
+    <App />
+  </Auth>,
+  document.getElementById("root")
+);
 
 // If you want your app to work offline and load faster, you can change
 // unregister() to register() below. Note this comes with some pitfalls.

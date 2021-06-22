@@ -1,9 +1,13 @@
-import { Env } from "@opendata-mvcr/assembly-line-shared";
+import {
+  getEnvInstance,
+  setProcessEnv,
+} from "@opendata-mvcr/assembly-line-shared";
 import { Components } from "@opendata-mvcr/assembly-line-shared/dist/env/types";
 
 type LocalVars = "PUBLIC_URL";
 
-const ENV = new Env<LocalVars>(process.env);
+setProcessEnv(process.env);
+const ENV = getEnvInstance<LocalVars>();
 
 export const Environment: {
   // JSON object of other components in the vocabulary development pipeline software kit

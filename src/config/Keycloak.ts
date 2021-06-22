@@ -1,4 +1,3 @@
-import Keycloak from "keycloak-js";
 import { Environment } from "./Environment";
 import { Locale } from "./Locale";
 
@@ -15,4 +14,4 @@ const keycloakConfig = {
   realm,
   clientId: Environment.id,
 };
-export const keycloak = Keycloak(keycloakConfig);
+// export const keycloak = Keycloak(keycloakConfig);
