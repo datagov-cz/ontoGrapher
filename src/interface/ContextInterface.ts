@@ -35,7 +35,7 @@ export async function getContext(
     "PREFIX termit: <http://onto.fel.cvut.cz/ontologies/application/termit/>",
     "PREFIX a-popis-dat: <http://onto.fel.cvut.cz/ontologies/slovník/agendový/popis-dat/>",
     "PREFIX dcterms: <http://purl.org/dc/terms/>",
-    "select ?vocab ?schemeLabel ?scheme ?label ?title ?vocabLabel ?vocabIRI",
+    "select ?vocab ?scheme ?label ?title ?vocabLabel ?vocabIRI",
     "where {",
     "BIND(<" + contextIRI + "> as ?contextIRI) . ",
     "OPTIONAL {?contextIRI rdfs:label ?label. }",
@@ -48,7 +48,6 @@ export async function getContext(
     "?vocabIRI a <http://onto.fel.cvut.cz/ontologies/slovník/agendový/popis-dat/pojem/slovník> .",
     "?vocabIRI <http://onto.fel.cvut.cz/ontologies/slovník/agendový/popis-dat/pojem/má-glosář> ?scheme.",
     "?vocabIRI dcterms:title ?vocabLabel .",
-    "?scheme dcterms:title ?schemeLabel .",
     "}",
     "}",
   ].join(" ");

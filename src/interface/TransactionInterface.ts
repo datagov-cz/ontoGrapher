@@ -102,13 +102,13 @@ export function processQuery(
   query: string,
   auth: boolean = endpoint === AppSettings.contextEndpoint
 ): Promise<Response> {
-  const q = endpoint + "?query=" + encodeURIComponent(query);
-  return fetch(q, {
-    headers: auth
-      ? {
-          Accept: "application/json",
-          Authorization: `Bearer ${keycloak.token}`,
-        }
-      : { Accept: "application/json" },
+  return fetch(endpoint, {
+    method: "POST",
+    body: "query=" + encodeURIComponent(query),
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+      Accept: "application/json",
+      ...(auth && { Authorization: `Bearer ${keycloak.token}` }),
+    },
   });
 }
