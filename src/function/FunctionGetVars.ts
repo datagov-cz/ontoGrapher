@@ -60,7 +60,8 @@ export function getDefaultCardinality() {
 
 export function setSchemeColors(pool: string) {
   Object.keys(WorkspaceVocabularies).forEach((scheme, i) => {
-    WorkspaceVocabularies[scheme].color = ColorPool[pool].colors[i];
+    WorkspaceVocabularies[scheme].color =
+      ColorPool[pool].colors[i % ColorPool[pool].colors.length];
   });
 }
 

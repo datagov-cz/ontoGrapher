@@ -1,5 +1,5 @@
 import { AppSettings } from "../config/Variables";
-import { getToken } from "@opendata-mvcr/assembly-line-shared";
+import { keycloak } from "../config/Keycloak";
 
 export async function processTransaction(
   contextEndpoint: string,
@@ -17,7 +17,7 @@ export async function processTransaction(
   const transactionID = await fetch(transactionUrl, {
     method: "POST",
     headers: {
-      Authorization: `Bearer ${getToken()}`,
+      Authorization: `Bearer ${keycloak.token}`,
     },
     signal,
   })
@@ -43,7 +43,7 @@ export async function processTransaction(
     const resultUpdate = await fetch(transactionID + "?action=UPDATE", {
       headers: {
         "Content-Type": "application/sparql-update; charset=UTF-8",
-        Authorization: `Bearer ${getToken()}`,
+        Authorization: `Bearer ${keycloak.token}`,
       },
       method: "PUT",
       body: transaction,
@@ -62,7 +62,7 @@ export async function processTransaction(
 
     const resultCommit = await fetch(transactionID + "?action=COMMIT", {
       method: "PUT",
-      headers: { Authorization: `Bearer ${getToken()}` },
+      headers: { Authorization: `Bearer ${keycloak.token}` },
       signal,
     })
       .then((response) => response.ok)
@@ -84,7 +84,7 @@ export async function processTransaction(
 export async function abortTransaction(transaction: string): Promise<boolean> {
   return await fetch(transaction, {
     method: "DELETE",
-    headers: { Authorization: `Bearer ${getToken()}` },
+    headers: { Authorization: `Bearer ${keycloak.token}` },
     keepalive: true,
   })
     .then((response) => {
@@ -102,13 +102,13 @@ export function processQuery(
   query: string,
   auth: boolean = endpoint === AppSettings.contextEndpoint
 ): Promise<Response> {
-  const q = endpoint + "?query=" + encodeURIComponent(query);
-  return fetch(q, {
-    headers: auth
-      ? {
-          Accept: "application/json",
-          Authorization: `Bearer ${getToken()}`,
-        }
-      : { Accept: "application/json" },
+  return fetch(endpoint, {
+    method: "POST",
+    body: "query=" + encodeURIComponent(query),
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+      Accept: "application/json",
+      ...(auth && { Authorization: `Bearer ${getToken()}` }),
+    },
   });
 }
