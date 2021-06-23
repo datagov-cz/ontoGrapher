@@ -30,6 +30,8 @@ import { Locale } from "../../config/Locale";
 import { unHighlightCell } from "../../function/FunctionDraw";
 import { updateProjectLink } from "../../queries/update/UpdateLinkQueries";
 import { updateConnections } from "../../queries/update/UpdateConnectionQueries";
+import AltLabelTable from "./components/AltLabelTable";
+import App from "../../main/App";
 
 interface Props {
   projectLanguage: string;
@@ -45,6 +47,9 @@ interface State {
   iri: string;
   sourceCardinality: string;
   targetCardinality: string;
+  inputAltLabels: { label: string; language: string }[];
+  selectedLabel: { [key: string]: string };
+  newAltInput: string;
   changes: boolean;
   readOnly: boolean;
 }
@@ -57,6 +62,9 @@ export default class DetailLink extends React.Component<Props, State> {
       iri: Object.keys(Links)[0],
       sourceCardinality: "0",
       targetCardinality: "0",
+      inputAltLabels: [],
+      selectedLabel: {},
+      newAltInput: "",
       changes: false,
       readOnly: false,
     };
@@ -117,6 +125,10 @@ export default class DetailLink extends React.Component<Props, State> {
           targetCardinality === -1 ? "0" : targetCardinality.toString(10),
         id: id,
         iri: WorkspaceLinks[id].iri,
+        inputAltLabels:
+          WorkspaceLinks[id].iri in WorkspaceTerms
+            ? WorkspaceTerms[WorkspaceLinks[id].iri].altLabels
+            : [],
         changes: false,
         readOnly:
           WorkspaceVocabularies[
@@ -238,10 +250,7 @@ export default class DetailLink extends React.Component<Props, State> {
                 this.props.updateDetailPanel();
               }}
             >
-              <span
-                role="img"
-                aria-label={"Remove read-only term from workspace"}
-              >
+              <span role="img" aria-label={""}>
                 ➖
               </span>
             </button>
@@ -399,6 +408,106 @@ export default class DetailLink extends React.Component<Props, State> {
                         </tr>
                       ))}
                     </TableList>
+                    {AppSettings.representation === Representation.COMPACT && (
+                      <div>
+                        <h5>
+                          {
+                            <IRILink
+                              label={
+                                Locale[AppSettings.viewLanguage]
+                                  .detailPanelAltLabel
+                              }
+                              iri={
+                                "http://www.w3.org/2004/02/skos/core#altLabel"
+                              }
+                            />
+                          }
+                        </h5>
+                        <AltLabelTable
+                          labels={this.state.inputAltLabels}
+                          readOnly={
+                            true
+                            // WorkspaceVocabularies[
+                            //   getVocabularyFromScheme(
+                            //     WorkspaceTerms[
+                            //       WorkspaceElements[this.state.id].iri
+                            //     ].inScheme
+                            //   )
+                            // ].readOnly
+                          }
+                          onEdit={(
+                            textarea: string,
+                            lang: string,
+                            i: number
+                          ) => {
+                            let res = this.state.inputAltLabels;
+                            let resL = this.state.selectedLabel;
+                            if (textarea === "") {
+                              if (
+                                res[i].label ===
+                                this.state.selectedLabel[
+                                  this.props.projectLanguage
+                                ]
+                              ) {
+                                resL[this.props.projectLanguage] =
+                                  WorkspaceTerms[
+                                    WorkspaceElements[this.state.id].iri
+                                  ].labels[this.props.projectLanguage];
+                              }
+                              res.splice(i, 1);
+                            } else {
+                              if (
+                                res[i].label ===
+                                this.state.selectedLabel[
+                                  this.props.projectLanguage
+                                ]
+                              ) {
+                                resL[this.props.projectLanguage] =
+                                  lang === this.props.projectLanguage
+                                    ? textarea
+                                    : "";
+                              }
+                              res[i] = { label: textarea, language: lang };
+                            }
+                            this.setState({
+                              inputAltLabels: res,
+                              selectedLabel: resL,
+                              changes: true,
+                            });
+                          }}
+                          default={
+                            this.state.selectedLabel[this.props.projectLanguage]
+                          }
+                          selectAsDefault={(lang: string, i: number) => {
+                            let res = this.state.selectedLabel;
+                            res[this.props.projectLanguage] =
+                              this.state.inputAltLabels[i].label;
+                            this.setState({
+                              selectedLabel: res,
+                              changes: true,
+                            });
+                          }}
+                          addAltLabel={(label: string) => {
+                            if (
+                              label !== "" ||
+                              this.state.inputAltLabels.find(
+                                (alt) => alt.label === label
+                              )
+                            ) {
+                              let res = this.state.inputAltLabels;
+                              res.push({
+                                label: label,
+                                language: this.props.projectLanguage,
+                              });
+                              this.setState({
+                                inputAltLabels: res,
+                                changes: true,
+                              });
+                            }
+                          }}
+                        />
+                      </div>
+                    )}
                     <h5>
                       {
                         <IRILink

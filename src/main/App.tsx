@@ -347,6 +347,9 @@ export default class App extends React.Component<
           updateDetailPanel={(id: string) => {
             this.handleUpdateDetailPanel(id);
           }}
+          updateDiagramCanvas={() => {
+            this.canvas.current?.setState({ modalAddElem: true });
+          }}
         />
         {this.state.validation && (
           <ValidationPanel

@@ -6,6 +6,7 @@ import {
   Languages,
   Stereotypes,
   WorkspaceElements,
+  WorkspaceLinks,
   WorkspaceTerms,
   WorkspaceVocabularies,
 } from "../../config/Variables";
@@ -26,6 +27,8 @@ import { drawGraphElement, unHighlightCell } from "../../function/FunctionDraw";
 import AltLabelTable from "./components/AltLabelTable";
 import ConnectionList from "./components/connections/ConnectionList";
 import { updateProjectElement } from "../../queries/update/UpdateElementQueries";
+import QualityTable from "./components/QualityTable";
+import { parsePrefix } from "../../function/FunctionEditVars";
 
 interface Props {
   projectLanguage: string;
@@ -34,6 +37,7 @@ interface Props {
   handleWidth: Function;
   error: boolean;
   updateDetailPanel: Function;
+  updateDiagramCanvas: Function;
 }
 
 interface State {
@@ -354,6 +358,50 @@ export default class DetailElement extends React.Component<Props, State> {
                         value={this.state.inputTypeData}
                       />
                     </TableList>
+                    <h5>Vlastnosti</h5>
+                    <QualityTable
+                      iri={WorkspaceElements[this.state.id].iri}
+                      qualities={Object.keys(WorkspaceLinks)
+                        .filter(
+                          (link) =>
+                            WorkspaceLinks[link].active &&
+                            WorkspaceLinks[link].source === this.state.id &&
+                            WorkspaceLinks[link].iri ===
+                              parsePrefix("z-sgov-pojem", "má-vlastnost")
+                        )
+                        .map(
+                          (link) =>
+                            WorkspaceElements[WorkspaceLinks[link].target].iri
+                        )
+                        .concat(
+                          Object.keys(WorkspaceLinks)
+                            .filter(
+                              (link) =>
+                                WorkspaceLinks[link].active &&
+                                WorkspaceLinks[link].target === this.state.id &&
+                                WorkspaceLinks[link].iri ===
+                                  parsePrefix("z-sgov-pojem", "je-vlastností")
+                            )
+                            .map(
+                              (link) =>
+                                WorkspaceElements[WorkspaceLinks[link].source]
+                                  .iri
+                            )
+                        )}
+                      onEdit={(id: string) => this.prepareDetails(id)}
+                      onRemove={() => {}}
+                      onAdd={() => {}}
+                      onCreate={() => this.props.updateDiagramCanvas()}
+                      readOnly={
+                        WorkspaceVocabularies[
+                          getVocabularyFromScheme(
+                            WorkspaceTerms[WorkspaceElements[this.state.id].iri]
+                              .inScheme
+                          )
+                        ].readOnly
+                      }
+                      projectLanguage={this.props.projectLanguage}
+                    />
                     <h5>
                       {
                         <IRILink

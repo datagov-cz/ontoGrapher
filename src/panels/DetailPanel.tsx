@@ -13,6 +13,7 @@ interface Props {
   performTransaction: (...queries: string[]) => void;
   freeze: boolean;
   updateDetailPanel: Function;
+  updateDiagramCanvas: Function;
 }
 
 interface State {
@@ -79,6 +80,7 @@ export default class DetailPanel extends React.Component<Props, State> {
           performTransaction={this.props.performTransaction}
           error={this.props.freeze}
           updateDetailPanel={this.props.updateDetailPanel}
+          updateDiagramCanvas={this.props.updateDiagramCanvas}
         />
         <DetailLink
           error={this.props.freeze}
