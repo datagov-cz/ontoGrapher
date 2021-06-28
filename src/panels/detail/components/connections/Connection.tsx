@@ -21,8 +21,8 @@ export default class Connection extends React.Component<Props, State> {
       <tr
         draggable
         onDragStart={(event) => this.props.onDragStart(event)}
-        onDragEnd={() => this.props.onDragEnd}
-        onClick={() => this.props.onClick}
+        onDragEnd={() => this.props.onDragEnd()}
+        onClick={() => this.props.onClick()}
         className={classNames("connectionComponent", "connection", {
           selected: this.props.selected,
         })}
