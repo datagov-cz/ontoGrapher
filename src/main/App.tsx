@@ -27,7 +27,6 @@ import {
   resetDiagramSelection,
 } from "../function/FunctionDiagram";
 import { qb } from "../queries/QueryBuilder";
-import { keycloak } from "../config/Keycloak";
 import { getLastChangeDay, setSchemeColors } from "../function/FunctionGetVars";
 import { getSettings } from "../queries/get/InitQueries";
 import { updateLegacyWorkspace } from "../queries/update/legacy/UpdateLegacyWorkspaceQueries";
@@ -56,7 +55,7 @@ interface DiagramAppState {
 
 require("../scss/style.scss");
 
-export default class DiagramApp extends React.Component<
+export default class App extends React.Component<
   DiagramAppProps,
   DiagramAppState
 > {
@@ -106,45 +105,7 @@ export default class DiagramApp extends React.Component<
   }
 
   componentDidMount(): void {
-    let timeout = setTimeout(() => {
-      console.error(Locale[AppSettings.viewLanguage].authenticationTimeout);
-      this.handleStatus(
-        false,
-        Locale[AppSettings.viewLanguage].authenticationError,
-        true,
-        false
-      );
-    }, 15000);
-    keycloak.onTokenExpired = () =>
-      keycloak
-        .updateToken(30)
-        .catch(() =>
-          this.handleStatus(
-            false,
-            Locale[AppSettings.viewLanguage].authenticationExpired,
-            true,
-            false
-          )
-        );
-    keycloak.onAuthError = (error) => {
-      console.error(`${error.error}: ${error.error_description}`);
-      window.clearTimeout(timeout);
-    };
-    keycloak
-      .init({ onLoad: "check-sso" })
-      .then((auth) => {
-        window.clearTimeout(timeout);
-        if (auth) this.loadWorkspace();
-        else keycloak.login();
-      })
-      .catch(() =>
-        this.handleStatus(
-          false,
-          Locale[AppSettings.viewLanguage].authenticationError,
-          true,
-          false
-        )
-      );
+    this.loadWorkspace();
   }
 
   loadWorkspace() {

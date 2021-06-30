@@ -1,7 +1,5 @@
 import React from "react";
 import TableList from "../../../components/TableList";
-// @ts-ignore
-import { RIEInput } from "riek";
 import { AppSettings, Languages } from "../../../config/Variables";
 import InlineEdit, { InputType } from "riec";
 import { Form, OverlayTrigger, Tooltip } from "react-bootstrap";
@@ -47,17 +45,13 @@ export default class AltLabelTable extends React.Component<Props, State> {
               {this.props.readOnly ? (
                 this.props.labels[i].label
               ) : (
-                <RIEInput
-                  className={"rieinput"}
+                <InlineEdit
+                  viewClass={"rieinput"}
                   value={this.props.labels[i].label}
-                  change={(event: { textarea: string }) =>
-                    this.props.onEdit(
-                      event.textarea,
-                      this.props.labels[i].language,
-                      i
-                    )
-                  }
-                  propName="textarea"
+                  onChange={(value: string) => {
+                    this.props.onEdit(value, this.props.labels[i].language, i);
+                  }}
+                  type={InputType.TextArea}
                 />
               )}
               <span className={"right"}>

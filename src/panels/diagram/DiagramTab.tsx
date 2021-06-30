@@ -1,9 +1,8 @@
 import React from "react";
 import { AppSettings, Diagrams } from "../../config/Variables";
 import { changeDiagrams } from "../../function/FunctionDiagram";
-// @ts-ignore
-import { RIEInput } from "riek";
 import { updateProjectSettings } from "../../queries/update/UpdateMiscQueries";
+import InlineEdit, { InputType } from "riec";
 
 interface Props {
   diagram: number;
@@ -21,9 +20,9 @@ export default class DiagramTab extends React.Component<Props, State> {
     AppSettings.selectedLink = "";
   }
 
-  handleChangeDiagramName(event: { textarea: string }) {
-    if (event.textarea.length > 0) {
-      Diagrams[this.props.diagram].name = event.textarea;
+  handleChangeDiagramName(value: string) {
+    if (value.length > 0) {
+      Diagrams[this.props.diagram].name = value;
       this.props.performTransaction(
         updateProjectSettings(AppSettings.contextIRI, this.props.diagram)
       );
@@ -44,17 +43,17 @@ export default class DiagramTab extends React.Component<Props, State> {
         onClick={() => this.changeDiagram()}
       >
         {this.props.diagram === AppSettings.selectedDiagram ? (
-          <RIEInput
-            className={"rieinput"}
+          <InlineEdit
+            viewClass={"rieinput"}
             value={
               Diagrams[this.props.diagram].name.length > 0
                 ? Diagrams[this.props.diagram].name
                 : "<blank>"
             }
-            change={(event: { textarea: string }) => {
-              this.handleChangeDiagramName(event);
+            onChange={(value: string) => {
+              this.handleChangeDiagramName(value);
             }}
-            propName="textarea"
+            type={InputType.TextArea}
           />
         ) : (
           Diagrams[this.props.diagram].name
