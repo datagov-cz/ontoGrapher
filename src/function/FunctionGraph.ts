@@ -167,7 +167,10 @@ function storeElement(elem: joint.dia.Cell) {
   }
 }
 
-export function setRepresentation(representation: number): {
+export function setRepresentation(
+  representation: number,
+  restoreFull: boolean = true
+): {
   result: boolean;
   transaction: string[];
 } {
@@ -352,7 +355,9 @@ export function setRepresentation(representation: number): {
     for (let elem of graph.getElements()) {
       drawGraphElement(elem, AppSettings.selectedLanguage, representation);
       if (typeof elem.id === "string") {
-        queries.push(...restoreHiddenElem(elem.id, elem, true, true, false));
+        queries.push(
+          ...restoreHiddenElem(elem.id, elem, true, restoreFull, false)
+        );
       }
     }
     for (let link of graph.getLinks()) {
