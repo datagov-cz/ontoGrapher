@@ -14,6 +14,7 @@ import FitContentWidget from "./menu/widget/FitContentWidget";
 import MenuPanelLogout from "./menu/MenuPanelLogout";
 import MenuPanelReport from "./menu/MenuPanelReport";
 import { Locale } from "../config/Locale";
+import { Environment } from "../config/Environment";
 
 interface MenuPanelProps {
   readOnly?: boolean;
@@ -109,7 +110,7 @@ export default class MenuPanel extends React.Component<
           <ViewWidget />
           <FitContentWidget />
           <div className={"right" + (this.props.freeze ? " nointeract" : "")}>
-            <MenuPanelLogout />
+            {Environment.auth && <MenuPanelLogout />}
             <MenuPanelHelp />
             <OverlayTrigger
               trigger={[]}

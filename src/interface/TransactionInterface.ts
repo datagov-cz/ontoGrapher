@@ -1,5 +1,6 @@
 import { AppSettings } from "../config/Variables";
 import { getToken } from "@opendata-mvcr/assembly-line-shared";
+import { Environment } from "../config/Environment";
 
 export async function processTransaction(
   contextEndpoint: string,
@@ -43,7 +44,7 @@ export async function processTransaction(
     const resultUpdate = await fetch(transactionID + "?action=UPDATE", {
       headers: {
         "Content-Type": "application/sparql-update; charset=UTF-8",
-        Authorization: `Bearer ${getToken()}`,
+        ...(Environment.auth && { Authorization: `Bearer ${getToken()}` }),
       },
       method: "PUT",
       body: transaction,
@@ -62,7 +63,9 @@ export async function processTransaction(
 
     const resultCommit = await fetch(transactionID + "?action=COMMIT", {
       method: "PUT",
-      headers: { Authorization: `Bearer ${getToken()}` },
+      headers: {
+        ...(Environment.auth && { Authorization: `Bearer ${getToken()}` }),
+      },
       signal,
     })
       .then((response) => response.ok)
@@ -84,7 +87,9 @@ export async function processTransaction(
 export async function abortTransaction(transaction: string): Promise<boolean> {
   return await fetch(transaction, {
     method: "DELETE",
-    headers: { Authorization: `Bearer ${getToken()}` },
+    headers: {
+      ...(Environment.auth && { Authorization: `Bearer ${getToken()}` }),
+    },
     keepalive: true,
   })
     .then((response) => {
@@ -100,7 +105,7 @@ export async function abortTransaction(transaction: string): Promise<boolean> {
 export function processQuery(
   endpoint: string,
   query: string,
-  auth: boolean = endpoint === AppSettings.contextEndpoint
+  auth: boolean = Environment.auth && endpoint === AppSettings.contextEndpoint
 ): Promise<Response> {
   return fetch(endpoint, {
     method: "POST",
