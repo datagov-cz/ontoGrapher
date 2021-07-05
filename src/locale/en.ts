@@ -107,6 +107,8 @@ export const en = {
   help: "Help",
   modalNewElemError: "You must enter a label in order to create a new term.",
   selectPackage: "Term will be created in:",
+  fromList: "From the list",
+  otherVocabularies: "Other vocabularies",
   view: "View",
   switchColors: "Vocabulary color scheme",
   reportIssue: "Report an issue",

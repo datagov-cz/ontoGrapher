@@ -21,7 +21,7 @@ import {
 import ValidationPanel from "../panels/ValidationPanel";
 import DiagramPanel from "../panels/DiagramPanel";
 import { Locale } from "../config/Locale";
-import { drawGraphElement } from "../function/FunctionDraw";
+import { drawGraphElement, unHighlightAll } from "../function/FunctionDraw";
 import {
   changeDiagrams,
   resetDiagramSelection,
@@ -356,7 +356,7 @@ export default class App extends React.Component<
             ref={this.validationPanel}
             close={() => {
               this.setState({ validation: false });
-              resetDiagramSelection();
+              unHighlightAll();
             }}
             projectLanguage={this.state.projectLanguage}
           />

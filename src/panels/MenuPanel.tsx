@@ -105,7 +105,9 @@ export default class MenuPanel extends React.Component<
             close={() => this.props.closeDetailPanel()}
             performTransaction={this.props.performTransaction}
           />
-          <MenuPanelValidate validate={() => this.props.validate()} />
+          {Environment.auth && (
+            <MenuPanelValidate validate={() => this.props.validate()} />
+          )}
           <ZoomWidget />
           <ViewWidget />
           <FitContentWidget />

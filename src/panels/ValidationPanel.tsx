@@ -61,11 +61,13 @@ export default class ValidationPanel extends React.Component<Props, State> {
       return false;
     });
     if (results) {
-      this.setState({
-        conforms: results.conforms,
-        results: results.reults,
-      });
-      this.highlight();
+      this.setState(
+        {
+          conforms: results.conforms,
+          results: results.results,
+        },
+        () => this.highlight()
+      );
     } else {
       this.setState({ error: true });
     }
@@ -90,7 +92,7 @@ export default class ValidationPanel extends React.Component<Props, State> {
   }
 
   highlight() {
-    let iriList = this.state.results.map((result) => result.focusNode);
+    const iriList = this.state.results.map((result) => result.focusNode);
     graph.getCells().forEach((cell) => {
       if (
         cell.id in WorkspaceElements &&

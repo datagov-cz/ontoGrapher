@@ -40,9 +40,11 @@ export function getNameOrBlank(name: string) {
 
 export function checkLabels() {
   for (const link in Links) {
-    if (!Links[link].labels[Object.keys(Languages)[0]]) {
-      const label = link.lastIndexOf("/");
-      Links[link].labels = initLanguageObject(link.substring(label + 1));
+    for (const lang in Languages) {
+      if (!Links[link].labels[lang]) {
+        const label = link.lastIndexOf("/");
+        Links[link].labels[lang] = link.substring(label + 1);
+      }
     }
     Links[link].subClassOfDomain = [];
     Links[link].subClassOfRange = [];
