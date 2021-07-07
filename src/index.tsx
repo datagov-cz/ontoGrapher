@@ -3,13 +3,18 @@ import ReactDOM from "react-dom";
 import * as serviceWorker from "./serviceWorker";
 import { Auth } from "@opendata-mvcr/assembly-line-shared";
 import App from "./main/App";
+import { Environment } from "./config/Environment";
 
-ReactDOM.render(
-  <Auth>
+const Main = () =>
+  Environment.auth ? (
+    <Auth>
+      <App />
+    </Auth>
+  ) : (
     <App />
-  </Auth>,
-  document.getElementById("root")
-);
+  );
+
+ReactDOM.render(<Main />, document.getElementById("root"));
 
 // If you want your app to work offline and load faster, you can change
 // unregister() to register() below. Note this comes with some pitfalls.
