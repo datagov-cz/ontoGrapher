@@ -7,7 +7,7 @@ import {
   WorkspaceTerms,
   WorkspaceVocabularies,
 } from "../config/Variables";
-import { initLanguageObject, parsePrefix } from "./FunctionEditVars";
+import { parsePrefix } from "./FunctionEditVars";
 import { ColorPool } from "../config/visual/ColorPool";
 import { Shapes } from "../config/visual/Shapes";
 import * as joint from "jointjs";
