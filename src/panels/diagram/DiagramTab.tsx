@@ -53,7 +53,7 @@ export default class DiagramTab extends React.Component<Props, State> {
             onChange={(value: string) => {
               this.handleChangeDiagramName(value);
             }}
-            type={InputType.TextArea}
+            type={InputType.Text}
           />
         ) : (
           Diagrams[this.props.diagram].name

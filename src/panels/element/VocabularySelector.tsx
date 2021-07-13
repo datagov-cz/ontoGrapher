@@ -49,8 +49,14 @@ export class VocabularySelector extends React.Component<Props, State> {
         value: scheme,
       };
     });
-    const existing = { label: "Ze seznamu", options: existingOptions };
-    const other = { label: "Ostatní slovníky", options: otherOptions };
+    const existing = {
+      label: Locale[AppSettings.viewLanguage].fromList,
+      options: existingOptions,
+    };
+    const other = {
+      label: Locale[AppSettings.viewLanguage].otherVocabularies,
+      options: otherOptions,
+    };
     return [existing, other];
   }
 

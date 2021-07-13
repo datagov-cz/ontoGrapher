@@ -21,7 +21,7 @@ import {
 import ValidationPanel from "../panels/ValidationPanel";
 import DiagramPanel from "../panels/DiagramPanel";
 import { Locale } from "../config/Locale";
-import { drawGraphElement } from "../function/FunctionDraw";
+import { drawGraphElement, unHighlightAll } from "../function/FunctionDraw";
 import {
   changeDiagrams,
   resetDiagramSelection,
@@ -63,6 +63,7 @@ export default class App extends React.Component<
   private readonly itemPanel: React.RefObject<ItemPanel>;
   private readonly detailPanel: React.RefObject<DetailPanel>;
   private readonly menuPanel: React.RefObject<MenuPanel>;
+  private readonly validationPanel: React.RefObject<ValidationPanel>;
 
   constructor(props: DiagramAppProps) {
     super(props);
@@ -71,6 +72,7 @@ export default class App extends React.Component<
     this.itemPanel = React.createRef();
     this.detailPanel = React.createRef();
     this.menuPanel = React.createRef();
+    this.validationPanel = React.createRef();
 
     initVars();
 
@@ -276,12 +278,13 @@ export default class App extends React.Component<
   }
 
   validate() {
-    this.setState({ validation: true });
+    this.setState({ validation: !this.state.validation });
   }
 
   handleUpdateDetailPanel(id?: string) {
     if (id) this.detailPanel.current?.update(id);
     else this.detailPanel.current?.hide();
+    this.validationPanel.current?.forceUpdate();
   }
 
   render() {
@@ -353,11 +356,10 @@ export default class App extends React.Component<
         />
         {this.state.validation && (
           <ValidationPanel
-            widthLeft={this.state.widthLeft}
-            widthRight={this.state.widthRight}
+            ref={this.validationPanel}
             close={() => {
               this.setState({ validation: false });
-              resetDiagramSelection();
+              unHighlightAll();
             }}
             projectLanguage={this.state.projectLanguage}
           />

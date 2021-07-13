@@ -7,7 +7,7 @@ import {
   WorkspaceTerms,
   WorkspaceVocabularies,
 } from "../config/Variables";
-import { initLanguageObject, parsePrefix } from "./FunctionEditVars";
+import { parsePrefix } from "./FunctionEditVars";
 import { ColorPool } from "../config/visual/ColorPool";
 import { Shapes } from "../config/visual/Shapes";
 import * as joint from "jointjs";
@@ -40,9 +40,11 @@ export function getNameOrBlank(name: string) {
 
 export function checkLabels() {
   for (const link in Links) {
-    if (!Links[link].labels[Object.keys(Languages)[0]]) {
-      const label = link.lastIndexOf("/");
-      Links[link].labels = initLanguageObject(link.substring(label + 1));
+    for (const lang in Languages) {
+      if (!Links[link].labels[lang]) {
+        const label = link.lastIndexOf("/");
+        Links[link].labels[lang] = link.substring(label + 1);
+      }
     }
     Links[link].subClassOfDomain = [];
     Links[link].subClassOfRange = [];
@@ -60,7 +62,8 @@ export function getDefaultCardinality() {
 
 export function setSchemeColors(pool: string) {
   Object.keys(WorkspaceVocabularies).forEach((scheme, i) => {
-    WorkspaceVocabularies[scheme].color = ColorPool[pool].colors[i];
+    WorkspaceVocabularies[scheme].color =
+      ColorPool[pool].colors[i % ColorPool[pool].colors.length];
   });
 }
 

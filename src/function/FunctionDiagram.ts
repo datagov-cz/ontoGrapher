@@ -38,7 +38,7 @@ export function changeDiagrams(diagram: number = 0) {
         restoreHiddenElem(id, cls, true, false, false);
       }
     }
-    setRepresentation(Diagrams[diagram].representation);
+    setRepresentation(Diagrams[diagram].representation, false);
     if (Diagrams[diagram].origin.x === 0 && Diagrams[diagram].origin.y === 0) {
       centerDiagram();
     } else {

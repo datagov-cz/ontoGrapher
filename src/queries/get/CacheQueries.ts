@@ -24,7 +24,7 @@ export async function fetchVocabularies(
       context +
       "> <https://slovník.gov.cz/datový/pracovní-prostor/pojem/odkazuje-na-kontext> ?vocabulary.}",
     "graph ?vocabulary {",
-    "?vocabulary <http://purl.org/vocab/vann/preferredNamespaceUri> ?namespace.",
+    "OPTIONAL {?vocabulary <http://purl.org/vocab/vann/preferredNamespaceUri> ?namespace.}",
     "?vocabulary <http://onto.fel.cvut.cz/ontologies/slovník/agendový/popis-dat/pojem/má-glosář> ?scheme.",
     "?vocabulary <http://purl.org/dc/terms/title> ?title.",
     "?term skos:inScheme ?scheme.",
@@ -39,7 +39,7 @@ export async function fetchVocabularies(
         if (!(row.vocabulary.value in CacheSearchVocabularies)) {
           CacheSearchVocabularies[row.vocabulary.value] = {
             labels: initLanguageObject(""),
-            namespace: row.namespace.value,
+            namespace: row.namespace ? row.namespace.value : "",
             glossary: row.scheme.value,
             count: 0,
           };

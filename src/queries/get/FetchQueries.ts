@@ -30,10 +30,10 @@ export async function fetchVocabulary(
     "PREFIX dct: <http://purl.org/dc/terms/>",
     "SELECT DISTINCT ?vocabulary ?scheme ?namespace ?schemeTitle ?vocabTitle",
     "WHERE {",
-    "?scheme dct:title ?schemeTitle",
+    "OPTIONAL {?scheme dct:title ?schemeTitle.}",
     "OPTIONAL {?vocabulary <http://onto.fel.cvut.cz/ontologies/slovník/agendový/popis-dat/pojem/má-glosář> ?scheme.",
     "?vocabulary dct:title ?vocabTitle.",
-    "?vocabulary <http://purl.org/vocab/vann/preferredNamespaceUri> ?namespace.}",
+    "OPTIONAL {?vocabulary <http://purl.org/vocab/vann/preferredNamespaceUri> ?namespace. }}",
     "filter(" +
       (scheme ? "?scheme" : "?vocabulary") +
       " in (<" +
@@ -65,7 +65,7 @@ export async function fetchVocabulary(
           if (result.vocabTitle)
             WorkspaceVocabularies[iri].labels[result.vocabTitle["xml:lang"]] =
               result.vocabTitle.value;
-          else
+          else if (result.schemeTitle)
             WorkspaceVocabularies[iri].labels[result.schemeTitle["xml:lang"]] =
               result.schemeTitle.value;
           if (result.namespace)
