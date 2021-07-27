@@ -1,8 +1,5 @@
-import React from "react";
-import { Alert, Button, Form, InputGroup, Modal } from "react-bootstrap";
 import {
   AppSettings,
-  Languages,
   Links,
   PackageRoot,
   Prefixes,
@@ -10,32 +7,40 @@ import {
   WorkspaceElements,
   WorkspaceLinks,
   WorkspaceTerms,
-  WorkspaceVocabularies,
-} from "../config/Variables";
+} from "../../config/Variables";
+import { Locale } from "../../config/Locale";
+import {
+  initLanguageObject,
+  parsePrefix,
+} from "../../function/FunctionEditVars";
+import React from "react";
+import { LinkType, Representation } from "../../config/Enum";
+import { graph } from "../../graph/Graph";
+import { Button, Form, Modal } from "react-bootstrap";
 import {
   getLabelOrBlank,
   getLinkOrVocabElem,
-  getVocabularyFromScheme,
-} from "../function/FunctionGetVars";
-import { graph } from "../graph/Graph";
-import { initLanguageObject, parsePrefix } from "../function/FunctionEditVars";
-import { LinkType, Representation } from "../config/Enum";
-import { Locale } from "../config/Locale";
-import { createNewElemIRI } from "../function/FunctionCreateVars";
+} from "../../function/FunctionGetVars";
+import { LinkCreationConfiguration } from "./CreationModals";
+import { NewElemForm } from "./NewElemForm";
+import { PackageNode } from "../../datatypes/PackageNode";
+import _ from "lodash";
 
 interface Props {
   modal: boolean;
-  close: Function;
+  closeLink: Function;
+  closeElem: Function;
   projectLanguage: string;
-  sid: string | undefined;
-  tid: string | undefined;
+  configuration: LinkCreationConfiguration;
 }
 
 interface State {
   selectedLink: string;
   displayIncompatible: boolean;
+  displayUsed: boolean;
   search: string;
-  conceptName: { [key: string]: string };
+  termName: { [key: string]: string };
+  selectedPackage: PackageNode;
   errorText: string;
   existing: boolean;
   create: boolean;
@@ -48,7 +53,9 @@ export default class NewLinkModal extends React.Component<Props, State> {
       search: "",
       selectedLink: "",
       displayIncompatible: false,
-      conceptName: initLanguageObject(""),
+      displayUsed: false,
+      termName: initLanguageObject(""),
+      selectedPackage: PackageRoot,
       errorText: Locale[AppSettings.viewLanguage].modalNewElemError,
       existing: true,
       create: false,
@@ -61,14 +68,20 @@ export default class NewLinkModal extends React.Component<Props, State> {
   }
 
   filtering(link: string): boolean {
-    if (!this.props.sid || !this.props.tid) return false;
+    if (
+      !this.props.configuration.sourceID ||
+      !this.props.configuration.targetID
+    )
+      return false;
     if (Links[link].type === LinkType.GENERALIZATION)
-      return this.props.sid !== this.props.tid;
+      return (
+        this.props.configuration.sourceID !== this.props.configuration.targetID
+      );
     const sourceTypes = WorkspaceTerms[
-      WorkspaceElements[this.props.sid].iri
+      WorkspaceElements[this.props.configuration.sourceID].iri
     ].types.filter((type) => type.startsWith(Prefixes["z-sgov-pojem"]));
     const targetTypes = WorkspaceTerms[
-      WorkspaceElements[this.props.tid].iri
+      WorkspaceElements[this.props.configuration.targetID].iri
     ].types.filter((type) => type.startsWith(Prefixes["z-sgov-pojem"]));
     if (sourceTypes.length === 0 || targetTypes.length === 0) return false;
     const domain = Links[link].domain;
@@ -104,16 +117,20 @@ export default class NewLinkModal extends React.Component<Props, State> {
   }
 
   getLinks() {
-    let elem = graph.getElements().find((elem) => elem.id === this.props.sid);
-    if (elem && this.props.sid) {
-      let conns = WorkspaceElements[this.props.sid].connections;
+    let elem = graph
+      .getElements()
+      .find((elem) => elem.id === this.props.configuration.sourceID);
+    if (elem && this.props.configuration.sourceID) {
+      const connections =
+        WorkspaceElements[this.props.configuration.sourceID].connections;
       if (AppSettings.representation === Representation.FULL) {
         return Object.keys(Links).filter(
           (link) =>
-            !conns.find(
+            !connections.find(
               (conn) =>
                 WorkspaceLinks[conn].iri === link &&
-                WorkspaceLinks[conn].target === this.props.tid &&
+                WorkspaceLinks[conn].target ===
+                  this.props.configuration.targetID &&
                 WorkspaceLinks[conn].active
             ) && (this.state.displayIncompatible ? true : this.filtering(link))
         );
@@ -121,10 +138,11 @@ export default class NewLinkModal extends React.Component<Props, State> {
         return Object.keys(WorkspaceTerms)
           .filter(
             (link) =>
-              !conns.find(
+              !connections.find(
                 (conn) =>
                   WorkspaceLinks[conn].iri === link &&
-                  WorkspaceLinks[conn].target === this.props.tid &&
+                  WorkspaceLinks[conn].target ===
+                    this.props.configuration.targetID &&
                   WorkspaceLinks[conn].active
               ) &&
               WorkspaceTerms[link].types.includes(
@@ -142,20 +160,7 @@ export default class NewLinkModal extends React.Component<Props, State> {
   }
 
   setLink(link: string) {
-    if (link !== "") this.props.close(link);
-  }
-
-  handleChangeInput(
-    event: React.ChangeEvent<
-      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
-    >,
-    language: string
-  ) {
-    const names = this.state.conceptName;
-    names[language] = event.currentTarget.value;
-    this.setState({
-      conceptName: names,
-    });
+    if (link !== "") this.props.closeLink(link);
   }
 
   render() {
@@ -165,14 +170,21 @@ export default class NewLinkModal extends React.Component<Props, State> {
         centered
         scrollable
         show={this.props.modal}
-        onHide={() => this.props.close}
+        onHide={() => this.props.closeLink}
         onEntering={() => {
-          this.setState({ selectedLink: options.length > 0 ? options[0] : "" });
+          this.setState({
+            selectedLink: options.length > 0 ? options[0] : "",
+            selectedPackage:
+              PackageRoot.children.find((p) =>
+                p.elements.includes(this.props.configuration.sourceID)
+              ) || PackageRoot,
+            termName: initLanguageObject(""),
+          });
           const input = document.getElementById("newLinkInputSelect");
           if (input) input.focus();
         }}
         keyboard
-        onEscapeKeyDown={() => this.props.close()}
+        onEscapeKeyDown={() => this.props.closeLink()}
       >
         <Modal.Header>
           <Modal.Title>
@@ -201,13 +213,12 @@ export default class NewLinkModal extends React.Component<Props, State> {
               </label>
             </span>
           )}
-          {/*<br />*/}
           {AppSettings.representation === Representation.FULL ? (
             <Form
               onSubmit={(event) => {
                 event.preventDefault();
                 if (this.state.selectedLink !== "")
-                  this.props.close(this.state.selectedLink);
+                  this.props.closeLink(this.state.selectedLink);
               }}
             >
               <Form.Control
@@ -242,14 +253,19 @@ export default class NewLinkModal extends React.Component<Props, State> {
             </Form>
           ) : (
             <Form
+              id={"createForm"}
               onSubmit={(event) => {
                 event.preventDefault();
-                if (this.state.selectedLink !== "")
-                  this.props.close(this.state.selectedLink);
+                if (this.state.errorText === "" && this.state.create) {
+                  const names = _.mapValues(this.state.termName, (name) =>
+                    name.trim()
+                  );
+                  this.props.closeElem(names, this.state.selectedPackage);
+                }
               }}
             >
               <Form.Check
-                label="Vybrat z existujících typů vztahů"
+                label={Locale[AppSettings.viewLanguage].selectRelationship}
                 type="radio"
                 id={"radio-1"}
                 value={1}
@@ -260,9 +276,27 @@ export default class NewLinkModal extends React.Component<Props, State> {
               />
               {this.state.existing && (
                 <div>
+                  <span>
+                    <input
+                      defaultChecked={this.state.displayUsed}
+                      onClick={(event: any) => {
+                        this.setState({
+                          displayUsed: event.currentTarget.checked,
+                        });
+                      }}
+                      type="checkbox"
+                      id={"displayUsed"}
+                    />
+                    &nbsp;
+                    <label htmlFor={"displayUsed"}>
+                      {Locale[AppSettings.viewLanguage].showUsedRelationships}
+                    </label>
+                  </span>
                   <Form.Control
                     type="text"
-                    placeholder="Hledat..."
+                    placeholder={
+                      Locale[AppSettings.viewLanguage].searchStereotypes
+                    }
                     value={this.state.search}
                     onChange={(event) =>
                       this.setState({ search: event.currentTarget.value })
@@ -276,28 +310,35 @@ export default class NewLinkModal extends React.Component<Props, State> {
                     onChange={this.handleChangeLink}
                     id={"newLinkInputSelect"}
                   >
-                    {options.map((link) => (
-                      <option
-                        key={link}
-                        onClick={() => this.setLink(link)}
-                        value={link}
-                      >
-                        {getLabelOrBlank(
-                          getLinkOrVocabElem(link).labels,
-                          this.props.projectLanguage
-                        ).concat(
-                          link.startsWith(AppSettings.ontographerContext)
-                            ? ""
-                            : " ⭐"
-                        )}
-                      </option>
-                    ))}
+                    {options
+                      .filter((link) =>
+                        this.state.displayUsed
+                          ? true
+                          : !Object.values(WorkspaceLinks).find(
+                              (l) =>
+                                l.active &&
+                                l.iri === link &&
+                                l.iri in WorkspaceTerms
+                            )
+                      )
+                      .map((link) => (
+                        <option
+                          key={link}
+                          onClick={() => this.setLink(link)}
+                          value={link}
+                        >
+                          {getLabelOrBlank(
+                            getLinkOrVocabElem(link).labels,
+                            this.props.projectLanguage
+                          )}
+                        </option>
+                      ))}
                   </Form.Control>
                 </div>
               )}
               <Form.Check
                 value={2}
-                label="Vytvořit nový typ vztahu"
+                label={Locale[AppSettings.viewLanguage].createNewRelationship}
                 type="radio"
                 id={"radio-2"}
                 checked={this.state.create}
@@ -306,112 +347,39 @@ export default class NewLinkModal extends React.Component<Props, State> {
                 }
               />
               {this.state.create && (
-                <div>
-                  <Form
-                    onSubmit={(event) => {
-                      event.preventDefault();
-                      // if (this.state.errorText === "") this.save();
-                    }}
-                  >
-                    {/*<Modal.Body>*/}
-                    <p>
-                      {Locale[AppSettings.viewLanguage].modalNewElemDescription}
-                    </p>
-                    {Object.keys(Languages).map((lang) => (
-                      <div key={lang}>
-                        <InputGroup>
-                          <InputGroup.Prepend>
-                            <InputGroup.Text id={"inputGroupPrepend" + lang}>
-                              {Languages[lang] +
-                                (lang === AppSettings.defaultLanguage
-                                  ? "*"
-                                  : "")}
-                            </InputGroup.Text>
-                          </InputGroup.Prepend>
-                          <Form.Control
-                            id={"newElemLabelInput" + lang}
-                            type="text"
-                            value={this.state.conceptName[lang]}
-                            required={lang === AppSettings.defaultLanguage}
-                            onChange={(event) =>
-                              this.handleChangeInput(event, lang)
-                            }
-                          />
-                        </InputGroup>
-                      </div>
-                    ))}
-                    <br />
-                    {/*<Form.Group controlId="exampleForm.ControlSelect1">*/}
-                    {/*  <Form.Label>*/}
-                    {/*    {Locale[AppSettings.viewLanguage].selectPackage}*/}
-                    {/*  </Form.Label>*/}
-                    {/*  <Form.Control*/}
-                    {/*    as="select"*/}
-                    {/*    value={*/}
-                    {/*      this.state.selectedPackage.labels[*/}
-                    {/*        this.props.projectLanguage*/}
-                    {/*      ]*/}
-                    {/*    }*/}
-                    {/*    onChange={(event) => this.handleChangeSelect(event)}*/}
-                    {/*  >*/}
-                    {/*    {PackageRoot.children*/}
-                    {/*      .filter(*/}
-                    {/*        (pkg) =>*/}
-                    {/*          !WorkspaceVocabularies[*/}
-                    {/*            getVocabularyFromScheme(pkg.scheme)*/}
-                    {/*          ].readOnly*/}
-                    {/*      )*/}
-                    {/*      .map((pkg, i) => (*/}
-                    {/*        <option*/}
-                    {/*          key={i}*/}
-                    {/*          value={pkg.labels[this.props.projectLanguage]}*/}
-                    {/*        >*/}
-                    {/*          {pkg.labels[this.props.projectLanguage]}*/}
-                    {/*        </option>*/}
-                    {/*      ))}*/}
-                    {/*  </Form.Control>*/}
-                    {/*</Form.Group>*/}
-                    {/*{!this.state.errorText && (*/}
-                    {/*  <Alert variant={"primary"}>{`${*/}
-                    {/*    Locale[AppSettings.viewLanguage].modalNewElemIRI*/}
-                    {/*  }*/}
-                    {/*${createNewElemIRI(*/}
-                    {/*  this.state.selectedPackage.scheme,*/}
-                    {/*  this.state.conceptName[AppSettings.defaultLanguage]*/}
-                    {/*)}`}</Alert>*/}
-                    {/*        )}*/}
-                    {this.state.errorText && (
-                      <Alert variant="danger">{this.state.errorText}</Alert>
-                    )}
-                    {/*      </Modal.Body>*/}
-                    {/*      <Modal.Footer>*/}
-                    {/*        <Button*/}
-                    {/*          type={"submit"}*/}
-                    {/*          disabled={this.state.errorText !== ""}*/}
-                    {/*          variant="primary"*/}
-                    {/*        >*/}
-                    {/*          {Locale[AppSettings.viewLanguage].confirm}*/}
-                    {/*        </Button>*/}
-                    {/*        <Button*/}
-                    {/*          onClick={() => {*/}
-                    {/*            this.props.close();*/}
-                    {/*          }}*/}
-                    {/*          variant="secondary"*/}
-                    {/*        >*/}
-                    {/*          {Locale[AppSettings.viewLanguage].cancel}*/}
-                    {/*        </Button>*/}
-                    {/*      </Modal.Footer>*/}
-                  </Form>
-                </div>
+                <NewElemForm
+                  lockPackage={true}
+                  projectLanguage={this.props.projectLanguage}
+                  termName={this.state.termName}
+                  selectedPackage={this.state.selectedPackage}
+                  errorText={this.state.errorText}
+                  setTermName={(name, lang) =>
+                    this.setState((prevState) => ({
+                      ...prevState,
+                      termName: { ...prevState.termName, [lang]: name },
+                    }))
+                  }
+                  setSelectedPackage={(p) =>
+                    this.setState({ selectedPackage: p })
+                  }
+                  setErrorText={(s) => this.setState({ errorText: s })}
+                />
               )}
-              <button style={{ display: "none" }} />
             </Form>
           )}
         </Modal.Body>
         <Modal.Footer>
           <Button
+            type={"submit"}
+            form={"createForm"}
+            disabled={!this.state.create || this.state.errorText !== ""}
+            variant="primary"
+          >
+            {Locale[AppSettings.viewLanguage].confirm}
+          </Button>
+          <Button
             onClick={() => {
-              this.props.close();
+              this.props.closeLink();
             }}
             variant="secondary"
           >

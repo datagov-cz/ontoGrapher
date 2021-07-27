@@ -4,7 +4,9 @@
     left: 300px;
     z-index: 99;
     background-color: #f1f1f1;
-
+    .list {
+        overflow-y: auto;
+    }
     .top {
         padding: 2px 20px 2px 2px;
 

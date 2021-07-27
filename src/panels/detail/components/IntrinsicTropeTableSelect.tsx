@@ -8,12 +8,11 @@ import { getLabelOrBlank } from "../../../function/FunctionGetVars";
 type Props = {
   projectLanguage: string;
   iri: string;
-  qualities: string[];
+  tropes: string[];
   handleChange: Function;
-  handleInput: Function;
 };
 
-export const QualityTableSelect: React.FC<Props> = (props) => {
+export const IntrinsicTropeTableSelect: React.FC<Props> = (props) => {
   const buildOptions: () => { label: string; value: string }[] = () => {
     return Object.keys(WorkspaceTerms)
       .filter((iri) =>
@@ -25,7 +24,7 @@ export const QualityTableSelect: React.FC<Props> = (props) => {
         (iri) =>
           WorkspaceTerms[iri].inScheme === WorkspaceTerms[props.iri].inScheme
       )
-      .filter((iri) => !props.qualities.includes(iri))
+      .filter((iri) => !props.tropes.includes(iri))
       .map((iri) => {
         return {
           label: getLabelOrBlank(
@@ -41,7 +40,8 @@ export const QualityTableSelect: React.FC<Props> = (props) => {
     <Select
       isSearchable={true}
       className={"qualityTableSelect"}
-      placeholder={"Vyberte typ vlastnosti"}
+      placeholder={Locale[AppSettings.viewLanguage].selectTropeTypePlaceholder}
+      value={null}
       styles={{
         container: (base) => ({
           ...base,
@@ -68,8 +68,8 @@ export const QualityTableSelect: React.FC<Props> = (props) => {
           ...base,
           margin: 0,
           padding: 0,
-          height: 25,
-          minHeight: 25,
+          height: 28,
+          minHeight: 28,
         }),
         valueContainer: (base) => ({
           ...base,
@@ -80,7 +80,6 @@ export const QualityTableSelect: React.FC<Props> = (props) => {
       options={buildOptions()}
       // @ts-ignore
       onChange={(value) => props.handleChange(value.value)}
-      onInputChange={(value) => props.handleInput(value)}
     />
   );
 };

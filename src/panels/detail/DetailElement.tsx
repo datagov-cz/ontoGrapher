@@ -11,7 +11,9 @@ import {
   WorkspaceVocabularies,
 } from "../../config/Variables";
 import {
+  getIntrinsicTropeTypes,
   getLabelOrBlank,
+  getNewLink,
   getVocabularyFromScheme,
 } from "../../function/FunctionGetVars";
 import { Accordion, Button, Card } from "react-bootstrap";
@@ -27,15 +29,20 @@ import { drawGraphElement, unHighlightCell } from "../../function/FunctionDraw";
 import AltLabelTable from "./components/AltLabelTable";
 import ConnectionList from "./components/connections/ConnectionList";
 import { updateProjectElement } from "../../queries/update/UpdateElementQueries";
-import QualityTable from "./components/QualityTable";
+import { IntrinsicTropeTable } from "./components/IntrinsicTropeTable";
 import { parsePrefix } from "../../function/FunctionEditVars";
+import {
+  deleteConnections,
+  updateConnection,
+} from "../../function/FunctionLink";
+import { LinkType } from "../../config/Enum";
 
 interface Props {
   projectLanguage: string;
   save: (id: string) => void;
   performTransaction: (...queries: string[]) => void;
-  handleWidth: Function;
   error: boolean;
+  handleCreation: Function;
   updateDetailPanel: Function;
   updateDiagramCanvas: Function;
 }
@@ -68,6 +75,17 @@ export default class DetailElement extends React.Component<Props, State> {
     };
     this.updateStereotype = this.updateStereotype.bind(this);
     this.prepareDetails = this.prepareDetails.bind(this);
+  }
+
+  redrawElement() {
+    const elem = graph.getElements().find((elem) => elem.id === this.state.id);
+    if (elem) {
+      drawGraphElement(
+        elem,
+        this.props.projectLanguage,
+        AppSettings.representation
+      );
+    }
   }
 
   prepareDetails(id?: string) {
@@ -157,11 +175,6 @@ export default class DetailElement extends React.Component<Props, State> {
           axis={"x"}
           handleSize={[8, 8]}
           resizeHandles={["sw"]}
-          onResizeStop={() => {
-            let elem = document.querySelector(".details");
-            if (elem)
-              this.props.handleWidth(elem.getBoundingClientRect().width);
-          }}
           className={"details" + (this.props.error ? " disabled" : "")}
         >
           <div>
@@ -358,40 +371,48 @@ export default class DetailElement extends React.Component<Props, State> {
                         value={this.state.inputTypeData}
                       />
                     </TableList>
-                    <h5>Vlastnosti</h5>
-                    <QualityTable
+                    <h5>{Locale[AppSettings.viewLanguage].intrinsicTropes}</h5>
+                    <IntrinsicTropeTable
                       iri={WorkspaceElements[this.state.id].iri}
-                      qualities={Object.keys(WorkspaceLinks)
-                        .filter(
+                      tropes={getIntrinsicTropeTypes(this.state.id)}
+                      onEdit={(id: string) => this.props.updateDetailPanel(id)}
+                      onRemove={(id: string) => {
+                        const conn = Object.keys(WorkspaceLinks).find(
                           (link) =>
                             WorkspaceLinks[link].active &&
-                            WorkspaceLinks[link].source === this.state.id &&
-                            WorkspaceLinks[link].iri ===
-                              parsePrefix("z-sgov-pojem", "má-vlastnost")
-                        )
-                        .map(
-                          (link) =>
-                            WorkspaceElements[WorkspaceLinks[link].target].iri
-                        )
-                        .concat(
-                          Object.keys(WorkspaceLinks)
-                            .filter(
-                              (link) =>
-                                WorkspaceLinks[link].active &&
-                                WorkspaceLinks[link].target === this.state.id &&
-                                WorkspaceLinks[link].iri ===
-                                  parsePrefix("z-sgov-pojem", "je-vlastností")
-                            )
-                            .map(
-                              (link) =>
-                                WorkspaceElements[WorkspaceLinks[link].source]
-                                  .iri
-                            )
-                        )}
-                      onEdit={(id: string) => this.prepareDetails(id)}
-                      onRemove={() => {}}
-                      onAdd={() => {}}
-                      onCreate={() => this.props.updateDiagramCanvas()}
+                            ((WorkspaceLinks[link].iri ===
+                              parsePrefix("z-sgov-pojem", "má-vlastnost") &&
+                              WorkspaceLinks[link].source === this.state.id &&
+                              WorkspaceLinks[link].target === id) ||
+                              (WorkspaceLinks[link].iri ===
+                                parsePrefix("z-sgov-pojem", "je-vlastností") &&
+                                WorkspaceLinks[link].source === id &&
+                                WorkspaceLinks[link].target === this.state.id))
+                        );
+                        if (conn)
+                          this.props.performTransaction(
+                            ...deleteConnections(conn)
+                          );
+                        this.redrawElement();
+                      }}
+                      onAdd={(id: string) => {
+                        const link = getNewLink(LinkType.DEFAULT);
+                        this.props.performTransaction(
+                          ...updateConnection(
+                            this.state.id,
+                            id,
+                            link.id as string,
+                            LinkType.DEFAULT,
+                            parsePrefix("z-sgov-pojem", "má-vlastnost"),
+                            true
+                          )
+                        );
+                        this.redrawElement();
+                      }}
+                      onCreate={() => {
+                        this.props.handleCreation(this.state.id);
+                        this.redrawElement();
+                      }}
                       readOnly={
                         WorkspaceVocabularies[
                           getVocabularyFromScheme(

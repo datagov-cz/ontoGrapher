@@ -24,6 +24,7 @@ interface State {
   conforms: boolean;
   loading: boolean;
   error: boolean;
+  height: number;
 }
 
 export default class ValidationPanel extends React.Component<Props, State> {
@@ -35,6 +36,7 @@ export default class ValidationPanel extends React.Component<Props, State> {
       conforms: false,
       loading: false,
       error: false,
+      height: 150,
     };
     this.validate = this.validate.bind(this);
   }
@@ -112,6 +114,14 @@ export default class ValidationPanel extends React.Component<Props, State> {
     });
   }
 
+  getHeight() {
+    const top = document.getElementById("top");
+    if (top)
+      this.setState({
+        height: window.innerHeight - top.getBoundingClientRect().bottom,
+      });
+  }
+
   render() {
     return (
       <ResizableBox
@@ -121,9 +131,10 @@ export default class ValidationPanel extends React.Component<Props, State> {
         axis={"y"}
         handleSize={[8, 8]}
         resizeHandles={["ne"]}
+        onResizeStop={() => this.getHeight()}
       >
         <div>
-          <div className={"top"}>
+          <div className={"top"} id={"top"}>
             <h4>{Locale[AppSettings.viewLanguage].validation}</h4>
             <span className="right">
               <Button
@@ -155,7 +166,10 @@ export default class ValidationPanel extends React.Component<Props, State> {
             </div>
           )}
           {!this.state.loading && !this.state.conforms && !this.state.error && (
-            <div style={{ overflow: "auto", height: "inherit" }}>
+            <div
+              className={"list"}
+              style={{ height: `${this.state.height}px` }}
+            >
               <TableList
                 headings={[
                   Locale[AppSettings.viewLanguage].validationNumber,

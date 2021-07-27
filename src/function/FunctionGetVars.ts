@@ -207,3 +207,32 @@ export function isTermReadOnly(iri: string) {
       .readOnly
   );
 }
+
+export function getIntrinsicTropeTypes(id: string) {
+  return Object.keys(WorkspaceLinks)
+    .filter(
+      (link) =>
+        WorkspaceLinks[link].active &&
+        WorkspaceLinks[link].source === id &&
+        WorkspaceLinks[link].iri ===
+          parsePrefix("z-sgov-pojem", "má-vlastnost") &&
+        WorkspaceTerms[
+          WorkspaceElements[WorkspaceLinks[link].target].iri
+        ].types.includes(parsePrefix("z-sgov-pojem", "typ-vlastnosti"))
+    )
+    .map((link) => WorkspaceElements[WorkspaceLinks[link].target].iri)
+    .concat(
+      Object.keys(WorkspaceLinks)
+        .filter(
+          (link) =>
+            WorkspaceLinks[link].active &&
+            WorkspaceLinks[link].target === id &&
+            WorkspaceLinks[link].iri ===
+              parsePrefix("z-sgov-pojem", "je-vlastností") &&
+            WorkspaceTerms[
+              WorkspaceElements[WorkspaceLinks[link].source].iri
+            ].types.includes(parsePrefix("z-sgov-pojem", "typ-vlastnosti"))
+        )
+        .map((link) => WorkspaceElements[WorkspaceLinks[link].source].iri)
+    );
+}

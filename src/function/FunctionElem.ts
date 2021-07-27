@@ -80,17 +80,34 @@ export function resizeElem(id: string) {
   }
 }
 
+export function getElementPosition(id: string): joint.dia.Point {
+  const point = graph
+    .getElements()
+    .find((elem) => (elem.id as string) === id)
+    ?.position();
+  if (point) return { x: point.x + 200, y: point.y + 200 };
+  else
+    return {
+      x: Diagrams[AppSettings.selectedDiagram].origin.x,
+      y: Diagrams[AppSettings.selectedDiagram].origin.y,
+    };
+}
+
 export function createNewConcept(
   point: { x: number; y: number },
   name: { [key: string]: string },
   language: string,
-  pkg: PackageNode
-) {
-  let cls = new graphElement();
-  let p = paper.clientToLocalPoint(point);
-  let id = cls.id as string;
-  let iri = createNewElemIRI(pkg.scheme, name[language]);
-  addVocabularyElement(iri, pkg.scheme, [parsePrefix("skos", "Concept")]);
+  pkg: PackageNode,
+  types: string[] = []
+): string {
+  const cls = new graphElement();
+  const p = paper.clientToLocalPoint(point);
+  const id = cls.id as string;
+  const iri = createNewElemIRI(pkg.scheme, name[language]);
+  addVocabularyElement(iri, pkg.scheme, [
+    parsePrefix("skos", "Concept"),
+    ...types,
+  ]);
   addClass(id, iri, pkg);
   WorkspaceElements[cls.id].hidden[AppSettings.selectedDiagram] = false;
   if (p) {
@@ -102,7 +119,7 @@ export function createNewConcept(
   }
   WorkspaceTerms[iri].labels = name;
   cls.addTo(graph);
-  let bbox = paper.findViewByModel(cls).getBBox();
+  const bbox = paper.findViewByModel(cls).getBBox();
   if (bbox) cls.resize(bbox.width, bbox.height);
   drawGraphElement(cls, language, AppSettings.representation);
   return id;

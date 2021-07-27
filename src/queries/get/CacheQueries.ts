@@ -48,7 +48,10 @@ export async function fetchVocabularies(
         CacheSearchVocabularies[row.vocabulary.value].labels[
           row.title["xml:lang"]
         ] = row.title.value;
-        if (!count[row.vocabulary.value].includes(row.term.value))
+        if (
+          row.vocabulary.value in count &&
+          !count[row.vocabulary.value].includes(row.term.value)
+        )
           count[row.vocabulary.value].push(row.term.value);
       }
       for (const vocab in count) {

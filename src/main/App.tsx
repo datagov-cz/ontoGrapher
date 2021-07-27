@@ -5,6 +5,7 @@ import DiagramCanvas from "./DiagramCanvas";
 import {
   AppSettings,
   Languages,
+  PackageRoot,
   WorkspaceElements,
   WorkspaceLinks,
 } from "../config/Variables";
@@ -27,30 +28,35 @@ import {
   resetDiagramSelection,
 } from "../function/FunctionDiagram";
 import { qb } from "../queries/QueryBuilder";
-import { getLastChangeDay, setSchemeColors } from "../function/FunctionGetVars";
+import {
+  getLastChangeDay,
+  getLinkOrVocabElem,
+  setSchemeColors,
+} from "../function/FunctionGetVars";
 import { getSettings } from "../queries/get/InitQueries";
 import { updateLegacyWorkspace } from "../queries/update/legacy/UpdateLegacyWorkspaceQueries";
 import { updateProjectSettings } from "../queries/update/UpdateMiscQueries";
+import {
+  CreationModals,
+  ElemCreationConfiguration,
+  LinkCreationConfiguration,
+} from "../components/modals/CreationModals";
+import { ElemCreationStrategy } from "../config/Enum";
+import { getElementPosition } from "../function/FunctionElem";
 
-interface DiagramAppProps {
-  readOnly?: boolean;
-  loadDefaultVocabularies?: boolean;
-  contextIRI?: string;
-  contextEndpoint?: string;
-}
+interface DiagramAppProps {}
 
 interface DiagramAppState {
-  detailPanelHidden: boolean;
   projectLanguage: string;
   viewLanguage: string;
   loading: boolean;
   status: string;
   freeze: boolean;
-  widthLeft: number;
-  widthRight: number;
   validation: boolean;
   retry: boolean;
   tooltip: boolean;
+  newElemConfiguration: ElemCreationConfiguration;
+  newLinkConfiguration: LinkCreationConfiguration;
 }
 
 require("../scss/style.scss");
@@ -88,15 +94,20 @@ export default class App extends React.Component<
     this.state = {
       projectLanguage: AppSettings.selectedLanguage,
       viewLanguage: AppSettings.viewLanguage,
-      detailPanelHidden: false,
       loading: true,
       status: Locale[AppSettings.viewLanguage].loading,
       freeze: true,
-      widthLeft: 300,
-      widthRight: 0,
       validation: false,
       retry: false,
       tooltip: false,
+      newElemConfiguration: {
+        strategy: ElemCreationStrategy.DEFAULT,
+        position: { x: 0, y: 0 },
+        connections: [],
+        header: "",
+        pkg: PackageRoot,
+      },
+      newLinkConfiguration: { sourceID: "", targetID: "" },
     };
     document.title = Locale[AppSettings.viewLanguage].ontoGrapher;
     this.handleChangeLanguage = this.handleChangeLanguage.bind(this);
@@ -127,8 +138,6 @@ export default class App extends React.Component<
           diagramNumber ? diagramNumber : 0
         );
       } else this.loadVocabularies(contextIRI, AppSettings.contextEndpoint, 0);
-    } else if (this.props.contextIRI && this.props.contextEndpoint) {
-      this.loadVocabularies(this.props.contextIRI, this.props.contextEndpoint);
     } else {
       this.handleStatus(
         false,
@@ -153,7 +162,11 @@ export default class App extends React.Component<
     });
     graph.getLinks().forEach((cell) => {
       if (WorkspaceLinks[cell.id]) {
-        nameGraphLink(cell, languageCode);
+        nameGraphLink(
+          cell,
+          getLinkOrVocabElem(WorkspaceLinks[cell.id].iri).labels,
+          languageCode
+        );
       }
     });
   }
@@ -281,6 +294,16 @@ export default class App extends React.Component<
     this.setState({ validation: !this.state.validation });
   }
 
+  handleCreation(
+    configuration: ElemCreationConfiguration | LinkCreationConfiguration
+  ) {
+    if ("strategy" in configuration) {
+      this.setState({ newElemConfiguration: configuration });
+    } else if ("sourceID" in configuration) {
+      this.setState({ newLinkConfiguration: configuration });
+    }
+  }
+
   handleUpdateDetailPanel(id?: string) {
     if (id) this.detailPanel.current?.update(id);
     else this.detailPanel.current?.hide();
@@ -312,9 +335,6 @@ export default class App extends React.Component<
         />
         <ItemPanel
           ref={this.itemPanel}
-          handleWidth={(width: number) => {
-            this.setState({ widthLeft: width });
-          }}
           projectLanguage={this.state.projectLanguage}
           freeze={this.state.freeze}
           update={() => {
@@ -343,15 +363,25 @@ export default class App extends React.Component<
             this.itemPanel.current?.update(id);
             this.detailPanel.current?.forceUpdate();
           }}
-          handleWidth={(width: number) => {
-            this.setState({ widthRight: width });
-          }}
           performTransaction={this.performTransaction}
           updateDetailPanel={(id: string) => {
             this.handleUpdateDetailPanel(id);
           }}
           updateDiagramCanvas={() => {
             this.canvas.current?.setState({ modalAddElem: true });
+          }}
+          handleCreation={(source: string) => {
+            this.handleCreation({
+              strategy: ElemCreationStrategy.INTRINSIC_TROPE_TYPE,
+              connections: [source],
+              pkg:
+                PackageRoot.children.find((pkg) =>
+                  pkg.elements.includes(source)
+                ) || PackageRoot,
+              position: getElementPosition(source),
+              header:
+                Locale[AppSettings.viewLanguage].modalNewIntrinsicTropeTitle,
+            });
           }}
         />
         {this.state.validation && (
@@ -376,6 +406,16 @@ export default class App extends React.Component<
           freeze={this.state.freeze}
           performTransaction={this.performTransaction}
           handleStatus={this.handleStatus}
+          handleCreation={(configuration) => {
+            this.handleCreation(configuration);
+          }}
+        />
+        <CreationModals
+          elemConfiguration={this.state.newElemConfiguration}
+          linkConfiguration={this.state.newLinkConfiguration}
+          performTransaction={this.performTransaction}
+          projectLanguage={this.state.projectLanguage}
+          update={() => this.itemPanel.current?.update()}
         />
       </div>
     );

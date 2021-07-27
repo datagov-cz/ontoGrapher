@@ -46,9 +46,14 @@ export function getConnectionElementID(linkID: string, elemID: string): string {
     : WorkspaceLinks[linkID].source;
 }
 
-export function saveNewLink(iri: string, sid: string, tid: string): string[] {
+export function saveNewLink(
+  iri: string,
+  sid: string,
+  tid: string,
+  representation: Representation = AppSettings.representation
+): string[] {
   const type = iri in Links ? Links[iri].type : LinkType.DEFAULT;
-  let link = getNewLink(type);
+  const link = getNewLink(type);
   link.source({
     id: sid,
     connectionPoint: {
@@ -97,7 +102,7 @@ export function saveNewLink(iri: string, sid: string, tid: string): string[] {
     });
     let queries: string[] = [];
     if (
-      AppSettings.representation === Representation.FULL ||
+      representation === Representation.FULL ||
       type === LinkType.GENERALIZATION
     ) {
       queries.push(...updateConnection(sid, tid, id, type, iri, true));
@@ -222,7 +227,7 @@ export function updateVertices(
   return queries;
 }
 
-export function deleteConnections(sid: string, id: string): string[] {
+export function deleteConnections(id: string): string[] {
   WorkspaceLinks[id].active = false;
   if (graph.getCell(id)) graph.getCell(id).remove();
   return [
@@ -243,8 +248,7 @@ export function addLinkTools(
     distance: 5,
     action: (evt, view) => {
       if (AppSettings.representation === Representation.FULL) {
-        const sid = view.model.getSourceCell()?.id as string;
-        let queries: string[] = [...deleteConnections(sid, id)];
+        let queries: string[] = [...deleteConnections(id)];
         const compactConn = Object.keys(WorkspaceLinks).find(
           (link) =>
             WorkspaceLinks[link].active &&
@@ -253,12 +257,7 @@ export function addLinkTools(
             WorkspaceLinks[link].target === WorkspaceLinks[id].target
         );
         if (compactConn) {
-          queries.push(
-            ...deleteConnections(
-              WorkspaceLinks[compactConn].source,
-              compactConn
-            )
-          );
+          queries.push(...deleteConnections(compactConn));
         }
         transaction(...queries);
       } else {
@@ -272,18 +271,11 @@ export function addLinkTools(
           WorkspaceLinks[deleteLinks.src].active = false;
           WorkspaceLinks[deleteLinks.tgt].active = false;
           queries.push(
-            ...deleteConnections(
-              WorkspaceLinks[deleteLinks.src].source,
-              deleteLinks.src
-            ),
-            ...deleteConnections(
-              WorkspaceLinks[deleteLinks.src].source,
-              deleteLinks.tgt
-            )
+            ...deleteConnections(deleteLinks.src),
+            ...deleteConnections(deleteLinks.tgt)
           );
         }
-        const sid = view.model.getSourceCell()?.id as string;
-        queries.push(...deleteConnections(sid, id));
+        queries.push(...deleteConnections(id));
         view.model.remove();
         WorkspaceLinks[view.model.id].active = false;
         update();
@@ -292,16 +284,16 @@ export function addLinkTools(
       }
     },
   });
-  let readOnly =
+  const readOnly =
     WorkspaceVocabularies[
       getVocabularyFromScheme(
         WorkspaceTerms[WorkspaceElements[WorkspaceLinks[id].source].iri]
           .inScheme
       )
     ].readOnly;
-  let tools = [verticesTool, segmentsTool];
+  const tools = [verticesTool, segmentsTool];
   if (!readOnly) tools.push(removeButton);
-  let toolsView = new joint.dia.ToolsView({
+  const toolsView = new joint.dia.ToolsView({
     tools: tools,
   });
   linkView.addTools(toolsView);

@@ -3,16 +3,11 @@ import * as joint from "jointjs";
 import {
   AppSettings,
   WorkspaceElements,
-  WorkspaceLinks,
   WorkspaceTerms,
 } from "../config/Variables";
-import {
-  getStereotypeList,
-  parsePrefix,
-  setElementShape,
-} from "./FunctionEditVars";
+import { getStereotypeList, setElementShape } from "./FunctionEditVars";
 import { Representation } from "../config/Enum";
-import { getElementShape } from "./FunctionGetVars";
+import { getElementShape, getIntrinsicTropeTypes } from "./FunctionGetVars";
 import { ElementColors } from "../config/visual/ElementColors";
 import _ from "underscore";
 
@@ -51,34 +46,11 @@ export function drawGraphElement(
     elem.prop("attrs/label/text", labels.join("\n"));
     const text: string[] = [];
     if (representation === Representation.COMPACT) {
-      Object.keys(WorkspaceLinks)
-        .filter(
-          (link) =>
-            WorkspaceLinks[link].active &&
-            WorkspaceLinks[link].source === elem.id &&
-            WorkspaceLinks[link].iri ===
-              parsePrefix("z-sgov-pojem", "má-vlastnost")
+      text.push(
+        ...getIntrinsicTropeTypes(elem.id).map(
+          (iri) => WorkspaceTerms[iri].labels[languageCode]
         )
-        .forEach((link) =>
-          text.push(
-            WorkspaceTerms[WorkspaceElements[WorkspaceLinks[link].target].iri]
-              .labels[languageCode]
-          )
-        );
-      Object.keys(WorkspaceLinks)
-        .filter(
-          (link) =>
-            WorkspaceLinks[link].active &&
-            WorkspaceLinks[link].target === elem.id &&
-            WorkspaceLinks[link].iri ===
-              parsePrefix("z-sgov-pojem", "je-vlastností")
-        )
-        .forEach((link) =>
-          text.push(
-            WorkspaceTerms[WorkspaceElements[WorkspaceLinks[link].source].iri]
-              .labels[languageCode]
-          )
-        );
+      );
     }
     elem.prop("attrs/labelAttrs/text", _.uniq(text).join("\n"));
     const width =

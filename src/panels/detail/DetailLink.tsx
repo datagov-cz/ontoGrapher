@@ -17,13 +17,17 @@ import { ResizableBox } from "react-resizable";
 import { graph } from "../../graph/Graph";
 import DescriptionTabs from "./components/DescriptionTabs";
 import {
+  getElemFromIRI,
   getLabelOrBlank,
   getLinkOrVocabElem,
   getUnderlyingFullConnections,
   getVocabularyFromScheme,
 } from "../../function/FunctionGetVars";
 import { setLabels } from "../../function/FunctionGraph";
-import { parsePrefix } from "../../function/FunctionEditVars";
+import {
+  initLanguageObject,
+  parsePrefix,
+} from "../../function/FunctionEditVars";
 import { Cardinality } from "../../datatypes/Cardinality";
 import { LinkType, Representation } from "../../config/Enum";
 import { Locale } from "../../config/Locale";
@@ -31,13 +35,12 @@ import { unHighlightCell } from "../../function/FunctionDraw";
 import { updateProjectLink } from "../../queries/update/UpdateLinkQueries";
 import { updateConnections } from "../../queries/update/UpdateConnectionQueries";
 import AltLabelTable from "./components/AltLabelTable";
-import App from "../../main/App";
+import { updateProjectElement } from "../../queries/update/UpdateElementQueries";
 
 interface Props {
   projectLanguage: string;
   save: (id: string) => void;
   performTransaction: (...queries: string[]) => void;
-  handleWidth: Function;
   error: boolean;
   updateDetailPanel: Function;
 }
@@ -63,7 +66,7 @@ export default class DetailLink extends React.Component<Props, State> {
       sourceCardinality: "0",
       targetCardinality: "0",
       inputAltLabels: [],
-      selectedLabel: {},
+      selectedLabel: initLanguageObject(""),
       newAltInput: "",
       changes: false,
       readOnly: false,
@@ -118,6 +121,7 @@ export default class DetailLink extends React.Component<Props, State> {
         (card) =>
           card.getString() === WorkspaceLinks[id].targetCardinality.getString()
       );
+      const elem = getElemFromIRI(WorkspaceLinks[id].iri);
       this.setState({
         sourceCardinality:
           sourceCardinality === -1 ? "0" : sourceCardinality.toString(10),
@@ -130,6 +134,10 @@ export default class DetailLink extends React.Component<Props, State> {
             ? WorkspaceTerms[WorkspaceLinks[id].iri].altLabels
             : [],
         changes: false,
+        selectedLabel: elem
+          ? WorkspaceElements[elem].selectedLabel
+          : initLanguageObject(""),
+        newAltInput: "",
         readOnly:
           WorkspaceVocabularies[
             getVocabularyFromScheme(
@@ -174,47 +182,63 @@ export default class DetailLink extends React.Component<Props, State> {
           CardinalityPool[parseInt(this.state.targetCardinality, 10)];
         const link = graph.getLinks().find((link) => link.id === this.state.id);
         if (link) {
-          setLabels(
-            link,
-            getLinkOrVocabElem(this.state.iri).labels[
-              this.props.projectLanguage
-            ]
-          );
-          const underlyingConnections = getUnderlyingFullConnections(link);
-          if (underlyingConnections) {
-            const sourceCard =
-              CardinalityPool[parseInt(this.state.sourceCardinality, 10)];
-            const targetCard =
-              CardinalityPool[parseInt(this.state.targetCardinality, 10)];
-            WorkspaceLinks[underlyingConnections.src].sourceCardinality =
-              new Cardinality(
-                sourceCard.getFirstCardinality(),
-                sourceCard.getFirstCardinality()
-              );
-            WorkspaceLinks[underlyingConnections.src].targetCardinality =
-              new Cardinality(
-                sourceCard.getSecondCardinality(),
-                sourceCard.getSecondCardinality()
-              );
-            WorkspaceLinks[underlyingConnections.tgt].sourceCardinality =
-              new Cardinality(
-                targetCard.getFirstCardinality(),
-                targetCard.getFirstCardinality()
-              );
-            WorkspaceLinks[underlyingConnections.tgt].targetCardinality =
-              new Cardinality(
-                targetCard.getSecondCardinality(),
-                targetCard.getSecondCardinality()
-              );
-            queries.push(
-              updateProjectLink(
-                true,
-                underlyingConnections.src,
-                underlyingConnections.tgt
-              ),
-              updateConnections(underlyingConnections.src),
-              updateConnections(underlyingConnections.tgt)
+          if (AppSettings.representation === Representation.FULL)
+            setLabels(
+              link,
+              getLinkOrVocabElem(this.state.iri).labels[
+                this.props.projectLanguage
+              ]
             );
+          else {
+            const elem = getElemFromIRI(this.state.iri);
+            if (elem) {
+              WorkspaceElements[elem].selectedLabel = this.state.selectedLabel;
+              WorkspaceTerms[WorkspaceElements[elem].iri].altLabels =
+                this.state.inputAltLabels;
+              setLabels(
+                link,
+                WorkspaceElements[elem].selectedLabel[
+                  this.props.projectLanguage
+                ]
+              );
+              queries.push(updateProjectElement(true, elem));
+            }
+            const underlyingConnections = getUnderlyingFullConnections(link);
+            if (underlyingConnections) {
+              const sourceCard =
+                CardinalityPool[parseInt(this.state.sourceCardinality, 10)];
+              const targetCard =
+                CardinalityPool[parseInt(this.state.targetCardinality, 10)];
+              WorkspaceLinks[underlyingConnections.src].sourceCardinality =
+                new Cardinality(
+                  sourceCard.getFirstCardinality(),
+                  sourceCard.getFirstCardinality()
+                );
+              WorkspaceLinks[underlyingConnections.src].targetCardinality =
+                new Cardinality(
+                  sourceCard.getSecondCardinality(),
+                  sourceCard.getSecondCardinality()
+                );
+              WorkspaceLinks[underlyingConnections.tgt].sourceCardinality =
+                new Cardinality(
+                  targetCard.getFirstCardinality(),
+                  targetCard.getFirstCardinality()
+                );
+              WorkspaceLinks[underlyingConnections.tgt].targetCardinality =
+                new Cardinality(
+                  targetCard.getSecondCardinality(),
+                  targetCard.getSecondCardinality()
+                );
+              queries.push(
+                updateProjectLink(
+                  true,
+                  underlyingConnections.src,
+                  underlyingConnections.tgt
+                ),
+                updateConnections(underlyingConnections.src),
+                updateConnections(underlyingConnections.tgt)
+              );
+            }
           }
           queries.push(updateProjectLink(true, this.state.id));
         }
@@ -235,11 +259,6 @@ export default class DetailLink extends React.Component<Props, State> {
           axis={"x"}
           handleSize={[8, 8]}
           resizeHandles={["sw"]}
-          onResizeStop={() => {
-            const elem = document.querySelector(".details");
-            if (elem)
-              this.props.handleWidth(elem.getBoundingClientRect().width);
-          }}
           className={"details" + (this.props.error ? " disabled" : "")}
         >
           <div className={this.props.error ? " disabled" : ""}>
@@ -250,7 +269,10 @@ export default class DetailLink extends React.Component<Props, State> {
                 this.props.updateDetailPanel();
               }}
             >
-              <span role="img" aria-label={""}>
+              <span
+                role="img"
+                aria-label={"Remove read-only term from workspace"}
+              >
                 ➖
               </span>
             </button>
@@ -426,14 +448,13 @@ export default class DetailLink extends React.Component<Props, State> {
                         <AltLabelTable
                           labels={this.state.inputAltLabels}
                           readOnly={
-                            true
-                            // WorkspaceVocabularies[
-                            //   getVocabularyFromScheme(
-                            //     WorkspaceTerms[
-                            //       WorkspaceElements[this.state.id].iri
-                            //     ].inScheme
-                            //   )
-                            // ].readOnly
+                            WorkspaceVocabularies[
+                              getVocabularyFromScheme(
+                                WorkspaceTerms[
+                                  WorkspaceLinks[this.state.id].iri
+                                ].inScheme
+                              )
+                            ].readOnly
                           }
                           onEdit={(
                             textarea: string,
@@ -451,7 +472,7 @@ export default class DetailLink extends React.Component<Props, State> {
                               ) {
                                 resL[this.props.projectLanguage] =
                                   WorkspaceTerms[
-                                    WorkspaceElements[this.state.id].iri
+                                    WorkspaceLinks[this.state.id].iri
                                   ].labels[this.props.projectLanguage];
                               }
                               res.splice(i, 1);
