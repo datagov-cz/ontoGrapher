@@ -183,7 +183,7 @@ export function updateGeneralizationLink(id: string): string {
     )
     .map((conn) => qb.i(WorkspaceElements[WorkspaceLinks[conn].target].iri));
   const list = WorkspaceTerms[iri].subClassOf
-    .filter((superClass) => !(superClass in WorkspaceTerms))
+    .filter((superClass) => superClass && !(superClass in WorkspaceTerms))
     .map((superClass) => qb.i(superClass));
 
   let del = DELETE`${qb.g(contextIRI, [
