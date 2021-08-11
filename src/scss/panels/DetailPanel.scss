@@ -1,5 +1,4 @@
 .details {
-  overflow: auto;
   word-wrap: break-word;
   background-color: white;
   float: right;
@@ -11,13 +10,27 @@
     cursor: not-allowed;
   }
 
+  .detailsFlex {
+    display: flex;
+    align-items: flex-start;
+    flex-direction: column;
+    height: 100%;
+  }
+
   .disabled {
     pointer-events: none;
     opacity: 0.5;
   }
 
   .detailTitle {
-    margin: 10px 20px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .accordions {
+    flex-grow: 1;
+    overflow: auto;
+    width: 100%;
   }
 
   .lucene {

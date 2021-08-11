@@ -177,39 +177,37 @@ export default class ItemPanel extends React.Component<Props, State> {
       Object.keys(Shapes)
         .concat("unsorted")
         .forEach((type) => (result[node.scheme][type] = []));
-      if (node.open) {
-        node.elements
-          .sort((a, b) => this.sort(a, b))
-          .filter(
-            (id) =>
-              this.search(id) &&
-              (AppSettings.representation === Representation.FULL ||
-                (AppSettings.representation === Representation.COMPACT &&
-                  !(
-                    WorkspaceTerms[WorkspaceElements[id].iri].types.includes(
-                      parsePrefix("z-sgov-pojem", "typ-vztahu")
-                    ) ||
-                    WorkspaceTerms[WorkspaceElements[id].iri].types.includes(
-                      parsePrefix("z-sgov-pojem", "typ-vlastnosti")
-                    )
-                  )))
-          )
-          .forEach((elem) => {
-            const types = WorkspaceTerms[WorkspaceElements[elem].iri].types;
-            for (const key in Shapes) {
-              if (types.includes(key)) {
-                result[node.scheme][key].push(elem);
-                break;
-              }
+      node.elements
+        .sort((a, b) => this.sort(a, b))
+        .filter(
+          (id) =>
+            this.search(id) &&
+            (AppSettings.representation === Representation.FULL ||
+              (AppSettings.representation === Representation.COMPACT &&
+                !(
+                  WorkspaceTerms[WorkspaceElements[id].iri].types.includes(
+                    parsePrefix("z-sgov-pojem", "typ-vztahu")
+                  ) ||
+                  WorkspaceTerms[WorkspaceElements[id].iri].types.includes(
+                    parsePrefix("z-sgov-pojem", "typ-vlastnosti")
+                  )
+                )))
+        )
+        .forEach((elem) => {
+          const types = WorkspaceTerms[WorkspaceElements[elem].iri].types;
+          for (const key in Shapes) {
+            if (types.includes(key)) {
+              result[node.scheme][key].push(elem);
+              break;
             }
-            if (
-              !Object.values(result[node.scheme]).find((arr) =>
-                arr.includes(elem)
-              )
+          }
+          if (
+            !Object.values(result[node.scheme]).find((arr) =>
+              arr.includes(elem)
             )
-              result[node.scheme]["unsorted"].push(elem);
-          });
-      }
+          )
+            result[node.scheme]["unsorted"].push(elem);
+        });
     });
     return result;
   }
@@ -266,11 +264,10 @@ export default class ItemPanel extends React.Component<Props, State> {
         }
       }
       if (
-        (this.state.vocabs.find(
+        this.state.vocabs.find(
           (vocab) => vocab.value === getVocabularyFromScheme(node.scheme)
         ) ||
-          this.state.vocabs.length === 0) &&
-        (packageItems.length > 0 || !node.open)
+        (this.state.vocabs.length === 0 && packageItems.length > 0)
       )
         result.push(
           <PackageFolder
@@ -284,7 +281,7 @@ export default class ItemPanel extends React.Component<Props, State> {
             }
             filter={this.filter}
           >
-            {packageItems}
+            {node.open && packageItems}
           </PackageFolder>
         );
     }
