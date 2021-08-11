@@ -64,6 +64,8 @@ export const en = {
   untitled: "Untitled diagram",
   none: "",
   cancel: "Cancel",
+  modalRemovePackageItemConnectionsDescription:
+    "Warning: the term you are about to delete is connected to terms from outside the workspace with relations that cannot be deleted here. As such, these relations will remain in the database:",
   menuPanelHelp: "Help",
   zoomIn: "Zoom in",
   zoomOut: "Zoom out",
