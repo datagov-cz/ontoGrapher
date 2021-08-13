@@ -2,6 +2,13 @@ export const enChangelog: {
   [key: string]: { [key: string]: { [key: string]: string[] } };
 } = {
   "2021": {
+    "7": {
+      "28": [
+        "Expansion of compact view functionality by providing ways to manage relationships and intrinsic tropes",
+        "Added support to create new relationships in compact mode in the relationship creation modal",
+        "Added support to manage terms' intrinsic tropes in the term detail panel in compact view",
+      ],
+    },
     "6": {
       "9": [
         "Full/Compact view is now remembered for each diagram, i.e. if you set the view of a diagram to Compact and come back to it later, the view will still be be Compact",

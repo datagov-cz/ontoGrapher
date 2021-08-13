@@ -2,6 +2,13 @@ export const csChangelog: {
   [key: string]: { [key: string]: { [key: string]: string[] } };
 } = {
   "2021": {
+    "7": {
+      "28": [
+        "Rozšíření funkcionality kompaktního pohledu o vytváření vztahů a management vlastností",
+        "Při vytváření vztahů v kompaktním pohledu přibyla možnost vytvoření nového vztahu",
+        "V popisu pojmu kompaktního módu přibyla sekce s vlastnostmi, které se dají k pojmu přidávat či odebírat",
+      ],
+    },
     "6": {
       "9": [
         "Úplný/kompaktní pohled se nyní udržuje pro každý diagram, tj. pokud nastavíte pohled diagramu na kompakní, tak bude kompaktní i poté, co se k němu vrátíte",

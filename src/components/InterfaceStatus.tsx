@@ -2,6 +2,7 @@ import React from "react";
 import { OverlayTrigger, Spinner, Tooltip } from "react-bootstrap";
 import { AppSettings } from "../config/Variables";
 import { Locale } from "../config/Locale";
+import { Environment } from "../config/Environment";
 
 interface Props {
   handleStatus: Function;
@@ -23,7 +24,7 @@ export default class InterfaceStatus extends React.Component<Props, State> {
   }
 
   componentDidMount() {
-    window.setInterval(this.setStatus, 10000);
+    if (Environment.auth) window.setInterval(this.setStatus, 10000);
   }
 
   setStatus() {

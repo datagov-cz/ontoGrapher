@@ -34,7 +34,6 @@ import ModalRemoveReadOnlyItem from "./modal/ModalRemoveReadOnlyItem";
 interface Props {
   projectLanguage: string;
   performTransaction: (...queries: string[]) => void;
-  handleWidth: Function;
   updateDetailPanel: Function;
   freeze: boolean;
   update: Function;
@@ -363,7 +362,6 @@ export default class ItemPanel extends React.Component<Props, State> {
         height={1000}
         axis={"x"}
         handleSize={[8, 8]}
-        onResizeStop={(e, d) => this.props.handleWidth(d.size.width)}
       >
         <div>
           <InputGroup>
@@ -392,8 +390,8 @@ export default class ItemPanel extends React.Component<Props, State> {
             <OverlayTrigger
               placement={"right"}
               overlay={
-                <Tooltip id={`tooltipaaa`}>
-                  Seskupit výsledky do slovníků
+                <Tooltip id={`tooltipGroupSearchTerms`}>
+                  {Locale[AppSettings.viewLanguage].groupSearchTerms}
                 </Tooltip>
               }
             >

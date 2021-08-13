@@ -6,11 +6,16 @@ import {
   WorkspaceLinks,
   WorkspaceTerms,
 } from "../config/Variables";
-import { initElements, parsePrefix } from "./FunctionEditVars";
+import {
+  initElements,
+  initLanguageObject,
+  parsePrefix,
+} from "./FunctionEditVars";
 import { graph } from "../graph/Graph";
 import {
   getActiveToConnections,
   getElementShape,
+  getElemFromIRI,
   getLinkOrVocabElem,
   getNewLink,
 } from "./FunctionGetVars";
@@ -44,22 +49,23 @@ export const mvp1IRI =
 export const mvp2IRI =
   "https://slovník.gov.cz/základní/pojem/má-vztažený-prvek-2";
 
-export function nameGraphLink(cell: joint.dia.Link, languageCode: string) {
+export function nameGraphLink(
+  link: joint.dia.Link,
+  names: ReturnType<typeof initLanguageObject>,
+  languageCode: string
+) {
   if (
-    typeof cell.id === "string" &&
-    WorkspaceLinks[cell.id].type === LinkType.DEFAULT
+    typeof link.id === "string" &&
+    WorkspaceLinks[link.id].type === LinkType.DEFAULT
   ) {
-    const label = getLinkOrVocabElem(WorkspaceLinks[cell.id].iri).labels[
-      languageCode
-    ];
-    if (label) {
-      let labels = cell.labels();
+    if (names[languageCode]) {
+      const labels = link.labels();
       labels.forEach((linkLabel, i) => {
         if (!linkLabel.attrs?.text?.text?.match(/^\d|\*/)) {
-          cell.label(i, {
+          link.label(i, {
             attrs: {
               text: {
-                text: label,
+                text: names[languageCode],
               },
             },
             position: {
@@ -320,6 +326,13 @@ export function setRepresentation(
       ) {
         link.remove();
         del = true;
+      } else if (WorkspaceLinks[link.id].iri in WorkspaceTerms) {
+        const elem = getElemFromIRI(WorkspaceLinks[link.id].iri);
+        if (!elem) continue;
+        setLabels(
+          link,
+          WorkspaceElements[elem].selectedLabel[AppSettings.selectedLanguage]
+        );
       }
     }
     for (const elem of graph.getElements()) {

@@ -11,14 +11,11 @@ import {
 import { graph } from "../graph/Graph";
 import { HideButton } from "../graph/elementTool/ElemHide";
 import { ElemCreateLink } from "../graph/elementTool/ElemCreateLink";
-import NewLinkModal from "./NewLinkModal";
 import {
   getElementShape,
   getNewLink,
   getVocabularyFromScheme,
 } from "../function/FunctionGetVars";
-import NewElemModal from "./NewElemModal";
-import { PackageNode } from "../datatypes/PackageNode";
 import { highlightCell } from "../function/FunctionDraw";
 import {
   highlightElement,
@@ -27,25 +24,23 @@ import {
   updateDiagramPosition,
   zoomDiagram,
 } from "../function/FunctionDiagram";
+import { updateProjectElementDiagram } from "../queries/update/UpdateElementQueries";
 import {
-  updateProjectElement,
-  updateProjectElementDiagram,
-} from "../queries/update/UpdateElementQueries";
-import {
-  createNewConcept,
   getElementToolPosition,
   isElementPositionOutdated,
   moveElements,
   putElementsOnCanvas,
 } from "../function/FunctionElem";
-import {
-  addLinkTools,
-  saveNewLink,
-  updateVertices,
-} from "../function/FunctionLink";
+import { addLinkTools, updateVertices } from "../function/FunctionLink";
 import { ElementColors } from "../config/visual/ElementColors";
 import hotkeys from "hotkeys-js";
 import * as _ from "lodash";
+import {
+  ElemCreationConfiguration,
+  LinkCreationConfiguration,
+} from "../components/modals/CreationModals";
+import { ElemCreationStrategy } from "../config/Enum";
+import { Locale } from "../config/Locale";
 
 interface Props {
   projectLanguage: string;
@@ -53,13 +48,13 @@ interface Props {
   updateDetailPanel: (id?: string) => void;
   freeze: boolean;
   performTransaction: (...queries: string[]) => void;
+  handleCreation: (
+    configuration: LinkCreationConfiguration | ElemCreationConfiguration
+  ) => void;
   handleStatus: Function;
 }
 
-interface State {
-  modalAddElem: boolean;
-  modalAddLink: boolean;
-}
+interface State {}
 
 export var paper: joint.dia.Paper;
 
@@ -67,24 +62,18 @@ export default class DiagramCanvas extends React.Component<Props, State> {
   private readonly canvasRef: React.RefObject<HTMLDivElement>;
   private drag: { x: any; y: any } | undefined;
   private newLink: boolean;
-  private sid: string | undefined;
-  private tid: string | undefined;
-  private newConceptEvent: { x: number; y: number };
+  private sid: string;
+  private tid: string;
   private drawStart: joint.g.Rect | undefined;
 
   constructor(props: Props) {
     super(props);
-    this.state = {
-      modalAddElem: false,
-      modalAddLink: false,
-    };
     this.canvasRef = React.createRef();
     this.componentDidMount = this.componentDidMount.bind(this);
     this.drag = undefined;
     this.newLink = false;
-    this.sid = undefined;
-    this.tid = undefined;
-    this.newConceptEvent = { x: 0, y: 0 };
+    this.sid = "";
+    this.tid = "";
     this.drawStart = undefined;
     this.createNewLink = this.createNewLink.bind(this);
   }
@@ -97,18 +86,6 @@ export default class DiagramCanvas extends React.Component<Props, State> {
         highlightElement(element.id, ElementColors.select);
       }
     });
-  }
-
-  saveNewLink(iri: string) {
-    if (this.sid && this.tid) {
-      this.props.performTransaction(...saveNewLink(iri, this.sid, this.tid));
-      this.props.updateElementPanel();
-      this.props.updateDetailPanel();
-      this.sid = undefined;
-      this.tid = undefined;
-      this.newLink = false;
-      resetDiagramSelection();
-    }
   }
 
   hideElements(cells: joint.dia.Cell[]) {
@@ -171,8 +148,13 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                 .readOnly
           )
         ) {
-          this.setState({ modalAddElem: true });
-          this.newConceptEvent = { x: evt.clientX, y: evt.clientY };
+          this.props.handleCreation({
+            strategy: ElemCreationStrategy.DEFAULT,
+            position: { x: evt.clientX, y: evt.clientY },
+            pkg: PackageRoot,
+            header: Locale[AppSettings.viewLanguage].modalNewElemTitle,
+            connections: [],
+          });
         } else this.newLink = false;
         resetDiagramSelection();
         this.props.updateDetailPanel();
@@ -206,7 +188,8 @@ export default class DiagramCanvas extends React.Component<Props, State> {
             : highlightElement(cellView.model.id);
         } else if (this.newLink) {
           this.tid = cellView.model.id;
-          this.setState({ modalAddLink: true });
+          this.props.handleCreation({ sourceID: this.sid, targetID: this.tid });
+          this.newLink = false;
         }
       },
       /**
@@ -531,46 +514,6 @@ export default class DiagramCanvas extends React.Component<Props, State> {
                 this.props.updateElementPanel();
               }
             );
-          }}
-        />
-        <NewLinkModal
-          projectLanguage={this.props.projectLanguage}
-          modal={this.state.modalAddLink}
-          sid={this.sid}
-          tid={this.tid}
-          close={(selectedLink: string) => {
-            this.setState({ modalAddLink: false });
-            if (selectedLink && this.sid && this.tid)
-              this.saveNewLink(selectedLink);
-            else {
-              this.newLink = false;
-              resetDiagramSelection();
-            }
-          }}
-        />
-        <NewElemModal
-          projectLanguage={this.props.projectLanguage}
-          modal={this.state.modalAddElem}
-          close={(
-            conceptName?: { [key: string]: string },
-            pkg?: PackageNode
-          ) => {
-            this.setState({ modalAddElem: false });
-            if (conceptName && pkg) {
-              const iri = createNewConcept(
-                this.newConceptEvent,
-                conceptName,
-                AppSettings.defaultLanguage,
-                pkg
-              );
-              this.props.updateElementPanel();
-              this.props.performTransaction(
-                updateProjectElement(true, iri),
-                updateProjectElementDiagram(AppSettings.selectedDiagram, iri)
-              );
-            } else {
-              this.newConceptEvent = { x: 0, y: 0 };
-            }
           }}
         />
       </div>

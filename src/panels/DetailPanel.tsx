@@ -9,10 +9,11 @@ import { resizeElem } from "../function/FunctionElem";
 interface Props {
   projectLanguage: string;
   update: Function;
-  handleWidth: Function;
   performTransaction: (...queries: string[]) => void;
   freeze: boolean;
+  handleCreation: Function;
   updateDetailPanel: Function;
+  updateDiagramCanvas: Function;
 }
 
 interface State {
@@ -75,14 +76,14 @@ export default class DetailPanel extends React.Component<Props, State> {
           projectLanguage={this.props.projectLanguage}
           save={this.save}
           ref={this.detailElem}
-          handleWidth={this.props.handleWidth}
           performTransaction={this.props.performTransaction}
           error={this.props.freeze}
           updateDetailPanel={this.props.updateDetailPanel}
+          updateDiagramCanvas={this.props.updateDiagramCanvas}
+          handleCreation={this.props.handleCreation}
         />
         <DetailLink
           error={this.props.freeze}
-          handleWidth={this.props.handleWidth}
           projectLanguage={this.props.projectLanguage}
           performTransaction={this.props.performTransaction}
           save={this.save}
