@@ -22,6 +22,8 @@ export const cs: { [Property in keyof typeof en]: string } = {
     "Chyba autentikace. Prosím, kontaktujte serverového administrátora.",
   authenticationUpdateError:
     "Chyba autentikace. Prosím, načtěte stránku znovu.",
+  modalRemovePackageItemConnectionsDescription:
+    "Varování: pojem, který se chystáte smazat, je spojen s pojmy mimo pracovní prostor relacemi, které zde nelze smazat. Tyto relace proto zůstanou v databázi:",
   authenticationExpired: "Autentikace vypršela. Prosím, načtěte stránku znovu.",
   authenticationTimeout: "Dotaz na autentikační server vypršel.",
   logout: "Odhlásit",

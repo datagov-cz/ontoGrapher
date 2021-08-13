@@ -472,6 +472,7 @@ export default class ItemPanel extends React.Component<Props, State> {
               this.props.update();
             }}
             performTransaction={this.props.performTransaction}
+            projectLanguage={this.props.projectLanguage}
           />
           <ModalRemoveReadOnlyItem
             modal={this.state.modalRemoveReadOnlyItem}

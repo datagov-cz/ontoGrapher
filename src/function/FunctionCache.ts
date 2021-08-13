@@ -22,15 +22,16 @@ import { PackageNode } from "../datatypes/PackageNode";
 import { Restriction } from "../datatypes/Restriction";
 
 export async function getCacheConnections(
-  iri: string
+  iri: string,
+  representation: Representation = AppSettings.representation
 ): Promise<CacheConnection[]> {
   const subClasses = (
     await fetchSubClasses(AppSettings.contextEndpoint, iri)
   ).concat(WorkspaceTerms[iri].subClassOf);
   let connections: CacheConnection[] = [];
-  if (AppSettings.representation === Representation.FULL) {
+  if (representation === Representation.FULL) {
     connections = connections.concat(await getFullConnections(iri, subClasses));
-  } else if (AppSettings.representation === Representation.COMPACT) {
+  } else if (representation === Representation.COMPACT) {
     connections = connections.concat(
       await getCompactConnections(iri, subClasses)
     );

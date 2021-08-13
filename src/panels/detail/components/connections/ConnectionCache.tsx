@@ -13,11 +13,11 @@ import { CacheConnection } from "../../../../types/CacheConnection";
 interface Props {
   connection: CacheConnection;
   projectLanguage: string;
-  update: Function;
+  update?: Function;
   elemID: string;
   selected: boolean;
   selection: string[];
-  updateSelection: (ids: string[]) => void;
+  updateSelection?: (ids: string[]) => void;
 }
 
 interface State {}
@@ -83,17 +83,23 @@ export default class ConnectionCache extends React.Component<Props, State> {
         }
       >
         <Connection
-          onDragStart={(event: DragEvent) =>
-            this.transferConnectionToEvent(event)
-          }
-          onDragEnd={() => this.props.update()}
-          onClick={() =>
-            this.props.updateSelection(
-              AppSettings.representation === Representation.FULL
-                ? [this.props.connection.target.iri]
-                : [this.props.connection.target.iri, this.props.connection.link]
-            )
-          }
+          onDragStart={(event: DragEvent) => {
+            if (this.props.update) this.transferConnectionToEvent(event);
+          }}
+          onDragEnd={() => {
+            if (this.props.update) this.props.update();
+          }}
+          onClick={() => {
+            if (this.props.updateSelection)
+              this.props.updateSelection(
+                AppSettings.representation === Representation.FULL
+                  ? [this.props.connection.target.iri]
+                  : [
+                      this.props.connection.target.iri,
+                      this.props.connection.link,
+                    ]
+              );
+          }}
           selected={this.props.selected}
           linkLabel={getLabelOrBlank(
             this.props.connection.linkLabels,
