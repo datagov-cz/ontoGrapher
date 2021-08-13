@@ -264,8 +264,7 @@ export default class App extends React.Component<
               Locale[AppSettings.viewLanguage].ontoGrapher;
             setSchemeColors(AppSettings.viewColorPool);
             changeDiagrams(diagram);
-            this.forceUpdate();
-            this.itemPanel.current?.forceUpdate();
+            this.itemPanel.current?.update();
             this.handleStatus(
               false,
               Locale[AppSettings.viewLanguage].workspaceReady,

@@ -261,176 +261,185 @@ export default class DetailLink extends React.Component<Props, State> {
           resizeHandles={["sw"]}
           className={"details" + (this.props.error ? " disabled" : "")}
         >
-          <div className={this.props.error ? " disabled" : ""}>
-            <button
-              className={"buttonlink close nounderline"}
-              onClick={() => {
-                unHighlightCell(this.state.id);
-                this.props.updateDetailPanel();
-              }}
-            >
-              <span
-                role="img"
-                aria-label={"Remove read-only term from workspace"}
+          <div className={"detailsFlex"}>
+            <div className={"detailTitle"}>
+              <button
+                className={"buttonlink close nounderline"}
+                onClick={() => {
+                  unHighlightCell(this.state.id);
+                  this.props.updateDetailPanel();
+                }}
               >
-                ➖
-              </span>
-            </button>
-            <h3>
-              <IRILink
-                label={
-                  getLinkOrVocabElem(this.state.iri).labels[
-                    this.props.projectLanguage
-                  ]
-                }
-                iri={this.state.iri}
-              />
-            </h3>
-            <Accordion defaultActiveKey={"0"}>
-              <Card>
-                <Card.Header>
-                  <Accordion.Toggle as={Button} variant={"link"} eventKey={"0"}>
-                    {Locale[AppSettings.viewLanguage].description}
-                  </Accordion.Toggle>
-                </Card.Header>
-                <Accordion.Collapse eventKey={"0"}>
-                  <Card.Body>
-                    {WorkspaceLinks[this.state.id].type ===
-                      LinkType.DEFAULT && (
-                      <TableList>
-                        <tr>
-                          <td className={"first"}>
-                            <span>
-                              {
-                                Locale[AppSettings.viewLanguage]
-                                  .sourceCardinality
-                              }
-                            </span>
-                          </td>
-                          <td className={"last"}>
-                            {!this.state.readOnly ? (
-                              <Form.Control
-                                as="select"
-                                value={this.state.sourceCardinality}
-                                onChange={(
-                                  event: React.ChangeEvent<HTMLSelectElement>
-                                ) => {
-                                  this.setState({
-                                    sourceCardinality:
-                                      event.currentTarget.value,
-                                    changes: true,
-                                  });
-                                }}
-                              >
-                                {CardinalityPool.map((card, i) => (
-                                  <option key={i} value={i.toString(10)}>
-                                    {card.getString()}
-                                  </option>
-                                ))}
-                              </Form.Control>
-                            ) : (
-                              CardinalityPool[
-                                parseInt(this.state.sourceCardinality, 10)
-                              ].getString()
-                            )}
-                          </td>
-                        </tr>
-
-                        <tr>
-                          <td className={"first"}>
-                            <span>
-                              {
-                                Locale[AppSettings.viewLanguage]
-                                  .targetCardinality
-                              }
-                            </span>
-                          </td>
-                          <td className={"last"}>
-                            {!this.state.readOnly ? (
-                              <Form.Control
-                                as="select"
-                                value={this.state.targetCardinality}
-                                onChange={(
-                                  event: React.ChangeEvent<HTMLSelectElement>
-                                ) => {
-                                  this.setState({
-                                    targetCardinality:
-                                      event.currentTarget.value,
-                                    changes: true,
-                                  });
-                                }}
-                              >
-                                {CardinalityPool.map((card, i) => (
-                                  <option key={i} value={i.toString(10)}>
-                                    {card.getString()}
-                                  </option>
-                                ))}
-                              </Form.Control>
-                            ) : (
-                              CardinalityPool[
-                                parseInt(this.state.targetCardinality, 10)
-                              ].getString()
-                            )}
-                          </td>
-                        </tr>
-                        <tr>
-                          <td className={"first"}>
-                            <span>
-                              {Locale[AppSettings.viewLanguage].linkType}
-                            </span>
-                          </td>
-                          {AppSettings.representation === Representation.FULL &&
-                          !this.state.readOnly ? (
-                            <td className={"last"}>
-                              <Form.Control
-                                as="select"
-                                value={this.state.iri}
-                                onChange={(event) => {
-                                  this.setState({
-                                    iri: event.currentTarget.value,
-                                    changes: true,
-                                  });
-                                }}
-                              >
-                                {this.prepareLinkOptions()}
-                              </Form.Control>
+                <span
+                  role="img"
+                  aria-label={"Remove read-only term from workspace"}
+                >
+                  ➖
+                </span>
+              </button>
+              <h3>
+                <IRILink
+                  label={
+                    getLinkOrVocabElem(this.state.iri).labels[
+                      this.props.projectLanguage
+                    ]
+                  }
+                  iri={this.state.iri}
+                />
+              </h3>
+            </div>
+            <div className={"accordions"}>
+              <Accordion defaultActiveKey={"0"}>
+                <Card>
+                  <Card.Header>
+                    <Accordion.Toggle
+                      as={Button}
+                      variant={"link"}
+                      eventKey={"0"}
+                    >
+                      {Locale[AppSettings.viewLanguage].description}
+                    </Accordion.Toggle>
+                  </Card.Header>
+                  <Accordion.Collapse eventKey={"0"}>
+                    <Card.Body>
+                      {WorkspaceLinks[this.state.id].type ===
+                        LinkType.DEFAULT && (
+                        <TableList>
+                          <tr>
+                            <td className={"first"}>
+                              <span>
+                                {
+                                  Locale[AppSettings.viewLanguage]
+                                    .sourceCardinality
+                                }
+                              </span>
                             </td>
-                          ) : (
-                            <IRIlabel
-                              label={getLabelOrBlank(
-                                getLinkOrVocabElem(this.state.iri).labels,
-                                this.props.projectLanguage
+                            <td className={"last"}>
+                              {!this.state.readOnly ? (
+                                <Form.Control
+                                  as="select"
+                                  value={this.state.sourceCardinality}
+                                  onChange={(
+                                    event: React.ChangeEvent<HTMLSelectElement>
+                                  ) => {
+                                    this.setState({
+                                      sourceCardinality:
+                                        event.currentTarget.value,
+                                      changes: true,
+                                    });
+                                  }}
+                                >
+                                  {CardinalityPool.map((card, i) => (
+                                    <option key={i} value={i.toString(10)}>
+                                      {card.getString()}
+                                    </option>
+                                  ))}
+                                </Form.Control>
+                              ) : (
+                                CardinalityPool[
+                                  parseInt(this.state.sourceCardinality, 10)
+                                ].getString()
                               )}
-                              iri={this.state.iri}
-                            />
-                          )}
-                        </tr>
+                            </td>
+                          </tr>
+
+                          <tr>
+                            <td className={"first"}>
+                              <span>
+                                {
+                                  Locale[AppSettings.viewLanguage]
+                                    .targetCardinality
+                                }
+                              </span>
+                            </td>
+                            <td className={"last"}>
+                              {!this.state.readOnly ? (
+                                <Form.Control
+                                  as="select"
+                                  value={this.state.targetCardinality}
+                                  onChange={(
+                                    event: React.ChangeEvent<HTMLSelectElement>
+                                  ) => {
+                                    this.setState({
+                                      targetCardinality:
+                                        event.currentTarget.value,
+                                      changes: true,
+                                    });
+                                  }}
+                                >
+                                  {CardinalityPool.map((card, i) => (
+                                    <option key={i} value={i.toString(10)}>
+                                      {card.getString()}
+                                    </option>
+                                  ))}
+                                </Form.Control>
+                              ) : (
+                                CardinalityPool[
+                                  parseInt(this.state.targetCardinality, 10)
+                                ].getString()
+                              )}
+                            </td>
+                          </tr>
+                          <tr>
+                            <td className={"first"}>
+                              <span>
+                                {Locale[AppSettings.viewLanguage].linkType}
+                              </span>
+                            </td>
+                            {AppSettings.representation ===
+                              Representation.FULL && !this.state.readOnly ? (
+                              <td className={"last"}>
+                                <Form.Control
+                                  as="select"
+                                  value={this.state.iri}
+                                  onChange={(event) => {
+                                    this.setState({
+                                      iri: event.currentTarget.value,
+                                      changes: true,
+                                    });
+                                  }}
+                                >
+                                  {this.prepareLinkOptions()}
+                                </Form.Control>
+                              </td>
+                            ) : (
+                              <IRIlabel
+                                label={getLabelOrBlank(
+                                  getLinkOrVocabElem(this.state.iri).labels,
+                                  this.props.projectLanguage
+                                )}
+                                iri={this.state.iri}
+                              />
+                            )}
+                          </tr>
+                        </TableList>
+                      )}
+                      <h5>
+                        {
+                          <IRILink
+                            label={
+                              Locale[AppSettings.viewLanguage]
+                                .detailPanelPrefLabel
+                            }
+                            iri={
+                              "http://www.w3.org/2004/02/skos/core#prefLabel"
+                            }
+                          />
+                        }
+                      </h5>
+                      <TableList>
+                        {Object.keys(
+                          getLinkOrVocabElem(this.state.iri).labels
+                        ).map((lang) => (
+                          <tr key={lang}>
+                            <td>
+                              {getLinkOrVocabElem(this.state.iri).labels[lang]}
+                            </td>
+                            <td>{Languages[lang]}</td>
+                          </tr>
+                        ))}
                       </TableList>
-                    )}
-                    <h5>
-                      {
-                        <IRILink
-                          label={
-                            Locale[AppSettings.viewLanguage]
-                              .detailPanelPrefLabel
-                          }
-                          iri={"http://www.w3.org/2004/02/skos/core#prefLabel"}
-                        />
-                      }
-                    </h5>
-                    <TableList>
-                      {Object.keys(
-                        getLinkOrVocabElem(this.state.iri).labels
-                      ).map((lang) => (
-                        <tr key={lang}>
-                          <td>
-                            {getLinkOrVocabElem(this.state.iri).labels[lang]}
-                          </td>
-                          <td>{Languages[lang]}</td>
-                        </tr>
-                      ))}
-                    </TableList>
-                    {AppSettings.representation === Representation.COMPACT && (
+                      {AppSettings.representation === Representation.COMPACT && (
                       <div>
                         <h5>
                           {
@@ -565,34 +574,36 @@ export default class DetailLink extends React.Component<Props, State> {
                       ))}
                     </TableList>
 
-                    {Object.keys(getLinkOrVocabElem(this.state.iri).definitions)
-                      .length > 0 && (
-                      <div>
-                        <h5>
-                          {
-                            <IRILink
-                              label={
-                                Locale[AppSettings.viewLanguage]
-                                  .detailPanelDefinition
-                              }
-                              iri={
-                                "http://www.w3.org/2004/02/skos/core#definition"
-                              }
-                            />
-                          }
-                        </h5>
-                        <DescriptionTabs
-                          descriptions={
-                            getLinkOrVocabElem(this.state.iri).definitions
-                          }
-                          readOnly={true}
-                        />
-                      </div>
-                    )}
-                  </Card.Body>
-                </Accordion.Collapse>
-              </Card>
-            </Accordion>
+                      {Object.keys(
+                        getLinkOrVocabElem(this.state.iri).definitions
+                      ).length > 0 && (
+                        <div>
+                          <h5>
+                            {
+                              <IRILink
+                                label={
+                                  Locale[AppSettings.viewLanguage]
+                                    .detailPanelDefinition
+                                }
+                                iri={
+                                  "http://www.w3.org/2004/02/skos/core#definition"
+                                }
+                              />
+                            }
+                          </h5>
+                          <DescriptionTabs
+                            descriptions={
+                              getLinkOrVocabElem(this.state.iri).definitions
+                            }
+                            readOnly={true}
+                          />
+                        </div>
+                      )}
+                    </Card.Body>
+                  </Accordion.Collapse>
+                </Card>
+              </Accordion>
+            </div>
           </div>
         </ResizableBox>
       )
