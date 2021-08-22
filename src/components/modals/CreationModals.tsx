@@ -1,7 +1,10 @@
 import React, { useEffect, useState } from "react";
 import NewLinkModal from "./NewLinkModal";
 import NewElemModal from "./NewElemModal";
-import { resetDiagramSelection } from "../../function/FunctionDiagram";
+import {
+  highlightElement,
+  resetDiagramSelection,
+} from "../../function/FunctionDiagram";
 import { PackageNode } from "../../datatypes/PackageNode";
 import { ElemCreationStrategy, Representation } from "../../config/Enum";
 import { createTerm } from "../../function/FunctionCreateElem";
@@ -9,6 +12,8 @@ import { saveNewLink } from "../../function/FunctionLink";
 import { AppSettings } from "../../config/Variables";
 import { setRepresentation } from "../../function/FunctionGraph";
 import { getElementPosition } from "../../function/FunctionElem";
+import { graph } from "../../graph/Graph";
+import { drawGraphElement } from "../../function/FunctionDraw";
 
 export type ElemCreationConfiguration = {
   strategy: ElemCreationStrategy;
@@ -100,6 +105,21 @@ export const CreationModals: React.FC<Props> = (props) => {
               )
             );
             setRepresentation(AppSettings.representation);
+            if (props.elemConfiguration.connections.length === 1) {
+              const elem = graph
+                .getElements()
+                .find(
+                  (elem) => elem.id === props.elemConfiguration.connections[0]
+                );
+              if (elem) {
+                drawGraphElement(
+                  elem,
+                  props.projectLanguage,
+                  AppSettings.representation
+                );
+                highlightElement(props.elemConfiguration.connections[0]);
+              }
+            }
             props.update();
           }
         }}

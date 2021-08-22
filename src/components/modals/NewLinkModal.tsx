@@ -180,8 +180,12 @@ export default class NewLinkModal extends React.Component<Props, State> {
               ) || PackageRoot,
             termName: initLanguageObject(""),
           });
-          const input = document.getElementById("newLinkInputSelect");
-          if (input) input.focus();
+          const inputLink = document.getElementById("newLinkInputSelect");
+          if (inputLink) inputLink.focus();
+          const inputElem = document.getElementById(
+            "newElemLabelInput" + this.props.projectLanguage
+          );
+          if (inputElem) inputElem.focus();
         }}
         keyboard
         onEscapeKeyDown={() => this.props.closeLink()}

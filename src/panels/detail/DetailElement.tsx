@@ -25,7 +25,11 @@ import { graph } from "../../graph/Graph";
 import StereotypeOptions from "./components/StereotypeOptions";
 import { Shapes } from "../../config/visual/Shapes";
 import { Locale } from "../../config/Locale";
-import { drawGraphElement, unHighlightCell } from "../../function/FunctionDraw";
+import {
+  drawGraphElement,
+  redrawElement,
+  unHighlightCell,
+} from "../../function/FunctionDraw";
 import AltLabelTable from "./components/AltLabelTable";
 import ConnectionList from "./components/connections/ConnectionList";
 import { updateProjectElement } from "../../queries/update/UpdateElementQueries";
@@ -389,59 +393,73 @@ export default class DetailElement extends React.Component<Props, State> {
                           value={this.state.inputTypeData}
                         />
                       </TableList>
-                      <h5>{Locale[AppSettings.viewLanguage].intrinsicTropes}</h5>
-                    <IntrinsicTropeTable
-                      iri={WorkspaceElements[this.state.id].iri}
-                      tropes={getIntrinsicTropeTypes(this.state.id)}
-                      onEdit={(id: string) => this.props.updateDetailPanel(id)}
-                      onRemove={(id: string) => {
-                        const conn = Object.keys(WorkspaceLinks).find(
-                          (link) =>
-                            WorkspaceLinks[link].active &&
-                            ((WorkspaceLinks[link].iri ===
-                              parsePrefix("z-sgov-pojem", "má-vlastnost") &&
-                              WorkspaceLinks[link].source === this.state.id &&
-                              WorkspaceLinks[link].target === id) ||
-                              (WorkspaceLinks[link].iri ===
-                                parsePrefix("z-sgov-pojem", "je-vlastností") &&
-                                WorkspaceLinks[link].source === id &&
-                                WorkspaceLinks[link].target === this.state.id))
-                        );
-                        if (conn)
-                          this.props.performTransaction(
-                            ...deleteConnections(conn)
+                      <h5>
+                        {Locale[AppSettings.viewLanguage].intrinsicTropes}
+                      </h5>
+                      <IntrinsicTropeTable
+                        iri={WorkspaceElements[this.state.id].iri}
+                        tropes={getIntrinsicTropeTypes(this.state.id)}
+                        onEdit={(id: string) =>
+                          this.props.updateDetailPanel(id)
+                        }
+                        onRemove={(id: string) => {
+                          const conn = Object.keys(WorkspaceLinks).find(
+                            (link) =>
+                              WorkspaceLinks[link].active &&
+                              ((WorkspaceLinks[link].iri ===
+                                parsePrefix("z-sgov-pojem", "má-vlastnost") &&
+                                WorkspaceLinks[link].source === this.state.id &&
+                                WorkspaceLinks[link].target === id) ||
+                                (WorkspaceLinks[link].iri ===
+                                  parsePrefix(
+                                    "z-sgov-pojem",
+                                    "je-vlastností"
+                                  ) &&
+                                  WorkspaceLinks[link].source === id &&
+                                  WorkspaceLinks[link].target ===
+                                    this.state.id))
                           );
-                        this.redrawElement();
-                      }}
-                      onAdd={(id: string) => {
-                        const link = getNewLink(LinkType.DEFAULT);
-                        this.props.performTransaction(
-                          ...updateConnection(
+                          if (conn)
+                            this.props.performTransaction(
+                              ...deleteConnections(conn)
+                            );
+                          redrawElement(
                             this.state.id,
-                            id,
-                            link.id as string,
-                            LinkType.DEFAULT,
-                            parsePrefix("z-sgov-pojem", "má-vlastnost"),
-                            true
-                          )
-                        );
-                        this.redrawElement();
-                      }}
-                      onCreate={() => {
-                        this.props.handleCreation(this.state.id);
-                        this.redrawElement();
-                      }}
-                      readOnly={
-                        WorkspaceVocabularies[
-                          getVocabularyFromScheme(
-                            WorkspaceTerms[WorkspaceElements[this.state.id].iri]
-                              .inScheme
-                          )
-                        ].readOnly
-                      }
-                      projectLanguage={this.props.projectLanguage}
-                    />
-                    <h5>
+                            this.props.projectLanguage
+                          );
+                        }}
+                        onAdd={(id: string) => {
+                          const link = getNewLink(LinkType.DEFAULT);
+                          this.props.performTransaction(
+                            ...updateConnection(
+                              this.state.id,
+                              id,
+                              link.id as string,
+                              LinkType.DEFAULT,
+                              parsePrefix("z-sgov-pojem", "má-vlastnost"),
+                              true
+                            )
+                          );
+                          redrawElement(
+                            this.state.id,
+                            this.props.projectLanguage
+                          );
+                        }}
+                        onCreate={() => {
+                          this.props.handleCreation(this.state.id);
+                        }}
+                        readOnly={
+                          WorkspaceVocabularies[
+                            getVocabularyFromScheme(
+                              WorkspaceTerms[
+                                WorkspaceElements[this.state.id].iri
+                              ].inScheme
+                            )
+                          ].readOnly
+                        }
+                        projectLanguage={this.props.projectLanguage}
+                      />
+                      <h5>
                         {
                           <IRILink
                             label={
