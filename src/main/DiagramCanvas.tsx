@@ -16,7 +16,7 @@ import {
   getNewLink,
   getVocabularyFromScheme,
 } from "../function/FunctionGetVars";
-import { highlightCell } from "../function/FunctionDraw";
+import { highlightCell, unHighlightAll } from "../function/FunctionDraw";
 import {
   highlightElement,
   resetDiagramSelection,
@@ -82,9 +82,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
     this.newLink = true;
     this.sid = id;
     graph.getElements().forEach((element) => {
-      if (typeof element.id === "string") {
-        highlightElement(element.id, ElementColors.select);
-      }
+      highlightCell(element.id as string, ElementColors.select);
     });
   }
 
@@ -141,7 +139,6 @@ export default class DiagramCanvas extends React.Component<Props, State> {
       "blank:contextmenu": (evt) => {
         evt.preventDefault();
         if (
-          !this.newLink &&
           PackageRoot.children.find(
             (pkg) =>
               !WorkspaceVocabularies[getVocabularyFromScheme(pkg.scheme)]
@@ -155,7 +152,9 @@ export default class DiagramCanvas extends React.Component<Props, State> {
             header: Locale[AppSettings.viewLanguage].modalNewElemTitle,
             connections: [],
           });
-        } else this.newLink = false;
+        }
+        this.newLink = false;
+        unHighlightAll();
         resetDiagramSelection();
         this.props.updateDetailPanel();
       },
@@ -190,6 +189,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
           this.tid = cellView.model.id;
           this.props.handleCreation({ sourceID: this.sid, targetID: this.tid });
           this.newLink = false;
+          unHighlightAll();
         }
       },
       /**
@@ -396,6 +396,10 @@ export default class DiagramCanvas extends React.Component<Props, State> {
         if (evt.button === 0 && !evt.shiftKey) {
           this.props.updateDetailPanel();
           resetDiagramSelection();
+          if (this.newLink) {
+            this.newLink = false;
+            unHighlightAll();
+          }
           const { rect, bbox } = evt.data;
           if (rect && bbox) {
             rect.remove();
@@ -421,6 +425,10 @@ export default class DiagramCanvas extends React.Component<Props, State> {
        */
       "link:pointerclick": (linkView) => {
         resetDiagramSelection();
+        if (this.newLink) {
+          this.newLink = false;
+          unHighlightAll();
+        }
         AppSettings.selectedLink = linkView.model.id;
         addLinkTools(
           linkView,

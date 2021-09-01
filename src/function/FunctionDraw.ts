@@ -86,7 +86,7 @@ export function highlightCell(
   id: string,
   color: string = ElementColors.detail
 ) {
-  let cell = graph.getCell(id);
+  const cell = graph.getCell(id);
   if (!cell) return;
   if (cell.isLink()) {
     cell.attr({ line: { stroke: color } });
@@ -99,7 +99,7 @@ export function unHighlightCell(
   id: string,
   color: string = ElementColors.default
 ) {
-  let cell = graph.getCell(id);
+  const cell = graph.getCell(id);
   if (!cell) return;
   if (cell.isLink()) {
     cell.attr({ line: { stroke: color } });
@@ -113,10 +113,13 @@ export function unHighlightCell(
 }
 
 export function unHighlightAll() {
-  for (let cell of graph.getCells()) {
-    if (typeof cell.id === "string") {
-      unHighlightCell(cell.id);
-    }
+  for (let cell of graph.getElements()) {
+    cell.attr({
+      [getElementShape(cell.id)]: { stroke: ElementColors.default },
+    });
+  }
+  for (let cell of graph.getLinks()) {
+    cell.attr({ line: { stroke: ElementColors.default } });
   }
 }
 
@@ -126,5 +129,12 @@ export function unHighlightSelected(ids: string[]) {
     if (cell && typeof cell.id === "string") {
       unHighlightCell(cell.id);
     }
+  }
+}
+
+export function redrawElement(id: string, language: string) {
+  const elem = graph.getElements().find((elem) => elem.id === id);
+  if (elem) {
+    drawGraphElement(elem, language, AppSettings.representation);
   }
 }
