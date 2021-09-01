@@ -67,9 +67,10 @@ export default class PackageItem extends React.Component<Props, State> {
   handleClick(event: React.MouseEvent<HTMLDivElement>) {
     event.stopPropagation();
     if (event.ctrlKey) {
-      if (AppSettings.selectedElements.includes(this.props.id))
+      if (AppSettings.selectedElements.includes(this.props.id)) {
         unhighlightElement(this.props.id);
-      else highlightElement(this.props.id);
+        return;
+      } else highlightElement(this.props.id);
     } else resetDiagramSelection();
     highlightElement(this.props.id);
     let elem = graph.getElements().find((elem) => elem.id === this.props.id);

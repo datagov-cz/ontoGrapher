@@ -55,7 +55,7 @@ export const NewElemForm: React.FC<Props> = (props) => {
     names: ReturnType<typeof initLanguageObject>
   ) => {
     let errorText = "";
-    if (names[AppSettings.defaultLanguage] === "") {
+    if (names[AppSettings.selectedLanguage] === "") {
       errorText = Locale[AppSettings.viewLanguage].modalNewElemError;
     } else if (Object.values(names).find((name) => checkExists(scheme, name))) {
       errorText = Locale[AppSettings.viewLanguage].modalNewElemExistsError;
@@ -66,7 +66,7 @@ export const NewElemForm: React.FC<Props> = (props) => {
     ) {
       errorText = Locale[AppSettings.viewLanguage].modalNewElemLengthError;
     } else if (
-      createNewElemIRI(scheme, names[AppSettings.defaultLanguage]) ===
+      createNewElemIRI(scheme, names[AppSettings.selectedLanguage]) ===
       WorkspaceVocabularies[getVocabularyFromScheme(scheme)].namespace
     ) {
       errorText = Locale[AppSettings.viewLanguage].modalNewElemCharacterError;
@@ -97,7 +97,7 @@ export const NewElemForm: React.FC<Props> = (props) => {
             <InputGroup.Prepend>
               <InputGroup.Text id={"inputGroupPrepend" + lang}>
                 {Languages[lang] +
-                  (lang === AppSettings.defaultLanguage ? "*" : "")}
+                  (lang === AppSettings.selectedLanguage ? "*" : "")}
               </InputGroup.Text>
             </InputGroup.Prepend>
             <Form.Control

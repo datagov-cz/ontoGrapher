@@ -77,7 +77,9 @@ export default class NewElemModal extends React.Component<Props, State> {
               termName: initLanguageObject(""),
               errorText: Locale[AppSettings.viewLanguage].modalNewElemError,
             });
-          const input = document.getElementById("newElemLabelInputcs");
+          const input = document.getElementById(
+            "newElemLabelInput" + this.props.projectLanguage
+          );
           if (input) input.focus();
         }}
       >

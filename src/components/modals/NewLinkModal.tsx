@@ -373,14 +373,17 @@ export default class NewLinkModal extends React.Component<Props, State> {
           )}
         </Modal.Body>
         <Modal.Footer>
-          <Button
-            type={"submit"}
-            form={"createForm"}
-            disabled={!this.state.create || this.state.errorText !== ""}
-            variant="primary"
-          >
-            {Locale[AppSettings.viewLanguage].confirm}
-          </Button>
+          {AppSettings.representation === Representation.COMPACT &&
+            this.state.create && (
+              <Button
+                type={"submit"}
+                form={"createForm"}
+                disabled={!this.state.create || this.state.errorText !== ""}
+                variant="primary"
+              >
+                {Locale[AppSettings.viewLanguage].confirm}
+              </Button>
+            )}
           <Button
             onClick={() => {
               this.props.closeLink();
