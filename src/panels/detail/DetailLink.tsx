@@ -111,6 +111,21 @@ export default class DetailLink extends React.Component<Props, State> {
     return result;
   }
 
+  prepareCardinality(cardinality: string): Cardinality {
+    return (
+      CardinalityPool[parseInt(cardinality, 10)] || new Cardinality("", "")
+    );
+  }
+
+  setCardinality(
+    linkID: string,
+    sourceCardinality: Cardinality,
+    targetCardinality: Cardinality
+  ) {
+    WorkspaceLinks[linkID].sourceCardinality = sourceCardinality;
+    WorkspaceLinks[linkID].targetCardinality = targetCardinality;
+  }
+
   prepareDetails(id?: string) {
     if (id) {
       const sourceCardinality = CardinalityPool.findIndex(
@@ -152,99 +167,80 @@ export default class DetailLink extends React.Component<Props, State> {
   save() {
     if (this.state.id in WorkspaceLinks) {
       const queries: string[] = [];
-      if (AppSettings.representation === Representation.FULL) {
-        WorkspaceLinks[this.state.id].sourceCardinality =
-          CardinalityPool[parseInt(this.state.sourceCardinality, 10)] ||
-          new Cardinality("", "");
-        WorkspaceLinks[this.state.id].targetCardinality =
-          CardinalityPool[parseInt(this.state.targetCardinality, 10)] ||
-          new Cardinality("", "");
-        WorkspaceLinks[this.state.id].iri = this.state.iri;
-        const link = graph.getLinks().find((link) => link.id === this.state.id);
-        if (link) {
-          setLabels(
-            link,
-            getLinkOrVocabElem(this.state.iri).labels[
-              this.props.projectLanguage
-            ]
-          );
-        }
-        this.setState({ changes: false });
-        this.props.save(this.state.id);
-        queries.push(
-          updateProjectLink(true, this.state.id),
-          updateConnections(this.state.id)
+      const sourceCardinality = this.prepareCardinality(
+        this.state.sourceCardinality
+      );
+      const targetCardinality = this.prepareCardinality(
+        this.state.targetCardinality
+      );
+      this.setCardinality(this.state.id, sourceCardinality, targetCardinality);
+      const link = graph.getLinks().find((link) => link.id === this.state.id);
+      if (link) {
+        setLabels(
+          link,
+          getLinkOrVocabElem(this.state.iri).labels[this.props.projectLanguage]
         );
+      }
+      if (AppSettings.representation === Representation.FULL) {
+        WorkspaceLinks[this.state.id].iri = this.state.iri;
+        queries.push(updateConnections(this.state.id));
       } else {
-        WorkspaceLinks[this.state.id].sourceCardinality =
-          CardinalityPool[parseInt(this.state.sourceCardinality, 10)];
-        WorkspaceLinks[this.state.id].targetCardinality =
-          CardinalityPool[parseInt(this.state.targetCardinality, 10)];
         const link = graph.getLinks().find((link) => link.id === this.state.id);
         if (link) {
-          if (AppSettings.representation === Representation.FULL)
+          const elem = getElemFromIRI(this.state.iri);
+          if (elem) {
+            WorkspaceElements[elem].selectedLabel = this.state.selectedLabel;
+            WorkspaceTerms[WorkspaceElements[elem].iri].altLabels =
+              this.state.inputAltLabels;
             setLabels(
               link,
-              getLinkOrVocabElem(this.state.iri).labels[
-                this.props.projectLanguage
-              ]
+              WorkspaceElements[elem].selectedLabel[this.props.projectLanguage]
             );
-          else {
-            const elem = getElemFromIRI(this.state.iri);
-            if (elem) {
-              WorkspaceElements[elem].selectedLabel = this.state.selectedLabel;
-              WorkspaceTerms[WorkspaceElements[elem].iri].altLabels =
-                this.state.inputAltLabels;
-              setLabels(
-                link,
-                WorkspaceElements[elem].selectedLabel[
-                  this.props.projectLanguage
-                ]
-              );
-              queries.push(updateProjectElement(true, elem));
-            }
-            const underlyingConnections = getUnderlyingFullConnections(link);
-            if (underlyingConnections) {
-              const sourceCard =
-                CardinalityPool[parseInt(this.state.sourceCardinality, 10)];
-              const targetCard =
-                CardinalityPool[parseInt(this.state.targetCardinality, 10)];
-              WorkspaceLinks[underlyingConnections.src].sourceCardinality =
-                new Cardinality(
-                  sourceCard.getFirstCardinality(),
-                  sourceCard.getFirstCardinality()
-                );
-              WorkspaceLinks[underlyingConnections.src].targetCardinality =
-                new Cardinality(
-                  sourceCard.getSecondCardinality(),
-                  sourceCard.getSecondCardinality()
-                );
-              WorkspaceLinks[underlyingConnections.tgt].sourceCardinality =
-                new Cardinality(
-                  targetCard.getFirstCardinality(),
-                  targetCard.getFirstCardinality()
-                );
-              WorkspaceLinks[underlyingConnections.tgt].targetCardinality =
-                new Cardinality(
-                  targetCard.getSecondCardinality(),
-                  targetCard.getSecondCardinality()
-                );
-              queries.push(
-                updateProjectLink(
-                  true,
-                  underlyingConnections.src,
-                  underlyingConnections.tgt
-                ),
-                updateConnections(underlyingConnections.src),
-                updateConnections(underlyingConnections.tgt)
-              );
-            }
+            queries.push(updateProjectElement(true, elem));
           }
-          queries.push(updateProjectLink(true, this.state.id));
+          const underlyingConnections = getUnderlyingFullConnections(link);
+          if (underlyingConnections) {
+            const sourceLinkSourceCardinality = new Cardinality(
+              sourceCardinality.getFirstCardinality(),
+              sourceCardinality.getFirstCardinality()
+            );
+            const sourceLinkTargetCardinality = new Cardinality(
+              sourceCardinality.getSecondCardinality(),
+              sourceCardinality.getSecondCardinality()
+            );
+            const targetLinkSourceCardinality = new Cardinality(
+              targetCardinality.getFirstCardinality(),
+              targetCardinality.getFirstCardinality()
+            );
+            const targetLinkTargetCardinality = new Cardinality(
+              targetCardinality.getSecondCardinality(),
+              targetCardinality.getSecondCardinality()
+            );
+            this.setCardinality(
+              underlyingConnections.src,
+              sourceLinkSourceCardinality,
+              sourceLinkTargetCardinality
+            );
+            this.setCardinality(
+              underlyingConnections.tgt,
+              targetLinkSourceCardinality,
+              targetLinkTargetCardinality
+            );
+            queries.push(
+              updateProjectLink(
+                true,
+                underlyingConnections.src,
+                underlyingConnections.tgt
+              ),
+              updateConnections(underlyingConnections.src),
+              updateConnections(underlyingConnections.tgt)
+            );
+          }
         }
-        this.setState({ changes: false });
-        this.props.save(this.state.id);
       }
+      queries.push(updateProjectLink(true, this.state.id));
+      this.setState({ changes: false });
+      this.props.save(this.state.id);
       this.props.performTransaction(...queries);
     }
   }

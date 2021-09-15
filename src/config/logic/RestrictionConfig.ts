@@ -14,7 +14,7 @@ import {
 } from "../../function/FunctionGetVars";
 import { LinkType } from "../Enum";
 import { Cardinality } from "../../datatypes/Cardinality";
-import _ from "underscore";
+import _ from "lodash";
 
 export const RestrictionConfig: {
   [key: string]: (iri: string, restriction: Restriction) => string | void;
@@ -43,6 +43,11 @@ function createConnection(iri: string, restriction: Restriction, pred: string) {
       restriction: pred,
       onProperty: restriction.onProperty,
       target: restriction.target,
+      // We only need to remember which links do we need
+      // to push an inverse into the DB for
+      // - the inverse restrictions are only used for cardinality creation.
+      // We don't actually create inverse WorkspaceLinks links.
+      inverse: false,
     })
   ) {
     const id = getElemFromIRI(iri);
@@ -66,8 +71,8 @@ function createConnection(iri: string, restriction: Restriction, pred: string) {
 }
 
 function createCardinality(iri: string, restriction: Restriction) {
-  const elemID = getElemFromIRI(iri) || "";
-  if (elemID !== "" && restriction.target !== "" && restriction.onClass) {
+  const elemID = getElemFromIRI(iri);
+  if (elemID && restriction.target && restriction.onClass) {
     const linkID = Object.keys(WorkspaceLinks).find(
       (link) =>
         WorkspaceElements[elemID].connections.includes(link) &&
@@ -78,19 +83,28 @@ function createCardinality(iri: string, restriction: Restriction) {
     );
     if (linkID) {
       const pos = restriction.restriction.includes("max");
-      WorkspaceLinks[linkID].targetCardinality = pos
-        ? new Cardinality(
-            WorkspaceLinks[linkID].targetCardinality.getFirstCardinality() ||
-              AppSettings.defaultCardinality1,
-            restriction.target
-          )
-        : new Cardinality(
-            restriction.target,
-            WorkspaceLinks[linkID].targetCardinality.getSecondCardinality() ||
-              AppSettings.defaultCardinality2
-          );
-      if (!WorkspaceLinks[linkID].targetCardinality.checkCardinalities())
-        WorkspaceLinks[linkID].targetCardinality = getDefaultCardinality();
+      const originalCardinality = _.cloneDeep(
+        restriction.inverse
+          ? WorkspaceLinks[linkID].sourceCardinality
+          : WorkspaceLinks[linkID].targetCardinality
+      );
+      let newCardinality = new Cardinality(
+        pos
+          ? originalCardinality.getFirstCardinality() ||
+            AppSettings.defaultCardinality1
+          : restriction.target,
+        pos
+          ? restriction.target
+          : originalCardinality.getSecondCardinality() ||
+            AppSettings.defaultCardinality2
+      );
+      if (!newCardinality.checkCardinalities())
+        newCardinality = getDefaultCardinality();
+      if (restriction.inverse) {
+        WorkspaceLinks[linkID].sourceCardinality = _.cloneDeep(newCardinality);
+      } else {
+        WorkspaceLinks[linkID].targetCardinality = _.cloneDeep(newCardinality);
+      }
     }
   }
 }

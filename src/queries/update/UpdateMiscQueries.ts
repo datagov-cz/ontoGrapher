@@ -18,7 +18,11 @@ export function updateProjectSettings(
 
   const insert = INSERT.DATA`${qb.g(projIRI, [
     qb.s(qb.i(projIRI), "og:viewColor", qb.ll(AppSettings.viewColorPool)),
-    qb.s(qb.i(projIRI), "og:contextVersion", qb.ll(2)),
+    qb.s(
+      qb.i(projIRI),
+      "og:contextVersion",
+      qb.ll(AppSettings.latestContextVersion)
+    ),
     qb.s(
       qb.i(projIRI),
       "og:diagram",

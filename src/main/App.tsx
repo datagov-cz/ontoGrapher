@@ -43,6 +43,7 @@ import {
 } from "../components/modals/CreationModals";
 import { ElemCreationStrategy } from "../config/Enum";
 import { getElementPosition } from "../function/FunctionElem";
+import { finishUpdatingLegacyWorkspace } from "../queries/update/legacy/FinishUpdatingLegacyWorkspaceQueries";
 
 interface DiagramAppProps {}
 
@@ -235,9 +236,11 @@ export default class App extends React.Component<
     ).then((result) => {
       if (result) {
         getSettings(AppSettings.contextEndpoint).then(async () => {
-          if (AppSettings.contextVersion < AppSettings.latestContextVersion) {
+          if (
+            !AppSettings.initWorkspace &&
+            AppSettings.contextVersion < AppSettings.latestContextVersion
+          ) {
             const queries = await updateLegacyWorkspace(
-              AppSettings.contextVersion,
               contextIRI,
               contextEndpoint,
               this.handleStatus
@@ -257,6 +260,20 @@ export default class App extends React.Component<
             await this.performTransaction(updateProjectSettings(contextIRI, 0));
           const success = await getContext(contextIRI, contextEndpoint);
           if (success) {
+            if (
+              !AppSettings.initWorkspace &&
+              AppSettings.contextVersion < AppSettings.latestContextVersion
+            ) {
+              const queries = await finishUpdatingLegacyWorkspace(
+                contextIRI,
+                contextEndpoint,
+                this.handleStatus
+              );
+              await processTransaction(
+                AppSettings.contextEndpoint,
+                qb.constructQuery(qb.combineQueries(...queries))
+              );
+            }
             this.handleChangeLanguage(Object.keys(Languages)[0]);
             document.title =
               AppSettings.name[this.state.projectLanguage] +

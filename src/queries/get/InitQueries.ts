@@ -1,6 +1,7 @@
 import {
   AppSettings,
   Diagrams,
+  Links,
   PackageRoot,
   WorkspaceElements,
   WorkspaceLinks,
@@ -19,7 +20,7 @@ import { addDiagram } from "../../function/FunctionCreateVars";
 export async function getElementsConfig(
   contextEndpoint: string
 ): Promise<boolean> {
-  let elements: {
+  const elements: {
     [key: string]: {
       id: "";
       active: boolean;
@@ -269,7 +270,7 @@ export async function getLinksConfig(
             diagram: result.diagram ? parseInt(result.diagram.value) : -1,
           };
       }
-      for (let link in links) {
+      for (const link in links) {
         let convert: { [key: number]: joint.dia.Link.Vertex[] } = {};
         let keys = Object.keys(links[link].vertexIRI);
         if (keys.length > 0) {
@@ -307,6 +308,9 @@ export async function getLinksConfig(
             type: links[link].type,
             vertices: convert,
             active: links[link].active,
+            hasInverse:
+              links[link].type !== LinkType.GENERALIZATION &&
+              links[link].iri in Links,
           };
           if (sourceID) {
             if (!WorkspaceElements[sourceID].connections.includes(link)) {

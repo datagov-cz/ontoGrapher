@@ -11,10 +11,10 @@ import { addLink } from "./FunctionCreateVars";
 
 export function createRestriction(
   restrictions: Restriction[],
-  iri: string,
   restriction: string,
   onProperty: string,
   target: { type: string; value: string },
+  inverse: boolean,
   onClass?: string
 ) {
   if (target.type !== "bnode") {
@@ -22,7 +22,8 @@ export function createRestriction(
       restriction,
       onProperty,
       target.value,
-      onClass
+      onClass,
+      inverse
     );
     for (const rest of restrictions) {
       if (rest.compare(newRestriction)) {

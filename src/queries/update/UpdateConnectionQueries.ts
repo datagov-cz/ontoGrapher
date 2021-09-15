@@ -11,6 +11,49 @@ import { qb } from "../QueryBuilder";
 import { LinkConfig } from "../../config/logic/LinkConfig";
 import { DELETE, INSERT } from "@tpluscode/sparql-builder";
 import { getVocabularyFromScheme } from "../../function/FunctionGetVars";
+import { doesLinkHaveInverse } from "../../function/FunctionLink";
+
+// This function helps construct the owl:Restrictions. The result for origin restrictions is:
+// IRI rdfs:subClassOf [rdf:type owl:Restriction;
+// 		owl:onProperty ONPROPERTY;
+//    owl:onClass ONCLASS;
+// 		RESTRICTION TARGET].
+// For inverse restrictions, it is:
+// (ONCLASS || TARGET) rdfs:subClassOf [rdf:type owl:Restriction;
+//    owl:onProperty [owl:inverseOf ONPROPERTY];
+//    owl:onClass IRI;
+//    RESTRICTION INVERSETARGET].
+function constructDefaultLinkRestriction(
+  iri: string,
+  restriction: string,
+  onProperty: string,
+  target: string,
+  buildInverse: boolean = false,
+  inverseTarget?: string,
+  onClass?: string
+): string[] {
+  const buildFunction = (inverse: boolean) =>
+    qb.s(
+      inverse && inverseTarget ? (onClass ? qb.i(onClass) : target) : qb.i(iri),
+      "rdfs:subClassOf",
+      qb.b([
+        qb.po("rdf:type", "owl:Restriction"),
+        qb.po(
+          "owl:onProperty",
+          inverse
+            ? qb.b([
+                qb.po(qb.i(parsePrefix("owl", "inverseOf")), qb.i(onProperty)),
+              ])
+            : qb.i(onProperty)
+        ),
+        ...(onClass
+          ? [qb.po("owl:onClass", inverse ? qb.i(iri) : qb.i(onClass))]
+          : []),
+        qb.po(restriction, inverse && inverseTarget ? inverseTarget : target),
+      ])
+    );
+  return [buildFunction(false), ...(buildInverse ? [buildFunction(true)] : [])];
+}
 
 export function updateDefaultLink(id: string): string {
   const iri = WorkspaceElements[WorkspaceLinks[id].source].iri;
@@ -21,12 +64,22 @@ export function updateDefaultLink(id: string): string {
   const del: string = DELETE`${qb.g(contextIRI, [
     qb.s(qb.i(iri), "rdfs:subClassOf", qb.v("b")),
     qb.s(qb.v("b"), "?p", "?o"),
+    qb.s("?i", "rdfs:subClassOf", "?ib"),
+    qb.s("?ib", "?ip", "?io"),
   ])}
 	`.WHERE`
 		${qb.g(contextIRI, [
       qb.s(qb.i(iri), "rdfs:subClassOf", qb.v("b")),
       qb.s(qb.v("b"), "?p", "?o"),
       "filter(isBlank(?b)).",
+      "OPTIONAL {",
+      qb.s("?i", "rdfs:subClassOf", "?ib"),
+      "filter(isBlank(?ib)).",
+      qb.s("?ib", "owl:onProperty", "?ibo"),
+      "filter(isBlank(?ibo)).",
+      qb.s("?ib", "owl:onClass", qb.i(iri)),
+      qb.s("?ib", "?ip", "?io"),
+      "}",
     ])}`.build();
 
   const insert: string = INSERT.DATA`${qb.g(contextIRI, [
@@ -41,123 +94,101 @@ export function updateDefaultLink(id: string): string {
       )
       .map((linkID) =>
         [
-          qb.s(
-            qb.i(iri),
-            "rdfs:subClassOf",
-            qb.b([
-              qb.po("rdf:type", "owl:Restriction"),
-              qb.po("owl:onProperty", qb.i(WorkspaceLinks[linkID].iri)),
-              qb.po(
-                "owl:someValuesFrom",
-                qb.i(WorkspaceElements[WorkspaceLinks[linkID].target].iri)
-              ),
-            ])
+          ...constructDefaultLinkRestriction(
+            iri,
+            "owl:someValuesFrom",
+            WorkspaceLinks[linkID].iri,
+            qb.i(WorkspaceElements[WorkspaceLinks[linkID].target].iri),
+            doesLinkHaveInverse(linkID),
+            qb.i(iri)
           ),
-          qb.s(
-            qb.i(iri),
-            "rdfs:subClassOf",
-            qb.b([
-              qb.po("rdf:type", "owl:Restriction"),
-              qb.po("owl:onProperty", qb.i(WorkspaceLinks[linkID].iri)),
-              qb.po(
-                "owl:allValuesFrom",
-                qb.i(WorkspaceElements[WorkspaceLinks[linkID].target].iri)
-              ),
-            ])
+          ...constructDefaultLinkRestriction(
+            iri,
+            "owl:allValuesFrom",
+            WorkspaceLinks[linkID].iri,
+            qb.i(WorkspaceElements[WorkspaceLinks[linkID].target].iri),
+            doesLinkHaveInverse(linkID),
+            qb.i(iri)
           ),
-          (WorkspaceTerms[iri].types.includes(
-            parsePrefix("z-sgov-pojem", "typ-vlastnosti")
-          ) ||
-            WorkspaceTerms[iri].types.includes(
-              parsePrefix("z-sgov-pojem", "typ-vztahu")
-            )) &&
-          WorkspaceLinks[id].targetCardinality.getString() !== ""
-            ? [
-                isNumber(
-                  WorkspaceLinks[linkID].targetCardinality.getFirstCardinality()
-                )
-                  ? qb.s(
-                      qb.i(iri),
-                      "rdfs:subClassOf",
-                      qb.b([
-                        qb.po("rdf:type", "owl:Restriction"),
-                        qb.po(
-                          "owl:onProperty",
-                          qb.i(WorkspaceLinks[linkID].iri)
-                        ),
-                        qb.po(
-                          "owl:onClass",
-                          qb.i(
-                            WorkspaceElements[WorkspaceLinks[linkID].target].iri
-                          )
-                        ),
-                        qb.po(
-                          "owl:minQualifiedCardinality",
-                          qb.lt(
-                            WorkspaceLinks[
-                              linkID
-                            ].targetCardinality.getFirstCardinality(),
-                            "xsd:nonNegativeInteger"
-                          )
-                        ),
-                      ])
-                    )
-                  : "",
-                isNumber(
+          ...(isNumber(
+            WorkspaceLinks[linkID].targetCardinality.getFirstCardinality()
+          )
+            ? constructDefaultLinkRestriction(
+                iri,
+                "owl:minQualifiedCardinality",
+                WorkspaceLinks[linkID].iri,
+                qb.lt(
                   WorkspaceLinks[
                     linkID
-                  ].targetCardinality.getSecondCardinality()
-                )
-                  ? qb.s(
-                      qb.i(iri),
-                      "rdfs:subClassOf",
-                      qb.b([
-                        qb.po("rdf:type", "owl:Restriction"),
-                        qb.po(
-                          "owl:onProperty",
-                          qb.i(WorkspaceLinks[linkID].iri)
-                        ),
-                        qb.po(
-                          "owl:onClass",
-                          qb.i(
-                            WorkspaceElements[WorkspaceLinks[linkID].target].iri
-                          )
-                        ),
-                        qb.po(
-                          "owl:maxQualifiedCardinality",
-                          qb.lt(
-                            WorkspaceLinks[
-                              linkID
-                            ].targetCardinality.getSecondCardinality(),
-                            "xsd:nonNegativeInteger"
-                          )
-                        ),
-                      ])
-                    )
-                  : "",
-              ].join(`
-				`)
-            : "",
+                  ].targetCardinality.getFirstCardinality(),
+                  "xsd:nonNegativeInteger"
+                ),
+                doesLinkHaveInverse(linkID) &&
+                  isNumber(
+                    WorkspaceLinks[
+                      linkID
+                    ].sourceCardinality.getFirstCardinality()
+                  ),
+                qb.lt(
+                  WorkspaceLinks[
+                    linkID
+                  ].sourceCardinality.getFirstCardinality(),
+                  "xsd:nonNegativeInteger"
+                ),
+                WorkspaceElements[WorkspaceLinks[linkID].target].iri
+              )
+            : []),
+          ...(isNumber(
+            WorkspaceLinks[linkID].targetCardinality.getSecondCardinality()
+          )
+            ? constructDefaultLinkRestriction(
+                iri,
+                "owl:maxQualifiedCardinality",
+                WorkspaceLinks[linkID].iri,
+                qb.lt(
+                  WorkspaceLinks[
+                    linkID
+                  ].targetCardinality.getSecondCardinality(),
+                  "xsd:nonNegativeInteger"
+                ),
+                doesLinkHaveInverse(linkID) &&
+                  isNumber(
+                    WorkspaceLinks[
+                      linkID
+                    ].sourceCardinality.getSecondCardinality()
+                  ),
+                qb.lt(
+                  WorkspaceLinks[
+                    linkID
+                  ].sourceCardinality.getSecondCardinality(),
+                  "xsd:nonNegativeInteger"
+                ),
+                WorkspaceElements[WorkspaceLinks[linkID].target].iri
+              )
+            : []),
         ].join(`
 		`)
       ),
     ...WorkspaceTerms[iri].restrictions
-      .filter((rest) => !(rest.target in WorkspaceTerms))
+      .filter(
+        (rest) =>
+          !(
+            rest.target in WorkspaceTerms ||
+            (isNumber(rest.target) && rest.onProperty in Links)
+          )
+      )
       .map((rest) =>
         [
-          qb.s(
-            qb.i(iri),
-            "rdfs:subClassOf",
-            qb.b([
-              qb.po("rdf:type", "owl:Restriction"),
-              qb.po("owl:onProperty", qb.i(rest.onProperty)),
-              qb.po(
-                qb.i(rest.restriction),
-                isNumber(rest.target)
-                  ? qb.lt(rest.target, "xsd:nonNegativeInteger")
-                  : qb.i(rest.target)
-              ),
-            ])
+          ...constructDefaultLinkRestriction(
+            iri,
+            qb.i(rest.restriction),
+            rest.onProperty,
+            isNumber(rest.target)
+              ? qb.lt(rest.target, "xsd:nonNegativeInteger")
+              : qb.i(rest.target),
+            false,
+            undefined,
+            rest.onClass
           ),
         ].join(`
 			`)
@@ -186,14 +217,14 @@ export function updateGeneralizationLink(id: string): string {
     .filter((superClass) => superClass && !(superClass in WorkspaceTerms))
     .map((superClass) => qb.i(superClass));
 
-  let del = DELETE`${qb.g(contextIRI, [
+  const del = DELETE`${qb.g(contextIRI, [
     qb.s(qb.i(iri), "rdfs:subClassOf", "?b"),
   ])}`.WHERE`${qb.g(contextIRI, [
     qb.s(qb.i(iri), "rdfs:subClassOf", "?b"),
     "filter(!isBlank(?b)).",
   ])}`.build();
 
-  let insert = INSERT.DATA`${qb.g(contextIRI, [
+  const insert = INSERT.DATA`${qb.g(contextIRI, [
     qb.s(qb.i(iri), "rdfs:subClassOf", qb.a(subClassOf.concat(list))),
   ])}`.build();
   return qb.combineQueries(del, insert);

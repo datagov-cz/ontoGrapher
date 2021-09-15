@@ -592,6 +592,7 @@ async function getLegacyConnections(
             type: iter[link].type,
             vertices: convert,
             active: iter[link].active,
+            hasInverse: false,
           };
           if (sourceID) {
             if (!elements[sourceID].connections.includes(link)) {

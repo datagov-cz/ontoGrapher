@@ -11,6 +11,8 @@ import {
 import { RestrictionConfig } from "../../config/logic/RestrictionConfig";
 import { LinkType } from "../../config/Enum";
 import { createRestriction } from "../../function/FunctionRestriction";
+import { Restriction } from "../../datatypes/Restriction";
+import _ from "lodash";
 
 /**
  * Gets vocabulary info.
@@ -100,7 +102,7 @@ export async function fetchConcepts(
       domain?: string;
       range?: string;
       subClassOf: string[];
-      restrictions: [];
+      restrictions: Restriction[];
       type: number;
       topConcept?: string;
       character?: string;
@@ -112,7 +114,7 @@ export async function fetchConcepts(
     "PREFIX skos: <http://www.w3.org/2004/02/skos/core#>",
     "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>",
     "PREFIX z-sgov-pojem: <https://slovník.gov.cz/základní/pojem/>",
-    "SELECT DISTINCT ?term ?termLabel ?termAltLabel ?termType ?termDefinition ?termDomain ?termRange ?topConcept ?inverseOf ?character ?restriction ?restrictionPred ?onProperty ?onClass ?target ?subClassOf",
+    "SELECT DISTINCT ?term ?termLabel ?termAltLabel ?termType ?termDefinition ?termDomain ?termRange ?topConcept ?inverseOf ?inverseOnProperty ?character ?restriction ?restrictionPred ?onProperty ?onClass ?target ?subClassOf",
     "WHERE {",
     graph && "GRAPH <" + graph + "> {",
     vocabulary
@@ -138,7 +140,8 @@ export async function fetchConcepts(
     "OPTIONAL {?topConcept skos:hasTopConcept ?term. }",
     "OPTIONAL {?term rdfs:subClassOf ?restriction. ",
     "?restriction a owl:Restriction .",
-    "?restriction owl:onProperty ?onProperty.",
+    "OPTIONAL {?restriction owl:onProperty ?onProperty.}",
+    "OPTIONAL {?restriction owl:onProperty [owl:inverseOf ?inverseOnProperty].}",
     "OPTIONAL {?restriction owl:onClass ?onClass.}",
     "?restriction ?restrictionPred ?target.",
     "filter (?restrictionPred in (<" +
@@ -213,20 +216,38 @@ export async function fetchConcepts(
           !result[row.term.value].subClassOf.includes(row.subClassOf.value)
         )
           result[row.term.value].subClassOf.push(row.subClassOf.value);
-        if (
-          row.restriction &&
-          Object.keys(Links).includes(row.onProperty.value)
-        )
+        if (row.restriction)
           createRestriction(
             result[row.term.value].restrictions,
-            row.term.value,
             row.restrictionPred.value,
-            row.onProperty.value,
+            !!row.inverseOnProperty
+              ? row.inverseOnProperty.value
+              : row.onProperty.value,
             row.target,
+            !!row.inverseOnProperty,
             row.onClass ? row.onClass.value : undefined
           );
         if (row.inverseOf)
           result[row.term.value].inverseOf = row.inverseOf.value;
+      }
+      for (const term in result) {
+        result[term].restrictions = result[term].restrictions.filter((r) =>
+          Object.keys(Links).includes(r.onProperty)
+        );
+        // Any inverse restriction is, for purposes convenience,
+        // saved under the original restriction's origin term.
+        // This will enable us to implement source cardinality recognition more easily.
+        result[term].restrictions
+          .filter((restriction) => restriction.inverse && restriction.onClass)
+          .forEach((restriction) => {
+            const inverseRestriction = _.cloneDeep(restriction);
+            inverseRestriction.onClass = term;
+            result[restriction.onClass!].restrictions.push(inverseRestriction);
+            result[term].restrictions.splice(
+              result[term].restrictions.indexOf(restriction),
+              1
+            );
+          });
       }
       Object.assign(sendTo, result);
       return true;
