@@ -5,17 +5,20 @@ export class Restriction {
   public restriction: string;
   public target: string;
   public onClass?: string;
+  public inverse: boolean;
 
   constructor(
     restriction: string,
     onProperty: string,
     target: string,
-    onClass?: string
+    onClass?: string,
+    inverse: boolean = false
   ) {
     this.onProperty = onProperty;
     this.restriction = restriction;
     this.target = target;
     if (onClass) this.onClass = onClass;
+    this.inverse = inverse;
   }
 
   initRestriction(iri: string) {
@@ -29,7 +32,8 @@ export class Restriction {
       this.target === other.target &&
       this.restriction === other.restriction &&
       this.onProperty === other.onProperty &&
-      this.onClass === other.onClass
+      this.onClass === other.onClass &&
+      this.inverse === other.inverse
     );
   }
 }

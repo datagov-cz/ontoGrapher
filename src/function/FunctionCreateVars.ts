@@ -2,6 +2,7 @@ import {
   AppSettings,
   CardinalityPool,
   Diagrams,
+  Links,
   WorkspaceElements,
   WorkspaceLinks,
   WorkspaceTerms,
@@ -121,5 +122,6 @@ export function addLink(
     type: type,
     vertices: [],
     active: true,
+    hasInverse: type !== LinkType.GENERALIZATION && iri in Links,
   };
 }

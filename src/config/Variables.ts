@@ -49,6 +49,8 @@ export var WorkspaceLinks: {
     type: number;
     //active
     active: boolean;
+    //inverse link presence for source cardinality purposes
+    hasInverse: boolean;
   };
 } = {};
 
@@ -179,7 +181,7 @@ export var AppSettings: {
   defaultCardinality1: "0",
   defaultCardinality2: "*",
   contextVersion: 1,
-  latestContextVersion: 2,
+  latestContextVersion: 3,
   lastTransaction: "",
   lastTransactionID: "",
   switchElements: [],

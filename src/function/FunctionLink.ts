@@ -144,6 +144,10 @@ export function saveNewLink(
   }
 }
 
+export function doesLinkHaveInverse(linkID: string) {
+  return linkID in WorkspaceLinks && WorkspaceLinks[linkID].hasInverse;
+}
+
 export function checkDefaultCardinality(link: string) {
   if (!Links[link].defaultSourceCardinality.checkCardinalities()) {
     Links[link].defaultSourceCardinality = getDefaultCardinality();
