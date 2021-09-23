@@ -94,7 +94,7 @@ export default class NewElemModal extends React.Component<Props, State> {
         >
           <Modal.Body>
             <NewElemForm
-              lockPackage={true}
+              lockPackage={this.props.configuration.pkg !== PackageRoot}
               projectLanguage={this.props.projectLanguage}
               termName={this.state.termName}
               selectedPackage={this.state.selectedPackage}
