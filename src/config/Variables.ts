@@ -79,7 +79,7 @@ export var Prefixes: { [key: string]: string } = {
   "v-sgov-pojem": "https://slovník.gov.cz/veřejný-sektor/pojem/",
 };
 
-export var PackageRoot: PackageNode = new PackageNode(
+export const PackageRoot: PackageNode = new PackageNode(
   initLanguageObject("Root"),
   undefined,
   true,
