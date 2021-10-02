@@ -234,6 +234,6 @@ export function updateConnections(id: string): string {
   return LinkConfig[WorkspaceLinks[id].type].update(id);
 }
 
-function isNumber(str: string) {
+export function isNumber(str: string) {
   return !isNaN(parseInt(str, 10));
 }

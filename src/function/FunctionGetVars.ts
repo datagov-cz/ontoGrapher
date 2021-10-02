@@ -145,22 +145,6 @@ export function getUnderlyingFullConnections(
   }
 }
 
-export function getFullConnections(id: string): string[] {
-  return Object.keys(WorkspaceElements).filter(
-    (elem) =>
-      WorkspaceElements[elem].active &&
-      parsePrefix("z-sgov-pojem", "typ-vztahu") ===
-        WorkspaceElements[elem].iri &&
-      WorkspaceElements[elem].connections.find(
-        (link) =>
-          WorkspaceLinks[link].active &&
-          (WorkspaceLinks[link].iri === mvp1IRI ||
-            WorkspaceLinks[link].iri === mvp2IRI) &&
-          WorkspaceLinks[link].target === id
-      )
-  );
-}
-
 export function getElemFromIRI(iri: string) {
   return Object.keys(WorkspaceElements).find(
     (elem) => WorkspaceElements[elem].iri === iri
@@ -208,7 +192,10 @@ export function isTermReadOnly(iri: string) {
   );
 }
 
-export function getIntrinsicTropeTypes(id: string) {
+export function getIntrinsicTropeTypes(
+  id: string,
+  returnLinkIDs: boolean = false
+) {
   return Object.keys(WorkspaceLinks)
     .filter(
       (link) =>
@@ -220,7 +207,9 @@ export function getIntrinsicTropeTypes(id: string) {
           WorkspaceElements[WorkspaceLinks[link].target].iri
         ].types.includes(parsePrefix("z-sgov-pojem", "typ-vlastnosti"))
     )
-    .map((link) => WorkspaceElements[WorkspaceLinks[link].target].iri)
+    .map((link) =>
+      returnLinkIDs ? link : WorkspaceElements[WorkspaceLinks[link].target].iri
+    )
     .concat(
       Object.keys(WorkspaceLinks)
         .filter(
@@ -233,6 +222,10 @@ export function getIntrinsicTropeTypes(id: string) {
               WorkspaceElements[WorkspaceLinks[link].source].iri
             ].types.includes(parsePrefix("z-sgov-pojem", "typ-vlastnosti"))
         )
-        .map((link) => WorkspaceElements[WorkspaceLinks[link].source].iri)
+        .map((link) =>
+          returnLinkIDs
+            ? link
+            : WorkspaceElements[WorkspaceLinks[link].source].iri
+        )
     );
 }

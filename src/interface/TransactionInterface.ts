@@ -18,7 +18,7 @@ export async function processTransaction(
   const transactionID = await fetch(transactionUrl, {
     method: "POST",
     headers: {
-      Authorization: `Bearer ${getToken()}`,
+      Authorization: `${getToken()}`,
     },
     signal,
   })
@@ -88,7 +88,7 @@ export async function abortTransaction(transaction: string): Promise<boolean> {
   return await fetch(transaction, {
     method: "DELETE",
     headers: {
-      ...(Environment.auth && { Authorization: `Bearer ${getToken()}` }),
+      ...(Environment.auth && { Authorization: `${getToken()}` },
     },
     keepalive: true,
   })

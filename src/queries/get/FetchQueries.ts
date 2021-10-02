@@ -1,13 +1,6 @@
 import { processQuery } from "../../interface/TransactionInterface";
-import {
-  initLanguageObject,
-  parsePrefix,
-} from "../../function/FunctionEditVars";
-import {
-  Links,
-  Stereotypes,
-  WorkspaceVocabularies,
-} from "../../config/Variables";
+import { initLanguageObject, parsePrefix } from "../../function/FunctionEditVars";
+import { Links, Stereotypes, WorkspaceVocabularies } from "../../config/Variables";
 import { RestrictionConfig } from "../../config/logic/RestrictionConfig";
 import { LinkType } from "../../config/Enum";
 import { createRestriction } from "../../function/FunctionRestriction";
@@ -27,7 +20,7 @@ export async function fetchVocabulary(
   endpoint: string,
   scheme: boolean = true
 ): Promise<boolean> {
-  let query = [
+  const query = [
     "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>",
     "PREFIX dct: <http://purl.org/dc/terms/>",
     "SELECT DISTINCT ?vocabulary ?scheme ?namespace ?schemeTitle ?vocabTitle",

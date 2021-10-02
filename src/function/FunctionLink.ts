@@ -10,7 +10,6 @@ import {
 import { LinkType, Representation } from "../config/Enum";
 import {
   getDefaultCardinality,
-  getElementShape,
   getLinkOrVocabElem,
   getNewLink,
   getUnderlyingFullConnections,
@@ -21,7 +20,7 @@ import * as joint from "jointjs";
 import { graphElement } from "../graph/GraphElement";
 import { addClass, addLink } from "./FunctionCreateVars";
 import { updateProjectElement } from "../queries/update/UpdateElementQueries";
-import { mvp1IRI, mvp2IRI, setLabels } from "./FunctionGraph";
+import { mvp1IRI, mvp2IRI, setLabels, setLinkBoundary } from "./FunctionGraph";
 import { paper } from "../main/DiagramCanvas";
 import {
   updateDeleteProjectLinkVertex,
@@ -29,7 +28,11 @@ import {
   updateProjectLinkVertex,
 } from "../queries/update/UpdateLinkQueries";
 import { LinkConfig } from "../config/logic/LinkConfig";
-import { updateConnections } from "../queries/update/UpdateConnectionQueries";
+import {
+  isNumber,
+  updateConnections,
+} from "../queries/update/UpdateConnectionQueries";
+import { Cardinality } from "../datatypes/Cardinality";
 
 export function getOtherConnectionElementID(
   linkID: string,
@@ -40,10 +43,98 @@ export function getOtherConnectionElementID(
     : WorkspaceLinks[linkID].source;
 }
 
+export function setSelfLoopConnectionPoints(
+  link: joint.dia.Link,
+  bbox?: joint.g.Rect
+) {
+  const sourcePoint = link.getSourcePoint();
+  const offsetX = bbox ? bbox.width / 2 + 50 : sourcePoint.x + 300;
+  link.vertices([
+    new joint.g.Point(sourcePoint.x, sourcePoint.y + 100),
+    new joint.g.Point(sourcePoint.x + offsetX, sourcePoint.y + 100),
+    new joint.g.Point(sourcePoint.x + offsetX, sourcePoint.y),
+  ]);
+}
+
 export function getConnectionElementID(linkID: string, elemID: string): string {
   return WorkspaceLinks[linkID].target === elemID
     ? WorkspaceLinks[linkID].target
     : WorkspaceLinks[linkID].source;
+}
+
+// full mode:
+// A [target] <-mvp1- [source] R [mvp2 source] -mvp2-> [target] B
+// A [a1..a2] <- [rl1..rl2] R [rr1..rr2] -> [b1..b2] B
+//
+// compact mode:
+// A [A1..A2] --R-> [B1..B2] B
+//
+// A1 = min(rr1,a1)
+// A2 = max(rr2,a2)
+//
+// B1 = min(rl1,b1)
+// B2 = max(rl2,b2)
+//
+// A [1..1] <- [1..1] R [0..*] -> [1..1] B
+// A1 = min(0,1) = 0
+// A2 = max(*,1) = *
+// B1 = min(1,1) = 1
+// B2 = max(1,1) = 1
+export function constructFullConnections(
+  compactLinkID: string,
+  mvp1linkID: string,
+  mvp2linkID: string
+) {
+  enum comparisonMode {
+    MIN,
+    MAX,
+  }
+
+  const compare: (a: string, b: string, mode: comparisonMode) => string = (
+    a,
+    b,
+    mode
+  ) => {
+    if (isNumber(a) && isNumber(b)) {
+      return mode === comparisonMode.MIN ? (a < b ? a : b) : a < b ? b : a;
+    } else {
+      return mode === comparisonMode.MIN
+        ? isNumber(a)
+          ? a
+          : b
+        : isNumber(a)
+        ? b
+        : a;
+    }
+  };
+  const mvp1SourceCardinality = WorkspaceLinks[mvp1linkID].sourceCardinality;
+  const mvp1TargetCardinality = WorkspaceLinks[mvp1linkID].targetCardinality;
+  const mvp2SourceCardinality = WorkspaceLinks[mvp2linkID].sourceCardinality;
+  const mvp2TargetCardinality = WorkspaceLinks[mvp2linkID].targetCardinality;
+  WorkspaceLinks[compactLinkID].sourceCardinality = new Cardinality(
+    compare(
+      mvp2SourceCardinality.getFirstCardinality(),
+      mvp1TargetCardinality.getFirstCardinality(),
+      comparisonMode.MIN
+    ),
+    compare(
+      mvp2SourceCardinality.getSecondCardinality(),
+      mvp1TargetCardinality.getSecondCardinality(),
+      comparisonMode.MAX
+    )
+  );
+  WorkspaceLinks[compactLinkID].targetCardinality = new Cardinality(
+    compare(
+      mvp2TargetCardinality.getFirstCardinality(),
+      mvp1SourceCardinality.getFirstCardinality(),
+      comparisonMode.MIN
+    ),
+    compare(
+      mvp2TargetCardinality.getSecondCardinality(),
+      mvp1SourceCardinality.getSecondCardinality(),
+      comparisonMode.MAX
+    )
+  );
 }
 
 export function saveNewLink(
@@ -54,20 +145,7 @@ export function saveNewLink(
 ): string[] {
   const type = iri in Links ? Links[iri].type : LinkType.DEFAULT;
   const link = getNewLink(type);
-  link.source({
-    id: sid,
-    connectionPoint: {
-      name: "boundary",
-      args: { selector: getElementShape(sid) },
-    },
-  });
-  link.target({
-    id: tid,
-    connectionPoint: {
-      name: "boundary",
-      args: { selector: getElementShape(tid) },
-    },
-  });
+  setLinkBoundary(link, sid, tid);
   link.addTo(graph);
   const s = link.getSourceElement();
   const t = link.getTargetElement();
@@ -75,31 +153,9 @@ export function saveNewLink(
     const id = link.id as string;
     const sid = s.id as string;
     const tid = t.id as string;
-    if (sid === tid) {
-      const coords = link.getSourcePoint();
-      const bbox = paper.findViewByModel(sid).getBBox();
-      if (bbox) {
-        link.vertices([
-          new joint.g.Point(coords.x, coords.y + 100),
-          new joint.g.Point(coords.x + bbox.width / 2 + 50, coords.y + 100),
-          new joint.g.Point(coords.x + bbox.width / 2 + 50, coords.y),
-        ]);
-      }
-    }
-    link.source({
-      id: sid,
-      connectionPoint: {
-        name: "boundary",
-        args: { selector: getElementShape(sid) },
-      },
-    });
-    link.target({
-      id: tid,
-      connectionPoint: {
-        name: "boundary",
-        args: { selector: getElementShape(tid) },
-      },
-    });
+    if (sid === tid)
+      setSelfLoopConnectionPoints(link, paper.findViewByModel(sid).getBBox());
+    setLinkBoundary(link, sid, tid);
     let queries: string[] = [];
     if (
       representation === Representation.FULL ||
