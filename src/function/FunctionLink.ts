@@ -74,12 +74,6 @@ export function getConnectionElementID(linkID: string, elemID: string): string {
 //
 // B1 = min(rl1,b1)
 // B2 = max(rl2,b2)
-//
-// A [1..1] <- [1..1] R [0..*] -> [1..1] B
-// A1 = min(0,1) = 0
-// A2 = max(*,1) = *
-// B1 = min(1,1) = 1
-// B2 = max(1,1) = 1
 export function constructFullConnections(
   compactLinkID: string,
   mvp1linkID: string,
@@ -89,7 +83,6 @@ export function constructFullConnections(
     MIN,
     MAX,
   }
-
   const compare: (a: string, b: string, mode: comparisonMode) => string = (
     a,
     b,

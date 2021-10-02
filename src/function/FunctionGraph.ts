@@ -1,12 +1,23 @@
-import { AppSettings, Diagrams, Links, WorkspaceElements, WorkspaceLinks, WorkspaceTerms } from "../config/Variables";
-import { initElements, initLanguageObject, parsePrefix } from "./FunctionEditVars";
+import {
+  AppSettings,
+  Diagrams,
+  Links,
+  WorkspaceElements,
+  WorkspaceLinks,
+  WorkspaceTerms,
+} from "../config/Variables";
+import {
+  initElements,
+  initLanguageObject,
+  parsePrefix,
+} from "./FunctionEditVars";
 import { graph } from "../graph/Graph";
 import {
   getActiveToConnections,
   getElementShape,
   getElemFromIRI,
   getLinkOrVocabElem,
-  getNewLink
+  getNewLink,
 } from "./FunctionGetVars";
 import * as joint from "jointjs";
 import * as _ from "lodash";
@@ -14,12 +25,25 @@ import { graphElement } from "../graph/GraphElement";
 import { addLink } from "./FunctionCreateVars";
 import { LinkType, Representation } from "../config/Enum";
 import { drawGraphElement } from "./FunctionDraw";
-import { updateDeleteProjectLinkVertex, updateProjectLink } from "../queries/update/UpdateLinkQueries";
-import { updateProjectElement, updateProjectElementDiagram } from "../queries/update/UpdateElementQueries";
-import { fetchReadOnlyTerms, fetchRelationships } from "../queries/get/CacheQueries";
+import {
+  updateDeleteProjectLinkVertex,
+  updateProjectLink,
+} from "../queries/update/UpdateLinkQueries";
+import {
+  updateProjectElement,
+  updateProjectElementDiagram,
+} from "../queries/update/UpdateElementQueries";
+import {
+  fetchReadOnlyTerms,
+  fetchRelationships,
+} from "../queries/get/CacheQueries";
 import { initConnections } from "./FunctionRestriction";
 import isUrl from "is-url";
-import { constructFullConnections, getOtherConnectionElementID, setSelfLoopConnectionPoints } from "./FunctionLink";
+import {
+  constructFullConnections,
+  getOtherConnectionElementID,
+  setSelfLoopConnectionPoints,
+} from "./FunctionLink";
 import { insertNewCacheTerms, insertNewRestrictions } from "./FunctionCache";
 import { updateProjectSettings } from "../queries/update/UpdateMiscQueries";
 
@@ -161,15 +185,15 @@ export function setLinkBoundary(
     id: source,
     connectionPoint: {
       name: "boundary",
-      args: { selector: getElementShape(source) ,
-    ,
+      args: { selector: getElementShape(source) },
+    },
   });
   link.target({
     id: target,
     connectionPoint: {
       name: "boundary",
-      args: { selector: getElementShape(target) ,
-    ,
+      args: { selector: getElementShape(target) },
+    },
   });
 }
 
@@ -234,7 +258,7 @@ export function setRepresentation(
                 newLink.vertices(
                   WorkspaceLinks[newLink.id].vertices[
                     AppSettings.selectedDiagram
-                    ]
+                  ]
                 );
               else if (source === target)
                 setSelfLoopConnectionPoints(newLink, sourceBox.getBBox());
@@ -495,7 +519,7 @@ export function restoreHiddenElem(
             domainLink,
             getLinkOrVocabElem(WorkspaceLinks[link].iri).labels[
               AppSettings.selectedLanguage
-              ]
+            ]
           );
           setLabels(
             rangeLink,

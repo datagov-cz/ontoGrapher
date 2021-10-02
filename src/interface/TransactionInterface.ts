@@ -44,7 +44,7 @@ export async function processTransaction(
     const resultUpdate = await fetch(transactionID + "?action=UPDATE", {
       headers: {
         "Content-Type": "application/sparql-update; charset=UTF-8",
-        ...(Environment.auth && { Authorization: `Bearer ${getToken()}` }),
+        ...(Environment.auth && { Authorization: `${getToken()}` }),
       },
       method: "PUT",
       body: transaction,
@@ -64,7 +64,7 @@ export async function processTransaction(
     const resultCommit = await fetch(transactionID + "?action=COMMIT", {
       method: "PUT",
       headers: {
-        ...(Environment.auth && { Authorization: `Bearer ${getToken()}` }),
+        ...(Environment.auth && { Authorization: `${getToken()}` }),
       },
       signal,
     })
@@ -88,7 +88,7 @@ export async function abortTransaction(transaction: string): Promise<boolean> {
   return await fetch(transaction, {
     method: "DELETE",
     headers: {
-      ...(Environment.auth && { Authorization: `${getToken()}` },
+      ...(Environment.auth && { Authorization: `${getToken()}` }),
     },
     keepalive: true,
   })
@@ -113,7 +113,7 @@ export function processQuery(
     headers: {
       "Content-Type": "application/x-www-form-urlencoded",
       Accept: "application/json",
-      ...(auth && { Authorization: `Bearer ${getToken()}` }),
+      ...(auth && { Authorization: `${getToken()}` }),
     },
   });
 }

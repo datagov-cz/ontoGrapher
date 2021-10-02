@@ -107,7 +107,7 @@ export default class DetailElement extends React.Component<Props, State> {
               getVocabularyFromScheme(
                 WorkspaceTerms[WorkspaceElements[id].iri].inScheme
               )
-            ].readOnl,
+            ].readOnly,
         })
       : this.setState({ id: "" });
   }

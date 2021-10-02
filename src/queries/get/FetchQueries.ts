@@ -1,6 +1,13 @@
 import { processQuery } from "../../interface/TransactionInterface";
-import { initLanguageObject, parsePrefix } from "../../function/FunctionEditVars";
-import { Links, Stereotypes, WorkspaceVocabularies } from "../../config/Variables";
+import {
+  initLanguageObject,
+  parsePrefix,
+} from "../../function/FunctionEditVars";
+import {
+  Links,
+  Stereotypes,
+  WorkspaceVocabularies,
+} from "../../config/Variables";
 import { RestrictionConfig } from "../../config/logic/RestrictionConfig";
 import { LinkType } from "../../config/Enum";
 import { createRestriction } from "../../function/FunctionRestriction";

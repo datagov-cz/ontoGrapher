@@ -205,20 +205,24 @@ export default class DetailLink extends React.Component<Props, State> {
           const underlyingConnections = getUnderlyingFullConnections(link);
           if (underlyingConnections) {
             const sourceLinkSourceCardinality = new Cardinality(
-              sourceCardinality.getFirstCardinality(),
-              sourceCardinality.getFirstCardinality()
+              targetCardinality.getFirstCardinality(),
+              targetCardinality.getSecondCardinality(),
+              true
             );
             const sourceLinkTargetCardinality = new Cardinality(
+              sourceCardinality.getFirstCardinality(),
               sourceCardinality.getSecondCardinality(),
-              sourceCardinality.getSecondCardinality()
+              true
             );
             const targetLinkSourceCardinality = new Cardinality(
-              targetCardinality.getFirstCardinality(),
-              targetCardinality.getFirstCardinality()
+              sourceCardinality.getFirstCardinality(),
+              sourceCardinality.getSecondCardinality(),
+              true
             );
             const targetLinkTargetCardinality = new Cardinality(
+              targetCardinality.getFirstCardinality(),
               targetCardinality.getSecondCardinality(),
-              targetCardinality.getSecondCardinality()
+              true
             );
             this.setCardinality(
               underlyingConnections.src,
