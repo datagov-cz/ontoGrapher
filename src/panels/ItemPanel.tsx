@@ -267,6 +267,7 @@ export default class ItemPanel extends React.Component<Props, State> {
           (vocab) => vocab.value === getVocabularyFromScheme(node.scheme)
         ) ||
         (this.state.vocabs.length === 0 && packageItems.length > 0)
+        || (this.state.vocabs.length === 0 && packageItems.length === 0 && !this.state.search)
       )
         result.push(
           <PackageFolder
