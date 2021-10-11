@@ -7,14 +7,13 @@ import {
   isTermReadOnly,
 } from "../../../function/FunctionGetVars";
 import { AppSettings, Languages } from "../../../config/Variables";
-import IRIlabel from "../../../components/IRIlabel";
+import InlineEdit, { InputType } from "riec";
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
 import { Locale } from "../../../config/Locale";
-import InlineEdit, { InputType } from "riec";
 
 interface Props {
   labels: { [key: string]: string };
-  iri?: string;
+  iri: string;
   default?: string;
   selectAsDefault?: Function;
   onEdit?: Function;
@@ -49,68 +48,66 @@ export default class LabelTable extends React.Component<Props, State> {
               this.setState({ hover: res });
             }}
           >
-            {this.props.iri ? (
-              isLabelBlank(getLabelOrBlank(this.props.labels, lang)) &&
+            <td className={"stretch"}>
+              {isLabelBlank(getLabelOrBlank(this.props.labels, lang)) &&
               !isTermReadOnly(this.props.iri) ? (
-                <td className={"stretch"}>
-                  <InlineEdit
-                    type={InputType.Text}
-                    value={getLabelOrBlank(this.props.labels, lang)}
-                    onChange={(label) => {
-                      if (this.props.onEdit) this.props.onEdit(label, lang);
-                    }}
-                    valueKey="id"
-                    labelKey="name"
-                    viewClass={"rieinput"}
-                  />
-                </td>
-              ) : (
-                <IRIlabel
-                  label={getLabelOrBlank(this.props.labels, lang)}
-                  iri={this.props.iri}
+                <InlineEdit
+                  type={InputType.Text}
+                  value={getLabelOrBlank(this.props.labels, lang)}
+                  onChange={(label) => {
+                    if (this.props.onEdit) this.props.onEdit(label, lang);
+                  }}
+                  valueKey="id"
+                  labelKey="name"
+                  viewClass={"rieinput"}
                 />
-              )
-            ) : (
-              <td className={"stretch"}>
-                {getLabelOrBlank(this.props.labels, lang)}
-                <span className={"right"}>
-                  {getLabelOrBlank(this.props.labels, lang) !==
-                    this.props.default &&
-                    getLabelOrBlank(this.props.labels, lang) !== "<blank>" &&
-                    this.state.hover[i] &&
-                    AppSettings.selectedLanguage === lang && (
-                      <OverlayTrigger
-                        placement="left"
-                        overlay={
-                          <Tooltip id="button-tooltip">
-                            {Locale[AppSettings.viewLanguage].setAsDisplayName}
-                          </Tooltip>
-                        }
-                      >
-                        <button
-                          className={"buttonlink"}
-                          onClick={() => {
-                            if (this.props.selectAsDefault)
-                              this.props.selectAsDefault(
-                                getLabelOrBlank(this.props.labels, lang)
-                              );
-                          }}
+              ) : (
+                <span>
+                  {getLabelOrBlank(this.props.labels, lang)}
+                  <span className={"right"}>
+                    {getLabelOrBlank(this.props.labels, lang) !==
+                      this.props.default &&
+                      AppSettings.selectedLanguage === lang &&
+                      this.state.hover[i] && (
+                        <OverlayTrigger
+                          placement="left"
+                          overlay={
+                            <Tooltip id="button-tooltip">
+                              {
+                                Locale[AppSettings.viewLanguage]
+                                  .setAsDisplayName
+                              }
+                            </Tooltip>
+                          }
                         >
-                          <span role="img" aria-label={""}>
-                            🏷️
-                          </span>
-                        </button>
-                      </OverlayTrigger>
+                          <button
+                            className={"buttonlink"}
+                            onClick={() => {
+                              if (this.props.selectAsDefault)
+                                this.props.selectAsDefault(
+                                  getLabelOrBlank(this.props.labels, lang)
+                                );
+                            }}
+                          >
+                            <span
+                              role="img"
+                              aria-label={"Set as display label"}
+                            >
+                              🏷️
+                            </span>
+                          </button>
+                        </OverlayTrigger>
+                      )}
+                    {getLabelOrBlank(this.props.labels, lang) ===
+                      this.props.default && (
+                      <span role="img" aria-label={"Current display label"}>
+                        🏷️
+                      </span>
                     )}
-                  {getLabelOrBlank(this.props.labels, lang) ===
-                    this.props.default && (
-                    <span role="img" aria-label={""}>
-                      🏷️
-                    </span>
-                  )}
+                  </span>
                 </span>
-              </td>
-            )}
+              )}
+            </td>
             <td className={"short"}>{Languages[lang]}</td>
           </tr>
         ))}

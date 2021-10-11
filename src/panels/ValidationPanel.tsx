@@ -2,7 +2,6 @@ import React from "react";
 import { ResizableBox } from "react-resizable";
 import TableList from "../components/TableList";
 import { Button, Spinner } from "react-bootstrap";
-import { validateWorkspace } from "../interface/ValidationInterface";
 import {
   AppSettings,
   WorkspaceElements,
@@ -13,6 +12,7 @@ import { graph } from "../graph/Graph";
 import IRIlabel from "../components/IRIlabel";
 import { Locale } from "../config/Locale";
 import { highlightCell } from "../function/FunctionDraw";
+import { validateWorkspace } from "../interface/ValidationInterface";
 
 interface Props {
   close: Function;
