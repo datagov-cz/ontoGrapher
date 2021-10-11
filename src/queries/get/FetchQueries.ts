@@ -27,7 +27,7 @@ export async function fetchVocabulary(
   endpoint: string,
   scheme: boolean = true
 ): Promise<boolean> {
-  let query = [
+  const query = [
     "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>",
     "PREFIX dct: <http://purl.org/dc/terms/>",
     "SELECT DISTINCT ?vocabulary ?scheme ?namespace ?schemeTitle ?vocabTitle",

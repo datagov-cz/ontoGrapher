@@ -58,7 +58,7 @@ export function resizeElem(id: string) {
       unHighlightCell(cell.id);
       highlightCell(cell.id);
     }
-    for (let link of links) {
+    for (const link of links) {
       if (link.getSourceCell() === null) {
         link.source({
           id: id,

@@ -23,7 +23,6 @@ import * as joint from "jointjs";
 import * as _ from "lodash";
 import { graphElement } from "../graph/GraphElement";
 import { addLink } from "./FunctionCreateVars";
-import { Cardinality } from "../datatypes/Cardinality";
 import { LinkType, Representation } from "../config/Enum";
 import { drawGraphElement } from "./FunctionDraw";
 import {
@@ -40,7 +39,11 @@ import {
 } from "../queries/get/CacheQueries";
 import { initConnections } from "./FunctionRestriction";
 import isUrl from "is-url";
-import { getOtherConnectionElementID } from "./FunctionLink";
+import {
+  constructFullConnections,
+  getOtherConnectionElementID,
+  setSelfLoopConnectionPoints,
+} from "./FunctionLink";
 import { insertNewCacheTerms, insertNewRestrictions } from "./FunctionCache";
 import { updateProjectSettings } from "../queries/update/UpdateMiscQueries";
 
@@ -173,6 +176,27 @@ function storeElement(elem: joint.dia.Cell) {
   }
 }
 
+export function setLinkBoundary(
+  link: joint.dia.Link,
+  source: string,
+  target: string
+) {
+  link.source({
+    id: source,
+    connectionPoint: {
+      name: "boundary",
+      args: { selector: getElementShape(source) },
+    },
+  });
+  link.target({
+    id: target,
+    connectionPoint: {
+      name: "boundary",
+      args: { selector: getElementShape(target) },
+    },
+  });
+}
+
 export function setRepresentation(
   representation: number,
   restoreFull: boolean = true
@@ -224,20 +248,7 @@ export function setRepresentation(
                 ? getNewLink(LinkType.DEFAULT, find)
                 : getNewLink();
             if (typeof newLink.id === "string" && sourceBox && targetBox) {
-              newLink.source({
-                id: source,
-                connectionPoint: {
-                  name: "boundary",
-                  args: { selector: getElementShape(source) },
-                },
-              });
-              newLink.target({
-                id: target,
-                connectionPoint: {
-                  name: "boundary",
-                  args: { selector: getElementShape(target) },
-                },
-              });
+              setLinkBoundary(newLink, source, target);
               newLink.addTo(graph);
               if (!(newLink.id in WorkspaceLinks))
                 addLink(newLink.id, WorkspaceElements[id].iri, source, target);
@@ -249,45 +260,12 @@ export function setRepresentation(
                     AppSettings.selectedDiagram
                   ]
                 );
-              else if (source === target) {
-                const coords = newLink.getSourcePoint();
-                const bbox = sourceBox.getBBox();
-                if (bbox) {
-                  newLink.vertices([
-                    new joint.g.Point(coords.x, coords.y + 100),
-                    new joint.g.Point(
-                      coords.x + bbox.width / 2 + 50,
-                      coords.y + 100
-                    ),
-                    new joint.g.Point(coords.x + bbox.width / 2 + 50, coords.y),
-                  ]);
-                } else {
-                  newLink.vertices([
-                    new joint.g.Point(coords.x, coords.y + 100),
-                    new joint.g.Point(coords.x + 300, coords.y + 100),
-                    new joint.g.Point(coords.x + 300, coords.y),
-                  ]);
-                }
-              }
+              else if (source === target)
+                setSelfLoopConnectionPoints(newLink, sourceBox.getBBox());
               WorkspaceLinks[newLink.id].vertices[AppSettings.selectedDiagram] =
                 newLink.vertices();
+              constructFullConnections(newLink.id, sourceLink, targetLink);
               if (!find) {
-                WorkspaceLinks[newLink.id].sourceCardinality = new Cardinality(
-                  WorkspaceLinks[
-                    sourceLink
-                  ].targetCardinality.getFirstCardinality(),
-                  WorkspaceLinks[
-                    sourceLink
-                  ].targetCardinality.getSecondCardinality()
-                );
-                WorkspaceLinks[newLink.id].targetCardinality = new Cardinality(
-                  WorkspaceLinks[
-                    sourceLink
-                  ].sourceCardinality.getFirstCardinality(),
-                  WorkspaceLinks[
-                    sourceLink
-                  ].sourceCardinality.getSecondCardinality()
-                );
                 queries.push(updateProjectLink(false, newLink.id));
               }
               setLabels(
@@ -392,23 +370,8 @@ export function findLinkSelfLoop(link: joint.dia.Link) {
     WorkspaceLinks[id].source === WorkspaceLinks[id].target &&
     (!WorkspaceLinks[id].vertices[AppSettings.selectedDiagram] ||
       WorkspaceLinks[id].vertices[AppSettings.selectedDiagram].length === 0)
-  ) {
-    const coords = link.getSourcePoint();
-    const bbox = link.getSourceCell()?.getBBox();
-    if (bbox) {
-      return [
-        new joint.g.Point(coords.x, coords.y + 100),
-        new joint.g.Point(coords.x + bbox.width / 2 + 50, coords.y + 100),
-        new joint.g.Point(coords.x + bbox.width / 2 + 50, coords.y),
-      ];
-    } else {
-      return [
-        new joint.g.Point(coords.x, coords.y + 100),
-        new joint.g.Point(coords.x + 300, coords.y + 100),
-        new joint.g.Point(coords.x + 300, coords.y),
-      ];
-    }
-  } else return [];
+  )
+    setSelfLoopConnectionPoints(link, link.getSourceCell()?.getBBox());
 }
 
 export function setupLink(
@@ -440,18 +403,16 @@ export function setupLink(
   if (!WorkspaceLinks[link].vertices[AppSettings.selectedDiagram])
     WorkspaceLinks[link].vertices[AppSettings.selectedDiagram] = [];
   if (restoreConnectionPosition) {
-    lnk.vertices(
-      WorkspaceLinks[link].vertices[AppSettings.selectedDiagram].length > 0
-        ? WorkspaceLinks[link].vertices[AppSettings.selectedDiagram]
-        : findLinkSelfLoop(lnk)
-    );
+    WorkspaceLinks[link].vertices[AppSettings.selectedDiagram].length > 0
+      ? lnk.vertices(WorkspaceLinks[link].vertices[AppSettings.selectedDiagram])
+      : findLinkSelfLoop(lnk);
     return undefined;
   } else {
     let ret = _.cloneDeep(
       WorkspaceLinks[link].vertices[AppSettings.selectedDiagram]
     );
-    WorkspaceLinks[link].vertices[AppSettings.selectedDiagram] =
-      findLinkSelfLoop(lnk);
+    findLinkSelfLoop(lnk);
+    WorkspaceLinks[link].vertices[AppSettings.selectedDiagram] = lnk.vertices();
     if (WorkspaceLinks[link].vertices[AppSettings.selectedDiagram].length > 0)
       lnk.vertices(WorkspaceLinks[link].vertices[AppSettings.selectedDiagram]);
     return ret ? ret.length : undefined;
@@ -552,36 +513,8 @@ export function restoreHiddenElem(
             AppSettings.selectedLanguage,
             Representation.FULL
           );
-          domainLink.source({
-            id: relID,
-            connectionPoint: {
-              name: "boundary",
-              args: { selector: getElementShape(relID) },
-            },
-          });
-          domainLink.target({
-            id: WorkspaceLinks[link].target,
-            connectionPoint: {
-              name: "boundary",
-              args: { selector: getElementShape(WorkspaceLinks[link].target) },
-            },
-          });
-          rangeLink.source({
-            id: relID,
-            connectionPoint: {
-              name: "boundary",
-              args: { selector: getElementShape(relID) },
-            },
-          });
-          rangeLink.target({
-            id: WorkspaceLinks[targetLink].target,
-            connectionPoint: {
-              name: "boundary",
-              args: {
-                selector: getElementShape(WorkspaceLinks[targetLink].target),
-              },
-            },
-          });
+          setLinkBoundary(domainLink, relID, WorkspaceLinks[link].target);
+          setLinkBoundary(rangeLink, relID, WorkspaceLinks[targetLink].target);
           setLabels(
             domainLink,
             getLinkOrVocabElem(WorkspaceLinks[link].iri).labels[

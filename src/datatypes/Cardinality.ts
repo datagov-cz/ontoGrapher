@@ -5,10 +5,19 @@ export class Cardinality {
   private first: string;
   private second: string;
 
-  constructor(first: string, second: string) {
+  constructor(
+    first: string,
+    second: string,
+    attemptSwapOnFail: boolean = false
+  ) {
     this.first = first;
     this.second = second;
     if (!this.checkCardinalities()) {
+      if (attemptSwapOnFail) {
+        this.first = second;
+        this.second = first;
+        if (this.checkCardinalities()) return;
+      }
       this.first = AppSettings.defaultCardinality1;
       this.second = AppSettings.defaultCardinality2;
     }
