@@ -1,8 +1,8 @@
 import React from "react";
 import { Nav } from "react-bootstrap";
-import { AppSettings } from "../../config/Variables";
-import { Locale } from "../../config/Locale";
 import { useAuth } from "@opendata-mvcr/assembly-line-shared";
+import { Locale } from "../../../config/Locale";
+import { AppSettings } from "../../../config/Variables";
 
 export default function MenuPanelLogout() {
   const { logout } = useAuth();

@@ -1,9 +1,9 @@
 import React from "react";
 import { Nav, OverlayTrigger, Tooltip } from "react-bootstrap";
-import AboutModal from "./misc/AboutModal";
-import { Locale } from "../../config/Locale";
-import { AppSettings } from "../../config/Variables";
-import { getLastChangeDay } from "../../function/FunctionGetVars";
+import { Locale } from "../../../config/Locale";
+import { AppSettings } from "../../../config/Variables";
+import AboutModal from "../modal/AboutModal";
+import { getLastChangeDay } from "../../../function/FunctionGetVars";
 
 interface Props {
   tooltip: boolean;

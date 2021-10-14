@@ -44,12 +44,7 @@ export default class HelpModal extends React.Component<Props, State> {
         <Modal.Header>
           <Modal.Title>{Locale[AppSettings.viewLanguage].help}</Modal.Title>
         </Modal.Header>
-        <Modal.Body>
-          {/*<Form.Control as="select" onChange={(event) => this.setState({topic: event.currentTarget.value})}>*/}
-          {/*    {Object.keys(this.topics).map(topic => <option key={topic} value={topic}>{this.topics[topic].title}</option>)}*/}
-          {/*</Form.Control>*/}
-          {this.topics[this.state.topic].page}
-        </Modal.Body>
+        <Modal.Body>{this.topics[this.state.topic].page}</Modal.Body>
         <Modal.Footer>
           <Button
             onClick={() => {

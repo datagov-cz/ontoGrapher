@@ -1,9 +1,9 @@
 import React from "react";
 import { Nav, OverlayTrigger, Tooltip } from "react-bootstrap";
-import { setRepresentation } from "../../function/FunctionGraph";
-import { AppSettings } from "../../config/Variables";
-import { Representation } from "../../config/Enum";
-import { Locale } from "../../config/Locale";
+import { Locale } from "../../../config/Locale";
+import { setRepresentation } from "../../../function/FunctionGraph";
+import { AppSettings } from "../../../config/Variables";
+import { Representation } from "../../../config/Enum";
 
 interface Props {
   update: Function;
@@ -58,8 +58,8 @@ export default class MenuPanelSwitchRepresentation extends React.Component<
         <div className={"inert"}>
           <Nav.Link onClick={() => this.switch()}>
             {AppSettings.representation === Representation.FULL
-              ? Locale[AppSettings.viewLanguage].representationCompact
-              : Locale[AppSettings.viewLanguage].representationFull}
+              ? Locale[AppSettings.viewLanguage].representationCompactSwitch
+              : Locale[AppSettings.viewLanguage].representationFullSwitch}
           </Nav.Link>
         </div>
       </OverlayTrigger>

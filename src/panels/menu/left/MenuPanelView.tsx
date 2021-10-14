@@ -1,9 +1,9 @@
 import React from "react";
 import { Dropdown } from "react-bootstrap";
-import MenuPanelSwitchStereotypes from "./view/MenuPanelSwitchStereotypes";
-import MenuPanelSwitchColors from "./view/MenuPanelSwitchColors";
-import { Locale } from "../../config/Locale";
-import { AppSettings } from "../../config/Variables";
+import { Locale } from "../../../config/Locale";
+import { AppSettings } from "../../../config/Variables";
+import MenuPanelSwitchColors from "../view/MenuPanelSwitchColors";
+import MenuPanelSwitchStereotypes from "../view/MenuPanelSwitchStereotypes";
 
 interface Props {
   update: Function;

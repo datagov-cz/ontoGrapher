@@ -199,14 +199,17 @@ export function setLinkBoundary(
 
 export function setRepresentation(
   representation: number,
-  restoreFull: boolean = true
+  restoreFull: boolean = true,
+  changeSettings: boolean = true
 ): {
   result: boolean;
   transaction: string[];
 } {
   let queries: string[] = [];
-  AppSettings.representation = representation;
-  Diagrams[AppSettings.selectedDiagram].representation = representation;
+  if (changeSettings) {
+    AppSettings.representation = representation;
+    Diagrams[AppSettings.selectedDiagram].representation = representation;
+  }
   queries.push(
     updateProjectSettings(AppSettings.contextIRI, AppSettings.selectedDiagram)
   );
@@ -340,14 +343,23 @@ export function setRepresentation(
         );
         WorkspaceElements[elem].hidden[AppSettings.selectedDiagram] = false;
         drawGraphElement(cell, AppSettings.selectedLanguage, representation);
-        queries.push(...restoreHiddenElem(elem, cell, false, false, false));
+        queries.push(
+          ...restoreHiddenElem(elem, cell, false, false, false, representation)
+        );
       }
     }
     for (let elem of graph.getElements()) {
       drawGraphElement(elem, AppSettings.selectedLanguage, representation);
       if (typeof elem.id === "string") {
         queries.push(
-          ...restoreHiddenElem(elem.id, elem, true, restoreFull, false)
+          ...restoreHiddenElem(
+            elem.id,
+            elem,
+            true,
+            restoreFull,
+            false,
+            representation
+          )
         );
       }
     }
@@ -424,7 +436,8 @@ export function restoreHiddenElem(
   cls: joint.dia.Element,
   restoreSimpleConnectionPosition: boolean,
   restoreFull: boolean,
-  restoreFullConnectionPosition: boolean
+  restoreFullConnectionPosition: boolean,
+  representation: Representation = AppSettings.representation
 ): string[] {
   let queries: string[] = [];
   if (!WorkspaceElements[id].diagrams.includes(AppSettings.selectedDiagram)) {
@@ -438,7 +451,7 @@ export function restoreHiddenElem(
         WorkspaceLinks[link].target === id) &&
       graph.getCell(WorkspaceLinks[link].source) &&
       graph.getCell(WorkspaceLinks[link].target) &&
-      (AppSettings.representation === Representation.FULL
+      (representation === Representation.FULL
         ? WorkspaceLinks[link].iri in Links
         : !(WorkspaceLinks[link].iri in Links) ||
           (WorkspaceLinks[link].iri in Links &&
@@ -458,7 +471,7 @@ export function restoreHiddenElem(
         );
     } else if (
       restoreFull &&
-      AppSettings.representation === Representation.FULL &&
+      representation === Representation.FULL &&
       WorkspaceLinks[link].target === id &&
       WorkspaceLinks[link].iri in Links &&
       graph.getCell(WorkspaceLinks[link].target)

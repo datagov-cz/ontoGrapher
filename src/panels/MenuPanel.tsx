@@ -1,20 +1,21 @@
 import React from "react";
 import { Form, OverlayTrigger, Tooltip } from "react-bootstrap";
 import { AppSettings, Languages } from "../config/Variables";
-import MenuPanelHelp from "./menu/MenuPanelHelp";
-import MenuPanelAbout from "./menu/MenuPanelAbout";
-import InterfaceNotification from "../components/InterfaceNotification";
-import MenuPanelValidate from "./menu/MenuPanelValidate";
-import MenuPanelSwitchRepresentation from "./menu/MenuPanelSwitchRepresentation";
-import InterfaceStatus from "../components/InterfaceStatus";
-import MenuPanelView from "./menu/MenuPanelView";
-import ZoomWidget from "./menu/widget/ZoomWidget";
-import ViewWidget from "./menu/widget/ViewWidget";
-import FitContentWidget from "./menu/widget/FitContentWidget";
-import MenuPanelLogout from "./menu/MenuPanelLogout";
-import MenuPanelReport from "./menu/MenuPanelReport";
 import { Locale } from "../config/Locale";
 import { Environment } from "../config/Environment";
+import MenuPanelReport from "./menu/right/MenuPanelReport";
+import MenuPanelView from "./menu/left/MenuPanelView";
+import MenuPanelHelp from "./menu/right/MenuPanelHelp";
+import { MenuPanelSaveDiagrams } from "./menu/left/MenuPanelSaveDiagrams";
+import ZoomWidget from "./menu/widget/ZoomWidget";
+import InterfaceNotification from "../components/InterfaceNotification";
+import MenuPanelLogout from "./menu/right/MenuPanelLogout";
+import ViewWidget from "./menu/widget/ViewWidget";
+import MenuPanelAbout from "./menu/right/MenuPanelAbout";
+import MenuPanelValidate from "./menu/left/MenuPanelValidate";
+import FitContentWidget from "./menu/widget/FitContentWidget";
+import InterfaceStatus from "../components/InterfaceStatus";
+import MenuPanelSwitchRepresentation from "./menu/left/MenuPanelSwitchRepresentation";
 
 interface MenuPanelProps {
   readOnly?: boolean;
@@ -108,6 +109,7 @@ export default class MenuPanel extends React.Component<
           {Environment.auth && (
             <MenuPanelValidate validate={() => this.props.validate()} />
           )}
+          <MenuPanelSaveDiagrams />
           <ZoomWidget />
           <ViewWidget />
           <FitContentWidget />

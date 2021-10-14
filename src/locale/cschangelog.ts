@@ -2,6 +2,12 @@ export const csChangelog: {
   [key: string]: { [key: string]: { [key: string]: string[] } };
 } = {
   "2021": {
+    "10": {
+      "14": [
+        "Přidána funkce ukládání obrázků diagramů do PNG",
+        'Přístupné přes tlačítko "Vytvořit obrázek" na hlavním panelu',
+      ],
+    },
     "7": {
       "28": [
         "Rozšíření funkcionality kompaktního pohledu o vytváření vztahů a management vlastností",

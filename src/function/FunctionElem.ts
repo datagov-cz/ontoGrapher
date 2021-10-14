@@ -41,7 +41,7 @@ import { restoreHiddenElem, setRepresentation } from "./FunctionGraph";
 import React from "react";
 import { insertNewCacheTerms, insertNewRestrictions } from "./FunctionCache";
 
-export function resizeElem(id: string) {
+export function resizeElem(id: string, highlight: boolean = true) {
   let view = paper.findViewByModel(id);
   if (view) {
     let bbox = view.getBBox();
@@ -54,7 +54,7 @@ export function resizeElem(id: string) {
         link.target({ x: bbox.x, y: bbox.y });
       }
     }
-    if (typeof cell.id === "string") {
+    if (typeof cell.id === "string" && highlight) {
       unHighlightCell(cell.id);
       highlightCell(cell.id);
     }
