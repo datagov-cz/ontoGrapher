@@ -2,6 +2,12 @@ export const enChangelog: {
   [key: string]: { [key: string]: { [key: string]: string[] } };
 } = {
   "2021": {
+    "10": {
+      "14": [
+        "Added function to save diagrams to PNG images",
+        'Accessible through the "Generate image" button on the main panel',
+      ],
+    },
     "7": {
       "28": [
         "Expansion of compact view functionality by providing ways to manage relationships and intrinsic tropes",

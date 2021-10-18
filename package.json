@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "private": true,
   "dependencies": {
-    "@opendata-mvcr/assembly-line-shared": "^0.2.1",
+    "@opendata-mvcr/assembly-line-shared": "^0.2.5",
     "@testing-library/dom": "^7.30.3",
     "@testing-library/jest-dom": "^5.11.10",
     "@testing-library/react": "^11.2.6",

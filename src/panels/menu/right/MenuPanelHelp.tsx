@@ -1,8 +1,8 @@
 import React from "react";
 import { Nav } from "react-bootstrap";
-import HelpModal from "./misc/HelpModal";
-import { AppSettings } from "../../config/Variables";
-import { Locale } from "../../config/Locale";
+import { Locale } from "../../../config/Locale";
+import { AppSettings } from "../../../config/Variables";
+import HelpModal from "../modal/HelpModal";
 
 interface Props {}
 

@@ -1,7 +1,7 @@
 import React from "react";
 import { Nav } from "react-bootstrap";
-import { AppSettings } from "../../config/Variables";
-import { Locale } from "../../config/Locale";
+import { Locale } from "../../../config/Locale";
+import { AppSettings } from "../../../config/Variables";
 
 interface Props {
   validate: Function;
