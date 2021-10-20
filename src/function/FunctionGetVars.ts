@@ -16,6 +16,9 @@ import { mvp1IRI, mvp2IRI } from "./FunctionGraph";
 import { Cardinality } from "../datatypes/Cardinality";
 import { CacheSearchVocabularies } from "../datatypes/CacheSearchResults";
 import { enChangelog } from "../locale/enchangelog";
+import { Representation } from "../config/Enum";
+import { Locale } from "../config/Locale";
+import { en } from "../locale/en";
 
 export function getVocabElementByElementID(id: string): { [key: string]: any } {
   return WorkspaceTerms[WorkspaceElements[id].iri];
@@ -65,6 +68,14 @@ export function setSchemeColors(pool: string) {
     WorkspaceVocabularies[scheme].color =
       ColorPool[pool].colors[i % ColorPool[pool].colors.length];
   });
+}
+
+export function getExpressionByRepresentation(
+  expressions: { [key in Representation]: keyof typeof en },
+  representation: Representation = AppSettings.representation,
+  language: string = AppSettings.viewLanguage
+) {
+  return Locale[language][expressions[representation]];
 }
 
 export function isConnectionWithTrope(link: string, id: string): boolean {

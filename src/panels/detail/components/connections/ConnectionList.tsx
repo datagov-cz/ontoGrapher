@@ -275,7 +275,16 @@ export default class ConnectionList extends React.Component<Props, State> {
             <Button
               className={"buttonlink"}
               onClick={() =>
-                this.setState({ showFilter: !this.state.showFilter })
+                this.setState((prevState) => {
+                  return {
+                    showFilter: !this.state.showFilter,
+                    filter: {
+                      ...prevState.filter,
+                      ...(AppSettings.representation ===
+                        Representation.COMPACT && { connection: "" }),
+                    },
+                  };
+                })
               }
             >
               {"🔍"}

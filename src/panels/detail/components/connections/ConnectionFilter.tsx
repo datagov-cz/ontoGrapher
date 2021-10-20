@@ -11,6 +11,7 @@ import { ReactComponent as HiddenElementSVG } from "../../../../svg/hiddenElemen
 import { ElementFilter } from "../../../../datatypes/ElementFilter";
 import { Form } from "react-bootstrap";
 import { Locale } from "../../../../config/Locale";
+import { Representation } from "../../../../config/Enum";
 
 interface Props {
   projectLanguage: string;
@@ -157,23 +158,25 @@ export default class ConnectionFilter extends React.Component<Props, State> {
               </svg>
             </button>
             &nbsp;
-            <Form.Control
-              size="sm"
-              as="select"
-              onChange={(event) =>
-                this.props.updateFilter("connection", event.target.value)
-              }
-              value={this.props.filter.connection}
-            >
-              <option key={""} value={""}>
-                {Locale[AppSettings.viewLanguage].anyConnection}
-              </option>
-              {Object.keys(Links).map((shape) => (
-                <option key={shape} value={shape}>
-                  {Links[shape].labels[this.props.projectLanguage]}
+            {AppSettings.representation === Representation.FULL && (
+              <Form.Control
+                size="sm"
+                as="select"
+                onChange={(event) =>
+                  this.props.updateFilter("connection", event.target.value)
+                }
+                value={this.props.filter.connection}
+              >
+                <option key={""} value={""}>
+                  {Locale[AppSettings.viewLanguage].anyLink}
                 </option>
-              ))}
-            </Form.Control>
+                {Object.keys(Links).map((shape) => (
+                  <option key={shape} value={shape}>
+                    {Links[shape].labels[this.props.projectLanguage]}
+                  </option>
+                ))}
+              </Form.Control>
+            )}
             &nbsp;
             <button
               onClick={() =>
