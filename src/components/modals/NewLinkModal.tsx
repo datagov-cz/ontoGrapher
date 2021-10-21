@@ -18,6 +18,7 @@ import { LinkType, Representation } from "../../config/Enum";
 import { graph } from "../../graph/Graph";
 import { Button, Form, Modal } from "react-bootstrap";
 import {
+  getExpressionByRepresentation,
   getLabelOrBlank,
   getLinkOrVocabElem,
 } from "../../function/FunctionGetVars";
@@ -192,12 +193,20 @@ export default class NewLinkModal extends React.Component<Props, State> {
       >
         <Modal.Header>
           <Modal.Title>
-            {Locale[AppSettings.viewLanguage].modalNewLinkTitle}
+            {getExpressionByRepresentation({
+              [Representation.FULL]: "modalNewLinkTitleLink",
+              [Representation.COMPACT]: "modalNewLinkTitleRelationship",
+            })}
           </Modal.Title>
         </Modal.Header>
         <Modal.Body>
           {AppSettings.representation === Representation.FULL && (
-            <p>{Locale[AppSettings.viewLanguage].modalNewLinkDescription}</p>
+            <p>
+              {getExpressionByRepresentation({
+                [Representation.FULL]: "modalNewLinkDescriptionLink",
+                [Representation.COMPACT]: "modalNewLinkDescriptionRelationship",
+              })}
+            </p>
           )}
           {AppSettings.representation === Representation.FULL && (
             <span>

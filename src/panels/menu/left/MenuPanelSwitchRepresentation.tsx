@@ -51,7 +51,7 @@ export default class MenuPanelSwitchRepresentation extends React.Component<
         placement="right"
         overlay={
           <Tooltip id="tooltipC">
-            {Locale[AppSettings.viewLanguage].deletedRelationships}
+            {Locale[AppSettings.viewLanguage].hiddenTermsAndLinks}
           </Tooltip>
         }
       >

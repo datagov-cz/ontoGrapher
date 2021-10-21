@@ -11,6 +11,7 @@ import {
   WorkspaceVocabularies,
 } from "../../config/Variables";
 import {
+  getExpressionByRepresentation,
   getIntrinsicTropeTypes,
   getLabelOrBlank,
   getNewLink,
@@ -490,7 +491,10 @@ export default class DetailElement extends React.Component<Props, State> {
                       variant={"link"}
                       eventKey={"1"}
                     >
-                      {Locale[AppSettings.viewLanguage].connections}
+                      {getExpressionByRepresentation({
+                        [Representation.FULL]: "links",
+                        [Representation.COMPACT]: "relationships",
+                      })}
                     </Accordion.Toggle>
                   </Card.Header>
                   <Accordion.Collapse eventKey={"1"}>
