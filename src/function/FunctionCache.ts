@@ -80,16 +80,18 @@ async function getFullConnections(
       )
       .concat(subClasses)
   );
-  WorkspaceTerms[iri].restrictions
-    .filter((restriction) => restriction.target in terms)
-    .map((restriction) =>
-      mapResultToConnection(
-        terms,
-        restriction.target,
-        restriction.onProperty,
-        "source"
+  connections.push(
+    ...WorkspaceTerms[iri].restrictions
+      .filter((restriction) => restriction.target in terms)
+      .map((restriction) =>
+        mapResultToConnection(
+          terms,
+          restriction.target,
+          restriction.onProperty,
+          "source"
+        )
       )
-    );
+  );
   Object.keys(restrictions).forEach((restriction) => {
     connections.push(
       ...restrictions[restriction].map((r) =>
