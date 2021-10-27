@@ -75,6 +75,7 @@ export const SaveDiagramsModal: React.FC<Props> = (props) => {
   const [diagramRepresentation, setDiagramRepresentation] = useState<number>(
     AppSettings.representation
   );
+  const [iriData, setIRIdata] = useState<boolean>(false);
   const [format, setFormat] = useState<string>("PNG");
 
   const saveDiagram: (behaviour: saveBehaviourEnum) => void = (
@@ -125,6 +126,30 @@ export const SaveDiagramsModal: React.FC<Props> = (props) => {
     svg.setAttribute("width", String(area.width));
     svg.setAttribute("height", String(area.height));
     svg.setAttribute("viewbox", `0 0 ${area.width} ${area.height}`);
+    if (format === "SVG" && iriData) {
+      svg.setAttribute(
+        "data-ontographer-view",
+        Representation[diagramRepresentation].toLowerCase()
+      );
+      const termElements = svg.getElementsByClassName("joint-element");
+      for (const index in graph.getElements()) {
+        const element = termElements[index];
+        const id = element.getAttribute("model-id");
+        if (element && id) {
+          const iri = WorkspaceElements[id].iri;
+          termElements[index].setAttribute("data-ontographer-iri", iri);
+        }
+      }
+      const linkElements = svg.getElementsByClassName("joint-link");
+      for (const index in graph.getLinks()) {
+        const element = linkElements[index];
+        const id = element.getAttribute("model-id");
+        if (element && id) {
+          const iri = WorkspaceLinks[id].iri;
+          linkElements[index].setAttribute("data-ontographer-iri", iri);
+        }
+      }
+    }
     let svgText = serializer.serializeToString(svg);
     if (blackWhiteSwitch) {
       svgText = svgText.replaceAll(
@@ -240,7 +265,10 @@ export const SaveDiagramsModal: React.FC<Props> = (props) => {
                 as="select"
                 size={"sm"}
                 value={format}
-                onChange={(event) => setFormat(event.currentTarget.value)}
+                onChange={(event) => {
+                  setFormat(event.currentTarget.value);
+                  if (event.currentTarget.value === "PNG") setIRIdata(false);
+                }}
               >
                 <option key={1} value={"PNG"}>
                   {"PNG"}
@@ -262,6 +290,16 @@ export const SaveDiagramsModal: React.FC<Props> = (props) => {
             onChange={(event) =>
               setBlackWhiteSwitch(event.currentTarget.checked)
             }
+          />
+          <Form.Check
+            disabled={format !== "SVG"}
+            type={"checkbox"}
+            label={
+              Locale[AppSettings.viewLanguage].generateDiagramImageWithIRIData
+            }
+            checked={iriData}
+            id={"setIRIcheckbox"}
+            onChange={(event) => setIRIdata(event.currentTarget.checked)}
           />
         </Form>
         <br />
