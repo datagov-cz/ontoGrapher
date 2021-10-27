@@ -177,7 +177,7 @@ export var AppSettings: {
     "http://onto.fel.cvut.cz/ontologies/application/ontoGrapher",
   cacheContext: "https://slovník.gov.cz",
   luceneConnector: "label_index",
-  representation: Representation.FULL,
+  representation: Representation.COMPACT,
   defaultCardinality1: "0",
   defaultCardinality2: "*",
   contextVersion: 1,

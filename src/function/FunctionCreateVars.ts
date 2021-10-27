@@ -95,7 +95,7 @@ export function addClass(
 export function addDiagram(
   name: string,
   active: boolean = true,
-  representation: Representation = Representation.FULL
+  representation: Representation = Representation.COMPACT
 ): typeof Diagrams[number] {
   return {
     name: name,
