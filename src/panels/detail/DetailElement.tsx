@@ -12,7 +12,7 @@ import {
 } from "../../config/Variables";
 import {
   getExpressionByRepresentation,
-  getIntrinsicTropeTypes,
+  getIntrinsicTropeTypeIDs,
   getLabelOrBlank,
   getNewLink,
   getVocabularyFromScheme,
@@ -375,12 +375,15 @@ export default class DetailElement extends React.Component<Props, State> {
                           </h5>
                           <IntrinsicTropeTable
                             iri={WorkspaceElements[this.state.id].iri}
-                            tropes={getIntrinsicTropeTypes(this.state.id)}
+                            tropes={getIntrinsicTropeTypeIDs(this.state.id).map(
+                              (id) => WorkspaceElements[id].iri
+                            )}
                             onEdit={(id: string) =>
                               this.props.updateDetailPanel(id)
                             }
                             onRemove={(id: string) => {
-                              const connections = getIntrinsicTropeTypes(
+                              debugger;
+                              const connections = getIntrinsicTropeTypeIDs(
                                 this.state.id,
                                 true
                               );

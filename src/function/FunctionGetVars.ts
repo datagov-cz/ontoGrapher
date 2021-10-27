@@ -203,7 +203,7 @@ export function isTermReadOnly(iri: string) {
   );
 }
 
-export function getIntrinsicTropeTypes(
+export function getIntrinsicTropeTypeIDs(
   id: string,
   returnLinkIDs: boolean = false
 ) {
@@ -218,9 +218,7 @@ export function getIntrinsicTropeTypes(
           WorkspaceElements[WorkspaceLinks[link].target].iri
         ].types.includes(parsePrefix("z-sgov-pojem", "typ-vlastnosti"))
     )
-    .map((link) =>
-      returnLinkIDs ? link : WorkspaceElements[WorkspaceLinks[link].target].iri
-    )
+    .map((link) => (returnLinkIDs ? link : WorkspaceLinks[link].target))
     .concat(
       Object.keys(WorkspaceLinks)
         .filter(
@@ -233,10 +231,6 @@ export function getIntrinsicTropeTypes(
               WorkspaceElements[WorkspaceLinks[link].source].iri
             ].types.includes(parsePrefix("z-sgov-pojem", "typ-vlastnosti"))
         )
-        .map((link) =>
-          returnLinkIDs
-            ? link
-            : WorkspaceElements[WorkspaceLinks[link].source].iri
-        )
+        .map((link) => (returnLinkIDs ? link : WorkspaceLinks[link].source))
     );
 }

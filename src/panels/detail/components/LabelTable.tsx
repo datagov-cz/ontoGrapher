@@ -67,6 +67,7 @@ export default class LabelTable extends React.Component<Props, State> {
                   <span className={"right"}>
                     {getLabelOrBlank(this.props.labels, lang) !==
                       this.props.default &&
+                      this.props.selectAsDefault &&
                       AppSettings.selectedLanguage === lang &&
                       this.state.hover[i] && (
                         <OverlayTrigger
