@@ -4,6 +4,7 @@ import { AppSettings, Languages } from "../../../config/Variables";
 import InlineEdit, { InputType } from "riec";
 import { Form, OverlayTrigger, Tooltip } from "react-bootstrap";
 import { Locale } from "../../../config/Locale";
+import { removeNewlines } from "../../../function/FunctionEditVars";
 
 interface Props {
   labels: { label: string; language: string }[];
@@ -49,7 +50,11 @@ export default class AltLabelTable extends React.Component<Props, State> {
                   viewClass={"rieinput"}
                   value={this.props.labels[i].label}
                   onChange={(value: string) => {
-                    this.props.onEdit(value, this.props.labels[i].language, i);
+                    this.props.onEdit(
+                      removeNewlines(value),
+                      this.props.labels[i].language,
+                      i
+                    );
                   }}
                   type={InputType.TextArea}
                 />
@@ -98,7 +103,11 @@ export default class AltLabelTable extends React.Component<Props, State> {
                   type={InputType.Select}
                   value={this.props.labels[i].language}
                   onChange={(language) =>
-                    this.props.onEdit(this.props.labels[i].label, language, i)
+                    this.props.onEdit(
+                      removeNewlines(this.props.labels[i].label),
+                      language,
+                      i
+                    )
                   }
                   options={Object.keys(Languages).map((lang) => {
                     return { id: lang, name: Languages[lang] };

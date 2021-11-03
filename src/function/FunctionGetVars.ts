@@ -203,6 +203,25 @@ export function isTermReadOnly(iri: string) {
   );
 }
 
+export function getParentOfIntrinsicTropeType(tropeID: string) {
+  const connections = Object.keys(WorkspaceLinks).filter((link) => {
+    return (
+      ([
+        parsePrefix("z-sgov-pojem", "je-vlastností"),
+        parsePrefix("z-sgov-pojem", "má-vlastnost"),
+      ].includes(WorkspaceLinks[link].iri) &&
+        WorkspaceLinks[link].active &&
+        WorkspaceLinks[link].source === tropeID) ||
+      WorkspaceLinks[link].target === tropeID
+    );
+  });
+  return connections.map((link) =>
+    WorkspaceLinks[link].source === tropeID
+      ? WorkspaceLinks[link].target
+      : WorkspaceLinks[link].source
+  );
+}
+
 export function getIntrinsicTropeTypeIDs(
   id: string,
   returnLinkIDs: boolean = false

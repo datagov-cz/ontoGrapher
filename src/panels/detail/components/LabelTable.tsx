@@ -10,6 +10,7 @@ import { AppSettings, Languages } from "../../../config/Variables";
 import InlineEdit, { InputType } from "riec";
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
 import { Locale } from "../../../config/Locale";
+import { removeNewlines } from "../../../function/FunctionEditVars";
 
 interface Props {
   labels: { [key: string]: string };
@@ -55,7 +56,8 @@ export default class LabelTable extends React.Component<Props, State> {
                   type={InputType.Text}
                   value={getLabelOrBlank(this.props.labels, lang)}
                   onChange={(label) => {
-                    if (this.props.onEdit) this.props.onEdit(label, lang);
+                    if (this.props.onEdit)
+                      this.props.onEdit(removeNewlines(label), lang);
                   }}
                   valueKey="id"
                   labelKey="name"

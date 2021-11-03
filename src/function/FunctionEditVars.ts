@@ -112,6 +112,10 @@ export function parsePrefix(prefix: string, name: string): string {
   return Prefixes[prefix] + name;
 }
 
+export function removeNewlines(str: string): string {
+  return str.replaceAll(/\r?\n|\r/g, "");
+}
+
 export function deletePackageItem(id: string): string[] {
   const folder = WorkspaceElements[id].package;
   const iri = WorkspaceElements[id].iri;
