@@ -382,7 +382,6 @@ export default class DetailElement extends React.Component<Props, State> {
                               this.props.updateDetailPanel(id)
                             }
                             onRemove={(id: string) => {
-                              debugger;
                               const connections = getIntrinsicTropeTypeIDs(
                                 this.state.id,
                                 true
