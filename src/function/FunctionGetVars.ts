@@ -203,7 +203,26 @@ export function isTermReadOnly(iri: string) {
   );
 }
 
-export function getIntrinsicTropeTypes(
+export function getParentOfIntrinsicTropeType(tropeID: string) {
+  const connections = Object.keys(WorkspaceLinks).filter((link) => {
+    return (
+      ([
+        parsePrefix("z-sgov-pojem", "je-vlastností"),
+        parsePrefix("z-sgov-pojem", "má-vlastnost"),
+      ].includes(WorkspaceLinks[link].iri) &&
+        WorkspaceLinks[link].active &&
+        WorkspaceLinks[link].source === tropeID) ||
+      WorkspaceLinks[link].target === tropeID
+    );
+  });
+  return connections.map((link) =>
+    WorkspaceLinks[link].source === tropeID
+      ? WorkspaceLinks[link].target
+      : WorkspaceLinks[link].source
+  );
+}
+
+export function getIntrinsicTropeTypeIDs(
   id: string,
   returnLinkIDs: boolean = false
 ) {
@@ -218,9 +237,7 @@ export function getIntrinsicTropeTypes(
           WorkspaceElements[WorkspaceLinks[link].target].iri
         ].types.includes(parsePrefix("z-sgov-pojem", "typ-vlastnosti"))
     )
-    .map((link) =>
-      returnLinkIDs ? link : WorkspaceElements[WorkspaceLinks[link].target].iri
-    )
+    .map((link) => (returnLinkIDs ? link : WorkspaceLinks[link].target))
     .concat(
       Object.keys(WorkspaceLinks)
         .filter(
@@ -233,10 +250,6 @@ export function getIntrinsicTropeTypes(
               WorkspaceElements[WorkspaceLinks[link].source].iri
             ].types.includes(parsePrefix("z-sgov-pojem", "typ-vlastnosti"))
         )
-        .map((link) =>
-          returnLinkIDs
-            ? link
-            : WorkspaceElements[WorkspaceLinks[link].source].iri
-        )
+        .map((link) => (returnLinkIDs ? link : WorkspaceLinks[link].source))
     );
 }

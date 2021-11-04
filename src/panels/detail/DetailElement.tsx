@@ -12,9 +12,10 @@ import {
 } from "../../config/Variables";
 import {
   getExpressionByRepresentation,
-  getIntrinsicTropeTypes,
+  getIntrinsicTropeTypeIDs,
   getLabelOrBlank,
   getNewLink,
+  getParentOfIntrinsicTropeType,
   getVocabularyFromScheme,
 } from "../../function/FunctionGetVars";
 import { Accordion, Button, Card } from "react-bootstrap";
@@ -114,7 +115,7 @@ export default class DetailElement extends React.Component<Props, State> {
   }
 
   save() {
-    let elem = graph.getElements().find((elem) => elem.id === this.state.id);
+    const elem = graph.getElements().find((elem) => elem.id === this.state.id);
     if (this.state.id in WorkspaceElements) {
       WorkspaceTerms[WorkspaceElements[this.state.id].iri].altLabels =
         this.state.inputAltLabels;
@@ -123,12 +124,28 @@ export default class DetailElement extends React.Component<Props, State> {
       WorkspaceElements[this.state.id].selectedLabel = this.state.selectedLabel;
       WorkspaceTerms[WorkspaceElements[this.state.id].iri].labels =
         this.state.inputLabels;
-      if (elem)
+      if (elem) {
         drawGraphElement(
           elem,
           this.props.projectLanguage,
           AppSettings.representation
         );
+      }
+
+      if (
+        this.state.inputTypeType ===
+        parsePrefix("z-sgov-pojem", "typ-vlastnosti")
+      ) {
+        getParentOfIntrinsicTropeType(this.state.id).forEach((id) => {
+          const elem = graph.getElements().find((elem) => elem.id === id);
+          if (elem)
+            drawGraphElement(
+              elem,
+              this.props.projectLanguage,
+              AppSettings.representation
+            );
+        });
+      }
       this.props.save(this.state.id);
       this.setState({ changes: false });
       this.prepareDetails(this.state.id);
@@ -375,12 +392,14 @@ export default class DetailElement extends React.Component<Props, State> {
                           </h5>
                           <IntrinsicTropeTable
                             iri={WorkspaceElements[this.state.id].iri}
-                            tropes={getIntrinsicTropeTypes(this.state.id)}
+                            tropes={getIntrinsicTropeTypeIDs(this.state.id).map(
+                              (id) => WorkspaceElements[id].iri
+                            )}
                             onEdit={(id: string) =>
                               this.props.updateDetailPanel(id)
                             }
                             onRemove={(id: string) => {
-                              const connections = getIntrinsicTropeTypes(
+                              const connections = getIntrinsicTropeTypeIDs(
                                 this.state.id,
                                 true
                               );

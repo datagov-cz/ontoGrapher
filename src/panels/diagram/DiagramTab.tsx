@@ -3,6 +3,7 @@ import { AppSettings, Diagrams } from "../../config/Variables";
 import { changeDiagrams } from "../../function/FunctionDiagram";
 import { updateProjectSettings } from "../../queries/update/UpdateMiscQueries";
 import InlineEdit, { InputType } from "riec";
+import { removeNewlines } from "../../function/FunctionEditVars";
 
 interface Props {
   diagram: number;
@@ -51,7 +52,7 @@ export default class DiagramTab extends React.Component<Props, State> {
                 : "<blank>"
             }
             onChange={(value: string) => {
-              this.handleChangeDiagramName(value);
+              this.handleChangeDiagramName(removeNewlines(value));
             }}
             type={InputType.Text}
           />
