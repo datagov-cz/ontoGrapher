@@ -3,7 +3,7 @@ import * as joint from "jointjs";
 import {
   AppSettings,
   Diagrams,
-  PackageRoot,
+  FolderRoot,
   WorkspaceElements,
   WorkspaceTerms,
   WorkspaceVocabularies,
@@ -139,7 +139,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
       "blank:contextmenu": (evt) => {
         evt.preventDefault();
         if (
-          PackageRoot.children.find(
+          FolderRoot.children.find(
             (pkg) =>
               !WorkspaceVocabularies[getVocabularyFromScheme(pkg.scheme)]
                 .readOnly
@@ -148,7 +148,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
           this.props.handleCreation({
             strategy: ElemCreationStrategy.DEFAULT,
             position: { x: evt.clientX, y: evt.clientY },
-            pkg: PackageRoot,
+            pkg: FolderRoot,
             header: Locale[AppSettings.viewLanguage].modalNewElemTitle,
             connections: [],
           });

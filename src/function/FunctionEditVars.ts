@@ -1,9 +1,9 @@
 import {
   AppSettings,
   Diagrams,
+  FolderRoot,
   Languages,
   Links,
-  PackageRoot,
   Prefixes,
   Stereotypes,
   WorkspaceElements,
@@ -108,12 +108,15 @@ export function initLanguageObject(def: any) {
   return result;
 }
 
-export function parsePrefix(prefix: string, name: string): string {
+export function parsePrefix(
+  prefix: keyof typeof Prefixes,
+  name: string
+): string {
   return Prefixes[prefix] + name;
 }
 
-export function deletePackageItem(id: string): string[] {
-  const folder = WorkspaceElements[id].package;
+export function deleteConcept(id: string): string[] {
+  const folder = WorkspaceElements[id].vocabularyNode;
   const iri = WorkspaceElements[id].iri;
   let queries: string[] = [];
   folder.elements.splice(folder.elements.indexOf(id), 1);
@@ -258,7 +261,7 @@ export function initElements() {
   let ids: string[] = [];
   for (const iri in WorkspaceTerms) {
     if (!getElemFromIRI(iri)) {
-      let pkg = PackageRoot.children.find(
+      const pkg = FolderRoot.children.find(
         (pkg) => pkg.scheme === WorkspaceTerms[iri].inScheme
       );
       const id = new graphElement().id as string;

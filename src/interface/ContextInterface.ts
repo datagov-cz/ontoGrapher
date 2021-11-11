@@ -1,11 +1,11 @@
 import {
   AppSettings,
-  PackageRoot,
+  FolderRoot,
   WorkspaceElements,
   WorkspaceTerms,
   WorkspaceVocabularies,
 } from "../config/Variables";
-import { PackageNode } from "../datatypes/PackageNode";
+import { VocabularyNode } from "../datatypes/VocabularyNode";
 import { processQuery, processTransaction } from "./TransactionInterface";
 import { fetchConcepts, fetchVocabulary } from "../queries/get/FetchQueries";
 import { getElementsConfig, getLinksConfig } from "../queries/get/InitQueries";
@@ -102,28 +102,30 @@ export async function getContext(
     WorkspaceVocabularies[vocab].readOnly = false;
     WorkspaceVocabularies[vocab].graph = vocabularies[vocab].graph;
     Object.assign(WorkspaceTerms, vocabularies[vocab].terms);
-    new PackageNode(
+    new VocabularyNode(
       WorkspaceVocabularies[vocab].labels,
-      PackageRoot,
+      FolderRoot,
       false,
       vocabularies[vocab].glossary
     );
   }
-  await getElementsConfig(AppSettings.contextEndpoint);
-  await getLinksConfig(AppSettings.contextEndpoint);
+  if (!(await getElementsConfig(AppSettings.contextEndpoint))) return false;
+  if (!(await getLinksConfig(AppSettings.contextEndpoint))) return false;
   const missingTerms: string[] = Object.keys(WorkspaceElements)
     .filter((id) => !(WorkspaceElements[id].iri in WorkspaceTerms))
     .map((id) => WorkspaceElements[id].iri);
   insertNewCacheTerms(
     await fetchReadOnlyTerms(AppSettings.contextEndpoint, missingTerms)
   );
-  await processTransaction(
-    AppSettings.contextEndpoint,
-    qb.constructQuery(updateProjectElement(false, ...initElements()))
-  );
-  await processTransaction(
+  if (
+    !(await processTransaction(
+      AppSettings.contextEndpoint,
+      qb.constructQuery(updateProjectElement(false, ...initElements()))
+    ))
+  )
+    return false;
+  return await processTransaction(
     AppSettings.contextEndpoint,
     qb.constructQuery(updateProjectLink(false, ...initConnections()))
   );
-  return true;
 }

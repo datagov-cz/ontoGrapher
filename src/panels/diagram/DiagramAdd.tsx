@@ -6,8 +6,8 @@ import {
   WorkspaceLinks,
 } from "../../config/Variables";
 import { Locale } from "../../config/Locale";
-import { updateProjectSettings } from "../../queries/update/UpdateMiscQueries";
 import { addDiagram } from "../../function/FunctionCreateVars";
+import { updateCreateDiagram } from "../../queries/update/UpdateDiagramQueries";
 
 interface Props {
   update: Function;
@@ -26,9 +26,7 @@ export default class DiagramAdd extends React.Component<Props, State> {
     Object.keys(WorkspaceLinks).forEach(
       (link) => (WorkspaceLinks[link].vertices[index] = [])
     );
-    this.props.performTransaction(
-      updateProjectSettings(AppSettings.contextIRI, index)
-    );
+    this.props.performTransaction(updateCreateDiagram(index));
     this.props.update();
   }
 

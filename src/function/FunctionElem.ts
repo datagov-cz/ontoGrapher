@@ -6,7 +6,7 @@ import {
 } from "./FunctionDraw";
 import { getElementShape } from "./FunctionGetVars";
 import { paper } from "../main/DiagramCanvas";
-import { PackageNode } from "../datatypes/PackageNode";
+import { VocabularyNode } from "../datatypes/VocabularyNode";
 import { graphElement } from "../graph/GraphElement";
 import {
   addClass,
@@ -97,7 +97,7 @@ export function createNewConcept(
   point: { x: number; y: number },
   name: { [key: string]: string },
   language: string,
-  pkg: PackageNode,
+  pkg: VocabularyNode,
   types: string[] = []
 ): string {
   const cls = new graphElement();
@@ -253,8 +253,8 @@ export async function putElementsOnCanvas(
         await fetchRelationships(AppSettings.contextEndpoint, iris)
       );
       const newIDs = initElements();
-      await queries.push(updateProjectElement(false, ...newIDs));
-      await queries.push(updateProjectLink(false, ...initConnections()));
+      queries.push(updateProjectElement(false, ...newIDs));
+      queries.push(updateProjectLink(false, ...initConnections()));
       ids.push(...newIDs);
     }
     const matrixLength = Math.max(ids.length, iris.length);
@@ -295,7 +295,9 @@ export async function putElementsOnCanvas(
         );
       });
     if (AppSettings.representation === Representation.COMPACT)
-      setRepresentation(AppSettings.representation);
+      queries.push(
+        ...setRepresentation(AppSettings.representation).transaction
+      );
   }
   return queries;
 }

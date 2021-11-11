@@ -1,22 +1,14 @@
-import {
-  AppSettings,
-  Diagrams,
-  WorkspaceElements,
-} from "../../config/Variables";
+import { AppSettings, WorkspaceElements } from "../../config/Variables";
 import { qb } from "../QueryBuilder";
 import { DELETE, INSERT } from "@tpluscode/sparql-builder";
 import { getWorkspaceContextIRI } from "../../function/FunctionGetVars";
+import { parsePrefix } from "../../function/FunctionEditVars";
+import { Environment } from "../../config/Environment";
 
-export function updateProjectSettings(
-  contextIRI: string,
-  diagram: number
-): string {
-  const projIRI =
-    AppSettings.ontographerContext +
-    AppSettings.contextIRI.substring(AppSettings.contextIRI.lastIndexOf("/"));
-  const diagramIRI = qb.i(projIRI + "/diagram-" + (diagram + 1));
+export function updateWorkspaceContext(): string {
+  const projIRI = getWorkspaceContextIRI();
 
-  const insert = INSERT.DATA`${qb.g(projIRI, [
+  const insertAppContext = INSERT.DATA`${qb.g(projIRI, [
     qb.s(qb.i(projIRI), "og:viewColor", qb.ll(AppSettings.viewColorPool)),
     qb.s(
       qb.i(projIRI),
@@ -25,28 +17,23 @@ export function updateProjectSettings(
     ),
     qb.s(
       qb.i(projIRI),
-      "og:diagram",
-      qb.a(Diagrams.map((diag, i) => qb.i(projIRI + "/diagram-" + (i + 1))))
+      qb.i(parsePrefix("d-sgov-pracovní-prostor-pojem", "má-id-aplikace")),
+      qb.ll(Environment.id)
     ),
-    qb.s(diagramIRI, "og:index", qb.ll(diagram)),
-    qb.s(diagramIRI, "og:name", qb.ll(Diagrams[diagram].name)),
-    qb.s(diagramIRI, "og:active", qb.ll(Diagrams[diagram].active)),
+  ])}`.build();
+
+  const insertMetadataContext = INSERT.DATA`${qb.g(AppSettings.contextIRI, [
     qb.s(
-      diagramIRI,
-      "og:representation",
-      qb.ll(Diagrams[diagram].representation)
+      qb.i(AppSettings.contextIRI),
+      qb.i(parsePrefix("d-sgov-pracovní-prostor-pojem", "odkazuje-na-kontext")),
+      qb.i(projIRI)
     ),
   ])}`.build();
 
-  const del = DELETE`${qb.g(getWorkspaceContextIRI(), [
-    qb.s(qb.i(projIRI), "?p", "?o"),
-    qb.s(diagramIRI, "?p1", "?o1"),
-  ])}`.WHERE`${qb.g(getWorkspaceContextIRI(), [
-    qb.s(qb.i(projIRI), "?p", "?o"),
-    qb.s(diagramIRI, "?p1", "?o1"),
-  ])}`.build();
+  const del = DELETE`${qb.g(projIRI, [qb.s(qb.i(projIRI), "?p", "?o")])}`
+    .WHERE`${qb.g(projIRI, [qb.s(qb.i(projIRI), "?p", "?o")])}`.build();
 
-  return qb.combineQueries(del, insert);
+  return qb.combineQueries(del, insertAppContext, insertMetadataContext);
 }
 
 export function updateDeleteTriples(
@@ -94,9 +81,7 @@ export function updateDeleteTriples(
 }
 
 export function updateAddTermsToWorkspace(ids: string[]) {
-  const projIRI =
-    AppSettings.ontographerContext +
-    AppSettings.contextIRI.substring(AppSettings.contextIRI.lastIndexOf("/"));
+  const projIRI = getWorkspaceContextIRI();
   const insert = INSERT.DATA`${qb.g(projIRI, [
     qb.s(
       qb.i(projIRI),

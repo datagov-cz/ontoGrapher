@@ -9,10 +9,11 @@ import {
   WorkspaceVocabularies,
 } from "../config/Variables";
 import { initLanguageObject } from "./FunctionEditVars";
-import { PackageNode } from "../datatypes/PackageNode";
+import { VocabularyNode } from "../datatypes/VocabularyNode";
 import { LinkType, Representation } from "../config/Enum";
 import { Locale } from "../config/Locale";
 import { getVocabularyFromScheme } from "./FunctionGetVars";
+import { v4 as uuidv4 } from "uuid";
 
 export function createValues(
   values: { [key: string]: string[] },
@@ -76,7 +77,7 @@ export function addVocabularyElement(
 export function addClass(
   id: string,
   iri: string,
-  pkg: PackageNode,
+  pkg: VocabularyNode,
   active: boolean = true
 ) {
   WorkspaceElements[id] = {
@@ -85,7 +86,7 @@ export function addClass(
     diagrams: [AppSettings.selectedDiagram],
     hidden: { [AppSettings.selectedDiagram]: true },
     position: { [AppSettings.selectedDiagram]: { x: 0, y: 0 } },
-    package: pkg,
+    vocabularyNode: pkg,
     active: active,
     selectedLabel: initLanguageObject(""),
   };
@@ -95,7 +96,8 @@ export function addClass(
 export function addDiagram(
   name: string,
   active: boolean = true,
-  representation: Representation = Representation.COMPACT
+  representation: Representation = Representation.COMPACT,
+  id?: string
 ): typeof Diagrams[number] {
   return {
     name: name,
@@ -103,6 +105,7 @@ export function addDiagram(
     origin: { x: 0, y: 0 },
     scale: 1,
     representation: representation,
+    id: id ? id : uuidv4(),
   };
 }
 

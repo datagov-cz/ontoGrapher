@@ -1,6 +1,6 @@
 import React from "react";
 import { Button, Form, Modal } from "react-bootstrap";
-import { deletePackageItem } from "../../function/FunctionEditVars";
+import { deleteConcept } from "../../function/FunctionEditVars";
 import {
   AppSettings,
   WorkspaceElements,
@@ -27,7 +27,7 @@ interface Props {
 
 interface State {}
 
-export default class ModalRemoveReadOnlyItem extends React.Component<
+export default class ModalRemoveReadOnlyConcept extends React.Component<
   Props,
   State
 > {
@@ -38,7 +38,7 @@ export default class ModalRemoveReadOnlyItem extends React.Component<
       )
     ].count--;
     this.props.performTransaction(
-      ...deletePackageItem(this.props.id),
+      ...deleteConcept(this.props.id),
       updateDeleteTriples(
         WorkspaceElements[this.props.id].iri + "/diagram",
         [getWorkspaceContextIRI()],
@@ -71,14 +71,14 @@ export default class ModalRemoveReadOnlyItem extends React.Component<
       >
         <Modal.Header>
           <Modal.Title>
-            {Locale[AppSettings.viewLanguage].modalRemovePackageItemTitle}
+            {Locale[AppSettings.viewLanguage].modalRemoveConceptTitle}
           </Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <p>
             {
               Locale[AppSettings.viewLanguage]
-                .modalRemoveReadOnlyPackageItemDescription
+                .modalRemoveReadOnlyConceptDescription
             }
           </p>
         </Modal.Body>

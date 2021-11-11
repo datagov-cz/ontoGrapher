@@ -24,7 +24,7 @@ import * as _ from "lodash";
 import { graphElement } from "../graph/GraphElement";
 import { addLink } from "./FunctionCreateVars";
 import { LinkType, Representation } from "../config/Enum";
-import { drawGraphElement } from "./FunctionDraw";
+import { drawGraphElement, getDisplayLabel } from "./FunctionDraw";
 import {
   updateDeleteProjectLinkVertex,
   updateProjectLink,
@@ -45,7 +45,7 @@ import {
   setSelfLoopConnectionPoints,
 } from "./FunctionLink";
 import { insertNewCacheTerms, insertNewRestrictions } from "./FunctionCache";
-import { updateProjectSettings } from "../queries/update/UpdateMiscQueries";
+import { updateDiagram } from "../queries/update/UpdateDiagramQueries";
 
 export const mvp1IRI =
   "https://slovník.gov.cz/základní/pojem/má-vztažený-prvek-1";
@@ -210,9 +210,7 @@ export function setRepresentation(
     AppSettings.representation = representation;
     Diagrams[AppSettings.selectedDiagram].representation = representation;
   }
-  queries.push(
-    updateProjectSettings(AppSettings.contextIRI, AppSettings.selectedDiagram)
-  );
+  queries.push(updateDiagram(AppSettings.selectedDiagram));
   AppSettings.selectedLink = "";
   let del = false;
   if (representation === Representation.COMPACT) {
@@ -273,12 +271,7 @@ export function setRepresentation(
               }
               setLabels(
                 newLink,
-                WorkspaceElements[id].selectedLabel[
-                  AppSettings.selectedLanguage
-                ] ||
-                  WorkspaceTerms[WorkspaceElements[id].iri].labels[
-                    AppSettings.selectedLanguage
-                  ]
+                getDisplayLabel(id, AppSettings.selectedLanguage)
               );
             }
           }
@@ -310,10 +303,7 @@ export function setRepresentation(
       } else if (WorkspaceLinks[link.id].iri in WorkspaceTerms) {
         const elem = getElemFromIRI(WorkspaceLinks[link.id].iri);
         if (!elem) continue;
-        setLabels(
-          link,
-          WorkspaceElements[elem].selectedLabel[AppSettings.selectedLanguage]
-        );
+        setLabels(link, getDisplayLabel(elem, AppSettings.selectedLanguage));
       }
     }
     for (const elem of graph.getElements()) {

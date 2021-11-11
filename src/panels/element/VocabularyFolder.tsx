@@ -1,5 +1,5 @@
 import React from "react";
-import { PackageNode } from "../../datatypes/PackageNode";
+import { VocabularyNode } from "../../datatypes/VocabularyNode";
 import { AppSettings, WorkspaceVocabularies } from "../../config/Variables";
 import {
   getLabelOrBlank,
@@ -14,7 +14,7 @@ import { CacheSearchVocabularies } from "../../datatypes/CacheSearchResults";
 import { Locale } from "../../config/Locale";
 
 interface Props {
-  node: PackageNode;
+  node: VocabularyNode;
   update: Function;
   projectLanguage: string;
   readOnly: boolean;
@@ -26,7 +26,7 @@ interface State {
   hover: boolean;
 }
 
-export default class PackageFolder extends React.Component<Props, State> {
+export default class VocabularyFolder extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = {
@@ -75,7 +75,7 @@ export default class PackageFolder extends React.Component<Props, State> {
         }}
         onClick={(event) => this.handleClick(event)}
         className={
-          "packageFolder" +
+          "vocabularyFolder" +
           (this.state.open ? " open" : "") +
           (this.props.node.elements.every((elem) =>
             AppSettings.selectedElements.includes(elem)

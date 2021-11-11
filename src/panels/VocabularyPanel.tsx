@@ -2,22 +2,22 @@ import React from "react";
 import { ResizableBox } from "react-resizable";
 import {
   AppSettings,
-  PackageRoot,
+  FolderRoot,
   WorkspaceElements,
   WorkspaceTerms,
   WorkspaceVocabularies,
 } from "../config/Variables";
-import PackageFolder from "./element/PackageFolder";
-import PackageItem from "./element/PackageItem";
+import VocabularyFolder from "./element/VocabularyFolder";
+import VocabularyConcept from "./element/VocabularyConcept";
 import {
   getLabelOrBlank,
   getVocabularyFromScheme,
 } from "../function/FunctionGetVars";
-import ModalRemoveItem from "./modal/ModalRemoveItem";
+import ModalRemoveConcept from "./modal/ModalRemoveConcept";
 import { Form, InputGroup, OverlayTrigger, Tooltip } from "react-bootstrap";
 import { parsePrefix } from "../function/FunctionEditVars";
 import { Representation } from "../config/Enum";
-import PackageDivider from "./element/PackageDivider";
+import ConceptDivider from "./element/ConceptDivider";
 import { Locale } from "../config/Locale";
 import { Shapes } from "../config/visual/Shapes";
 import { SearchTerm } from "./element/SearchTerm";
@@ -29,7 +29,7 @@ import {
   CacheSearchVocabularies,
 } from "../datatypes/CacheSearchResults";
 import { searchCache } from "../queries/get/CacheQueries";
-import ModalRemoveReadOnlyItem from "./modal/ModalRemoveReadOnlyItem";
+import ModalRemoveReadOnlyConcept from "./modal/ModalRemoveReadOnlyConcept";
 
 interface Props {
   projectLanguage: string;
@@ -53,7 +53,7 @@ interface State {
   groupLucene: boolean;
 }
 
-export default class ItemPanel extends React.Component<Props, State> {
+export default class VocabularyPanel extends React.Component<Props, State> {
   private searchTimeout: number = 0;
 
   constructor(props: Props) {
@@ -81,7 +81,7 @@ export default class ItemPanel extends React.Component<Props, State> {
   }
 
   showItem(id: string) {
-    PackageRoot.children.forEach((pkg) => {
+    FolderRoot.children.forEach((pkg) => {
       if (!pkg.open) pkg.open = pkg.elements.includes(id);
     });
     this.setState(
@@ -113,7 +113,7 @@ export default class ItemPanel extends React.Component<Props, State> {
   }
 
   handleChangeSearch(event: React.ChangeEvent<HTMLSelectElement>) {
-    PackageRoot.children.forEach(
+    FolderRoot.children.forEach(
       (pkg) => (pkg.open = !(event.currentTarget.value === ""))
     );
     this.setState({ search: event.currentTarget.value });
@@ -171,7 +171,7 @@ export default class ItemPanel extends React.Component<Props, State> {
 
   updateShownElements() {
     const result: { [key: string]: { [key: string]: string[] } } = {};
-    PackageRoot.children.forEach((node) => {
+    FolderRoot.children.forEach((node) => {
       result[node.scheme] = {};
       Object.keys(Shapes)
         .concat("unsorted")
@@ -227,12 +227,12 @@ export default class ItemPanel extends React.Component<Props, State> {
 
   getFolders(): JSX.Element[] {
     let result: JSX.Element[] = [];
-    for (const node of PackageRoot.children) {
-      const packageItems: JSX.Element[] = [];
+    for (const node of FolderRoot.children) {
+      const vocabularyConcepts: JSX.Element[] = [];
       for (const iri in this.state.shownElements[node.scheme]) {
         if (this.state.shownElements[node.scheme][iri].length === 0) continue;
-        packageItems.push(
-          <PackageDivider
+        vocabularyConcepts.push(
+          <ConceptDivider
             key={iri}
             iri={iri}
             items={this.state.shownElements[node.scheme][iri]}
@@ -242,8 +242,8 @@ export default class ItemPanel extends React.Component<Props, State> {
           />
         );
         for (const id of this.state.shownElements[node.scheme][iri]) {
-          packageItems.push(
-            <PackageItem
+          vocabularyConcepts.push(
+            <VocabularyConcept
               key={id}
               id={id}
               visible={node.open}
@@ -266,11 +266,13 @@ export default class ItemPanel extends React.Component<Props, State> {
         this.state.vocabs.find(
           (vocab) => vocab.value === getVocabularyFromScheme(node.scheme)
         ) ||
-        (this.state.vocabs.length === 0 && packageItems.length > 0)
-        || (this.state.vocabs.length === 0 && packageItems.length === 0 && !this.state.search)
+        (this.state.vocabs.length === 0 && vocabularyConcepts.length > 0) ||
+        (this.state.vocabs.length === 0 &&
+          vocabularyConcepts.length === 0 &&
+          !this.state.search)
       )
         result.push(
-          <PackageFolder
+          <VocabularyFolder
             key={node.scheme}
             projectLanguage={this.props.projectLanguage}
             node={node}
@@ -281,8 +283,8 @@ export default class ItemPanel extends React.Component<Props, State> {
             }
             filter={this.filter}
           >
-            {node.open && packageItems}
-          </PackageFolder>
+            {node.open && vocabularyConcepts}
+          </VocabularyFolder>
         );
     }
     return result;
@@ -458,7 +460,7 @@ export default class ItemPanel extends React.Component<Props, State> {
               </div>
             </div>
           </div>
-          <ModalRemoveItem
+          <ModalRemoveConcept
             modal={this.state.modalRemoveItem}
             id={this.state.selectedID}
             close={() => {
@@ -472,7 +474,7 @@ export default class ItemPanel extends React.Component<Props, State> {
             performTransaction={this.props.performTransaction}
             projectLanguage={this.props.projectLanguage}
           />
-          <ModalRemoveReadOnlyItem
+          <ModalRemoveReadOnlyConcept
             modal={this.state.modalRemoveReadOnlyItem}
             id={this.state.selectedID}
             close={() => {

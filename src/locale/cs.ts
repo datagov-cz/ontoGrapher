@@ -22,7 +22,7 @@ export const cs: { [Property in keyof typeof en]: string } = {
     "Chyba autentikace. Prosím, kontaktujte serverového administrátora.",
   authenticationUpdateError:
     "Chyba autentikace. Prosím, načtěte stránku znovu.",
-  modalRemovePackageItemConnectionsDescription:
+  modalRemoveConceptConnectionsDescription:
     "Varování: pojem, který se chystáte smazat, je spojen s pojmy mimo pracovní prostor relacemi, které zde nelze smazat. Tyto relace proto zůstanou v databázi:",
   authenticationExpired: "Autentikace vypršela. Prosím, načtěte stránku znovu.",
   authenticationTimeout: "Dotaz na autentikační server vypršel.",
@@ -79,6 +79,7 @@ export const cs: { [Property in keyof typeof en]: string } = {
     "Připojení k validačnímu serveru se nezdařilo. Prosím, zkuste to znovu.",
   pleaseReload:
     "Chyba: pracovní prostor nebyl nalezen. Prosím, zkontrolujte IRI pracovního prostoru.",
+  connectionError: "Chyba při načítání pracovního prostoru.",
   spreadLinks: "Zobrazit všechny vazby na plátně",
   spreadRelationships: "Zobrazit všechny vztahy na plátně",
   links: "Vazby",
@@ -103,7 +104,7 @@ export const cs: { [Property in keyof typeof en]: string } = {
   description: "Popis",
   vocabularyNotFound: "URL definice slovníků chybí nebo není správné",
   validate: "Zkontrolovat",
-  modalRemovePackageItemTitle: "Smazat pojem?",
+  modalRemoveConceptTitle: "Smazat pojem?",
   modalRemoveDiagramTitle: "Smazat diagram?",
   modalRemoveDiagramDescription: "Opravdu chcete smazat diagram?",
   selectTropeTypePlaceholder: "Vybrat vlastnost",
@@ -117,7 +118,7 @@ export const cs: { [Property in keyof typeof en]: string } = {
   connectionTo: "ke",
   connectionFrom: "od",
   diagram: "v diagramu",
-  modalRemovePackageItemDescription: "Opravdu chcete smazat pojem?",
+  modalRemoveConceptDescription: "Opravdu chcete smazat pojem?",
   definitions: "Popisy",
   representationCompactSwitch: "Přepnout na kompaktní pohled",
   representationFullSwitch: "Přepnout na úplný pohled",
@@ -136,7 +137,7 @@ export const cs: { [Property in keyof typeof en]: string } = {
   fileProjectSettingsDescriptions: "Popis",
   help: "Nápověda",
   modalNewElemError: "Jméno pojmu je povinné.",
-  selectPackage: "Pojem se vytvoří ve slovníku:",
+  selectVocabulary: "Pojem se vytvoří ve slovníku:",
   view: "Vzhled",
   switchColors: "Barvy slovníků",
   reportIssue: "Nahlásit chybu",
@@ -155,7 +156,7 @@ export const cs: { [Property in keyof typeof en]: string } = {
   connectionListShowFilter: "Zobrazit/skrýt filtr",
   connectionListEmptyFilter: "Zrušit filtr",
   downloadingTerms: "Přidávání vybraných pojmů do pracovního prostoru...",
-  modalRemoveReadOnlyPackageItemDescription:
+  modalRemoveReadOnlyConceptDescription:
     "Opravdu chcete smazat pojem? Daný pojem zůstane ve slovníku, pouze se odstraní z pracovního prostoru společně s vazbami směřujícími k pojmu.",
   updatingWorkspaceVersion: "Aktualizace verze pracovního prostoru...",
   vocabularyNotFullyRepresented:

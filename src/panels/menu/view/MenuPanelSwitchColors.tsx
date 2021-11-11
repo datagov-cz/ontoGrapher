@@ -6,7 +6,7 @@ import { graph } from "../../../graph/Graph";
 import { setSchemeColors } from "../../../function/FunctionGetVars";
 import { Locale } from "../../../config/Locale";
 import { drawGraphElement } from "../../../function/FunctionDraw";
-import { updateProjectSettings } from "../../../queries/update/UpdateMiscQueries";
+import { updateWorkspaceContext } from "../../../queries/update/UpdateMiscQueries";
 
 interface Props {
   update: Function;
@@ -31,9 +31,7 @@ export default class MenuPanelSwitchColors extends React.Component<
           AppSettings.representation
         )
       );
-    this.props.performTransaction(
-      updateProjectSettings(AppSettings.contextIRI, AppSettings.selectedDiagram)
-    );
+    this.props.performTransaction(updateWorkspaceContext());
     this.props.update();
     this.forceUpdate();
   }

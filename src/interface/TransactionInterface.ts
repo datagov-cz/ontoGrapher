@@ -8,10 +8,10 @@ export async function processTransaction(
 ): Promise<boolean> {
   if (!transaction) return true;
   AppSettings.lastTransaction = transaction;
-  const miliseconds = 15000;
+  const timeoutDeadline = 15000;
   const controller = new AbortController();
   const signal = controller.signal;
-  let timeout = window.setTimeout(() => controller.abort(), miliseconds);
+  let timeout = window.setTimeout(() => controller.abort(), timeoutDeadline);
 
   const transactionUrl = contextEndpoint + "/transactions";
 
@@ -40,7 +40,7 @@ export async function processTransaction(
     timeout = window.setTimeout(() => {
       controller.abort();
       abortTransaction(transactionID);
-    }, miliseconds);
+    }, timeoutDeadline);
     const resultUpdate = await fetch(transactionID + "?action=UPDATE", {
       headers: {
         "Content-Type": "application/sparql-update; charset=UTF-8",

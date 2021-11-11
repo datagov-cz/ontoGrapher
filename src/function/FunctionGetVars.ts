@@ -1,5 +1,6 @@
 import {
   AppSettings,
+  Diagrams,
   Languages,
   Links,
   WorkspaceElements,
@@ -185,9 +186,22 @@ export function getLastChangeDay() {
 }
 
 export function getWorkspaceContextIRI() {
-  return (
-    AppSettings.ontographerContext +
-    AppSettings.contextIRI.substring(AppSettings.contextIRI.lastIndexOf("/"))
+  const projectID = AppSettings.contextIRI.substring(
+    AppSettings.contextIRI.lastIndexOf("/")
+  );
+  return parsePrefix(
+    "d-sgov-pracovní-prostor-pojem",
+    `aplikační-kontext${projectID}/ontographer`
+  );
+}
+
+export function getDiagramContextIRI(diagram: number) {
+  const projectID = AppSettings.contextIRI.substring(
+    AppSettings.contextIRI.lastIndexOf("/")
+  );
+  return parsePrefix(
+    "d-sgov-pracovní-prostor-pojem",
+    `assetový-kontext${projectID}/diagram/${Diagrams[diagram].id}`
   );
 }
 

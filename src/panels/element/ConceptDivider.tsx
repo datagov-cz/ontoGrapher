@@ -18,7 +18,7 @@ interface State {
   hover: boolean;
 }
 
-export default class PackageDivider extends React.Component<Props, State> {
+export default class ConceptDivider extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = {
@@ -46,7 +46,7 @@ export default class PackageDivider extends React.Component<Props, State> {
     return (
       <div
         className={
-          "packageDivider" +
+          "conceptDivider" +
           (this.props.visible ? "" : " closed") +
           (this.props.items.every((elem) =>
             AppSettings.selectedElements.includes(elem)

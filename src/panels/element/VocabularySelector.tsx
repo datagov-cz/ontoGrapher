@@ -6,7 +6,7 @@ import {
 } from "../../function/FunctionGetVars";
 import {
   AppSettings,
-  PackageRoot,
+  FolderRoot,
   WorkspaceVocabularies,
 } from "../../config/Variables";
 import { CacheSearchVocabularies } from "../../datatypes/CacheSearchResults";
@@ -27,7 +27,7 @@ export class VocabularySelector extends React.Component<Props, State> {
   }[] {
     const existingOptions = Object.keys(WorkspaceVocabularies)
       .filter((scheme) =>
-        PackageRoot.children.find(
+        FolderRoot.children.find(
           (pkg) => getVocabularyFromScheme(pkg.scheme) === scheme
         )
       )

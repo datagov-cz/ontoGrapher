@@ -1,7 +1,7 @@
 import {
   AppSettings,
   Links,
-  PackageRoot,
+  FolderRoot,
   Prefixes,
   Stereotypes,
   WorkspaceElements,
@@ -24,7 +24,7 @@ import {
 } from "../../function/FunctionGetVars";
 import { LinkCreationConfiguration } from "./CreationModals";
 import { NewElemForm } from "./NewElemForm";
-import { PackageNode } from "../../datatypes/PackageNode";
+import { VocabularyNode } from "../../datatypes/VocabularyNode";
 import _ from "lodash";
 
 interface Props {
@@ -41,7 +41,7 @@ interface State {
   displayUsed: boolean;
   search: string;
   termName: { [key: string]: string };
-  selectedPackage: PackageNode;
+  selectedVocabulary: VocabularyNode;
   errorText: string;
   existing: boolean;
   create: boolean;
@@ -56,7 +56,7 @@ export default class NewLinkModal extends React.Component<Props, State> {
       displayIncompatible: false,
       displayUsed: false,
       termName: initLanguageObject(""),
-      selectedPackage: PackageRoot,
+      selectedVocabulary: FolderRoot,
       errorText: Locale[AppSettings.viewLanguage].modalNewElemError,
       existing: true,
       create: false,
@@ -175,10 +175,10 @@ export default class NewLinkModal extends React.Component<Props, State> {
         onEntering={() => {
           this.setState({
             selectedLink: options.length > 0 ? options[0] : "",
-            selectedPackage:
-              PackageRoot.children.find((p) =>
+            selectedVocabulary:
+              FolderRoot.children.find((p) =>
                 p.elements.includes(this.props.configuration.sourceID)
-              ) || PackageRoot,
+              ) || FolderRoot,
             termName: initLanguageObject(""),
           });
           const inputLink = document.getElementById("newLinkInputSelect");
@@ -273,7 +273,7 @@ export default class NewLinkModal extends React.Component<Props, State> {
                   const names = _.mapValues(this.state.termName, (name) =>
                     name.trim()
                   );
-                  this.props.closeElem(names, this.state.selectedPackage);
+                  this.props.closeElem(names, this.state.selectedVocabulary);
                 }
               }}
             >
@@ -361,10 +361,10 @@ export default class NewLinkModal extends React.Component<Props, State> {
               />
               {this.state.create && (
                 <NewElemForm
-                  lockPackage={true}
+                  lockVocabulary={true}
                   projectLanguage={this.props.projectLanguage}
                   termName={this.state.termName}
-                  selectedPackage={this.state.selectedPackage}
+                  selectedVocabulary={this.state.selectedVocabulary}
                   errorText={this.state.errorText}
                   setTermName={(name, lang) =>
                     this.setState((prevState) => ({
@@ -372,8 +372,8 @@ export default class NewLinkModal extends React.Component<Props, State> {
                       termName: { ...prevState.termName, [lang]: name },
                     }))
                   }
-                  setSelectedPackage={(p) =>
-                    this.setState({ selectedPackage: p })
+                  setSelectedVocabulary={(p) =>
+                    this.setState({ selectedVocabulary: p })
                   }
                   setErrorText={(s) => this.setState({ errorText: s })}
                 />

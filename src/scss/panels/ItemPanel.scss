@@ -51,7 +51,7 @@
     opacity: 0.5;
   }
 
-  .packageDivider {
+  .conceptDivider {
     border-bottom: solid 1px black;
     user-select: none;
     font-size: 14px;
@@ -136,7 +136,7 @@
     }
   }
 
-  .packageFolder {
+  .vocabularyFolder {
     display: inline-block;
     font-size: 14px;
     user-select: none;
@@ -167,7 +167,7 @@
   }
 }
 
-.packageOptions {
+.conceptOptions {
   display: inline-block;
 }
 

@@ -8,7 +8,7 @@ import {
 import {
   AppSettings,
   Links,
-  PackageRoot,
+  FolderRoot,
   WorkspaceTerms,
   WorkspaceVocabularies,
 } from "../config/Variables";
@@ -18,7 +18,7 @@ import _ from "lodash";
 import { getVocabularyFromScheme, setSchemeColors } from "./FunctionGetVars";
 import isUrl from "is-url";
 import { CacheSearchVocabularies } from "../datatypes/CacheSearchResults";
-import { PackageNode } from "../datatypes/PackageNode";
+import { VocabularyNode } from "../datatypes/VocabularyNode";
 import { Restriction } from "../datatypes/Restriction";
 
 export async function getCacheConnections(
@@ -179,9 +179,9 @@ export function insertNewCacheTerms(newTerms: typeof WorkspaceTerms) {
           color: "#FFF",
           count: 1,
         };
-        new PackageNode(
+        new VocabularyNode(
           CacheSearchVocabularies[vocab].labels,
-          PackageRoot,
+          FolderRoot,
           false,
           newTerms[term].inScheme
         );

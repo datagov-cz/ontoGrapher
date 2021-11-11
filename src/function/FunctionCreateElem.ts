@@ -1,4 +1,4 @@
-import { PackageNode } from "../datatypes/PackageNode";
+import { VocabularyNode } from "../datatypes/VocabularyNode";
 import { ElemCreationStrategy, Representation } from "../config/Enum";
 import { createNewConcept } from "./FunctionElem";
 import { AppSettings } from "../config/Variables";
@@ -11,14 +11,14 @@ import { saveNewLink } from "./FunctionLink";
 
 type CreateElemStrategyType = (
   conceptName: { [key: string]: string },
-  pkg: PackageNode,
+  pkg: VocabularyNode,
   position: { x: number; y: number },
   connections: string[]
 ) => string[];
 
 export const createTerm: (
   conceptName: { [key: string]: string },
-  pkg: PackageNode,
+  pkg: VocabularyNode,
   strategy: ElemCreationStrategy,
   position: { x: number; y: number },
   connections: string[]
@@ -37,7 +37,7 @@ const CreateElemStrategy: {
 } = {
   [ElemCreationStrategy.DEFAULT]: (
     conceptName: { [key: string]: string },
-    pkg: PackageNode,
+    pkg: VocabularyNode,
     position: { x: number; y: number }
   ) => {
     const id = createNewConcept(
@@ -53,7 +53,7 @@ const CreateElemStrategy: {
   },
   [ElemCreationStrategy.INTRINSIC_TROPE_TYPE]: (
     conceptName: { [key: string]: string },
-    pkg: PackageNode,
+    pkg: VocabularyNode,
     position: { x: number; y: number },
     connections: string[]
   ) => {
@@ -79,7 +79,7 @@ const CreateElemStrategy: {
   },
   [ElemCreationStrategy.RELATOR_TYPE]: (
     conceptName: { [key: string]: string },
-    pkg: PackageNode,
+    pkg: VocabularyNode,
     position: { x: number; y: number },
     connections: string[]
   ) => {
