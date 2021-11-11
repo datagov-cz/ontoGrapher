@@ -122,6 +122,7 @@ export const cs: { [Property in keyof typeof en]: string } = {
   definitions: "Popisy",
   representationCompactSwitch: "Přepnout na kompaktní pohled",
   representationFullSwitch: "Přepnout na úplný pohled",
+  generateDiagramImageWithIRIData: "Vložit data o pohledu a IRI do SVG",
   showStereotypes: "Ukázat stereotypy",
   showIncompatibleLinks: "Ukázat nekompatibilní vazby",
   hideStereotypes: "Skrýt stereotypy",

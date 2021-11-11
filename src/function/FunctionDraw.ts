@@ -7,7 +7,7 @@ import {
 } from "../config/Variables";
 import { getStereotypeList, setElementShape } from "./FunctionEditVars";
 import { Representation } from "../config/Enum";
-import { getElementShape, getIntrinsicTropeTypes } from "./FunctionGetVars";
+import { getElementShape, getIntrinsicTropeTypeIDs } from "./FunctionGetVars";
 import { ElementColors } from "../config/visual/ElementColors";
 import _ from "underscore";
 
@@ -47,8 +47,8 @@ export function drawGraphElement(
     const text: string[] = [];
     if (representation === Representation.COMPACT) {
       text.push(
-        ...getIntrinsicTropeTypes(elem.id).map(
-          (iri) => WorkspaceTerms[iri].labels[languageCode]
+        ...getIntrinsicTropeTypeIDs(elem.id).map((id) =>
+          getDisplayLabel(id, languageCode)
         )
       );
     }

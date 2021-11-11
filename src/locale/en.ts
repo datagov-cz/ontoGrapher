@@ -114,6 +114,7 @@ export const en = {
   definitions: "Definitions",
   representationCompactSwitch: "Switch to Compact view",
   representationFullSwitch: "Switch to Full view",
+  generateDiagramImageWithIRIData: "Embed view & IRI data into SVG",
   showStereotypes: "View stereotypes",
   showIncompatibleLinks: "Display incompatible links",
   hideStereotypes: "Hide stereotypes",
