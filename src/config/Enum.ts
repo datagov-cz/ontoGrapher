@@ -13,3 +13,9 @@ export enum ElemCreationStrategy {
   INTRINSIC_TROPE_TYPE,
   RELATOR_TYPE,
 }
+
+export enum ContextLoadingStrategy {
+  DEFAULT,
+  UPDATE_LEGACY_WORKSPACE,
+  RECONSTRUCT_WORKSPACE,
+}

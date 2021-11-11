@@ -1,8 +1,8 @@
 import React from "react";
 import { AppSettings, Diagrams } from "../../config/Variables";
 import { changeDiagrams } from "../../function/FunctionDiagram";
-import { updateProjectSettings } from "../../queries/update/UpdateMiscQueries";
 import InlineEdit, { InputType } from "riec";
+import { updateDiagram } from "../../queries/update/UpdateDiagramQueries";
 import { removeNewlines } from "../../function/FunctionEditVars";
 
 interface Props {
@@ -24,9 +24,7 @@ export default class DiagramTab extends React.Component<Props, State> {
   handleChangeDiagramName(value: string) {
     if (value.length > 0) {
       Diagrams[this.props.diagram].name = value;
-      this.props.performTransaction(
-        updateProjectSettings(AppSettings.contextIRI, this.props.diagram)
-      );
+      this.props.performTransaction(updateDiagram(this.props.diagram));
       this.forceUpdate();
       this.props.update();
     }

@@ -48,7 +48,7 @@ export default class SearchFolder extends React.Component<Props, State> {
     return (
       <div
         onClick={(event) => this.handleClick(event)}
-        className={classNames("packageFolder", { open: this.state.open })}
+        className={classNames("vocabularyFolder", { open: this.state.open })}
       >
         <span className={"vocabularyLabel"}>
           {getLabelOrBlank(

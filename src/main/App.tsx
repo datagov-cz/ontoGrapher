@@ -1,11 +1,11 @@
 import React from "react";
 import MenuPanel from "../panels/MenuPanel";
-import ItemPanel from "../panels/ItemPanel";
+import VocabularyPanel from "../panels/VocabularyPanel";
 import DiagramCanvas from "./DiagramCanvas";
 import {
   AppSettings,
+  FolderRoot,
   Languages,
-  PackageRoot,
   WorkspaceElements,
   WorkspaceLinks,
 } from "../config/Variables";
@@ -35,15 +35,18 @@ import {
 } from "../function/FunctionGetVars";
 import { getSettings } from "../queries/get/InitQueries";
 import { updateLegacyWorkspace } from "../queries/update/legacy/UpdateLegacyWorkspaceQueries";
-import { updateProjectSettings } from "../queries/update/UpdateMiscQueries";
+import { updateWorkspaceContext } from "../queries/update/UpdateMiscQueries";
 import {
   CreationModals,
   ElemCreationConfiguration,
   LinkCreationConfiguration,
 } from "../components/modals/CreationModals";
-import { ElemCreationStrategy } from "../config/Enum";
+import { ContextLoadingStrategy, ElemCreationStrategy } from "../config/Enum";
 import { getElementPosition } from "../function/FunctionElem";
 import { finishUpdatingLegacyWorkspace } from "../queries/update/legacy/FinishUpdatingLegacyWorkspaceQueries";
+import { updateCreateDiagram } from "../queries/update/UpdateDiagramQueries";
+import { en } from "../locale/en";
+import { reconstructApplicationContextWithDiagrams } from "../queries/update/UpdateReconstructAppContext";
 
 interface DiagramAppProps {}
 
@@ -67,7 +70,7 @@ export default class App extends React.Component<
   DiagramAppState
 > {
   private readonly canvas: React.RefObject<DiagramCanvas>;
-  private readonly itemPanel: React.RefObject<ItemPanel>;
+  private readonly itemPanel: React.RefObject<VocabularyPanel>;
   private readonly detailPanel: React.RefObject<DetailPanel>;
   private readonly menuPanel: React.RefObject<MenuPanel>;
   private readonly validationPanel: React.RefObject<ValidationPanel>;
@@ -106,7 +109,7 @@ export default class App extends React.Component<
         position: { x: 0, y: 0 },
         connections: [],
         header: "",
-        pkg: PackageRoot,
+        pkg: FolderRoot,
       },
       newLinkConfiguration: { sourceID: "", targetID: "" },
     };
@@ -143,8 +146,7 @@ export default class App extends React.Component<
       this.handleStatus(
         false,
         Locale[AppSettings.viewLanguage].pleaseReload,
-        true,
-        false
+        true
       );
     }
   }
@@ -175,7 +177,12 @@ export default class App extends React.Component<
   performTransaction(...queries: string[]) {
     let transaction = qb.constructQuery(...queries);
     if (!transaction) return;
-    this.handleStatus(true, Locale[AppSettings.viewLanguage].updating, false);
+    this.handleStatus(
+      true,
+      Locale[AppSettings.viewLanguage].updating,
+      false,
+      false
+    );
     processTransaction(AppSettings.contextEndpoint, transaction).then(
       (result) => {
         if (result) {
@@ -188,6 +195,7 @@ export default class App extends React.Component<
           this.handleStatus(
             false,
             Locale[AppSettings.viewLanguage].errorUpdating,
+            true,
             true
           );
         }
@@ -199,7 +207,7 @@ export default class App extends React.Component<
     loading: boolean,
     status: string,
     freeze: boolean,
-    retry: boolean = true
+    retry: boolean = false
   ) {
     this.setState({
       loading: loading,
@@ -223,87 +231,123 @@ export default class App extends React.Component<
     contextEndpoint: string,
     diagram: number = 0
   ) {
-    this.handleStatus(
-      true,
-      Locale[AppSettings.viewLanguage].loading,
-      true,
-      false
-    );
     AppSettings.contextEndpoint = contextEndpoint;
     AppSettings.contextIRI = contextIRI;
     getVocabulariesFromRemoteJSON(
       "https://raw.githubusercontent.com/opendata-mvcr/ontoGrapher/main/src/config/Vocabularies.json"
     ).then((result) => {
       if (result) {
-        getSettings(AppSettings.contextEndpoint).then(async () => {
-          if (
-            !AppSettings.initWorkspace &&
-            AppSettings.contextVersion < AppSettings.latestContextVersion
-          ) {
-            const queries = await updateLegacyWorkspace(
-              contextIRI,
-              contextEndpoint,
-              this.handleStatus
-            );
-            await processTransaction(
-              AppSettings.contextEndpoint,
-              qb.constructQuery(qb.combineQueries(...queries))
-            );
-            this.handleStatus(
-              true,
-              Locale[AppSettings.viewLanguage].loading,
-              true,
-              false
-            );
-          }
-          if (AppSettings.initWorkspace)
-            await this.performTransaction(updateProjectSettings(contextIRI, 0));
-          const success = await getContext(contextIRI, contextEndpoint);
-          if (success) {
-            if (
-              !AppSettings.initWorkspace &&
-              AppSettings.contextVersion < AppSettings.latestContextVersion
-            ) {
-              const queries = await finishUpdatingLegacyWorkspace(
-                contextIRI,
-                contextEndpoint,
-                this.handleStatus
-              );
-              await processTransaction(
-                AppSettings.contextEndpoint,
-                qb.constructQuery(qb.combineQueries(...queries))
-              );
-            }
-            this.handleChangeLanguage(Object.keys(Languages)[0]);
-            document.title =
-              AppSettings.name[this.state.projectLanguage] +
-              " | " +
-              Locale[AppSettings.viewLanguage].ontoGrapher;
-            setSchemeColors(AppSettings.viewColorPool);
-            changeDiagrams(diagram);
-            this.itemPanel.current?.update();
-            this.handleStatus(
-              false,
-              Locale[AppSettings.viewLanguage].workspaceReady,
-              false,
-              false
-            );
-            this.checkLastViewedVersion();
+        getSettings(AppSettings.contextEndpoint).then(async (result) => {
+          if (result !== undefined) {
+            await this.handleLoadingStrategy(result);
           } else {
-            this.handleStatus(
-              false,
-              Locale[AppSettings.viewLanguage].pleaseReload,
-              false
-            );
+            this.handleLoadingError();
+            return;
           }
+          this.handleChangeLanguage(Object.keys(Languages)[0]);
+          document.title =
+            AppSettings.name[this.state.projectLanguage] +
+            " | " +
+            Locale[AppSettings.viewLanguage].ontoGrapher;
+          setSchemeColors(AppSettings.viewColorPool);
+          changeDiagrams(diagram);
+          this.itemPanel.current?.update();
+          this.handleStatus(
+            false,
+            Locale[AppSettings.viewLanguage].workspaceReady,
+            false
+          );
+          this.checkLastViewedVersion();
         });
-      } else
-        this.handleStatus(
-          false,
-          Locale[AppSettings.viewLanguage].pleaseReload,
-          false
-        );
+      } else {
+        this.handleLoadingError();
+      }
     });
+  }
+
+  async handleLoadingStrategy(strategy: ContextLoadingStrategy | undefined) {
+    if (strategy !== ContextLoadingStrategy.DEFAULT)
+      this.handleStatus(
+        true,
+        Locale[AppSettings.viewLanguage].updatingWorkspaceVersion,
+        true
+      );
+    switch (strategy) {
+      case ContextLoadingStrategy.UPDATE_LEGACY_WORKSPACE:
+        const queries = await updateLegacyWorkspace(
+          AppSettings.contextIRI,
+          AppSettings.contextEndpoint
+        );
+        if (
+          !(await processTransaction(
+            AppSettings.contextEndpoint,
+            qb.constructQuery(qb.combineQueries(...queries))
+          ))
+        ) {
+          this.handleLoadingError();
+          return;
+        }
+        break;
+      case ContextLoadingStrategy.RECONSTRUCT_WORKSPACE:
+        if (
+          !(await processTransaction(
+            AppSettings.contextEndpoint,
+            qb.constructQuery(await reconstructApplicationContextWithDiagrams())
+          ))
+        ) {
+          this.handleLoadingError();
+          return;
+        }
+        break;
+      default:
+        break;
+    }
+    if (AppSettings.initWorkspace) {
+      if (
+        !(await processTransaction(
+          AppSettings.contextEndpoint,
+          qb.constructQuery(updateWorkspaceContext(), updateCreateDiagram(0))
+        ))
+      ) {
+        this.handleLoadingError();
+        return;
+      }
+    }
+    this.handleResumeLoading();
+    const success = await getContext(
+      AppSettings.contextIRI,
+      AppSettings.contextEndpoint
+    );
+    if (success) {
+      if (
+        !AppSettings.initWorkspace &&
+        ContextLoadingStrategy.UPDATE_LEGACY_WORKSPACE === strategy
+      ) {
+        if (
+          !(await processTransaction(
+            AppSettings.contextEndpoint,
+            qb.constructQuery(
+              qb.combineQueries(...(await finishUpdatingLegacyWorkspace()))
+            )
+          ))
+        ) {
+          this.handleLoadingError();
+          return;
+        }
+        this.handleResumeLoading();
+      }
+    } else {
+      this.handleLoadingError();
+      return;
+    }
+  }
+
+  handleLoadingError(message: keyof typeof en = "connectionError") {
+    this.handleStatus(false, Locale[AppSettings.viewLanguage][message], true);
+  }
+
+  handleResumeLoading() {
+    this.handleStatus(true, Locale[AppSettings.viewLanguage].loading, true);
   }
 
   validate() {
@@ -349,7 +393,7 @@ export default class App extends React.Component<
           performTransaction={this.performTransaction}
           tooltip={this.state.tooltip}
         />
-        <ItemPanel
+        <VocabularyPanel
           ref={this.itemPanel}
           projectLanguage={this.state.projectLanguage}
           freeze={this.state.freeze}
@@ -391,9 +435,9 @@ export default class App extends React.Component<
               strategy: ElemCreationStrategy.INTRINSIC_TROPE_TYPE,
               connections: [source],
               pkg:
-                PackageRoot.children.find((pkg) =>
+                FolderRoot.children.find((pkg) =>
                   pkg.elements.includes(source)
-                ) || PackageRoot,
+                ) || FolderRoot,
               position: getElementPosition(source),
               header:
                 Locale[AppSettings.viewLanguage].modalNewIntrinsicTropeTitle,

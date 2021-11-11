@@ -1,5 +1,5 @@
 import { Cardinality } from "../datatypes/Cardinality";
-import { PackageNode } from "../datatypes/PackageNode";
+import { VocabularyNode } from "../datatypes/VocabularyNode";
 import { initLanguageObject } from "../function/FunctionEditVars";
 import { Restriction } from "../datatypes/Restriction";
 import { Representation } from "./Enum";
@@ -24,8 +24,8 @@ export var WorkspaceElements: {
     position: { [key: number]: { x: number; y: number } };
     //if usable in graph
     active: boolean;
-    //package
-    package: PackageNode;
+    //vocabulary node
+    vocabularyNode: VocabularyNode;
     //selected label from pref/altLabels
     selectedLabel: { [key: string]: string };
   };
@@ -79,7 +79,7 @@ export var Prefixes: { [key: string]: string } = {
   "v-sgov-pojem": "https://slovník.gov.cz/veřejný-sektor/pojem/",
 };
 
-export const PackageRoot: PackageNode = new PackageNode(
+export const FolderRoot: VocabularyNode = new VocabularyNode(
   initLanguageObject("Root"),
   undefined,
   true,
@@ -135,6 +135,7 @@ export var Diagrams: {
   origin: { x: number; y: number };
   scale: number;
   representation: Representation;
+  id: string;
 }[] = [addDiagram("Untitled")];
 
 export var AppSettings: {
@@ -180,8 +181,8 @@ export var AppSettings: {
   representation: Representation.COMPACT,
   defaultCardinality1: "0",
   defaultCardinality2: "*",
-  contextVersion: 1,
-  latestContextVersion: 3,
+  contextVersion: 4,
+  latestContextVersion: 4,
   lastTransaction: "",
   lastTransactionID: "",
   switchElements: [],

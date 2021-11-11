@@ -1,8 +1,8 @@
 import { Locale } from "../../config/Locale";
 import {
   AppSettings,
+  FolderRoot,
   Languages,
-  PackageRoot,
   WorkspaceElements,
   WorkspaceTerms,
   WorkspaceVocabularies,
@@ -12,16 +12,16 @@ import { getVocabularyFromScheme } from "../../function/FunctionGetVars";
 import { createNewElemIRI } from "../../function/FunctionCreateVars";
 import React from "react";
 import { initLanguageObject } from "../../function/FunctionEditVars";
-import { PackageNode } from "../../datatypes/PackageNode";
+import { VocabularyNode } from "../../datatypes/VocabularyNode";
 
 interface Props {
-  lockPackage: boolean;
+  lockVocabulary: boolean;
   projectLanguage: string;
   termName: ReturnType<typeof initLanguageObject>;
-  selectedPackage: PackageNode;
+  selectedVocabulary: VocabularyNode;
   errorText: string;
   setTermName: (s: string, l: string) => void;
-  setSelectedPackage: (p: PackageNode) => void;
+  setSelectedVocabulary: (p: VocabularyNode) => void;
   setErrorText: (s: string) => void;
 }
 
@@ -79,12 +79,12 @@ export const NewElemForm: React.FC<Props> = (props) => {
       HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
     >
   ) => {
-    const pkg = PackageRoot.children.find(
+    const pkg = FolderRoot.children.find(
       (pkg) => pkg.labels[props.projectLanguage] === event.currentTarget.value
     );
-    if (pkg) props.setSelectedPackage(pkg);
+    if (pkg) props.setSelectedVocabulary(pkg);
     props.setErrorText(
-      checkNames(props.selectedPackage.scheme, props.termName)
+      checkNames(props.selectedVocabulary.scheme, props.termName)
     );
   };
 
@@ -108,7 +108,7 @@ export const NewElemForm: React.FC<Props> = (props) => {
               onChange={(event) => {
                 props.setTermName(event.currentTarget.value, lang);
                 props.setErrorText(
-                  checkNames(props.selectedPackage.scheme, props.termName)
+                  checkNames(props.selectedVocabulary.scheme, props.termName)
                 );
               }}
             />
@@ -118,15 +118,15 @@ export const NewElemForm: React.FC<Props> = (props) => {
       <br />
       <Form.Group controlId="exampleForm.ControlSelect1">
         <Form.Label>
-          {Locale[AppSettings.viewLanguage].selectPackage}
+          {Locale[AppSettings.viewLanguage].selectVocabulary}
         </Form.Label>
         <Form.Control
           as="select"
-          value={props.selectedPackage.labels[props.projectLanguage]}
+          value={props.selectedVocabulary.labels[props.projectLanguage]}
           onChange={(event) => handleChangeSelect(event)}
-          disabled={props.lockPackage}
+          disabled={props.lockVocabulary}
         >
-          {PackageRoot.children
+          {FolderRoot.children
             .filter(
               (pkg) =>
                 !WorkspaceVocabularies[getVocabularyFromScheme(pkg.scheme)]
@@ -144,7 +144,7 @@ export const NewElemForm: React.FC<Props> = (props) => {
           Locale[AppSettings.viewLanguage].modalNewElemIRI
         }
 					${createNewElemIRI(
-            props.selectedPackage.scheme,
+            props.selectedVocabulary.scheme,
             props.termName[AppSettings.defaultLanguage]
           )}`}</Alert>
       )}

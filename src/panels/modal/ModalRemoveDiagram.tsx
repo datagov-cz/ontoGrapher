@@ -3,7 +3,7 @@ import { Button, Form, Modal } from "react-bootstrap";
 import { AppSettings, Diagrams } from "../../config/Variables";
 import { changeDiagrams } from "../../function/FunctionDiagram";
 import { Locale } from "../../config/Locale";
-import { updateProjectSettings } from "../../queries/update/UpdateMiscQueries";
+import { updateDeleteDiagram } from "../../queries/update/UpdateDiagramQueries";
 
 interface Props {
   modal: boolean;
@@ -20,9 +20,7 @@ export default class ModalRemoveDiagram extends React.Component<Props> {
       changeDiagrams(Diagrams.findIndex((diag) => diag.active));
     }
     this.props.update();
-    this.props.performTransaction(
-      updateProjectSettings(AppSettings.contextIRI, this.props.diagram)
-    );
+    this.props.performTransaction(updateDeleteDiagram(this.props.diagram));
   }
 
   render() {

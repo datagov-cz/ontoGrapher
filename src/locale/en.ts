@@ -71,6 +71,8 @@ export const en = {
   validationLoadingError:
     "Connection to validation server unsuccessful. Please reload to try again.",
   pleaseReload: "Error: workspace not found. Please check the workspace IRI.",
+  connectionError:
+    "Error loading the workspace - please check the console for details.",
   spreadLinks: "Explode links",
   spreadRelationships: "Explode relations",
   links: "Links",
@@ -83,7 +85,7 @@ export const en = {
   untitled: "Untitled diagram",
   none: "",
   cancel: "Cancel",
-  modalRemovePackageItemConnectionsDescription:
+  modalRemoveConceptConnectionsDescription:
     "Warning: the term you are about to delete is connected to terms from outside the workspace with relations that cannot be deleted here. As such, these relations will remain in the database:",
   menuPanelHelp: "Help",
   zoomIn: "Zoom in",
@@ -100,7 +102,7 @@ export const en = {
   description: "Description",
   vocabularyNotFound: "Vocabulary definition URL is missing or incorrect",
   validate: "Validate",
-  modalRemovePackageItemTitle: "Remove term?",
+  modalRemoveConceptTitle: "Remove term?",
   modalRemoveDiagramTitle: "Remove diagram?",
   modalRemoveDiagramDescription:
     "Are you sure you want to remove the diagram? The layout of the diagram will be lost!",
@@ -108,8 +110,7 @@ export const en = {
   connectionTo: "to",
   connectionFrom: "from",
   diagram: "in diagram",
-  modalRemovePackageItemDescription:
-    "Are you sure you want to remove the term?",
+  modalRemoveConceptDescription: "Are you sure you want to remove the term?",
   definitions: "Definitions",
   representationCompactSwitch: "Switch to Compact view",
   representationFullSwitch: "Switch to Full view",
@@ -135,7 +136,7 @@ export const en = {
   fileProjectSettingsDescriptions: "Descriptions",
   help: "Help",
   modalNewElemError: "You must enter a label in order to create a new term.",
-  selectPackage: "Term will be created in:",
+  selectVocabulary: "Term will be created in:",
   fromList: "From the list",
   otherVocabularies: "Other vocabularies",
   view: "View",
@@ -156,7 +157,7 @@ export const en = {
   connectionListShowFilter: "Show/hide filter options",
   connectionListEmptyFilter: "Disable filter",
   downloadingTerms: "Adding selected terms into the workspace...",
-  modalRemoveReadOnlyPackageItemDescription:
+  modalRemoveReadOnlyConceptDescription:
     "Are you sure you want to remove the term? This will remove the term and created connections to the term in the workspace, but won't delete the term from the vocabulary.",
   vocabularyNotFullyRepresented:
     "This workspace does not contain all terms from this vocabulary. Click here to show all terms of this vocabulary.",

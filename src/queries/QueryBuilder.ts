@@ -4,6 +4,7 @@ let count: number = 0;
 
 export const qb: {
   g: (context: string, statements: string[]) => string;
+  gs: (contexts: string[], statements: string[]) => string;
   b: (strings: string[]) => string;
   po: (p: string, o: string) => string;
   v: (name?: string) => string;
@@ -16,6 +17,13 @@ export const qb: {
   constructQuery: (...queries: string[]) => string;
   combineQueries: (...queries: string[]) => string;
 } = {
+  gs(contexts: string[], statements: string[]): string {
+    return `graph ?graphs {
+${statements.join(`
+`)}
+}
+values ?graphs (<${contexts.join("> <")}>)`;
+  },
   g: (context: string, statements: string[]) => {
     return `graph <${context}> {
 ${statements.join(`
@@ -85,7 +93,7 @@ ${statements.join(`
       : "";
   },
   combineQueries: (...queries) => {
-    return queries.join(`;
+    return queries.filter((q) => q).join(`;
 `);
   },
 };

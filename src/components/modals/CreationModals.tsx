@@ -5,7 +5,7 @@ import {
   highlightElement,
   resetDiagramSelection,
 } from "../../function/FunctionDiagram";
-import { PackageNode } from "../../datatypes/PackageNode";
+import { VocabularyNode } from "../../datatypes/VocabularyNode";
 import { ElemCreationStrategy, Representation } from "../../config/Enum";
 import { createTerm } from "../../function/FunctionCreateElem";
 import { saveNewLink } from "../../function/FunctionLink";
@@ -20,7 +20,7 @@ export type ElemCreationConfiguration = {
   position: { x: number; y: number };
   connections: string[];
   header: string;
-  pkg: PackageNode;
+  pkg: VocabularyNode;
 };
 
 export type LinkCreationConfiguration = { sourceID: string; targetID: string };
@@ -66,7 +66,7 @@ export const CreationModals: React.FC<Props> = (props) => {
         }}
         closeElem={(
           conceptName?: { [key: string]: string },
-          pkg?: PackageNode
+          pkg?: VocabularyNode
         ) => {
           setModalAddLink(false);
           if (conceptName && pkg) {
@@ -92,7 +92,10 @@ export const CreationModals: React.FC<Props> = (props) => {
         projectLanguage={props.projectLanguage}
         modal={modalAddElem}
         configuration={props.elemConfiguration}
-        close={(conceptName?: { [key: string]: string }, pkg?: PackageNode) => {
+        close={(
+          conceptName?: { [key: string]: string },
+          pkg?: VocabularyNode
+        ) => {
           setModalAddElem(false);
           if (conceptName && pkg) {
             props.performTransaction(

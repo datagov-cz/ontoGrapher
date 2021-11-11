@@ -3,7 +3,7 @@ import { initLanguageObject } from "../../../function/FunctionEditVars";
 import {
   AppSettings,
   Diagrams,
-  PackageRoot,
+  FolderRoot,
   WorkspaceElements,
   WorkspaceLinks,
   WorkspaceTerms,
@@ -13,9 +13,15 @@ import { LinkType } from "../../../config/Enum";
 import { Locale } from "../../../config/Locale";
 import { fetchConcepts } from "../../get/FetchQueries";
 import { qb } from "../../QueryBuilder";
-import { getWorkspaceContextIRI } from "../../../function/FunctionGetVars";
 import { LinkConfig } from "../../../config/logic/LinkConfig";
 import { addDiagram } from "../../../function/FunctionCreateVars";
+
+function getLegacyWorkspaceContext(): string {
+  return (
+    AppSettings.ontographerContext +
+    AppSettings.contextIRI.substring(AppSettings.contextIRI.lastIndexOf("/"))
+  );
+}
 
 export async function updateLegacyWorkspaceToVersion2(
   contextIRI: string,
@@ -32,26 +38,26 @@ export async function updateLegacyWorkspaceToVersion2(
   const terms = await getLegacyTerms(contextIRI, contextEndpoint);
   triples.push(
     qb.g(
-      getWorkspaceContextIRI(),
+      getLegacyWorkspaceContext(),
       diagrams.map((diagram, i) =>
         [
           qb.s(
-            qb.i(getWorkspaceContextIRI()),
+            qb.i(getLegacyWorkspaceContext()),
             "og:diagram",
-            qb.i(getWorkspaceContextIRI() + "/diagram-" + (i + 1))
+            qb.i(getLegacyWorkspaceContext() + "/diagram-" + (i + 1))
           ),
           qb.s(
-            qb.i(getWorkspaceContextIRI() + "/diagram-" + (i + 1)),
+            qb.i(getLegacyWorkspaceContext() + "/diagram-" + (i + 1)),
             "og:index",
             qb.ll(i)
           ),
           qb.s(
-            qb.i(getWorkspaceContextIRI() + "/diagram-" + (i + 1)),
+            qb.i(getLegacyWorkspaceContext() + "/diagram-" + (i + 1)),
             "og:name",
             qb.ll(diagram.name)
           ),
           qb.s(
-            qb.i(getWorkspaceContextIRI() + "/diagram-" + (i + 1)),
+            qb.i(getLegacyWorkspaceContext() + "/diagram-" + (i + 1)),
             "og:active",
             qb.ll(diagram.active)
           ),
@@ -62,7 +68,7 @@ export async function updateLegacyWorkspaceToVersion2(
   );
   triples.push(
     qb.g(
-      getWorkspaceContextIRI(),
+      getLegacyWorkspaceContext(),
       Object.keys(elements).map((element) =>
         [
           qb.s(qb.i(elements[element].iri), "rdf:type", "og:element"),
@@ -109,7 +115,7 @@ export async function updateLegacyWorkspaceToVersion2(
   Object.keys(elements).forEach((element) =>
     elements[element].diagrams.forEach((diagram) => {
       triples.push(
-        qb.g(getWorkspaceContextIRI(), [
+        qb.g(getLegacyWorkspaceContext(), [
           qb.s(
             qb.i(`${elements[element].iri}`),
             "og:diagram",
@@ -146,7 +152,7 @@ export async function updateLegacyWorkspaceToVersion2(
   );
   triples.push(
     qb.g(
-      getWorkspaceContextIRI(),
+      getLegacyWorkspaceContext(),
       Object.keys(links).map((link) =>
         [
           qb.s(
@@ -223,7 +229,7 @@ export async function updateLegacyWorkspaceToVersion2(
     Object.keys(links[link].vertices).forEach((diagram, i) =>
       links[link].vertices[parseInt(diagram)].forEach((vertex, j) => {
         triples.push(
-          qb.g(getWorkspaceContextIRI(), [
+          qb.g(getLegacyWorkspaceContext(), [
             qb.s(
               qb.i(AppSettings.ontographerContext + "-" + link),
               "og:vertex",
@@ -648,7 +654,7 @@ async function getLegacyElements(
             diagrams: [],
             hidden: {},
             position: {},
-            package: PackageRoot,
+            vocabularyNode: FolderRoot,
             active: result.active.value === "true",
             selectedLabel: initLanguageObject(""),
           };

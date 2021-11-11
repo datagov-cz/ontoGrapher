@@ -32,7 +32,7 @@ interface State {
   hover: boolean;
 }
 
-export default class PackageItem extends React.Component<Props, State> {
+export default class VocabularyConcept extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = {
@@ -137,7 +137,7 @@ export default class PackageItem extends React.Component<Props, State> {
           <HiddenElementSVG />
         )}
         {this.state.hover && !this.props.readOnly && (
-          <span className={"packageOptions right"}>
+          <span className={"conceptOptions right"}>
             <button
               className={"buttonlink"}
               onClick={(event) => {
@@ -152,7 +152,7 @@ export default class PackageItem extends React.Component<Props, State> {
           </span>
         )}
         {this.state.hover && this.props.readOnly && (
-          <span className={"packageOptions right"}>
+          <span className={"conceptOptions right"}>
             <button
               className={"buttonlink"}
               onClick={(event) => {

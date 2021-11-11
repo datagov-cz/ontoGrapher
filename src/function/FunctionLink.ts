@@ -1,7 +1,7 @@
 import {
   AppSettings,
   Links,
-  PackageRoot,
+  FolderRoot,
   WorkspaceElements,
   WorkspaceLinks,
   WorkspaceTerms,
@@ -167,10 +167,10 @@ export function saveNewLink(
       const propertyId = property.id as string;
       const targetId = target.id as string;
       const pkg =
-        PackageRoot.children.find(
+        FolderRoot.children.find(
           (pkg) =>
             pkg.scheme === WorkspaceTerms[WorkspaceElements[sid].iri].inScheme
-        ) || PackageRoot;
+        ) || FolderRoot;
       if (!find) addClass(propertyId, iri, pkg);
       WorkspaceElements[property.id].connections.push(sourceId);
       WorkspaceElements[property.id].connections.push(targetId);

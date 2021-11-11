@@ -1,6 +1,6 @@
 import React from "react";
 import { Button, Form, Modal } from "react-bootstrap";
-import { deletePackageItem } from "../../function/FunctionEditVars";
+import { deleteConcept } from "../../function/FunctionEditVars";
 import {
   AppSettings,
   WorkspaceElements,
@@ -28,7 +28,7 @@ interface State {
   shownLucene: CacheConnection[];
 }
 
-export default class ModalRemoveItem extends React.Component<Props, State> {
+export default class ModalRemoveConcept extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = {
@@ -41,7 +41,7 @@ export default class ModalRemoveItem extends React.Component<Props, State> {
       .filter((vocab) => !WorkspaceVocabularies[vocab].readOnly)
       .map((vocab) => WorkspaceVocabularies[vocab].graph);
     this.props.performTransaction(
-      ...deletePackageItem(this.props.id),
+      ...deleteConcept(this.props.id),
       updateDeleteTriples(
         WorkspaceElements[this.props.id].iri,
         [getWorkspaceContextIRI()],
@@ -85,18 +85,18 @@ export default class ModalRemoveItem extends React.Component<Props, State> {
       >
         <Modal.Header>
           <Modal.Title>
-            {Locale[AppSettings.viewLanguage].modalRemovePackageItemTitle}
+            {Locale[AppSettings.viewLanguage].modalRemoveConceptTitle}
           </Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <p>
-            {Locale[AppSettings.viewLanguage].modalRemovePackageItemDescription}
+            {Locale[AppSettings.viewLanguage].modalRemoveConceptDescription}
           </p>
           {this.state.shownLucene.length > 0 && (
             <div>
               {
                 Locale[AppSettings.viewLanguage]
-                  .modalRemovePackageItemConnectionsDescription
+                  .modalRemoveConceptConnectionsDescription
               }
               <div className={"deleteConnections"}>
                 <TableList width={"400px"}>
