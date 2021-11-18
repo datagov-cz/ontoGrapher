@@ -13,6 +13,7 @@ import { LinkType } from "../../config/Enum";
 import { createRestriction } from "../../function/FunctionRestriction";
 import { Restriction } from "../../datatypes/Restriction";
 import _ from "lodash";
+import { createCount } from "../../function/FunctionCreateVars";
 
 /**
  * Gets vocabulary info.
@@ -61,7 +62,7 @@ export async function fetchVocabulary(
               namespace: "",
               graph: "",
               glossary: result.scheme.value,
-              count: 0,
+              count: createCount(),
               color: "#FFF",
             };
           if (result.vocabTitle)

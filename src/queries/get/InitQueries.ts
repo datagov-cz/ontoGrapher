@@ -16,7 +16,7 @@ import {
   initLanguageObject,
   parsePrefix,
 } from "../../function/FunctionEditVars";
-import { addDiagram } from "../../function/FunctionCreateVars";
+import { addDiagram, createCount } from "../../function/FunctionCreateVars";
 import { qb } from "../QueryBuilder";
 import { CacheSearchVocabularies } from "../../datatypes/CacheSearchResults";
 import { VocabularyNode } from "../../datatypes/VocabularyNode";
@@ -152,7 +152,7 @@ export async function getElementsConfig(
               namespace: CacheSearchVocabularies[vocab].namespace,
               graph: AppSettings.cacheContext,
               color: "#FFF",
-              count: 0,
+              count: createCount(),
               glossary: CacheSearchVocabularies[vocab].glossary,
             };
             new VocabularyNode(

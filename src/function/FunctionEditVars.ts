@@ -12,9 +12,9 @@ import {
   WorkspaceVocabularies,
 } from "../config/Variables";
 import { graph } from "../graph/Graph";
-import { addClass } from "./FunctionCreateVars";
+import { addClass, createCount } from "./FunctionCreateVars";
 import { LinkConfig } from "../config/logic/LinkConfig";
-import { LinkType } from "../config/Enum";
+import { LinkType, Representation } from "../config/Enum";
 import { Locale } from "../config/Locale";
 import { updateDeleteTriples } from "../queries/update/UpdateMiscQueries";
 import { Cardinality } from "../datatypes/Cardinality";
@@ -24,6 +24,8 @@ import {
   getVocabularyFromScheme,
   getWorkspaceContextIRI,
 } from "./FunctionGetVars";
+import _ from "lodash";
+import { RepresentationConfig } from "../config/logic/RepresentationConfig";
 
 export function getName(element: string, language: string): string {
   if (element in Stereotypes) {
@@ -58,7 +60,7 @@ export function loadUML() {
     namespace: "",
     graph: AppSettings.ontographerContext,
     color: "#FFF",
-    count: 0,
+    count: createCount(),
     glossary: scheme,
   };
 
@@ -276,4 +278,32 @@ export function initElements() {
     }
   }
   return ids;
+}
+
+export function addToCount(vocabulary: string, ...terms: string[]) {
+  for (const term of terms) {
+    WorkspaceVocabularies[vocabulary].count[Representation.FULL]++;
+    if (
+      _.difference(
+        RepresentationConfig[Representation.COMPACT].visibleStereotypes,
+        WorkspaceTerms[term].types
+      ).length <
+      RepresentationConfig[Representation.COMPACT].visibleStereotypes.length
+    )
+      WorkspaceVocabularies[vocabulary].count[Representation.COMPACT]++;
+  }
+}
+
+export function subtractFromCount(vocabulary: string, terms: string[]) {
+  for (const term of terms) {
+    WorkspaceVocabularies[vocabulary].count[Representation.FULL]--;
+    if (
+      _.difference(
+        RepresentationConfig[Representation.COMPACT].visibleStereotypes,
+        WorkspaceTerms[term].types
+      ).length <
+      RepresentationConfig[Representation.COMPACT].visibleStereotypes.length
+    )
+      WorkspaceVocabularies[vocabulary].count[Representation.COMPACT]--;
+  }
 }

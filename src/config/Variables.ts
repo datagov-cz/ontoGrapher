@@ -59,7 +59,7 @@ export var WorkspaceVocabularies: {
     labels: { [key: string]: string };
     readOnly: boolean;
     glossary: string;
-    count: number;
+    count: { [key in Representation]: number };
     namespace: string;
     graph: string;
     color: string;
@@ -150,7 +150,7 @@ export var AppSettings: {
   cacheContext: string;
   luceneConnector: string;
   initWorkspace: boolean;
-  representation: number;
+  representation: Representation;
   defaultCardinality1: string;
   defaultCardinality2: string;
   contextVersion: number;

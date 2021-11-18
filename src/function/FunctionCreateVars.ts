@@ -74,6 +74,10 @@ export function addVocabularyElement(
   };
 }
 
+export function createCount(): { [key in Representation]: number } {
+  return { [Representation.COMPACT]: 0, [Representation.FULL]: 0 };
+}
+
 export function addClass(
   id: string,
   iri: string,

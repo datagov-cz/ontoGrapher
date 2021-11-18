@@ -11,6 +11,10 @@ import { AppSettings, Links, WorkspaceTerms } from "../../config/Variables";
 import { RestrictionConfig } from "../../config/logic/RestrictionConfig";
 import { createRestriction } from "../../function/FunctionRestriction";
 import { Restriction } from "../../datatypes/Restriction";
+import { Representation } from "../../config/Enum";
+import _ from "lodash";
+import { createCount } from "../../function/FunctionCreateVars";
+import { RepresentationConfig } from "../../config/logic/RepresentationConfig";
 
 export async function fetchVocabularies(
   endpoint: string,
@@ -18,7 +22,7 @@ export async function fetchVocabularies(
 ): Promise<boolean> {
   const query = [
     "PREFIX skos: <http://www.w3.org/2004/02/skos/core#> ",
-    "SELECT ?vocabulary ?scheme ?title ?namespace ?term where {",
+    "SELECT ?vocabulary ?scheme ?title ?namespace ?term ?type where {",
     "graph <" + context + "> {",
     "<" +
       context +
@@ -28,9 +32,10 @@ export async function fetchVocabularies(
     "?vocabulary <http://onto.fel.cvut.cz/ontologies/slovník/agendový/popis-dat/pojem/má-glosář> ?scheme.",
     "?vocabulary <http://purl.org/dc/terms/title> ?title.",
     "?term skos:inScheme ?scheme.",
+    "?term a ?type.",
     "}}",
   ].join(" ");
-  const count: { [key: string]: string[] } = {};
+  const count: { [key: string]: { [key: string]: string[] } } = {};
   return await processQuery(endpoint, query)
     .then((response) => response.json())
     .then((data) => {
@@ -41,22 +46,32 @@ export async function fetchVocabularies(
             labels: initLanguageObject(""),
             namespace: row.namespace ? row.namespace.value : "",
             glossary: row.scheme.value,
-            count: 0,
+            count: createCount(),
           };
-          count[row.vocabulary.value] = [];
+          count[row.vocabulary.value] = {};
         }
         CacheSearchVocabularies[row.vocabulary.value].labels[
           row.title["xml:lang"]
         ] = row.title.value;
+        if (!(row.term.value in count[row.vocabulary.value])) {
+          count[row.vocabulary.value][row.term.value] = [];
+          CacheSearchVocabularies[row.vocabulary.value].count[
+            Representation.FULL
+          ]++;
+        }
         if (
-          row.vocabulary.value in count &&
-          !count[row.vocabulary.value].includes(row.term.value)
+          RepresentationConfig[
+            Representation.COMPACT
+          ].visibleStereotypes.includes(row.type.value)
         )
-          count[row.vocabulary.value].push(row.term.value);
+          count[row.vocabulary.value][row.term.value].push(row.type.value);
       }
-      for (const vocab in count) {
-        CacheSearchVocabularies[vocab].count = count[vocab].length;
-      }
+      Object.keys(count).forEach((vocab) => {
+        CacheSearchVocabularies[vocab].count[Representation.COMPACT] =
+          Object.keys(count[vocab]).filter(
+            (term) => _.uniq(count[vocab][term]).length > 0
+          ).length;
+      });
       return true;
     })
     .catch((e) => {
@@ -187,7 +202,6 @@ export async function searchCache(
     .then((json) => {
       const result: CacheSearchResults = {};
       for (const row of json.results.bindings) {
-        if (row.entity.value in WorkspaceTerms) continue;
         if (!(row.entity.value in result)) {
           result[row.entity.value] = {
             labels: initLanguageObject(""),

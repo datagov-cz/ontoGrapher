@@ -7,8 +7,8 @@ import {
 } from "../queries/get/CacheQueries";
 import {
   AppSettings,
-  Links,
   FolderRoot,
+  Links,
   WorkspaceTerms,
   WorkspaceVocabularies,
 } from "../config/Variables";
@@ -20,6 +20,8 @@ import isUrl from "is-url";
 import { CacheSearchVocabularies } from "../datatypes/CacheSearchResults";
 import { VocabularyNode } from "../datatypes/VocabularyNode";
 import { Restriction } from "../datatypes/Restriction";
+import { createCount } from "./FunctionCreateVars";
+import { addToCount } from "./FunctionEditVars";
 
 export async function getCacheConnections(
   iri: string,
@@ -177,7 +179,7 @@ export function insertNewCacheTerms(newTerms: typeof WorkspaceTerms) {
           glossary: CacheSearchVocabularies[vocab].glossary,
           graph: vocab,
           color: "#FFF",
-          count: 1,
+          count: createCount(),
         };
         new VocabularyNode(
           CacheSearchVocabularies[vocab].labels,
@@ -187,7 +189,7 @@ export function insertNewCacheTerms(newTerms: typeof WorkspaceTerms) {
         );
         setSchemeColors(AppSettings.viewColorPool);
       } else {
-        WorkspaceVocabularies[vocab].count++;
+        addToCount(vocab, term);
       }
     } else
       console.error(
