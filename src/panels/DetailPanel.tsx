@@ -2,7 +2,7 @@ import React from "react";
 import DetailLink from "./detail/DetailLink";
 import { graph } from "../graph/Graph";
 import DetailElement from "./detail/DetailElement";
-import { setDisplayLabel } from "../function/FunctionDraw";
+import { getDisplayLabel } from "../function/FunctionDraw";
 import { WorkspaceElements, WorkspaceLinks } from "../config/Variables";
 import { resizeElem } from "../function/FunctionElem";
 
@@ -46,7 +46,7 @@ export default class DetailPanel extends React.Component<Props, State> {
     this.detailElem.current?.prepareDetails();
     this.detailLink.current?.prepareDetails();
     if (id in WorkspaceElements) {
-      setDisplayLabel(id, this.props.projectLanguage);
+      getDisplayLabel(id, this.props.projectLanguage);
       this.detailElem.current?.prepareDetails(id);
     } else if (id in WorkspaceLinks) {
       this.detailLink.current?.prepareDetails(id);

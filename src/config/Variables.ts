@@ -71,6 +71,7 @@ export var Prefixes: { [key: string]: string } = {
   owl: "http://www.w3.org/2002/07/owl#",
   rdf: "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
   rdfs: "http://www.w3.org/2000/01/rdf-schema#",
+  dc: "http://purl.org/dc/terms/",
   og: "http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/",
   xsd: "http://www.w3.org/2001/XMLSchema#",
   "d-sgov-pracovní-prostor-pojem":
