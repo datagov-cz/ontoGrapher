@@ -22,7 +22,7 @@ export const qb: {
 ${statements.join(`
 `)}
 }
-values ?graphs (<${contexts.join("> <")}>)`;
+values ?graphs {<${contexts.join("> <")}>}`;
   },
   g: (context: string, statements: string[]) => {
     return `graph <${context}> {

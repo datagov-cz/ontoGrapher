@@ -18,8 +18,8 @@ export function updateProjectLinkVertex(
   diagram: number
 ): string {
   checkLink(id);
-  let linkIRI = AppSettings.ontographerContext + "-" + id;
-  let vertIRIs = vertices.map((i) => qb.i(`${linkIRI}/vertex-${i + 1}`));
+  const linkIRI = AppSettings.ontographerContext + "-" + id;
+  const vertIRIs = vertices.map((i) => qb.i(`${linkIRI}/vertex-${i + 1}`));
 
   if (vertIRIs.length === 0) return "";
 
@@ -85,7 +85,7 @@ export function updateProjectLinkVertex(
     ),
   ])}`.build();
 
-  let delS = vertIRIs.map((iri) =>
+  const delS = vertIRIs.map((iri) =>
     DELETE`${qb.g(getDiagramContextIRI(diagram), [qb.s(iri, "?p", "?o")])}`
       .WHERE`${qb.g(getDiagramContextIRI(diagram), [
       qb.s(iri, "?p", "?o"),
@@ -170,16 +170,18 @@ export function updateProjectLink(del: boolean, ...ids: string[]): string {
           qb.s(linkIRI, "?p", "?o"),
           "filter(?p not in (og:vertex))",
         ])}`.build(),
-        DELETE`${qb.gs(diagrams, [qb.s(linkIRI, "?p", "?o")])}`.WHERE`${qb.gs(
-          diagrams,
-          [qb.s(linkIRI, "?p", "?o"), "filter(?p not in (og:vertex))"]
-        )}`.build()
+        DELETE`graph ?graphs {${[qb.s(linkIRI, "?p", "?o")].join(`
+        `)}}`.WHERE`${qb.gs(diagrams, [
+          qb.s(linkIRI, "?p", "?o"),
+          "filter(?p not in (og:vertex))",
+        ])}`.build()
       );
   }
   insert.push(
     ...diagrams.map((diagram) =>
       INSERT.DATA`${qb.g(diagram, insertBody)}`.build()
-    )
+    ),
+    INSERT.DATA`${qb.g(getWorkspaceContextIRI(), insertBody)}`.build()
   );
 
   return qb.combineQueries(...deletes, ...insert);

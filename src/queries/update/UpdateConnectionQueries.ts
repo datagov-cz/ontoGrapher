@@ -60,7 +60,6 @@ export function updateDefaultLink(id: string): string {
   const contextIRI =
     WorkspaceVocabularies[getVocabularyFromScheme(WorkspaceTerms[iri].inScheme)]
       .graph;
-
   const del: string = DELETE`${qb.g(contextIRI, [
     qb.s(qb.i(iri), "rdfs:subClassOf", qb.v("b")),
     qb.s(qb.v("b"), "?p", "?o"),
