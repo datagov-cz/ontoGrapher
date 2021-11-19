@@ -1,8 +1,8 @@
 import React from "react";
 import { Button, Form, Modal } from "react-bootstrap";
 import {
+  changeVocabularyCount,
   deleteConcept,
-  subtractFromCount,
 } from "../../function/FunctionEditVars";
 import {
   AppSettings,
@@ -37,7 +37,11 @@ export default class ModalRemoveReadOnlyConcept extends React.Component<
     const vocabulary = getVocabularyFromScheme(
       WorkspaceTerms[WorkspaceElements[this.props.id].iri].inScheme
     );
-    subtractFromCount(vocabulary, [WorkspaceElements[this.props.id].iri]);
+    changeVocabularyCount(
+      vocabulary,
+      (count) => count - 1,
+      WorkspaceElements[this.props.id].iri
+    );
     this.props.performTransaction(
       ...deleteConcept(this.props.id),
       updateDeleteTriples(

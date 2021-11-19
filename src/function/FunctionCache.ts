@@ -21,7 +21,7 @@ import { CacheSearchVocabularies } from "../datatypes/CacheSearchResults";
 import { VocabularyNode } from "../datatypes/VocabularyNode";
 import { Restriction } from "../datatypes/Restriction";
 import { createCount } from "./FunctionCreateVars";
-import { addToCount } from "./FunctionEditVars";
+import { changeVocabularyCount } from "./FunctionEditVars";
 
 export async function getCacheConnections(
   iri: string,
@@ -189,7 +189,7 @@ export function insertNewCacheTerms(newTerms: typeof WorkspaceTerms) {
         );
         setSchemeColors(AppSettings.viewColorPool);
       } else {
-        addToCount(vocab, term);
+        changeVocabularyCount(vocab, (count) => count + 1, term);
       }
     } else
       console.error(

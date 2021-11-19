@@ -280,7 +280,11 @@ export function initElements() {
   return ids;
 }
 
-export function addToCount(vocabulary: string, ...terms: string[]) {
+export function changeVocabularyCount(
+  vocabulary: string,
+  changeFunction: (count: number) => number,
+  ...terms: string[]
+) {
   for (const term of terms) {
     WorkspaceVocabularies[vocabulary].count[Representation.FULL]++;
     if (
@@ -290,20 +294,9 @@ export function addToCount(vocabulary: string, ...terms: string[]) {
       ).length <
       RepresentationConfig[Representation.COMPACT].visibleStereotypes.length
     )
-      WorkspaceVocabularies[vocabulary].count[Representation.COMPACT]++;
-  }
-}
-
-export function subtractFromCount(vocabulary: string, terms: string[]) {
-  for (const term of terms) {
-    WorkspaceVocabularies[vocabulary].count[Representation.FULL]--;
-    if (
-      _.difference(
-        RepresentationConfig[Representation.COMPACT].visibleStereotypes,
-        WorkspaceTerms[term].types
-      ).length <
-      RepresentationConfig[Representation.COMPACT].visibleStereotypes.length
-    )
-      WorkspaceVocabularies[vocabulary].count[Representation.COMPACT]--;
+      WorkspaceVocabularies[vocabulary].count[Representation.COMPACT] =
+        changeFunction(
+          WorkspaceVocabularies[vocabulary].count[Representation.COMPACT]
+        );
   }
 }
