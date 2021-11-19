@@ -35,7 +35,7 @@ export function drawGraphElement(
 ) {
   if (typeof elem.id === "string") {
     const types = WorkspaceTerms[WorkspaceElements[elem.id].iri].types;
-    setDisplayLabel(elem.id, languageCode);
+    getDisplayLabel(elem.id, languageCode);
     const label = WorkspaceElements[elem.id].selectedLabel[languageCode];
     const labels: string[] = [];
     if (AppSettings.viewStereotypes)

@@ -1,5 +1,6 @@
 import {
   Diagrams,
+  Languages,
   WorkspaceElements,
   WorkspaceTerms,
   WorkspaceVocabularies,
@@ -31,12 +32,15 @@ export function updateProjectElement(del: boolean, ...ids: string[]): string {
     const altLabels = vocabElem.altLabels.map((alt) =>
       qb.ll(alt.label, alt.language)
     );
+    const names = Object.entries(WorkspaceElements[id].selectedLabel)
+      .filter(
+        ([key, value]) =>
+          key in Languages && WorkspaceTerms[iri].labels[key] !== value
+      )
+      .map(([key, value]) => qb.ll(value, key));
     const definitions = Object.keys(vocabElem.definitions)
       .filter((lang) => vocabElem.definitions[lang])
       .map((lang) => qb.ll(vocabElem.definitions[lang], lang));
-    const names = Object.keys(WorkspaceElements[id].selectedLabel).map((lang) =>
-      qb.ll(WorkspaceElements[id].selectedLabel[lang], lang)
-    );
 
     if (!(graph in data)) data[graph] = [];
 
@@ -45,6 +49,7 @@ export function updateProjectElement(del: boolean, ...ids: string[]): string {
         qb.s(qb.i(iri), "rdf:type", qb.a(types)),
         qb.s(qb.i(iri), "skos:prefLabel", qb.a(labels)),
         qb.s(qb.i(iri), "skos:altLabel", qb.a(altLabels), altLabels.length > 0),
+        qb.s(qb.i(iri), "dc:title", qb.a(names), names.length > 0),
         qb.s(
           qb.i(iri),
           "skos:definition",
@@ -69,15 +74,17 @@ export function updateProjectElement(del: boolean, ...ids: string[]): string {
     ];
 
     data[getWorkspaceContextIRI()].push(...ogStatements);
+    const deleteStatements = [
+      qb.s(qb.i(iri), "og:name", "?name"),
+      qb.s(qb.i(iri), "og:diagram", "?diagram"),
+      qb.s(qb.i(iri), "og:active", "?active"),
+    ];
+
     Diagrams.forEach((diagram, i) => {
       data[getDiagramContextIRI(i)] = ogStatements;
       if (del)
         deletes.push(
-          ...[
-            qb.s(qb.i(iri), "og:name", "?name"),
-            qb.s(qb.i(iri), "og:diagram", "?diagram"),
-            qb.s(qb.i(iri), "og:active", "?active"),
-          ].map((stmt) =>
+          ...deleteStatements.map((stmt) =>
             DELETE`${qb.g(getDiagramContextIRI(i), [stmt])}`.WHERE`${qb.g(
               getDiagramContextIRI(i),
               [stmt]
@@ -86,17 +93,25 @@ export function updateProjectElement(del: boolean, ...ids: string[]): string {
         );
     });
 
-    if (del)
+    if (del) {
       deletes.push(
+        ...deleteStatements.map((stmt) =>
+          DELETE`${qb.g(getWorkspaceContextIRI(), [stmt])}`.WHERE`${qb.g(
+            getWorkspaceContextIRI(),
+            [stmt]
+          )}`.build()
+        ),
         ...[
           qb.s(qb.i(iri), "rdf:type", "?type"),
           qb.s(qb.i(iri), "skos:prefLabel", "?labels"),
           qb.s(qb.i(iri), "skos:altLabel", "?alt"),
           qb.s(qb.i(iri), "skos:definition", "?definition"),
+          qb.s(qb.i(iri), "dc:title", "?title"),
         ].map((stmt) =>
           DELETE`${qb.g(graph, [stmt])}`.WHERE`${qb.g(graph, [stmt])}`.build()
         )
       );
+    }
   }
 
   for (const graph in data) {
