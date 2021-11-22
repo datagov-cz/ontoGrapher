@@ -286,7 +286,10 @@ export function changeVocabularyCount(
   ...terms: string[]
 ) {
   for (const term of terms) {
-    WorkspaceVocabularies[vocabulary].count[Representation.FULL]++;
+    WorkspaceVocabularies[vocabulary].count[Representation.FULL] =
+      changeFunction(
+        WorkspaceVocabularies[vocabulary].count[Representation.FULL]
+      );
     if (
       _.difference(
         RepresentationConfig[Representation.COMPACT].visibleStereotypes,
