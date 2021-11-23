@@ -175,8 +175,12 @@ export default class App extends React.Component<
   }
 
   performTransaction(...queries: string[]) {
-    let transaction = qb.constructQuery(...queries);
-    if (!transaction) return;
+    const queriesTrimmed = queries.filter((q) => q);
+    if (queriesTrimmed.length === 0) {
+      this.handleWorkspaceReady();
+      return;
+    }
+    const transaction = qb.constructQuery(...queriesTrimmed);
     this.handleStatus(
       true,
       Locale[AppSettings.viewLanguage].updating,
@@ -186,11 +190,7 @@ export default class App extends React.Component<
     processTransaction(AppSettings.contextEndpoint, transaction).then(
       (result) => {
         if (result) {
-          this.handleStatus(
-            false,
-            Locale[AppSettings.viewLanguage].savedChanges,
-            false
-          );
+          this.handleWorkspaceReady();
         } else {
           this.handleStatus(
             false,
@@ -350,6 +350,10 @@ export default class App extends React.Component<
     this.handleStatus(true, Locale[AppSettings.viewLanguage].loading, true);
   }
 
+  handleWorkspaceReady(message: keyof typeof en = "savedChanges") {
+    this.handleStatus(false, Locale[AppSettings.viewLanguage][message], false);
+  }
+
   validate() {
     this.setState({ validation: !this.state.validation });
   }
@@ -457,8 +461,8 @@ export default class App extends React.Component<
         <DiagramCanvas
           ref={this.canvas}
           projectLanguage={this.state.projectLanguage}
-          updateElementPanel={(id?: string) => {
-            this.itemPanel.current?.update(id);
+          updateElementPanel={(id?: string, redoCacheSearch?: boolean) => {
+            this.itemPanel.current?.update(id, redoCacheSearch);
           }}
           updateDetailPanel={(id?: string) => {
             this.handleUpdateDetailPanel(id);

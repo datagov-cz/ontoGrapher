@@ -261,17 +261,18 @@ export function setElementShape(
   }
 }
 
-export function initElements() {
+export function initElements(replaceInactive: boolean = false) {
   let ids: string[] = [];
   for (const iri in WorkspaceTerms) {
-    if (!getElemFromIRI(iri)) {
+    const id = getElemFromIRI(iri);
+    if (!id || (replaceInactive && id && !WorkspaceElements[id].active)) {
       const pkg = FolderRoot.children.find(
         (pkg) => pkg.scheme === WorkspaceTerms[iri].inScheme
       );
-      const id = new graphElement().id as string;
+      const newID = id || (new graphElement().id as string);
       if (pkg) {
-        addClass(id, iri, pkg);
-        ids.push(id);
+        addClass(newID, iri, pkg);
+        ids.push(newID);
       }
     }
   }
