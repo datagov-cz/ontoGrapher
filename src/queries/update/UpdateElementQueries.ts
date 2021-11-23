@@ -46,8 +46,8 @@ export function updateProjectElement(del: boolean, ...ids: string[]): string {
 
     if (del)
       data[graph].push(
-        qb.s(qb.i(iri), "rdf:type", qb.a(types)),
-        qb.s(qb.i(iri), "skos:prefLabel", qb.a(labels)),
+        qb.s(qb.i(iri), "rdf:type", qb.a(types), types.length > 0),
+        qb.s(qb.i(iri), "skos:prefLabel", qb.a(labels), labels.length > 0),
         qb.s(qb.i(iri), "skos:altLabel", qb.a(altLabels), altLabels.length > 0),
         qb.s(qb.i(iri), "dc:title", qb.a(names), names.length > 0),
         qb.s(
@@ -69,7 +69,7 @@ export function updateProjectElement(del: boolean, ...ids: string[]): string {
       qb.s(qb.i(iri), "og:id", qb.ll(id)),
       qb.s(qb.i(iri), "og:scheme", qb.i(scheme)),
       qb.s(qb.i(iri), "og:vocabulary", qb.i(getVocabularyFromScheme(scheme))),
-      qb.s(qb.i(iri), "og:name", qb.a(names)),
+      qb.s(qb.i(iri), "og:name", qb.a(names), names.length > 0),
       qb.s(qb.i(iri), "og:active", qb.ll(WorkspaceElements[id].active)),
     ];
 
@@ -143,7 +143,7 @@ export function updateProjectElementDiagram(
         qb.s(qb.i(iri), "og:id", qb.ll(id)),
         qb.s(qb.i(iri), "og:scheme", qb.i(scheme)),
         qb.s(qb.i(iri), "og:vocabulary", qb.i(getVocabularyFromScheme(scheme))),
-        qb.s(qb.i(iri), "og:name", qb.a(names)),
+        qb.s(qb.i(iri), "og:name", qb.a(names), names.length > 0),
         qb.s(qb.i(iri), "og:active", qb.ll(WorkspaceElements[id].active)),
         qb.s(
           qb.i(iri),

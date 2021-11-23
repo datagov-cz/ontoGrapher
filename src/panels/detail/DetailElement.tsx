@@ -454,6 +454,7 @@ export default class DetailElement extends React.Component<Props, State> {
                         }
                       </h5>
                       <LabelTable
+                        showCopyIRI={true}
                         labels={
                           WorkspaceVocabularies[
                             getVocabularyFromScheme(

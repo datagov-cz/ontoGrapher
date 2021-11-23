@@ -11,10 +11,12 @@ import InlineEdit, { InputType } from "riec";
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
 import { Locale } from "../../../config/Locale";
 import { removeNewlines } from "../../../function/FunctionEditVars";
+import IRILink from "../../../components/IRILink";
 
 interface Props {
   labels: { [key: string]: string };
   iri: string;
+  showCopyIRI?: boolean;
   default?: string;
   selectAsDefault?: Function;
   onEdit?: Function;
@@ -65,7 +67,14 @@ export default class LabelTable extends React.Component<Props, State> {
                 />
               ) : (
                 <span>
-                  {getLabelOrBlank(this.props.labels, lang)}
+                  {this.props.showCopyIRI ? (
+                    <IRILink
+                      iri={this.props.iri}
+                      label={getLabelOrBlank(this.props.labels, lang)}
+                    />
+                  ) : (
+                    <span>{getLabelOrBlank(this.props.labels, lang)}</span>
+                  )}
                   <span className={"right"}>
                     {getLabelOrBlank(this.props.labels, lang) !==
                       this.props.default &&

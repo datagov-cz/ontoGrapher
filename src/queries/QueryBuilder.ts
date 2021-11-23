@@ -22,7 +22,7 @@ export const qb: {
 ${statements.join(`
 `)}
 }
-values ?graphs {<${contexts.join("> <")}>}`;
+values ?graphs {<${contexts.filter((c) => c).join("> <")}>}`;
   },
   g: (context: string, statements: string[]) => {
     return `graph <${context}> {
@@ -69,11 +69,11 @@ ${statements.join(`
   },
   //statement
   s: (s: string, p: string, o: string, option: boolean = true) => {
-    return `${option ? `${s} ${p} ${o}.` : ""}`;
+    return `${(option && o) ? `${s} ${p} ${o}.` : ""}`;
   },
   //statement (blank)
   po: (p: string, o: string, option: boolean = true) => {
-    return `${option ? `${p} ${o}` : ""}`;
+    return `${option && o ? `${p} ${o}` : ""}`;
   },
   constructQuery: (...queries) => {
     let filter = queries.filter((query) => query);

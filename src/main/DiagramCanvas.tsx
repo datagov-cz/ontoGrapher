@@ -168,6 +168,8 @@ export default class DiagramCanvas extends React.Component<Props, State> {
        * Otherwise if the element position(s) changed, save the change, else open the Detail Panel
        */
       "element:pointerup": (cellView, evt) => {
+        const { rect } = evt.data;
+        if (rect) rect.remove();
         if (!this.newLink && !evt.ctrlKey) {
           if (isElementPositionOutdated(cellView.model)) {
             this.props.performTransaction(...moveElements(cellView.model, evt));
