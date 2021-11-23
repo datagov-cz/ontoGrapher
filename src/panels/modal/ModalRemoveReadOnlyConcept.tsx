@@ -1,11 +1,13 @@
 import React from "react";
 import { Button, Form, Modal } from "react-bootstrap";
-import { deleteConcept } from "../../function/FunctionEditVars";
+import {
+  changeVocabularyCount,
+  deleteConcept,
+} from "../../function/FunctionEditVars";
 import {
   AppSettings,
   WorkspaceElements,
   WorkspaceTerms,
-  WorkspaceVocabularies,
 } from "../../config/Variables";
 import { Locale } from "../../config/Locale";
 import {
@@ -32,11 +34,14 @@ export default class ModalRemoveReadOnlyConcept extends React.Component<
   State
 > {
   save() {
-    WorkspaceVocabularies[
-      getVocabularyFromScheme(
-        WorkspaceTerms[WorkspaceElements[this.props.id].iri].inScheme
-      )
-    ].count--;
+    const vocabulary = getVocabularyFromScheme(
+      WorkspaceTerms[WorkspaceElements[this.props.id].iri].inScheme
+    );
+    changeVocabularyCount(
+      vocabulary,
+      (count) => count - 1,
+      WorkspaceElements[this.props.id].iri
+    );
     this.props.performTransaction(
       ...deleteConcept(this.props.id),
       updateDeleteTriples(

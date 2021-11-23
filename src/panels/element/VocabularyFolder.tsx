@@ -64,6 +64,48 @@ export default class VocabularyFolder extends React.Component<Props, State> {
     this.props.update();
   }
 
+  getTermCounter() {
+    const vocabulary = getVocabularyFromScheme(this.props.node.scheme);
+    if (!(vocabulary in CacheSearchVocabularies) || !this.props.readOnly)
+      return;
+    const workspaceCount =
+      WorkspaceVocabularies[vocabulary].count[AppSettings.representation];
+    const totalCount: number =
+      CacheSearchVocabularies[vocabulary].count[AppSettings.representation];
+    if (!(workspaceCount === totalCount)) {
+      return (
+        <span>
+          &nbsp;
+          <OverlayTrigger
+            placement="right"
+            overlay={
+              <Tooltip id="button-tooltip">
+                {Locale[AppSettings.viewLanguage].vocabularyNotFullyRepresented}
+              </Tooltip>
+            }
+          >
+            <button
+              className={"buttonlink"}
+              onClick={() =>
+                this.props.filter([
+                  getVocabularyFromScheme(this.props.node.scheme),
+                ])
+              }
+            >
+              <h6>
+                <Badge variant={"secondary"}>
+                  {`${workspaceCount}/${totalCount} ${
+                    Locale[AppSettings.viewLanguage].termsCase
+                  }`}
+                </Badge>
+              </h6>
+            </button>
+          </OverlayTrigger>
+        </span>
+      );
+    }
+  }
+
   render() {
     return (
       <div
@@ -95,63 +137,7 @@ export default class VocabularyFolder extends React.Component<Props, State> {
           {(this.props.readOnly ? "📑" : "✏") +
             getLabelOrBlank(this.props.node.labels, this.props.projectLanguage)}
         </span>
-        {this.props.readOnly &&
-          getVocabularyFromScheme(this.props.node.scheme) in
-            CacheSearchVocabularies &&
-          CacheSearchVocabularies[
-            getVocabularyFromScheme(this.props.node.scheme)
-          ].count !==
-            WorkspaceVocabularies[
-              getVocabularyFromScheme(this.props.node.scheme)
-            ].count && (
-            <span>
-              &nbsp;
-              <OverlayTrigger
-                placement="right"
-                overlay={
-                  <Tooltip id="button-tooltip">
-                    {
-                      Locale[AppSettings.viewLanguage]
-                        .vocabularyNotFullyRepresented
-                    }
-                  </Tooltip>
-                }
-              >
-                <button
-                  className={"buttonlink"}
-                  onClick={() =>
-                    this.props.filter([
-                      getVocabularyFromScheme(this.props.node.scheme),
-                    ])
-                  }
-                >
-                  <h6>
-                    <Badge variant={"secondary"}>
-                      {this.props.readOnly &&
-                      getVocabularyFromScheme(this.props.node.scheme) in
-                        CacheSearchVocabularies &&
-                      CacheSearchVocabularies[
-                        getVocabularyFromScheme(this.props.node.scheme)
-                      ].count !==
-                        WorkspaceVocabularies[
-                          getVocabularyFromScheme(this.props.node.scheme)
-                        ].count
-                        ? `${
-                            WorkspaceVocabularies[
-                              getVocabularyFromScheme(this.props.node.scheme)
-                            ].count
-                          }/${
-                            CacheSearchVocabularies[
-                              getVocabularyFromScheme(this.props.node.scheme)
-                            ].count
-                          } ${Locale[AppSettings.viewLanguage].termsCase}`
-                        : ""}
-                    </Badge>
-                  </h6>
-                </button>
-              </OverlayTrigger>
-            </span>
-          )}
+        {this.getTermCounter()}
         {this.props.children}
       </div>
     );

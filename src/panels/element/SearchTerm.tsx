@@ -1,11 +1,7 @@
 import React from "react";
 import { Badge, OverlayTrigger, Popover } from "react-bootstrap";
 import { getLabelOrBlank } from "../../function/FunctionGetVars";
-import {
-  AppSettings,
-  WorkspaceElements,
-  WorkspaceTerms,
-} from "../../config/Variables";
+import { AppSettings, WorkspaceElements } from "../../config/Variables";
 import { getVocabularyShortLabel } from "@opendata-mvcr/assembly-line-shared";
 import {
   CacheSearchResults,
@@ -106,8 +102,6 @@ export class SearchTerm extends React.Component<Props, State> {
               {getVocabularyShortLabel(this.props.result.vocabulary)}
             </Badge>
           )}
-          &nbsp;
-          {this.props.iri in WorkspaceTerms && "⭐"}
         </div>
       </OverlayTrigger>
     );
