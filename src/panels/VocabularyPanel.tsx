@@ -10,6 +10,7 @@ import {
 import VocabularyFolder from "./element/VocabularyFolder";
 import VocabularyConcept from "./element/VocabularyConcept";
 import {
+  getElemFromIRI,
   getLabelOrBlank,
   getVocabularyFromScheme,
 } from "../function/FunctionGetVars";
@@ -100,16 +101,17 @@ export default class VocabularyPanel extends React.Component<Props, State> {
     );
   }
 
-  update(id?: string) {
+  update(id?: string, redoCacheSearch: boolean = false) {
     if (id) this.showItem(id);
-    else this.updateElements();
+    else this.updateElements(redoCacheSearch);
   }
 
-  updateElements() {
+  updateElements(redoCacheSearch: boolean = false) {
     this.setState({
       selectedElements: AppSettings.selectedElements,
       shownElements: this.updateShownElements(),
     });
+    if (redoCacheSearch) this.getSearchResults(this.state.search);
   }
 
   handleChangeSearch(event: React.ChangeEvent<HTMLSelectElement>) {
@@ -137,7 +139,17 @@ export default class VocabularyPanel extends React.Component<Props, State> {
       term,
       this.state.vocabs.map((vocab) => vocab.value)
     ).then((results) => {
-      this.setState({ shownLucene: results });
+      this.setState({
+        shownLucene: _.omit(
+          results,
+          Object.keys(results).filter((iri) => {
+            const elem = getElemFromIRI(iri);
+            return (
+              iri in WorkspaceTerms && elem && WorkspaceElements[elem].active
+            );
+          })
+        ),
+      });
     });
   }
 
@@ -468,7 +480,6 @@ export default class VocabularyPanel extends React.Component<Props, State> {
             }}
             update={() => {
               this.updateElements();
-              this.updateShownElements();
               this.props.update();
             }}
             performTransaction={this.props.performTransaction}
@@ -481,8 +492,7 @@ export default class VocabularyPanel extends React.Component<Props, State> {
               this.setState({ modalRemoveReadOnlyItem: false });
             }}
             update={() => {
-              this.updateElements();
-              this.updateShownElements();
+              this.updateElements(true);
               this.props.update();
             }}
             performTransaction={this.props.performTransaction}

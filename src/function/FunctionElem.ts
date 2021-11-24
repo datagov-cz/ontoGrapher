@@ -4,7 +4,7 @@ import {
   highlightCell,
   unHighlightCell,
 } from "./FunctionDraw";
-import { getElementShape } from "./FunctionGetVars";
+import { getElementShape, getElemFromIRI } from "./FunctionGetVars";
 import { paper } from "../main/DiagramCanvas";
 import { VocabularyNode } from "../datatypes/VocabularyNode";
 import { graphElement } from "../graph/GraphElement";
@@ -245,7 +245,10 @@ export async function putElementsOnCanvas(
   let queries: string[] = [];
   if (event.dataTransfer) {
     const data = JSON.parse(event.dataTransfer.getData("newClass"));
-    const iris = data.iri.filter((iri: string) => !(iri in WorkspaceTerms));
+    const iris = data.iri.filter((iri: string) => {
+      const elem = getElemFromIRI(iri);
+      return !(iri in WorkspaceTerms && elem && WorkspaceElements[elem].active);
+    });
     const ids = data.id;
     if (iris.length > 0) {
       handleStatus(
@@ -260,7 +263,7 @@ export async function putElementsOnCanvas(
       insertNewRestrictions(
         await fetchRelationships(AppSettings.contextEndpoint, iris)
       );
-      const newIDs = initElements();
+      const newIDs = initElements(true);
       queries.push(updateProjectElement(false, ...newIDs));
       queries.push(updateProjectLink(false, ...initConnections()));
       ids.push(...newIDs);

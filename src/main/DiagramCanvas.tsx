@@ -44,7 +44,7 @@ import { Locale } from "../config/Locale";
 
 interface Props {
   projectLanguage: string;
-  updateElementPanel: (id?: string) => void;
+  updateElementPanel: (id?: string, redoCacheSearch?: boolean) => void;
   updateDetailPanel: (id?: string) => void;
   freeze: boolean;
   performTransaction: (...queries: string[]) => void;
@@ -521,7 +521,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
             putElementsOnCanvas(event, this.props.handleStatus).then(
               (queries) => {
                 this.props.performTransaction(...queries);
-                this.props.updateElementPanel();
+                this.props.updateElementPanel(undefined, true);
               }
             );
           }}
