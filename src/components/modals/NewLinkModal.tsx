@@ -1,7 +1,7 @@
 import {
   AppSettings,
-  Links,
   FolderRoot,
+  Links,
   Prefixes,
   Stereotypes,
   WorkspaceElements,
@@ -18,9 +18,11 @@ import { LinkType, Representation } from "../../config/Enum";
 import { graph } from "../../graph/Graph";
 import { Button, Form, Modal } from "react-bootstrap";
 import {
+  getElemFromIRI,
   getExpressionByRepresentation,
   getLabelOrBlank,
   getLinkOrVocabElem,
+  isTermReadOnly,
 } from "../../function/FunctionGetVars";
 import { LinkCreationConfiguration } from "./CreationModals";
 import { NewElemForm } from "./NewElemForm";
@@ -38,7 +40,6 @@ interface Props {
 interface State {
   selectedLink: string;
   displayIncompatible: boolean;
-  displayUsed: boolean;
   search: string;
   termName: { [key: string]: string };
   selectedVocabulary: VocabularyNode;
@@ -54,7 +55,6 @@ export default class NewLinkModal extends React.Component<Props, State> {
       search: "",
       selectedLink: "",
       displayIncompatible: false,
-      displayUsed: false,
       termName: initLanguageObject(""),
       selectedVocabulary: FolderRoot,
       errorText: Locale[AppSettings.viewLanguage].modalNewElemError,
@@ -137,19 +137,17 @@ export default class NewLinkModal extends React.Component<Props, State> {
         );
       } else if (AppSettings.representation === Representation.COMPACT) {
         return Object.keys(WorkspaceTerms)
-          .filter(
-            (link) =>
-              !connections.find(
-                (conn) =>
-                  WorkspaceLinks[conn].iri === link &&
-                  WorkspaceLinks[conn].target ===
-                    this.props.configuration.targetID &&
-                  WorkspaceLinks[conn].active
-              ) &&
-              WorkspaceTerms[link].types.includes(
+          .filter((iri) => {
+            const id = getElemFromIRI(iri);
+            return (
+              !isTermReadOnly(iri) &&
+              id &&
+              WorkspaceElements[id].connections.length === 0 &&
+              WorkspaceTerms[iri].types.includes(
                 parsePrefix("z-sgov-pojem", "typ-vztahu")
               )
-          )
+            );
+          })
           .concat(
             Object.keys(Links).filter(
               (link) =>
@@ -289,22 +287,6 @@ export default class NewLinkModal extends React.Component<Props, State> {
               />
               {this.state.existing && (
                 <div>
-                  <span>
-                    <input
-                      defaultChecked={this.state.displayUsed}
-                      onClick={(event: any) => {
-                        this.setState({
-                          displayUsed: event.currentTarget.checked,
-                        });
-                      }}
-                      type="checkbox"
-                      id={"displayUsed"}
-                    />
-                    &nbsp;
-                    <label htmlFor={"displayUsed"}>
-                      {Locale[AppSettings.viewLanguage].showUsedRelationships}
-                    </label>
-                  </span>
                   <Form.Control
                     type="text"
                     placeholder={
@@ -323,29 +305,18 @@ export default class NewLinkModal extends React.Component<Props, State> {
                     onChange={this.handleChangeLink}
                     id={"newLinkInputSelect"}
                   >
-                    {options
-                      .filter((link) =>
-                        this.state.displayUsed
-                          ? true
-                          : !Object.values(WorkspaceLinks).find(
-                              (l) =>
-                                l.active &&
-                                l.iri === link &&
-                                l.iri in WorkspaceTerms
-                            )
-                      )
-                      .map((link) => (
-                        <option
-                          key={link}
-                          onClick={() => this.setLink(link)}
-                          value={link}
-                        >
-                          {getLabelOrBlank(
-                            getLinkOrVocabElem(link).labels,
-                            this.props.projectLanguage
-                          )}
-                        </option>
-                      ))}
+                    {options.map((link) => (
+                      <option
+                        key={link}
+                        onClick={() => this.setLink(link)}
+                        value={link}
+                      >
+                        {getLabelOrBlank(
+                          getLinkOrVocabElem(link).labels,
+                          this.props.projectLanguage
+                        )}
+                      </option>
+                    ))}
                   </Form.Control>
                 </div>
               )}

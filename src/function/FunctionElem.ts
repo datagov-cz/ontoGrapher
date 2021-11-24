@@ -28,7 +28,7 @@ import {
 } from "../queries/update/UpdateElementQueries";
 import {
   updateProjectLink,
-  updateProjectLinkVertices,
+  updateProjectLinkVertex,
 } from "../queries/update/UpdateLinkQueries";
 import { Representation } from "../config/Enum";
 import { Locale } from "../config/Locale";
@@ -40,6 +40,7 @@ import { initConnections } from "./FunctionRestriction";
 import { restoreHiddenElem, setRepresentation } from "./FunctionGraph";
 import React from "react";
 import { insertNewCacheTerms, insertNewRestrictions } from "./FunctionCache";
+import _ from "lodash";
 
 export function resizeElem(id: string, highlight: boolean = true) {
   let view = paper.findViewByModel(id);
@@ -225,7 +226,14 @@ export function moveElements(
     );
   if (movedLinks.length > 0)
     queries.push(
-      updateProjectLinkVertices(AppSettings.selectedDiagram, ...movedLinks)
+      ...movedLinks.map((link) =>
+        updateProjectLinkVertex(
+          link,
+          _.range(
+            WorkspaceLinks[link].vertices[AppSettings.selectedDiagram].length
+          )
+        )
+      )
     );
   return queries;
 }

@@ -15,7 +15,7 @@ import {
 export function updateProjectLinkVertex(
   id: string,
   vertices: number[],
-  diagram: number
+  diagram: number = AppSettings.selectedDiagram
 ): string {
   checkLink(id);
   const linkIRI = AppSettings.ontographerContext + "-" + id;
@@ -24,7 +24,7 @@ export function updateProjectLinkVertex(
   if (vertIRIs.length === 0) return "";
 
   const insert = INSERT.DATA`${qb.g(getDiagramContextIRI(diagram), [
-    qb.s(qb.i(linkIRI), "og:vertex", qb.a(vertIRIs)),
+    qb.s(qb.i(linkIRI), "og:vertex", qb.a(vertIRIs), vertIRIs.length > 0),
     qb.s(qb.i(linkIRI), "og:id", qb.ll(id)),
     qb.s(qb.i(linkIRI), "rdf:type", "og:link"),
     qb.s(qb.i(linkIRI), "og:iri", qb.i(WorkspaceLinks[id].iri)),
@@ -185,96 +185,6 @@ export function updateProjectLink(del: boolean, ...ids: string[]): string {
   );
 
   return qb.combineQueries(...deletes, ...insert);
-}
-
-export function updateProjectLinkVertices(
-  diagram: number,
-  ...ids: string[]
-): string {
-  let insertBody = [];
-  let deletes: string[] = [];
-  if (ids.length === 0) return "";
-  for (let id of ids) {
-    checkLink(id);
-    if (!(diagram in WorkspaceLinks[id].vertices)) continue;
-    let linkIRI = AppSettings.ontographerContext + "-" + id;
-    let vertices = WorkspaceLinks[id].vertices[diagram].map((vert, i) =>
-      qb.i(`${linkIRI}/vertex-${i + 1}`)
-    );
-    insertBody.push(
-      qb.s(qb.i(linkIRI), "og:vertex", qb.a(vertices)),
-      qb.s(linkIRI, "og:id", qb.ll(id)),
-      qb.s(qb.i(linkIRI), "og:id", qb.ll(id)),
-      qb.s(linkIRI, "rdf:type", "og:link"),
-      qb.s(linkIRI, "og:iri", qb.i(WorkspaceLinks[id].iri)),
-      qb.s(linkIRI, "og:active", qb.ll(WorkspaceLinks[id].active)),
-      qb.s(linkIRI, "og:source-id", qb.ll(WorkspaceLinks[id].source)),
-      qb.s(linkIRI, "og:target-id", qb.ll(WorkspaceLinks[id].target)),
-      qb.s(
-        linkIRI,
-        "og:source",
-        qb.i(WorkspaceElements[WorkspaceLinks[id].source].iri)
-      ),
-      qb.s(
-        linkIRI,
-        "og:target",
-        qb.i(WorkspaceElements[WorkspaceLinks[id].target].iri)
-      ),
-      qb.s(linkIRI, "og:type", qb.ll(LinkConfig[WorkspaceLinks[id].type].id)),
-      qb.s(
-        linkIRI,
-        "og:sourceCardinality1",
-        qb.ll(WorkspaceLinks[id].sourceCardinality.getFirstCardinality())
-      ),
-      qb.s(
-        linkIRI,
-        "og:sourceCardinality2",
-        qb.ll(WorkspaceLinks[id].sourceCardinality.getSecondCardinality())
-      ),
-      qb.s(
-        linkIRI,
-        "og:targetCardinality1",
-        qb.ll(WorkspaceLinks[id].targetCardinality.getFirstCardinality())
-      ),
-      qb.s(
-        linkIRI,
-        "og:targetCardinality2",
-        qb.ll(WorkspaceLinks[id].targetCardinality.getSecondCardinality())
-      ),
-      ...vertices.map((vertIRI, i) =>
-        [
-          qb.s(vertIRI, "rdf:type", "og:vertexDiagram"),
-          qb.s(vertIRI, "og:index", qb.ll(i)),
-          qb.s(
-            vertIRI,
-            "og:position-x",
-            qb.ll(Math.round(WorkspaceLinks[id].vertices[diagram][i].x))
-          ),
-          qb.s(
-            vertIRI,
-            "og:position-y",
-            qb.ll(Math.round(WorkspaceLinks[id].vertices[diagram][i].y))
-          ),
-        ].join(`
-			`)
-      )
-    );
-    vertices.forEach((vertIRI) =>
-      deletes.push(
-        DELETE`${qb.g(getWorkspaceContextIRI(), [qb.s(vertIRI, "?p", "?o")])}`
-          .WHERE`${qb.g(getWorkspaceContextIRI(), [
-          qb.s(vertIRI, "?p", "?o"),
-          "filter(?p not in (og:vertex))",
-        ])}`.build()
-      )
-    );
-  }
-  let insert = INSERT.DATA`${qb.g(
-    getWorkspaceContextIRI(),
-    insertBody
-  )}`.build();
-
-  return qb.combineQueries(...deletes, insert);
 }
 
 function checkLink(id: string) {

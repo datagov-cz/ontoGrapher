@@ -80,7 +80,6 @@ export function updateDefaultLink(id: string): string {
       qb.s("?ib", "?ip", "?io"),
       "}",
     ])}`.build();
-
   const insert: string = INSERT.DATA`${qb.g(contextIRI, [
     ...WorkspaceElements[WorkspaceLinks[id].source].connections
       .filter(
@@ -171,6 +170,7 @@ export function updateDefaultLink(id: string): string {
     ...WorkspaceTerms[iri].restrictions
       .filter(
         (rest) =>
+          rest.target &&
           !(
             rest.target in WorkspaceTerms ||
             (isNumber(rest.target) && rest.onProperty in Links)
@@ -223,8 +223,10 @@ export function updateGeneralizationLink(id: string): string {
     "filter(!isBlank(?b)).",
   ])}`.build();
 
+  const subClasses = subClassOf.concat(list);
+
   const insert = INSERT.DATA`${qb.g(contextIRI, [
-    qb.s(qb.i(iri), "rdfs:subClassOf", qb.a(subClassOf.concat(list))),
+    qb.s(qb.i(iri), "rdfs:subClassOf", qb.a(subClasses), subClasses.length > 0),
   ])}`.build();
   return qb.combineQueries(del, insert);
 }
