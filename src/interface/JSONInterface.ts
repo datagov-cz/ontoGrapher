@@ -6,7 +6,10 @@ import {
 } from "../config/Variables";
 import { createValues } from "../function/FunctionCreateVars";
 import { initLanguageObject } from "../function/FunctionEditVars";
-import { checkLabels } from "../function/FunctionGetVars";
+import {
+  checkLabels,
+  getVocabularyFromScheme,
+} from "../function/FunctionGetVars";
 import { Locale } from "../config/Locale";
 import { checkDefaultCardinality } from "../function/FunctionLink";
 import {
@@ -31,8 +34,9 @@ export async function getVocabulariesFromRemoteJSON(
             results.push(
               await fetchVocabulary([data.sourceIRI], true, data.endpoint)
             );
-            WorkspaceVocabularies[data.sourceIRI].labels =
-              initLanguageObject(key);
+            WorkspaceVocabularies[
+              getVocabularyFromScheme(data.sourceIRI)
+            ].labels = initLanguageObject(key);
             results.push(
               await fetchConcepts(
                 data.endpoint,
