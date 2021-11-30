@@ -18,6 +18,7 @@ import {
   getVocabularyFromScheme,
   getWorkspaceContextIRI,
 } from "../../function/FunctionGetVars";
+import { removeFromFlexSearch } from "../../function/FunctionCreateVars";
 
 interface Props {
   modal: boolean;
@@ -34,6 +35,7 @@ export default class ModalRemoveReadOnlyConcept extends React.Component<
   State
 > {
   save() {
+    removeFromFlexSearch(this.props.id);
     const vocabulary = getVocabularyFromScheme(
       WorkspaceTerms[WorkspaceElements[this.props.id].iri].inScheme
     );

@@ -14,6 +14,10 @@ import { LinkType, Representation } from "../config/Enum";
 import { Locale } from "../config/Locale";
 import { getVocabularyFromScheme } from "./FunctionGetVars";
 import { v4 as uuidv4 } from "uuid";
+import {
+  FlexDocumentIDTable,
+  FlexDocumentSearch,
+} from "../config/FlexDocumentSearch";
 
 export function createValues(
   values: { [key: string]: string[] },
@@ -52,6 +56,43 @@ export function getDomainOf(iriElem: string): string[] {
     }
   }
   return result;
+}
+
+export function addToFlexSearch(...ids: string[]) {
+  let numberID = Object.keys(FlexDocumentIDTable).length;
+  for (const id of ids) {
+    if (!(id in WorkspaceElements))
+      throw new Error(`ID ${id} not recognized as an element ID.`);
+    const iri = WorkspaceElements[id].iri;
+    if (!(iri in WorkspaceTerms))
+      throw new Error(`IRI ${iri} not recognized as a term in the workspace.`);
+    FlexDocumentIDTable[numberID] = id;
+    // for (const lang of Object.keys(Languages)) {
+    FlexDocumentSearch.add({
+      id: numberID++,
+      tag: "cs",
+      index: {
+        selectedLabel:
+          WorkspaceElements[id].selectedLabel["cs"] ||
+          WorkspaceTerms[iri].labels["cs"],
+        prefLabel: WorkspaceTerms[iri].labels["cs"],
+        // altLabel: WorkspaceTerms[iri].altLabels
+        //   .filter((alt) => alt.language === lang)
+        //   .map((alt) => alt.label),
+      },
+    });
+    // }
+  }
+}
+
+export function removeFromFlexSearch(...ids: string[]) {
+  const entries = Object.entries(FlexDocumentIDTable).filter(([key, value]) =>
+    ids.includes(value)
+  );
+  entries.forEach(([key, value]) => {
+    const num = parseInt(key, 10);
+    FlexDocumentSearch.remove(num);
+  });
 }
 
 export function addVocabularyElement(

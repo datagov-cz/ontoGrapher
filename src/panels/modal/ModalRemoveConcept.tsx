@@ -14,6 +14,7 @@ import { CacheConnection } from "../../types/CacheConnection";
 import ConnectionCache from "../detail/components/connections/ConnectionCache";
 import TableList from "../../components/TableList";
 import { Representation } from "../../config/Enum";
+import { removeFromFlexSearch } from "../../function/FunctionCreateVars";
 
 interface Props {
   modal: boolean;
@@ -37,6 +38,7 @@ export default class ModalRemoveConcept extends React.Component<Props, State> {
   }
 
   save() {
+    removeFromFlexSearch(this.props.id);
     const writeGraphs = Object.keys(WorkspaceVocabularies)
       .filter((vocab) => !WorkspaceVocabularies[vocab].readOnly)
       .map((vocab) => WorkspaceVocabularies[vocab].graph);
