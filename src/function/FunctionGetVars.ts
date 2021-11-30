@@ -201,7 +201,7 @@ export function getDiagramContextIRI(diagram: number) {
   );
   return parsePrefix(
     "d-sgov-pracovní-prostor-pojem",
-    `assetový-kontext${projectID}/diagram/${Diagrams[diagram].id}`
+    `přílohový-kontext${projectID}/diagram/${Diagrams[diagram].id}`
   );
 }
 

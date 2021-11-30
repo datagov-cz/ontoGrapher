@@ -42,7 +42,7 @@ export async function updateLegacyWorkspaceToVersion4(
     const diagramID = diagrams[index].id;
     return parsePrefix(
       "d-sgov-pracovní-prostor-pojem",
-      `assetový-kontext${projectID}/diagram/${diagramID}`
+      `přílohový-kontext${projectID}/diagram/${diagramID}`
     );
   }
   const elemStatements = Object.keys(elements).map((element) =>
@@ -111,7 +111,7 @@ export async function updateLegacyWorkspaceToVersion4(
           qb.i(
             parsePrefix(
               "d-sgov-pracovní-prostor-pojem",
-              `odkazuje-na-assetový-kontext`
+              `odkazuje-na-přílohový-kontext`
             )
           ),
           qb.i(diagramIRI)
@@ -127,11 +127,13 @@ export async function updateLegacyWorkspaceToVersion4(
         qb.s(
           qb.i(diagramIRI),
           "rdf:type",
-          qb.i(parsePrefix("d-sgov-pracovní-prostor-pojem", "assetový-kontext"))
+          qb.i(
+            parsePrefix("d-sgov-pracovní-prostor-pojem", "přílohový-kontext")
+          )
         ),
         qb.s(
           qb.i(diagramIRI),
-          qb.i(parsePrefix("d-sgov-pracovní-prostor-pojem", "má-typ-assetu")),
+          qb.i(parsePrefix("d-sgov-pracovní-prostor-pojem", "má-typ-přílohy")),
           "og:diagram"
         ),
         qb.s(

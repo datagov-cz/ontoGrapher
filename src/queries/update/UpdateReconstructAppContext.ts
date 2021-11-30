@@ -6,21 +6,27 @@ import { processQuery } from "../../interface/TransactionInterface";
 import { updateWorkspaceContext } from "./UpdateMiscQueries";
 
 export async function reconstructApplicationContextWithDiagrams(): Promise<string> {
+  const linkPredicates = [
+    parsePrefix(
+      "d-sgov-pracovní-prostor-pojem",
+      "odkazuje-na-assetový-kontext"
+    ),
+    parsePrefix(
+      "d-sgov-pracovní-prostor-pojem",
+      "odkazuje-na-přílohový-kontext"
+    ),
+  ];
   const diagramRetrievalQuery = [
     "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
     "select ?diagram where {",
     "BIND(<" + AppSettings.contextIRI + "> as ?metaContext).",
     "graph ?metaContext {",
-    `?metaContext ${qb.i(
-      parsePrefix(
-        "d-sgov-pracovní-prostor-pojem",
-        `odkazuje-na-assetový-kontext`
-      )
-    )} ?diagram .`,
+    `?metaContext ?linkPredicate ?diagram .`,
+    `values ?linkPredicate { <${linkPredicates.join("> <")}> }`,
     "}",
     "graph ?diagram {",
     `?diagram ${qb.i(
-      parsePrefix("d-sgov-pracovní-prostor-pojem", "má-typ-assetu")
+      parsePrefix("d-sgov-pracovní-prostor-pojem", "má-typ-přílohy")
     )} og:diagram.`,
     "}",
     "} limit 1",

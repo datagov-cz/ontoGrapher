@@ -13,11 +13,11 @@ export function updateCreateDiagram(diagram: number): string {
     qb.s(
       qb.i(diagramIRI),
       "rdf:type",
-      qb.i(parsePrefix("d-sgov-pracovní-prostor-pojem", "assetový-kontext"))
+      qb.i(parsePrefix("d-sgov-pracovní-prostor-pojem", "přílohový-kontext"))
     ),
     qb.s(
       qb.i(diagramIRI),
-      qb.i(parsePrefix("d-sgov-pracovní-prostor-pojem", "má-typ-assetu")),
+      qb.i(parsePrefix("d-sgov-pracovní-prostor-pojem", "má-typ-přílohy")),
       "og:diagram"
     ),
     qb.s(qb.i(diagramIRI), "og:index", qb.ll(diagram)),
@@ -36,7 +36,7 @@ export function updateCreateDiagram(diagram: number): string {
       qb.i(
         parsePrefix(
           "d-sgov-pracovní-prostor-pojem",
-          `odkazuje-na-assetový-kontext`
+          `odkazuje-na-přílohový-kontext`
         )
       ),
       qb.i(diagramIRI)
@@ -60,11 +60,11 @@ export function updateDiagram(diagram: number): string {
     qb.s(
       qb.i(diagramIRI),
       "rdf:type",
-      qb.i(parsePrefix("d-sgov-pracovní-prostor-pojem", "assetový-kontext"))
+      qb.i(parsePrefix("d-sgov-pracovní-prostor-pojem", "přílohový-kontext"))
     ),
     qb.s(
       qb.i(diagramIRI),
-      qb.i(parsePrefix("d-sgov-pracovní-prostor-pojem", "má-typ-assetu")),
+      qb.i(parsePrefix("d-sgov-pracovní-prostor-pojem", "má-typ-přílohy")),
       "og:diagram"
     ),
     qb.s(
@@ -90,7 +90,7 @@ export function updateDeleteDiagram(diagram: number) {
       qb.i(
         parsePrefix(
           "d-sgov-pracovní-prostor-pojem",
-          `odkazuje-na-assetový-kontext`
+          `odkazuje-na-přílohový-kontext`
         )
       ),
       qb.i(diagramIRI)
