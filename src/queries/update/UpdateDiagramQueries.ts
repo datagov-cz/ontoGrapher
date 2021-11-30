@@ -84,6 +84,13 @@ export function updateDiagram(diagram: number): string {
 export function updateDeleteDiagram(diagram: number) {
   const diagramIRI = getDiagramContextIRI(diagram);
   const deleteGraph = `DROP GRAPH <${diagramIRI}>`;
+  const projectID = AppSettings.contextIRI.substring(
+    AppSettings.contextIRI.lastIndexOf("/")
+  );
+  const deleteGraphLegacy = `DROP GRAPH <${parsePrefix(
+    "d-sgov-pracovní-prostor-pojem",
+    `assetový-kontext${projectID}/diagram/${Diagrams[diagram].id}`
+  )}>`;
   const deleteMetadataContext = DELETE.DATA`${qb.g(AppSettings.contextIRI, [
     qb.s(
       qb.i(AppSettings.contextIRI),
@@ -106,5 +113,5 @@ export function updateDeleteDiagram(diagram: number) {
       qb.i(diagramIRI)
     ),
   ])}`.build();
-  return qb.combineQueries(deleteGraph, deleteMetadataContext);
+  return qb.combineQueries(deleteGraph, deleteGraphLegacy, deleteMetadataContext);
 }
