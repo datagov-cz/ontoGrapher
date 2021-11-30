@@ -41,6 +41,16 @@ export function updateCreateDiagram(diagram: number): string {
       ),
       qb.i(diagramIRI)
     ),
+    qb.s(
+      qb.i(diagramIRI),
+      "rdf:type",
+      qb.i(parsePrefix("d-sgov-pracovní-prostor-pojem", "přílohový-kontext"))
+    ),
+    qb.s(
+      qb.i(diagramIRI),
+      qb.i(parsePrefix("d-sgov-pracovní-prostor-pojem", "má-typ-přílohy")),
+      "og:diagram"
+    ),
   ])}`.build();
 
   return qb.combineQueries(insertMetadataContext, insertDiagramContext);
@@ -112,6 +122,20 @@ export function updateDeleteDiagram(diagram: number) {
       ),
       qb.i(diagramIRI)
     ),
+    qb.s(
+      qb.i(diagramIRI),
+      "rdf:type",
+      qb.i(parsePrefix("d-sgov-pracovní-prostor-pojem", "přílohový-kontext"))
+    ),
+    qb.s(
+      qb.i(diagramIRI),
+      qb.i(parsePrefix("d-sgov-pracovní-prostor-pojem", "má-typ-přílohy")),
+      "og:diagram"
+    ),
   ])}`.build();
-  return qb.combineQueries(deleteGraph, deleteGraphLegacy, deleteMetadataContext);
+  return qb.combineQueries(
+    deleteGraph,
+    deleteGraphLegacy,
+    deleteMetadataContext
+  );
 }
