@@ -95,6 +95,16 @@ export function updateDeleteDiagram(diagram: number) {
       ),
       qb.i(diagramIRI)
     ),
+    qb.s(
+      qb.i(AppSettings.contextIRI),
+      qb.i(
+        parsePrefix(
+          "d-sgov-pracovní-prostor-pojem",
+          `odkazuje-na-assetový-kontext`
+        )
+      ),
+      qb.i(diagramIRI)
+    ),
   ])}`.build();
   return qb.combineQueries(deleteGraph, deleteMetadataContext);
 }
