@@ -93,7 +93,7 @@ export async function fetchConcepts(
   requiredTypes?: string[],
   requiredValues?: string[]
 ): Promise<boolean> {
-  let result: {
+  const result: {
     [key: string]: {
       labels: { [key: string]: string };
       definitions: { [key: string]: string };
@@ -235,7 +235,7 @@ export async function fetchConcepts(
         result[term].restrictions = result[term].restrictions.filter((r) =>
           Object.keys(Links).includes(r.onProperty)
         );
-        // Any inverse restriction is, for purposes convenience,
+        // Any inverse restriction is, for purposes of convenience,
         // saved under the original restriction's origin term.
         // This will enable us to implement source cardinality recognition more easily.
         result[term].restrictions
