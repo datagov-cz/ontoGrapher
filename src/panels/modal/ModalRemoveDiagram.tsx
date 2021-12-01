@@ -17,7 +17,7 @@ export default class ModalRemoveDiagram extends React.Component<Props> {
   save() {
     Diagrams[this.props.diagram].active = false;
     if (AppSettings.selectedDiagram === this.props.diagram) {
-      changeDiagrams(Diagrams.findIndex((diag) => diag.active));
+      changeDiagrams(Diagrams.findIndex((diag) => diag && diag.active));
     }
     this.props.update();
     this.props.performTransaction(updateDeleteDiagram(this.props.diagram));
