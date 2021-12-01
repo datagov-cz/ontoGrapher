@@ -93,11 +93,11 @@ export async function getElementsConfig(
       `${qb.i(AppSettings.contextIRI)} ${qb.i(
         parsePrefix(
           "d-sgov-pracovní-prostor-pojem",
-          `odkazuje-na-assetový-kontext`
+          `odkazuje-na-přílohový-kontext`
         )
       )} ?diagram.`,
       `?diagram ${qb.i(
-        parsePrefix("d-sgov-pracovní-prostor-pojem", `má-typ-assetu`)
+        parsePrefix("d-sgov-pracovní-prostor-pojem", `má-typ-přílohy`)
       )} og:diagram.`,
       `?diagram og:index ?index.`,
       "}",
@@ -200,13 +200,13 @@ export async function getSettings(
     `?metaContext ${qb.i(
       parsePrefix(
         "d-sgov-pracovní-prostor-pojem",
-        `odkazuje-na-assetový-kontext`
+        `odkazuje-na-přílohový-kontext`
       )
     )} ?diagram .`,
     "}",
     "graph ?diagram {",
     `?diagram ${qb.i(
-      parsePrefix("d-sgov-pracovní-prostor-pojem", "má-typ-assetu")
+      parsePrefix("d-sgov-pracovní-prostor-pojem", "má-typ-přílohy")
     )} og:diagram.`,
     "?diagram og:index ?index .",
     "?diagram og:name ?name .",
@@ -350,6 +350,20 @@ export async function getLinksConfig(
     });
   if (!appContextLinkRetrieval) return false;
   else {
+    const linkPredicates = [
+      parsePrefix(
+        "d-sgov-pracovní-prostor-pojem",
+        "odkazuje-na-assetový-kontext"
+      ),
+      parsePrefix(
+        "d-sgov-pracovní-prostor-pojem",
+        "odkazuje-na-přílohový-kontext"
+      ),
+    ];
+    const typePredicates = [
+      parsePrefix("d-sgov-pracovní-prostor-pojem", "má-typ-assetu"),
+      parsePrefix("d-sgov-pracovní-prostor-pojem", "má-typ-přílohy"),
+    ];
     const diagramContextQuery = [
       "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
       "select ?vertex ?diagram ?index ?diagramIndex ?posX ?posY ?id ?iri where {",
@@ -364,15 +378,10 @@ export async function getLinksConfig(
       "?vertex og:position-x ?posX.",
       "?vertex og:position-y ?posY.",
       "}",
-      `${qb.i(AppSettings.contextIRI)} ${qb.i(
-        parsePrefix(
-          "d-sgov-pracovní-prostor-pojem",
-          `odkazuje-na-assetový-kontext`
-        )
-      )} ?diagram.`,
-      `?diagram ${qb.i(
-        parsePrefix("d-sgov-pracovní-prostor-pojem", `má-typ-assetu`)
-      )} og:diagram.`,
+      `${qb.i(AppSettings.contextIRI)} ?linkPredicate ?diagram.`,
+      `?diagram ?typePredicate og:diagram.`,
+      `values ?linkPredicate { <${linkPredicates.join("> <")}> }`,
+      `values ?typePredicate { <${typePredicates.join("> <")}> }`,
       `?diagram og:index ?diagramIndex.`,
       "}",
     ].join(`

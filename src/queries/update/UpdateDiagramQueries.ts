@@ -13,11 +13,11 @@ export function updateCreateDiagram(diagram: number): string {
     qb.s(
       qb.i(diagramIRI),
       "rdf:type",
-      qb.i(parsePrefix("d-sgov-pracovní-prostor-pojem", "assetový-kontext"))
+      qb.i(parsePrefix("d-sgov-pracovní-prostor-pojem", "přílohový-kontext"))
     ),
     qb.s(
       qb.i(diagramIRI),
-      qb.i(parsePrefix("d-sgov-pracovní-prostor-pojem", "má-typ-assetu")),
+      qb.i(parsePrefix("d-sgov-pracovní-prostor-pojem", "má-typ-přílohy")),
       "og:diagram"
     ),
     qb.s(qb.i(diagramIRI), "og:index", qb.ll(diagram)),
@@ -36,10 +36,20 @@ export function updateCreateDiagram(diagram: number): string {
       qb.i(
         parsePrefix(
           "d-sgov-pracovní-prostor-pojem",
-          `odkazuje-na-assetový-kontext`
+          `odkazuje-na-přílohový-kontext`
         )
       ),
       qb.i(diagramIRI)
+    ),
+    qb.s(
+      qb.i(diagramIRI),
+      "rdf:type",
+      qb.i(parsePrefix("d-sgov-pracovní-prostor-pojem", "přílohový-kontext"))
+    ),
+    qb.s(
+      qb.i(diagramIRI),
+      qb.i(parsePrefix("d-sgov-pracovní-prostor-pojem", "má-typ-přílohy")),
+      "og:diagram"
     ),
   ])}`.build();
 
@@ -60,11 +70,11 @@ export function updateDiagram(diagram: number): string {
     qb.s(
       qb.i(diagramIRI),
       "rdf:type",
-      qb.i(parsePrefix("d-sgov-pracovní-prostor-pojem", "assetový-kontext"))
+      qb.i(parsePrefix("d-sgov-pracovní-prostor-pojem", "přílohový-kontext"))
     ),
     qb.s(
       qb.i(diagramIRI),
-      qb.i(parsePrefix("d-sgov-pracovní-prostor-pojem", "má-typ-assetu")),
+      qb.i(parsePrefix("d-sgov-pracovní-prostor-pojem", "má-typ-přílohy")),
       "og:diagram"
     ),
     qb.s(
@@ -84,7 +94,24 @@ export function updateDiagram(diagram: number): string {
 export function updateDeleteDiagram(diagram: number) {
   const diagramIRI = getDiagramContextIRI(diagram);
   const deleteGraph = `DROP GRAPH <${diagramIRI}>`;
+  const projectID = AppSettings.contextIRI.substring(
+    AppSettings.contextIRI.lastIndexOf("/")
+  );
+  const deleteGraphLegacy = `DROP GRAPH <${parsePrefix(
+    "d-sgov-pracovní-prostor-pojem",
+    `assetový-kontext${projectID}/diagram/${Diagrams[diagram].id}`
+  )}>`;
   const deleteMetadataContext = DELETE.DATA`${qb.g(AppSettings.contextIRI, [
+    qb.s(
+      qb.i(AppSettings.contextIRI),
+      qb.i(
+        parsePrefix(
+          "d-sgov-pracovní-prostor-pojem",
+          `odkazuje-na-přílohový-kontext`
+        )
+      ),
+      qb.i(diagramIRI)
+    ),
     qb.s(
       qb.i(AppSettings.contextIRI),
       qb.i(
@@ -95,6 +122,20 @@ export function updateDeleteDiagram(diagram: number) {
       ),
       qb.i(diagramIRI)
     ),
+    qb.s(
+      qb.i(diagramIRI),
+      "rdf:type",
+      qb.i(parsePrefix("d-sgov-pracovní-prostor-pojem", "přílohový-kontext"))
+    ),
+    qb.s(
+      qb.i(diagramIRI),
+      qb.i(parsePrefix("d-sgov-pracovní-prostor-pojem", "má-typ-přílohy")),
+      "og:diagram"
+    ),
   ])}`.build();
-  return qb.combineQueries(deleteGraph, deleteMetadataContext);
+  return qb.combineQueries(
+    deleteGraph,
+    deleteGraphLegacy,
+    deleteMetadataContext
+  );
 }
