@@ -15,11 +15,6 @@ export function updateCreateDiagram(diagram: number): string {
       "rdf:type",
       qb.i(parsePrefix("d-sgov-pracovní-prostor-pojem", "přílohový-kontext"))
     ),
-    qb.s(
-      qb.i(diagramIRI),
-      qb.i(parsePrefix("d-sgov-pracovní-prostor-pojem", "má-typ-přílohy")),
-      "og:diagram"
-    ),
     qb.s(qb.i(diagramIRI), "og:index", qb.ll(diagram)),
     qb.s(qb.i(diagramIRI), "og:name", qb.ll(Diagrams[diagram].name)),
     qb.s(qb.i(diagramIRI), "og:id", qb.ll(Diagrams[diagram].id)),
