@@ -2,6 +2,7 @@ import {
   AppSettings,
   CardinalityPool,
   Diagrams,
+  Languages,
   Links,
   WorkspaceElements,
   WorkspaceLinks,
@@ -67,21 +68,19 @@ export function addToFlexSearch(...ids: string[]) {
     if (!(iri in WorkspaceTerms))
       throw new Error(`IRI ${iri} not recognized as a term in the workspace.`);
     FlexDocumentIDTable[numberID] = id;
-    // for (const lang of Object.keys(Languages)) {
-    FlexDocumentSearch.add({
-      id: numberID++,
-      tag: "cs",
-      index: {
+    for (const lang of Object.keys(Languages)) {
+      FlexDocumentSearch.add({
+        id: numberID++,
+        language: lang,
         selectedLabel:
-          WorkspaceElements[id].selectedLabel["cs"] ||
-          WorkspaceTerms[iri].labels["cs"],
-        prefLabel: WorkspaceTerms[iri].labels["cs"],
-        // altLabel: WorkspaceTerms[iri].altLabels
-        //   .filter((alt) => alt.language === lang)
-        //   .map((alt) => alt.label),
-      },
-    });
-    // }
+          WorkspaceElements[id].selectedLabel[lang] ||
+          WorkspaceTerms[iri].labels[lang],
+        prefLabel: WorkspaceTerms[iri].labels[lang],
+        altLabel: WorkspaceTerms[iri].altLabels
+          .filter((alt) => alt.language === lang)
+          .map((alt) => alt.label),
+      });
+    }
   }
 }
 

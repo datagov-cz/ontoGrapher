@@ -2,27 +2,21 @@ import { Document } from "flexsearch";
 
 type FlexDocument = {
   id: number;
-  tag: string;
-  index: {
-    selectedLabel: string;
-    prefLabel: string;
-    // altLabel: string[];
-  };
+  language: string;
+  selectedLabel: string;
+  prefLabel: string;
+  altLabel: string[];
 };
 
-export var FlexDocumentSearch = new Document({
-  worker: true,
-  encode: "simple",
-  preset: "performance",
+export var FlexDocumentSearch = new Document<FlexDocument>({
+  worker: false,
   tokenize: "reverse",
+  charset: "latin:advanced",
   document: {
     id: "id",
     tag: "language",
-    index: [
-      "selectedLabel",
-      "prefLabel",
-      // "altLabel"
-    ],
+    index: ["selectedLabel", "prefLabel", "altLabel"],
   },
 });
+
 export var FlexDocumentIDTable: { [key: number]: string } = {};

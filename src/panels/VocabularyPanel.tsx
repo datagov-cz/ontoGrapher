@@ -172,15 +172,11 @@ export default class VocabularyPanel extends React.Component<Props, State> {
 
   updateShownElements() {
     const result: { [key: string]: { [key: string]: string[] } } = {};
-    let flexSearchResults: Id[] = _.flatten(
+    const flexSearchResults: Id[] = _.flatten(
       FlexDocumentSearch.search(this.state.search, {
         tag: AppSettings.selectedLanguage,
-        index: ["selectedLabel", "prefLabel", "altLabel"],
       }).map((result) => result.result)
-    );
-    flexSearchResults = flexSearchResults.map(
-      (num) => FlexDocumentIDTable[num as number]
-    );
+    ).map((num) => FlexDocumentIDTable[num as number]);
     FolderRoot.children.forEach((node) => {
       result[node.scheme] = {};
       Object.keys(Shapes)
