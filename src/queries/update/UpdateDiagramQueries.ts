@@ -8,7 +8,7 @@ function getDiagramTriples(diagram: number): string {
   const diagramGraph = Diagrams[diagram].graph;
   const diagramAttachmentTypes = [
     qb.i(parsePrefix("d-sgov-pracovní-prostor-pojem", "příloha")),
-    qb.i(parsePrefix("a-popis-dat", "příloha")),
+    qb.i(parsePrefix("a-popis-dat-pojem", "příloha")),
     qb.i(parsePrefix("og", "diagram")),
   ];
   return INSERT.DATA`${qb.g(diagramGraph, [

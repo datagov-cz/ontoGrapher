@@ -79,8 +79,8 @@ export var Prefixes: { [key: string]: string } = {
     "https://slovník.gov.cz/datový/pracovní-prostor/pojem/",
   "z-sgov-pojem": "https://slovník.gov.cz/základní/pojem/",
   "v-sgov-pojem": "https://slovník.gov.cz/veřejný-sektor/pojem/",
-  "a-popis-dat":
-    "http://onto.fel.cvut.cz/ontologies/slovník/agendový/popis-dat/",
+  "a-popis-dat-pojem":
+    "http://onto.fel.cvut.cz/ontologies/slovník/agendový/popis-dat/pojem/",
 };
 
 export const FolderRoot: VocabularyNode = new VocabularyNode(
