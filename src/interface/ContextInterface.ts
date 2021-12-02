@@ -19,6 +19,7 @@ import { initElements } from "../function/FunctionEditVars";
 import { updateProjectLink } from "../queries/update/UpdateLinkQueries";
 import { initConnections } from "../function/FunctionRestriction";
 import { insertNewCacheTerms } from "../function/FunctionCache";
+import { addToFlexSearch } from "../function/FunctionCreateVars";
 
 export async function getContext(
   contextIRI: string,
@@ -124,6 +125,7 @@ export async function getContext(
     ))
   )
     return false;
+  addToFlexSearch(...Object.keys(WorkspaceElements));
   return await processTransaction(
     AppSettings.contextEndpoint,
     qb.constructQuery(updateProjectLink(false, ...initConnections()))

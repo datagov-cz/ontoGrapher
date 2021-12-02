@@ -16,7 +16,6 @@ import {
 } from "../function/FunctionGetVars";
 import ModalRemoveConcept from "./modal/ModalRemoveConcept";
 import { Form, InputGroup, OverlayTrigger, Tooltip } from "react-bootstrap";
-import { parsePrefix } from "../function/FunctionEditVars";
 import { Representation } from "../config/Enum";
 import ConceptDivider from "./element/ConceptDivider";
 import { Locale } from "../config/Locale";
@@ -31,6 +30,12 @@ import {
 } from "../datatypes/CacheSearchResults";
 import { searchCache } from "../queries/get/CacheQueries";
 import ModalRemoveReadOnlyConcept from "./modal/ModalRemoveReadOnlyConcept";
+import {
+  FlexDocumentIDTable,
+  FlexDocumentSearch,
+} from "../config/FlexDocumentSearch";
+import { Id } from "flexsearch";
+import { RepresentationConfig } from "../config/logic/RepresentationConfig";
 
 interface Props {
   projectLanguage: string;
@@ -165,24 +170,13 @@ export default class VocabularyPanel extends React.Component<Props, State> {
     return aLabel.localeCompare(bLabel);
   }
 
-  search(id: string): boolean {
-    const search = this.state.search.normalize().trim().toLowerCase();
-    const name = getLabelOrBlank(
-      WorkspaceTerms[WorkspaceElements[id].iri].labels,
-      this.props.projectLanguage
-    );
-    return (
-      name.normalize().trim().toLowerCase().includes(search) ||
-      WorkspaceTerms[WorkspaceElements[id].iri].altLabels.find(
-        (alt) =>
-          alt.language === this.props.projectLanguage &&
-          alt.label.normalize().trim().toLowerCase().includes(search)
-      ) !== undefined
-    );
-  }
-
   updateShownElements() {
     const result: { [key: string]: { [key: string]: string[] } } = {};
+    const flexSearchResults: Id[] = _.flatten(
+      FlexDocumentSearch.search(this.state.search, {
+        tag: AppSettings.selectedLanguage,
+      }).map((result) => result.result)
+    ).map((num) => FlexDocumentIDTable[num as number]);
     FolderRoot.children.forEach((node) => {
       result[node.scheme] = {};
       Object.keys(Shapes)
@@ -192,17 +186,15 @@ export default class VocabularyPanel extends React.Component<Props, State> {
         .sort((a, b) => this.sort(a, b))
         .filter(
           (id) =>
-            this.search(id) &&
-            (AppSettings.representation === Representation.FULL ||
-              (AppSettings.representation === Representation.COMPACT &&
-                !(
-                  WorkspaceTerms[WorkspaceElements[id].iri].types.includes(
-                    parsePrefix("z-sgov-pojem", "typ-vztahu")
-                  ) ||
-                  WorkspaceTerms[WorkspaceElements[id].iri].types.includes(
-                    parsePrefix("z-sgov-pojem", "typ-vlastnosti")
-                  )
-                )))
+            (flexSearchResults.includes(id) &&
+              AppSettings.representation === Representation.FULL) ||
+            (AppSettings.representation === Representation.COMPACT &&
+              _.difference(
+                RepresentationConfig[Representation.COMPACT].visibleStereotypes,
+                WorkspaceTerms[WorkspaceElements[id].iri].types
+              ).length <
+                RepresentationConfig[Representation.COMPACT].visibleStereotypes
+                  .length)
         )
         .forEach((elem) => {
           const types = WorkspaceTerms[WorkspaceElements[elem].iri].types;

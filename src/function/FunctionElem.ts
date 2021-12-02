@@ -10,6 +10,7 @@ import { VocabularyNode } from "../datatypes/VocabularyNode";
 import { graphElement } from "../graph/GraphElement";
 import {
   addClass,
+  addToFlexSearch,
   addVocabularyElement,
   createNewElemIRI,
 } from "./FunctionCreateVars";
@@ -123,6 +124,7 @@ export function createNewConcept(
   const bbox = paper.findViewByModel(cls).getBBox();
   if (bbox) cls.resize(bbox.width, bbox.height);
   drawGraphElement(cls, language, AppSettings.representation);
+  addToFlexSearch(id);
   return id;
 }
 
@@ -267,6 +269,7 @@ export async function putElementsOnCanvas(
       queries.push(updateProjectElement(false, ...newIDs));
       queries.push(updateProjectLink(false, ...initConnections()));
       ids.push(...newIDs);
+      addToFlexSearch(ids);
     }
     const matrixLength = Math.max(ids.length, iris.length);
     const matrixDimension = Math.ceil(Math.sqrt(matrixLength));
