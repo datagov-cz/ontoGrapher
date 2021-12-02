@@ -4,6 +4,7 @@ import VocabularyPanel from "../panels/VocabularyPanel";
 import DiagramCanvas from "./DiagramCanvas";
 import {
   AppSettings,
+  Diagrams,
   FolderRoot,
   Languages,
   WorkspaceElements,
@@ -132,16 +133,8 @@ export default class App extends React.Component<
     if (contextIRI && isURL(contextIRI)) {
       contextIRI = decodeURIComponent(contextIRI);
       if (contextIRI.includes("/diagram-")) {
-        const diagram = contextIRI.substring(contextIRI.lastIndexOf("/"));
-        const match = diagram.match(/(\d+)/);
-        let diagramNumber;
-        if (match) diagramNumber = parseInt(match[0], 10);
-        this.loadVocabularies(
-          contextIRI,
-          AppSettings.contextEndpoint,
-          diagramNumber ? diagramNumber : 0
-        );
-      } else this.loadVocabularies(contextIRI, AppSettings.contextEndpoint, 0);
+        this.loadVocabularies(contextIRI, AppSettings.contextEndpoint);
+      } else this.loadVocabularies(contextIRI, AppSettings.contextEndpoint);
     } else {
       this.handleStatus(
         false,
@@ -226,11 +219,7 @@ export default class App extends React.Component<
     window.localStorage.setItem("lastViewedVersion", getLastChangeDay());
   }
 
-  loadVocabularies(
-    contextIRI: string,
-    contextEndpoint: string,
-    diagram: number = 0
-  ) {
+  loadVocabularies(contextIRI: string, contextEndpoint: string) {
     AppSettings.contextEndpoint = contextEndpoint;
     AppSettings.contextIRI = contextIRI;
     getVocabulariesFromRemoteJSON(
@@ -250,7 +239,7 @@ export default class App extends React.Component<
             " | " +
             Locale[AppSettings.viewLanguage].ontoGrapher;
           setSchemeColors(AppSettings.viewColorPool);
-          changeDiagrams(diagram);
+          changeDiagrams(Diagrams.findIndex((diag) => diag && diag.active));
           this.itemPanel.current?.update();
           this.handleStatus(
             false,

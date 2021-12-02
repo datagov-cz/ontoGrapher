@@ -7,14 +7,15 @@ import { qb } from "../QueryBuilder";
 import { AppSettings, Diagrams } from "../../config/Variables";
 import { parsePrefix } from "../../function/FunctionEditVars";
 
-export function updateCreateDiagram(diagram: number): string {
+function getDiagramTriples(diagram: number): string {
   const diagramIRI = getDiagramContextIRI(diagram);
-  const insertDiagramContext = INSERT.DATA`${qb.g(diagramIRI, [
-    qb.s(
-      qb.i(diagramIRI),
-      "rdf:type",
-      qb.i(parsePrefix("d-sgov-pracovní-prostor-pojem", "přílohový-kontext"))
-    ),
+  const diagramAttachmentTypes = [
+    qb.i(parsePrefix("d-sgov-pracovní-prostor-pojem", "příloha")),
+    qb.i(parsePrefix("a-popis-dat", "příloha")),
+    qb.i(parsePrefix("og", "diagram")),
+  ];
+  return INSERT.DATA`${qb.g(diagramIRI, [
+    qb.s(qb.i(diagramIRI), "rdf:type", qb.a(diagramAttachmentTypes)),
     qb.s(qb.i(diagramIRI), "og:index", qb.ll(diagram)),
     qb.s(qb.i(diagramIRI), "og:name", qb.ll(Diagrams[diagram].name)),
     qb.s(qb.i(diagramIRI), "og:id", qb.ll(Diagrams[diagram].id)),
@@ -24,7 +25,11 @@ export function updateCreateDiagram(diagram: number): string {
       qb.ll(Diagrams[diagram].representation)
     ),
   ])}`.build();
+}
 
+export function updateCreateDiagram(diagram: number): string {
+  const diagramIRI = qb.i(getDiagramContextIRI(diagram));
+  const insertDiagramContext = getDiagramTriples(diagram);
   const insertMetadataContext = INSERT.DATA`${qb.g(AppSettings.contextIRI, [
     qb.s(
       qb.i(AppSettings.contextIRI),
@@ -34,15 +39,15 @@ export function updateCreateDiagram(diagram: number): string {
           `odkazuje-na-přílohový-kontext`
         )
       ),
-      qb.i(diagramIRI)
+      diagramIRI
     ),
     qb.s(
-      qb.i(diagramIRI),
+      diagramIRI,
       "rdf:type",
       qb.i(parsePrefix("d-sgov-pracovní-prostor-pojem", "přílohový-kontext"))
     ),
     qb.s(
-      qb.i(diagramIRI),
+      diagramIRI,
       qb.i(parsePrefix("d-sgov-pracovní-prostor-pojem", "má-typ-přílohy")),
       "og:diagram"
     ),
@@ -57,27 +62,7 @@ export function updateDiagram(diagram: number): string {
   const insertAppContext = INSERT.DATA`${qb.g(appContextIRI, [
     qb.s(qb.i(appContextIRI), "og:diagram", qb.i(diagramIRI)),
   ])}`.build();
-  const insertDiagramContext = INSERT.DATA`${qb.g(diagramIRI, [
-    qb.s(qb.i(diagramIRI), "rdf:type", "og:diagram"),
-    qb.s(qb.i(diagramIRI), "og:index", qb.ll(diagram)),
-    qb.s(qb.i(diagramIRI), "og:name", qb.ll(Diagrams[diagram].name)),
-    qb.s(qb.i(diagramIRI), "og:id", qb.ll(Diagrams[diagram].id)),
-    qb.s(
-      qb.i(diagramIRI),
-      "rdf:type",
-      qb.i(parsePrefix("d-sgov-pracovní-prostor-pojem", "přílohový-kontext"))
-    ),
-    qb.s(
-      qb.i(diagramIRI),
-      qb.i(parsePrefix("d-sgov-pracovní-prostor-pojem", "má-typ-přílohy")),
-      "og:diagram"
-    ),
-    qb.s(
-      qb.i(diagramIRI),
-      "og:representation",
-      qb.ll(Diagrams[diagram].representation)
-    ),
-  ])}`.build();
+  const insertDiagramContext = getDiagramTriples(diagram);
   const del = DELETE`${qb.g(diagramIRI, [
     qb.s(qb.i(diagramIRI), "?p1", "?o1"),
   ])}`.WHERE`${qb.g(diagramIRI, [

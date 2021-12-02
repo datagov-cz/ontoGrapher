@@ -1,5 +1,8 @@
 import { qb } from "../../QueryBuilder";
-import { getWorkspaceContextIRI } from "../../../function/FunctionGetVars";
+import {
+  getLinkIRI,
+  getWorkspaceContextIRI,
+} from "../../../function/FunctionGetVars";
 import {
   AppSettings,
   Diagrams,
@@ -68,7 +71,7 @@ export async function updateLegacyWorkspaceToVersion4(
   `)
   );
   const linkStatements = Object.keys(links).map((id) => {
-    const linkIRI = qb.i(AppSettings.ontographerContext + "-" + id);
+    const linkIRI = qb.i(getLinkIRI(id));
     return [
       qb.s(linkIRI, "rdf:type", "og:link"),
       qb.s(linkIRI, "og:id", qb.ll(id)),
@@ -150,38 +153,23 @@ export async function updateLegacyWorkspaceToVersion4(
     Object.keys(links[link].vertices).forEach((diagram, i) => {
       links[link].vertices[parseInt(diagram)].forEach((vertex, j) => {
         if (!diagrams[i]) return;
+        const linkIRI = getLinkIRI(link);
         triples.push(
           qb.g(getDiagramIRI(i), [
+            qb.s(qb.i(linkIRI), "og:id", qb.ll(link)),
             qb.s(
-              qb.i(AppSettings.ontographerContext + "-" + link),
-              "og:id",
-              qb.ll(link)
-            ),
-            qb.s(
-              qb.i(AppSettings.ontographerContext + "-" + link),
+              qb.i(linkIRI),
               "og:vertex",
-              qb.i(
-                `${AppSettings.ontographerContext + "-" + link}/vertex-${j + 1}`
-              )
+              qb.i(`${linkIRI}/vertex-${j + 1}`)
             ),
+            qb.s(qb.i(`${linkIRI}/vertex-${j + 1}`), "og:index", qb.ll(j)),
             qb.s(
-              qb.i(
-                `${AppSettings.ontographerContext + "-" + link}/vertex-${j + 1}`
-              ),
-              "og:index",
-              qb.ll(j)
-            ),
-            qb.s(
-              qb.i(
-                `${AppSettings.ontographerContext + "-" + link}/vertex-${j + 1}`
-              ),
+              qb.i(`${linkIRI}/vertex-${j + 1}`),
               "og:position-x",
               qb.ll(Math.round(vertex.x))
             ),
             qb.s(
-              qb.i(
-                `${AppSettings.ontographerContext + "-" + link}/vertex-${j + 1}`
-              ),
+              qb.i(`${linkIRI}/vertex-${j + 1}`),
               "og:position-y",
               qb.ll(Math.round(vertex.y))
             ),

@@ -15,6 +15,7 @@ import { fetchConcepts } from "../../get/FetchQueries";
 import { qb } from "../../QueryBuilder";
 import { LinkConfig } from "../../../config/logic/LinkConfig";
 import { addDiagram } from "../../../function/FunctionCreateVars";
+import { getLinkIRI } from "../../../function/FunctionGetVars";
 
 function getLegacyWorkspaceContext(): string {
   return (
@@ -153,134 +154,76 @@ export async function updateLegacyWorkspaceToVersion2(
   triples.push(
     qb.g(
       getLegacyWorkspaceContext(),
-      Object.keys(links).map((link) =>
-        [
+      Object.keys(links).map((link) => {
+        const linkIRI = qb.i(getLinkIRI(link));
+        return [
+          qb.s(linkIRI, "rdf:type", "og:link"),
+          qb.s(linkIRI, "og:id", qb.ll(link)),
+          qb.s(linkIRI, "og:iri", qb.i(links[link].iri)),
+          qb.s(linkIRI, "og:active", qb.ll(links[link].active)),
+          qb.s(linkIRI, "og:source-id", qb.ll(links[link].source)),
+          qb.s(linkIRI, "og:target-id", qb.ll(links[link].target)),
+          qb.s(linkIRI, "og:source", qb.i(elements[links[link].source].iri)),
+          qb.s(linkIRI, "og:target", qb.i(elements[links[link].target].iri)),
+          qb.s(linkIRI, "og:type", qb.ll(LinkConfig[links[link].type].id)),
           qb.s(
-            qb.i(AppSettings.ontographerContext + "-" + link),
-            "rdf:type",
-            "og:link"
-          ),
-          qb.s(
-            qb.i(AppSettings.ontographerContext + "-" + link),
-            "og:id",
-            qb.ll(link)
-          ),
-          qb.s(
-            qb.i(AppSettings.ontographerContext + "-" + link),
-            "og:iri",
-            qb.i(links[link].iri)
-          ),
-          qb.s(
-            qb.i(AppSettings.ontographerContext + "-" + link),
-            "og:active",
-            qb.ll(links[link].active)
-          ),
-          qb.s(
-            qb.i(AppSettings.ontographerContext + "-" + link),
-            "og:source-id",
-            qb.ll(links[link].source)
-          ),
-          qb.s(
-            qb.i(AppSettings.ontographerContext + "-" + link),
-            "og:target-id",
-            qb.ll(links[link].target)
-          ),
-          qb.s(
-            qb.i(AppSettings.ontographerContext + "-" + link),
-            "og:source",
-            qb.i(elements[links[link].source].iri)
-          ),
-          qb.s(
-            qb.i(AppSettings.ontographerContext + "-" + link),
-            "og:target",
-            qb.i(elements[links[link].target].iri)
-          ),
-          qb.s(
-            qb.i(AppSettings.ontographerContext + "-" + link),
-            "og:type",
-            qb.ll(LinkConfig[links[link].type].id)
-          ),
-          qb.s(
-            qb.i(AppSettings.ontographerContext + "-" + link),
+            linkIRI,
             "og:sourceCardinality1",
             qb.ll(links[link].sourceCardinality.getFirstCardinality())
           ),
           qb.s(
-            qb.i(AppSettings.ontographerContext + "-" + link),
+            linkIRI,
             "og:sourceCardinality2",
             qb.ll(links[link].sourceCardinality.getSecondCardinality())
           ),
           qb.s(
-            qb.i(AppSettings.ontographerContext + "-" + link),
+            linkIRI,
             "og:targetCardinality1",
             qb.ll(links[link].targetCardinality.getFirstCardinality())
           ),
           qb.s(
-            qb.i(AppSettings.ontographerContext + "-" + link),
+            linkIRI,
             "og:targetCardinality2",
             qb.ll(links[link].targetCardinality.getSecondCardinality())
           ),
         ].join(`
-  `)
-      )
+  `);
+      })
     )
   );
   Object.keys(links).forEach((link) =>
     Object.keys(links[link].vertices).forEach((diagram, i) =>
       links[link].vertices[parseInt(diagram)].forEach((vertex, j) => {
+        const linkIRI = getLinkIRI(link);
         triples.push(
           qb.g(getLegacyWorkspaceContext(), [
             qb.s(
-              qb.i(AppSettings.ontographerContext + "-" + link),
+              qb.i(linkIRI),
               "og:vertex",
-              qb.i(
-                `${AppSettings.ontographerContext + "-" + link}/diagram-${
-                  i + 1
-                }/vertex-${j + 1}`
-              )
+              qb.i(`${linkIRI}/diagram-${i + 1}/vertex-${j + 1}`)
             ),
             qb.s(
-              qb.i(
-                `${AppSettings.ontographerContext + "-" + link}/diagram-${
-                  i + 1
-                }/vertex-${j + 1}`
-              ),
+              qb.i(`${linkIRI}/diagram-${i + 1}/vertex-${j + 1}`),
               "rdf:type",
               "og:vertexDiagram"
             ),
             qb.s(
-              qb.i(
-                `${AppSettings.ontographerContext + "-" + link}/diagram-${
-                  i + 1
-                }/vertex-${j + 1}`
-              ),
+              qb.i(`${linkIRI}/diagram-${i + 1}/vertex-${j + 1}`),
               "og:index",
               qb.ll(j)
             ),
             qb.s(
-              qb.i(
-                `${AppSettings.ontographerContext + "-" + link}/diagram-${
-                  i + 1
-                }/vertex-${j + 1}`
-              ),
+              qb.i(`${linkIRI}/diagram-${i + 1}/vertex-${j + 1}`),
               "og:diagram",
               qb.ll(diagram)
             ),
             qb.s(
-              qb.i(
-                `${AppSettings.ontographerContext + "-" + link}/diagram-${
-                  i + 1
-                }/vertex-${j + 1}`
-              ),
+              qb.i(`${linkIRI}/diagram-${i + 1}/vertex-${j + 1}`),
               "og:position-x",
               qb.ll(Math.round(vertex.x))
             ),
             qb.s(
-              qb.i(
-                `${AppSettings.ontographerContext + "-" + link}/diagram-${
-                  i + 1
-                }/vertex-${j + 1}`
-              ),
+              qb.i(`${linkIRI}/diagram-${i + 1}/vertex-${j + 1}`),
               "og:position-y",
               qb.ll(Math.round(vertex.y))
             ),

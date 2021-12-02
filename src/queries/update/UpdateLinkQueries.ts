@@ -9,6 +9,7 @@ import { LinkConfig } from "../../config/logic/LinkConfig";
 import { DELETE, INSERT } from "@tpluscode/sparql-builder";
 import {
   getDiagramContextIRI,
+  getLinkIRI,
   getWorkspaceContextIRI,
 } from "../../function/FunctionGetVars";
 
@@ -18,7 +19,7 @@ export function updateProjectLinkVertex(
   diagram: number = AppSettings.selectedDiagram
 ): string {
   checkLink(id);
-  const linkIRI = AppSettings.ontographerContext + "-" + id;
+  const linkIRI = getLinkIRI(id);
   const vertIRIs = vertices.map((i) => qb.i(`${linkIRI}/vertex-${i + 1}`));
 
   if (vertIRIs.length === 0) return "";
@@ -101,8 +102,8 @@ export function updateDeleteProjectLinkVertex(
   to: number,
   diagram: number
 ): string {
-  let linkIRI = AppSettings.ontographerContext + "-" + id;
-  let IRIs = [];
+  const linkIRI = getLinkIRI(id);
+  const IRIs = [];
   if (from === to) return "";
   for (let i = from; i < to; i++) {
     IRIs.push(qb.i(`${linkIRI}/vertex-${i + 1}`));
@@ -121,7 +122,7 @@ export function updateProjectLink(del: boolean, ...ids: string[]): string {
   if (ids.length === 0) return "";
   for (let id of ids) {
     checkLink(id);
-    const linkIRI = qb.i(AppSettings.ontographerContext + "-" + id);
+    const linkIRI = qb.i(getLinkIRI(id));
 
     insertBody.push(
       qb.s(linkIRI, "rdf:type", "og:link"),

@@ -195,13 +195,14 @@ export function getWorkspaceContextIRI() {
   );
 }
 
+export function getLinkIRI(linkID: string) {
+  return `${AppSettings.ontographerContext}-${linkID}`;
+}
+
 export function getDiagramContextIRI(diagram: number) {
-  const projectID = AppSettings.contextIRI.substring(
-    AppSettings.contextIRI.lastIndexOf("/")
-  );
   return parsePrefix(
     "d-sgov-pracovní-prostor-pojem",
-    `přílohový-kontext${projectID}/diagram/${Diagrams[diagram].id}`
+    `příloha/instance-${Diagrams[diagram].id}`
   );
 }
 
