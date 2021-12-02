@@ -80,11 +80,11 @@ export function updateProjectElement(del: boolean, ...ids: string[]): string {
     ];
 
     Diagrams.forEach((diagram, i) => {
-      data[diagram.iri] = ogStatements;
+      data[diagram.graph] = ogStatements;
       if (del)
         deletes.push(
           ...deleteStatements.map((stmt) =>
-            DELETE`${qb.g(diagram.iri, [stmt])}`.WHERE`${qb.g(diagram.iri, [
+            DELETE`${qb.g(diagram.graph, [stmt])}`.WHERE`${qb.g(diagram.graph, [
               stmt,
             ])}`.build()
           )
@@ -128,7 +128,7 @@ export function updateProjectElementDiagram(
   if (ids.length === 0) return "";
   for (const id of ids) {
     checkElem(id);
-    const diagramIRI = Diagrams[diagram].iri;
+    const diagramGraph = Diagrams[diagram].graph;
     const iri = WorkspaceElements[id].iri;
     const names = Object.keys(WorkspaceElements[id].selectedLabel).map((lang) =>
       qb.ll(WorkspaceElements[id].selectedLabel[lang], lang)
@@ -136,7 +136,7 @@ export function updateProjectElementDiagram(
 
     const scheme = WorkspaceTerms[WorkspaceElements[id].iri].inScheme;
     inserts.push(
-      INSERT.DATA`${qb.g(diagramIRI, [
+      INSERT.DATA`${qb.g(diagramGraph, [
         qb.s(qb.i(iri), "rdf:type", "og:element"),
         qb.s(qb.i(iri), "og:id", qb.ll(id)),
         qb.s(qb.i(iri), "og:scheme", qb.i(scheme)),
@@ -167,7 +167,7 @@ export function updateProjectElementDiagram(
         qb.s(qb.i(iri), "og:position-y", "?positionY"),
         qb.s(qb.i(iri), "og:hidden", "?hidden"),
       ].map((stmt) =>
-        DELETE`${qb.g(diagramIRI, [stmt])}`.WHERE`${qb.g(diagramIRI, [
+        DELETE`${qb.g(diagramGraph, [stmt])}`.WHERE`${qb.g(diagramGraph, [
           stmt,
         ])}`.build()
       )

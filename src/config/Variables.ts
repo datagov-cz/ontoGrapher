@@ -141,6 +141,7 @@ export var Diagrams: {
   representation: Representation;
   id: string;
   iri: string;
+  graph: string;
 }[] = [addDiagram("Untitled", true, Representation.COMPACT, 0)];
 
 export var AppSettings: {

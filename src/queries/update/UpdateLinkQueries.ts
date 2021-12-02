@@ -20,7 +20,7 @@ export function updateProjectLinkVertex(
 
   if (vertIRIs.length === 0) return "";
 
-  const insert = INSERT.DATA`${qb.g(Diagrams[diagram].iri, [
+  const insert = INSERT.DATA`${qb.g(Diagrams[diagram].graph, [
     qb.s(qb.i(linkIRI), "og:vertex", qb.a(vertIRIs), vertIRIs.length > 0),
     qb.s(qb.i(linkIRI), "og:id", qb.ll(id)),
     qb.s(qb.i(linkIRI), "rdf:type", "og:link"),
@@ -83,8 +83,8 @@ export function updateProjectLinkVertex(
   ])}`.build();
 
   const delS = vertIRIs.map((iri) =>
-    DELETE`${qb.g(Diagrams[diagram].iri, [qb.s(iri, "?p", "?o")])}`
-      .WHERE`${qb.g(Diagrams[diagram].iri, [qb.s(iri, "?p", "?o")])}`.build()
+    DELETE`${qb.g(Diagrams[diagram].graph, [qb.s(iri, "?p", "?o")])}`
+      .WHERE`${qb.g(Diagrams[diagram].graph, [qb.s(iri, "?p", "?o")])}`.build()
   );
 
   return qb.combineQueries(...delS, insert);
@@ -103,7 +103,7 @@ export function updateDeleteProjectLinkVertex(
     IRIs.push(qb.i(`${linkIRI}/vertex-${i + 1}`));
   }
 
-  return DELETE.DATA`${qb.g(Diagrams[diagram].iri, [
+  return DELETE.DATA`${qb.g(Diagrams[diagram].graph, [
     qb.s(qb.i(linkIRI), "og:vertex", qb.a(IRIs)),
   ])}`.build();
 }
@@ -112,7 +112,7 @@ export function updateProjectLink(del: boolean, ...ids: string[]): string {
   const insertBody: string[] = [];
   const deletes: string[] = [];
   const insert: string[] = [];
-  const diagrams = Diagrams.map((diagram) => diagram.iri);
+  const diagrams = Diagrams.map((diagram) => diagram.graph);
   if (ids.length === 0) return "";
   for (let id of ids) {
     checkLink(id);

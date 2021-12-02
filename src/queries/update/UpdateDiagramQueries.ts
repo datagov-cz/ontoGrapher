@@ -4,19 +4,20 @@ import { AppSettings, Diagrams } from "../../config/Variables";
 import { parsePrefix } from "../../function/FunctionEditVars";
 
 function getDiagramTriples(diagram: number): string {
-  const diagramIRI = Diagrams[diagram].iri;
+  const diagramIRI = qb.i(Diagrams[diagram].iri);
+  const diagramGraph = Diagrams[diagram].graph;
   const diagramAttachmentTypes = [
     qb.i(parsePrefix("d-sgov-pracovní-prostor-pojem", "příloha")),
     qb.i(parsePrefix("a-popis-dat", "příloha")),
     qb.i(parsePrefix("og", "diagram")),
   ];
-  return INSERT.DATA`${qb.g(diagramIRI, [
-    qb.s(qb.i(diagramIRI), "rdf:type", qb.a(diagramAttachmentTypes)),
-    qb.s(qb.i(diagramIRI), "og:index", qb.ll(diagram)),
-    qb.s(qb.i(diagramIRI), "og:name", qb.ll(Diagrams[diagram].name)),
-    qb.s(qb.i(diagramIRI), "og:id", qb.ll(Diagrams[diagram].id)),
+  return INSERT.DATA`${qb.g(diagramGraph, [
+    qb.s(diagramIRI, "rdf:type", qb.a(diagramAttachmentTypes)),
+    qb.s(diagramIRI, "og:index", qb.ll(diagram)),
+    qb.s(diagramIRI, "og:name", qb.ll(Diagrams[diagram].name)),
+    qb.s(diagramIRI, "og:id", qb.ll(Diagrams[diagram].id)),
     qb.s(
-      qb.i(diagramIRI),
+      diagramIRI,
       "og:representation",
       qb.ll(Diagrams[diagram].representation)
     ),
@@ -25,6 +26,7 @@ function getDiagramTriples(diagram: number): string {
 
 export function updateCreateDiagram(diagram: number): string {
   const diagramIRI = qb.i(Diagrams[diagram].iri);
+  const diagramGraph = qb.i(Diagrams[diagram].graph);
   const insertDiagramContext = getDiagramTriples(diagram);
   const insertMetadataContext = INSERT.DATA`${qb.g(AppSettings.contextIRI, [
     qb.s(
@@ -38,14 +40,19 @@ export function updateCreateDiagram(diagram: number): string {
       diagramIRI
     ),
     qb.s(
-      diagramIRI,
+      diagramGraph,
       "rdf:type",
       qb.i(parsePrefix("d-sgov-pracovní-prostor-pojem", "přílohový-kontext"))
     ),
     qb.s(
-      diagramIRI,
+      diagramGraph,
       qb.i(parsePrefix("d-sgov-pracovní-prostor-pojem", "má-typ-přílohy")),
       "og:diagram"
+    ),
+    qb.s(
+      diagramGraph,
+      qb.i(parsePrefix("d-sgov-pracovní-prostor-pojem", "vychází-z-verze")),
+      diagramIRI
     ),
   ])}`.build();
 
@@ -54,10 +61,11 @@ export function updateCreateDiagram(diagram: number): string {
 
 export function updateDiagram(diagram: number): string {
   const diagramIRI = Diagrams[diagram].iri;
+  const diagramGraph = Diagrams[diagram].graph;
   const insertDiagramContext = getDiagramTriples(diagram);
-  const del = DELETE`${qb.g(diagramIRI, [
+  const del = DELETE`${qb.g(diagramGraph, [
     qb.s(qb.i(diagramIRI), "?p1", "?o1"),
-  ])}`.WHERE`${qb.g(diagramIRI, [
+  ])}`.WHERE`${qb.g(diagramGraph, [
     qb.s(qb.i(diagramIRI), "?p1", "?o1"),
   ])}`.build();
   return qb.combineQueries(del, insertDiagramContext);
@@ -65,38 +73,21 @@ export function updateDiagram(diagram: number): string {
 
 export function updateDeleteDiagram(diagram: number) {
   const diagramIRI = Diagrams[diagram].iri;
-  const deleteGraph = `DROP GRAPH <${diagramIRI}>`;
-  const deleteMetadataContext = DELETE.DATA`${qb.g(AppSettings.contextIRI, [
-    qb.s(
-      qb.i(AppSettings.contextIRI),
-      qb.i(
-        parsePrefix(
-          "d-sgov-pracovní-prostor-pojem",
-          `odkazuje-na-přílohový-kontext`
-        )
-      ),
-      qb.i(diagramIRI)
-    ),
-    qb.s(
-      qb.i(AppSettings.contextIRI),
-      qb.i(
-        parsePrefix(
-          "d-sgov-pracovní-prostor-pojem",
-          `odkazuje-na-assetový-kontext`
-        )
-      ),
-      qb.i(diagramIRI)
-    ),
-    qb.s(
-      qb.i(diagramIRI),
-      "rdf:type",
-      qb.i(parsePrefix("d-sgov-pracovní-prostor-pojem", "přílohový-kontext"))
-    ),
-    qb.s(
-      qb.i(diagramIRI),
-      qb.i(parsePrefix("d-sgov-pracovní-prostor-pojem", "má-typ-přílohy")),
-      "og:diagram"
-    ),
+  const diagramGraph = Diagrams[diagram].graph;
+  const deleteGraph = `DROP GRAPH <${diagramGraph}>`;
+  const deleteMetadataContext1 = DELETE`${qb.g(AppSettings.contextIRI, [
+    qb.s(qb.i(diagramGraph), "?p1", "?o1"),
+  ])}`.WHERE`${qb.g(diagramIRI, [
+    qb.s(qb.i(diagramGraph), "?p1", "?o1"),
   ])}`.build();
-  return qb.combineQueries(deleteGraph, deleteMetadataContext);
+  const deleteMetadataContext2 = DELETE`${qb.g(AppSettings.contextIRI, [
+    qb.s("?s1", "?p1", qb.i(diagramGraph)),
+  ])}`.WHERE`${qb.g(diagramIRI, [
+    qb.s("?s1", "?p1", qb.i(diagramGraph)),
+  ])}`.build();
+  return qb.combineQueries(
+    deleteGraph,
+    deleteMetadataContext1,
+    deleteMetadataContext2
+  );
 }
