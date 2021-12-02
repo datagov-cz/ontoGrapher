@@ -42,12 +42,17 @@ import {
   ElemCreationConfiguration,
   LinkCreationConfiguration,
 } from "../components/modals/CreationModals";
-import { ContextLoadingStrategy, ElemCreationStrategy } from "../config/Enum";
+import {
+  ContextLoadingStrategy,
+  ElemCreationStrategy,
+  Representation,
+} from "../config/Enum";
 import { getElementPosition } from "../function/FunctionElem";
 import { finishUpdatingLegacyWorkspace } from "../queries/update/legacy/FinishUpdatingLegacyWorkspaceQueries";
 import { updateCreateDiagram } from "../queries/update/UpdateDiagramQueries";
 import { en } from "../locale/en";
 import { reconstructApplicationContextWithDiagrams } from "../queries/update/UpdateReconstructAppContext";
+import { addDiagram } from "../function/FunctionCreateVars";
 
 interface DiagramAppProps {}
 
@@ -292,6 +297,12 @@ export default class App extends React.Component<
         break;
     }
     if (AppSettings.initWorkspace) {
+      Diagrams[0] = addDiagram(
+        Locale[AppSettings.viewLanguage].untitled,
+        true,
+        Representation.COMPACT,
+        0
+      );
       if (
         !(await processTransaction(
           AppSettings.contextEndpoint,

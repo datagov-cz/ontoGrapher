@@ -84,8 +84,8 @@ export async function getElementsConfig(
   else {
     const diagramContextQuery = [
       "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
-      "select ?diagram ?index ?iri ?posX ?posY ?hidden where {",
-      "graph ?diagram {",
+      "select ?diagram ?graph ?index ?iri ?posX ?posY ?hidden where {",
+      "graph ?graph {",
       "?iri og:position-x ?posX.",
       "?iri og:position-y ?posY.",
       "?iri og:hidden ?hidden.",
@@ -95,8 +95,9 @@ export async function getElementsConfig(
           "d-sgov-pracovní-prostor-pojem",
           `odkazuje-na-přílohový-kontext`
         )
-      )} ?diagram.`,
-      `?diagram og:index ?index.`,
+      )} ?graph.`,
+      "?diagram og:index ?index.",
+      "?diagram og:representation ?representation .",
       "}",
     ].join(`
     `);
@@ -189,7 +190,7 @@ export async function getSettings(
 ): Promise<ContextLoadingStrategy | undefined> {
   const query = [
     "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
-    "select ?diagram ?index ?name ?color ?active ?id ?representation ?context ?legacyContext where {",
+    "select ?graph ?diagram ?index ?name ?color ?active ?id ?representation ?context ?legacyContext where {",
     "BIND(<" + AppSettings.contextIRI + "> as ?metaContext).",
     "BIND(<" + getWorkspaceContextIRI() + "> as ?ogContext).",
     "OPTIONAL {",
@@ -199,12 +200,9 @@ export async function getSettings(
         "d-sgov-pracovní-prostor-pojem",
         `odkazuje-na-přílohový-kontext`
       )
-    )} ?diagram .`,
-    `optional {?diagram ${qb.i(
-      parsePrefix("d-sgov-pracovní-prostor-pojem", "má-typ-přílohy")
-    )} og:diagram.}`,
+    )} ?graph .`,
     "}",
-    "graph ?diagram {",
+    "graph ?graph {",
     "?diagram og:index ?index .",
     "?diagram og:name ?name .",
     "?diagram og:id ?id .",
@@ -240,7 +238,8 @@ export async function getSettings(
             parseInt(result.representation.value, 10),
             index,
             result.diagram.value,
-            result.id.value
+            result.id.value,
+            result.graph.value
           );
           indices.push(index);
           AppSettings.initWorkspace = false;
@@ -368,22 +367,22 @@ export async function getLinksConfig(
     ];
     const diagramContextQuery = [
       "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
-      "select ?vertex ?diagram ?index ?diagramIndex ?posX ?posY ?id ?iri where {",
+      "select ?graph ?vertex ?diagram ?index ?diagramIndex ?posX ?posY ?id ?iri where {",
       "graph <" + getWorkspaceContextIRI() + "> {",
       "?link a og:link.",
       "?link og:iri ?iri.",
       "}",
-      "graph ?diagram {",
+      "graph ?graph {",
       "?link og:vertex ?vertex.",
       "?link og:id ?id.",
       "?vertex og:index ?index.",
       "?vertex og:position-x ?posX.",
       "?vertex og:position-y ?posY.",
+      "?diagram og:index ?diagramIndex.",
+      "?diagram og:representation ?representation.",
       "}",
-      `${qb.i(AppSettings.contextIRI)} ?linkPredicate ?diagram.`,
-      `?diagram ?typePredicate og:diagram.`,
+      `${qb.i(AppSettings.contextIRI)} ?linkPredicate ?graph.`,
       `values ?linkPredicate { <${linkPredicates.join("> <")}> }`,
-      `?diagram og:index ?diagramIndex.`,
       "}",
     ].join(`
     `);

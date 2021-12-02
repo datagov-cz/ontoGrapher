@@ -107,7 +107,8 @@ export function addDiagram(
   representation: Representation = Representation.COMPACT,
   index: number,
   iri?: string,
-  id?: string
+  id?: string,
+  graph?: string
 ): typeof Diagrams[number] {
   const diagramID = id ? id : uuidv4();
   return {
@@ -118,6 +119,7 @@ export function addDiagram(
     representation: representation,
     id: diagramID,
     iri: iri ? iri : getNewDiagramContextIRI(diagramID),
+    graph: graph ? graph : getNewDiagramContextIRI(diagramID),
   };
 }
 
