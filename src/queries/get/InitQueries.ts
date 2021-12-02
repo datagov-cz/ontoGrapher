@@ -203,11 +203,11 @@ export async function getSettings(
         `odkazuje-na-přílohový-kontext`
       )
     )} ?diagram .`,
+    `optional {?diagram ${qb.i(
+      parsePrefix("d-sgov-pracovní-prostor-pojem", "má-typ-přílohy")
+    )} og:diagram.}`,
     "}",
     "graph ?diagram {",
-    `?diagram ${qb.i(
-      parsePrefix("d-sgov-pracovní-prostor-pojem", "má-typ-přílohy")
-    )} og:diagram.`,
     "?diagram og:index ?index .",
     "?diagram og:name ?name .",
     "?diagram og:id ?id .",
@@ -231,12 +231,14 @@ export async function getSettings(
       return response.json();
     })
     .then((data) => {
+      const indices: number[] = [];
       AppSettings.initWorkspace = true;
       let reconstructWorkspace = false;
       for (const result of data.results.bindings) {
         if (result.index || (result.active && result.active.value === "true")) {
           const index = parseInt(result.index.value);
           Diagrams[index] = addDiagram(result.name.value);
+          indices.push(index);
           Diagrams[index].representation = parseInt(
             result.representation.value,
             10
@@ -254,6 +256,9 @@ export async function getSettings(
           return ContextLoadingStrategy.UPDATE_LEGACY_WORKSPACE;
         }
       }
+      Diagrams.forEach((diag, index) => {
+        if (!indices.includes(index)) Diagrams[index].active = false;
+      });
       return reconstructWorkspace
         ? ContextLoadingStrategy.RECONSTRUCT_WORKSPACE
         : ContextLoadingStrategy.DEFAULT;
