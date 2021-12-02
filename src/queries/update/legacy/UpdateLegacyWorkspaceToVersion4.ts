@@ -1,6 +1,7 @@
 import { qb } from "../../QueryBuilder";
 import {
   getLinkIRI,
+  getNewDiagramContextIRI,
   getWorkspaceContextIRI,
 } from "../../../function/FunctionGetVars";
 import {
@@ -71,7 +72,7 @@ export async function updateLegacyWorkspaceToVersion4(
   `)
   );
   const linkStatements = Object.keys(links).map((id) => {
-    const linkIRI = qb.i(getLinkIRI(id));
+    const linkIRI = qb.i(links[id].linkIRI);
     return [
       qb.s(linkIRI, "rdf:type", "og:link"),
       qb.s(linkIRI, "og:id", qb.ll(id)),
@@ -153,7 +154,7 @@ export async function updateLegacyWorkspaceToVersion4(
     Object.keys(links[link].vertices).forEach((diagram, i) => {
       links[link].vertices[parseInt(diagram)].forEach((vertex, j) => {
         if (!diagrams[i]) return;
-        const linkIRI = getLinkIRI(link);
+        const linkIRI = links[link].linkIRI;
         triples.push(
           qb.g(getDiagramIRI(i), [
             qb.s(qb.i(linkIRI), "og:id", qb.ll(link)),
@@ -209,6 +210,8 @@ export async function updateLegacyWorkspaceToVersion4(
       diagram.name,
       true,
       diagram.representation,
+      i,
+      getNewDiagramContextIRI(diagram.id),
       diagram.id
     );
   });
@@ -245,7 +248,8 @@ async function getLegacyDiagrams(
           diagrams[parseInt(result.index.value)] = addDiagram(
             Locale[AppSettings.viewLanguage].untitled,
             result.active ? result.active.value === "true" : true,
-            parseInt(result.representation.value)
+            parseInt(result.representation.value),
+            parseInt(result.index.value)
           );
         }
         diagrams[parseInt(result.index.value)].name = result.name.value;
@@ -465,6 +469,7 @@ async function getLegacyConnections(
             vertices: convert,
             active: iter[link].active,
             hasInverse: false,
+            linkIRI: getLinkIRI(link),
           };
           if (sourceID) {
             if (!elements[sourceID].connections.includes(link)) {

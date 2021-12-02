@@ -8,7 +8,6 @@ import {
 import { qb } from "../QueryBuilder";
 import { DELETE, INSERT } from "@tpluscode/sparql-builder";
 import {
-  getDiagramContextIRI,
   getVocabularyFromScheme,
   getWorkspaceContextIRI,
 } from "../../function/FunctionGetVars";
@@ -81,14 +80,13 @@ export function updateProjectElement(del: boolean, ...ids: string[]): string {
     ];
 
     Diagrams.forEach((diagram, i) => {
-      data[getDiagramContextIRI(i)] = ogStatements;
+      data[diagram.iri] = ogStatements;
       if (del)
         deletes.push(
           ...deleteStatements.map((stmt) =>
-            DELETE`${qb.g(getDiagramContextIRI(i), [stmt])}`.WHERE`${qb.g(
-              getDiagramContextIRI(i),
-              [stmt]
-            )}`.build()
+            DELETE`${qb.g(diagram.iri, [stmt])}`.WHERE`${qb.g(diagram.iri, [
+              stmt,
+            ])}`.build()
           )
         );
     });
@@ -130,7 +128,7 @@ export function updateProjectElementDiagram(
   if (ids.length === 0) return "";
   for (const id of ids) {
     checkElem(id);
-    const diagramIRI = getDiagramContextIRI(diagram);
+    const diagramIRI = Diagrams[diagram].iri;
     const iri = WorkspaceElements[id].iri;
     const names = Object.keys(WorkspaceElements[id].selectedLabel).map((lang) =>
       qb.ll(WorkspaceElements[id].selectedLabel[lang], lang)

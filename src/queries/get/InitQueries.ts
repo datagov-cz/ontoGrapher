@@ -96,9 +96,6 @@ export async function getElementsConfig(
           `odkazuje-na-přílohový-kontext`
         )
       )} ?diagram.`,
-      `?diagram ${qb.i(
-        parsePrefix("d-sgov-pracovní-prostor-pojem", `má-typ-přílohy`)
-      )} og:diagram.`,
       `?diagram og:index ?index.`,
       "}",
     ].join(`
@@ -237,13 +234,15 @@ export async function getSettings(
       for (const result of data.results.bindings) {
         if (result.index || (result.active && result.active.value === "true")) {
           const index = parseInt(result.index.value);
-          Diagrams[index] = addDiagram(result.name.value);
-          indices.push(index);
-          Diagrams[index].representation = parseInt(
-            result.representation.value,
-            10
+          Diagrams[index] = addDiagram(
+            result.name.value,
+            true,
+            parseInt(result.representation.value, 10),
+            index,
+            result.diagram.value,
+            result.id.value
           );
-          Diagrams[index].id = result.id.value;
+          indices.push(index);
           AppSettings.initWorkspace = false;
           if (result.context) {
             AppSettings.viewColorPool = result.color.value;
@@ -274,7 +273,7 @@ export async function getLinksConfig(
 ): Promise<boolean> {
   let query = [
     "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
-    "select ?id ?iri ?sourceID ?targetID ?source ?active ?target ?sourceCard1 ?sourceCard2 ?targetCard1 ?targetCard2 ?type where {",
+    "select ?id ?iri ?sourceID ?targetID ?source ?active ?target ?sourceCard1 ?sourceCard2 ?targetCard1 ?targetCard2 ?type ?link where {",
     "graph <" + getWorkspaceContextIRI() + "> {",
     "?link a og:link .",
     "?link og:id ?id .",
@@ -314,6 +313,7 @@ export async function getLinksConfig(
       targetCardinality2: string;
       active: boolean;
       type: number;
+      linkIRI: string;
     };
   } = {};
   const appContextLinkRetrieval = await processQuery(contextEndpoint, query)
@@ -344,6 +344,7 @@ export async function getLinksConfig(
             sourceCardinality2: result.sourceCard2.value,
             targetCardinality1: result.targetCard1.value,
             targetCardinality2: result.targetCard2.value,
+            linkIRI: result.link.value,
           };
         }
       }
@@ -365,10 +366,6 @@ export async function getLinksConfig(
         "odkazuje-na-přílohový-kontext"
       ),
     ];
-    const typePredicates = [
-      parsePrefix("d-sgov-pracovní-prostor-pojem", "má-typ-assetu"),
-      parsePrefix("d-sgov-pracovní-prostor-pojem", "má-typ-přílohy"),
-    ];
     const diagramContextQuery = [
       "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
       "select ?vertex ?diagram ?index ?diagramIndex ?posX ?posY ?id ?iri where {",
@@ -386,7 +383,6 @@ export async function getLinksConfig(
       `${qb.i(AppSettings.contextIRI)} ?linkPredicate ?diagram.`,
       `?diagram ?typePredicate og:diagram.`,
       `values ?linkPredicate { <${linkPredicates.join("> <")}> }`,
-      `values ?typePredicate { <${typePredicates.join("> <")}> }`,
       `?diagram og:index ?diagramIndex.`,
       "}",
     ].join(`
@@ -457,6 +453,7 @@ export async function getLinksConfig(
               hasInverse:
                 links[link].type !== LinkType.GENERALIZATION &&
                 links[link].iri in Links,
+              linkIRI: links[link].linkIRI,
             };
             if (sourceID) {
               if (!WorkspaceElements[sourceID].connections.includes(link)) {

@@ -7,11 +7,7 @@ import {
 import { qb } from "../QueryBuilder";
 import { LinkConfig } from "../../config/logic/LinkConfig";
 import { DELETE, INSERT } from "@tpluscode/sparql-builder";
-import {
-  getDiagramContextIRI,
-  getLinkIRI,
-  getWorkspaceContextIRI,
-} from "../../function/FunctionGetVars";
+import { getWorkspaceContextIRI } from "../../function/FunctionGetVars";
 
 export function updateProjectLinkVertex(
   id: string,
@@ -19,12 +15,12 @@ export function updateProjectLinkVertex(
   diagram: number = AppSettings.selectedDiagram
 ): string {
   checkLink(id);
-  const linkIRI = getLinkIRI(id);
+  const linkIRI = WorkspaceLinks[id].linkIRI;
   const vertIRIs = vertices.map((i) => qb.i(`${linkIRI}/vertex-${i + 1}`));
 
   if (vertIRIs.length === 0) return "";
 
-  const insert = INSERT.DATA`${qb.g(getDiagramContextIRI(diagram), [
+  const insert = INSERT.DATA`${qb.g(Diagrams[diagram].iri, [
     qb.s(qb.i(linkIRI), "og:vertex", qb.a(vertIRIs), vertIRIs.length > 0),
     qb.s(qb.i(linkIRI), "og:id", qb.ll(id)),
     qb.s(qb.i(linkIRI), "rdf:type", "og:link"),
@@ -87,10 +83,8 @@ export function updateProjectLinkVertex(
   ])}`.build();
 
   const delS = vertIRIs.map((iri) =>
-    DELETE`${qb.g(getDiagramContextIRI(diagram), [qb.s(iri, "?p", "?o")])}`
-      .WHERE`${qb.g(getDiagramContextIRI(diagram), [
-      qb.s(iri, "?p", "?o"),
-    ])}`.build()
+    DELETE`${qb.g(Diagrams[diagram].iri, [qb.s(iri, "?p", "?o")])}`
+      .WHERE`${qb.g(Diagrams[diagram].iri, [qb.s(iri, "?p", "?o")])}`.build()
   );
 
   return qb.combineQueries(...delS, insert);
@@ -102,14 +96,14 @@ export function updateDeleteProjectLinkVertex(
   to: number,
   diagram: number
 ): string {
-  const linkIRI = getLinkIRI(id);
+  const linkIRI = WorkspaceLinks[id].linkIRI;
   const IRIs = [];
   if (from === to) return "";
   for (let i = from; i < to; i++) {
     IRIs.push(qb.i(`${linkIRI}/vertex-${i + 1}`));
   }
 
-  return DELETE.DATA`${qb.g(getDiagramContextIRI(diagram), [
+  return DELETE.DATA`${qb.g(Diagrams[diagram].iri, [
     qb.s(qb.i(linkIRI), "og:vertex", qb.a(IRIs)),
   ])}`.build();
 }
@@ -118,11 +112,11 @@ export function updateProjectLink(del: boolean, ...ids: string[]): string {
   const insertBody: string[] = [];
   const deletes: string[] = [];
   const insert: string[] = [];
-  const diagrams = Diagrams.map((diagram, i) => getDiagramContextIRI(i));
+  const diagrams = Diagrams.map((diagram) => diagram.iri);
   if (ids.length === 0) return "";
   for (let id of ids) {
     checkLink(id);
-    const linkIRI = qb.i(getLinkIRI(id));
+    const linkIRI = qb.i(WorkspaceLinks[id].linkIRI);
 
     insertBody.push(
       qb.s(linkIRI, "rdf:type", "og:link"),

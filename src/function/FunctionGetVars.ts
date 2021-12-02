@@ -1,6 +1,5 @@
 import {
   AppSettings,
-  Diagrams,
   Languages,
   Links,
   WorkspaceElements,
@@ -196,14 +195,11 @@ export function getWorkspaceContextIRI() {
 }
 
 export function getLinkIRI(linkID: string) {
-  return `${AppSettings.ontographerContext}-${linkID}`;
+  return `${AppSettings.ontographerContext}/link/instance-${linkID}`;
 }
 
-export function getDiagramContextIRI(diagram: number) {
-  return parsePrefix(
-    "d-sgov-pracovní-prostor-pojem",
-    `příloha/instance-${Diagrams[diagram].id}`
-  );
+export function getNewDiagramContextIRI(id: string) {
+  return parsePrefix("d-sgov-pracovní-prostor-pojem", `příloha/instance-${id}`);
 }
 
 export function isLabelBlank(label: string) {

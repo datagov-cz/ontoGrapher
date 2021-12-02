@@ -1,14 +1,10 @@
-import {
-  getDiagramContextIRI,
-  getWorkspaceContextIRI,
-} from "../../function/FunctionGetVars";
 import { DELETE, INSERT } from "@tpluscode/sparql-builder";
 import { qb } from "../QueryBuilder";
 import { AppSettings, Diagrams } from "../../config/Variables";
 import { parsePrefix } from "../../function/FunctionEditVars";
 
 function getDiagramTriples(diagram: number): string {
-  const diagramIRI = getDiagramContextIRI(diagram);
+  const diagramIRI = Diagrams[diagram].iri;
   const diagramAttachmentTypes = [
     qb.i(parsePrefix("d-sgov-pracovní-prostor-pojem", "příloha")),
     qb.i(parsePrefix("a-popis-dat", "příloha")),
@@ -28,7 +24,7 @@ function getDiagramTriples(diagram: number): string {
 }
 
 export function updateCreateDiagram(diagram: number): string {
-  const diagramIRI = qb.i(getDiagramContextIRI(diagram));
+  const diagramIRI = qb.i(Diagrams[diagram].iri);
   const insertDiagramContext = getDiagramTriples(diagram);
   const insertMetadataContext = INSERT.DATA`${qb.g(AppSettings.contextIRI, [
     qb.s(
@@ -57,30 +53,19 @@ export function updateCreateDiagram(diagram: number): string {
 }
 
 export function updateDiagram(diagram: number): string {
-  const appContextIRI = getWorkspaceContextIRI();
-  const diagramIRI = getDiagramContextIRI(diagram);
-  const insertAppContext = INSERT.DATA`${qb.g(appContextIRI, [
-    qb.s(qb.i(appContextIRI), "og:diagram", qb.i(diagramIRI)),
-  ])}`.build();
+  const diagramIRI = Diagrams[diagram].iri;
   const insertDiagramContext = getDiagramTriples(diagram);
   const del = DELETE`${qb.g(diagramIRI, [
     qb.s(qb.i(diagramIRI), "?p1", "?o1"),
   ])}`.WHERE`${qb.g(diagramIRI, [
     qb.s(qb.i(diagramIRI), "?p1", "?o1"),
   ])}`.build();
-  return qb.combineQueries(del, insertAppContext, insertDiagramContext);
+  return qb.combineQueries(del, insertDiagramContext);
 }
 
 export function updateDeleteDiagram(diagram: number) {
-  const diagramIRI = getDiagramContextIRI(diagram);
+  const diagramIRI = Diagrams[diagram].iri;
   const deleteGraph = `DROP GRAPH <${diagramIRI}>`;
-  const projectID = AppSettings.contextIRI.substring(
-    AppSettings.contextIRI.lastIndexOf("/")
-  );
-  const deleteGraphLegacy = `DROP GRAPH <${parsePrefix(
-    "d-sgov-pracovní-prostor-pojem",
-    `assetový-kontext${projectID}/diagram/${Diagrams[diagram].id}`
-  )}>`;
   const deleteMetadataContext = DELETE.DATA`${qb.g(AppSettings.contextIRI, [
     qb.s(
       qb.i(AppSettings.contextIRI),
@@ -113,9 +98,5 @@ export function updateDeleteDiagram(diagram: number) {
       "og:diagram"
     ),
   ])}`.build();
-  return qb.combineQueries(
-    deleteGraph,
-    deleteGraphLegacy,
-    deleteMetadataContext
-  );
+  return qb.combineQueries(deleteGraph, deleteMetadataContext);
 }

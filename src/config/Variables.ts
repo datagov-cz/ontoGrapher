@@ -51,6 +51,7 @@ export var WorkspaceLinks: {
     active: boolean;
     //inverse link presence for source cardinality purposes
     hasInverse: boolean;
+    linkIRI: string;
   };
 } = {};
 
@@ -139,7 +140,8 @@ export var Diagrams: {
   scale: number;
   representation: Representation;
   id: string;
-}[] = [addDiagram("Untitled")];
+  iri: string;
+}[] = [addDiagram("Untitled", true, Representation.COMPACT, 0)];
 
 export var AppSettings: {
   name: { [key: string]: string };

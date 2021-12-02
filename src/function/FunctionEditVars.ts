@@ -21,7 +21,6 @@ import { Cardinality } from "../datatypes/Cardinality";
 import { graphElement } from "../graph/GraphElement";
 import {
   getElemFromIRI,
-  getLinkIRI,
   getVocabularyFromScheme,
   getWorkspaceContextIRI,
 } from "./FunctionGetVars";
@@ -131,7 +130,7 @@ export function deleteConcept(id: string): string[] {
     WorkspaceLinks[connection].active = false;
     queries.push(
       updateDeleteTriples(
-        getLinkIRI(connection),
+        WorkspaceLinks[connection].linkIRI,
         [getWorkspaceContextIRI()],
         true,
         false,
@@ -146,7 +145,7 @@ export function deleteConcept(id: string): string[] {
     WorkspaceLinks[connection].active = false;
     queries.push(
       updateDeleteTriples(
-        getLinkIRI(connection),
+        WorkspaceLinks[connection].linkIRI,
         [getWorkspaceContextIRI()],
         true,
         false,

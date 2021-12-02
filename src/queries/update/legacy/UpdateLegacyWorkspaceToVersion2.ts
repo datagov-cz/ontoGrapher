@@ -9,7 +9,7 @@ import {
   WorkspaceTerms,
 } from "../../../config/Variables";
 import { Cardinality } from "../../../datatypes/Cardinality";
-import { LinkType } from "../../../config/Enum";
+import { LinkType, Representation } from "../../../config/Enum";
 import { Locale } from "../../../config/Locale";
 import { fetchConcepts } from "../../get/FetchQueries";
 import { qb } from "../../QueryBuilder";
@@ -155,7 +155,7 @@ export async function updateLegacyWorkspaceToVersion2(
     qb.g(
       getLegacyWorkspaceContext(),
       Object.keys(links).map((link) => {
-        const linkIRI = qb.i(getLinkIRI(link));
+        const linkIRI = qb.i(links[link].linkIRI);
         return [
           qb.s(linkIRI, "rdf:type", "og:link"),
           qb.s(linkIRI, "og:id", qb.ll(link)),
@@ -194,7 +194,7 @@ export async function updateLegacyWorkspaceToVersion2(
   Object.keys(links).forEach((link) =>
     Object.keys(links[link].vertices).forEach((diagram, i) =>
       links[link].vertices[parseInt(diagram)].forEach((vertex, j) => {
-        const linkIRI = getLinkIRI(link);
+        const linkIRI = links[link].linkIRI;
         triples.push(
           qb.g(getLegacyWorkspaceContext(), [
             qb.s(
@@ -277,7 +277,9 @@ async function getLegacyDiagrams(
         if (!(parseInt(result.index.value) in diagrams)) {
           diagrams[parseInt(result.index.value)] = addDiagram(
             Locale[AppSettings.viewLanguage].untitled,
-            result.active ? result.active.value === "true" : true
+            result.active ? result.active.value === "true" : true,
+            Representation.COMPACT,
+            parseInt(result.index.value)
           );
         }
         diagrams[parseInt(result.index.value)].name = result.name.value;
@@ -542,6 +544,7 @@ async function getLegacyConnections(
             vertices: convert,
             active: iter[link].active,
             hasInverse: false,
+            linkIRI: getLinkIRI(link),
           };
           if (sourceID) {
             if (!elements[sourceID].connections.includes(link)) {
