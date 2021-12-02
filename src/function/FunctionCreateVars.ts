@@ -12,7 +12,11 @@ import { initLanguageObject } from "./FunctionEditVars";
 import { VocabularyNode } from "../datatypes/VocabularyNode";
 import { LinkType, Representation } from "../config/Enum";
 import { Locale } from "../config/Locale";
-import { getVocabularyFromScheme } from "./FunctionGetVars";
+import {
+  getLinkIRI,
+  getNewDiagramContextIRI,
+  getVocabularyFromScheme,
+} from "./FunctionGetVars";
 import { v4 as uuidv4 } from "uuid";
 
 export function createValues(
@@ -101,15 +105,19 @@ export function addDiagram(
   name: string,
   active: boolean = true,
   representation: Representation = Representation.COMPACT,
+  index: number,
+  iri?: string,
   id?: string
 ): typeof Diagrams[number] {
+  const diagramID = id ? id : uuidv4();
   return {
     name: name,
     active: active,
     origin: { x: 0, y: 0 },
     scale: 1,
     representation: representation,
-    id: id ? id : uuidv4(),
+    id: diagramID,
+    iri: iri ? iri : getNewDiagramContextIRI(diagramID),
   };
 }
 
@@ -130,5 +138,6 @@ export function addLink(
     vertices: [],
     active: true,
     hasInverse: type !== LinkType.GENERALIZATION && iri in Links,
+    linkIRI: getLinkIRI(id),
   };
 }

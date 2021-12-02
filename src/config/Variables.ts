@@ -51,6 +51,7 @@ export var WorkspaceLinks: {
     active: boolean;
     //inverse link presence for source cardinality purposes
     hasInverse: boolean;
+    linkIRI: string;
   };
 } = {};
 
@@ -78,6 +79,8 @@ export var Prefixes: { [key: string]: string } = {
     "https://slovník.gov.cz/datový/pracovní-prostor/pojem/",
   "z-sgov-pojem": "https://slovník.gov.cz/základní/pojem/",
   "v-sgov-pojem": "https://slovník.gov.cz/veřejný-sektor/pojem/",
+  "a-popis-dat":
+    "http://onto.fel.cvut.cz/ontologies/slovník/agendový/popis-dat/",
 };
 
 export const FolderRoot: VocabularyNode = new VocabularyNode(
@@ -137,7 +140,8 @@ export var Diagrams: {
   scale: number;
   representation: Representation;
   id: string;
-}[] = [addDiagram("Untitled")];
+  iri: string;
+}[] = [addDiagram("Untitled", true, Representation.COMPACT, 0)];
 
 export var AppSettings: {
   name: { [key: string]: string };

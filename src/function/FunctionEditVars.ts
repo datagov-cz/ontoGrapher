@@ -130,7 +130,7 @@ export function deleteConcept(id: string): string[] {
     WorkspaceLinks[connection].active = false;
     queries.push(
       updateDeleteTriples(
-        AppSettings.ontographerContext + "-" + connection,
+        WorkspaceLinks[connection].linkIRI,
         [getWorkspaceContextIRI()],
         true,
         false,
@@ -145,7 +145,7 @@ export function deleteConcept(id: string): string[] {
     WorkspaceLinks[connection].active = false;
     queries.push(
       updateDeleteTriples(
-        AppSettings.ontographerContext + "-" + connection,
+        WorkspaceLinks[connection].linkIRI,
         [getWorkspaceContextIRI()],
         true,
         false,
