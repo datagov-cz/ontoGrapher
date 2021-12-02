@@ -192,6 +192,9 @@ export async function searchCache(
     "optional {?entity skos:definition ?definition.}",
     "?entity skos:inScheme ?scheme.",
     "?vocabulary <http://onto.fel.cvut.cz/ontologies/slovník/agendový/popis-dat/pojem/má-glosář> ?scheme.",
+    "<" +
+      AppSettings.cacheContext +
+      "> <https://slovník.gov.cz/datový/pracovní-prostor/pojem/odkazuje-na-kontext> ?vocabulary.",
     limitToVocabularies && limitToVocabularies.length > 0
       ? "VALUES ?vocabulary {<" + limitToVocabularies.join("> <") + ">}"
       : "",
