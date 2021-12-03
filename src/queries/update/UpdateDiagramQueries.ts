@@ -2,13 +2,14 @@ import { DELETE, INSERT } from "@tpluscode/sparql-builder";
 import { qb } from "../QueryBuilder";
 import { AppSettings, Diagrams } from "../../config/Variables";
 import { parsePrefix } from "../../function/FunctionEditVars";
+import { getWorkspaceContextIRI } from "../../function/FunctionGetVars";
 
 function getDiagramTriples(diagram: number): string {
   const diagramIRI = qb.i(Diagrams[diagram].iri);
   const diagramGraph = Diagrams[diagram].graph;
   const diagramAttachmentTypes = [
     qb.i(parsePrefix("d-sgov-pracovní-prostor-pojem", "příloha")),
-    qb.i(parsePrefix("a-popis-dat", "příloha")),
+    qb.i(parsePrefix("a-popis-dat-pojem", "příloha")),
     qb.i(parsePrefix("og", "diagram")),
   ];
   return INSERT.DATA`${qb.g(diagramGraph, [
@@ -27,6 +28,9 @@ function getDiagramTriples(diagram: number): string {
 export function updateCreateDiagram(diagram: number): string {
   const diagramIRI = qb.i(Diagrams[diagram].iri);
   const diagramGraph = qb.i(Diagrams[diagram].graph);
+  const insertAppContext = INSERT.DATA`${qb.g(getWorkspaceContextIRI(), [
+    qb.s(qb.i(getWorkspaceContextIRI()), "og:diagram", qb.ll(diagram)),
+  ])}`.build();
   const insertDiagramContext = getDiagramTriples(diagram);
   const insertMetadataContext = INSERT.DATA`${qb.g(AppSettings.contextIRI, [
     qb.s(
@@ -56,7 +60,11 @@ export function updateCreateDiagram(diagram: number): string {
     ),
   ])}`.build();
 
-  return qb.combineQueries(insertMetadataContext, insertDiagramContext);
+  return qb.combineQueries(
+    insertAppContext,
+    insertMetadataContext,
+    insertDiagramContext
+  );
 }
 
 export function updateDiagram(diagram: number): string {

@@ -10,7 +10,11 @@ import {
 } from "../../config/Variables";
 import { processQuery } from "../../interface/TransactionInterface";
 import { getWorkspaceContextIRI } from "../../function/FunctionGetVars";
-import { ContextLoadingStrategy, LinkType } from "../../config/Enum";
+import {
+  ContextLoadingStrategy,
+  LinkType,
+  Representation,
+} from "../../config/Enum";
 import * as joint from "jointjs";
 import { Cardinality } from "../../datatypes/Cardinality";
 import {
@@ -89,6 +93,8 @@ export async function getElementsConfig(
       "?iri og:position-x ?posX.",
       "?iri og:position-y ?posY.",
       "?iri og:hidden ?hidden.",
+      "?diagram og:index ?index.",
+      "?diagram og:representation ?representation .",
       "}",
       `${qb.i(AppSettings.contextIRI)} ${qb.i(
         parsePrefix(
@@ -96,8 +102,6 @@ export async function getElementsConfig(
           `odkazuje-na-přílohový-kontext`
         )
       )} ?graph.`,
-      "?diagram og:index ?index.",
-      "?diagram og:representation ?representation .",
       "}",
     ].join(`
     `);
@@ -190,7 +194,7 @@ export async function getSettings(
 ): Promise<ContextLoadingStrategy | undefined> {
   const query = [
     "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
-    "select ?graph ?diagram ?index ?name ?color ?active ?id ?representation ?context ?legacyContext where {",
+    "select ?graph ?diagramIndex ?diagram ?index ?name ?color ?active ?id ?representation ?context ?legacyContext where {",
     "BIND(<" + AppSettings.contextIRI + "> as ?metaContext).",
     "BIND(<" + getWorkspaceContextIRI() + "> as ?ogContext).",
     "OPTIONAL {",
@@ -212,6 +216,7 @@ export async function getSettings(
     "OPTIONAL {",
     "?ogContext og:viewColor ?color .",
     "?ogContext og:contextVersion ?context .",
+    "OPTIONAL {?ogContext og:diagram ?diagramIndex .}",
     "}",
     "OPTIONAL {",
     `<${
@@ -246,6 +251,16 @@ export async function getSettings(
           if (result.context) {
             AppSettings.viewColorPool = result.color.value;
             AppSettings.contextVersion = parseInt(result.context.value, 10);
+            if (result.diagramIndex) {
+              const diagramIndex = parseInt(result.diagramIndex.value);
+              if (!(diagramIndex in Diagrams))
+                Diagrams[diagramIndex] = addDiagram(
+                  "",
+                  false,
+                  Representation.COMPACT,
+                  diagramIndex
+                );
+            }
           } else {
             reconstructWorkspace = true;
           }
