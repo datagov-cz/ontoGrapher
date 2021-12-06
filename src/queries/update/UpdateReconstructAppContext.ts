@@ -18,16 +18,14 @@ export async function reconstructApplicationContextWithDiagrams(): Promise<strin
   ];
   const diagramRetrievalQuery = [
     "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
-    "select ?diagram where {",
+    "select ?diagram ?graph where {",
     "BIND(<" + AppSettings.contextIRI + "> as ?metaContext).",
     "graph ?metaContext {",
-    `?metaContext ?linkPredicate ?diagram .`,
+    `?metaContext ?linkPredicate ?graph .`,
     `values ?linkPredicate { <${linkPredicates.join("> <")}> }`,
     "}",
-    "graph ?diagram {",
-    `?diagram ${qb.i(
-      parsePrefix("d-sgov-pracovní-prostor-pojem", "má-typ-přílohy")
-    )} og:diagram.`,
+    "graph ?graph {",
+    "?diagram a og:diagram.",
     "}",
     "} limit 1",
   ].join(`
