@@ -73,7 +73,7 @@ export function setSchemeColors(pool: string) {
 export function getExpressionByRepresentation(
   expressions: { [key in Representation]: keyof typeof en },
   representation: Representation = AppSettings.representation,
-  language: string = AppSettings.viewLanguage
+  language: string = AppSettings.interfaceLanguage
 ) {
   return Locale[language][expressions[representation]];
 }

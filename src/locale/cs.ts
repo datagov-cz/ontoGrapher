@@ -32,6 +32,8 @@ export const cs: { [Property in keyof typeof en]: string } = {
   detailPanelInScheme: "Ve slovníku",
   detailPanelDefinition: "Definice",
   detailPanelStereotype: "Stereotyp",
+  setCanvasLanguage: "Jazyk pracovního prostoru",
+  setInterfaceLanguage: "Jazyk uživatelského rozhraní",
   ontoGrapher: "ontoGrapher",
   errorMissingRestriction: "Restrikce nebyla nalezena",
   validationNumber: "#",

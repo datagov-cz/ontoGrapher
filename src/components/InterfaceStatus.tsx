@@ -35,18 +35,18 @@ export default class InterfaceStatus extends React.Component<Props, State> {
           status &&
           this.props.error &&
           this.props.status ===
-            Locale[AppSettings.viewLanguage].errorConnectionLost
+            Locale[AppSettings.interfaceLanguage].errorConnectionLost
         ) {
           this.props.handleStatus(
             false,
-            Locale[AppSettings.viewLanguage].workspaceReady,
+            Locale[AppSettings.interfaceLanguage].workspaceReady,
             false,
             false
           );
         } else if (status === this.props.error && !status) {
           this.props.handleStatus(
             false,
-            Locale[AppSettings.viewLanguage].errorConnectionLost,
+            Locale[AppSettings.interfaceLanguage].errorConnectionLost,
             true,
             false
           );
@@ -56,7 +56,7 @@ export default class InterfaceStatus extends React.Component<Props, State> {
         this.setState({ connection: false });
         this.props.handleStatus(
           false,
-          Locale[AppSettings.viewLanguage].errorConnectionLost,
+          Locale[AppSettings.interfaceLanguage].errorConnectionLost,
           true,
           false
         );
@@ -93,8 +93,8 @@ export default class InterfaceStatus extends React.Component<Props, State> {
           overlay={
             <Tooltip id="tooltipC">
               {this.state.connection
-                ? Locale[AppSettings.viewLanguage].stableConnection
-                : Locale[AppSettings.viewLanguage].brokenConnection}
+                ? Locale[AppSettings.interfaceLanguage].stableConnection
+                : Locale[AppSettings.interfaceLanguage].brokenConnection}
             </Tooltip>
           }
         >

@@ -276,7 +276,7 @@ async function getLegacyDiagrams(
       for (let result of data.results.bindings) {
         if (!(parseInt(result.index.value) in diagrams)) {
           diagrams[parseInt(result.index.value)] = addDiagram(
-            Locale[AppSettings.viewLanguage].untitled,
+            Locale[AppSettings.interfaceLanguage].untitled,
             result.active ? result.active.value === "true" : true,
             Representation.COMPACT,
             parseInt(result.index.value)

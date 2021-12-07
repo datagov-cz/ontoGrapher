@@ -87,17 +87,20 @@ export default class ModalRemoveConcept extends React.Component<Props, State> {
       >
         <Modal.Header>
           <Modal.Title>
-            {Locale[AppSettings.viewLanguage].modalRemoveConceptTitle}
+            {Locale[AppSettings.interfaceLanguage].modalRemoveConceptTitle}
           </Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <p>
-            {Locale[AppSettings.viewLanguage].modalRemoveConceptDescription}
+            {
+              Locale[AppSettings.interfaceLanguage]
+                .modalRemoveConceptDescription
+            }
           </p>
           {this.state.shownLucene.length > 0 && (
             <div>
               {
-                Locale[AppSettings.viewLanguage]
+                Locale[AppSettings.interfaceLanguage]
                   .modalRemoveConceptConnectionsDescription
               }
               <div className={"deleteConnections"}>
@@ -127,7 +130,7 @@ export default class ModalRemoveConcept extends React.Component<Props, State> {
             }}
           >
             <Button type={"submit"} id={"modalRemoveItemConfirm"}>
-              {Locale[AppSettings.viewLanguage].confirm}
+              {Locale[AppSettings.interfaceLanguage].confirm}
             </Button>
           </Form>
           <Button
@@ -136,7 +139,7 @@ export default class ModalRemoveConcept extends React.Component<Props, State> {
             }}
             variant="secondary"
           >
-            {Locale[AppSettings.viewLanguage].cancel}
+            {Locale[AppSettings.interfaceLanguage].cancel}
           </Button>
         </Modal.Footer>
       </Modal>

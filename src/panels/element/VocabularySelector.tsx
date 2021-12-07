@@ -50,11 +50,11 @@ export class VocabularySelector extends React.Component<Props, State> {
       };
     });
     const existing = {
-      label: Locale[AppSettings.viewLanguage].fromList,
+      label: Locale[AppSettings.interfaceLanguage].fromList,
       options: existingOptions,
     };
     const other = {
-      label: Locale[AppSettings.viewLanguage].otherVocabularies,
+      label: Locale[AppSettings.interfaceLanguage].otherVocabularies,
       options: otherOptions,
     };
     return [existing, other];
@@ -68,7 +68,7 @@ export class VocabularySelector extends React.Component<Props, State> {
         className={"luceneSelect"}
         options={this.buildOptions()}
         placeholder={
-          Locale[AppSettings.viewLanguage].filterVocabulariesPlaceholder
+          Locale[AppSettings.interfaceLanguage].filterVocabulariesPlaceholder
         }
         value={this.props.values}
         onChange={(value) =>

@@ -66,7 +66,7 @@ export default class ConnectionFilter extends React.Component<Props, State> {
                 value={""}
                 onClick={() => this.props.updateFilter("scheme", "")}
               >
-                {Locale[AppSettings.viewLanguage].anyVocabulary}
+                {Locale[AppSettings.interfaceLanguage].anyVocabulary}
               </option>
               {Object.keys(WorkspaceVocabularies)
                 .filter(
@@ -99,7 +99,7 @@ export default class ConnectionFilter extends React.Component<Props, State> {
             value={this.props.filter.typeType}
           >
             <option key={""} value={""}>
-              {Locale[AppSettings.viewLanguage].anyStereotypeType}
+              {Locale[AppSettings.interfaceLanguage].anyStereotypeType}
             </option>
             {Object.keys(Shapes)
               .filter((shape) => shape in Stereotypes)
@@ -118,7 +118,7 @@ export default class ConnectionFilter extends React.Component<Props, State> {
             }
           >
             <option key={""} value={""}>
-              {Locale[AppSettings.viewLanguage].anyStereotypeOnto}
+              {Locale[AppSettings.interfaceLanguage].anyStereotypeOnto}
             </option>
             {Object.keys(Stereotypes)
               .filter((stereotype) => !(stereotype in Shapes))
@@ -132,7 +132,7 @@ export default class ConnectionFilter extends React.Component<Props, State> {
             size="sm"
             value={this.props.filter.search}
             placeholder={
-              Locale[AppSettings.viewLanguage].filterSearchPlaceholder
+              Locale[AppSettings.interfaceLanguage].filterSearchPlaceholder
             }
             type={"search"}
             onChange={(event) =>
@@ -168,7 +168,7 @@ export default class ConnectionFilter extends React.Component<Props, State> {
                 value={this.props.filter.connection}
               >
                 <option key={""} value={""}>
-                  {Locale[AppSettings.viewLanguage].anyLink}
+                  {Locale[AppSettings.interfaceLanguage].anyLink}
                 </option>
                 {Object.keys(Links).map((shape) => (
                   <option key={shape} value={shape}>

@@ -26,7 +26,7 @@ export default class MenuPanelHelp extends React.Component<Props, State> {
             this.setState({ modal: true });
           }}
         >
-          {Locale[AppSettings.viewLanguage].help}
+          {Locale[AppSettings.interfaceLanguage].help}
         </Nav.Link>
         <HelpModal
           modal={this.state.modal}

@@ -1,6 +1,6 @@
 import React from "react";
 import { Form, OverlayTrigger, Tooltip } from "react-bootstrap";
-import { AppSettings, Languages } from "../config/Variables";
+import { AppSettings } from "../config/Variables";
 import { Locale } from "../config/Locale";
 import { Environment } from "../config/Environment";
 import MenuPanelReport from "./menu/right/MenuPanelReport";
@@ -20,7 +20,8 @@ import MenuPanelSwitchRepresentation from "./menu/left/MenuPanelSwitchRepresenta
 interface MenuPanelProps {
   readOnly?: boolean;
   projectLanguage: string;
-  handleChangeLanguage: any;
+  handleChangeLanguage: (language: string) => void;
+  handleChangeInterfaceLanguage: (language: string) => void;
   update: Function;
   loading: boolean;
   status: string;
@@ -81,18 +82,6 @@ export default class MenuPanel extends React.Component<
                 error={this.props.freeze}
                 status={this.props.status}
               />
-              &nbsp;
-              <Form.Control
-                as="select"
-                value={this.props.projectLanguage}
-                onChange={this.handleChangeLanguage}
-              >
-                {Object.keys(Languages).map((languageCode) => (
-                  <option key={languageCode} value={languageCode}>
-                    {Languages[languageCode]}
-                  </option>
-                ))}
-              </Form.Control>
             </Form>
           </div>
         </div>
@@ -100,6 +89,10 @@ export default class MenuPanel extends React.Component<
           <MenuPanelView
             update={() => this.props.update()}
             performTransaction={this.props.performTransaction}
+            handleChangeLanguage={this.props.handleChangeLanguage}
+            handleChangeInterfaceLanguage={
+              this.props.handleChangeInterfaceLanguage
+            }
           />
           <MenuPanelSwitchRepresentation
             update={() => this.props.update()}
@@ -123,7 +116,7 @@ export default class MenuPanel extends React.Component<
               show={this.state.tooltip}
               overlay={
                 <Tooltip id={"newVersionTooltip"}>
-                  {Locale[AppSettings.viewLanguage].newVersion}
+                  {Locale[AppSettings.interfaceLanguage].newVersion}
                 </Tooltip>
               }
             >

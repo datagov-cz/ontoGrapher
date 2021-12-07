@@ -58,7 +58,7 @@ export default class ValidationPanel extends React.Component<Props, State> {
     this.setState({ loading: true, error: false });
     const results = await validateWorkspace(
       AppSettings.contextIRI,
-      AppSettings.selectedLanguage
+      AppSettings.canvasLanguage
     ).catch(() => {
       return false;
     });
@@ -135,29 +135,29 @@ export default class ValidationPanel extends React.Component<Props, State> {
       >
         <div>
           <div className={"top"} id={"top"}>
-            <h4>{Locale[AppSettings.viewLanguage].validation}</h4>
+            <h4>{Locale[AppSettings.interfaceLanguage].validation}</h4>
             <span className="right">
               <Button
                 onClick={() => {
                   this.validate();
                 }}
               >
-                {Locale[AppSettings.viewLanguage].validationReload}
+                {Locale[AppSettings.interfaceLanguage].validationReload}
               </Button>
               &nbsp;
               <Button variant={"secondary"} onClick={() => this.props.close()}>
-                {Locale[AppSettings.viewLanguage].close}
+                {Locale[AppSettings.interfaceLanguage].close}
               </Button>
             </span>
           </div>
           {this.state.conforms && (
             <div className={"centeredValidation"}>
-              {"✅" + Locale[AppSettings.viewLanguage].conforms}
+              {"✅" + Locale[AppSettings.interfaceLanguage].conforms}
             </div>
           )}
           {this.state.error && (
             <div className={"centeredValidation"}>
-              {Locale[AppSettings.viewLanguage].validationLoadingError}
+              {Locale[AppSettings.interfaceLanguage].validationLoadingError}
             </div>
           )}
           {this.state.loading && (
@@ -172,10 +172,10 @@ export default class ValidationPanel extends React.Component<Props, State> {
             >
               <TableList
                 headings={[
-                  Locale[AppSettings.viewLanguage].validationNumber,
-                  Locale[AppSettings.viewLanguage].validationSeverity,
-                  Locale[AppSettings.viewLanguage].validationName,
-                  Locale[AppSettings.viewLanguage].validationError,
+                  Locale[AppSettings.interfaceLanguage].validationNumber,
+                  Locale[AppSettings.interfaceLanguage].validationSeverity,
+                  Locale[AppSettings.interfaceLanguage].validationName,
+                  Locale[AppSettings.interfaceLanguage].validationError,
                 ]}
               >
                 {this.state.results.map((result, i) => (

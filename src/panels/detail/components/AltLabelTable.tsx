@@ -61,14 +61,17 @@ export default class AltLabelTable extends React.Component<Props, State> {
               )}
               <span className={"right"}>
                 {this.props.labels[i].label !== this.props.default &&
-                  AppSettings.selectedLanguage ===
+                  AppSettings.canvasLanguage ===
                     this.props.labels[i].language &&
                   this.state.hover === i && (
                     <OverlayTrigger
                       placement="left"
                       overlay={
                         <Tooltip id="button-tooltip">
-                          {Locale[AppSettings.viewLanguage].setAsDisplayName}
+                          {
+                            Locale[AppSettings.interfaceLanguage]
+                              .setAsDisplayName
+                          }
                         </Tooltip>
                       }
                     >
@@ -152,7 +155,7 @@ export default class AltLabelTable extends React.Component<Props, State> {
                   type="text"
                   value={this.state.newAltInput}
                   placeholder={
-                    Locale[AppSettings.viewLanguage].addAltLabelPlaceholder
+                    Locale[AppSettings.interfaceLanguage].addAltLabelPlaceholder
                   }
                   onChange={(event) =>
                     this.setState({ newAltInput: event.currentTarget.value })

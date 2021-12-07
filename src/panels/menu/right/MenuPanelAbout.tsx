@@ -31,7 +31,7 @@ export default class MenuPanelAbout extends React.Component<Props, State> {
           show={this.props.tooltip}
           overlay={
             <Tooltip id={"newVersionTooltip"}>
-              {Locale[AppSettings.viewLanguage].newVersion}
+              {Locale[AppSettings.interfaceLanguage].newVersion}
             </Tooltip>
           }
         >
@@ -41,7 +41,7 @@ export default class MenuPanelAbout extends React.Component<Props, State> {
             }}
           >
             {`${getLastChangeDay()} - ${
-              Locale[AppSettings.viewLanguage].changelogButton
+              Locale[AppSettings.interfaceLanguage].changelogButton
             }`}
           </Nav.Link>
         </OverlayTrigger>

@@ -64,7 +64,7 @@ export default class ConceptDivider extends React.Component<Props, State> {
       >
         {this.props.iri in Stereotypes
           ? Stereotypes[this.props.iri].labels[this.props.projectLanguage]
-          : Locale[AppSettings.viewLanguage].unsorted}
+          : Locale[AppSettings.interfaceLanguage].unsorted}
       </div>
     );
   }

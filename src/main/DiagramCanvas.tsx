@@ -149,7 +149,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
             strategy: ElemCreationStrategy.DEFAULT,
             position: { x: evt.clientX, y: evt.clientY },
             pkg: FolderRoot,
-            header: Locale[AppSettings.viewLanguage].modalNewElemTitle,
+            header: Locale[AppSettings.interfaceLanguage].modalNewElemTitle,
             connections: [],
           });
         }

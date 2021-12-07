@@ -27,7 +27,7 @@ export default class MenuPanelSwitchColors extends React.Component<
       .forEach((elem) =>
         drawGraphElement(
           elem,
-          AppSettings.selectedLanguage,
+          AppSettings.canvasLanguage,
           AppSettings.representation
         )
       );
@@ -40,7 +40,7 @@ export default class MenuPanelSwitchColors extends React.Component<
     return (
       <Dropdown drop={"right"}>
         <Dropdown.Toggle>
-          {Locale[AppSettings.viewLanguage].switchColors}
+          {Locale[AppSettings.interfaceLanguage].switchColors}
         </Dropdown.Toggle>
         <Dropdown.Menu>
           {Object.keys(ColorPool).map((pool) => (
@@ -50,7 +50,7 @@ export default class MenuPanelSwitchColors extends React.Component<
               onClick={() => this.switch(pool)}
             >
               {(pool === AppSettings.viewColorPool ? "✓ " : "") +
-                ColorPool[pool].label[AppSettings.viewLanguage]}
+                ColorPool[pool].label[AppSettings.interfaceLanguage]}
             </Dropdown.Item>
           ))}
         </Dropdown.Menu>

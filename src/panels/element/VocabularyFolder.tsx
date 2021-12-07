@@ -80,7 +80,10 @@ export default class VocabularyFolder extends React.Component<Props, State> {
             placement="right"
             overlay={
               <Tooltip id="button-tooltip">
-                {Locale[AppSettings.viewLanguage].vocabularyNotFullyRepresented}
+                {
+                  Locale[AppSettings.interfaceLanguage]
+                    .vocabularyNotFullyRepresented
+                }
               </Tooltip>
             }
           >
@@ -95,7 +98,7 @@ export default class VocabularyFolder extends React.Component<Props, State> {
               <h6>
                 <Badge variant={"secondary"}>
                   {`${workspaceCount}/${totalCount} ${
-                    Locale[AppSettings.viewLanguage].termsCase
+                    Locale[AppSettings.interfaceLanguage].termsCase
                   }`}
                 </Badge>
               </h6>

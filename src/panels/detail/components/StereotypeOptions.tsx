@@ -33,11 +33,11 @@ export default class StereotypeOptions extends React.Component<Props, State> {
               <option key={""} value={""}>
                 {this.props.readonly
                   ? this.props.content
-                    ? Locale[AppSettings.viewLanguage].noStereotypeUML
-                    : Locale[AppSettings.viewLanguage].noStereotypeData
+                    ? Locale[AppSettings.interfaceLanguage].noStereotypeUML
+                    : Locale[AppSettings.interfaceLanguage].noStereotypeData
                   : this.props.content
-                  ? Locale[AppSettings.viewLanguage].setStereotypeUML
-                  : Locale[AppSettings.viewLanguage].setStereotypeData}
+                  ? Locale[AppSettings.interfaceLanguage].setStereotypeUML
+                  : Locale[AppSettings.interfaceLanguage].setStereotypeData}
               </option>
               {Object.keys(Stereotypes)
                 .filter((stereotype) =>

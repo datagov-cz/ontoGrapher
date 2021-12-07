@@ -25,6 +25,8 @@ export const en = {
   detailPanelInScheme: "In vocabulary",
   detailPanelDefinition: "Definition",
   detailPanelStereotype: "Stereotype",
+  setCanvasLanguage: "Workspace language",
+  setInterfaceLanguage: "User interface language",
   ontoGrapher: "ontoGrapher",
   errorMissingRestriction: "Restriction not found",
   validationNumber: "#",

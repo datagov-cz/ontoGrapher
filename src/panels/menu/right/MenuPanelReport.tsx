@@ -15,7 +15,7 @@ export default class MenuPanelReport extends React.Component<Props, State> {
         <SplitButton
           id={"reportIssueSplitButton"}
           className={"inert report"}
-          title={Locale[AppSettings.viewLanguage].reportIssue}
+          title={Locale[AppSettings.interfaceLanguage].reportIssue}
           variant={"warning"}
           href={Environment.components["al-issue-tracker"].meta["new-bug"]}
           menuAlign={{ sm: "left" }}
@@ -27,7 +27,7 @@ export default class MenuPanelReport extends React.Component<Props, State> {
             }
             target={"_blank"}
           >
-            {Locale[AppSettings.viewLanguage].reportEnhancement}
+            {Locale[AppSettings.interfaceLanguage].reportEnhancement}
           </Dropdown.Item>
         </SplitButton>
       </span>

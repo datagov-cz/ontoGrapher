@@ -14,7 +14,7 @@ export default class MenuPanelValidate extends React.Component<Props, State> {
     return (
       <div className={"inert"}>
         <Nav.Link onClick={() => this.props.validate()}>
-          {Locale[AppSettings.viewLanguage].validate}
+          {Locale[AppSettings.interfaceLanguage].validate}
         </Nav.Link>
       </div>
     );

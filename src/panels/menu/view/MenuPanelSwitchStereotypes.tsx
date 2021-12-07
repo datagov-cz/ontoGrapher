@@ -22,7 +22,7 @@ export default class MenuPanelSwitchStereotypes extends React.Component<
       .forEach((elem) =>
         drawGraphElement(
           elem,
-          AppSettings.selectedLanguage,
+          AppSettings.canvasLanguage,
           AppSettings.representation
         )
       );
@@ -38,14 +38,14 @@ export default class MenuPanelSwitchStereotypes extends React.Component<
           disabled={!AppSettings.viewStereotypes}
         >
           {(!AppSettings.viewStereotypes ? "✓ " : "") +
-            Locale[AppSettings.viewLanguage].hideStereotypes}
+            Locale[AppSettings.interfaceLanguage].hideStereotypes}
         </Dropdown.Item>
         <Dropdown.Item
           onClick={() => this.switch()}
           disabled={AppSettings.viewStereotypes}
         >
           {(AppSettings.viewStereotypes ? "✓ " : "") +
-            Locale[AppSettings.viewLanguage].showStereotypes}
+            Locale[AppSettings.interfaceLanguage].showStereotypes}
         </Dropdown.Item>
       </div>
     );

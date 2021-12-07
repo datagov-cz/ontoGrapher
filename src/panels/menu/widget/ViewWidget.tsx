@@ -18,7 +18,7 @@ export default class ViewWidget extends React.Component<Props, State> {
           placement="bottom"
           overlay={
             <Tooltip id="button-tooltip">
-              {Locale[AppSettings.viewLanguage].menuPanelCenterView}
+              {Locale[AppSettings.interfaceLanguage].menuPanelCenterView}
             </Tooltip>
           }
         >
@@ -34,7 +34,7 @@ export default class ViewWidget extends React.Component<Props, State> {
           placement="bottom"
           overlay={
             <Tooltip id="button-tooltip">
-              {Locale[AppSettings.viewLanguage].menuPanelZoom}
+              {Locale[AppSettings.interfaceLanguage].menuPanelZoom}
             </Tooltip>
           }
         >

@@ -51,15 +51,16 @@ export default class MenuPanelSwitchRepresentation extends React.Component<
         placement="right"
         overlay={
           <Tooltip id="tooltipC">
-            {Locale[AppSettings.viewLanguage].hiddenTermsAndLinks}
+            {Locale[AppSettings.interfaceLanguage].hiddenTermsAndLinks}
           </Tooltip>
         }
       >
         <div className={"inert"}>
           <Nav.Link onClick={() => this.switch()}>
             {AppSettings.representation === Representation.FULL
-              ? Locale[AppSettings.viewLanguage].representationCompactSwitch
-              : Locale[AppSettings.viewLanguage].representationFullSwitch}
+              ? Locale[AppSettings.interfaceLanguage]
+                  .representationCompactSwitch
+              : Locale[AppSettings.interfaceLanguage].representationFullSwitch}
           </Nav.Link>
         </div>
       </OverlayTrigger>
