@@ -36,6 +36,7 @@ import { updateProjectLink } from "../../queries/update/UpdateLinkQueries";
 import { updateConnections } from "../../queries/update/UpdateConnectionQueries";
 import AltLabelTable from "./components/AltLabelTable";
 import { updateProjectElement } from "../../queries/update/UpdateElementQueries";
+import LabelTable from "./components/LabelTable";
 
 interface Props {
   projectLanguage: string;
@@ -50,6 +51,7 @@ interface State {
   iri: string;
   sourceCardinality: string;
   targetCardinality: string;
+  inputLabels: { [key: string]: string };
   inputAltLabels: { label: string; language: string }[];
   selectedLabel: { [key: string]: string };
   newAltInput: string;
@@ -65,6 +67,7 @@ export default class DetailLink extends React.Component<Props, State> {
       iri: Object.keys(Links)[0],
       sourceCardinality: "0",
       targetCardinality: "0",
+      inputLabels: {},
       inputAltLabels: [],
       selectedLabel: initLanguageObject(""),
       newAltInput: "",
@@ -138,6 +141,7 @@ export default class DetailLink extends React.Component<Props, State> {
 
   prepareDetails(id?: string) {
     if (id) {
+      const iri = WorkspaceLinks[id].iri;
       const sourceCardinality = CardinalityPool.findIndex(
         (card) =>
           card.getString() === WorkspaceLinks[id].sourceCardinality.getString()
@@ -146,23 +150,22 @@ export default class DetailLink extends React.Component<Props, State> {
         (card) =>
           card.getString() === WorkspaceLinks[id].targetCardinality.getString()
       );
-      const elem = getElemFromIRI(WorkspaceLinks[id].iri);
+      const elem = getElemFromIRI(iri);
       this.setState({
         sourceCardinality:
           sourceCardinality === -1 ? "0" : sourceCardinality.toString(10),
         targetCardinality:
           targetCardinality === -1 ? "0" : targetCardinality.toString(10),
         id: id,
-        iri: WorkspaceLinks[id].iri,
+        iri: iri,
         inputAltLabels:
-          WorkspaceLinks[id].iri in WorkspaceTerms
-            ? WorkspaceTerms[WorkspaceLinks[id].iri].altLabels
-            : [],
+          iri in WorkspaceTerms ? WorkspaceTerms[iri].altLabels : [],
         changes: false,
         selectedLabel: elem
           ? WorkspaceElements[elem].selectedLabel
           : initLanguageObject(""),
         newAltInput: "",
+        inputLabels: getLinkOrVocabElem(iri).labels,
         readOnly: this.isReadOnly(id),
       });
     } else this.setState({ id: "" });
@@ -200,6 +203,8 @@ export default class DetailLink extends React.Component<Props, State> {
               link,
               WorkspaceElements[elem].selectedLabel[this.props.projectLanguage]
             );
+            WorkspaceTerms[WorkspaceElements[elem].iri].labels =
+              this.state.inputLabels;
             queries.push(updateProjectElement(true, elem));
           }
           const underlyingConnections = getUnderlyingFullConnections(link);
@@ -431,18 +436,27 @@ export default class DetailLink extends React.Component<Props, State> {
                           />
                         }
                       </h5>
-                      <TableList>
-                        {Object.keys(
-                          getLinkOrVocabElem(this.state.iri).labels
-                        ).map((lang) => (
-                          <tr key={lang}>
-                            <td>
-                              {getLinkOrVocabElem(this.state.iri).labels[lang]}
-                            </td>
-                            <td>{Languages[lang]}</td>
-                          </tr>
-                        ))}
-                      </TableList>
+                      <LabelTable
+                        iri={this.state.iri}
+                        labels={this.state.inputLabels}
+                        default={
+                          this.state.selectedLabel[this.props.projectLanguage]
+                        }
+                        selectAsDefault={(label: string) => {
+                          let res = this.state.selectedLabel;
+                          res[this.props.projectLanguage] = label;
+                          this.setState({ selectedLabel: res, changes: true });
+                        }}
+                        onEdit={(label: string, lang: string) =>
+                          this.setState((prevState) => ({
+                            inputLabels: {
+                              ...prevState.inputLabels,
+                              [lang]: label,
+                            },
+                            changes: true,
+                          }))
+                        }
+                      />
                       {AppSettings.representation ===
                         Representation.COMPACT && (
                         <div>
