@@ -3,11 +3,12 @@ import { Dropdown } from "react-bootstrap";
 import { Locale } from "../../../config/Locale";
 import { AppSettings, Languages } from "../../../config/Variables";
 import { en } from "../../../locale/en";
+import { getLocalStorageKey } from "../../../function/FunctionGetVars";
 
 interface Props {
   handleChangeLanguage: (language: string) => void;
   title: keyof typeof en;
-  language: "interfaceLanguage" | "canvasLanguage";
+  languageType: "interfaceLanguage" | "canvasLanguage";
 }
 
 export const MenuPanelChangeLanguage: React.FC<Props> = (props: Props) => {
@@ -20,9 +21,12 @@ export const MenuPanelChangeLanguage: React.FC<Props> = (props: Props) => {
         {Object.keys(Languages).map((languageCode) => (
           <Dropdown.Item
             key={languageCode}
-            disabled={languageCode === AppSettings[props.language]}
+            disabled={languageCode === AppSettings[props.languageType]}
             onClick={() => {
-              localStorage.setItem(props.language, languageCode);
+              localStorage.setItem(
+                getLocalStorageKey(props.languageType),
+                languageCode
+              );
               props.handleChangeLanguage(languageCode);
             }}
           >

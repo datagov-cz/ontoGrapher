@@ -32,12 +32,12 @@ export default class MenuPanelView extends React.Component<Props, State> {
           <MenuPanelChangeLanguage
             handleChangeLanguage={this.props.handleChangeLanguage}
             title={"setCanvasLanguage"}
-            language={"canvasLanguage"}
+            languageType={"canvasLanguage"}
           />
           <MenuPanelChangeLanguage
             handleChangeLanguage={this.props.handleChangeInterfaceLanguage}
             title={"setInterfaceLanguage"}
-            language={"interfaceLanguage"}
+            languageType={"interfaceLanguage"}
           />
         </Dropdown.Menu>
       </Dropdown>

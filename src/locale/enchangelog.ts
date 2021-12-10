@@ -2,6 +2,13 @@ export const enChangelog: {
   [key: string]: { [key: string]: { [key: string]: string[] } };
 } = {
   "2021": {
+    "12": {
+      "10": [
+        "Added setting to change user interface language",
+        'Accessible through the "View" submenu',
+        'Moved setting to change vocabulary language from top left to the "View" submenu',
+      ],
+    },
     "10": {
       "14": [
         "Added function to save diagrams to PNG images",

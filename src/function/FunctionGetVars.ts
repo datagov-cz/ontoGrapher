@@ -28,6 +28,10 @@ export function getLinkOrVocabElem(iri: string): { [key: string]: any } {
   return iri in Links ? Links[iri] : WorkspaceTerms[iri];
 }
 
+export function getLocalStorageKey(name: string) {
+  return `ontoGrapher:${name}`;
+}
+
 export function getLabelOrBlank(
   labels: { [key: string]: string },
   language: string

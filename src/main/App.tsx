@@ -31,6 +31,7 @@ import { qb } from "../queries/QueryBuilder";
 import {
   getLastChangeDay,
   getLinkOrVocabElem,
+  getLocalStorageKey,
   setSchemeColors,
 } from "../function/FunctionGetVars";
 import { getSettings } from "../queries/get/InitQueries";
@@ -224,12 +225,17 @@ export default class App extends React.Component<
   }
 
   checkLastViewedVersion() {
-    const lastViewedVersion = window.localStorage.getItem("lastViewedVersion");
+    const lastViewedVersion = window.localStorage.getItem(
+      getLocalStorageKey("lastViewedVersion")
+    );
     if (!lastViewedVersion || lastViewedVersion !== getLastChangeDay()) {
       this.setState({ tooltip: true });
       window.setTimeout(() => this.setState({ tooltip: false }), 5000);
     }
-    window.localStorage.setItem("lastViewedVersion", getLastChangeDay());
+    window.localStorage.setItem(
+      getLocalStorageKey("lastViewedVersion"),
+      getLastChangeDay()
+    );
   }
 
   loadVocabularies(contextIRI: string, contextEndpoint: string) {
