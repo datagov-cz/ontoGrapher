@@ -1,12 +1,22 @@
-import { AppSettings, Links, Stereotypes } from "../config/Variables";
+import {
+  AppSettings,
+  Links,
+  Stereotypes,
+  WorkspaceVocabularies,
+} from "../config/Variables";
 import { createValues } from "../function/FunctionCreateVars";
-import { checkLabels } from "../function/FunctionGetVars";
+import {
+  checkLabels,
+  getVocabularyFromScheme,
+} from "../function/FunctionGetVars";
 import { Locale } from "../config/Locale";
 import { checkDefaultCardinality } from "../function/FunctionLink";
 import {
   fetchConcepts,
   fetchSubClassesAndCardinalities,
+  fetchVocabulary,
 } from "../queries/get/FetchQueries";
+import { initLanguageObject } from "../function/FunctionEditVars";
 
 export async function getVocabulariesFromRemoteJSON(
   pathToJSON: string
@@ -21,6 +31,12 @@ export async function getVocabulariesFromRemoteJSON(
         for (const key of Object.keys(json)) {
           const data = json[key];
           if (data.type === "stereotype") {
+            results.push(
+              await fetchVocabulary([data.sourceIRI], true, data.endpoint)
+            );
+            WorkspaceVocabularies[
+              getVocabularyFromScheme(data.sourceIRI)
+            ].labels = initLanguageObject(key);
             results.push(
               await fetchConcepts(
                 data.endpoint,
