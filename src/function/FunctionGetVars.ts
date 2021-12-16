@@ -28,6 +28,10 @@ export function getLinkOrVocabElem(iri: string): { [key: string]: any } {
   return iri in Links ? Links[iri] : WorkspaceTerms[iri];
 }
 
+export function getLocalStorageKey(name: string) {
+  return `ontoGrapher:${name}`;
+}
+
 export function getLabelOrBlank(
   labels: { [key: string]: string },
   language: string
@@ -73,7 +77,7 @@ export function setSchemeColors(pool: string) {
 export function getExpressionByRepresentation(
   expressions: { [key in Representation]: keyof typeof en },
   representation: Representation = AppSettings.representation,
-  language: string = AppSettings.viewLanguage
+  language: string = AppSettings.interfaceLanguage
 ) {
   return Locale[language][expressions[representation]];
 }

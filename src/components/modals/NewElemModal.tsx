@@ -37,7 +37,7 @@ export default class NewElemModal extends React.Component<Props, State> {
     this.state = {
       termName: initLanguageObject(""),
       selectedVocabulary: pkg ? pkg : FolderRoot,
-      errorText: Locale[AppSettings.viewLanguage].modalNewElemError,
+      errorText: Locale[AppSettings.interfaceLanguage].modalNewElemError,
     };
     this.save = this.save.bind(this);
   }
@@ -69,13 +69,15 @@ export default class NewElemModal extends React.Component<Props, State> {
             else
               this.setState({
                 termName: initLanguageObject(""),
-                errorText: Locale[AppSettings.viewLanguage].modalNewElemError,
+                errorText:
+                  Locale[AppSettings.interfaceLanguage].modalNewElemError,
                 selectedVocabulary: pkg,
               });
           } else
             this.setState({
               termName: initLanguageObject(""),
-              errorText: Locale[AppSettings.viewLanguage].modalNewElemError,
+              errorText:
+                Locale[AppSettings.interfaceLanguage].modalNewElemError,
             });
           const input = document.getElementById(
             "newElemLabelInput" + this.props.projectLanguage
@@ -117,7 +119,7 @@ export default class NewElemModal extends React.Component<Props, State> {
               disabled={this.state.errorText !== ""}
               variant="primary"
             >
-              {Locale[AppSettings.viewLanguage].confirm}
+              {Locale[AppSettings.interfaceLanguage].confirm}
             </Button>
             <Button
               onClick={() => {
@@ -125,7 +127,7 @@ export default class NewElemModal extends React.Component<Props, State> {
               }}
               variant="secondary"
             >
-              {Locale[AppSettings.viewLanguage].cancel}
+              {Locale[AppSettings.interfaceLanguage].cancel}
             </Button>
           </Modal.Footer>
         </Form>

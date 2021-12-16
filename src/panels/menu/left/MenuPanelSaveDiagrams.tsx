@@ -12,7 +12,7 @@ export const MenuPanelSaveDiagrams: React.FC<Props> = (props) => {
   return (
     <div className={"inert"}>
       <Nav.Link onClick={() => setModal(true)}>
-        {Locale[AppSettings.viewLanguage].generateDiagramImage}
+        {Locale[AppSettings.interfaceLanguage].generateDiagramImage}
       </Nav.Link>
       <SaveDiagramsModal modal={modal} close={() => setModal(false)} />
     </div>

@@ -30,11 +30,7 @@ export function changeDiagrams(diagram: number = 0) {
           WorkspaceElements[id].position[diagram].y
         );
         cls.addTo(graph);
-        drawGraphElement(
-          cls,
-          AppSettings.selectedLanguage,
-          Representation.FULL
-        );
+        drawGraphElement(cls, AppSettings.canvasLanguage, Representation.FULL);
         restoreHiddenElem(id, cls, true, false, false);
       }
     }

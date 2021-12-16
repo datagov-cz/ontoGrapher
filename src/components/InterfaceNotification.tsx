@@ -30,7 +30,7 @@ export default class InterfaceNotification extends React.Component<Props> {
                 this.props.performTransaction(AppSettings.lastTransaction);
               }}
             >
-              {Locale[AppSettings.viewLanguage].retry}
+              {Locale[AppSettings.interfaceLanguage].retry}
             </button>
           )}
         </span>

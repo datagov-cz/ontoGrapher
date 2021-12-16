@@ -22,7 +22,7 @@ export default class DiagramAdd extends React.Component<Props, State> {
     const index =
       Diagrams.push(
         addDiagram(
-          Locale[AppSettings.viewLanguage].untitled,
+          Locale[AppSettings.interfaceLanguage].untitled,
           true,
           Representation.COMPACT,
           Diagrams.length

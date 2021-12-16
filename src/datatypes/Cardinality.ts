@@ -84,7 +84,9 @@ export class Cardinality {
     if (this.checkCardinality(cardinalityPart)) {
       this.first = cardinalityPart;
     } else {
-      throw new Error(Locale[AppSettings.viewLanguage].errorInvalidCardinality);
+      throw new Error(
+        Locale[AppSettings.interfaceLanguage].errorInvalidCardinality
+      );
     }
   }
 
@@ -92,7 +94,9 @@ export class Cardinality {
     if (this.checkCardinality(cardinalityPart)) {
       this.second = cardinalityPart;
     } else {
-      throw new Error(Locale[AppSettings.viewLanguage].errorInvalidCardinality);
+      throw new Error(
+        Locale[AppSettings.interfaceLanguage].errorInvalidCardinality
+      );
     }
   }
 

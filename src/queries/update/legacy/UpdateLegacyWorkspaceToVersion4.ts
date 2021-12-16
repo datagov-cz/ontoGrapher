@@ -246,7 +246,7 @@ async function getLegacyDiagrams(
         if (!(parseInt(result.index.value) in diagrams)) {
           if (result.active && result.active.value !== "true") continue;
           diagrams[parseInt(result.index.value)] = addDiagram(
-            Locale[AppSettings.viewLanguage].untitled,
+            Locale[AppSettings.interfaceLanguage].untitled,
             result.active ? result.active.value === "true" : true,
             parseInt(result.representation.value),
             parseInt(result.index.value)

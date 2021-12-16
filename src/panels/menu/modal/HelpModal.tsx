@@ -25,7 +25,7 @@ export default class HelpModal extends React.Component<Props, State> {
     };
     this.topics = {
       main: {
-        title: LocaleHelp[AppSettings.viewLanguage].intro.title,
+        title: LocaleHelp[AppSettings.interfaceLanguage].intro.title,
         page: <HelpMain />,
       },
     };
@@ -42,7 +42,9 @@ export default class HelpModal extends React.Component<Props, State> {
         onEscapeKeyDown={() => this.props.close()}
       >
         <Modal.Header>
-          <Modal.Title>{Locale[AppSettings.viewLanguage].help}</Modal.Title>
+          <Modal.Title>
+            {Locale[AppSettings.interfaceLanguage].help}
+          </Modal.Title>
         </Modal.Header>
         <Modal.Body>{this.topics[this.state.topic].page}</Modal.Body>
         <Modal.Footer>
@@ -51,7 +53,7 @@ export default class HelpModal extends React.Component<Props, State> {
               this.props.close();
             }}
           >
-            {Locale[AppSettings.viewLanguage].close}
+            {Locale[AppSettings.interfaceLanguage].close}
           </Button>
         </Modal.Footer>
       </Modal>

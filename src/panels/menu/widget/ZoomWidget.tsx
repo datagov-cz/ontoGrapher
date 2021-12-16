@@ -19,7 +19,7 @@ export default class ZoomWidget extends React.Component<Props, State> {
           placement="bottom"
           overlay={
             <Tooltip id="button-tooltip">
-              {Locale[AppSettings.viewLanguage].zoomIn}
+              {Locale[AppSettings.interfaceLanguage].zoomIn}
             </Tooltip>
           }
         >
@@ -39,7 +39,7 @@ export default class ZoomWidget extends React.Component<Props, State> {
           placement="bottom"
           overlay={
             <Tooltip id="button-tooltip">
-              {Locale[AppSettings.viewLanguage].zoomOut}
+              {Locale[AppSettings.interfaceLanguage].zoomOut}
             </Tooltip>
           }
         >

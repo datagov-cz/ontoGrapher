@@ -17,7 +17,7 @@ export default class FitContentWidget extends React.Component<Props, State> {
           placement="bottom"
           overlay={
             <Tooltip id="button-tooltip">
-              {Locale[AppSettings.viewLanguage].menuPanelFitContent}
+              {Locale[AppSettings.interfaceLanguage].menuPanelFitContent}
             </Tooltip>
           }
         >

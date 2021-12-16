@@ -174,7 +174,7 @@ export default class VocabularyPanel extends React.Component<Props, State> {
     const result: { [key: string]: { [key: string]: string[] } } = {};
     const flexSearchResults: Id[] = _.flatten(
       FlexDocumentSearch.search(this.state.search, {
-        tag: AppSettings.selectedLanguage,
+        tag: AppSettings.canvasLanguage,
       }).map((result) => result.result)
     ).map((num) => FlexDocumentIDTable[num as number]);
     FolderRoot.children.forEach((node) => {
@@ -374,7 +374,7 @@ export default class VocabularyPanel extends React.Component<Props, State> {
                 <span
                   role="img"
                   aria-label={
-                    Locale[AppSettings.viewLanguage].searchStereotypes
+                    Locale[AppSettings.interfaceLanguage].searchStereotypes
                   }
                 >
                   🔎
@@ -384,7 +384,9 @@ export default class VocabularyPanel extends React.Component<Props, State> {
             <Form.Control
               type="search"
               id={"searchInput"}
-              placeholder={Locale[AppSettings.viewLanguage].searchStereotypes}
+              placeholder={
+                Locale[AppSettings.interfaceLanguage].searchStereotypes
+              }
               aria-describedby="inputGroupPrepend"
               value={this.state.search}
               onChange={this.handleChangeSearch}
@@ -395,7 +397,7 @@ export default class VocabularyPanel extends React.Component<Props, State> {
               placement={"right"}
               overlay={
                 <Tooltip id={`tooltipGroupSearchTerms`}>
-                  {Locale[AppSettings.viewLanguage].groupSearchTerms}
+                  {Locale[AppSettings.interfaceLanguage].groupSearchTerms}
                 </Tooltip>
               }
             >
@@ -441,7 +443,8 @@ export default class VocabularyPanel extends React.Component<Props, State> {
                     className="buttonlink"
                   >
                     {(this.state.showLucene ? "ᐯ " : "ᐱ ") +
-                      Locale[AppSettings.viewLanguage].termsFromOtherLanguages}
+                      Locale[AppSettings.interfaceLanguage]
+                        .termsFromOtherLanguages}
                   </button>
                 </div>
               )}

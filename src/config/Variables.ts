@@ -148,7 +148,7 @@ export var AppSettings: {
   name: { [key: string]: string };
   description: { [key: string]: string };
   selectedDiagram: number;
-  selectedLanguage: string;
+  canvasLanguage: string;
   selectedLink: string;
   contextIRI: string;
   contextEndpoint: string;
@@ -169,13 +169,13 @@ export var AppSettings: {
   viewZoom: number;
   viewColorPool: string;
   viewItemPanelTypes: boolean;
-  viewLanguage: string;
+  interfaceLanguage: string;
   selectedElements: string[];
 } = {
   name: {},
   description: {},
   selectedDiagram: 0,
-  selectedLanguage: Object.keys(Languages)[0],
+  canvasLanguage: Object.keys(Languages)[0],
   selectedLink: "",
   contextIRI: "",
   initWorkspace: false,
@@ -197,7 +197,7 @@ export var AppSettings: {
   viewZoom: 1,
   viewColorPool: "pastelLow",
   viewItemPanelTypes: true,
-  viewLanguage: "en",
+  interfaceLanguage: "en",
   selectedElements: [],
 };
 

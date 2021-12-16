@@ -1,7 +1,7 @@
 import {
   AppSettings,
-  Links,
   FolderRoot,
+  Links,
   WorkspaceElements,
   WorkspaceLinks,
   WorkspaceTerms,
@@ -184,7 +184,7 @@ export function saveNewLink(
     if (type === LinkType.DEFAULT)
       setLabels(
         link,
-        getLinkOrVocabElem(iri).labels[AppSettings.selectedLanguage]
+        getLinkOrVocabElem(iri).labels[AppSettings.canvasLanguage]
       );
     return queries;
   } else {

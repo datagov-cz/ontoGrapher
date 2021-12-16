@@ -255,7 +255,7 @@ export async function putElementsOnCanvas(
     if (iris.length > 0) {
       handleStatus(
         true,
-        Locale[AppSettings.viewLanguage].downloadingTerms,
+        Locale[AppSettings.interfaceLanguage].downloadingTerms,
         true,
         false
       );
@@ -269,7 +269,7 @@ export async function putElementsOnCanvas(
       queries.push(updateProjectElement(false, ...newIDs));
       queries.push(updateProjectLink(false, ...initConnections()));
       ids.push(...newIDs);
-      addToFlexSearch(ids);
+      addToFlexSearch(...ids);
     }
     const matrixLength = Math.max(ids.length, iris.length);
     const matrixDimension = Math.ceil(Math.sqrt(matrixLength));
@@ -300,7 +300,7 @@ export async function putElementsOnCanvas(
         cls.addTo(graph);
         drawGraphElement(
           cls,
-          AppSettings.selectedLanguage,
+          AppSettings.canvasLanguage,
           AppSettings.representation
         );
         queries.push(

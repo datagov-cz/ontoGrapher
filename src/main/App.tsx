@@ -6,7 +6,6 @@ import {
   AppSettings,
   Diagrams,
   FolderRoot,
-  Languages,
   WorkspaceElements,
   WorkspaceLinks,
 } from "../config/Variables";
@@ -32,6 +31,7 @@ import { qb } from "../queries/QueryBuilder";
 import {
   getLastChangeDay,
   getLinkOrVocabElem,
+  getLocalStorageKey,
   setSchemeColors,
 } from "../function/FunctionGetVars";
 import { getSettings } from "../queries/get/InitQueries";
@@ -102,10 +102,10 @@ export default class App extends React.Component<
     };
 
     this.state = {
-      projectLanguage: AppSettings.selectedLanguage,
-      viewLanguage: AppSettings.viewLanguage,
+      projectLanguage: AppSettings.canvasLanguage,
+      viewLanguage: AppSettings.interfaceLanguage,
       loading: true,
-      status: Locale[AppSettings.viewLanguage].loading,
+      status: Locale[AppSettings.interfaceLanguage].loading,
       freeze: true,
       validation: false,
       retry: false,
@@ -119,8 +119,10 @@ export default class App extends React.Component<
       },
       newLinkConfiguration: { sourceID: "", targetID: "" },
     };
-    document.title = Locale[AppSettings.viewLanguage].ontoGrapher;
+    document.title = Locale[AppSettings.interfaceLanguage].ontoGrapher;
     this.handleChangeLanguage = this.handleChangeLanguage.bind(this);
+    this.handleChangeInterfaceLanguage =
+      this.handleChangeInterfaceLanguage.bind(this);
     this.loadVocabularies = this.loadVocabularies.bind(this);
     this.handleStatus = this.handleStatus.bind(this);
     this.validate = this.validate.bind(this);
@@ -137,25 +139,32 @@ export default class App extends React.Component<
     let contextIRI = urlParams.get("workspace");
     if (contextIRI && isURL(contextIRI)) {
       contextIRI = decodeURIComponent(contextIRI);
-      if (contextIRI.includes("/diagram-")) {
-        this.loadVocabularies(contextIRI, AppSettings.contextEndpoint);
-      } else this.loadVocabularies(contextIRI, AppSettings.contextEndpoint);
+      this.loadVocabularies(contextIRI, AppSettings.contextEndpoint);
     } else {
       this.handleStatus(
         false,
-        Locale[AppSettings.viewLanguage].pleaseReload,
+        Locale[AppSettings.interfaceLanguage].pleaseReload,
         true
       );
     }
   }
 
+  handleChangeInterfaceLanguage(languageCode: string) {
+    AppSettings.interfaceLanguage = languageCode;
+    this.forceUpdate();
+    this.menuPanel.current?.forceUpdate();
+    this.validationPanel.current?.forceUpdate();
+    this.itemPanel.current?.forceUpdate();
+    this.detailPanel.current?.forceUpdate();
+  }
+
   handleChangeLanguage(languageCode: string) {
     this.setState({ projectLanguage: languageCode });
-    AppSettings.selectedLanguage = languageCode;
+    AppSettings.canvasLanguage = languageCode;
     document.title =
       AppSettings.name[languageCode] +
       " | " +
-      Locale[AppSettings.viewLanguage].ontoGrapher;
+      Locale[AppSettings.interfaceLanguage].ontoGrapher;
     graph.getElements().forEach((cell) => {
       if (WorkspaceElements[cell.id]) {
         drawGraphElement(cell, languageCode, AppSettings.representation);
@@ -181,7 +190,7 @@ export default class App extends React.Component<
     const transaction = qb.constructQuery(...queriesTrimmed);
     this.handleStatus(
       true,
-      Locale[AppSettings.viewLanguage].updating,
+      Locale[AppSettings.interfaceLanguage].updating,
       false,
       false
     );
@@ -192,7 +201,7 @@ export default class App extends React.Component<
         } else {
           this.handleStatus(
             false,
-            Locale[AppSettings.viewLanguage].errorUpdating,
+            Locale[AppSettings.interfaceLanguage].errorUpdating,
             true,
             true
           );
@@ -216,12 +225,17 @@ export default class App extends React.Component<
   }
 
   checkLastViewedVersion() {
-    const lastViewedVersion = window.localStorage.getItem("lastViewedVersion");
+    const lastViewedVersion = window.localStorage.getItem(
+      getLocalStorageKey("lastViewedVersion")
+    );
     if (!lastViewedVersion || lastViewedVersion !== getLastChangeDay()) {
       this.setState({ tooltip: true });
       window.setTimeout(() => this.setState({ tooltip: false }), 5000);
     }
-    window.localStorage.setItem("lastViewedVersion", getLastChangeDay());
+    window.localStorage.setItem(
+      getLocalStorageKey("lastViewedVersion"),
+      getLastChangeDay()
+    );
   }
 
   loadVocabularies(contextIRI: string, contextEndpoint: string) {
@@ -238,17 +252,17 @@ export default class App extends React.Component<
             this.handleLoadingError();
             return;
           }
-          this.handleChangeLanguage(Object.keys(Languages)[0]);
+          this.handleChangeLanguage(AppSettings.canvasLanguage);
           document.title =
             AppSettings.name[this.state.projectLanguage] +
             " | " +
-            Locale[AppSettings.viewLanguage].ontoGrapher;
+            Locale[AppSettings.interfaceLanguage].ontoGrapher;
           setSchemeColors(AppSettings.viewColorPool);
           changeDiagrams(Diagrams.findIndex((diag) => diag && diag.active));
           this.itemPanel.current?.update();
           this.handleStatus(
             false,
-            Locale[AppSettings.viewLanguage].workspaceReady,
+            Locale[AppSettings.interfaceLanguage].workspaceReady,
             false
           );
           this.checkLastViewedVersion();
@@ -263,7 +277,7 @@ export default class App extends React.Component<
     if (strategy !== ContextLoadingStrategy.DEFAULT)
       this.handleStatus(
         true,
-        Locale[AppSettings.viewLanguage].updatingWorkspaceVersion,
+        Locale[AppSettings.interfaceLanguage].updatingWorkspaceVersion,
         true
       );
     switch (strategy) {
@@ -298,7 +312,7 @@ export default class App extends React.Component<
     }
     if (AppSettings.initWorkspace) {
       Diagrams[0] = addDiagram(
-        Locale[AppSettings.viewLanguage].untitled,
+        Locale[AppSettings.interfaceLanguage].untitled,
         true,
         Representation.COMPACT,
         0
@@ -343,15 +357,27 @@ export default class App extends React.Component<
   }
 
   handleLoadingError(message: keyof typeof en = "connectionError") {
-    this.handleStatus(false, Locale[AppSettings.viewLanguage][message], true);
+    this.handleStatus(
+      false,
+      Locale[AppSettings.interfaceLanguage][message],
+      true
+    );
   }
 
   handleResumeLoading() {
-    this.handleStatus(true, Locale[AppSettings.viewLanguage].loading, true);
+    this.handleStatus(
+      true,
+      Locale[AppSettings.interfaceLanguage].loading,
+      true
+    );
   }
 
   handleWorkspaceReady(message: keyof typeof en = "savedChanges") {
-    this.handleStatus(false, Locale[AppSettings.viewLanguage][message], false);
+    this.handleStatus(
+      false,
+      Locale[AppSettings.interfaceLanguage][message],
+      false
+    );
   }
 
   validate() {
@@ -384,6 +410,7 @@ export default class App extends React.Component<
           status={this.state.status}
           projectLanguage={this.state.projectLanguage}
           handleChangeLanguage={this.handleChangeLanguage}
+          handleChangeInterfaceLanguage={this.handleChangeInterfaceLanguage}
           update={() => {
             this.itemPanel.current?.update();
           }}
@@ -444,7 +471,8 @@ export default class App extends React.Component<
                 ) || FolderRoot,
               position: getElementPosition(source),
               header:
-                Locale[AppSettings.viewLanguage].modalNewIntrinsicTropeTitle,
+                Locale[AppSettings.interfaceLanguage]
+                  .modalNewIntrinsicTropeTitle,
             });
           }}
         />

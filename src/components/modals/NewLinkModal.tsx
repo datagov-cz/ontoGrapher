@@ -57,7 +57,7 @@ export default class NewLinkModal extends React.Component<Props, State> {
       displayIncompatible: false,
       termName: initLanguageObject(""),
       selectedVocabulary: FolderRoot,
-      errorText: Locale[AppSettings.viewLanguage].modalNewElemError,
+      errorText: Locale[AppSettings.interfaceLanguage].modalNewElemError,
       existing: true,
       create: false,
     };
@@ -220,7 +220,7 @@ export default class NewLinkModal extends React.Component<Props, State> {
               />
               &nbsp;
               <label htmlFor={"displayIncompatible"}>
-                {Locale[AppSettings.viewLanguage].showIncompatibleLinks}
+                {Locale[AppSettings.interfaceLanguage].showIncompatibleLinks}
               </label>
             </span>
           )}
@@ -276,7 +276,7 @@ export default class NewLinkModal extends React.Component<Props, State> {
               }}
             >
               <Form.Check
-                label={Locale[AppSettings.viewLanguage].selectRelationship}
+                label={Locale[AppSettings.interfaceLanguage].selectRelationship}
                 type="radio"
                 id={"radio-1"}
                 value={1}
@@ -290,7 +290,7 @@ export default class NewLinkModal extends React.Component<Props, State> {
                   <Form.Control
                     type="text"
                     placeholder={
-                      Locale[AppSettings.viewLanguage].searchStereotypes
+                      Locale[AppSettings.interfaceLanguage].searchStereotypes
                     }
                     value={this.state.search}
                     onChange={(event) =>
@@ -322,7 +322,9 @@ export default class NewLinkModal extends React.Component<Props, State> {
               )}
               <Form.Check
                 value={2}
-                label={Locale[AppSettings.viewLanguage].createNewRelationship}
+                label={
+                  Locale[AppSettings.interfaceLanguage].createNewRelationship
+                }
                 type="radio"
                 id={"radio-2"}
                 checked={this.state.create}
@@ -361,7 +363,7 @@ export default class NewLinkModal extends React.Component<Props, State> {
                 disabled={!this.state.create || this.state.errorText !== ""}
                 variant="primary"
               >
-                {Locale[AppSettings.viewLanguage].confirm}
+                {Locale[AppSettings.interfaceLanguage].confirm}
               </Button>
             )}
           <Button
@@ -370,7 +372,7 @@ export default class NewLinkModal extends React.Component<Props, State> {
             }}
             variant="secondary"
           >
-            {Locale[AppSettings.viewLanguage].cancel}
+            {Locale[AppSettings.interfaceLanguage].cancel}
           </Button>
         </Modal.Footer>
       </Modal>

@@ -23,20 +23,24 @@ export default class AboutModal extends React.Component<Props, State> {
       >
         <Modal.Header>
           <Modal.Title>
-            {Locale[AppSettings.viewLanguage].changelog}
+            {Locale[AppSettings.interfaceLanguage].changelog}
           </Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <Tabs id={"changelog"}>
-            {Object.keys(LocaleChangelog[AppSettings.viewLanguage]).map(
+            {Object.keys(LocaleChangelog[AppSettings.interfaceLanguage]).map(
               (year, key) => (
                 <Tab title={year} key={key++} eventKey={year}>
-                  {Object.keys(LocaleChangelog[AppSettings.viewLanguage][year])
+                  {Object.keys(
+                    LocaleChangelog[AppSettings.interfaceLanguage][year]
+                  )
                     .reverse()
                     .map((month) => (
                       <div key={key++}>
                         {Object.keys(
-                          LocaleChangelog[AppSettings.viewLanguage][year][month]
+                          LocaleChangelog[AppSettings.interfaceLanguage][year][
+                            month
+                          ]
                         )
                           .reverse()
                           .map((day) => (
@@ -44,33 +48,33 @@ export default class AboutModal extends React.Component<Props, State> {
                               <h6 key={key++}>{`${day}. ${month}.`}</h6>
                               <ul key={key++}>
                                 {Object.keys(
-                                  LocaleChangelog[AppSettings.viewLanguage][
-                                    year
-                                  ][month][day]
+                                  LocaleChangelog[
+                                    AppSettings.interfaceLanguage
+                                  ][year][month][day]
                                 ).map((entry, i) => (
                                   <li key={key++}>
                                     {isUrl(
-                                      LocaleChangelog[AppSettings.viewLanguage][
-                                        year
-                                      ][month][day][i]
+                                      LocaleChangelog[
+                                        AppSettings.interfaceLanguage
+                                      ][year][month][day][i]
                                     ) ? (
                                       <a
                                         href={
                                           LocaleChangelog[
-                                            AppSettings.viewLanguage
+                                            AppSettings.interfaceLanguage
                                           ][year][month][day][i]
                                         }
                                       >
                                         {
                                           LocaleChangelog[
-                                            AppSettings.viewLanguage
+                                            AppSettings.interfaceLanguage
                                           ][year][month][day][i]
                                         }
                                       </a>
                                     ) : (
-                                      LocaleChangelog[AppSettings.viewLanguage][
-                                        year
-                                      ][month][day][i]
+                                      LocaleChangelog[
+                                        AppSettings.interfaceLanguage
+                                      ][year][month][day][i]
                                     )}
                                   </li>
                                 ))}
@@ -90,7 +94,7 @@ export default class AboutModal extends React.Component<Props, State> {
               this.props.close();
             }}
           >
-            {Locale[AppSettings.viewLanguage].close}
+            {Locale[AppSettings.interfaceLanguage].close}
           </Button>
         </Modal.Footer>
       </Modal>

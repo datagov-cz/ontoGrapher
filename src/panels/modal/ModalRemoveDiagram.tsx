@@ -37,12 +37,15 @@ export default class ModalRemoveDiagram extends React.Component<Props> {
       >
         <Modal.Header>
           <Modal.Title>
-            {Locale[AppSettings.viewLanguage].modalRemoveDiagramTitle}
+            {Locale[AppSettings.interfaceLanguage].modalRemoveDiagramTitle}
           </Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <p>
-            {Locale[AppSettings.viewLanguage].modalRemoveDiagramDescription}
+            {
+              Locale[AppSettings.interfaceLanguage]
+                .modalRemoveDiagramDescription
+            }
           </p>
         </Modal.Body>
         <Modal.Footer>
@@ -55,7 +58,7 @@ export default class ModalRemoveDiagram extends React.Component<Props> {
             }}
           >
             <Button id={"modalRemoveDiagramConfirm"} type={"submit"}>
-              {Locale[AppSettings.viewLanguage].confirm}
+              {Locale[AppSettings.interfaceLanguage].confirm}
             </Button>
           </Form>
           <Button
@@ -64,7 +67,7 @@ export default class ModalRemoveDiagram extends React.Component<Props> {
             }}
             variant="secondary"
           >
-            {Locale[AppSettings.viewLanguage].cancel}
+            {Locale[AppSettings.interfaceLanguage].cancel}
           </Button>
         </Modal.Footer>
       </Modal>
