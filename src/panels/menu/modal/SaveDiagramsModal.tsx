@@ -69,9 +69,7 @@ const changeLanguage: (language: string) => void = (language) => {
 
 export const SaveDiagramsModal: React.FC<Props> = (props) => {
   const [blackWhiteSwitch, setBlackWhiteSwitch] = useState<boolean>(false);
-  const [language, setLanguage] = useState<string>(
-    AppSettings.selectedLanguage
-  );
+  const [language, setLanguage] = useState<string>(AppSettings.canvasLanguage);
   const [diagramRepresentation, setDiagramRepresentation] = useState<number>(
     AppSettings.representation
   );
@@ -106,7 +104,7 @@ export const SaveDiagramsModal: React.FC<Props> = (props) => {
         return getNewLink();
       },
     });
-    if (language !== AppSettings.selectedLanguage) {
+    if (language !== AppSettings.canvasLanguage) {
       changeLanguage(language);
     }
     if (diagramRepresentation !== AppSettings.representation) {
@@ -181,8 +179,8 @@ export const SaveDiagramsModal: React.FC<Props> = (props) => {
           unescape(encodeURIComponent(svgText))
         )}`;
       saveBehaviour[behaviour](data);
-      if (language !== AppSettings.selectedLanguage) {
-        changeLanguage(AppSettings.selectedLanguage);
+      if (language !== AppSettings.canvasLanguage) {
+        changeLanguage(AppSettings.canvasLanguage);
       }
       if (diagramRepresentation !== AppSettings.representation) {
         setRepresentation(AppSettings.representation, true, false);
@@ -200,13 +198,13 @@ export const SaveDiagramsModal: React.FC<Props> = (props) => {
       scrollable
       onEscapeKeyDown={() => props.close()}
       onEntering={() => {
-        setLanguage(AppSettings.selectedLanguage);
+        setLanguage(AppSettings.canvasLanguage);
         setDiagramRepresentation(AppSettings.representation);
       }}
     >
       <Modal.Header>
         <Modal.Title>
-          {Locale[AppSettings.viewLanguage].generateDiagramImageModalTitle +
+          {Locale[AppSettings.interfaceLanguage].generateDiagramImageModalTitle +
             AppSettings.selectedDiagram in
           Diagrams
             ? Diagrams[AppSettings.selectedDiagram].name
@@ -214,11 +212,11 @@ export const SaveDiagramsModal: React.FC<Props> = (props) => {
         </Modal.Title>
       </Modal.Header>
       <Modal.Body>
-        <h5>{Locale[AppSettings.viewLanguage].settings}</h5>
+        <h5>{Locale[AppSettings.interfaceLanguage].settings}</h5>
         <Form>
           <Form.Group as={Row} className="mb-3" controlId="formLanguage">
             <Form.Label column sm="2">
-              {Locale[AppSettings.viewLanguage].language}
+              {Locale[AppSettings.interfaceLanguage].language}
             </Form.Label>
             <Col sm="10">
               <Form.Control
@@ -237,7 +235,7 @@ export const SaveDiagramsModal: React.FC<Props> = (props) => {
           </Form.Group>
           <Form.Group as={Row} className="mb-3" controlId="formRepresentation">
             <Form.Label column sm="2">
-              {Locale[AppSettings.viewLanguage].representation}
+              {Locale[AppSettings.interfaceLanguage].representation}
             </Form.Label>
             <Col sm="10">
               <Form.Control
@@ -251,17 +249,17 @@ export const SaveDiagramsModal: React.FC<Props> = (props) => {
                 }
               >
                 <option key={1} value={Representation.FULL}>
-                  {Locale[AppSettings.viewLanguage].representationFull}
+                  {Locale[AppSettings.interfaceLanguage].representationFull}
                 </option>
                 <option key={2} value={Representation.COMPACT}>
-                  {Locale[AppSettings.viewLanguage].representationCompact}
+                  {Locale[AppSettings.interfaceLanguage].representationCompact}
                 </option>
               </Form.Control>
             </Col>
           </Form.Group>
           <Form.Group as={Row} className="mb-3" controlId="formFormat">
             <Form.Label column sm="2">
-              {Locale[AppSettings.viewLanguage].format}
+              {Locale[AppSettings.interfaceLanguage].format}
             </Form.Label>
             <Col sm="10">
               <Form.Control
@@ -285,7 +283,7 @@ export const SaveDiagramsModal: React.FC<Props> = (props) => {
           <Form.Check
             type={"checkbox"}
             label={
-              Locale[AppSettings.viewLanguage]
+              Locale[AppSettings.interfaceLanguage]
                 .generateDiagramImageInBlackAndWhite
             }
             checked={blackWhiteSwitch}
@@ -298,7 +296,8 @@ export const SaveDiagramsModal: React.FC<Props> = (props) => {
             disabled={format !== "SVG"}
             type={"checkbox"}
             label={
-              Locale[AppSettings.viewLanguage].generateDiagramImageWithIRIData
+              Locale[AppSettings.interfaceLanguage]
+                .generateDiagramImageWithIRIData
             }
             checked={iriData}
             id={"setIRIcheckbox"}
@@ -306,11 +305,14 @@ export const SaveDiagramsModal: React.FC<Props> = (props) => {
           />
         </Form>
         <br />
-        <h5>{Locale[AppSettings.viewLanguage].preview}</h5>
+        <h5>{Locale[AppSettings.interfaceLanguage].preview}</h5>
         <img id={"imagePreview"} alt={""} />
         {graph.getElements().length === 0 && (
           <Alert variant="danger">
-            {Locale[AppSettings.viewLanguage].generateDiagramNoElementsError}
+            {
+              Locale[AppSettings.interfaceLanguage]
+                .generateDiagramNoElementsError
+            }
           </Alert>
         )}
       </Modal.Body>
@@ -319,13 +321,13 @@ export const SaveDiagramsModal: React.FC<Props> = (props) => {
           disabled={graph.getElements().length === 0}
           onClick={() => saveDiagram(saveBehaviourEnum.PREVIEW)}
         >
-          {Locale[AppSettings.viewLanguage].previewDiagramImage}
+          {Locale[AppSettings.interfaceLanguage].previewDiagramImage}
         </Button>
         <Button
           disabled={graph.getElements().length === 0}
           onClick={() => saveDiagram(saveBehaviourEnum.DOWNLOAD)}
         >
-          {Locale[AppSettings.viewLanguage].downloadDiagramImage}
+          {Locale[AppSettings.interfaceLanguage].downloadDiagramImage}
         </Button>
         <Button
           variant={"secondary"}
@@ -333,7 +335,7 @@ export const SaveDiagramsModal: React.FC<Props> = (props) => {
             props.close();
           }}
         >
-          {Locale[AppSettings.viewLanguage].close}
+          {Locale[AppSettings.interfaceLanguage].close}
         </Button>
       </Modal.Footer>
     </Modal>

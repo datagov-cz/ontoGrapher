@@ -9,7 +9,7 @@ export default function MenuPanelLogout() {
   return (
     <div className={"inert"}>
       <Nav.Link onClick={logout}>
-        {Locale[AppSettings.viewLanguage].logout}
+        {Locale[AppSettings.interfaceLanguage].logout}
       </Nav.Link>
     </div>
   );

@@ -270,7 +270,7 @@ async function getLegacyDiagrams(
         if (!(index in diagrams)) {
           const diagramID = uuidv4();
           diagrams[index] = {
-            name: Locale[AppSettings.viewLanguage].untitled,
+            name: Locale[AppSettings.interfaceLanguage].untitled,
             active: result.active ? result.active.value === "true" : true,
             origin: { x: 0, y: 0 },
             scale: 1,
@@ -279,12 +279,6 @@ async function getLegacyDiagrams(
             iri: getNewDiagramContextIRI(diagramID),
             graph: getNewDiagramContextIRI(diagramID),
           };
-          addDiagram(
-            Locale[AppSettings.viewLanguage].untitled,
-            result.active ? result.active.value === "true" : true,
-            Representation.COMPACT,
-            index
-          );
         }
         diagrams[parseInt(result.index.value)].name = result.name.value;
       }

@@ -79,14 +79,14 @@ export default class LabelTable extends React.Component<Props, State> {
                     {getLabelOrBlank(this.props.labels, lang) !==
                       this.props.default &&
                       this.props.selectAsDefault &&
-                      AppSettings.selectedLanguage === lang &&
+                      AppSettings.canvasLanguage === lang &&
                       this.state.hover[i] && (
                         <OverlayTrigger
                           placement="left"
                           overlay={
                             <Tooltip id="button-tooltip">
                               {
-                                Locale[AppSettings.viewLanguage]
+                                Locale[AppSettings.interfaceLanguage]
                                   .setAsDisplayName
                               }
                             </Tooltip>

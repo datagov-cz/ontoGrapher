@@ -233,7 +233,7 @@ export default class DetailElement extends React.Component<Props, State> {
                       variant={"link"}
                       eventKey={"0"}
                     >
-                      {Locale[AppSettings.viewLanguage].description}
+                      {Locale[AppSettings.interfaceLanguage].description}
                     </Accordion.Toggle>
                   </Card.Header>
                   <Accordion.Collapse eventKey={"0"}>
@@ -242,7 +242,7 @@ export default class DetailElement extends React.Component<Props, State> {
                         {
                           <IRILink
                             label={
-                              Locale[AppSettings.viewLanguage]
+                              Locale[AppSettings.interfaceLanguage]
                                 .detailPanelPrefLabel
                             }
                             iri={
@@ -279,7 +279,7 @@ export default class DetailElement extends React.Component<Props, State> {
                         {
                           <IRILink
                             label={
-                              Locale[AppSettings.viewLanguage]
+                              Locale[AppSettings.interfaceLanguage]
                                 .detailPanelAltLabel
                             }
                             iri={"http://www.w3.org/2004/02/skos/core#altLabel"}
@@ -357,7 +357,7 @@ export default class DetailElement extends React.Component<Props, State> {
                         {
                           <IRILink
                             label={
-                              Locale[AppSettings.viewLanguage]
+                              Locale[AppSettings.interfaceLanguage]
                                 .detailPanelStereotype
                             }
                             iri={"http://www.w3.org/2000/01/rdf-schema#type"}
@@ -388,7 +388,10 @@ export default class DetailElement extends React.Component<Props, State> {
                         Representation.COMPACT && (
                         <div>
                           <h5>
-                            {Locale[AppSettings.viewLanguage].intrinsicTropes}
+                            {
+                              Locale[AppSettings.interfaceLanguage]
+                                .intrinsicTropes
+                            }
                           </h5>
                           <IntrinsicTropeTable
                             iri={WorkspaceElements[this.state.id].iri}
@@ -446,7 +449,7 @@ export default class DetailElement extends React.Component<Props, State> {
                         {
                           <IRILink
                             label={
-                              Locale[AppSettings.viewLanguage]
+                              Locale[AppSettings.interfaceLanguage]
                                 .detailPanelInScheme
                             }
                             iri={"http://www.w3.org/2004/02/skos/core#inScheme"}
@@ -474,7 +477,7 @@ export default class DetailElement extends React.Component<Props, State> {
                           {
                             <IRILink
                               label={
-                                Locale[AppSettings.viewLanguage]
+                                Locale[AppSettings.interfaceLanguage]
                                   .detailPanelDefinition
                               }
                               iri={
@@ -535,7 +538,7 @@ export default class DetailElement extends React.Component<Props, State> {
                       variant={"link"}
                       eventKey={"2"}
                     >
-                      {Locale[AppSettings.viewLanguage].diagramTab}
+                      {Locale[AppSettings.interfaceLanguage].diagramTab}
                     </Accordion.Toggle>
                   </Card.Header>
                   <Accordion.Collapse eventKey={"2"}>

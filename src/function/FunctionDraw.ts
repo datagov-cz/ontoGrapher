@@ -106,7 +106,7 @@ export function unHighlightCell(
   } else if (cell.id) {
     drawGraphElement(
       cell as joint.dia.Element,
-      AppSettings.selectedLanguage,
+      AppSettings.canvasLanguage,
       AppSettings.representation
     );
   }

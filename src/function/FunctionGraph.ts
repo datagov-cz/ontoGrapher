@@ -121,7 +121,7 @@ export async function spreadConnections(
       newElem.addTo(graph);
       drawGraphElement(
         newElem,
-        AppSettings.selectedLanguage,
+        AppSettings.canvasLanguage,
         AppSettings.representation
       );
       queries.push(
@@ -270,7 +270,7 @@ export function setRepresentation(
               }
               setLabels(
                 newLink,
-                getDisplayLabel(id, AppSettings.selectedLanguage)
+                getDisplayLabel(id, AppSettings.canvasLanguage)
               );
             }
           }
@@ -302,13 +302,13 @@ export function setRepresentation(
       } else if (WorkspaceLinks[link.id].iri in WorkspaceTerms) {
         const elem = getElemFromIRI(WorkspaceLinks[link.id].iri);
         if (!elem) continue;
-        setLabels(link, getDisplayLabel(elem, AppSettings.selectedLanguage));
+        setLabels(link, getDisplayLabel(elem, AppSettings.canvasLanguage));
       }
     }
     for (const elem of graph.getElements()) {
       drawGraphElement(
         elem,
-        AppSettings.selectedLanguage,
+        AppSettings.canvasLanguage,
         Representation.COMPACT
       );
     }
@@ -331,14 +331,14 @@ export function setRepresentation(
           WorkspaceElements[elem].position[AppSettings.selectedDiagram].y
         );
         WorkspaceElements[elem].hidden[AppSettings.selectedDiagram] = false;
-        drawGraphElement(cell, AppSettings.selectedLanguage, representation);
+        drawGraphElement(cell, AppSettings.canvasLanguage, representation);
         queries.push(
           ...restoreHiddenElem(elem, cell, false, false, false, representation)
         );
       }
     }
     for (let elem of graph.getElements()) {
-      drawGraphElement(elem, AppSettings.selectedLanguage, representation);
+      drawGraphElement(elem, AppSettings.canvasLanguage, representation);
       if (typeof elem.id === "string") {
         queries.push(
           ...restoreHiddenElem(
@@ -383,7 +383,7 @@ export function setupLink(
   setLabels(
     lnk,
     getLinkOrVocabElem(WorkspaceLinks[link].iri).labels[
-      AppSettings.selectedLanguage
+      AppSettings.canvasLanguage
     ]
   );
   lnk.source({
@@ -509,7 +509,7 @@ export function restoreHiddenElem(
           WorkspaceElements[relID].hidden[AppSettings.selectedDiagram] = false;
           drawGraphElement(
             relationship,
-            AppSettings.selectedLanguage,
+            AppSettings.canvasLanguage,
             Representation.FULL
           );
           setLinkBoundary(domainLink, relID, WorkspaceLinks[link].target);
@@ -517,13 +517,13 @@ export function restoreHiddenElem(
           setLabels(
             domainLink,
             getLinkOrVocabElem(WorkspaceLinks[link].iri).labels[
-              AppSettings.selectedLanguage
+              AppSettings.canvasLanguage
             ]
           );
           setLabels(
             rangeLink,
             getLinkOrVocabElem(WorkspaceLinks[targetLink].iri).labels[
-              AppSettings.selectedLanguage
+              AppSettings.canvasLanguage
             ]
           );
           relationship.addTo(graph);

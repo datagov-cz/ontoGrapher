@@ -40,7 +40,9 @@ export const IntrinsicTropeTableSelect: React.FC<Props> = (props) => {
     <Select
       isSearchable={true}
       className={"qualityTableSelect"}
-      placeholder={Locale[AppSettings.viewLanguage].selectTropeTypePlaceholder}
+      placeholder={
+        Locale[AppSettings.interfaceLanguage].selectTropeTypePlaceholder
+      }
       value={null}
       styles={{
         container: (base) => ({

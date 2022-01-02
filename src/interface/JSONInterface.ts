@@ -87,6 +87,6 @@ export async function getVocabulariesFromRemoteJSON(
       });
     return true;
   } else {
-    throw new Error(Locale[AppSettings.viewLanguage].vocabularyNotFound);
+    throw new Error(Locale[AppSettings.interfaceLanguage].vocabularyNotFound);
   }
 }

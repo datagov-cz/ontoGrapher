@@ -20,6 +20,7 @@ import { Cardinality } from "../datatypes/Cardinality";
 import { graphElement } from "../graph/GraphElement";
 import {
   getElemFromIRI,
+  getLocalStorageKey,
   getVocabularyFromScheme,
   getWorkspaceContextIRI,
 } from "./FunctionGetVars";
@@ -88,13 +89,23 @@ export function loadLanguages() {
   for (const code in json) {
     if (json.hasOwnProperty(code)) Languages[code] = json[code];
   }
-  const language = navigator.language.slice(0, 2);
-  AppSettings.viewLanguage = language in Languages ? language : "en";
+  const navigatorLanguage = navigator.language.slice(0, 2);
+  const interfaceLanguage =
+    localStorage.getItem(getLocalStorageKey("interfaceLanguage")) ||
+    navigatorLanguage;
+  const canvasLanguage =
+    localStorage.getItem(getLocalStorageKey("canvasLanguage")) ||
+    navigatorLanguage;
+  AppSettings.interfaceLanguage =
+    interfaceLanguage in Languages ? interfaceLanguage : "en";
+  AppSettings.canvasLanguage =
+    canvasLanguage in Languages ? canvasLanguage : "en";
+  Diagrams[0].name = Locale[AppSettings.interfaceLanguage].untitled;
 }
 
 export function initProjectSettings() {
   AppSettings.name = initLanguageObject(
-    Locale[AppSettings.viewLanguage].untitledProject
+    Locale[AppSettings.interfaceLanguage].untitledProject
   );
   AppSettings.description = initLanguageObject("");
 }

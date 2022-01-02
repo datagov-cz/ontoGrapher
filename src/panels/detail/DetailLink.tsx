@@ -306,7 +306,7 @@ export default class DetailLink extends React.Component<Props, State> {
                       variant={"link"}
                       eventKey={"0"}
                     >
-                      {Locale[AppSettings.viewLanguage].description}
+                      {Locale[AppSettings.interfaceLanguage].description}
                     </Accordion.Toggle>
                   </Card.Header>
                   <Accordion.Collapse eventKey={"0"}>
@@ -318,7 +318,7 @@ export default class DetailLink extends React.Component<Props, State> {
                             <td className={"first"}>
                               <span>
                                 {
-                                  Locale[AppSettings.viewLanguage]
+                                  Locale[AppSettings.interfaceLanguage]
                                     .sourceCardinality
                                 }
                               </span>
@@ -356,7 +356,7 @@ export default class DetailLink extends React.Component<Props, State> {
                             <td className={"first"}>
                               <span>
                                 {
-                                  Locale[AppSettings.viewLanguage]
+                                  Locale[AppSettings.interfaceLanguage]
                                     .targetCardinality
                                 }
                               </span>
@@ -392,7 +392,7 @@ export default class DetailLink extends React.Component<Props, State> {
                           <tr>
                             <td className={"first"}>
                               <span>
-                                {Locale[AppSettings.viewLanguage].linkType}
+                                {Locale[AppSettings.interfaceLanguage].linkType}
                               </span>
                             </td>
                             {AppSettings.representation ===
@@ -427,7 +427,7 @@ export default class DetailLink extends React.Component<Props, State> {
                         {
                           <IRILink
                             label={
-                              Locale[AppSettings.viewLanguage]
+                              Locale[AppSettings.interfaceLanguage]
                                 .detailPanelPrefLabel
                             }
                             iri={
@@ -464,7 +464,7 @@ export default class DetailLink extends React.Component<Props, State> {
                             {
                               <IRILink
                                 label={
-                                  Locale[AppSettings.viewLanguage]
+                                  Locale[AppSettings.interfaceLanguage]
                                     .detailPanelAltLabel
                                 }
                                 iri={
@@ -555,7 +555,7 @@ export default class DetailLink extends React.Component<Props, State> {
                         {
                           <IRILink
                             label={
-                              Locale[AppSettings.viewLanguage]
+                              Locale[AppSettings.interfaceLanguage]
                                 .detailPanelInScheme
                             }
                             iri={"http://www.w3.org/2004/02/skos/core#inScheme"}
@@ -596,7 +596,7 @@ export default class DetailLink extends React.Component<Props, State> {
                             {
                               <IRILink
                                 label={
-                                  Locale[AppSettings.viewLanguage]
+                                  Locale[AppSettings.interfaceLanguage]
                                     .detailPanelDefinition
                                 }
                                 iri={

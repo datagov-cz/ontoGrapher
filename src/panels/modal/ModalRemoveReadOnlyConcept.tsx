@@ -78,13 +78,13 @@ export default class ModalRemoveReadOnlyConcept extends React.Component<
       >
         <Modal.Header>
           <Modal.Title>
-            {Locale[AppSettings.viewLanguage].modalRemoveConceptTitle}
+            {Locale[AppSettings.interfaceLanguage].modalRemoveConceptTitle}
           </Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <p>
             {
-              Locale[AppSettings.viewLanguage]
+              Locale[AppSettings.interfaceLanguage]
                 .modalRemoveReadOnlyConceptDescription
             }
           </p>
@@ -99,7 +99,7 @@ export default class ModalRemoveReadOnlyConcept extends React.Component<
             }}
           >
             <Button type={"submit"} id={"modalRemoveItemConfirm"}>
-              {Locale[AppSettings.viewLanguage].confirm}
+              {Locale[AppSettings.interfaceLanguage].confirm}
             </Button>
           </Form>
           <Button
@@ -108,7 +108,7 @@ export default class ModalRemoveReadOnlyConcept extends React.Component<
             }}
             variant="secondary"
           >
-            {Locale[AppSettings.viewLanguage].cancel}
+            {Locale[AppSettings.interfaceLanguage].cancel}
           </Button>
         </Modal.Footer>
       </Modal>

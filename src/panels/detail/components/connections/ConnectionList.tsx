@@ -202,7 +202,10 @@ export default class ConnectionList extends React.Component<Props, State> {
             placement="top"
             overlay={
               <Tooltip id="tooltipA">
-                {Locale[AppSettings.viewLanguage].connectionListAddSelection}
+                {
+                  Locale[AppSettings.interfaceLanguage]
+                    .connectionListAddSelection
+                }
               </Tooltip>
             }
           >
@@ -232,7 +235,10 @@ export default class ConnectionList extends React.Component<Props, State> {
             placement="top"
             overlay={
               <Tooltip id="tooltipB">
-                {Locale[AppSettings.viewLanguage].connectionListEmptySelection}
+                {
+                  Locale[AppSettings.interfaceLanguage]
+                    .connectionListEmptySelection
+                }
               </Tooltip>
             }
           >
@@ -247,7 +253,10 @@ export default class ConnectionList extends React.Component<Props, State> {
             placement="top"
             overlay={
               <Tooltip id="tooltipC">
-                {Locale[AppSettings.viewLanguage].connectionListShowSelection}
+                {
+                  Locale[AppSettings.interfaceLanguage]
+                    .connectionListShowSelection
+                }
               </Tooltip>
             }
           >
@@ -268,7 +277,7 @@ export default class ConnectionList extends React.Component<Props, State> {
             placement="top"
             overlay={
               <Tooltip id="tooltipD">
-                {Locale[AppSettings.viewLanguage].connectionListShowFilter}
+                {Locale[AppSettings.interfaceLanguage].connectionListShowFilter}
               </Tooltip>
             }
           >
@@ -294,7 +303,10 @@ export default class ConnectionList extends React.Component<Props, State> {
             placement="top"
             overlay={
               <Tooltip id="tooltipE">
-                {Locale[AppSettings.viewLanguage].connectionListEmptyFilter}
+                {
+                  Locale[AppSettings.interfaceLanguage]
+                    .connectionListEmptyFilter
+                }
               </Tooltip>
             }
           >
@@ -353,7 +365,7 @@ export default class ConnectionList extends React.Component<Props, State> {
             className="buttonlink"
           >
             {(this.state.showLucene ? "ᐯ " : "ᐱ ") +
-              Locale[AppSettings.viewLanguage].termsFromOtherLanguages}
+              Locale[AppSettings.interfaceLanguage].termsFromOtherLanguages}
           </button>
         </div>
         {this.state.showLucene && (

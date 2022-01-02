@@ -2,6 +2,13 @@ export const csChangelog: {
   [key: string]: { [key: string]: { [key: string]: string[] } };
 } = {
   "2021": {
+    "12": {
+      "10": [
+        "Přidáno nastavení pro změnu jazyka uživatelského rozhraní",
+        'Přístupné přes menu "Vzhled" na hlavním panelu',
+        'Přesunuto nastavení pro změnu jazyka slovníků z levého horního rohu do menu "Vzhled"',
+      ],
+    },
     "10": {
       "14": [
         "Přidána funkce ukládání obrázků diagramů do PNG",

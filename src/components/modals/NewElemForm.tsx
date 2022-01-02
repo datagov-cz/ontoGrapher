@@ -55,21 +55,22 @@ export const NewElemForm: React.FC<Props> = (props) => {
     names: ReturnType<typeof initLanguageObject>
   ) => {
     let errorText = "";
-    if (names[AppSettings.selectedLanguage] === "") {
-      errorText = Locale[AppSettings.viewLanguage].modalNewElemError;
+    if (names[AppSettings.canvasLanguage] === "") {
+      errorText = Locale[AppSettings.interfaceLanguage].modalNewElemError;
     } else if (Object.values(names).find((name) => checkExists(scheme, name))) {
-      errorText = Locale[AppSettings.viewLanguage].modalNewElemExistsError;
+      errorText = Locale[AppSettings.interfaceLanguage].modalNewElemExistsError;
     } else if (
       Object.values(names).find(
         (name) => name && (name.length < 2 || name.length > 150)
       )
     ) {
-      errorText = Locale[AppSettings.viewLanguage].modalNewElemLengthError;
+      errorText = Locale[AppSettings.interfaceLanguage].modalNewElemLengthError;
     } else if (
-      createNewElemIRI(scheme, names[AppSettings.selectedLanguage]) ===
+      createNewElemIRI(scheme, names[AppSettings.canvasLanguage]) ===
       WorkspaceVocabularies[getVocabularyFromScheme(scheme)].namespace
     ) {
-      errorText = Locale[AppSettings.viewLanguage].modalNewElemCharacterError;
+      errorText =
+        Locale[AppSettings.interfaceLanguage].modalNewElemCharacterError;
     }
     return errorText;
   };
@@ -90,14 +91,14 @@ export const NewElemForm: React.FC<Props> = (props) => {
 
   return (
     <div>
-      <p>{Locale[AppSettings.viewLanguage].modalNewElemDescription}</p>
+      <p>{Locale[AppSettings.interfaceLanguage].modalNewElemDescription}</p>
       {Object.keys(Languages).map((lang) => (
         <div key={lang}>
           <InputGroup>
             <InputGroup.Prepend>
               <InputGroup.Text id={"inputGroupPrepend" + lang}>
                 {Languages[lang] +
-                  (lang === AppSettings.selectedLanguage ? "*" : "")}
+                  (lang === AppSettings.canvasLanguage ? "*" : "")}
               </InputGroup.Text>
             </InputGroup.Prepend>
             <Form.Control
@@ -118,7 +119,7 @@ export const NewElemForm: React.FC<Props> = (props) => {
       <br />
       <Form.Group controlId="exampleForm.ControlSelect1">
         <Form.Label>
-          {Locale[AppSettings.viewLanguage].selectVocabulary}
+          {Locale[AppSettings.interfaceLanguage].selectVocabulary}
         </Form.Label>
         <Form.Control
           as="select"
@@ -141,7 +142,7 @@ export const NewElemForm: React.FC<Props> = (props) => {
       </Form.Group>
       {!props.errorText && (
         <Alert variant={"primary"}>{`${
-          Locale[AppSettings.viewLanguage].modalNewElemIRI
+          Locale[AppSettings.interfaceLanguage].modalNewElemIRI
         }
 					${createNewElemIRI(
             props.selectedVocabulary.scheme,

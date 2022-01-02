@@ -19,7 +19,7 @@ interface State {}
 export default class DiagramAdd extends React.Component<Props, State> {
   addDiagram() {
     const id = addDiagram(
-      Locale[AppSettings.viewLanguage].untitled,
+      Locale[AppSettings.interfaceLanguage].untitled,
       true,
       Representation.COMPACT
     );
