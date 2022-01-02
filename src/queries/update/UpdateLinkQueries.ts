@@ -12,7 +12,7 @@ import { getWorkspaceContextIRI } from "../../function/FunctionGetVars";
 export function updateProjectLinkVertex(
   id: string,
   vertices: number[],
-  diagram: number = AppSettings.selectedDiagram
+  diagram: string = AppSettings.selectedDiagram
 ): string {
   checkLink(id);
   const linkIRI = WorkspaceLinks[id].linkIRI;
@@ -94,7 +94,7 @@ export function updateDeleteProjectLinkVertex(
   id: string,
   from: number,
   to: number,
-  diagram: number
+  diagram: string
 ): string {
   const linkIRI = WorkspaceLinks[id].linkIRI;
   const IRIs = [];
@@ -112,7 +112,9 @@ export function updateProjectLink(del: boolean, ...ids: string[]): string {
   const insertBody: string[] = [];
   const deletes: string[] = [];
   const insert: string[] = [];
-  const diagrams = Diagrams.map((diagram) => diagram.graph);
+  const diagrams = Object.values(Diagrams)
+    .filter((diag) => diag.active)
+    .map((diagram) => diagram.graph);
   if (ids.length === 0) return "";
   for (let id of ids) {
     checkLink(id);

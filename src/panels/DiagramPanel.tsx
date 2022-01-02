@@ -12,7 +12,7 @@ interface Props {
 
 interface State {
   modalRemoveDiagram: boolean;
-  selectedDiagram: number;
+  selectedDiagram: string;
 }
 
 export default class DiagramPanel extends React.Component<Props, State> {
@@ -20,30 +20,32 @@ export default class DiagramPanel extends React.Component<Props, State> {
     super(props);
     this.state = {
       modalRemoveDiagram: false,
-      selectedDiagram: 0,
+      selectedDiagram: "init",
     };
   }
 
   render() {
     return (
       <div className={"diagramPanel" + (this.props.freeze ? " disabled" : "")}>
-        {Diagrams.filter((diag) => diag.active).map((diag, i) => (
-          <DiagramTab
-            key={i}
-            diagram={Diagrams.indexOf(diag)}
-            update={() => {
-              this.forceUpdate();
-              this.props.update();
-            }}
-            performTransaction={this.props.performTransaction}
-            deleteDiagram={(diag: number) => {
-              this.setState({
-                selectedDiagram: diag,
-                modalRemoveDiagram: true,
-              });
-            }}
-          />
-        ))}
+        {Object.keys(Diagrams)
+          .filter((diag) => Diagrams[diag].active)
+          .map((diag, i) => (
+            <DiagramTab
+              key={i}
+              diagram={diag}
+              update={() => {
+                this.forceUpdate();
+                this.props.update();
+              }}
+              performTransaction={this.props.performTransaction}
+              deleteDiagram={(diag: string) => {
+                this.setState({
+                  selectedDiagram: diag,
+                  modalRemoveDiagram: true,
+                });
+              }}
+            />
+          ))}
         <DiagramAdd
           update={() => {
             this.forceUpdate();

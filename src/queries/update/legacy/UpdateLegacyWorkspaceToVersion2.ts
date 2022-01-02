@@ -15,7 +15,12 @@ import { fetchConcepts } from "../../get/FetchQueries";
 import { qb } from "../../QueryBuilder";
 import { LinkConfig } from "../../../config/logic/LinkConfig";
 import { addDiagram } from "../../../function/FunctionCreateVars";
-import { getLinkIRI } from "../../../function/FunctionGetVars";
+import {
+  getLinkIRI,
+  getNewDiagramContextIRI,
+} from "../../../function/FunctionGetVars";
+import { v4 as uuidv4 } from "uuid";
+import { parseInt } from "lodash";
 
 function getLegacyWorkspaceContext(): string {
   return (
@@ -40,31 +45,21 @@ export async function updateLegacyWorkspaceToVersion2(
   triples.push(
     qb.g(
       getLegacyWorkspaceContext(),
-      diagrams.map((diagram, i) =>
-        [
+      Object.values(diagrams).map((diagram, i) => {
+        const diagramIRI =
+          getLegacyWorkspaceContext() + "/diagram-" + (diagram.index + 1);
+        return [
           qb.s(
             qb.i(getLegacyWorkspaceContext()),
             "og:diagram",
-            qb.i(getLegacyWorkspaceContext() + "/diagram-" + (i + 1))
+            qb.i(diagramIRI)
           ),
-          qb.s(
-            qb.i(getLegacyWorkspaceContext() + "/diagram-" + (i + 1)),
-            "og:index",
-            qb.ll(i)
-          ),
-          qb.s(
-            qb.i(getLegacyWorkspaceContext() + "/diagram-" + (i + 1)),
-            "og:name",
-            qb.ll(diagram.name)
-          ),
-          qb.s(
-            qb.i(getLegacyWorkspaceContext() + "/diagram-" + (i + 1)),
-            "og:active",
-            qb.ll(diagram.active)
-          ),
+          qb.s(qb.i(diagramIRI), "og:index", qb.ll(i)),
+          qb.s(qb.i(diagramIRI), "og:name", qb.ll(diagram.name)),
+          qb.s(qb.i(diagramIRI), "og:active", qb.ll(diagram.active)),
         ].join(`
-  `)
-      )
+  `);
+      })
     )
   );
   triples.push(
@@ -97,11 +92,13 @@ export async function updateLegacyWorkspaceToVersion2(
             qb.i(elements[element].iri),
             "og:diagram",
             qb.a(
-              elements[element].diagrams.map((diag) =>
-                qb.i(`${elements[element].iri}/diagram-${diag + 1}`)
+              Object.keys(elements[element].hidden).map((diag) =>
+                qb.i(
+                  `${elements[element].iri}/diagram-${diagrams[diag].index + 1}`
+                )
               )
             ),
-            diagrams.length > 0
+            Object.keys(diagrams).length > 0
           ),
           qb.s(
             qb.i(elements[element].iri),
@@ -114,36 +111,31 @@ export async function updateLegacyWorkspaceToVersion2(
     )
   );
   Object.keys(elements).forEach((element) =>
-    elements[element].diagrams.forEach((diagram) => {
+    Object.keys(elements[element].hidden).forEach((diagram) => {
+      const diagramIRI = `${elements[element].iri}/diagram-${
+        diagrams[diagram].index + 1
+      }`;
       triples.push(
         qb.g(getLegacyWorkspaceContext(), [
           qb.s(
             qb.i(`${elements[element].iri}`),
             "og:diagram",
-            qb.i(`${elements[element].iri}/diagram-${diagram + 1}`)
+            qb.i(diagramIRI)
           ),
+          qb.s(qb.i(diagramIRI), "rdf:type", "og:elementDiagram"),
+          qb.s(qb.i(diagramIRI), "og:index", qb.ll(diagram)),
           qb.s(
-            qb.i(`${elements[element].iri}/diagram-${diagram + 1}`),
-            "rdf:type",
-            "og:elementDiagram"
-          ),
-          qb.s(
-            qb.i(`${elements[element].iri}/diagram-${diagram + 1}`),
-            "og:index",
-            qb.ll(diagram)
-          ),
-          qb.s(
-            qb.i(`${elements[element].iri}/diagram-${diagram + 1}`),
+            qb.i(diagramIRI),
             "og:position-x",
             qb.ll(Math.round(elements[element].position[diagram].x))
           ),
           qb.s(
-            qb.i(`${elements[element].iri}/diagram-${diagram + 1}`),
+            qb.i(diagramIRI),
             "og:position-y",
             qb.ll(Math.round(elements[element].position[diagram].y))
           ),
           qb.s(
-            qb.i(`${elements[element].iri}/diagram-${diagram + 1}`),
+            qb.i(diagramIRI),
             "og:hidden",
             qb.ll(elements[element].hidden[diagram])
           ),
@@ -250,7 +242,7 @@ async function getLegacyDiagrams(
   contextIRI: string,
   contextEndpoint: string
 ): Promise<typeof Diagrams> {
-  const diagrams: typeof Diagrams = [];
+  const diagrams: typeof Diagrams = {};
   let contextInstance = contextIRI.substring(contextIRI.lastIndexOf("/"));
   let query = [
     "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
@@ -273,13 +265,25 @@ async function getLegacyDiagrams(
       return response.json();
     })
     .then((data) => {
-      for (let result of data.results.bindings) {
-        if (!(parseInt(result.index.value) in diagrams)) {
-          diagrams[parseInt(result.index.value)] = addDiagram(
+      for (const result of data.results.bindings) {
+        const index = parseInt(result.index.value);
+        if (!(index in diagrams)) {
+          const diagramID = uuidv4();
+          diagrams[index] = {
+            name: Locale[AppSettings.viewLanguage].untitled,
+            active: result.active ? result.active.value === "true" : true,
+            origin: { x: 0, y: 0 },
+            scale: 1,
+            index: parseInt(result.index.value),
+            representation: Representation.COMPACT,
+            iri: getNewDiagramContextIRI(diagramID),
+            graph: getNewDiagramContextIRI(diagramID),
+          };
+          addDiagram(
             Locale[AppSettings.viewLanguage].untitled,
             result.active ? result.active.value === "true" : true,
             Representation.COMPACT,
-            parseInt(result.index.value)
+            index
           );
         }
         diagrams[parseInt(result.index.value)].name = result.name.value;
@@ -288,7 +292,7 @@ async function getLegacyDiagrams(
     })
     .catch((e) => {
       console.error(e);
-      return [];
+      return {};
     });
 }
 
@@ -597,7 +601,6 @@ async function getLegacyElements(
           elements[id] = {
             iri: result.iri.value,
             connections: [],
-            diagrams: [],
             hidden: {},
             position: {},
             vocabularyNode: FolderRoot,
@@ -610,9 +613,8 @@ async function getLegacyElements(
             result.name.value;
         if (
           result.index &&
-          !elements[id].diagrams.includes(parseInt(result.index.value))
+          !(parseInt(result.index.value) in elements[id].position)
         ) {
-          elements[id].diagrams.push(parseInt(result.index.value));
           elements[id].position[parseInt(result.index.value)] = {
             x: parseInt(result.posX.value),
             y: parseInt(result.posY.value),

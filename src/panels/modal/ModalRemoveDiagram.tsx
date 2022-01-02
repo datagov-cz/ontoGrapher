@@ -7,7 +7,7 @@ import { updateDeleteDiagram } from "../../queries/update/UpdateDiagramQueries";
 
 interface Props {
   modal: boolean;
-  diagram: number;
+  diagram: string;
   close: Function;
   update: Function;
   performTransaction: (...queries: string[]) => void;
@@ -17,7 +17,7 @@ export default class ModalRemoveDiagram extends React.Component<Props> {
   save() {
     Diagrams[this.props.diagram].active = false;
     if (AppSettings.selectedDiagram === this.props.diagram) {
-      changeDiagrams(Diagrams.findIndex((diag) => diag && diag.active));
+      changeDiagrams();
     }
     this.props.update();
     this.props.performTransaction(updateDeleteDiagram(this.props.diagram));

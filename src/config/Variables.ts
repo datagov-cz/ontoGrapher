@@ -5,7 +5,6 @@ import { Restriction } from "../datatypes/Restriction";
 import { Representation } from "./Enum";
 import * as joint from "jointjs";
 import { Environment } from "./Environment";
-import { addDiagram } from "../function/FunctionCreateVars";
 
 // language code : language label
 export var Languages: { [key: string]: string } = {};
@@ -16,12 +15,10 @@ export var WorkspaceElements: {
     iri: string;
     //array of ProjectLink ids
     connections: string[];
-    //diagram indices in which elem is present/hidden
-    diagrams: number[];
-    //if hidden in diagram index
-    hidden: { [key: number]: boolean };
-    //position on graph by diagram index
-    position: { [key: number]: { x: number; y: number } };
+    //if hidden in diagram ID
+    hidden: { [key: string]: boolean };
+    //position on graph by diagram ID
+    position: { [key: string]: { x: number; y: number } };
     //if usable in graph
     active: boolean;
     //vocabulary node
@@ -43,8 +40,8 @@ export var WorkspaceLinks: {
     sourceCardinality: Cardinality;
     //target cardinality Cardinality object
     targetCardinality: Cardinality;
-    //vertices - point breaks of link by diagram
-    vertices: { [key: number]: joint.dia.Link.Vertex[] };
+    //vertices - point breaks of link by diagram ID
+    vertices: { [key: string]: joint.dia.Link.Vertex[] };
     //type - dictates saving/loading behaviour
     type: number;
     //active
@@ -134,20 +131,22 @@ export var Stereotypes: {
 } = {};
 
 export var Diagrams: {
-  name: string;
-  active: boolean;
-  origin: { x: number; y: number };
-  scale: number;
-  representation: Representation;
-  id: string;
-  iri: string;
-  graph: string;
-}[] = [addDiagram("Untitled", true, Representation.COMPACT, 0)];
+  [key: string]: {
+    name: string;
+    active: boolean;
+    origin: { x: number; y: number };
+    scale: number;
+    representation: Representation;
+    index: number;
+    iri: string;
+    graph: string;
+  };
+} = {};
 
 export var AppSettings: {
   name: { [key: string]: string };
   description: { [key: string]: string };
-  selectedDiagram: number;
+  selectedDiagram: string;
   selectedLanguage: string;
   selectedLink: string;
   contextIRI: string;
@@ -174,7 +173,7 @@ export var AppSettings: {
 } = {
   name: {},
   description: {},
-  selectedDiagram: 0,
+  selectedDiagram: "",
   selectedLanguage: Object.keys(Languages)[0],
   selectedLink: "",
   contextIRI: "",

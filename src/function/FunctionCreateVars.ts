@@ -131,7 +131,6 @@ export function addClass(
   WorkspaceElements[id] = {
     iri: iri,
     connections: [],
-    diagrams: [AppSettings.selectedDiagram],
     hidden: { [AppSettings.selectedDiagram]: true },
     position: { [AppSettings.selectedDiagram]: { x: 0, y: 0 } },
     vocabularyNode: pkg,
@@ -145,22 +144,24 @@ export function addDiagram(
   name: string,
   active: boolean = true,
   representation: Representation = Representation.COMPACT,
-  index: number,
+  index?: number,
   iri?: string,
   id?: string,
   graph?: string
-): typeof Diagrams[number] {
+): string {
   const diagramID = id ? id : uuidv4();
-  return {
+  const diagramIndex = index ? index : Object.keys(Diagrams).length;
+  Diagrams[diagramID] = {
     name: name,
     active: active,
     origin: { x: 0, y: 0 },
     scale: 1,
+    index: diagramIndex,
     representation: representation,
-    id: diagramID,
     iri: iri ? iri : getNewDiagramContextIRI(diagramID),
     graph: graph ? graph : getNewDiagramContextIRI(diagramID),
   };
+  return diagramID;
 }
 
 export function addLink(
@@ -177,7 +178,7 @@ export function addLink(
     sourceCardinality: CardinalityPool[0],
     targetCardinality: CardinalityPool[0],
     type: type,
-    vertices: [],
+    vertices: {},
     active: true,
     hasInverse: type !== LinkType.GENERALIZATION && iri in Links,
     linkIRI: getLinkIRI(id),

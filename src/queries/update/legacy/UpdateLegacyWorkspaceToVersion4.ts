@@ -1,3 +1,4 @@
+import { v4 as uuidv4 } from "uuid";
 import { qb } from "../../QueryBuilder";
 import {
   getLinkIRI,
@@ -32,21 +33,21 @@ export async function updateLegacyWorkspaceToVersion4(
   const elements = await getLegacyElements(
     contextIRI,
     contextEndpoint,
-    schemes
+    schemes,
+    diagrams
   );
   const links = await getLegacyConnections(
     contextIRI,
     contextEndpoint,
     elements
   );
-  function getDiagramIRI(index: number) {
+  function getDiagramIRI(id: string) {
     const projectID = AppSettings.contextIRI.substring(
       AppSettings.contextIRI.lastIndexOf("/")
     );
-    const diagramID = diagrams[index].id;
     return parsePrefix(
       "d-sgov-pracovní-prostor-pojem",
-      `přílohový-kontext${projectID}/diagram/${diagramID}`
+      `přílohový-kontext${projectID}/diagram/${id}`
     );
   }
   const elemStatements = Object.keys(elements).map((element) =>
@@ -106,8 +107,8 @@ export async function updateLegacyWorkspaceToVersion4(
     ].join(`
   `);
   });
-  diagrams.forEach((diagram, i) => {
-    const diagramIRI = getDiagramIRI(i);
+  Object.keys(diagrams).forEach((diagram, i) => {
+    const diagramIRI = getDiagramIRI(diagram);
     triples.push(
       qb.g(contextIRI, [
         qb.s(
@@ -126,8 +127,8 @@ export async function updateLegacyWorkspaceToVersion4(
       qb.g(diagramIRI, [
         qb.s(qb.i(diagramIRI), "rdf:type", "og:diagram"),
         qb.s(qb.i(diagramIRI), "og:index", qb.ll(i)),
-        qb.s(qb.i(diagramIRI), "og:name", qb.ll(diagram.name)),
-        qb.s(qb.i(diagramIRI), "og:id", qb.ll(diagram.id)),
+        qb.s(qb.i(diagramIRI), "og:name", qb.ll(diagrams[diagram].name)),
+        qb.s(qb.i(diagramIRI), "og:id", qb.ll(diagram)),
         qb.s(
           qb.i(diagramIRI),
           "rdf:type",
@@ -143,7 +144,7 @@ export async function updateLegacyWorkspaceToVersion4(
         qb.s(
           qb.i(diagramIRI),
           "og:representation",
-          qb.ll(diagram.representation)
+          qb.ll(diagrams[diagram].representation)
         ),
         ...linkStatements,
         ...elemStatements,
@@ -151,12 +152,12 @@ export async function updateLegacyWorkspaceToVersion4(
     );
   });
   Object.keys(links).forEach((link) =>
-    Object.keys(links[link].vertices).forEach((diagram, i) => {
-      links[link].vertices[parseInt(diagram)].forEach((vertex, j) => {
-        if (!diagrams[i]) return;
+    Object.keys(links[link].vertices).forEach((diagram) => {
+      links[link].vertices[diagram].forEach((vertex, j) => {
+        if (!diagrams[diagram]) return;
         const linkIRI = links[link].linkIRI;
         triples.push(
-          qb.g(getDiagramIRI(i), [
+          qb.g(getDiagramIRI(diagram), [
             qb.s(qb.i(linkIRI), "og:id", qb.ll(link)),
             qb.s(
               qb.i(linkIRI),
@@ -182,7 +183,7 @@ export async function updateLegacyWorkspaceToVersion4(
   triples.push(qb.g(getWorkspaceContextIRI(), linkStatements));
   triples.push(qb.g(getWorkspaceContextIRI(), elemStatements));
   Object.keys(elements).forEach((element) =>
-    elements[element].diagrams.forEach((diagram) => {
+    Object.keys(elements[element].hidden).forEach((diagram) => {
       if (!diagrams[diagram]) return;
       triples.push(
         qb.g(getDiagramIRI(diagram), [
@@ -205,14 +206,14 @@ export async function updateLegacyWorkspaceToVersion4(
       );
     })
   );
-  diagrams.forEach((diagram, i) => {
-    Diagrams[i] = addDiagram(
-      diagram.name,
+  Object.keys(diagrams).forEach((diagram) => {
+    addDiagram(
+      diagrams[diagram].name,
       true,
-      diagram.representation,
-      i,
-      getNewDiagramContextIRI(diagram.id),
-      diagram.id
+      diagrams[diagram].representation,
+      diagrams[diagram].index,
+      getNewDiagramContextIRI(diagram),
+      diagram
     );
   });
   return triples;
@@ -222,7 +223,7 @@ async function getLegacyDiagrams(
   contextIRI: string,
   contextEndpoint: string
 ): Promise<typeof Diagrams> {
-  const diagrams: typeof Diagrams = [];
+  const diagrams: typeof Diagrams = {};
   let query = [
     "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
     "select ?diagram ?index ?name ?color ?representation ?active ?context where {",
@@ -245,7 +246,18 @@ async function getLegacyDiagrams(
       for (let result of data.results.bindings) {
         if (!(parseInt(result.index.value) in diagrams)) {
           if (result.active && result.active.value !== "true") continue;
-          diagrams[parseInt(result.index.value)] = addDiagram(
+          const id = uuidv4();
+          diagrams[id] = {
+            name: Locale[AppSettings.viewLanguage].untitled,
+            active: result.active ? result.active.value === "true" : true,
+            origin: { x: 0, y: 0 },
+            scale: 1,
+            index: parseInt(result.index.value),
+            representation: parseInt(result.representation.value),
+            iri: getNewDiagramContextIRI(id),
+            graph: getNewDiagramContextIRI(id),
+          };
+          addDiagram(
             Locale[AppSettings.viewLanguage].untitled,
             result.active ? result.active.value === "true" : true,
             parseInt(result.representation.value),
@@ -258,7 +270,7 @@ async function getLegacyDiagrams(
     })
     .catch((e) => {
       console.error(e);
-      return [];
+      return {};
     });
 }
 
@@ -272,7 +284,8 @@ function getLegacyWorkspaceContext(): string {
 async function getLegacyElements(
   contextIRI: string,
   contextEndpoint: string,
-  schemes: { [key: string]: string }
+  schemes: { [key: string]: string },
+  diagrams: typeof Diagrams
 ): Promise<typeof WorkspaceElements> {
   const elements: typeof WorkspaceElements = {};
   const query = [
@@ -306,7 +319,6 @@ async function getLegacyElements(
           elements[id] = {
             iri: result.iri.value,
             connections: [],
-            diagrams: [],
             hidden: {},
             position: {},
             vocabularyNode: FolderRoot,
@@ -318,17 +330,19 @@ async function getLegacyElements(
         if (result.name && !elements[id].selectedLabel[result.name["xml:lang"]])
           elements[id].selectedLabel[result.name["xml:lang"]] =
             result.name.value;
+        const diagramID = Object.keys(diagrams).find(
+          (diag) => diagrams[diag].index === parseInt(result.index.value)
+        );
         if (
+          diagramID &&
           result.index &&
-          !elements[id].diagrams.includes(parseInt(result.index.value))
+          !(diagramID in elements[id].position)
         ) {
-          elements[id].diagrams.push(parseInt(result.index.value));
-          elements[id].position[parseInt(result.index.value)] = {
+          elements[id].position[diagramID] = {
             x: parseInt(result.posX.value),
             y: parseInt(result.posY.value),
           };
-          elements[id].hidden[parseInt(result.index.value)] =
-            result.hidden.value === "true";
+          elements[id].hidden[diagramID] = result.hidden.value === "true";
         }
       }
       return elements;

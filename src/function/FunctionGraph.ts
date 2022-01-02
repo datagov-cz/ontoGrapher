@@ -244,10 +244,9 @@ export function setRepresentation(
                 WorkspaceLinks[link].source === source &&
                 WorkspaceLinks[link].target === target
             );
-            let newLink =
-              typeof find === "string"
-                ? getNewLink(LinkType.DEFAULT, find)
-                : getNewLink();
+            const newLink = find
+              ? getNewLink(LinkType.DEFAULT, find)
+              : getNewLink();
             if (typeof newLink.id === "string" && sourceBox && targetBox) {
               setLinkBoundary(newLink, source, target);
               newLink.addTo(graph);
@@ -430,9 +429,6 @@ export function restoreHiddenElem(
   representation: Representation = AppSettings.representation
 ): string[] {
   let queries: string[] = [];
-  if (!WorkspaceElements[id].diagrams.includes(AppSettings.selectedDiagram)) {
-    WorkspaceElements[id].diagrams.push(AppSettings.selectedDiagram);
-  }
   for (let link of Object.keys(WorkspaceLinks).filter(
     (link) => WorkspaceLinks[link].active
   )) {

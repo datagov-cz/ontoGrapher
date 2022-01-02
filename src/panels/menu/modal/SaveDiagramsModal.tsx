@@ -207,7 +207,10 @@ export const SaveDiagramsModal: React.FC<Props> = (props) => {
       <Modal.Header>
         <Modal.Title>
           {Locale[AppSettings.viewLanguage].generateDiagramImageModalTitle +
-            Diagrams[AppSettings.selectedDiagram].name}
+            AppSettings.selectedDiagram in
+          Diagrams
+            ? Diagrams[AppSettings.selectedDiagram].name
+            : ""}
         </Modal.Title>
       </Modal.Header>
       <Modal.Body>

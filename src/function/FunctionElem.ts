@@ -146,7 +146,7 @@ export function getElementToolPosition(
   }
 }
 
-export function isElementHidden(id: string, diagram: number) {
+export function isElementHidden(id: string, diagram: string) {
   return (
     WorkspaceElements[id].hidden[diagram] ||
     WorkspaceElements[id].hidden[diagram] === undefined

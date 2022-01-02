@@ -541,7 +541,7 @@ export default class DetailElement extends React.Component<Props, State> {
                   <Accordion.Collapse eventKey={"2"}>
                     <Card.Body>
                       <TableList>
-                        {WorkspaceElements[this.state.id].diagrams
+                        {Object.keys(WorkspaceElements[this.state.id].hidden)
                           .filter(
                             (diag) => Diagrams[diag] && Diagrams[diag].active
                           )

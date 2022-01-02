@@ -79,7 +79,8 @@ export function updateProjectElement(del: boolean, ...ids: string[]): string {
       qb.s(qb.i(iri), "og:active", "?active"),
     ];
 
-    Diagrams.forEach((diagram, i) => {
+    Object.values(Diagrams).forEach((diagram) => {
+      if (!diagram.active) return;
       data[diagram.graph] = ogStatements;
       if (del)
         deletes.push(
@@ -119,7 +120,7 @@ export function updateProjectElement(del: boolean, ...ids: string[]): string {
 }
 
 export function updateProjectElementDiagram(
-  diagram: number,
+  diagram: string,
   ...ids: string[]
 ): string {
   let inserts: string[] = [];
