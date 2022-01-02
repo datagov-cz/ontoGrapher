@@ -37,6 +37,10 @@
       height: 100%;
       vertical-align: middle;
 
+      span.badge {
+        white-space: normal;
+      }
+
       svg {
         transform: scale(0.8);
       }
@@ -85,6 +89,10 @@
       overflow-wrap: anywhere;
       line-height: 1 !important;
       position: relative;
+
+      span.badge {
+        white-space: normal;
+      }
 
       select, input {
         position: relative;

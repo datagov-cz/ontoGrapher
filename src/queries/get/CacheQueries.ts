@@ -238,7 +238,7 @@ export async function fetchReadOnlyTerms(
       "PREFIX skos: <http://www.w3.org/2004/02/skos/core#>",
       "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>",
       "PREFIX dct: <http://purl.org/dc/terms/>",
-      "SELECT DISTINCT ?term ?termLabel ?termAltLabel ?termType ?termDefinition ?termDomain ?termRange ?topConcept ?restriction ?restrictionPred ?onProperty ?onClass ?target ?subClassOf ?scheme",
+      "SELECT DISTINCT ?term ?termLabel ?termAltLabel ?termType ?termDefinition ?termDomain ?termRange ?topConcept ?inverseOnProperty ?restriction ?restrictionPred ?onProperty ?onClass ?target ?subClassOf ?scheme",
       "WHERE {",
       "GRAPH ?graph {",
       "?term skos:inScheme ?scheme.",
@@ -254,7 +254,8 @@ export async function fetchReadOnlyTerms(
       "OPTIONAL {?topConcept skos:hasTopConcept ?term. }",
       "OPTIONAL {?term rdfs:subClassOf ?restriction. ",
       "?restriction a owl:Restriction .",
-      "?restriction owl:onProperty ?onProperty.",
+      "OPTIONAL {?restriction owl:onProperty ?onProperty.}",
+      "OPTIONAL {?restriction owl:onProperty [owl:inverseOf ?inverseOnProperty].}",
       "OPTIONAL {?restriction owl:onClass ?onClass.}",
       "?restriction ?restrictionPred ?target.",
       "filter (?restrictionPred in (<" +
@@ -333,19 +334,17 @@ export async function fetchReadOnlyTerms(
             !result[row.term.value].subClassOf.includes(row.subClassOf.value)
           )
             result[row.term.value].subClassOf.push(row.subClassOf.value);
-          if (
-            row.restriction &&
-            Object.keys(Links).includes(row.onProperty.value)
-          ) {
+          if (row.restriction)
             createRestriction(
               result[row.term.value].restrictions,
-              row.term.value,
               row.restrictionPred.value,
-              row.onProperty.value,
+              !!row.inverseOnProperty
+                ? row.inverseOnProperty.value
+                : row.onProperty.value,
               row.target,
+              !!row.inverseOnProperty,
               row.onClass ? row.onClass.value : undefined
             );
-          }
         }
       })
       .catch((e) => {
