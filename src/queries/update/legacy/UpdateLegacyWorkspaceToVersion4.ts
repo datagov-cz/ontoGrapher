@@ -14,7 +14,6 @@ import {
 } from "../../../config/Variables";
 import { processQuery } from "../../../interface/TransactionInterface";
 import { addDiagram } from "../../../function/FunctionCreateVars";
-import { Locale } from "../../../config/Locale";
 import {
   initLanguageObject,
   parsePrefix,
@@ -243,12 +242,15 @@ async function getLegacyDiagrams(
       return response.json();
     })
     .then((data) => {
-      for (let result of data.results.bindings) {
-        if (!(parseInt(result.index.value) in diagrams)) {
+      for (const result of data.results.bindings) {
+        const diagram = Object.keys(diagrams).find(
+          (diag) => diagrams[diag].index === parseInt(result.index.value)
+        );
+        if (!diagram) {
           if (result.active && result.active.value !== "true") continue;
           const id = uuidv4();
           diagrams[id] = {
-            name: Locale[AppSettings.interfaceLanguage].untitled,
+            name: result.name.value,
             active: result.active ? result.active.value === "true" : true,
             origin: { x: 0, y: 0 },
             scale: 1,
@@ -258,7 +260,6 @@ async function getLegacyDiagrams(
             graph: getNewDiagramContextIRI(id),
           };
         }
-        diagrams[parseInt(result.index.value)].name = result.name.value;
       }
       return diagrams;
     })

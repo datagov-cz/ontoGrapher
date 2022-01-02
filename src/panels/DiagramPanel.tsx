@@ -20,7 +20,7 @@ export default class DiagramPanel extends React.Component<Props, State> {
     super(props);
     this.state = {
       modalRemoveDiagram: false,
-      selectedDiagram: "init",
+      selectedDiagram: "",
     };
   }
 
@@ -29,6 +29,7 @@ export default class DiagramPanel extends React.Component<Props, State> {
       <div className={"diagramPanel" + (this.props.freeze ? " disabled" : "")}>
         {Object.keys(Diagrams)
           .filter((diag) => Diagrams[diag].active)
+          .sort((a, b) => Diagrams[a].index - Diagrams[b].index)
           .map((diag, i) => (
             <DiagramTab
               key={i}

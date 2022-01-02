@@ -4,6 +4,7 @@ import VocabularyPanel from "../panels/VocabularyPanel";
 import DiagramCanvas from "./DiagramCanvas";
 import {
   AppSettings,
+  Diagrams,
   FolderRoot,
   WorkspaceElements,
   WorkspaceLinks,
@@ -181,7 +182,6 @@ export default class App extends React.Component<
   }
 
   performTransaction(...queries: string[]) {
-    debugger;
     const queriesTrimmed = queries.filter((q) => q);
     if (queriesTrimmed.length === 0) {
       this.handleWorkspaceReady();
@@ -311,22 +311,29 @@ export default class App extends React.Component<
         break;
     }
     if (AppSettings.initWorkspace) {
-      const id = addDiagram(
-        Locale[AppSettings.interfaceLanguage].untitled,
-        true,
-        Representation.COMPACT,
-        0
-      );
+      const queries = [updateWorkspaceContext()];
+      if (Object.keys(Diagrams).length === 0) {
+        const id = addDiagram(
+          Locale[AppSettings.interfaceLanguage].untitled,
+          true,
+          Representation.COMPACT,
+          0
+        );
+        queries.push(updateCreateDiagram(id));
+      }
       if (
         !(await processTransaction(
           AppSettings.contextEndpoint,
-          qb.constructQuery(updateWorkspaceContext(), updateCreateDiagram(id))
+          qb.constructQuery(...queries)
         ))
       ) {
         this.handleLoadingError();
         return;
       }
     }
+    AppSettings.selectedDiagram = Object.keys(Diagrams).reduce((a, b) =>
+      Diagrams[a].index < Diagrams[b].index ? a : b
+    );
     this.handleResumeLoading();
     const success = await getContext(
       AppSettings.contextIRI,

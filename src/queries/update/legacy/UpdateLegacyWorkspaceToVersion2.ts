@@ -10,11 +10,9 @@ import {
 } from "../../../config/Variables";
 import { Cardinality } from "../../../datatypes/Cardinality";
 import { LinkType, Representation } from "../../../config/Enum";
-import { Locale } from "../../../config/Locale";
 import { fetchConcepts } from "../../get/FetchQueries";
 import { qb } from "../../QueryBuilder";
 import { LinkConfig } from "../../../config/logic/LinkConfig";
-import { addDiagram } from "../../../function/FunctionCreateVars";
 import {
   getLinkIRI,
   getNewDiagramContextIRI,
@@ -266,11 +264,13 @@ async function getLegacyDiagrams(
     })
     .then((data) => {
       for (const result of data.results.bindings) {
-        const index = parseInt(result.index.value);
-        if (!(index in diagrams)) {
+        const diagram = Object.keys(diagrams).find(
+          (diag) => diagrams[diag].index === parseInt(result.index.value)
+        );
+        if (!diagram) {
           const diagramID = uuidv4();
-          diagrams[index] = {
-            name: Locale[AppSettings.interfaceLanguage].untitled,
+          diagrams[diagramID] = {
+            name: result.name.value,
             active: result.active ? result.active.value === "true" : true,
             origin: { x: 0, y: 0 },
             scale: 1,
@@ -280,7 +280,6 @@ async function getLegacyDiagrams(
             graph: getNewDiagramContextIRI(diagramID),
           };
         }
-        diagrams[parseInt(result.index.value)].name = result.name.value;
       }
       return diagrams;
     })

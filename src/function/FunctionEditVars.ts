@@ -100,7 +100,6 @@ export function loadLanguages() {
     interfaceLanguage in Languages ? interfaceLanguage : "en";
   AppSettings.canvasLanguage =
     canvasLanguage in Languages ? canvasLanguage : "en";
-  Diagrams[0].name = Locale[AppSettings.interfaceLanguage].untitled;
 }
 
 export function initProjectSettings() {

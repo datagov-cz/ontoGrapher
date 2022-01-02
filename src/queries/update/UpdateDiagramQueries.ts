@@ -14,7 +14,7 @@ function getDiagramTriples(diagram: string): string {
   ];
   return INSERT.DATA`${qb.g(diagramGraph, [
     qb.s(diagramIRI, "rdf:type", qb.a(diagramAttachmentTypes)),
-    qb.s(diagramIRI, "og:index", qb.ll(diagram)),
+    qb.s(diagramIRI, "og:index", qb.ll(Diagrams[diagram].index)),
     qb.s(diagramIRI, "og:name", qb.ll(Diagrams[diagram].name)),
     qb.s(diagramIRI, "og:id", qb.ll(diagram)),
     qb.s(

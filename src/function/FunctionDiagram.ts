@@ -16,7 +16,9 @@ export function changeDiagrams(diagram?: string) {
   graph.clear();
   AppSettings.selectedLink = "";
   if (!diagram)
-    diagram = Object.keys(Diagrams).find((diag) => Diagrams[diag].active);
+    diagram = Object.keys(Diagrams).reduce((a, b) =>
+      Diagrams[a].index < Diagrams[b].index ? a : b
+    );
   if (diagram && Diagrams[diagram]) {
     AppSettings.selectedDiagram = diagram;
     AppSettings.selectedLink = "";

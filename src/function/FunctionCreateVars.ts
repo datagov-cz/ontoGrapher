@@ -150,13 +150,18 @@ export function addDiagram(
   graph?: string
 ): string {
   const diagramID = id ? id : uuidv4();
-  const diagramIndex = index ? index : Object.keys(Diagrams).length;
+  if (!index)
+    index =
+      Object.keys(Diagrams).length > 0
+        ? Object.values(Diagrams).reduce((a, b) => (a.index > b.index ? a : b))
+            .index
+        : 0;
   Diagrams[diagramID] = {
     name: name,
     active: active,
     origin: { x: 0, y: 0 },
     scale: 1,
-    index: diagramIndex,
+    index: index,
     representation: representation,
     iri: iri ? iri : getNewDiagramContextIRI(diagramID),
     graph: graph ? graph : getNewDiagramContextIRI(diagramID),
