@@ -69,11 +69,11 @@ ${statements.join(`
   },
   //statement
   s: (s: string, p: string, o: string, option: boolean = true) => {
-    return `${(option && o) ? `${s} ${p} ${o}.` : ""}`;
+    return `${option ? `${s} ${p} ${o}.` : ""}`;
   },
   //statement (blank)
   po: (p: string, o: string, option: boolean = true) => {
-    return `${option && o ? `${p} ${o}` : ""}`;
+    return `${option ? `${p} ${o}` : ""}`;
   },
   constructQuery: (...queries) => {
     let filter = queries.filter((query) => query);

@@ -258,7 +258,7 @@ export default class App extends React.Component<
             " | " +
             Locale[AppSettings.interfaceLanguage].ontoGrapher;
           setSchemeColors(AppSettings.viewColorPool);
-          changeDiagrams(Diagrams.findIndex((diag) => diag && diag.active));
+          changeDiagrams();
           this.itemPanel.current?.update();
           this.handleStatus(
             false,
@@ -311,22 +311,29 @@ export default class App extends React.Component<
         break;
     }
     if (AppSettings.initWorkspace) {
-      Diagrams[0] = addDiagram(
-        Locale[AppSettings.interfaceLanguage].untitled,
-        true,
-        Representation.COMPACT,
-        0
-      );
+      const queries = [updateWorkspaceContext()];
+      if (Object.keys(Diagrams).length === 0) {
+        const id = addDiagram(
+          Locale[AppSettings.interfaceLanguage].untitled,
+          true,
+          Representation.COMPACT,
+          0
+        );
+        queries.push(updateCreateDiagram(id));
+      }
       if (
         !(await processTransaction(
           AppSettings.contextEndpoint,
-          qb.constructQuery(updateWorkspaceContext(), updateCreateDiagram(0))
+          qb.constructQuery(...queries)
         ))
       ) {
         this.handleLoadingError();
         return;
       }
     }
+    AppSettings.selectedDiagram = Object.keys(Diagrams).reduce((a, b) =>
+      Diagrams[a].index < Diagrams[b].index ? a : b
+    );
     this.handleResumeLoading();
     const success = await getContext(
       AppSettings.contextIRI,

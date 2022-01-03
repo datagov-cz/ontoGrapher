@@ -68,7 +68,7 @@ export function updateProjectElement(del: boolean, ...ids: string[]): string {
       qb.s(qb.i(iri), "og:id", qb.ll(id)),
       qb.s(qb.i(iri), "og:scheme", qb.i(scheme)),
       qb.s(qb.i(iri), "og:vocabulary", qb.i(getVocabularyFromScheme(scheme))),
-      qb.s(qb.i(iri), "og:name", qb.a(names), names.length > 0),
+      qb.s(qb.i(iri), "og:name", qb.a(names)),
       qb.s(qb.i(iri), "og:active", qb.ll(WorkspaceElements[id].active)),
     ];
 
@@ -79,7 +79,8 @@ export function updateProjectElement(del: boolean, ...ids: string[]): string {
       qb.s(qb.i(iri), "og:active", "?active"),
     ];
 
-    Diagrams.forEach((diagram, i) => {
+    Object.values(Diagrams).forEach((diagram) => {
+      if (!diagram.active) return;
       data[diagram.graph] = ogStatements;
       if (del)
         deletes.push(
@@ -119,7 +120,7 @@ export function updateProjectElement(del: boolean, ...ids: string[]): string {
 }
 
 export function updateProjectElementDiagram(
-  diagram: number,
+  diagram: string,
   ...ids: string[]
 ): string {
   let inserts: string[] = [];
@@ -133,7 +134,6 @@ export function updateProjectElementDiagram(
     const names = Object.keys(WorkspaceElements[id].selectedLabel).map((lang) =>
       qb.ll(WorkspaceElements[id].selectedLabel[lang], lang)
     );
-
     const scheme = WorkspaceTerms[WorkspaceElements[id].iri].inScheme;
     inserts.push(
       INSERT.DATA`${qb.g(diagramGraph, [

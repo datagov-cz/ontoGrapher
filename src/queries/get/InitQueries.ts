@@ -10,12 +10,7 @@ import {
 } from "../../config/Variables";
 import { processQuery } from "../../interface/TransactionInterface";
 import { getWorkspaceContextIRI } from "../../function/FunctionGetVars";
-import {
-  ContextLoadingStrategy,
-  LinkType,
-  Representation,
-} from "../../config/Enum";
-import * as joint from "jointjs";
+import { ContextLoadingStrategy, LinkType } from "../../config/Enum";
 import { Cardinality } from "../../datatypes/Cardinality";
 import {
   initLanguageObject,
@@ -33,9 +28,8 @@ export async function getElementsConfig(
     [key: string]: {
       id: "";
       active: boolean;
-      diagramPosition: { [key: number]: { x: number; y: number } };
-      hidden: { [key: number]: boolean };
-      diagrams: number[];
+      diagramPosition: { [key: string]: { x: number; y: number } };
+      hidden: { [key: string]: boolean };
       selectedName: { [key: string]: string };
       scheme: string;
     };
@@ -66,7 +60,6 @@ export async function getElementsConfig(
         if (!(iri in elements)) {
           elements[iri] = {
             id: result.id.value,
-            diagrams: [],
             active: result.active.value === "true",
             diagramPosition: {},
             hidden: {},
@@ -88,12 +81,12 @@ export async function getElementsConfig(
   else {
     const diagramContextQuery = [
       "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
-      "select ?diagram ?graph ?index ?iri ?posX ?posY ?hidden where {",
+      "select ?diagram ?graph ?diagramID ?iri ?posX ?posY ?hidden where {",
       "graph ?graph {",
       "?iri og:position-x ?posX.",
       "?iri og:position-y ?posY.",
       "?iri og:hidden ?hidden.",
-      "?diagram og:index ?index.",
+      "?diagram og:id ?diagramID.",
       "?diagram og:representation ?representation .",
       "}",
       `${qb.i(AppSettings.contextIRI)} ${qb.i(
@@ -116,16 +109,12 @@ export async function getElementsConfig(
         for (const result of data.results.bindings) {
           const iri = result.iri.value;
           if (iri in elements) {
-            if (
-              result.index &&
-              !elements[iri].diagrams.includes(parseInt(result.index.value))
-            ) {
-              elements[iri].diagrams.push(parseInt(result.index.value));
-              elements[iri].diagramPosition[parseInt(result.index.value)] = {
+            if (!(result.diagramID.value in elements[iri].hidden)) {
+              elements[iri].diagramPosition[result.diagramID.value] = {
                 x: parseInt(result.posX.value),
                 y: parseInt(result.posY.value),
               };
-              elements[iri].hidden[parseInt(result.index.value)] =
+              elements[iri].hidden[result.diagramID.value] =
                 result.hidden.value === "true";
             }
           }
@@ -174,7 +163,6 @@ export async function getElementsConfig(
           WorkspaceElements[id] = {
             iri: iri,
             connections: [],
-            diagrams: elements[iri].diagrams,
             hidden: elements[iri].hidden,
             position: elements[iri].diagramPosition,
             vocabularyNode: pkg,
@@ -194,7 +182,7 @@ export async function getSettings(
 ): Promise<ContextLoadingStrategy | undefined> {
   const query = [
     "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
-    "select ?graph ?diagramIndex ?diagram ?index ?name ?color ?active ?id ?representation ?context ?legacyContext where {",
+    "select ?graph ?diagram ?index ?name ?color ?id ?representation ?context ?legacyContext where {",
     "BIND(<" + AppSettings.contextIRI + "> as ?metaContext).",
     "BIND(<" + getWorkspaceContextIRI() + "> as ?ogContext).",
     "OPTIONAL {",
@@ -216,14 +204,13 @@ export async function getSettings(
     "OPTIONAL {",
     "?ogContext og:viewColor ?color .",
     "?ogContext og:contextVersion ?context .",
-    "OPTIONAL {?ogContext og:diagram ?diagramIndex .}",
     "}",
     "OPTIONAL {",
     `<${
       AppSettings.ontographerContext +
       AppSettings.contextIRI.substring(AppSettings.contextIRI.lastIndexOf("/"))
     }> og:contextVersion ?legacyContext.`,
-    "}}",
+    "}} order by asc(?index)",
   ].join(`
   `);
   return await processQuery(contextEndpoint, query)
@@ -235,9 +222,10 @@ export async function getSettings(
       AppSettings.initWorkspace = true;
       let reconstructWorkspace = false;
       for (const result of data.results.bindings) {
-        if (result.index || (result.active && result.active.value === "true")) {
-          const index = parseInt(result.index.value);
-          Diagrams[index] = addDiagram(
+        if (result.id) {
+          let index = parseInt(result.index.value);
+          while (indices.includes(index)) index++;
+          addDiagram(
             result.name.value,
             true,
             parseInt(result.representation.value, 10),
@@ -251,16 +239,6 @@ export async function getSettings(
           if (result.context) {
             AppSettings.viewColorPool = result.color.value;
             AppSettings.contextVersion = parseInt(result.context.value, 10);
-            if (result.diagramIndex) {
-              const diagramIndex = parseInt(result.diagramIndex.value);
-              if (!(diagramIndex in Diagrams))
-                Diagrams[diagramIndex] = addDiagram(
-                  "",
-                  false,
-                  Representation.COMPACT,
-                  diagramIndex
-                );
-            }
           } else {
             reconstructWorkspace = true;
           }
@@ -269,8 +247,8 @@ export async function getSettings(
           return ContextLoadingStrategy.UPDATE_LEGACY_WORKSPACE;
         }
       }
-      Diagrams.forEach((diag, index) => {
-        if (!indices.includes(index)) Diagrams[index].active = false;
+      Object.entries(Diagrams).forEach(([key, value]) => {
+        if (!indices.includes(value.index)) Diagrams[key].active = false;
       });
       return reconstructWorkspace
         ? ContextLoadingStrategy.RECONSTRUCT_WORKSPACE
@@ -285,18 +263,16 @@ export async function getSettings(
 export async function getLinksConfig(
   contextEndpoint: string
 ): Promise<boolean> {
-  let query = [
+  const query = [
     "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
-    "select ?id ?iri ?sourceID ?targetID ?source ?active ?target ?sourceCard1 ?sourceCard2 ?targetCard1 ?targetCard2 ?type ?link where {",
+    "select ?id ?iri ?sourceID ?targetID ?active ?sourceCard1 ?sourceCard2 ?targetCard1 ?targetCard2 ?type ?link where {",
     "graph <" + getWorkspaceContextIRI() + "> {",
     "?link a og:link .",
     "?link og:id ?id .",
     "?link og:iri ?iri .",
     "?link og:source-id ?sourceID .",
     "?link og:target-id ?targetID .",
-    "?link og:source ?source .",
     "?link og:active ?active .",
-    "?link og:target ?target .",
     "?link og:type ?type .",
     "?link og:sourceCardinality1 ?sourceCard1 .",
     "?link og:sourceCardinality2 ?sourceCard2 .",
@@ -305,22 +281,12 @@ export async function getLinksConfig(
     "}} order by ?id",
   ].join(`
   `);
-  let links: {
+  const links: {
     [key: string]: {
       iri: string;
-      source: string;
-      target: string;
       targetID: string;
       sourceID: string;
-      vertexIRI: {
-        [key: string]: {
-          index: number;
-          x: number;
-          y: number;
-          diagram: number;
-        };
-      };
-      vertices: { [key: number]: { [key: number]: { x: number; y: number } } };
+      vertices: { [key: string]: { x: number; y: number }[] };
       sourceCardinality1: string;
       sourceCardinality2: string;
       targetCardinality1: string;
@@ -343,12 +309,9 @@ export async function getLinksConfig(
         ) {
           links[result.id.value] = {
             iri: result.iri.value,
-            source: result.source.value,
-            target: result.target.value,
             targetID: result.targetID.value,
             sourceID: result.sourceID.value,
             active: result.active.value === "true",
-            vertexIRI: {},
             vertices: {},
             type:
               result.type.value === "default"
@@ -382,7 +345,7 @@ export async function getLinksConfig(
     ];
     const diagramContextQuery = [
       "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
-      "select ?graph ?vertex ?diagram ?index ?diagramIndex ?posX ?posY ?id ?iri where {",
+      "select ?graph ?vertex ?diagram ?diagramID ?index ?posX ?posY ?id ?iri where {",
       "graph <" + getWorkspaceContextIRI() + "> {",
       "?link a og:link.",
       "?link og:iri ?iri.",
@@ -393,7 +356,7 @@ export async function getLinksConfig(
       "?vertex og:index ?index.",
       "?vertex og:position-x ?posX.",
       "?vertex og:position-y ?posY.",
-      "?diagram og:index ?diagramIndex.",
+      "?diagram og:id ?diagramID.",
       "?diagram og:representation ?representation.",
       "}",
       `${qb.i(AppSettings.contextIRI)} ?linkPredicate ?graph.`,
@@ -411,15 +374,19 @@ export async function getLinksConfig(
             result.id.value in links
               ? result.id.value
               : Object.keys(links).find(
-                  (link) => links[link].iri === result.iri.value
+                  (link) =>
+                    links[link].iri === result.iri.value && links[link].active
                 );
-          if (id && !(result.vertex.value in links[id].vertexIRI))
-            links[result.id.value].vertexIRI[result.vertex.value] = {
-              index: parseInt(result.index.value),
+          if (id) {
+            if (!(result.diagramID.value in links[id].vertices))
+              links[id].vertices[result.diagramID.value] = [];
+            links[id].vertices[result.diagramID.value][
+              parseInt(result.index.value)
+            ] = {
               x: parseInt(result.posX.value),
               y: parseInt(result.posY.value),
-              diagram: parseInt(result.diagramIndex.value),
             };
+          }
           // This is not necessarily an issue. What this means is there is some corrupted data from a buggy version
           // of OG that is now recognized and left behind - the worst that happens is that some link vertices have
           // been reset.
@@ -431,49 +398,35 @@ export async function getLinksConfig(
             );
         }
         for (const link in links) {
-          let convert: { [key: number]: joint.dia.Link.Vertex[] } = {};
-          let keys = Object.keys(links[link].vertexIRI);
-          if (keys.length > 0) {
-            for (let vertexIRI of keys) {
-              let vertex = links[link].vertexIRI[vertexIRI];
-              let diagram: number = vertex.diagram !== -1 ? vertex.diagram : 0;
-              if (!(diagram in convert)) convert[diagram] = [];
-              convert[diagram][vertex.index] = { x: vertex.x, y: vertex.y };
-            }
-          }
-          let sourceID, targetID;
-          for (let id in WorkspaceElements) {
-            if (WorkspaceElements[id].iri === links[link].source) sourceID = id;
-            if (WorkspaceElements[id].iri === links[link].target) targetID = id;
-            if (targetID && sourceID) break;
-          }
-
-          if (targetID && sourceID) {
-            let sourceCard = new Cardinality("", "");
-            let targetCard = new Cardinality("", "");
-            sourceCard.setFirstCardinality(links[link].sourceCardinality1);
-            sourceCard.setSecondCardinality(links[link].sourceCardinality2);
-            targetCard.setFirstCardinality(links[link].targetCardinality1);
-            targetCard.setSecondCardinality(links[link].targetCardinality2);
-            WorkspaceLinks[link] = {
-              iri: links[link].iri,
-              source: sourceID,
-              target: targetID,
-              sourceCardinality: sourceCard,
-              targetCardinality: targetCard,
-              type: links[link].type,
-              vertices: convert,
-              active: links[link].active,
-              hasInverse:
-                links[link].type !== LinkType.GENERALIZATION &&
-                links[link].iri in Links,
-              linkIRI: links[link].linkIRI,
-            };
-            if (sourceID) {
-              if (!WorkspaceElements[sourceID].connections.includes(link)) {
-                WorkspaceElements[sourceID].connections.push(link);
-              }
-            }
+          if (
+            !(links[link].sourceID in WorkspaceElements) ||
+            !(links[link].targetID in WorkspaceElements)
+          )
+            continue;
+          const sourceCard = new Cardinality("", "");
+          const targetCard = new Cardinality("", "");
+          sourceCard.setFirstCardinality(links[link].sourceCardinality1);
+          sourceCard.setSecondCardinality(links[link].sourceCardinality2);
+          targetCard.setFirstCardinality(links[link].targetCardinality1);
+          targetCard.setSecondCardinality(links[link].targetCardinality2);
+          WorkspaceLinks[link] = {
+            iri: links[link].iri,
+            source: links[link].sourceID,
+            target: links[link].targetID,
+            sourceCardinality: sourceCard,
+            targetCardinality: targetCard,
+            type: links[link].type,
+            vertices: links[link].vertices,
+            active: links[link].active,
+            hasInverse:
+              links[link].type !== LinkType.GENERALIZATION &&
+              links[link].iri in Links,
+            linkIRI: links[link].linkIRI,
+          };
+          if (
+            !WorkspaceElements[links[link].sourceID].connections.includes(link)
+          ) {
+            WorkspaceElements[links[link].sourceID].connections.push(link);
           }
         }
         return true;

@@ -6,7 +6,7 @@ import { updateDiagram } from "../../queries/update/UpdateDiagramQueries";
 import { removeNewlines } from "../../function/FunctionEditVars";
 
 interface Props {
-  diagram: number;
+  diagram: string;
   update: Function;
   deleteDiagram: Function;
   performTransaction: (...queries: string[]) => void;
@@ -57,7 +57,7 @@ export default class DiagramTab extends React.Component<Props, State> {
         ) : (
           Diagrams[this.props.diagram].name
         )}
-        {Diagrams.filter((diag) => diag.active).length > 1 && (
+        {Object.values(Diagrams).filter((diag) => diag.active).length > 1 && (
           <button
             className={"buttonlink"}
             onClick={(evt) => {

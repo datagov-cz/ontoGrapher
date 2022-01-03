@@ -1,6 +1,5 @@
 import {
   AppSettings,
-  Diagrams,
   FolderRoot,
   Languages,
   Links,
@@ -101,7 +100,6 @@ export function loadLanguages() {
     interfaceLanguage in Languages ? interfaceLanguage : "en";
   AppSettings.canvasLanguage =
     canvasLanguage in Languages ? canvasLanguage : "en";
-  Diagrams[0].name = Locale[AppSettings.interfaceLanguage].untitled;
 }
 
 export function initProjectSettings() {
@@ -109,7 +107,6 @@ export function initProjectSettings() {
     Locale[AppSettings.interfaceLanguage].untitledProject
   );
   AppSettings.description = initLanguageObject("");
-  AppSettings.selectedDiagram = 0;
 }
 
 export function initLanguageObject(def: any) {
@@ -274,7 +271,7 @@ export function setElementShape(
 }
 
 export function initElements(replaceInactive: boolean = false) {
-  let ids: string[] = [];
+  const ids: string[] = [];
   for (const iri in WorkspaceTerms) {
     const id = getElemFromIRI(iri);
     if (!id || (replaceInactive && id && !WorkspaceElements[id].active)) {

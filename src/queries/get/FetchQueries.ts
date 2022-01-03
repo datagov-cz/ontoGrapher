@@ -37,11 +37,11 @@ export async function fetchVocabulary(
     "OPTIONAL {?vocabulary <http://onto.fel.cvut.cz/ontologies/slovník/agendový/popis-dat/pojem/má-glosář> ?scheme.",
     "?vocabulary dct:title ?vocabTitle.",
     "OPTIONAL {?vocabulary <http://purl.org/vocab/vann/preferredNamespaceUri> ?namespace. }}",
-    "filter(" +
+    "values " +
       (scheme ? "?scheme" : "?vocabulary") +
-      " in (<" +
+      " {<" +
       iris.join(">, <") +
-      ">))",
+      ">}",
     "}",
   ].join(" ");
   return await processQuery(endpoint, query)

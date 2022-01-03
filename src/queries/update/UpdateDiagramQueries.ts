@@ -4,7 +4,7 @@ import { AppSettings, Diagrams } from "../../config/Variables";
 import { parsePrefix } from "../../function/FunctionEditVars";
 import { getWorkspaceContextIRI } from "../../function/FunctionGetVars";
 
-function getDiagramTriples(diagram: number): string {
+function getDiagramTriples(diagram: string): string {
   const diagramIRI = qb.i(Diagrams[diagram].iri);
   const diagramGraph = Diagrams[diagram].graph;
   const diagramAttachmentTypes = [
@@ -14,9 +14,9 @@ function getDiagramTriples(diagram: number): string {
   ];
   return INSERT.DATA`${qb.g(diagramGraph, [
     qb.s(diagramIRI, "rdf:type", qb.a(diagramAttachmentTypes)),
-    qb.s(diagramIRI, "og:index", qb.ll(diagram)),
+    qb.s(diagramIRI, "og:index", qb.ll(Diagrams[diagram].index)),
     qb.s(diagramIRI, "og:name", qb.ll(Diagrams[diagram].name)),
-    qb.s(diagramIRI, "og:id", qb.ll(Diagrams[diagram].id)),
+    qb.s(diagramIRI, "og:id", qb.ll(diagram)),
     qb.s(
       diagramIRI,
       "og:representation",
@@ -25,7 +25,7 @@ function getDiagramTriples(diagram: number): string {
   ])}`.build();
 }
 
-export function updateCreateDiagram(diagram: number): string {
+export function updateCreateDiagram(diagram: string): string {
   const diagramIRI = qb.i(Diagrams[diagram].iri);
   const diagramGraph = qb.i(Diagrams[diagram].graph);
   const insertAppContext = INSERT.DATA`${qb.g(getWorkspaceContextIRI(), [
@@ -67,7 +67,7 @@ export function updateCreateDiagram(diagram: number): string {
   );
 }
 
-export function updateDiagram(diagram: number): string {
+export function updateDiagram(diagram: string): string {
   const diagramIRI = Diagrams[diagram].iri;
   const diagramGraph = Diagrams[diagram].graph;
   const insertDiagramContext = getDiagramTriples(diagram);
@@ -79,7 +79,7 @@ export function updateDiagram(diagram: number): string {
   return qb.combineQueries(del, insertDiagramContext);
 }
 
-export function updateDeleteDiagram(diagram: number) {
+export function updateDeleteDiagram(diagram: string) {
   const diagramIRI = Diagrams[diagram].iri;
   const diagramGraph = Diagrams[diagram].graph;
   const deleteGraph = `DROP GRAPH <${diagramGraph}>`;

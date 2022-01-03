@@ -42,6 +42,7 @@ import {
   deleteConnections,
   updateConnection,
 } from "../../function/FunctionLink";
+import { isElementHidden } from "../../function/FunctionElem";
 
 interface Props {
   projectLanguage: string;
@@ -544,9 +545,12 @@ export default class DetailElement extends React.Component<Props, State> {
                   <Accordion.Collapse eventKey={"2"}>
                     <Card.Body>
                       <TableList>
-                        {WorkspaceElements[this.state.id].diagrams
+                        {Object.keys(WorkspaceElements[this.state.id].hidden)
                           .filter(
-                            (diag) => Diagrams[diag] && Diagrams[diag].active
+                            (diag) =>
+                              Diagrams[diag] &&
+                              Diagrams[diag].active &&
+                              !isElementHidden(this.state.id, diag)
                           )
                           .map((diag, i) => (
                             <tr key={i}>

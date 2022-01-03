@@ -12,10 +12,14 @@ import { Representation } from "../config/Enum";
 import { paper } from "../main/DiagramCanvas";
 import * as _ from "lodash";
 
-export function changeDiagrams(diagram: number = 0) {
+export function changeDiagrams(diagram?: string) {
   graph.clear();
   AppSettings.selectedLink = "";
-  if (Diagrams[diagram]) {
+  if (!diagram)
+    diagram = Object.keys(Diagrams).reduce((a, b) =>
+      Diagrams[a].index < Diagrams[b].index ? a : b
+    );
+  if (diagram && Diagrams[diagram]) {
     AppSettings.selectedDiagram = diagram;
     AppSettings.selectedLink = "";
     for (const id in WorkspaceElements) {
@@ -80,7 +84,7 @@ export function zoomDiagram(x: number, y: number, delta: number) {
  * Saves the diagram position and scale information.
  * @param diagram The diagram to be updated
  */
-export function updateDiagramPosition(diagram: number) {
+export function updateDiagramPosition(diagram: string) {
   Diagrams[diagram].origin = {
     x: paper.translate().tx,
     y: paper.translate().ty,
