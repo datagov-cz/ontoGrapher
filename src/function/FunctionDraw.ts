@@ -7,7 +7,11 @@ import {
 } from "../config/Variables";
 import { getStereotypeList, setElementShape } from "./FunctionEditVars";
 import { Representation } from "../config/Enum";
-import { getElementShape, getIntrinsicTropeTypeIDs } from "./FunctionGetVars";
+import {
+  getElementShape,
+  getIntrinsicTropeTypeIDs,
+  getLabelOrBlank,
+} from "./FunctionGetVars";
 import { ElementColors } from "../config/visual/ElementColors";
 import _ from "underscore";
 
@@ -25,7 +29,7 @@ export function setDisplayLabel(id: string, languageCode: string) {
 export function getDisplayLabel(id: string, languageCode: string): string {
   if (!WorkspaceElements[id].selectedLabel[languageCode])
     setDisplayLabel(id, languageCode);
-  return WorkspaceElements[id].selectedLabel[languageCode];
+  return getLabelOrBlank(WorkspaceElements[id].selectedLabel, languageCode);
 }
 
 export function drawGraphElement(
@@ -47,12 +51,12 @@ export function drawGraphElement(
     const text: string[] = [];
     if (representation === Representation.COMPACT) {
       text.push(
-        ...getIntrinsicTropeTypeIDs(elem.id).map((id) =>
+        ..._.uniq(getIntrinsicTropeTypeIDs(elem.id)).map((id) =>
           getDisplayLabel(id, languageCode)
         )
       );
     }
-    elem.prop("attrs/labelAttrs/text", _.uniq(text).join("\n"));
+    elem.prop("attrs/labelAttrs/text", text.join("\n"));
     const width =
       representation === Representation.COMPACT
         ? Math.max(

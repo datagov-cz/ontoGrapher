@@ -188,9 +188,8 @@ export function insertNewCacheTerms(newTerms: typeof WorkspaceTerms) {
           newTerms[term].inScheme
         );
         setSchemeColors(AppSettings.viewColorPool);
-      } else {
-        changeVocabularyCount(vocab, (count) => count + 1, term);
       }
+      changeVocabularyCount(vocab, (count) => count + 1, term);
     } else
       console.error(
         `Vocabulary with glossary ${newTerms[term].inScheme} has not been found in the database; term ${term} will not be added.`
