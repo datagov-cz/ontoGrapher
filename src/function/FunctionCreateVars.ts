@@ -154,7 +154,7 @@ export function addDiagram(
     index =
       Object.keys(Diagrams).length > 0
         ? Object.values(Diagrams).reduce((a, b) => (a.index > b.index ? a : b))
-            .index
+            .index + 1
         : 0;
   Diagrams[diagramID] = {
     name: name,

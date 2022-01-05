@@ -266,14 +266,15 @@ export default class VocabularyPanel extends React.Component<Props, State> {
           );
         }
       }
+      const vocabulary = getVocabularyFromScheme(node.scheme);
       if (
-        this.state.vocabs.find(
-          (vocab) => vocab.value === getVocabularyFromScheme(node.scheme)
-        ) ||
-        (this.state.vocabs.length === 0 && vocabularyConcepts.length > 0) ||
+        this.state.vocabs.find((vocab) => vocab.value === vocabulary) ||
         (this.state.vocabs.length === 0 &&
-          vocabularyConcepts.length === 0 &&
-          !this.state.search)
+          (vocabularyConcepts.length > 0 ||
+            (vocabularyConcepts.length === 0 &&
+              !this.state.search &&
+              vocabulary in WorkspaceVocabularies &&
+              !WorkspaceVocabularies[vocabulary].readOnly)))
       )
         result.push(
           <VocabularyFolder
