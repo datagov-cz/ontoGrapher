@@ -40,7 +40,7 @@ export async function fetchVocabulary(
     "values " +
       (scheme ? "?scheme" : "?vocabulary") +
       " {<" +
-      iris.join(">, <") +
+      iris.join("> <") +
       ">}",
     "}",
   ].join(" ");
