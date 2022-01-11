@@ -6,6 +6,7 @@ import {
 } from "../../function/FunctionEditVars";
 import {
   AppSettings,
+  Diagrams,
   WorkspaceElements,
   WorkspaceTerms,
 } from "../../config/Variables";
@@ -48,14 +49,20 @@ export default class ModalRemoveReadOnlyConcept extends React.Component<
       ...deleteConcept(this.props.id),
       updateDeleteTriples(
         WorkspaceElements[this.props.id].iri + "/diagram",
-        [getWorkspaceContextIRI()],
+        [
+          getWorkspaceContextIRI(),
+          ...Object.values(Diagrams).map((diag) => diag.graph),
+        ],
         true,
         false,
         false
       ),
       updateDeleteTriples(
         WorkspaceElements[this.props.id].iri,
-        [getWorkspaceContextIRI()],
+        [
+          getWorkspaceContextIRI(),
+          ...Object.values(Diagrams).map((diag) => diag.graph),
+        ],
         true,
         true,
         true

@@ -1,5 +1,6 @@
 import {
   AppSettings,
+  Diagrams,
   FolderRoot,
   Languages,
   Links,
@@ -138,7 +139,10 @@ export function deleteConcept(id: string): string[] {
     queries.push(
       updateDeleteTriples(
         WorkspaceLinks[connection].linkIRI,
-        [getWorkspaceContextIRI()],
+        [
+          getWorkspaceContextIRI(),
+          ...Object.values(Diagrams).map((diag) => diag.graph),
+        ],
         true,
         false,
         false
@@ -153,7 +157,10 @@ export function deleteConcept(id: string): string[] {
     queries.push(
       updateDeleteTriples(
         WorkspaceLinks[connection].linkIRI,
-        [getWorkspaceContextIRI()],
+        [
+          getWorkspaceContextIRI(),
+          ...Object.values(Diagrams).map((diag) => diag.graph),
+        ],
         true,
         false,
         false
@@ -170,7 +177,6 @@ export function deleteConcept(id: string): string[] {
         1
       );
   });
-  WorkspaceTerms[WorkspaceElements[id].iri].labels = initLanguageObject("");
   WorkspaceElements[id].connections = [];
   if (graph.getCell(id)) {
     graph.removeCells([graph.getCell(id)]);

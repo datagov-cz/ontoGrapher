@@ -3,6 +3,7 @@ import { Button, Form, Modal } from "react-bootstrap";
 import { deleteConcept } from "../../function/FunctionEditVars";
 import {
   AppSettings,
+  Diagrams,
   WorkspaceElements,
   WorkspaceVocabularies,
 } from "../../config/Variables";
@@ -46,7 +47,10 @@ export default class ModalRemoveConcept extends React.Component<Props, State> {
       ...deleteConcept(this.props.id),
       updateDeleteTriples(
         WorkspaceElements[this.props.id].iri,
-        [getWorkspaceContextIRI()],
+        [
+          getWorkspaceContextIRI(),
+          ...Object.values(Diagrams).map((diag) => diag.graph),
+        ],
         true,
         false,
         false

@@ -15,7 +15,7 @@ import {
 } from "../queries/get/CacheQueries";
 import { qb } from "../queries/QueryBuilder";
 import { updateProjectElement } from "../queries/update/UpdateElementQueries";
-import { initElements } from "../function/FunctionEditVars";
+import { deleteConcept, initElements } from "../function/FunctionEditVars";
 import { updateProjectLink } from "../queries/update/UpdateLinkQueries";
 import { initConnections } from "../function/FunctionRestriction";
 import { insertNewCacheTerms } from "../function/FunctionCache";
@@ -118,6 +118,16 @@ export async function getContext(
   insertNewCacheTerms(
     await fetchReadOnlyTerms(AppSettings.contextEndpoint, missingTerms)
   );
+  Object.keys(WorkspaceElements)
+    .filter((id) => !(WorkspaceElements[id].iri in WorkspaceTerms))
+    .forEach((id) => {
+      // In all probability, the workspace has been modified outside of OG
+      // *OR* OG deletes its terms incorrectly.
+      console.error(
+        `Corresponding term ${WorkspaceElements[id].iri} not found for element ID ${id}.`
+      );
+      deleteConcept(id);
+    });
   if (
     !(await processTransaction(
       AppSettings.contextEndpoint,
