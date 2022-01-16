@@ -231,8 +231,8 @@ export async function fetchConcepts(
         if (row.inverseOf)
           result[row.term.value].inverseOf = row.inverseOf.value;
       }
-      for (const restriction of restrictions.filter((r) =>
-        Object.keys(Links).includes(r.onProperty)
+      for (const restriction of restrictions.filter(
+        (r) => Object.keys(Links).includes(r.onProperty) && r.source in result
       )) {
         createRestriction(restriction, result[restriction.source].restrictions);
       }
