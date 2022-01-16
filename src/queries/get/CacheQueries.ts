@@ -150,6 +150,7 @@ export async function fetchRelationships(
           if (row.restriction) {
             result[row.term.value].push(
               new Restriction(
+                row.term.value,
                 row.restrictionPred.value,
                 row.onProperty.value,
                 row.target,
@@ -238,7 +239,7 @@ export async function fetchReadOnlyTerms(
       "PREFIX skos: <http://www.w3.org/2004/02/skos/core#>",
       "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>",
       "PREFIX dct: <http://purl.org/dc/terms/>",
-      "SELECT DISTINCT ?term ?termLabel ?termAltLabel ?termType ?termDefinition ?termDomain ?termRange ?topConcept ?inverseOnProperty ?restriction ?restrictionPred ?onProperty ?onClass ?target ?subClassOf ?scheme",
+      "SELECT DISTINCT ?term ?termLabel ?termAltLabel ?termType ?termDefinition ?topConcept ?inverseOnProperty ?restriction ?restrictionPred ?onProperty ?onClass ?target ?subClassOf ?scheme",
       "WHERE {",
       "GRAPH ?graph {",
       "?term skos:inScheme ?scheme.",
@@ -247,8 +248,6 @@ export async function fetchReadOnlyTerms(
       "OPTIONAL {?term skos:prefLabel ?termLabel.}",
       "OPTIONAL {?term skos:altLabel ?termAltLabel.}",
       "OPTIONAL {?term skos:definition ?termDefinition.}",
-      "OPTIONAL {?term rdfs:domain ?termDomain.}",
-      "OPTIONAL {?term rdfs:range ?termRange.}",
       "OPTIONAL {?term rdfs:subClassOf ?subClassOf. ",
       "filter (!isBlank(?subClassOf)) }",
       "OPTIONAL {?topConcept skos:hasTopConcept ?term. }",
@@ -269,12 +268,11 @@ export async function fetchReadOnlyTerms(
     await processQuery(contextEndpoint, query)
       .then((response) => response.json())
       .then((data) => {
+        const restrictions: Restriction[] = [];
         for (const row of data.results.bindings) {
           if (!(row.term.value in result)) {
             result[row.term.value] = {
               active: true,
-              domain: undefined,
-              range: undefined,
               topConcept: undefined,
               labels: initLanguageObject(""),
               definitions: initLanguageObject(""),
@@ -323,9 +321,6 @@ export async function fetchReadOnlyTerms(
             result[row.term.value].definitions[row.termDefinition["xml:lang"]] =
               row.termDefinition.value;
           }
-          if (row.termDomain)
-            result[row.term.value].domain = row.termDomain.value;
-          if (row.termRange) result[row.term.value].range = row.termRange.value;
           if (row.topConcept)
             result[row.term.value].topConcept = row.topConcept.value;
           if (
@@ -334,17 +329,27 @@ export async function fetchReadOnlyTerms(
             !result[row.term.value].subClassOf.includes(row.subClassOf.value)
           )
             result[row.term.value].subClassOf.push(row.subClassOf.value);
-          if (row.restriction)
-            createRestriction(
-              result[row.term.value].restrictions,
-              row.restrictionPred.value,
-              !!row.inverseOnProperty
-                ? row.inverseOnProperty.value
-                : row.onProperty.value,
-              row.target,
-              !!row.inverseOnProperty,
-              row.onClass ? row.onClass.value : undefined
+          if (row.restriction && row.target.type !== "bnode")
+            restrictions.push(
+              new Restriction(
+                row.term.value,
+                row.restrictionPred.value,
+                !!row.inverseOnProperty
+                  ? row.inverseOnProperty.value
+                  : row.onProperty.value,
+                row.target.value,
+                row.onClass ? row.onClass.value : undefined,
+                !!row.inverseOnProperty
+              )
             );
+        }
+        for (const restriction of restrictions.filter((r) =>
+          Object.keys(Links).includes(r.onProperty)
+        )) {
+          createRestriction(
+            restriction,
+            result[restriction.source].restrictions
+          );
         }
       })
       .catch((e) => {

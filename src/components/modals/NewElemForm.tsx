@@ -1,27 +1,27 @@
 import { Locale } from "../../config/Locale";
 import {
   AppSettings,
-  FolderRoot,
   Languages,
   WorkspaceElements,
   WorkspaceTerms,
   WorkspaceVocabularies,
 } from "../../config/Variables";
 import { Alert, Form, InputGroup } from "react-bootstrap";
-import { getVocabularyFromScheme } from "../../function/FunctionGetVars";
+import {
+  getLabelOrBlank,
+  getVocabularyFromScheme,
+} from "../../function/FunctionGetVars";
 import { createNewElemIRI } from "../../function/FunctionCreateVars";
 import React from "react";
 import { initLanguageObject } from "../../function/FunctionEditVars";
-import { VocabularyNode } from "../../datatypes/VocabularyNode";
 
 interface Props {
-  lockVocabulary: boolean;
   projectLanguage: string;
   termName: ReturnType<typeof initLanguageObject>;
-  selectedVocabulary: VocabularyNode;
+  selectedVocabulary: string;
   errorText: string;
   setTermName: (s: string, l: string) => void;
-  setSelectedVocabulary: (p: VocabularyNode) => void;
+  setSelectedVocabulary: (p: string) => void;
   setErrorText: (s: string) => void;
 }
 
@@ -38,9 +38,7 @@ export const NewElemForm: React.FC<Props> = (props) => {
           (iri) =>
             (iri === newIRI &&
               Object.keys(WorkspaceElements).find(
-                (elem) =>
-                  WorkspaceElements[elem].active &&
-                  WorkspaceElements[elem].iri === iri
+                (elem) => WorkspaceElements[elem].active && elem === iri
               )) ||
             Object.values(WorkspaceTerms[iri].labels).find(
               (label) =>
@@ -80,12 +78,15 @@ export const NewElemForm: React.FC<Props> = (props) => {
       HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
     >
   ) => {
-    const pkg = FolderRoot.children.find(
-      (pkg) => pkg.labels[props.projectLanguage] === event.currentTarget.value
+    const pkg = Object.keys(WorkspaceVocabularies).find(
+      (pkg) => pkg === event.currentTarget.value
     );
     if (pkg) props.setSelectedVocabulary(pkg);
     props.setErrorText(
-      checkNames(props.selectedVocabulary.scheme, props.termName)
+      checkNames(
+        WorkspaceVocabularies[props.selectedVocabulary].glossary,
+        props.termName
+      )
     );
   };
 
@@ -109,7 +110,10 @@ export const NewElemForm: React.FC<Props> = (props) => {
               onChange={(event) => {
                 props.setTermName(event.currentTarget.value, lang);
                 props.setErrorText(
-                  checkNames(props.selectedVocabulary.scheme, props.termName)
+                  checkNames(
+                    WorkspaceVocabularies[props.selectedVocabulary].glossary,
+                    props.termName
+                  )
                 );
               }}
             />
@@ -123,19 +127,25 @@ export const NewElemForm: React.FC<Props> = (props) => {
         </Form.Label>
         <Form.Control
           as="select"
-          value={props.selectedVocabulary.labels[props.projectLanguage]}
+          value={getLabelOrBlank(
+            WorkspaceVocabularies[props.selectedVocabulary].labels,
+            props.projectLanguage
+          )}
           onChange={(event) => handleChangeSelect(event)}
-          disabled={props.lockVocabulary}
+          disabled={
+            Object.keys(WorkspaceVocabularies).filter(
+              (vocab) => !WorkspaceVocabularies[vocab].readOnly
+            ).length <= 1
+          }
         >
-          {FolderRoot.children
-            .filter(
-              (pkg) =>
-                !WorkspaceVocabularies[getVocabularyFromScheme(pkg.scheme)]
-                  .readOnly
-            )
-            .map((pkg, i) => (
-              <option key={i} value={pkg.labels[props.projectLanguage]}>
-                {pkg.labels[props.projectLanguage]}
+          {Object.keys(WorkspaceVocabularies)
+            .filter((vocab) => !WorkspaceVocabularies[vocab].readOnly)
+            .map((vocab, i) => (
+              <option key={i} value={vocab}>
+                {getLabelOrBlank(
+                  WorkspaceVocabularies[vocab].labels,
+                  props.projectLanguage
+                )}
               </option>
             ))}
         </Form.Control>
@@ -145,7 +155,7 @@ export const NewElemForm: React.FC<Props> = (props) => {
           Locale[AppSettings.interfaceLanguage].modalNewElemIRI
         }
 					${createNewElemIRI(
-            props.selectedVocabulary.scheme,
+            WorkspaceVocabularies[props.selectedVocabulary].glossary,
             props.termName[AppSettings.defaultLanguage]
           )}`}</Alert>
       )}

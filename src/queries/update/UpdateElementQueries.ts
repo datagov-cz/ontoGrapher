@@ -12,15 +12,14 @@ import {
   getWorkspaceContextIRI,
 } from "../../function/FunctionGetVars";
 
-export function updateProjectElement(del: boolean, ...ids: string[]): string {
+export function updateProjectElement(del: boolean, ...iris: string[]): string {
   let data: { [key: string]: string[] } = { [getWorkspaceContextIRI()]: [] };
   let deletes: string[] = [];
   let inserts: string[] = [];
-  if (ids.length === 0) return "";
-  for (const id of ids) {
-    checkElem(id);
-    const iri = WorkspaceElements[id].iri;
-    const vocabElem = WorkspaceTerms[WorkspaceElements[id].iri];
+  if (iris.length === 0) return "";
+  for (const iri of iris) {
+    checkElem(iri);
+    const vocabElem = WorkspaceTerms[iri];
     const scheme = vocabElem.inScheme;
     const graph =
       WorkspaceVocabularies[getVocabularyFromScheme(vocabElem.inScheme)].graph;
@@ -31,10 +30,10 @@ export function updateProjectElement(del: boolean, ...ids: string[]): string {
     const altLabels = vocabElem.altLabels.map((alt) =>
       qb.ll(alt.label, alt.language)
     );
-    const names = Object.entries(WorkspaceElements[id].selectedLabel)
+    const names = Object.entries(WorkspaceElements[iri].selectedLabel)
       .filter(
         ([key, value]) =>
-          key in Languages && WorkspaceTerms[iri].labels[key] !== value
+          key in Languages && value && WorkspaceTerms[iri].labels[key] !== value
       )
       .map(([key, value]) => qb.ll(value, key));
     const definitions = Object.keys(vocabElem.definitions)
@@ -65,11 +64,10 @@ export function updateProjectElement(del: boolean, ...ids: string[]): string {
       );
     const ogStatements: string[] = [
       qb.s(qb.i(iri), "rdf:type", "og:element"),
-      qb.s(qb.i(iri), "og:id", qb.ll(id)),
       qb.s(qb.i(iri), "og:scheme", qb.i(scheme)),
       qb.s(qb.i(iri), "og:vocabulary", qb.i(getVocabularyFromScheme(scheme))),
       qb.s(qb.i(iri), "og:name", qb.a(names)),
-      qb.s(qb.i(iri), "og:active", qb.ll(WorkspaceElements[id].active)),
+      qb.s(qb.i(iri), "og:active", qb.ll(WorkspaceElements[iri].active)),
     ];
 
     data[getWorkspaceContextIRI()].push(...ogStatements);
@@ -78,19 +76,6 @@ export function updateProjectElement(del: boolean, ...ids: string[]): string {
       qb.s(qb.i(iri), "og:diagram", "?diagram"),
       qb.s(qb.i(iri), "og:active", "?active"),
     ];
-
-    Object.values(Diagrams).forEach((diagram) => {
-      if (!diagram.active) return;
-      data[diagram.graph] = ogStatements;
-      if (del)
-        deletes.push(
-          ...deleteStatements.map((stmt) =>
-            DELETE`${qb.g(diagram.graph, [stmt])}`.WHERE`${qb.g(diagram.graph, [
-              stmt,
-            ])}`.build()
-          )
-        );
-    });
 
     if (del) {
       deletes.push(
@@ -127,36 +112,26 @@ export function updateProjectElementDiagram(
   let deletes: string[] = [];
 
   if (ids.length === 0) return "";
-  for (const id of ids) {
-    checkElem(id);
+  for (const iri of ids) {
+    checkElem(iri);
     const diagramGraph = Diagrams[diagram].graph;
-    const iri = WorkspaceElements[id].iri;
-    const names = Object.keys(WorkspaceElements[id].selectedLabel).map((lang) =>
-      qb.ll(WorkspaceElements[id].selectedLabel[lang], lang)
-    );
-    const scheme = WorkspaceTerms[WorkspaceElements[id].iri].inScheme;
     inserts.push(
       INSERT.DATA`${qb.g(diagramGraph, [
         qb.s(qb.i(iri), "rdf:type", "og:element"),
-        qb.s(qb.i(iri), "og:id", qb.ll(id)),
-        qb.s(qb.i(iri), "og:scheme", qb.i(scheme)),
-        qb.s(qb.i(iri), "og:vocabulary", qb.i(getVocabularyFromScheme(scheme))),
-        qb.s(qb.i(iri), "og:name", qb.a(names), names.length > 0),
-        qb.s(qb.i(iri), "og:active", qb.ll(WorkspaceElements[id].active)),
         qb.s(
           qb.i(iri),
           "og:position-x",
-          qb.ll(Math.round(WorkspaceElements[id].position[diagram].x))
+          qb.ll(Math.round(WorkspaceElements[iri].position[diagram].x))
         ),
         qb.s(
           qb.i(iri),
           "og:position-y",
-          qb.ll(Math.round(WorkspaceElements[id].position[diagram].y))
+          qb.ll(Math.round(WorkspaceElements[iri].position[diagram].y))
         ),
         qb.s(
           qb.i(iri),
           "og:hidden",
-          qb.ll(WorkspaceElements[id].hidden[diagram])
+          qb.ll(WorkspaceElements[iri].hidden[diagram])
         ),
       ])}`.build()
     );
@@ -177,10 +152,10 @@ export function updateProjectElementDiagram(
   return qb.combineQueries(...deletes, ...inserts);
 }
 
-function checkElem(id: string) {
-  if (!(id in WorkspaceElements || WorkspaceElements[id]))
+function checkElem(iri: string) {
+  if (!(iri in WorkspaceElements || WorkspaceElements[iri]))
     console.error("Passed ID is not recognized as an element ID");
-  if (!(WorkspaceElements[id].iri in WorkspaceTerms)) {
+  if (!(iri in WorkspaceTerms)) {
     console.error("Element ID is not tied to a Concept IRI");
   }
 }

@@ -4,7 +4,6 @@ import ConnectionWorkspace from "./ConnectionWorkspace";
 import {
   AppSettings,
   Links,
-  WorkspaceElements,
   WorkspaceLinks,
   WorkspaceTerms,
 } from "../../../../config/Variables";
@@ -66,12 +65,12 @@ export default class ConnectionList extends React.Component<Props, State> {
   search(id: string): boolean {
     const search = this.state.filter.search.normalize().trim().toLowerCase();
     const name = getLabelOrBlank(
-      WorkspaceTerms[WorkspaceElements[id].iri].labels,
+      WorkspaceTerms[id].labels,
       this.props.projectLanguage
     );
     return (
       name.normalize().trim().toLowerCase().includes(search) ||
-      WorkspaceTerms[WorkspaceElements[id].iri].altLabels.find(
+      WorkspaceTerms[id].altLabels.find(
         (alt) =>
           alt.language === this.props.projectLanguage &&
           alt.label.normalize().trim().toLowerCase().includes(search)
@@ -80,26 +79,25 @@ export default class ConnectionList extends React.Component<Props, State> {
   }
 
   getConnectionsFromOtherVocabularies() {
-    getCacheConnections(WorkspaceElements[this.props.id].iri).then(
-      (connections) =>
-        this.setState(
-          {
-            shownLucene: connections,
-          },
-          () => this.setState({ shownConnections: this.filter() })
-        )
+    getCacheConnections(this.props.id).then((connections) =>
+      this.setState(
+        {
+          shownLucene: connections,
+        },
+        () => this.setState({ shownConnections: this.filter() })
+      )
     );
   }
 
   sort(a: string, b: string): number {
     const aLabel =
-      WorkspaceTerms[
-        WorkspaceElements[getOtherConnectionElementID(a, this.props.id)].iri
-      ].labels[this.props.projectLanguage];
+      WorkspaceTerms[getOtherConnectionElementID(a, this.props.id)].labels[
+        this.props.projectLanguage
+      ];
     const bLabel =
-      WorkspaceTerms[
-        WorkspaceElements[getOtherConnectionElementID(b, this.props.id)].iri
-      ].labels[this.props.projectLanguage];
+      WorkspaceTerms[getOtherConnectionElementID(b, this.props.id)].labels[
+        this.props.projectLanguage
+      ];
     return aLabel.localeCompare(bLabel);
   }
 
@@ -115,8 +113,7 @@ export default class ConnectionList extends React.Component<Props, State> {
           return false;
         if (
           this.state.filter.scheme &&
-          WorkspaceTerms[WorkspaceElements[otherElement].iri].inScheme !==
-            this.state.filter.scheme
+          WorkspaceTerms[otherElement].inScheme !== this.state.filter.scheme
         )
           return false;
         if (
@@ -136,14 +133,14 @@ export default class ConnectionList extends React.Component<Props, State> {
           return false;
         if (
           this.state.filter.ontoType &&
-          !WorkspaceTerms[WorkspaceElements[otherElement].iri].types.includes(
+          !WorkspaceTerms[otherElement].types.includes(
             this.state.filter.ontoType
           )
         )
           return false;
         if (
           this.state.filter.typeType &&
-          !WorkspaceTerms[WorkspaceElements[otherElement].iri].types.includes(
+          !WorkspaceTerms[otherElement].types.includes(
             this.state.filter.typeType
           )
         )

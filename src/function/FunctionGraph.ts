@@ -15,14 +15,12 @@ import { graph } from "../graph/Graph";
 import {
   getActiveToConnections,
   getElementShape,
-  getElemFromIRI,
   getLinkOrVocabElem,
   getNewLink,
 } from "./FunctionGetVars";
 import * as joint from "jointjs";
 import * as _ from "lodash";
 import { graphElement } from "../graph/GraphElement";
-import { addLink } from "./FunctionCreateVars";
 import { LinkType, Representation } from "../config/Enum";
 import { drawGraphElement, getDisplayLabel } from "./FunctionDraw";
 import {
@@ -214,13 +212,15 @@ export function setRepresentation(
   AppSettings.selectedLink = "";
   let del = false;
   if (representation === Representation.COMPACT) {
-    for (const id of Object.keys(WorkspaceElements)) {
+    for (const id of Object.keys(WorkspaceElements).filter(
+      (elem) => WorkspaceElements[elem].active
+    )) {
       if (
-        WorkspaceTerms[WorkspaceElements[id].iri].types.includes(
+        WorkspaceTerms[id].types.includes(
           parsePrefix("z-sgov-pojem", "typ-vztahu")
         )
       ) {
-        let connections: string[] = getActiveToConnections(id);
+        const connections: string[] = getActiveToConnections(id);
         if (connections.length > 1) {
           const sourceLink: string | undefined = connections.find(
             (src) => WorkspaceLinks[src].iri === mvp1IRI
@@ -240,34 +240,38 @@ export function setRepresentation(
             const find = Object.keys(WorkspaceLinks).find(
               (link) =>
                 WorkspaceLinks[link].active &&
-                WorkspaceLinks[link].iri === WorkspaceElements[id].iri &&
+                WorkspaceLinks[link].iri === id &&
                 WorkspaceLinks[link].source === source &&
                 WorkspaceLinks[link].target === target
             );
-            const newLink = find
-              ? getNewLink(LinkType.DEFAULT, find)
-              : getNewLink();
-            if (typeof newLink.id === "string" && sourceBox && targetBox) {
+            if (!find) {
+              console.error(
+                `Compact relationship ${id} not initialized before displaying.`
+              );
+              continue;
+            }
+            const newLink = getNewLink(LinkType.DEFAULT, find);
+            if (sourceBox && targetBox) {
+              const newLinkID = newLink.id as string;
               setLinkBoundary(newLink, source, target);
               newLink.addTo(graph);
-              if (!(newLink.id in WorkspaceLinks))
-                addLink(newLink.id, WorkspaceElements[id].iri, source, target);
               if (
-                WorkspaceLinks[newLink.id].vertices[AppSettings.selectedDiagram]
+                WorkspaceLinks[newLinkID].vertices[AppSettings.selectedDiagram]
               )
                 newLink.vertices(
-                  WorkspaceLinks[newLink.id].vertices[
+                  WorkspaceLinks[newLinkID].vertices[
                     AppSettings.selectedDiagram
                   ]
                 );
-              else if (source === target)
+              if (
+                source === target &&
+                WorkspaceLinks[newLinkID].vertices[AppSettings.selectedDiagram]
+                  .length < 3
+              )
                 setSelfLoopConnectionPoints(newLink, sourceBox.getBBox());
               WorkspaceLinks[newLink.id].vertices[AppSettings.selectedDiagram] =
                 newLink.vertices();
-              constructFullConnections(newLink.id, sourceLink, targetLink);
-              if (!find) {
-                queries.push(updateProjectLink(false, newLink.id));
-              }
+              constructFullConnections(newLinkID, sourceLink, targetLink);
               setLabels(
                 newLink,
                 getDisplayLabel(id, AppSettings.canvasLanguage)
@@ -281,7 +285,7 @@ export function setRepresentation(
           del = true;
         }
       } else if (
-        WorkspaceTerms[WorkspaceElements[id].iri].types.includes(
+        WorkspaceTerms[id].types.includes(
           parsePrefix("z-sgov-pojem", "typ-vlastnosti")
         )
       ) {
@@ -300,7 +304,7 @@ export function setRepresentation(
         link.remove();
         del = true;
       } else if (WorkspaceLinks[link.id].iri in WorkspaceTerms) {
-        const elem = getElemFromIRI(WorkspaceLinks[link.id].iri);
+        const elem = WorkspaceLinks[link.id].iri;
         if (!elem) continue;
         setLabels(link, getDisplayLabel(elem, AppSettings.canvasLanguage));
       }

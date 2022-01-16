@@ -1,6 +1,4 @@
 import { Cardinality } from "../datatypes/Cardinality";
-import { VocabularyNode } from "../datatypes/VocabularyNode";
-import { initLanguageObject } from "../function/FunctionEditVars";
 import { Restriction } from "../datatypes/Restriction";
 import { Representation } from "./Enum";
 import * as joint from "jointjs";
@@ -11,18 +9,12 @@ export var Languages: { [key: string]: string } = {};
 
 export var WorkspaceElements: {
   [key: string]: {
-    //iri pointing to VocabularyElements
-    iri: string;
-    //array of ProjectLink ids
-    connections: string[];
     //if hidden in diagram ID
     hidden: { [key: string]: boolean };
     //position on graph by diagram ID
     position: { [key: string]: { x: number; y: number } };
     //if usable in graph
     active: boolean;
-    //vocabulary node
-    vocabularyNode: VocabularyNode;
     //selected label from pref/altLabels
     selectedLabel: { [key: string]: string };
   };
@@ -80,21 +72,12 @@ export var Prefixes: { [key: string]: string } = {
     "http://onto.fel.cvut.cz/ontologies/slovník/agendový/popis-dat/pojem/",
 };
 
-export const FolderRoot: VocabularyNode = new VocabularyNode(
-  initLanguageObject("Root"),
-  undefined,
-  true,
-  ""
-);
-
 export var WorkspaceTerms: {
   [key: string]: {
     labels: { [key: string]: string };
     altLabels: { label: string; language: string }[];
     definitions: { [key: string]: string };
     inScheme: string;
-    domain: string | undefined;
-    range: string | undefined;
     types: string[];
     subClassOf: string[];
     restrictions: Restriction[];

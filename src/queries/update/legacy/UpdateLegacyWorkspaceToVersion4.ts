@@ -8,7 +8,6 @@ import {
 import {
   AppSettings,
   Diagrams,
-  FolderRoot,
   WorkspaceElements,
   WorkspaceLinks,
 } from "../../../config/Variables";
@@ -51,11 +50,11 @@ export async function updateLegacyWorkspaceToVersion4(
   }
   const elemStatements = Object.keys(elements).map((element) =>
     [
-      qb.s(qb.i(elements[element].iri), "rdf:type", "og:element"),
-      qb.s(qb.i(elements[element].iri), "og:id", qb.ll(element)),
-      qb.s(qb.i(elements[element].iri), "og:scheme", qb.i(schemes[element])),
+      qb.s(qb.i(element), "rdf:type", "og:element"),
+      qb.s(qb.i(element), "og:id", qb.ll(element)),
+      qb.s(qb.i(element), "og:scheme", qb.i(schemes[element])),
       qb.s(
-        qb.i(elements[element].iri),
+        qb.i(element),
         "og:name",
         qb.a(
           Object.keys(elements[element].selectedLabel).map((lang) =>
@@ -63,11 +62,7 @@ export async function updateLegacyWorkspaceToVersion4(
           )
         )
       ),
-      qb.s(
-        qb.i(elements[element].iri),
-        "og:active",
-        qb.ll(elements[element].active)
-      ),
+      qb.s(qb.i(element), "og:active", qb.ll(elements[element].active)),
     ].join(`
   `)
   );
@@ -78,10 +73,8 @@ export async function updateLegacyWorkspaceToVersion4(
       qb.s(linkIRI, "og:id", qb.ll(id)),
       qb.s(linkIRI, "og:iri", qb.i(links[id].iri)),
       qb.s(linkIRI, "og:active", qb.ll(links[id].active)),
-      qb.s(linkIRI, "og:source-id", qb.ll(links[id].source)),
-      qb.s(linkIRI, "og:target-id", qb.ll(links[id].target)),
-      qb.s(linkIRI, "og:source", qb.i(elements[links[id].source].iri)),
-      qb.s(linkIRI, "og:target", qb.i(elements[links[id].target].iri)),
+      qb.s(linkIRI, "og:source", qb.ll(links[id].source)),
+      qb.s(linkIRI, "og:target", qb.ll(links[id].target)),
       qb.s(linkIRI, "og:type", qb.ll(LinkConfig[links[id].type].id)),
       qb.s(
         linkIRI,
@@ -187,17 +180,17 @@ export async function updateLegacyWorkspaceToVersion4(
       triples.push(
         qb.g(getDiagramIRI(diagram), [
           qb.s(
-            qb.i(`${elements[element].iri}`),
+            qb.i(`${element}`),
             "og:position-x",
             qb.ll(Math.round(elements[element].position[diagram].x))
           ),
           qb.s(
-            qb.i(`${elements[element].iri}`),
+            qb.i(`${element}`),
             "og:position-y",
             qb.ll(Math.round(elements[element].position[diagram].y))
           ),
           qb.s(
-            qb.i(`${elements[element].iri}`),
+            qb.i(`${element}`),
             "og:hidden",
             qb.ll(elements[element].hidden[diagram])
           ),
@@ -309,14 +302,11 @@ async function getLegacyElements(
     })
     .then((data) => {
       for (const result of data.results.bindings) {
-        const id = result.id.value;
+        const id = result.iri.value;
         if (!(id in elements)) {
           elements[id] = {
-            iri: result.iri.value,
-            connections: [],
             hidden: {},
             position: {},
-            vocabularyNode: FolderRoot,
             active: result.active.value === "true",
             selectedLabel: initLanguageObject(""),
           };
@@ -383,8 +373,6 @@ async function getLegacyConnections(
       iri: string;
       source: string;
       target: string;
-      targetID: string;
-      sourceID: string;
       vertexIRI: {
         [key: string]: {
           index: number;
@@ -413,8 +401,6 @@ async function getLegacyConnections(
             iri: result.iri.value,
             source: result.source.value,
             target: result.target.value,
-            targetID: result.targetID.value,
-            sourceID: result.sourceID.value,
             active: result.active.value === "true",
             vertexIRI: {},
             vertices: {},
@@ -455,9 +441,9 @@ async function getLegacyConnections(
           }
         }
         let sourceID, targetID;
-        for (let id in elements) {
-          if (elements[id].iri === iter[link].source) sourceID = id;
-          if (elements[id].iri === iter[link].target) targetID = id;
+        for (const id in elements) {
+          if (id === iter[link].source) sourceID = id;
+          if (id === iter[link].target) targetID = id;
           if (targetID && sourceID) break;
         }
 
@@ -480,11 +466,6 @@ async function getLegacyConnections(
             hasInverse: false,
             linkIRI: getLinkIRI(link),
           };
-          if (sourceID) {
-            if (!elements[sourceID].connections.includes(link)) {
-              elements[sourceID].connections.push(link);
-            }
-          }
         }
       }
       return links;

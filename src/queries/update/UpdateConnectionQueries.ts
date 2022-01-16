@@ -10,7 +10,10 @@ import { parsePrefix } from "../../function/FunctionEditVars";
 import { qb } from "../QueryBuilder";
 import { LinkConfig } from "../../config/logic/LinkConfig";
 import { DELETE, INSERT } from "@tpluscode/sparql-builder";
-import { getVocabularyFromScheme } from "../../function/FunctionGetVars";
+import {
+  getActiveToConnections,
+  getVocabularyFromScheme,
+} from "../../function/FunctionGetVars";
 import { doesLinkHaveInverse } from "../../function/FunctionLink";
 
 // This function helps construct the owl:Restrictions. The result for origin restrictions is:
@@ -56,7 +59,7 @@ function constructDefaultLinkRestriction(
 }
 
 export function updateDefaultLink(id: string): string {
-  const iri = WorkspaceElements[WorkspaceLinks[id].source].iri;
+  const iri = WorkspaceLinks[id].source;
   const contextIRI =
     WorkspaceVocabularies[getVocabularyFromScheme(WorkspaceTerms[iri].inScheme)]
       .graph;
@@ -81,12 +84,11 @@ export function updateDefaultLink(id: string): string {
       "}",
     ])}`.build();
   const insert: string = INSERT.DATA`${qb.g(contextIRI, [
-    ...WorkspaceElements[WorkspaceLinks[id].source].connections
+    ...getActiveToConnections(WorkspaceLinks[id].source)
       .filter(
         (linkID) =>
           linkID in WorkspaceLinks &&
           WorkspaceElements[WorkspaceLinks[linkID].target] &&
-          WorkspaceLinks[linkID].active &&
           WorkspaceLinks[linkID].iri in Links &&
           WorkspaceLinks[linkID].type === LinkType.DEFAULT
       )
@@ -96,7 +98,7 @@ export function updateDefaultLink(id: string): string {
             iri,
             "owl:someValuesFrom",
             WorkspaceLinks[linkID].iri,
-            qb.i(WorkspaceElements[WorkspaceLinks[linkID].target].iri),
+            qb.i(WorkspaceLinks[linkID].target),
             doesLinkHaveInverse(linkID),
             qb.i(iri)
           ),
@@ -104,7 +106,7 @@ export function updateDefaultLink(id: string): string {
             iri,
             "owl:allValuesFrom",
             WorkspaceLinks[linkID].iri,
-            qb.i(WorkspaceElements[WorkspaceLinks[linkID].target].iri),
+            qb.i(WorkspaceLinks[linkID].target),
             doesLinkHaveInverse(linkID),
             qb.i(iri)
           ),
@@ -133,7 +135,7 @@ export function updateDefaultLink(id: string): string {
                   ].sourceCardinality.getFirstCardinality(),
                   "xsd:nonNegativeInteger"
                 ),
-                WorkspaceElements[WorkspaceLinks[linkID].target].iri
+                WorkspaceLinks[linkID].target
               )
             : []),
           ...(isNumber(
@@ -161,7 +163,7 @@ export function updateDefaultLink(id: string): string {
                   ].sourceCardinality.getSecondCardinality(),
                   "xsd:nonNegativeInteger"
                 ),
-                WorkspaceElements[WorkspaceLinks[linkID].target].iri
+                WorkspaceLinks[linkID].target
               )
             : []),
         ].join(`
@@ -198,20 +200,14 @@ export function updateDefaultLink(id: string): string {
 }
 
 export function updateGeneralizationLink(id: string): string {
-  const iri = WorkspaceElements[WorkspaceLinks[id].source].iri;
+  const iri = WorkspaceLinks[id].source;
   const contextIRI =
     WorkspaceVocabularies[getVocabularyFromScheme(WorkspaceTerms[iri].inScheme)]
       .graph;
 
-  const subClassOf: string[] = WorkspaceElements[
-    WorkspaceLinks[id].source
-  ].connections
-    .filter(
-      (conn) =>
-        WorkspaceLinks[conn].type === LinkType.GENERALIZATION &&
-        WorkspaceLinks[conn].active
-    )
-    .map((conn) => qb.i(WorkspaceElements[WorkspaceLinks[conn].target].iri));
+  const subClassOf: string[] = getActiveToConnections(WorkspaceLinks[id].source)
+    .filter((conn) => WorkspaceLinks[conn].type === LinkType.GENERALIZATION)
+    .map((conn) => qb.i(WorkspaceLinks[conn].target));
   const list = WorkspaceTerms[iri].subClassOf
     .filter((superClass) => superClass && !(superClass in WorkspaceTerms))
     .map((superClass) => qb.i(superClass));

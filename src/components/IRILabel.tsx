@@ -9,7 +9,7 @@ interface State {
   hover: boolean;
 }
 
-export default class IRIlabel extends React.Component<Props, State> {
+export default class IRILabel extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = {

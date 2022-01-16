@@ -1,4 +1,4 @@
-import { AppSettings, WorkspaceElements } from "../../config/Variables";
+import { AppSettings } from "../../config/Variables";
 import { qb } from "../QueryBuilder";
 import { DELETE, INSERT } from "@tpluscode/sparql-builder";
 import { getWorkspaceContextIRI } from "../../function/FunctionGetVars";
@@ -78,33 +78,4 @@ export function updateDeleteTriples(
       ].join(" ")}`.build()
     );
   return qb.combineQueries(...deletes);
-}
-
-export function updateAddTermsToWorkspace(ids: string[]) {
-  const projIRI = getWorkspaceContextIRI();
-  const insert = INSERT.DATA`${qb.g(projIRI, [
-    qb.s(
-      qb.i(projIRI),
-      "og:element",
-      qb.a(ids.map((id) => qb.i(WorkspaceElements[id].iri)))
-    ),
-    ...ids.map((id) =>
-      qb.s(qb.i(WorkspaceElements[id].iri), "og:id", qb.ll(id))
-    ),
-  ])}`.build();
-  return qb.combineQueries(insert);
-}
-
-export function updateRemoveTermsFromWorkspace(ids: string[]) {
-  const del = DELETE.DATA`${qb.g(getWorkspaceContextIRI(), [
-    qb.s(
-      qb.i(getWorkspaceContextIRI()),
-      "og:element",
-      qb.a(ids.map((id) => qb.i(WorkspaceElements[id].iri)))
-    ),
-    ...ids.map((id) =>
-      qb.s(qb.i(WorkspaceElements[id].iri), "og:id", qb.ll(id))
-    ),
-  ])}`.build();
-  return qb.combineQueries(del);
 }

@@ -1,7 +1,6 @@
 import {
   AppSettings,
   Diagrams,
-  FolderRoot,
   Languages,
   Links,
   Prefixes,
@@ -18,15 +17,13 @@ import { LinkType, Representation } from "../config/Enum";
 import { Locale } from "../config/Locale";
 import { updateDeleteTriples } from "../queries/update/UpdateMiscQueries";
 import { Cardinality } from "../datatypes/Cardinality";
-import { graphElement } from "../graph/GraphElement";
 import {
-  getElemFromIRI,
+  getActiveToConnections,
   getLocalStorageKey,
   getVocabularyFromScheme,
   getWorkspaceContextIRI,
 } from "./FunctionGetVars";
-import _ from "lodash";
-import { RepresentationConfig } from "../config/logic/RepresentationConfig";
+import { isElementVisible } from "./FunctionElem";
 
 export function getName(element: string, language: string): string {
   if (element in Stereotypes) {
@@ -130,11 +127,8 @@ export function removeNewlines(str: string): string {
 }
 
 export function deleteConcept(id: string): string[] {
-  const folder = WorkspaceElements[id].vocabularyNode;
-  const iri = WorkspaceElements[id].iri;
   let queries: string[] = [];
-  folder.elements.splice(folder.elements.indexOf(id), 1);
-  for (const connection of WorkspaceElements[id].connections) {
+  for (const connection of getActiveToConnections(id)) {
     WorkspaceLinks[connection].active = false;
     queries.push(
       updateDeleteTriples(
@@ -150,7 +144,7 @@ export function deleteConcept(id: string): string[] {
     );
   }
   const targets = Object.keys(WorkspaceLinks).filter(
-    (link) => WorkspaceElements[WorkspaceLinks[link].target].iri === iri
+    (link) => WorkspaceLinks[link].target === id
   );
   for (const connection of targets) {
     WorkspaceLinks[connection].active = false;
@@ -167,17 +161,6 @@ export function deleteConcept(id: string): string[] {
       )
     );
   }
-  targets.forEach((target) => {
-    const elem = Object.keys(WorkspaceElements).find((elem) =>
-      WorkspaceElements[elem].connections.includes(target)
-    );
-    if (elem)
-      WorkspaceElements[elem].connections.splice(
-        WorkspaceElements[elem].connections.indexOf(target),
-        1
-      );
-  });
-  WorkspaceElements[id].connections = [];
   if (graph.getCell(id)) {
     graph.removeCells([graph.getCell(id)]);
   }
@@ -190,7 +173,7 @@ export function setElementShape(
   width: number,
   height: number
 ) {
-  const types = WorkspaceTerms[WorkspaceElements[elem.id].iri].types;
+  const types = WorkspaceTerms[elem.id].types;
   elem.attr({
     bodyBox: { display: "none" },
     bodyEllipse: { display: "none" },
@@ -207,9 +190,7 @@ export function setElementShape(
         strokeDasharray: "none",
         stroke: "black",
         fill: WorkspaceVocabularies[
-          getVocabularyFromScheme(
-            WorkspaceTerms[WorkspaceElements[elem.id].iri].inScheme
-          )
+          getVocabularyFromScheme(WorkspaceTerms[elem.id].inScheme)
         ].color,
       },
     });
@@ -223,9 +204,7 @@ export function setElementShape(
         cy: height / 2,
         stroke: "black",
         fill: WorkspaceVocabularies[
-          getVocabularyFromScheme(
-            WorkspaceTerms[WorkspaceElements[elem.id].iri].inScheme
-          )
+          getVocabularyFromScheme(WorkspaceTerms[elem.id].inScheme)
         ].color,
       },
     });
@@ -238,9 +217,7 @@ export function setElementShape(
         } ${width / 2},${height * (3 / 2)} ${-(width / 8)},${height / 2}`,
         stroke: "black",
         fill: WorkspaceVocabularies[
-          getVocabularyFromScheme(
-            WorkspaceTerms[WorkspaceElements[elem.id].iri].inScheme
-          )
+          getVocabularyFromScheme(WorkspaceTerms[elem.id].inScheme)
         ].color,
       },
     });
@@ -251,9 +228,7 @@ export function setElementShape(
         points: `20,0 ${width - 20},0 ${width},${height} 0,${height}`,
         stroke: "black",
         fill: WorkspaceVocabularies[
-          getVocabularyFromScheme(
-            WorkspaceTerms[WorkspaceElements[elem.id].iri].inScheme
-          )
+          getVocabularyFromScheme(WorkspaceTerms[elem.id].inScheme)
         ].color,
       },
     });
@@ -266,9 +241,7 @@ export function setElementShape(
         strokeDasharray: "10,10",
         stroke: "grey",
         fill: WorkspaceVocabularies[
-          getVocabularyFromScheme(
-            WorkspaceTerms[WorkspaceElements[elem.id].iri].inScheme
-          )
+          getVocabularyFromScheme(WorkspaceTerms[elem.id].inScheme)
         ].color,
       },
       label: { color: "grey" },
@@ -279,16 +252,12 @@ export function setElementShape(
 export function initElements(replaceInactive: boolean = false) {
   const ids: string[] = [];
   for (const iri in WorkspaceTerms) {
-    const id = getElemFromIRI(iri);
-    if (!id || (replaceInactive && id && !WorkspaceElements[id].active)) {
-      const pkg = FolderRoot.children.find(
-        (pkg) => pkg.scheme === WorkspaceTerms[iri].inScheme
-      );
-      const newID = id || (new graphElement().id as string);
-      if (pkg) {
-        addClass(newID, iri, pkg);
-        ids.push(newID);
-      }
+    if (
+      !(iri in WorkspaceElements) ||
+      (replaceInactive && !WorkspaceElements[iri].active)
+    ) {
+      addClass(iri);
+      ids.push(iri);
     }
   }
   return ids;
@@ -304,13 +273,7 @@ export function changeVocabularyCount(
       changeFunction(
         WorkspaceVocabularies[vocabulary].count[Representation.FULL]
       );
-    if (
-      _.difference(
-        RepresentationConfig[Representation.COMPACT].visibleStereotypes,
-        WorkspaceTerms[term].types
-      ).length <
-      RepresentationConfig[Representation.COMPACT].visibleStereotypes.length
-    )
+    if (isElementVisible(term, Representation.COMPACT))
       WorkspaceVocabularies[vocabulary].count[Representation.COMPACT] =
         changeFunction(
           WorkspaceVocabularies[vocabulary].count[Representation.COMPACT]

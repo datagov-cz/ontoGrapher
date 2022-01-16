@@ -1,10 +1,7 @@
 import React from "react";
 import TableList from "../../../components/TableList";
 import { WorkspaceTerms } from "../../../config/Variables";
-import {
-  getElemFromIRI,
-  getLabelOrBlank,
-} from "../../../function/FunctionGetVars";
+import { getLabelOrBlank } from "../../../function/FunctionGetVars";
 import { IntrinsicTropeTableSelect } from "./IntrinsicTropeTableSelect";
 
 interface Props {
@@ -30,7 +27,7 @@ export const IntrinsicTropeTable: React.FC<Props> = (props) => {
             <span className={"right"}>
               <button
                 className={"buttonlink"}
-                onClick={() => props.onEdit(getElemFromIRI(iri))}
+                onClick={() => props.onEdit(iri)}
               >
                 <span role="img" aria-label={"View intrinsic trope"}>
                   📝
@@ -43,7 +40,7 @@ export const IntrinsicTropeTable: React.FC<Props> = (props) => {
               <span className={"right"}>
                 <button
                   className={"buttonlink"}
-                  onClick={() => props.onRemove(getElemFromIRI(iri))}
+                  onClick={() => props.onRemove(iri)}
                 >
                   <span role="img" aria-label={"Remove intrinsic trope"}>
                     ➖
@@ -61,7 +58,7 @@ export const IntrinsicTropeTable: React.FC<Props> = (props) => {
               projectLanguage={props.projectLanguage}
               iri={props.iri}
               handleChange={(value: string) => {
-                props.onAdd(getElemFromIRI(value));
+                props.onAdd(value);
               }}
               tropes={props.tropes}
             />

@@ -4,17 +4,9 @@ import {
   changeVocabularyCount,
   deleteConcept,
 } from "../../function/FunctionEditVars";
-import {
-  AppSettings,
-  Diagrams,
-  WorkspaceElements,
-  WorkspaceTerms,
-} from "../../config/Variables";
+import { AppSettings, Diagrams, WorkspaceTerms } from "../../config/Variables";
 import { Locale } from "../../config/Locale";
-import {
-  updateDeleteTriples,
-  updateRemoveTermsFromWorkspace,
-} from "../../queries/update/UpdateMiscQueries";
+import { updateDeleteTriples } from "../../queries/update/UpdateMiscQueries";
 import {
   getVocabularyFromScheme,
   getWorkspaceContextIRI,
@@ -38,36 +30,21 @@ export default class ModalRemoveReadOnlyConcept extends React.Component<
   save() {
     removeFromFlexSearch(this.props.id);
     const vocabulary = getVocabularyFromScheme(
-      WorkspaceTerms[WorkspaceElements[this.props.id].iri].inScheme
+      WorkspaceTerms[this.props.id].inScheme
     );
-    changeVocabularyCount(
-      vocabulary,
-      (count) => count - 1,
-      WorkspaceElements[this.props.id].iri
-    );
+    changeVocabularyCount(vocabulary, (count) => count - 1, this.props.id);
     this.props.performTransaction(
       ...deleteConcept(this.props.id),
       updateDeleteTriples(
-        WorkspaceElements[this.props.id].iri + "/diagram",
+        this.props.id,
         [
           getWorkspaceContextIRI(),
           ...Object.values(Diagrams).map((diag) => diag.graph),
         ],
         true,
-        false,
+        true,
         false
-      ),
-      updateDeleteTriples(
-        WorkspaceElements[this.props.id].iri,
-        [
-          getWorkspaceContextIRI(),
-          ...Object.values(Diagrams).map((diag) => diag.graph),
-        ],
-        true,
-        true,
-        true
-      ),
-      updateRemoveTermsFromWorkspace([this.props.id])
+      )
     );
   }
 

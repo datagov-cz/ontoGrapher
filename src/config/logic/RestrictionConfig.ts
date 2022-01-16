@@ -1,15 +1,9 @@
 import { Restriction } from "../../datatypes/Restriction";
-import {
-  AppSettings,
-  WorkspaceElements,
-  WorkspaceLinks,
-  WorkspaceTerms,
-} from "../Variables";
-import { parsePrefix } from "../../function/FunctionEditVars";
+import { AppSettings, WorkspaceLinks, WorkspaceTerms } from "../Variables";
 import { addLink } from "../../function/FunctionCreateVars";
 import {
+  getActiveToConnections,
   getDefaultCardinality,
-  getElemFromIRI,
   getNewLink,
 } from "../../function/FunctionGetVars";
 import { LinkType } from "../Enum";
@@ -22,11 +16,11 @@ export const RestrictionConfig: {
   "http://www.w3.org/2002/07/owl#someValuesFrom": (
     iri: string,
     restriction: Restriction
-  ) => createConnection(iri, restriction, parsePrefix("owl", "allValuesFrom")),
+  ) => createConnection(iri, restriction),
   "http://www.w3.org/2002/07/owl#allValuesFrom": (
     iri: string,
     restriction: Restriction
-  ) => createConnection(iri, restriction, parsePrefix("owl", "someValuesFrom")),
+  ) => createConnection(iri, restriction),
   "http://www.w3.org/2002/07/owl#minQualifiedCardinality": (
     iri: string,
     restriction: Restriction
@@ -37,49 +31,31 @@ export const RestrictionConfig: {
   ) => createCardinality(iri, restriction),
 } as const;
 
-function createConnection(iri: string, restriction: Restriction, pred: string) {
+function createConnection(iri: string, restriction: Restriction) {
+  if (restriction.inverse) return;
+  const target = restriction.target;
   if (
-    _.find(WorkspaceTerms[iri].restrictions, {
-      restriction: pred,
-      onProperty: restriction.onProperty,
-      target: restriction.target,
-      // We only need to remember which links do we need
-      // to push an inverse into the DB for
-      // - the inverse restrictions are only used for cardinality creation.
-      // We don't actually create inverse WorkspaceLinks links.
-      inverse: false,
-    })
+    !getActiveToConnections(iri).find(
+      (conn) =>
+        WorkspaceLinks[conn].iri === restriction.onProperty &&
+        WorkspaceLinks[conn].target === target
+    ) &&
+    target in WorkspaceTerms
   ) {
-    const id = getElemFromIRI(iri);
-    const target = getElemFromIRI(restriction.target);
-    if (
-      id &&
-      target &&
-      !WorkspaceElements[id].connections.find(
-        (conn) =>
-          WorkspaceLinks[conn].iri === restriction.onProperty &&
-          WorkspaceLinks[conn].target === target
-      )
-    ) {
-      const link = getNewLink(LinkType.DEFAULT);
-      const linkID = link.id as string;
-      addLink(linkID, restriction.onProperty, id, target);
-      WorkspaceElements[id].connections.push(linkID);
-      return linkID;
-    }
+    const link = getNewLink(LinkType.DEFAULT);
+    const linkID = link.id as string;
+    addLink(linkID, restriction.onProperty, iri, target);
+    return linkID;
   }
 }
 
 function createCardinality(iri: string, restriction: Restriction) {
-  const elemID = getElemFromIRI(iri);
-  if (elemID && restriction.target && restriction.onClass) {
+  if (iri && restriction.target && restriction.onClass) {
     const linkID = Object.keys(WorkspaceLinks).find(
       (link) =>
-        WorkspaceElements[elemID].connections.includes(link) &&
-        WorkspaceLinks[link].active &&
+        getActiveToConnections(restriction.source).includes(link) &&
         WorkspaceLinks[link].iri === restriction.onProperty &&
-        restriction.onClass ===
-          WorkspaceElements[WorkspaceLinks[link].target].iri
+        restriction.onClass === WorkspaceLinks[link].target
     );
     if (linkID) {
       const pos = restriction.restriction.includes("max");

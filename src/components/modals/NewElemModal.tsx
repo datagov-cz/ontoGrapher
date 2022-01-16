@@ -1,21 +1,15 @@
 import React from "react";
 import { Button, Form, Modal } from "react-bootstrap";
-import {
-  AppSettings,
-  FolderRoot,
-  WorkspaceVocabularies,
-} from "../../config/Variables";
+import { AppSettings, WorkspaceVocabularies } from "../../config/Variables";
 import _ from "lodash";
 import { ElemCreationConfiguration } from "./CreationModals";
-import { VocabularyNode } from "../../datatypes/VocabularyNode";
-import { getVocabularyFromScheme } from "../../function/FunctionGetVars";
 import { initLanguageObject } from "../../function/FunctionEditVars";
 import { Locale } from "../../config/Locale";
 import { NewElemForm } from "./NewElemForm";
 
 interface Props {
   modal: boolean;
-  close: (names?: State["termName"], pkg?: VocabularyNode) => void;
+  close: (names?: State["termName"], vocabulary?: string) => void;
   projectLanguage: string;
   configuration: ElemCreationConfiguration;
 }
@@ -23,20 +17,19 @@ interface Props {
 interface State {
   termName: { [key: string]: string };
   errorText: string;
-  selectedVocabulary: VocabularyNode;
+  selectedVocabulary: string;
 }
 
 export default class NewElemModal extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props);
-    const pkg = FolderRoot.children.find(
-      (pkg) =>
-        !WorkspaceVocabularies[getVocabularyFromScheme(pkg.scheme)].readOnly
+    const vocab = Object.keys(WorkspaceVocabularies).find(
+      (vocab) => !WorkspaceVocabularies[vocab].readOnly
     );
-    if (!pkg) this.props.close();
+    if (!vocab) this.props.close();
     this.state = {
       termName: initLanguageObject(""),
-      selectedVocabulary: pkg ? pkg : FolderRoot,
+      selectedVocabulary: vocab ? vocab : "",
       errorText: Locale[AppSettings.interfaceLanguage].modalNewElemError,
     };
     this.save = this.save.bind(this);
@@ -59,19 +52,17 @@ export default class NewElemModal extends React.Component<Props, State> {
         onEscapeKeyDown={() => this.props.close()}
         onHide={() => this.props.close}
         onEntering={() => {
-          if (this.state.selectedVocabulary === FolderRoot) {
-            const pkg = FolderRoot.children.find(
-              (pkg) =>
-                !WorkspaceVocabularies[getVocabularyFromScheme(pkg.scheme)]
-                  .readOnly
+          if (!this.state.selectedVocabulary) {
+            const vocab = Object.keys(WorkspaceVocabularies).find(
+              (vocab) => !WorkspaceVocabularies[vocab].readOnly
             );
-            if (!pkg) this.props.close();
+            if (!vocab) this.props.close();
             else
               this.setState({
                 termName: initLanguageObject(""),
                 errorText:
                   Locale[AppSettings.interfaceLanguage].modalNewElemError,
-                selectedVocabulary: pkg,
+                selectedVocabulary: vocab,
               });
           } else
             this.setState({
@@ -95,23 +86,24 @@ export default class NewElemModal extends React.Component<Props, State> {
           }}
         >
           <Modal.Body>
-            <NewElemForm
-              lockVocabulary={this.props.configuration.pkg !== FolderRoot}
-              projectLanguage={this.props.projectLanguage}
-              termName={this.state.termName}
-              selectedVocabulary={this.state.selectedVocabulary}
-              errorText={this.state.errorText}
-              setTermName={(name, lang) =>
-                this.setState((prevState) => ({
-                  ...prevState,
-                  termName: { ...prevState.termName, [lang]: name },
-                }))
-              }
-              setSelectedVocabulary={(p) =>
-                this.setState({ selectedVocabulary: p })
-              }
-              setErrorText={(s) => this.setState({ errorText: s })}
-            />
+            {this.state.selectedVocabulary && (
+              <NewElemForm
+                projectLanguage={this.props.projectLanguage}
+                termName={this.state.termName}
+                selectedVocabulary={this.state.selectedVocabulary}
+                errorText={this.state.errorText}
+                setTermName={(name, lang) =>
+                  this.setState((prevState) => ({
+                    ...prevState,
+                    termName: { ...prevState.termName, [lang]: name },
+                  }))
+                }
+                setSelectedVocabulary={(p) =>
+                  this.setState({ selectedVocabulary: p })
+                }
+                setErrorText={(s) => this.setState({ errorText: s })}
+              />
+            )}
           </Modal.Body>
           <Modal.Footer>
             <Button

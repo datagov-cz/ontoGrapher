@@ -3,7 +3,6 @@ import { initLanguageObject } from "../../../function/FunctionEditVars";
 import {
   AppSettings,
   Diagrams,
-  FolderRoot,
   WorkspaceElements,
   WorkspaceLinks,
   WorkspaceTerms,
@@ -65,20 +64,12 @@ export async function updateLegacyWorkspaceToVersion2(
       getLegacyWorkspaceContext(),
       Object.keys(elements).map((element) =>
         [
-          qb.s(qb.i(elements[element].iri), "rdf:type", "og:element"),
-          qb.s(qb.i(elements[element].iri), "og:id", qb.ll(element)),
+          qb.s(qb.i(element), "rdf:type", "og:element"),
+          qb.s(qb.i(element), "og:id", qb.ll(element)),
+          qb.s(qb.i(element), "og:iri", qb.i(element)),
+          qb.s(qb.i(element), "og:scheme", qb.i(terms[element].inScheme)),
           qb.s(
-            qb.i(elements[element].iri),
-            "og:iri",
-            qb.i(elements[element].iri)
-          ),
-          qb.s(
-            qb.i(elements[element].iri),
-            "og:scheme",
-            qb.i(terms[elements[element].iri].inScheme)
-          ),
-          qb.s(
-            qb.i(elements[element].iri),
+            qb.i(element),
             "og:name",
             qb.a(
               Object.keys(elements[element].selectedLabel).map((lang) =>
@@ -87,22 +78,16 @@ export async function updateLegacyWorkspaceToVersion2(
             )
           ),
           qb.s(
-            qb.i(elements[element].iri),
+            qb.i(element),
             "og:diagram",
             qb.a(
               Object.keys(elements[element].hidden).map((diag) =>
-                qb.i(
-                  `${elements[element].iri}/diagram-${diagrams[diag].index + 1}`
-                )
+                qb.i(`${element}/diagram-${diagrams[diag].index + 1}`)
               )
             ),
             Object.keys(diagrams).length > 0
           ),
-          qb.s(
-            qb.i(elements[element].iri),
-            "og:active",
-            qb.ll(elements[element].active)
-          ),
+          qb.s(qb.i(element), "og:active", qb.ll(elements[element].active)),
         ].join(`
   `)
       )
@@ -110,16 +95,10 @@ export async function updateLegacyWorkspaceToVersion2(
   );
   Object.keys(elements).forEach((element) =>
     Object.keys(elements[element].hidden).forEach((diagram) => {
-      const diagramIRI = `${elements[element].iri}/diagram-${
-        diagrams[diagram].index + 1
-      }`;
+      const diagramIRI = `${element}/diagram-${diagrams[diagram].index + 1}`;
       triples.push(
         qb.g(getLegacyWorkspaceContext(), [
-          qb.s(
-            qb.i(`${elements[element].iri}`),
-            "og:diagram",
-            qb.i(diagramIRI)
-          ),
+          qb.s(qb.i(`${element}`), "og:diagram", qb.i(diagramIRI)),
           qb.s(qb.i(diagramIRI), "rdf:type", "og:elementDiagram"),
           qb.s(qb.i(diagramIRI), "og:index", qb.ll(diagram)),
           qb.s(
@@ -151,10 +130,8 @@ export async function updateLegacyWorkspaceToVersion2(
           qb.s(linkIRI, "og:id", qb.ll(link)),
           qb.s(linkIRI, "og:iri", qb.i(links[link].iri)),
           qb.s(linkIRI, "og:active", qb.ll(links[link].active)),
-          qb.s(linkIRI, "og:source-id", qb.ll(links[link].source)),
-          qb.s(linkIRI, "og:target-id", qb.ll(links[link].target)),
-          qb.s(linkIRI, "og:source", qb.i(elements[links[link].source].iri)),
-          qb.s(linkIRI, "og:target", qb.i(elements[links[link].target].iri)),
+          qb.s(linkIRI, "og:source", qb.ll(links[link].source)),
+          qb.s(linkIRI, "og:target", qb.ll(links[link].target)),
           qb.s(linkIRI, "og:type", qb.ll(LinkConfig[links[link].type].id)),
           qb.s(
             linkIRI,
@@ -446,8 +423,6 @@ async function getLegacyConnections(
       iri: string;
       source: string;
       target: string;
-      targetID: string;
-      sourceID: string;
       vertexIRI: {
         [key: string]: {
           index: number;
@@ -476,8 +451,6 @@ async function getLegacyConnections(
             iri: result.iri.value,
             source: result.source.value,
             target: result.target.value,
-            targetID: result.targetID.value,
-            sourceID: result.sourceID.value,
             active: result.active.value === "true",
             vertexIRI: {},
             vertices: {},
@@ -518,9 +491,9 @@ async function getLegacyConnections(
           }
         }
         let sourceID, targetID;
-        for (let id in elements) {
-          if (elements[id].iri === iter[link].source) sourceID = id;
-          if (elements[id].iri === iter[link].target) targetID = id;
+        for (const id in elements) {
+          if (id === iter[link].source) sourceID = id;
+          if (id === iter[link].target) targetID = id;
           if (targetID && sourceID) break;
         }
 
@@ -543,11 +516,6 @@ async function getLegacyConnections(
             hasInverse: false,
             linkIRI: getLinkIRI(link),
           };
-          if (sourceID) {
-            if (!elements[sourceID].connections.includes(link)) {
-              elements[sourceID].connections.push(link);
-            }
-          }
         }
       }
       return links;
@@ -589,14 +557,11 @@ async function getLegacyElements(
     })
     .then((data) => {
       for (const result of data.results.bindings) {
-        const id = result.id.value;
+        const id = result.iri.value;
         if (!(id in elements)) {
           elements[id] = {
-            iri: result.iri.value,
-            connections: [],
             hidden: {},
             position: {},
-            vocabularyNode: FolderRoot,
             active: result.active.value === "true",
             selectedLabel: initLanguageObject(""),
           };

@@ -2,7 +2,6 @@ import React from "react";
 import { ReactComponent as HiddenElementSVG } from "../../../../svg/hiddenElement.svg";
 import {
   AppSettings,
-  WorkspaceElements,
   WorkspaceLinks,
   WorkspaceTerms,
   WorkspaceVocabularies,
@@ -83,9 +82,7 @@ export default class ConnectionWorkspace extends React.Component<Props, State> {
         }
         backgroundColor={
           WorkspaceVocabularies[
-            getVocabularyFromScheme(
-              WorkspaceTerms[WorkspaceElements[elemID].iri].inScheme
-            )
+            getVocabularyFromScheme(WorkspaceTerms[elemID].inScheme)
           ].color
         }
       />

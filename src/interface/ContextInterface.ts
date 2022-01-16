@@ -1,11 +1,9 @@
 import {
   AppSettings,
-  FolderRoot,
   WorkspaceElements,
   WorkspaceTerms,
   WorkspaceVocabularies,
 } from "../config/Variables";
-import { VocabularyNode } from "../datatypes/VocabularyNode";
 import { processQuery, processTransaction } from "./TransactionInterface";
 import { fetchConcepts, fetchVocabulary } from "../queries/get/FetchQueries";
 import { getElementsConfig, getLinksConfig } from "../queries/get/InitQueries";
@@ -103,28 +101,22 @@ export async function getContext(
     WorkspaceVocabularies[vocab].readOnly = false;
     WorkspaceVocabularies[vocab].graph = vocabularies[vocab].graph;
     Object.assign(WorkspaceTerms, vocabularies[vocab].terms);
-    new VocabularyNode(
-      WorkspaceVocabularies[vocab].labels,
-      FolderRoot,
-      false,
-      vocabularies[vocab].glossary
-    );
   }
   if (!(await getElementsConfig(AppSettings.contextEndpoint))) return false;
   if (!(await getLinksConfig(AppSettings.contextEndpoint))) return false;
-  const missingTerms: string[] = Object.keys(WorkspaceElements)
-    .filter((id) => !(WorkspaceElements[id].iri in WorkspaceTerms))
-    .map((id) => WorkspaceElements[id].iri);
+  const missingTerms: string[] = Object.keys(WorkspaceElements).filter(
+    (id) => !(id in WorkspaceTerms)
+  );
   insertNewCacheTerms(
     await fetchReadOnlyTerms(AppSettings.contextEndpoint, missingTerms)
   );
   Object.keys(WorkspaceElements)
-    .filter((id) => !(WorkspaceElements[id].iri in WorkspaceTerms))
+    .filter((id) => !(id in WorkspaceTerms))
     .forEach((id) => {
       // In all probability, the workspace has been modified outside of OG
       // *OR* OG deletes its terms incorrectly.
       console.error(
-        `Corresponding term ${WorkspaceElements[id].iri} not found for element ID ${id}.`
+        `Term ${id} not found in vocabulary contexts nor cache contexts.`
       );
       deleteConcept(id);
     });

@@ -11,13 +11,11 @@ import {
 } from "../../config/Variables";
 import { Accordion, Button, Card, Form } from "react-bootstrap";
 import TableList from "../../components/TableList";
-import IRIlabel from "../../components/IRIlabel";
 import IRILink from "../../components/IRILink";
 import { ResizableBox } from "react-resizable";
 import { graph } from "../../graph/Graph";
 import DescriptionTabs from "./components/DescriptionTabs";
 import {
-  getElemFromIRI,
   getLabelOrBlank,
   getLinkOrVocabElem,
   getUnderlyingFullConnections,
@@ -37,6 +35,7 @@ import { updateConnections } from "../../queries/update/UpdateConnectionQueries"
 import AltLabelTable from "./components/AltLabelTable";
 import { updateProjectElement } from "../../queries/update/UpdateElementQueries";
 import LabelTable from "./components/LabelTable";
+import IRILabel from "../../components/IRILabel";
 
 interface Props {
   projectLanguage: string;
@@ -90,7 +89,7 @@ export default class DetailLink extends React.Component<Props, State> {
     const iri =
       id in WorkspaceElements
         ? WorkspaceLinks[id].iri
-        : WorkspaceElements[WorkspaceLinks[id].source].iri;
+        : WorkspaceLinks[id].source;
     return WorkspaceVocabularies[
       getVocabularyFromScheme(WorkspaceTerms[iri].inScheme)
     ].readOnly;
@@ -150,7 +149,6 @@ export default class DetailLink extends React.Component<Props, State> {
         (card) =>
           card.getString() === WorkspaceLinks[id].targetCardinality.getString()
       );
-      const elem = getElemFromIRI(iri);
       this.setState({
         sourceCardinality:
           sourceCardinality === -1 ? "0" : sourceCardinality.toString(10),
@@ -161,9 +159,10 @@ export default class DetailLink extends React.Component<Props, State> {
         inputAltLabels:
           iri in WorkspaceTerms ? WorkspaceTerms[iri].altLabels : [],
         changes: false,
-        selectedLabel: elem
-          ? WorkspaceElements[elem].selectedLabel
-          : initLanguageObject(""),
+        selectedLabel:
+          iri in WorkspaceElements
+            ? WorkspaceElements[iri].selectedLabel
+            : initLanguageObject(""),
         newAltInput: "",
         inputLabels: getLinkOrVocabElem(iri).labels,
         readOnly: this.isReadOnly(id),
@@ -194,18 +193,19 @@ export default class DetailLink extends React.Component<Props, State> {
       } else {
         const link = graph.getLinks().find((link) => link.id === this.state.id);
         if (link) {
-          const elem = getElemFromIRI(this.state.iri);
-          if (elem) {
-            WorkspaceElements[elem].selectedLabel = this.state.selectedLabel;
-            WorkspaceTerms[WorkspaceElements[elem].iri].altLabels =
+          if (this.state.iri) {
+            WorkspaceElements[this.state.iri].selectedLabel =
+              this.state.selectedLabel;
+            WorkspaceTerms[this.state.iri].altLabels =
               this.state.inputAltLabels;
             setLabels(
               link,
-              WorkspaceElements[elem].selectedLabel[this.props.projectLanguage]
+              WorkspaceElements[this.state.iri].selectedLabel[
+                this.props.projectLanguage
+              ]
             );
-            WorkspaceTerms[WorkspaceElements[elem].iri].labels =
-              this.state.inputLabels;
-            queries.push(updateProjectElement(true, elem));
+            WorkspaceTerms[this.state.iri].labels = this.state.inputLabels;
+            queries.push(updateProjectElement(true, this.state.iri));
           }
           const underlyingConnections = getUnderlyingFullConnections(link);
           if (underlyingConnections) {
@@ -412,7 +412,7 @@ export default class DetailLink extends React.Component<Props, State> {
                                 </Form.Control>
                               </td>
                             ) : (
-                              <IRIlabel
+                              <IRILabel
                                 label={getLabelOrBlank(
                                   getLinkOrVocabElem(this.state.iri).labels,
                                   this.props.projectLanguage
@@ -571,7 +571,7 @@ export default class DetailLink extends React.Component<Props, State> {
                           ].labels
                         ).map((lang) => (
                           <tr key={lang}>
-                            <IRIlabel
+                            <IRILabel
                               label={
                                 WorkspaceVocabularies[
                                   getVocabularyFromScheme(

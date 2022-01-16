@@ -1,6 +1,6 @@
 export const en = {
   untitledProject: "Untitled workspace",
-  unsorted: "Unsorted",
+  unsorted: "No type",
   updating: "Saving...",
   newVersion:
     "Ontographer has been updated with new functions since you were gone! Click here to see a detailed changelog.",
