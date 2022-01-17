@@ -1,6 +1,5 @@
 import {
   AppSettings,
-  FolderRoot,
   Links,
   WorkspaceElements,
   WorkspaceLinks,
@@ -157,23 +156,18 @@ export function saveNewLink(
       queries.push(...updateConnection(sid, tid, id, type, iri, true));
     } else {
       const find = Object.keys(WorkspaceElements).find(
-        (elem) =>
-          WorkspaceElements[elem].active && WorkspaceElements[elem].iri === iri
+        (elem) => WorkspaceElements[elem].active && elem === iri
       );
-      let property = find ? new graphElement({ id: find }) : new graphElement();
-      let source = getNewLink();
-      let target = getNewLink();
+      if (!find) {
+        throw new Error(`Error initializing compact relationship ${id}.`);
+      }
+      const property = new graphElement({ id: find });
+      const source = getNewLink();
+      const target = getNewLink();
       const sourceId = source.id as string;
       const propertyId = property.id as string;
       const targetId = target.id as string;
-      const pkg =
-        FolderRoot.children.find(
-          (pkg) =>
-            pkg.scheme === WorkspaceTerms[WorkspaceElements[sid].iri].inScheme
-        ) || FolderRoot;
-      if (!find) addClass(propertyId, iri, pkg);
-      WorkspaceElements[property.id].connections.push(sourceId);
-      WorkspaceElements[property.id].connections.push(targetId);
+      if (!find) addClass(iri);
       queries.push(
         updateProjectElement(true, propertyId),
         ...updateConnection(propertyId, sid, sourceId, type, mvp1IRI),
@@ -227,7 +221,6 @@ export function updateConnection(
       ? getDefaultCardinality()
       : Links[iri].defaultTargetCardinality;
   }
-  WorkspaceElements[sid].connections.push(linkID);
   return [updateConnections(linkID), updateProjectLink(true, linkID)];
 }
 
@@ -305,8 +298,7 @@ export function addLinkTools(
         const compactConn = Object.keys(WorkspaceLinks).find(
           (link) =>
             WorkspaceLinks[link].active &&
-            WorkspaceLinks[link].iri ===
-              WorkspaceElements[WorkspaceLinks[id].source].iri &&
+            WorkspaceLinks[link].iri === WorkspaceLinks[id].source &&
             WorkspaceLinks[link].target === WorkspaceLinks[id].target
         );
         if (compactConn) {
@@ -340,8 +332,7 @@ export function addLinkTools(
   const readOnly =
     WorkspaceVocabularies[
       getVocabularyFromScheme(
-        WorkspaceTerms[WorkspaceElements[WorkspaceLinks[id].source].iri]
-          .inScheme
+        WorkspaceTerms[WorkspaceLinks[id].source].inScheme
       )
     ].readOnly;
   const tools = [verticesTool, segmentsTool];

@@ -5,7 +5,6 @@ import {
   highlightElement,
   resetDiagramSelection,
 } from "../../function/FunctionDiagram";
-import { VocabularyNode } from "../../datatypes/VocabularyNode";
 import { ElemCreationStrategy, Representation } from "../../config/Enum";
 import { createTerm } from "../../function/FunctionCreateElem";
 import { saveNewLink } from "../../function/FunctionLink";
@@ -14,13 +13,15 @@ import { setRepresentation } from "../../function/FunctionGraph";
 import { getElementPosition } from "../../function/FunctionElem";
 import { graph } from "../../graph/Graph";
 import { drawGraphElement } from "../../function/FunctionDraw";
+import { initConnections } from "../../function/FunctionRestriction";
+import { updateProjectLink } from "../../queries/update/UpdateLinkQueries";
 
 export type ElemCreationConfiguration = {
   strategy: ElemCreationStrategy;
   position: { x: number; y: number };
   connections: string[];
   header: string;
-  pkg: VocabularyNode;
+  vocabulary: string;
 };
 
 export type LinkCreationConfiguration = { sourceID: string; targetID: string };
@@ -66,21 +67,22 @@ export const CreationModals: React.FC<Props> = (props) => {
         }}
         closeElem={(
           conceptName?: { [key: string]: string },
-          pkg?: VocabularyNode
+          vocabulary?: string
         ) => {
           setModalAddLink(false);
-          if (conceptName && pkg) {
+          if (conceptName && vocabulary) {
             props.performTransaction(
               ...createTerm(
                 conceptName,
-                pkg,
+                vocabulary,
                 ElemCreationStrategy.RELATOR_TYPE,
                 getElementPosition(props.linkConfiguration.sourceID),
                 [
                   props.linkConfiguration.sourceID,
                   props.linkConfiguration.targetID,
                 ]
-              )
+              ),
+              updateProjectLink(false, ...initConnections())
             );
             setRepresentation(Representation.COMPACT);
             AppSettings.selectedElements = [];
@@ -94,14 +96,14 @@ export const CreationModals: React.FC<Props> = (props) => {
         configuration={props.elemConfiguration}
         close={(
           conceptName?: { [key: string]: string },
-          pkg?: VocabularyNode
+          vocabulary?: string
         ) => {
           setModalAddElem(false);
-          if (conceptName && pkg) {
+          if (conceptName && vocabulary) {
             props.performTransaction(
               ...createTerm(
                 conceptName,
-                pkg,
+                vocabulary,
                 props.elemConfiguration.strategy,
                 props.elemConfiguration.position,
                 props.elemConfiguration.connections

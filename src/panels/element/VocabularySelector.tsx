@@ -1,14 +1,7 @@
 import React from "react";
 import Select from "react-select";
-import {
-  getLabelOrBlank,
-  getVocabularyFromScheme,
-} from "../../function/FunctionGetVars";
-import {
-  AppSettings,
-  FolderRoot,
-  WorkspaceVocabularies,
-} from "../../config/Variables";
+import { getLabelOrBlank } from "../../function/FunctionGetVars";
+import { AppSettings, WorkspaceVocabularies } from "../../config/Variables";
 import { CacheSearchVocabularies } from "../../datatypes/CacheSearchResults";
 import { Locale } from "../../config/Locale";
 
@@ -25,21 +18,15 @@ export class VocabularySelector extends React.Component<Props, State> {
     label: string;
     options: { value: string; label: string }[];
   }[] {
-    const existingOptions = Object.keys(WorkspaceVocabularies)
-      .filter((scheme) =>
-        FolderRoot.children.find(
-          (pkg) => getVocabularyFromScheme(pkg.scheme) === scheme
-        )
-      )
-      .map((scheme) => {
-        return {
-          label: getLabelOrBlank(
-            WorkspaceVocabularies[scheme].labels,
-            this.props.projectLanguage
-          ),
-          value: scheme,
-        };
-      });
+    const existingOptions = Object.keys(WorkspaceVocabularies).map((scheme) => {
+      return {
+        label: getLabelOrBlank(
+          WorkspaceVocabularies[scheme].labels,
+          this.props.projectLanguage
+        ),
+        value: scheme,
+      };
+    });
     const otherOptions = Object.keys(CacheSearchVocabularies).map((scheme) => {
       return {
         label: getLabelOrBlank(

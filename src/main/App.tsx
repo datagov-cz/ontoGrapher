@@ -5,9 +5,9 @@ import DiagramCanvas from "./DiagramCanvas";
 import {
   AppSettings,
   Diagrams,
-  FolderRoot,
   WorkspaceElements,
   WorkspaceLinks,
+  WorkspaceTerms,
 } from "../config/Variables";
 import DetailPanel from "../panels/DetailPanel";
 import { getVocabulariesFromRemoteJSON } from "../interface/JSONInterface";
@@ -32,6 +32,7 @@ import {
   getLastChangeDay,
   getLinkOrVocabElem,
   getLocalStorageKey,
+  getVocabularyFromScheme,
   setSchemeColors,
 } from "../function/FunctionGetVars";
 import { getSettings } from "../queries/get/InitQueries";
@@ -115,7 +116,7 @@ export default class App extends React.Component<
         position: { x: 0, y: 0 },
         connections: [],
         header: "",
-        pkg: FolderRoot,
+        vocabulary: "",
       },
       newLinkConfiguration: { sourceID: "", targetID: "" },
     };
@@ -472,10 +473,9 @@ export default class App extends React.Component<
             this.handleCreation({
               strategy: ElemCreationStrategy.INTRINSIC_TROPE_TYPE,
               connections: [source],
-              pkg:
-                FolderRoot.children.find((pkg) =>
-                  pkg.elements.includes(source)
-                ) || FolderRoot,
+              vocabulary: getVocabularyFromScheme(
+                WorkspaceTerms[source].inScheme
+              ),
               position: getElementPosition(source),
               header:
                 Locale[AppSettings.interfaceLanguage]

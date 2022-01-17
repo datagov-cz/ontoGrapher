@@ -12,7 +12,6 @@ import { RestrictionConfig } from "../../config/logic/RestrictionConfig";
 import { LinkType } from "../../config/Enum";
 import { createRestriction } from "../../function/FunctionRestriction";
 import { Restriction } from "../../datatypes/Restriction";
-import _ from "lodash";
 import { createCount } from "../../function/FunctionCreateVars";
 
 /**
@@ -115,7 +114,7 @@ export async function fetchConcepts(
     "PREFIX skos: <http://www.w3.org/2004/02/skos/core#>",
     "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>",
     "PREFIX z-sgov-pojem: <https://slovník.gov.cz/základní/pojem/>",
-    "SELECT DISTINCT ?term ?termLabel ?termAltLabel ?termType ?termDefinition ?termDomain ?termRange ?topConcept ?inverseOf ?inverseOnProperty ?character ?restriction ?restrictionPred ?onProperty ?onClass ?target ?subClassOf",
+    "SELECT DISTINCT ?term ?termLabel ?termAltLabel ?termType ?termDefinition ?topConcept ?inverseOf ?inverseOnProperty ?character ?restriction ?restrictionPred ?onProperty ?onClass ?target ?subClassOf",
     "WHERE {",
     graph && "GRAPH <" + graph + "> {",
     vocabulary
@@ -133,8 +132,6 @@ export async function fetchConcepts(
     "OPTIONAL {?term skos:altLabel ?termAltLabel.}",
     "OPTIONAL {?term skos:definition ?termDefinition.}",
     "OPTIONAL {?term z-sgov-pojem:charakterizuje ?character.}",
-    "OPTIONAL {?term rdfs:domain ?termDomain.}",
-    "OPTIONAL {?term rdfs:range ?termRange.}",
     "OPTIONAL {?term rdfs:subClassOf ?subClassOf. ",
     "filter (!isBlank(?subClassOf)) }",
     "OPTIONAL {?term owl:inverseOf ?inverseOf. }",
@@ -155,6 +152,7 @@ export async function fetchConcepts(
     .then((response) => response.json())
     .then((data) => {
       if (data.results.bindings.length === 0) return false;
+      const restrictions: Restriction[] = [];
       for (const row of data.results.bindings) {
         if (!(row.term.value in result)) {
           result[row.term.value] = {
@@ -217,38 +215,26 @@ export async function fetchConcepts(
           !result[row.term.value].subClassOf.includes(row.subClassOf.value)
         )
           result[row.term.value].subClassOf.push(row.subClassOf.value);
-        if (row.restriction)
-          createRestriction(
-            result[row.term.value].restrictions,
-            row.restrictionPred.value,
-            !!row.inverseOnProperty
-              ? row.inverseOnProperty.value
-              : row.onProperty.value,
-            row.target,
-            !!row.inverseOnProperty,
-            row.onClass ? row.onClass.value : undefined
+        if (row.restriction && row.target.type !== "bnode")
+          restrictions.push(
+            new Restriction(
+              row.term.value,
+              row.restrictionPred.value,
+              !!row.inverseOnProperty
+                ? row.inverseOnProperty.value
+                : row.onProperty.value,
+              row.target.value,
+              row.onClass ? row.onClass.value : undefined,
+              !!row.inverseOnProperty
+            )
           );
         if (row.inverseOf)
           result[row.term.value].inverseOf = row.inverseOf.value;
       }
-      for (const term in result) {
-        result[term].restrictions = result[term].restrictions.filter((r) =>
-          Object.keys(Links).includes(r.onProperty)
-        );
-        // Any inverse restriction is, for purposes of convenience,
-        // saved under the original restriction's origin term.
-        // This will enable us to implement source cardinality recognition more easily.
-        result[term].restrictions
-          .filter((restriction) => restriction.inverse && restriction.onClass)
-          .forEach((restriction) => {
-            const inverseRestriction = _.cloneDeep(restriction);
-            inverseRestriction.onClass = term;
-            result[restriction.onClass!].restrictions.push(inverseRestriction);
-            result[term].restrictions.splice(
-              result[term].restrictions.indexOf(restriction),
-              1
-            );
-          });
+      for (const restriction of restrictions.filter(
+        (r) => Object.keys(Links).includes(r.onProperty) && r.source in result
+      )) {
+        createRestriction(restriction, result[restriction.source].restrictions);
       }
       Object.assign(sendTo, result);
       return true;

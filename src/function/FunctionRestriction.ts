@@ -5,71 +5,90 @@ import {
   WorkspaceTerms,
 } from "../config/Variables";
 import { Restriction } from "../datatypes/Restriction";
-import { getElemFromIRI, getNewLink } from "./FunctionGetVars";
+import { getActiveToConnections, getNewLink } from "./FunctionGetVars";
 import { LinkType } from "../config/Enum";
 import { addLink } from "./FunctionCreateVars";
+import { parsePrefix } from "./FunctionEditVars";
+import { constructFullConnections } from "./FunctionLink";
+import { mvp1IRI, mvp2IRI } from "./FunctionGraph";
+import _ from "lodash";
 
 export function createRestriction(
-  restrictions: Restriction[],
-  restriction: string,
-  onProperty: string,
-  target: { type: string; value: string },
-  inverse: boolean,
-  onClass?: string
+  restriction: Restriction,
+  restrictions: Restriction[]
 ) {
-  if (target.type !== "bnode") {
-    const newRestriction = new Restriction(
-      restriction,
-      onProperty,
-      target.value,
-      onClass,
-      inverse
-    );
-    for (const rest of restrictions) {
-      if (rest.compare(newRestriction)) {
-        return;
-      }
+  for (const rest of restrictions) {
+    if (rest.compare(restriction)) {
+      return;
     }
-    restrictions.push(newRestriction);
-    restrictions.sort((a: Restriction, b: Restriction) =>
-      a.restriction.localeCompare(b.restriction)
-    );
   }
+  restrictions.push(restriction);
 }
 
 export function initConnections(): string[] {
   const linksToPush = [];
+  const restrictions = _.flatten(
+    Object.keys(WorkspaceTerms).map((term) => WorkspaceTerms[term].restrictions)
+  ).sort((a, b) => a.restriction.localeCompare(b.restriction));
+  for (const restriction of restrictions) {
+    const newLink = restriction.initRestriction(restriction.source);
+    if (newLink) linksToPush.push(newLink);
+  }
   for (const iri in WorkspaceTerms) {
-    for (const restriction of WorkspaceTerms[iri].restrictions) {
-      const newLink = restriction.initRestriction(iri);
-      if (newLink) linksToPush.push(newLink);
-    }
-
     for (const subClassOf of WorkspaceTerms[iri].subClassOf) {
       if (subClassOf in WorkspaceTerms) {
-        const domainID = getElemFromIRI(iri);
         const rangeID = Object.keys(WorkspaceElements).find(
-          (element) => WorkspaceElements[element].iri === subClassOf
+          (element) => element === subClassOf
         );
         if (
-          domainID &&
           rangeID &&
-          !WorkspaceElements[domainID].connections.find(
-            (conn) =>
-              WorkspaceElements[WorkspaceLinks[conn].target].iri === subClassOf
+          !getActiveToConnections(iri).find(
+            (conn) => WorkspaceLinks[conn].target === subClassOf
           )
         ) {
-          let linkGeneralization = getNewLink(LinkType.GENERALIZATION);
+          const linkGeneralization = getNewLink(LinkType.GENERALIZATION);
           const id = linkGeneralization.id as string;
           addLink(
             id,
             AppSettings.ontographerContext + "/uml/generalization",
-            domainID,
+            iri,
             rangeID,
             LinkType.GENERALIZATION
           );
-          WorkspaceElements[domainID].connections.push(id);
           linksToPush.push(id);
+        }
+      }
+    }
+    if (
+      WorkspaceTerms[iri].types.includes(
+        parsePrefix("z-sgov-pojem", "typ-vztahu")
+      )
+    ) {
+      const connections: string[] = getActiveToConnections(iri);
+      if (connections.length > 1) {
+        const sourceLink: string | undefined = connections.find(
+          (src) => WorkspaceLinks[src].iri === mvp1IRI
+        );
+        const targetLink: string | undefined = connections.find(
+          (src) => WorkspaceLinks[src].iri === mvp2IRI
+        );
+        if (sourceLink && targetLink) {
+          const source = WorkspaceLinks[sourceLink].target;
+          const target = WorkspaceLinks[targetLink].target;
+          const find = Object.keys(WorkspaceLinks).find(
+            (link) =>
+              WorkspaceLinks[link].active &&
+              WorkspaceLinks[link].iri === iri &&
+              WorkspaceLinks[link].source === source &&
+              WorkspaceLinks[link].target === target
+          );
+          if (!find) {
+            const newLink = getNewLink();
+            const newLinkID = newLink.id as string;
+            addLink(newLinkID, iri, source, target);
+            constructFullConnections(newLinkID, sourceLink, targetLink);
+            linksToPush.push(newLinkID);
+          }
         }
       }
     }

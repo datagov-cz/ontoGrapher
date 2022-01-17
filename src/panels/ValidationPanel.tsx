@@ -9,7 +9,7 @@ import {
   WorkspaceTerms,
 } from "../config/Variables";
 import { graph } from "../graph/Graph";
-import IRIlabel from "../components/IRIlabel";
+import IRILabel from "../components/IRILabel";
 import { Locale } from "../config/Locale";
 import { highlightCell } from "../function/FunctionDraw";
 import { validateWorkspace } from "../interface/ValidationInterface";
@@ -77,12 +77,8 @@ export default class ValidationPanel extends React.Component<Props, State> {
   }
 
   focus(node: string) {
-    const cellElem = graph
-      .getElements()
-      .find((element) => WorkspaceElements[element.id].iri === node);
-    const cellLink = graph
-      .getLinks()
-      .find((element) => WorkspaceLinks[element.id].iri === node);
+    const cellElem = graph.getElements().find((element) => element.id === node);
+    const cellLink = graph.getLinks().find((element) => element.id === node);
     if (cellElem)
       if (typeof cellElem.id === "string") {
         highlightCell(cellElem.id, "#FFFF00");
@@ -96,16 +92,13 @@ export default class ValidationPanel extends React.Component<Props, State> {
   highlight() {
     const iriList = this.state.results.map((result) => result.focusNode);
     graph.getCells().forEach((cell) => {
-      if (
-        cell.id in WorkspaceElements &&
-        iriList.includes(WorkspaceElements[cell.id].iri)
-      ) {
+      if (cell.id in WorkspaceElements && iriList.includes(cell.id as string)) {
         if (typeof cell.id === "string") {
           highlightCell(cell.id, "#FF0000");
         }
       } else if (
         cell.id in WorkspaceLinks &&
-        iriList.includes(WorkspaceLinks[cell.id].iri)
+        iriList.includes(cell.id as string)
       ) {
         if (typeof cell.id === "string") {
           highlightCell(cell.id, "#FF0000");
@@ -194,7 +187,7 @@ export default class ValidationPanel extends React.Component<Props, State> {
                       )}
                     </td>
                     {result.focusNode in WorkspaceTerms ? (
-                      <IRIlabel
+                      <IRILabel
                         label={
                           WorkspaceTerms[result.focusNode].labels[
                             this.props.projectLanguage
@@ -203,7 +196,7 @@ export default class ValidationPanel extends React.Component<Props, State> {
                         iri={result.focusNode}
                       />
                     ) : (
-                      <IRIlabel
+                      <IRILabel
                         label={result.focusNode}
                         iri={result.focusNode}
                       />

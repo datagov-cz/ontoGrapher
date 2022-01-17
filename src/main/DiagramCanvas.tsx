@@ -3,7 +3,6 @@ import * as joint from "jointjs";
 import {
   AppSettings,
   Diagrams,
-  FolderRoot,
   WorkspaceElements,
   WorkspaceTerms,
   WorkspaceVocabularies,
@@ -129,7 +128,8 @@ export default class DiagramCanvas extends React.Component<Props, State> {
 
     /**
      * This handles all the various mouse events on the canvas and the elements within.
-     * For more information on JointJS events visit https://resources.jointjs.com/docs/jointjs/v3.2/joint.html#dia.Paper.events
+     * For more information on JointJS events visit
+     * https://resources.jointjs.com/docs/jointjs/v3.2/joint.html#dia.Paper.events
      */
     paper.on({
       /**
@@ -138,17 +138,12 @@ export default class DiagramCanvas extends React.Component<Props, State> {
        */
       "blank:contextmenu": (evt) => {
         evt.preventDefault();
-        if (
-          FolderRoot.children.find(
-            (pkg) =>
-              !WorkspaceVocabularies[getVocabularyFromScheme(pkg.scheme)]
-                .readOnly
-          )
-        ) {
+        const vocabulary = Object.keys(WorkspaceVocabularies).find(vocab => !(WorkspaceVocabularies[vocab].readOnly))
+        if (vocabulary) {
           this.props.handleCreation({
             strategy: ElemCreationStrategy.DEFAULT,
             position: { x: evt.clientX, y: evt.clientY },
-            pkg: FolderRoot,
+            vocabulary: vocabulary,
             header: Locale[AppSettings.interfaceLanguage].modalNewElemTitle,
             connections: [],
           });
@@ -213,9 +208,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
           new joint.dia.ToolsView({
             tools: [
               !WorkspaceVocabularies[
-                getVocabularyFromScheme(
-                  WorkspaceTerms[WorkspaceElements[id].iri].inScheme
-                )
+                getVocabularyFromScheme(WorkspaceTerms[id].inScheme)
               ].readOnly &&
                 new ElemCreateLink({
                   useModelGeometry: false,

@@ -4,9 +4,8 @@ import {
   highlightCell,
   unHighlightCell,
 } from "./FunctionDraw";
-import { getElementShape, getElemFromIRI } from "./FunctionGetVars";
+import { getElementShape } from "./FunctionGetVars";
 import { paper } from "../main/DiagramCanvas";
-import { VocabularyNode } from "../datatypes/VocabularyNode";
 import { graphElement } from "../graph/GraphElement";
 import {
   addClass,
@@ -21,6 +20,7 @@ import {
   WorkspaceElements,
   WorkspaceLinks,
   WorkspaceTerms,
+  WorkspaceVocabularies,
 } from "../config/Variables";
 import * as joint from "jointjs";
 import {
@@ -42,6 +42,7 @@ import { restoreHiddenElem, setRepresentation } from "./FunctionGraph";
 import React from "react";
 import { insertNewCacheTerms, insertNewRestrictions } from "./FunctionCache";
 import _ from "lodash";
+import { RepresentationConfig } from "../config/logic/RepresentationConfig";
 
 export function resizeElem(id: string, highlight: boolean = true) {
   let view = paper.findViewByModel(id);
@@ -99,18 +100,20 @@ export function createNewConcept(
   point: { x: number; y: number },
   name: { [key: string]: string },
   language: string,
-  pkg: VocabularyNode,
+  vocabulary: string,
   types: string[] = []
 ): string {
-  const cls = new graphElement();
+  const iri = createNewElemIRI(
+    WorkspaceVocabularies[vocabulary].glossary,
+    name[language]
+  );
+  const cls = new graphElement({ id: iri });
   const p = paper.clientToLocalPoint(point);
-  const id = cls.id as string;
-  const iri = createNewElemIRI(pkg.scheme, name[language]);
-  addVocabularyElement(iri, pkg.scheme, [
+  addVocabularyElement(iri, WorkspaceVocabularies[vocabulary].glossary, [
     parsePrefix("skos", "Concept"),
     ...types,
   ]);
-  addClass(id, iri, pkg);
+  addClass(iri);
   WorkspaceElements[cls.id].hidden[AppSettings.selectedDiagram] = false;
   if (p) {
     cls.set("position", { x: p.x, y: p.y });
@@ -124,8 +127,22 @@ export function createNewConcept(
   const bbox = paper.findViewByModel(cls).getBBox();
   if (bbox) cls.resize(bbox.width, bbox.height);
   drawGraphElement(cls, language, AppSettings.representation);
-  addToFlexSearch(id);
-  return id;
+  addToFlexSearch(iri);
+  return iri;
+}
+
+export function isElementVisible(iri: string, representation: Representation) {
+  return (
+    _.difference(
+      RepresentationConfig[representation].visibleStereotypes,
+      WorkspaceTerms[iri].types
+    ).length < RepresentationConfig[representation].visibleStereotypes.length ||
+    !WorkspaceTerms[iri].types.find((type) =>
+      RepresentationConfig[Representation.FULL].visibleStereotypes.includes(
+        type
+      )
+    )
+  );
 }
 
 export function getElementToolPosition(
@@ -248,8 +265,7 @@ export async function putElementsOnCanvas(
   if (event.dataTransfer) {
     const data = JSON.parse(event.dataTransfer.getData("newClass"));
     const iris = data.iri.filter((iri: string) => {
-      const elem = getElemFromIRI(iri);
-      return !(iri in WorkspaceTerms && elem && WorkspaceElements[elem].active);
+      return !(iri in WorkspaceTerms && WorkspaceElements[iri].active);
     });
     const ids = data.id;
     if (iris.length > 0) {

@@ -10,7 +10,6 @@ import {
   WorkspaceVocabularies,
 } from "../config/Variables";
 import { initLanguageObject } from "./FunctionEditVars";
-import { VocabularyNode } from "../datatypes/VocabularyNode";
 import { LinkType, Representation } from "../config/Enum";
 import { Locale } from "../config/Locale";
 import {
@@ -51,33 +50,20 @@ export function createNewElemIRI(scheme: string, name: string): string {
   );
 }
 
-export function getDomainOf(iriElem: string): string[] {
-  let result = [];
-  for (const iri in WorkspaceTerms) {
-    if (WorkspaceTerms[iri].domain) {
-      if (WorkspaceTerms[iri].domain === iriElem) {
-        result.push(iri);
-      }
-    }
-  }
-  return result;
-}
-
 export function addToFlexSearch(...ids: string[]) {
   let numberID = Object.keys(FlexDocumentIDTable).length;
-  for (const id of ids.filter((id) => WorkspaceElements[id].active)) {
-    if (!(id in WorkspaceElements))
-      throw new Error(`ID ${id} not recognized as an element ID.`);
-    const iri = WorkspaceElements[id].iri;
+  for (const iri of ids.filter((id) => WorkspaceElements[id].active)) {
+    if (!(iri in WorkspaceElements))
+      throw new Error(`ID ${iri} not recognized as an element ID.`);
     if (!(iri in WorkspaceTerms))
       throw new Error(`IRI ${iri} not recognized as a term in the workspace.`);
-    FlexDocumentIDTable[numberID] = id;
+    FlexDocumentIDTable[numberID] = iri;
     for (const lang of Object.keys(Languages)) {
       FlexDocumentSearch.add({
         id: numberID++,
         language: lang,
         selectedLabel:
-          WorkspaceElements[id].selectedLabel[lang] ||
+          WorkspaceElements[iri].selectedLabel[lang] ||
           WorkspaceTerms[iri].labels[lang],
         prefLabel: WorkspaceTerms[iri].labels[lang],
         altLabel: WorkspaceTerms[iri].altLabels
@@ -108,8 +94,6 @@ export function addVocabularyElement(
     altLabels: [],
     definitions: initLanguageObject(""),
     inScheme: scheme,
-    domain: undefined,
-    range: undefined,
     types: types ? types : [],
     subClassOf: [],
     restrictions: [],
@@ -122,22 +106,13 @@ export function createCount(): { [key in Representation]: number } {
   return { [Representation.COMPACT]: 0, [Representation.FULL]: 0 };
 }
 
-export function addClass(
-  id: string,
-  iri: string,
-  pkg: VocabularyNode,
-  active: boolean = true
-) {
+export function addClass(id: string, active: boolean = true) {
   WorkspaceElements[id] = {
-    iri: iri,
-    connections: [],
     hidden: { [AppSettings.selectedDiagram]: true },
     position: { [AppSettings.selectedDiagram]: { x: 0, y: 0 } },
-    vocabularyNode: pkg,
     active: active,
     selectedLabel: initLanguageObject(""),
   };
-  pkg.elements.push(id);
 }
 
 export function addDiagram(

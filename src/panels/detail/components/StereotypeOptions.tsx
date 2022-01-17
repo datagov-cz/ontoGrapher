@@ -4,6 +4,7 @@ import { AppSettings, Stereotypes } from "../../../config/Variables";
 import { getName } from "../../../function/FunctionEditVars";
 import { Shapes } from "../../../config/visual/Shapes";
 import { Locale } from "../../../config/Locale";
+import { RepresentationConfig } from "../../../config/logic/RepresentationConfig";
 
 interface Props {
   readonly: boolean;
@@ -42,7 +43,9 @@ export default class StereotypeOptions extends React.Component<Props, State> {
               {Object.keys(Stereotypes)
                 .filter((stereotype) =>
                   this.props.content
-                    ? stereotype in Shapes
+                    ? RepresentationConfig[
+                        AppSettings.representation
+                      ].visibleStereotypes.includes(stereotype)
                     : !(stereotype in Shapes)
                 )
                 .map((stereotype) => (

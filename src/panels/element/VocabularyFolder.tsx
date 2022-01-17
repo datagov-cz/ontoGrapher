@@ -1,10 +1,6 @@
 import React from "react";
-import { VocabularyNode } from "../../datatypes/VocabularyNode";
 import { AppSettings, WorkspaceVocabularies } from "../../config/Variables";
-import {
-  getLabelOrBlank,
-  getVocabularyFromScheme,
-} from "../../function/FunctionGetVars";
+import { getLabelOrBlank } from "../../function/FunctionGetVars";
 import {
   highlightElement,
   unhighlightElement,
@@ -14,15 +10,17 @@ import { CacheSearchVocabularies } from "../../datatypes/CacheSearchResults";
 import { Locale } from "../../config/Locale";
 
 interface Props {
-  node: VocabularyNode;
+  open: boolean;
+  vocabulary: string;
   update: Function;
   projectLanguage: string;
   readOnly: boolean;
   filter: Function;
+  elements: string[];
+  setOpen: (vocabulary: string) => void;
 }
 
 interface State {
-  open: boolean;
   hover: boolean;
 }
 
@@ -30,42 +28,30 @@ export default class VocabularyFolder extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = {
-      open: false,
       hover: false,
     };
-  }
-
-  componentDidUpdate(
-    prevProps: Readonly<Props>,
-    prevState: Readonly<State>,
-    snapshot?: any
-  ) {
-    if (prevProps !== this.props && this.state.open !== this.props.node.open) {
-      this.setState({ open: this.props.node.open });
-    }
   }
 
   handleClick(event: React.MouseEvent<HTMLDivElement, MouseEvent>) {
     event.stopPropagation();
     if (event.ctrlKey) {
       if (
-        this.props.node.elements.every((id) =>
+        this.props.elements.every((id) =>
           AppSettings.selectedElements.includes(id)
         )
       )
         AppSettings.selectedElements
-          .filter((elem) => this.props.node.elements.includes(elem))
+          .filter((elem) => this.props.elements.includes(elem))
           .forEach((elem) => unhighlightElement(elem));
-      else this.props.node.elements.forEach((elem) => highlightElement(elem));
+      else this.props.elements.forEach((elem) => highlightElement(elem));
     } else {
-      this.setState({ open: !this.state.open });
-      this.props.node.open = !this.props.node.open;
+      this.props.setOpen(this.props.vocabulary);
     }
     this.props.update();
   }
 
   getTermCounter() {
-    const vocabulary = getVocabularyFromScheme(this.props.node.scheme);
+    const vocabulary = this.props.vocabulary;
     if (!(vocabulary in CacheSearchVocabularies) || !this.props.readOnly)
       return;
     const workspaceCount =
@@ -89,11 +75,7 @@ export default class VocabularyFolder extends React.Component<Props, State> {
           >
             <button
               className={"buttonlink"}
-              onClick={() =>
-                this.props.filter([
-                  getVocabularyFromScheme(this.props.node.scheme),
-                ])
-              }
+              onClick={() => this.props.filter([vocabulary])}
             >
               <h6>
                 <Badge variant={"secondary"}>
@@ -121,24 +103,23 @@ export default class VocabularyFolder extends React.Component<Props, State> {
         onClick={(event) => this.handleClick(event)}
         className={
           "vocabularyFolder" +
-          (this.state.open ? " open" : "") +
-          (this.props.node.elements.every((elem) =>
+          (this.props.open ? " open" : "") +
+          (this.props.elements.every((elem) =>
             AppSettings.selectedElements.includes(elem)
           )
             ? " selected"
             : "")
         }
         style={{
-          backgroundColor: this.props.node.scheme
-            ? WorkspaceVocabularies[
-                getVocabularyFromScheme(this.props.node.scheme)
-              ].color
-            : "#FFF",
+          backgroundColor: WorkspaceVocabularies[this.props.vocabulary].color,
         }}
       >
         <span className={"vocabularyLabel"}>
           {(this.props.readOnly ? "📑" : "✏") +
-            getLabelOrBlank(this.props.node.labels, this.props.projectLanguage)}
+            getLabelOrBlank(
+              WorkspaceVocabularies[this.props.vocabulary].labels,
+              this.props.projectLanguage
+            )}
         </span>
         {this.getTermCounter()}
         {this.props.children}

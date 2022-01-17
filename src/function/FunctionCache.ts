@@ -7,7 +7,6 @@ import {
 } from "../queries/get/CacheQueries";
 import {
   AppSettings,
-  FolderRoot,
   Links,
   WorkspaceTerms,
   WorkspaceVocabularies,
@@ -18,7 +17,6 @@ import _ from "lodash";
 import { getVocabularyFromScheme, setSchemeColors } from "./FunctionGetVars";
 import isUrl from "is-url";
 import { CacheSearchVocabularies } from "../datatypes/CacheSearchResults";
-import { VocabularyNode } from "../datatypes/VocabularyNode";
 import { Restriction } from "../datatypes/Restriction";
 import { createCount } from "./FunctionCreateVars";
 import { changeVocabularyCount } from "./FunctionEditVars";
@@ -94,13 +92,15 @@ async function getFullConnections(
         )
       )
   );
-  Object.keys(restrictions).forEach((restriction) => {
-    connections.push(
-      ...restrictions[restriction].map((r) =>
-        mapResultToConnection(terms, restriction, r.onProperty, "target")
-      )
-    );
-  });
+  Object.keys(restrictions)
+    .filter((restriction) => restriction in terms)
+    .forEach((restriction) => {
+      connections.push(
+        ...restrictions[restriction].map((r) =>
+          mapResultToConnection(terms, restriction, r.onProperty, "target")
+        )
+      );
+    });
   return connections.concat(getSubclassConnections(iri, terms, subClasses));
 }
 
@@ -118,25 +118,29 @@ async function getCompactConnections(
     relationships.map((rel) => rel.target).concat(subClasses)
   );
   connections.push(
-    ...relationships.map((relationship) =>
-      mapResultToConnection(
-        terms,
-        relationship.target,
-        relationship.relation,
-        "target",
-        relationship.labels
+    ...relationships
+      .filter((relationship) => relationship.target in terms)
+      .map((relationship) =>
+        mapResultToConnection(
+          terms,
+          relationship.target,
+          relationship.relation,
+          "target",
+          relationship.labels
+        )
       )
-    )
   );
   connections.push(
-    ...subClasses.map((subC) =>
-      mapResultToConnection(
-        terms,
-        subC,
-        LinkConfig[LinkType.GENERALIZATION].iri,
-        WorkspaceTerms[iri].subClassOf.includes(subC) ? "source" : "target"
+    ...subClasses
+      .filter((subC) => subC in terms)
+      .map((subC) =>
+        mapResultToConnection(
+          terms,
+          subC,
+          LinkConfig[LinkType.GENERALIZATION].iri,
+          WorkspaceTerms[iri].subClassOf.includes(subC) ? "source" : "target"
+        )
       )
-    )
   );
   return connections.concat(getSubclassConnections(iri, terms, subClasses));
 }
@@ -181,12 +185,6 @@ export function insertNewCacheTerms(newTerms: typeof WorkspaceTerms) {
           color: "#FFF",
           count: createCount(),
         };
-        new VocabularyNode(
-          CacheSearchVocabularies[vocab].labels,
-          FolderRoot,
-          false,
-          newTerms[term].inScheme
-        );
         setSchemeColors(AppSettings.viewColorPool);
       }
       changeVocabularyCount(vocab, (count) => count + 1, term);

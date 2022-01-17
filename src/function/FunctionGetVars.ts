@@ -21,7 +21,7 @@ import { Locale } from "../config/Locale";
 import { en } from "../locale/en";
 
 export function getVocabElementByElementID(id: string): { [key: string]: any } {
-  return WorkspaceTerms[WorkspaceElements[id].iri];
+  return WorkspaceTerms[id];
 }
 
 export function getLinkOrVocabElem(iri: string): { [key: string]: any } {
@@ -114,16 +114,16 @@ export function getNewLink(type?: number, id?: string): joint.dia.Link {
 }
 
 export function getElementShape(id: string | number): string {
-  const types = WorkspaceTerms[WorkspaceElements[id].iri].types;
+  const types = WorkspaceTerms[id].types;
   for (const type in Shapes) {
     if (types.includes(type)) return Shapes[type].body;
   }
   return Shapes["default"].body;
 }
 
-export function getActiveToConnections(id: string): string[] {
-  return WorkspaceElements[id].connections.filter(
-    (conn) => WorkspaceLinks[conn].active
+export function getActiveToConnections(iri: string): string[] {
+  return Object.keys(WorkspaceLinks).filter(
+    (id) => WorkspaceLinks[id].source === iri && WorkspaceLinks[id].active
   );
 }
 
@@ -136,34 +136,25 @@ export function getUnderlyingFullConnections(
   const sourceElem = link.getSourceCell()?.id;
   const targetElem = link.getTargetCell()?.id;
   if (sourceElem && targetElem) {
-    const preds = Object.keys(WorkspaceElements).filter(
-      (id) => WorkspaceElements[id].iri === iri
-    );
+    const preds = Object.keys(WorkspaceElements).filter((id) => id === iri);
     for (const pred of preds) {
+      const connections = getActiveToConnections(pred);
       const sourceLink = Object.keys(WorkspaceLinks).find(
         (id) =>
-          WorkspaceElements[pred].connections.includes(id) &&
+          connections.includes(id) &&
           WorkspaceLinks[id].iri === mvp1IRI &&
-          WorkspaceLinks[id].target === sourceElem &&
-          WorkspaceLinks[id].active
+          WorkspaceLinks[id].target === sourceElem
       );
       const targetLink = Object.keys(WorkspaceLinks).find(
         (id) =>
-          WorkspaceElements[pred].connections.includes(id) &&
+          getActiveToConnections(pred).includes(id) &&
           WorkspaceLinks[id].iri === mvp2IRI &&
-          WorkspaceLinks[id].target === targetElem &&
-          WorkspaceLinks[id].active
+          WorkspaceLinks[id].target === targetElem
       );
       if (sourceLink && targetLink) return { src: sourceLink, tgt: targetLink };
     }
     return;
   }
-}
-
-export function getElemFromIRI(iri: string) {
-  return Object.keys(WorkspaceElements).find(
-    (elem) => WorkspaceElements[elem].iri === iri
-  );
 }
 
 export function getVocabularyFromScheme(scheme: string): string {
@@ -248,9 +239,9 @@ export function getIntrinsicTropeTypeIDs(
         WorkspaceLinks[link].source === id &&
         WorkspaceLinks[link].iri ===
           parsePrefix("z-sgov-pojem", "má-vlastnost") &&
-        WorkspaceTerms[
-          WorkspaceElements[WorkspaceLinks[link].target].iri
-        ].types.includes(parsePrefix("z-sgov-pojem", "typ-vlastnosti"))
+        WorkspaceTerms[WorkspaceLinks[link].target].types.includes(
+          parsePrefix("z-sgov-pojem", "typ-vlastnosti")
+        )
     )
     .map((link) => (returnLinkIDs ? link : WorkspaceLinks[link].target))
     .concat(
@@ -261,9 +252,9 @@ export function getIntrinsicTropeTypeIDs(
             WorkspaceLinks[link].target === id &&
             WorkspaceLinks[link].iri ===
               parsePrefix("z-sgov-pojem", "je-vlastností") &&
-            WorkspaceTerms[
-              WorkspaceElements[WorkspaceLinks[link].source].iri
-            ].types.includes(parsePrefix("z-sgov-pojem", "typ-vlastnosti"))
+            WorkspaceTerms[WorkspaceLinks[link].source].types.includes(
+              parsePrefix("z-sgov-pojem", "typ-vlastnosti")
+            )
         )
         .map((link) => (returnLinkIDs ? link : WorkspaceLinks[link].source))
     );

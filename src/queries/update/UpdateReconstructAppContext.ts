@@ -27,10 +27,10 @@ export async function reconstructApplicationContextWithDiagrams(): Promise<strin
     "graph ?graph {",
     "?diagram a og:diagram.",
     "}",
-    "} limit 1",
+    "}",
   ].join(`
   `);
-  const diagramIRI = await processQuery(
+  const diagramIRIs: string[] = await processQuery(
     AppSettings.contextEndpoint,
     diagramRetrievalQuery
   )
@@ -38,18 +38,20 @@ export async function reconstructApplicationContextWithDiagrams(): Promise<strin
       return response.json();
     })
     .then((data) => {
-      if (data.results.bindings.length > 0) {
-        return data.results.bindings[0].diagram.value;
-      } else return undefined;
+      const result = [];
+      for (const diag of data.results.bindings) {
+        result.push(diag.diagram.value);
+      }
+      return result;
     })
     .catch((e) => {
       console.error(e);
-      return undefined;
+      return [];
     });
-  if (diagramIRI) {
-    const transferQuery = [
-      `add <${diagramIRI}> to <${getWorkspaceContextIRI()}>`,
-    ].join(`
+  if (diagramIRIs) {
+    const transferQuery = diagramIRIs.map(
+      (iri) => `add <${iri}> to <${getWorkspaceContextIRI()}>`
+    ).join(`;
     `);
     return qb.combineQueries(updateWorkspaceContext(), transferQuery);
   } else return "";

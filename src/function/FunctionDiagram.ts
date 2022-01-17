@@ -11,6 +11,7 @@ import { restoreHiddenElem, setRepresentation } from "./FunctionGraph";
 import { Representation } from "../config/Enum";
 import { paper } from "../main/DiagramCanvas";
 import * as _ from "lodash";
+import { isElementHidden } from "./FunctionElem";
 
 export function changeDiagrams(diagram?: string) {
   graph.clear();
@@ -24,11 +25,11 @@ export function changeDiagrams(diagram?: string) {
     AppSettings.selectedLink = "";
     for (const id in WorkspaceElements) {
       if (
-        WorkspaceElements[id].hidden[diagram] === false &&
+        !isElementHidden(id, diagram) &&
         WorkspaceElements[id].position[diagram] &&
         WorkspaceElements[id].active
       ) {
-        let cls = new graphElement({ id: id });
+        const cls = new graphElement({ id: id });
         cls.position(
           WorkspaceElements[id].position[diagram].x,
           WorkspaceElements[id].position[diagram].y

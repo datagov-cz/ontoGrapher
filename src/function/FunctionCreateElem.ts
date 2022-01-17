@@ -1,4 +1,3 @@
-import { VocabularyNode } from "../datatypes/VocabularyNode";
 import { ElemCreationStrategy, Representation } from "../config/Enum";
 import { createNewConcept } from "./FunctionElem";
 import { AppSettings } from "../config/Variables";
@@ -11,25 +10,30 @@ import { saveNewLink } from "./FunctionLink";
 
 type CreateElemStrategyType = (
   conceptName: { [key: string]: string },
-  pkg: VocabularyNode,
+  vocabulary: string,
   position: { x: number; y: number },
   connections: string[]
 ) => string[];
 
 export const createTerm: (
   conceptName: { [key: string]: string },
-  pkg: VocabularyNode,
+  vocabulary: string,
   strategy: ElemCreationStrategy,
   position: { x: number; y: number },
   connections: string[]
 ) => string[] = (
   conceptName,
-  pkg,
+  vocabulary,
   strategy,
   position = { x: 0, y: 0 },
   connections
 ) => {
-  return CreateElemStrategy[strategy](conceptName, pkg, position, connections);
+  return CreateElemStrategy[strategy](
+    conceptName,
+    vocabulary,
+    position,
+    connections
+  );
 };
 
 const CreateElemStrategy: {
@@ -37,14 +41,14 @@ const CreateElemStrategy: {
 } = {
   [ElemCreationStrategy.DEFAULT]: (
     conceptName: { [key: string]: string },
-    pkg: VocabularyNode,
+    vocabulary: string,
     position: { x: number; y: number }
   ) => {
     const id = createNewConcept(
       position,
       conceptName,
       AppSettings.defaultLanguage,
-      pkg
+      vocabulary
     );
     return [
       updateProjectElement(true, id),
@@ -53,7 +57,7 @@ const CreateElemStrategy: {
   },
   [ElemCreationStrategy.INTRINSIC_TROPE_TYPE]: (
     conceptName: { [key: string]: string },
-    pkg: VocabularyNode,
+    vocabulary: string,
     position: { x: number; y: number },
     connections: string[]
   ) => {
@@ -63,7 +67,7 @@ const CreateElemStrategy: {
       position,
       conceptName,
       AppSettings.defaultLanguage,
-      pkg,
+      vocabulary,
       [parsePrefix("z-sgov-pojem", "typ-vlastnosti")]
     );
     return [
@@ -79,7 +83,7 @@ const CreateElemStrategy: {
   },
   [ElemCreationStrategy.RELATOR_TYPE]: (
     conceptName: { [key: string]: string },
-    pkg: VocabularyNode,
+    vocabulary: string,
     position: { x: number; y: number },
     connections: string[]
   ) => {
@@ -89,7 +93,7 @@ const CreateElemStrategy: {
       position,
       conceptName,
       AppSettings.defaultLanguage,
-      pkg,
+      vocabulary,
       [parsePrefix("z-sgov-pojem", "typ-vztahu")]
     );
     return [

@@ -2,7 +2,6 @@ import React from "react";
 import { ResizableBox } from "react-resizable";
 import {
   AppSettings,
-  FolderRoot,
   WorkspaceElements,
   WorkspaceTerms,
   WorkspaceVocabularies,
@@ -10,7 +9,6 @@ import {
 import VocabularyFolder from "./element/VocabularyFolder";
 import VocabularyConcept from "./element/VocabularyConcept";
 import {
-  getElemFromIRI,
   getLabelOrBlank,
   getVocabularyFromScheme,
 } from "../function/FunctionGetVars";
@@ -23,7 +21,6 @@ import { Shapes } from "../config/visual/Shapes";
 import { SearchTerm } from "./element/SearchTerm";
 import SearchFolder from "./element/SearchFolder";
 import { VocabularySelector } from "./element/VocabularySelector";
-import _ from "underscore";
 import {
   CacheSearchResults,
   CacheSearchVocabularies,
@@ -35,7 +32,8 @@ import {
   FlexDocumentSearch,
 } from "../config/FlexDocumentSearch";
 import { Id } from "flexsearch";
-import { RepresentationConfig } from "../config/logic/RepresentationConfig";
+import _ from "lodash";
+import { isElementVisible } from "../function/FunctionElem";
 
 interface Props {
   projectLanguage: string;
@@ -57,6 +55,7 @@ interface State {
   showLucene: boolean;
   shownLucene: CacheSearchResults;
   groupLucene: boolean;
+  open: { [key: string]: boolean };
 }
 
 export default class VocabularyPanel extends React.Component<Props, State> {
@@ -65,6 +64,7 @@ export default class VocabularyPanel extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = {
+      open: {},
       filter: [],
       vocabs: [],
       search: "",
@@ -87,11 +87,18 @@ export default class VocabularyPanel extends React.Component<Props, State> {
   }
 
   showItem(id: string) {
-    FolderRoot.children.forEach((pkg) => {
-      if (!pkg.open) pkg.open = pkg.elements.includes(id);
-    });
     this.setState(
-      { shownElements: this.updateShownElements(), selectedID: id },
+      (prevState) => ({
+        ...prevState,
+        shownElements: this.updateShownElements(),
+        selectedID: id,
+        open: Object.fromEntries(
+          Object.keys(WorkspaceVocabularies).map((vocab) => [
+            vocab,
+            vocab === getVocabularyFromScheme(WorkspaceTerms[id].inScheme),
+          ])
+        ),
+      }),
       () => {
         const itemElement = document.getElementById(this.state.selectedID);
         const parent = document.getElementById("elementList");
@@ -120,10 +127,15 @@ export default class VocabularyPanel extends React.Component<Props, State> {
   }
 
   handleChangeSearch(event: React.ChangeEvent<HTMLSelectElement>) {
-    FolderRoot.children.forEach(
-      (pkg) => (pkg.open = !(event.currentTarget.value === ""))
-    );
-    this.setState({ search: event.currentTarget.value });
+    this.setState({
+      search: event.currentTarget.value,
+      open: Object.fromEntries(
+        Object.keys(WorkspaceVocabularies).map((vocab) => [
+          vocab,
+          !(event.currentTarget.value === ""),
+        ])
+      ),
+    });
     window.clearTimeout(this.searchTimeout);
     this.searchTimeout = window.setTimeout(() => {
       this.setState({
@@ -148,10 +160,7 @@ export default class VocabularyPanel extends React.Component<Props, State> {
         shownLucene: _.omit(
           results,
           Object.keys(results).filter((iri) => {
-            const elem = getElemFromIRI(iri);
-            return (
-              iri in WorkspaceTerms && elem && WorkspaceElements[elem].active
-            );
+            return iri in WorkspaceTerms && WorkspaceElements[iri].active;
           })
         ),
       });
@@ -160,11 +169,11 @@ export default class VocabularyPanel extends React.Component<Props, State> {
 
   sort(a: string, b: string): number {
     const aLabel = getLabelOrBlank(
-      WorkspaceTerms[WorkspaceElements[a].iri].labels,
+      WorkspaceTerms[a].labels,
       this.props.projectLanguage
     );
     const bLabel = getLabelOrBlank(
-      WorkspaceTerms[WorkspaceElements[b].iri].labels,
+      WorkspaceTerms[b].labels,
       this.props.projectLanguage
     );
     return aLabel.localeCompare(bLabel);
@@ -177,39 +186,34 @@ export default class VocabularyPanel extends React.Component<Props, State> {
         tag: AppSettings.canvasLanguage,
       }).map((result) => result.result)
     ).map((num) => FlexDocumentIDTable[num as number]);
-    FolderRoot.children.forEach((node) => {
-      result[node.scheme] = {};
+    Object.keys(WorkspaceVocabularies).forEach((vocab) => {
+      result[vocab] = {};
       Object.keys(Shapes)
         .concat("unsorted")
-        .forEach((type) => (result[node.scheme][type] = []));
-      node.elements
+        .forEach((type) => (result[vocab][type] = []));
+      Object.keys(WorkspaceTerms)
+        .filter(
+          (iri) =>
+            getVocabularyFromScheme(WorkspaceTerms[iri].inScheme) === vocab
+        )
         .sort((a, b) => this.sort(a, b))
         .filter(
           (id) =>
             (flexSearchResults.includes(id) &&
               AppSettings.representation === Representation.FULL) ||
             (AppSettings.representation === Representation.COMPACT &&
-              _.difference(
-                RepresentationConfig[Representation.COMPACT].visibleStereotypes,
-                WorkspaceTerms[WorkspaceElements[id].iri].types
-              ).length <
-                RepresentationConfig[Representation.COMPACT].visibleStereotypes
-                  .length)
+              isElementVisible(id, Representation.COMPACT))
         )
         .forEach((elem) => {
-          const types = WorkspaceTerms[WorkspaceElements[elem].iri].types;
+          const types = WorkspaceTerms[elem].types;
           for (const key in Shapes) {
             if (types.includes(key)) {
-              result[node.scheme][key].push(elem);
+              result[vocab][key].push(elem);
               break;
             }
           }
-          if (
-            !Object.values(result[node.scheme]).find((arr) =>
-              arr.includes(elem)
-            )
-          )
-            result[node.scheme]["unsorted"].push(elem);
+          if (!Object.values(result[vocab]).find((arr) => arr.includes(elem)))
+            result[vocab]["unsorted"].push(elem);
         });
     });
     return result;
@@ -231,33 +235,28 @@ export default class VocabularyPanel extends React.Component<Props, State> {
 
   getFolders(): JSX.Element[] {
     let result: JSX.Element[] = [];
-    for (const node of FolderRoot.children) {
+    for (const vocabulary in WorkspaceVocabularies) {
       const vocabularyConcepts: JSX.Element[] = [];
-      for (const iri in this.state.shownElements[node.scheme]) {
-        if (this.state.shownElements[node.scheme][iri].length === 0) continue;
+      for (const iri in this.state.shownElements[vocabulary]) {
+        if (this.state.shownElements[vocabulary][iri].length === 0) continue;
         vocabularyConcepts.push(
           <ConceptDivider
             key={iri}
             iri={iri}
-            items={this.state.shownElements[node.scheme][iri]}
-            visible={node.open}
+            items={this.state.shownElements[vocabulary][iri]}
+            visible={this.state.open[vocabulary]}
             projectLanguage={this.props.projectLanguage}
             update={this.updateElements}
           />
         );
-        for (const id of this.state.shownElements[node.scheme][iri]) {
+        for (const id of this.state.shownElements[vocabulary][iri]) {
           vocabularyConcepts.push(
             <VocabularyConcept
               key={id}
               id={id}
-              visible={node.open}
+              visible={this.state.open[vocabulary]}
               projectLanguage={this.props.projectLanguage}
-              readOnly={
-                node.scheme
-                  ? WorkspaceVocabularies[getVocabularyFromScheme(node.scheme)]
-                      .readOnly
-                  : true
-              }
+              readOnly={WorkspaceVocabularies[vocabulary].readOnly}
               update={this.updateElements}
               openRemoveItem={this.handleOpenRemoveItemModal}
               openRemoveReadOnlyItem={this.handleOpenRemoveReadOnlyItemModal}
@@ -266,7 +265,6 @@ export default class VocabularyPanel extends React.Component<Props, State> {
           );
         }
       }
-      const vocabulary = getVocabularyFromScheme(node.scheme);
       if (
         this.state.vocabs.find((vocab) => vocab.value === vocabulary) ||
         (this.state.vocabs.length === 0 &&
@@ -278,17 +276,31 @@ export default class VocabularyPanel extends React.Component<Props, State> {
       )
         result.push(
           <VocabularyFolder
-            key={node.scheme}
+            key={vocabulary}
             projectLanguage={this.props.projectLanguage}
-            node={node}
             update={this.updateElements}
-            readOnly={
-              WorkspaceVocabularies[getVocabularyFromScheme(node.scheme)]
-                .readOnly
-            }
+            readOnly={WorkspaceVocabularies[vocabulary].readOnly}
             filter={this.filter}
+            open={this.state.open[vocabulary]}
+            vocabulary={vocabulary}
+            elements={Object.keys(WorkspaceTerms).filter(
+              (term) =>
+                getVocabularyFromScheme(WorkspaceTerms[term].inScheme) ===
+                vocabulary
+            )}
+            setOpen={(vocabulary: string) =>
+              this.setState((prevState) => ({
+                open: {
+                  ...prevState.open,
+                  [vocabulary]:
+                    vocabulary in prevState.open
+                      ? !prevState.open[vocabulary]
+                      : true,
+                },
+              }))
+            }
           >
-            {node.open && vocabularyConcepts}
+            {this.state.open[vocabulary] && vocabularyConcepts}
           </VocabularyFolder>
         );
     }

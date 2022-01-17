@@ -2,7 +2,7 @@ import { en } from "./en";
 
 export const cs: { [Property in keyof typeof en]: string } = {
   untitledProject: "Nový pracovní prostor",
-  unsorted: "Neřazeno",
+  unsorted: "Bez typu",
   updating: "Ukládání...",
   newVersion:
     "Od vašeho posledního používání ontoGrapher získal nové funkce! Klikněte sem pro detailní popis změn.",

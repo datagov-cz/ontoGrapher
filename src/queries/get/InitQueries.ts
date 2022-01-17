@@ -1,11 +1,9 @@
 import {
   AppSettings,
   Diagrams,
-  FolderRoot,
   Links,
   WorkspaceElements,
   WorkspaceLinks,
-  WorkspaceTerms,
   WorkspaceVocabularies,
 } from "../../config/Variables";
 import { processQuery } from "../../interface/TransactionInterface";
@@ -19,14 +17,12 @@ import {
 import { addDiagram, createCount } from "../../function/FunctionCreateVars";
 import { qb } from "../QueryBuilder";
 import { CacheSearchVocabularies } from "../../datatypes/CacheSearchResults";
-import { VocabularyNode } from "../../datatypes/VocabularyNode";
 
 export async function getElementsConfig(
   contextEndpoint: string
 ): Promise<boolean> {
   const elements: {
     [key: string]: {
-      id: "";
       active: boolean;
       diagramPosition: { [key: string]: { x: number; y: number } };
       hidden: { [key: string]: boolean };
@@ -37,10 +33,9 @@ export async function getElementsConfig(
   const appContextQuery = [
     "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
     "PREFIX skos: <http://www.w3.org/2004/02/skos/core#> ",
-    "select ?elem ?id ?scheme ?active ?name where {",
+    "select ?elem ?scheme ?active ?name where {",
     "graph <" + getWorkspaceContextIRI() + "> {",
     "?elem a og:element .",
-    "?elem og:id ?id .",
     "?elem og:active ?active .",
     "?elem og:name ?name.",
     "?elem og:scheme ?scheme .",
@@ -59,7 +54,6 @@ export async function getElementsConfig(
         const iri = result.elem.value;
         if (!(iri in elements)) {
           elements[iri] = {
-            id: result.id.value,
             active: result.active.value === "true",
             diagramPosition: {},
             hidden: {},
@@ -147,30 +141,14 @@ export async function getElementsConfig(
               count: createCount(),
               glossary: CacheSearchVocabularies[vocab].glossary,
             };
-            new VocabularyNode(
-              CacheSearchVocabularies[vocab].labels,
-              FolderRoot,
-              false,
-              CacheSearchVocabularies[vocab].glossary
-            );
           }
         }
-        const id = elements[iri].id;
-        const pkg = FolderRoot.children.find(
-          (pkg) => pkg.scheme === elements[iri].scheme
-        );
-        if (pkg) {
-          WorkspaceElements[id] = {
-            iri: iri,
-            connections: [],
-            hidden: elements[iri].hidden,
-            position: elements[iri].diagramPosition,
-            vocabularyNode: pkg,
-            active: elements[iri].active,
-            selectedLabel: elements[iri].selectedName,
-          };
-          pkg.elements.push(id);
-        }
+        WorkspaceElements[iri] = {
+          hidden: elements[iri].hidden,
+          position: elements[iri].diagramPosition,
+          active: elements[iri].active,
+          selectedLabel: elements[iri].selectedName,
+        };
       }
     }
     return true;
@@ -270,8 +248,8 @@ export async function getLinksConfig(
     "?link a og:link .",
     "?link og:id ?id .",
     "?link og:iri ?iri .",
-    "?link og:source-id ?sourceID .",
-    "?link og:target-id ?targetID .",
+    "?link og:source ?sourceID .",
+    "?link og:target ?targetID .",
     "?link og:active ?active .",
     "?link og:type ?type .",
     "?link og:sourceCardinality1 ?sourceCard1 .",
@@ -303,9 +281,13 @@ export async function getLinksConfig(
     .then((data) => {
       for (const result of data.results.bindings) {
         if (
-          result.iri.value in Links ||
-          (result.iri.value in WorkspaceTerms &&
-            !Object.values(links).find((link) => link.iri === result.iri.value))
+          !Object.values(links).find(
+            (link) =>
+              link.active &&
+              link.iri === result.iri.value &&
+              link.sourceID === result.sourceID.value &&
+              link.targetID === result.targetID.value
+          )
         ) {
           links[result.id.value] = {
             iri: result.iri.value,
@@ -370,32 +352,16 @@ export async function getLinksConfig(
       })
       .then((data) => {
         for (const result of data.results.bindings) {
-          const id =
-            result.id.value in links
-              ? result.id.value
-              : Object.keys(links).find(
-                  (link) =>
-                    links[link].iri === result.iri.value && links[link].active
-                );
-          if (id) {
-            if (!(result.diagramID.value in links[id].vertices))
-              links[id].vertices[result.diagramID.value] = [];
-            links[id].vertices[result.diagramID.value][
-              parseInt(result.index.value)
-            ] = {
-              x: parseInt(result.posX.value),
-              y: parseInt(result.posY.value),
-            };
-          }
-          // This is not necessarily an issue. What this means is there is some corrupted data from a buggy version
-          // of OG that is now recognized and left behind - the worst that happens is that some link vertices have
-          // been reset.
-          // Example: A compact link corresponding to a <<relationship-type>> term which is not found in the workspace.
-          // The issue arises whenever this data is generated by the *current* OG version - hence the warning.
-          else
-            console.warn(
-              `Warning: Link ID ${result.id.value} not found for vertex IRI ${result.vertex.value}. Vertex and/or link data may have been corrupted.`
-            );
+          if (!(result.id.value in links)) continue;
+          const id = result.id.value;
+          if (!(result.diagramID.value in links[id].vertices))
+            links[id].vertices[result.diagramID.value] = [];
+          links[id].vertices[result.diagramID.value][
+            parseInt(result.index.value)
+          ] = {
+            x: parseInt(result.posX.value),
+            y: parseInt(result.posY.value),
+          };
         }
         for (const link in links) {
           if (
@@ -423,11 +389,6 @@ export async function getLinksConfig(
               links[link].iri in Links,
             linkIRI: links[link].linkIRI,
           };
-          if (
-            !WorkspaceElements[links[link].sourceID].connections.includes(link)
-          ) {
-            WorkspaceElements[links[link].sourceID].connections.push(link);
-          }
         }
         return true;
       })

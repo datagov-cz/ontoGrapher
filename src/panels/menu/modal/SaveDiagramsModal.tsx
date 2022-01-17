@@ -134,8 +134,7 @@ export const SaveDiagramsModal: React.FC<Props> = (props) => {
         const element = termElements[index];
         const id = element.getAttribute("model-id");
         if (element && id) {
-          const iri = WorkspaceElements[id].iri;
-          termElements[index].setAttribute("data-ontographer-iri", iri);
+          termElements[index].setAttribute("data-ontographer-iri", id);
         }
       }
       const linkElements = svg.getElementsByClassName("joint-link");
@@ -143,8 +142,7 @@ export const SaveDiagramsModal: React.FC<Props> = (props) => {
         const element = linkElements[index];
         const id = element.getAttribute("model-id");
         if (element && id) {
-          const iri = WorkspaceLinks[id].iri;
-          linkElements[index].setAttribute("data-ontographer-iri", iri);
+          linkElements[index].setAttribute("data-ontographer-iri", id);
         }
       }
     }

@@ -1,9 +1,4 @@
-import {
-  AppSettings,
-  Diagrams,
-  WorkspaceElements,
-  WorkspaceLinks,
-} from "../../config/Variables";
+import { AppSettings, Diagrams, WorkspaceLinks } from "../../config/Variables";
 import { qb } from "../QueryBuilder";
 import { LinkConfig } from "../../config/logic/LinkConfig";
 import { DELETE, INSERT } from "@tpluscode/sparql-builder";
@@ -26,18 +21,8 @@ export function updateProjectLinkVertex(
     qb.s(qb.i(linkIRI), "rdf:type", "og:link"),
     qb.s(qb.i(linkIRI), "og:iri", qb.i(WorkspaceLinks[id].iri)),
     qb.s(qb.i(linkIRI), "og:active", qb.ll(WorkspaceLinks[id].active)),
-    qb.s(qb.i(linkIRI), "og:source-id", qb.ll(WorkspaceLinks[id].source)),
-    qb.s(qb.i(linkIRI), "og:target-id", qb.ll(WorkspaceLinks[id].target)),
-    qb.s(
-      qb.i(linkIRI),
-      "og:source",
-      qb.i(WorkspaceElements[WorkspaceLinks[id].source].iri)
-    ),
-    qb.s(
-      qb.i(linkIRI),
-      "og:target",
-      qb.i(WorkspaceElements[WorkspaceLinks[id].target].iri)
-    ),
+    qb.s(qb.i(linkIRI), "og:source", qb.i(WorkspaceLinks[id].source)),
+    qb.s(qb.i(linkIRI), "og:target", qb.i(WorkspaceLinks[id].target)),
     qb.s(
       qb.i(linkIRI),
       "og:type",
@@ -125,18 +110,8 @@ export function updateProjectLink(del: boolean, ...ids: string[]): string {
       qb.s(linkIRI, "og:id", qb.ll(id)),
       qb.s(linkIRI, "og:iri", qb.i(WorkspaceLinks[id].iri)),
       qb.s(linkIRI, "og:active", qb.ll(WorkspaceLinks[id].active)),
-      qb.s(linkIRI, "og:source-id", qb.ll(WorkspaceLinks[id].source)),
-      qb.s(linkIRI, "og:target-id", qb.ll(WorkspaceLinks[id].target)),
-      qb.s(
-        linkIRI,
-        "og:source",
-        qb.i(WorkspaceElements[WorkspaceLinks[id].source].iri)
-      ),
-      qb.s(
-        linkIRI,
-        "og:target",
-        qb.i(WorkspaceElements[WorkspaceLinks[id].target].iri)
-      ),
+      qb.s(linkIRI, "og:source", qb.i(WorkspaceLinks[id].source)),
+      qb.s(linkIRI, "og:target", qb.i(WorkspaceLinks[id].target)),
       qb.s(linkIRI, "og:type", qb.ll(LinkConfig[WorkspaceLinks[id].type].id)),
       qb.s(
         linkIRI,

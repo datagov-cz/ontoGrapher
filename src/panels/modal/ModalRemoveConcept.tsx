@@ -4,7 +4,6 @@ import { deleteConcept } from "../../function/FunctionEditVars";
 import {
   AppSettings,
   Diagrams,
-  WorkspaceElements,
   WorkspaceVocabularies,
 } from "../../config/Variables";
 import { Locale } from "../../config/Locale";
@@ -46,7 +45,7 @@ export default class ModalRemoveConcept extends React.Component<Props, State> {
     this.props.performTransaction(
       ...deleteConcept(this.props.id),
       updateDeleteTriples(
-        WorkspaceElements[this.props.id].iri,
+        this.props.id,
         [
           getWorkspaceContextIRI(),
           ...Object.values(Diagrams).map((diag) => diag.graph),
@@ -55,24 +54,18 @@ export default class ModalRemoveConcept extends React.Component<Props, State> {
         false,
         false
       ),
-      updateDeleteTriples(
-        WorkspaceElements[this.props.id].iri,
-        writeGraphs,
-        true,
-        true,
-        true
-      )
+      updateDeleteTriples(this.props.id, writeGraphs, true, true, true)
     );
   }
 
   getConnections() {
-    getCacheConnections(
-      WorkspaceElements[this.props.id].iri,
-      Representation.FULL
-    ).then((connections) =>
-      this.setState({
-        shownLucene: connections.filter((conn) => conn.direction === "target"),
-      })
+    getCacheConnections(this.props.id, Representation.FULL).then(
+      (connections) =>
+        this.setState({
+          shownLucene: connections.filter(
+            (conn) => conn.direction === "target"
+          ),
+        })
     );
   }
 

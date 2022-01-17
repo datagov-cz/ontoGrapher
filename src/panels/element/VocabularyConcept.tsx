@@ -44,16 +44,16 @@ export default class VocabularyConcept extends React.Component<Props, State> {
     return (
       <span className={"label"}>
         {getLabelOrBlank(
-          WorkspaceTerms[WorkspaceElements[this.props.id].iri].labels,
+          WorkspaceTerms[this.props.id].labels,
           this.props.projectLanguage
         )}
-        {WorkspaceTerms[WorkspaceElements[this.props.id].iri].altLabels.filter(
+        {WorkspaceTerms[this.props.id].altLabels.filter(
           (alt) => alt.language === this.props.projectLanguage
         ).length > 0 && (
           <span className={"altLabel"}>
             &nbsp;
             {"(" +
-              WorkspaceTerms[WorkspaceElements[this.props.id].iri].altLabels
+              WorkspaceTerms[this.props.id].altLabels
                 .filter((alt) => alt.language === this.props.projectLanguage)
                 .map((alt) => alt.label)
                 .join(", ") +

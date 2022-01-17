@@ -1,6 +1,7 @@
 import { RestrictionConfig } from "../config/logic/RestrictionConfig";
 
 export class Restriction {
+  public source: string;
   public onProperty: string;
   public restriction: string;
   public target: string;
@@ -8,16 +9,18 @@ export class Restriction {
   public inverse: boolean;
 
   constructor(
+    source: string,
     restriction: string,
     onProperty: string,
     target: string,
     onClass?: string,
     inverse: boolean = false
   ) {
+    this.source = inverse && onClass ? onClass : source;
     this.onProperty = onProperty;
     this.restriction = restriction;
     this.target = target;
-    if (onClass) this.onClass = onClass;
+    if (onClass) this.onClass = inverse ? source : onClass;
     this.inverse = inverse;
   }
 
@@ -29,6 +32,7 @@ export class Restriction {
 
   compare(other: Restriction) {
     return (
+      this.source === other.source &&
       this.target === other.target &&
       this.restriction === other.restriction &&
       this.onProperty === other.onProperty &&

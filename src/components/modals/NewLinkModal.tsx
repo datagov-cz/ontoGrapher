@@ -1,10 +1,8 @@
 import {
   AppSettings,
-  FolderRoot,
   Links,
   Prefixes,
   Stereotypes,
-  WorkspaceElements,
   WorkspaceLinks,
   WorkspaceTerms,
 } from "../../config/Variables";
@@ -18,15 +16,15 @@ import { LinkType, Representation } from "../../config/Enum";
 import { graph } from "../../graph/Graph";
 import { Button, Form, Modal } from "react-bootstrap";
 import {
-  getElemFromIRI,
+  getActiveToConnections,
   getExpressionByRepresentation,
   getLabelOrBlank,
   getLinkOrVocabElem,
+  getVocabularyFromScheme,
   isTermReadOnly,
 } from "../../function/FunctionGetVars";
 import { LinkCreationConfiguration } from "./CreationModals";
 import { NewElemForm } from "./NewElemForm";
-import { VocabularyNode } from "../../datatypes/VocabularyNode";
 import _ from "lodash";
 
 interface Props {
@@ -42,7 +40,7 @@ interface State {
   displayIncompatible: boolean;
   search: string;
   termName: { [key: string]: string };
-  selectedVocabulary: VocabularyNode;
+  selectedVocabulary: string;
   errorText: string;
   existing: boolean;
   create: boolean;
@@ -56,7 +54,7 @@ export default class NewLinkModal extends React.Component<Props, State> {
       selectedLink: "",
       displayIncompatible: false,
       termName: initLanguageObject(""),
-      selectedVocabulary: FolderRoot,
+      selectedVocabulary: "",
       errorText: Locale[AppSettings.interfaceLanguage].modalNewElemError,
       existing: true,
       create: false,
@@ -79,10 +77,10 @@ export default class NewLinkModal extends React.Component<Props, State> {
         this.props.configuration.sourceID !== this.props.configuration.targetID
       );
     const sourceTypes = WorkspaceTerms[
-      WorkspaceElements[this.props.configuration.sourceID].iri
+      this.props.configuration.sourceID
     ].types.filter((type) => type.startsWith(Prefixes["z-sgov-pojem"]));
     const targetTypes = WorkspaceTerms[
-      WorkspaceElements[this.props.configuration.targetID].iri
+      this.props.configuration.targetID
     ].types.filter((type) => type.startsWith(Prefixes["z-sgov-pojem"]));
     if (sourceTypes.length === 0 || targetTypes.length === 0) return false;
     const domain = Links[link].domain;
@@ -122,8 +120,9 @@ export default class NewLinkModal extends React.Component<Props, State> {
       .getElements()
       .find((elem) => elem.id === this.props.configuration.sourceID);
     if (elem && this.props.configuration.sourceID) {
-      const connections =
-        WorkspaceElements[this.props.configuration.sourceID].connections;
+      const connections = getActiveToConnections(
+        this.props.configuration.sourceID
+      );
       if (AppSettings.representation === Representation.FULL) {
         return Object.keys(Links).filter(
           (link) =>
@@ -138,11 +137,9 @@ export default class NewLinkModal extends React.Component<Props, State> {
       } else if (AppSettings.representation === Representation.COMPACT) {
         return Object.keys(WorkspaceTerms)
           .filter((iri) => {
-            const id = getElemFromIRI(iri);
             return (
               !isTermReadOnly(iri) &&
-              id &&
-              WorkspaceElements[id].connections.length === 0 &&
+              getActiveToConnections(iri).length === 0 &&
               WorkspaceTerms[iri].types.includes(
                 parsePrefix("z-sgov-pojem", "typ-vztahu")
               )
@@ -173,10 +170,9 @@ export default class NewLinkModal extends React.Component<Props, State> {
         onEntering={() => {
           this.setState({
             selectedLink: options.length > 0 ? options[0] : "",
-            selectedVocabulary:
-              FolderRoot.children.find((p) =>
-                p.elements.includes(this.props.configuration.sourceID)
-              ) || FolderRoot,
+            selectedVocabulary: getVocabularyFromScheme(
+              WorkspaceTerms[this.props.configuration.sourceID].inScheme
+            ),
             termName: initLanguageObject(""),
           });
           const inputLink = document.getElementById("newLinkInputSelect");
@@ -232,14 +228,14 @@ export default class NewLinkModal extends React.Component<Props, State> {
                   this.props.closeLink(this.state.selectedLink);
               }}
             >
-              <Form.Control
-                type="text"
-                value={this.state.search}
-                onChange={(event) =>
-                  this.setState({ search: event.currentTarget.value })
-                }
-                id={"newLinkInputSearch"}
-              />
+              {/*<Form.Control*/}
+              {/*  type="text"*/}
+              {/*  value={this.state.search}*/}
+              {/*  onChange={(event) =>*/}
+              {/*    this.setState({ search: event.currentTarget.value })*/}
+              {/*  }*/}
+              {/*  id={"newLinkInputSearch"}*/}
+              {/*/>*/}
               <Form.Control
                 htmlSize={Object.keys(Links).length}
                 as="select"
@@ -287,17 +283,17 @@ export default class NewLinkModal extends React.Component<Props, State> {
               />
               {this.state.existing && (
                 <div>
-                  <Form.Control
-                    type="text"
-                    placeholder={
-                      Locale[AppSettings.interfaceLanguage].searchStereotypes
-                    }
-                    value={this.state.search}
-                    onChange={(event) =>
-                      this.setState({ search: event.currentTarget.value })
-                    }
-                    id={"newLinkInputSearch"}
-                  />
+                  {/*<Form.Control*/}
+                  {/*  type="text"*/}
+                  {/*  placeholder={*/}
+                  {/*    Locale[AppSettings.interfaceLanguage].searchStereotypes*/}
+                  {/*  }*/}
+                  {/*  value={this.state.search}*/}
+                  {/*  onChange={(event) =>*/}
+                  {/*    this.setState({ search: event.currentTarget.value })*/}
+                  {/*  }*/}
+                  {/*  id={"newLinkInputSearch"}*/}
+                  {/*/>*/}
                   <Form.Control
                     htmlSize={Object.keys(Links).length}
                     as="select"
@@ -334,7 +330,6 @@ export default class NewLinkModal extends React.Component<Props, State> {
               />
               {this.state.create && (
                 <NewElemForm
-                  lockVocabulary={true}
                   projectLanguage={this.props.projectLanguage}
                   termName={this.state.termName}
                   selectedVocabulary={this.state.selectedVocabulary}

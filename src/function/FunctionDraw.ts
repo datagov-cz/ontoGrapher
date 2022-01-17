@@ -17,12 +17,12 @@ import _ from "underscore";
 
 export function setDisplayLabel(id: string, languageCode: string) {
   if (WorkspaceElements[id].selectedLabel[languageCode] === "") {
-    const altLabel = WorkspaceTerms[WorkspaceElements[id].iri].altLabels.find(
+    const altLabel = WorkspaceTerms[id].altLabels.find(
       (alt) => alt.language === languageCode
     );
     WorkspaceElements[id].selectedLabel[languageCode] = altLabel
       ? altLabel.label
-      : WorkspaceTerms[WorkspaceElements[id].iri].labels[languageCode];
+      : WorkspaceTerms[id].labels[languageCode];
   }
 }
 
@@ -38,7 +38,7 @@ export function drawGraphElement(
   representation: number
 ) {
   if (typeof elem.id === "string") {
-    const types = WorkspaceTerms[WorkspaceElements[elem.id].iri].types;
+    const types = WorkspaceTerms[elem.id].types;
     getDisplayLabel(elem.id, languageCode);
     const label = WorkspaceElements[elem.id].selectedLabel[languageCode];
     const labels: string[] = [];

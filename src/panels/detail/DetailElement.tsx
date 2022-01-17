@@ -92,24 +92,21 @@ export default class DetailElement extends React.Component<Props, State> {
           id: id,
           selectedLabel: WorkspaceElements[id].selectedLabel,
           inputTypeType:
-            WorkspaceTerms[WorkspaceElements[id].iri].types.find(
+            WorkspaceTerms[id].types.find(
               (type) => type in Stereotypes && type in Shapes
             ) || "",
           inputTypeData:
-            WorkspaceTerms[WorkspaceElements[id].iri].types.find(
+            WorkspaceTerms[id].types.find(
               (type) => type in Stereotypes && !(type in Shapes)
             ) || "",
-          inputLabels: WorkspaceTerms[WorkspaceElements[id].iri].labels,
-          inputAltLabels: WorkspaceTerms[WorkspaceElements[id].iri].altLabels,
-          inputDefinitions:
-            WorkspaceTerms[WorkspaceElements[id].iri].definitions,
+          inputLabels: WorkspaceTerms[id].labels,
+          inputAltLabels: WorkspaceTerms[id].altLabels,
+          inputDefinitions: WorkspaceTerms[id].definitions,
           newAltInput: "",
           changes: false,
           readOnly:
             WorkspaceVocabularies[
-              getVocabularyFromScheme(
-                WorkspaceTerms[WorkspaceElements[id].iri].inScheme
-              )
+              getVocabularyFromScheme(WorkspaceTerms[id].inScheme)
             ].readOnly,
         })
       : this.setState({ id: "" });
@@ -118,13 +115,10 @@ export default class DetailElement extends React.Component<Props, State> {
   save() {
     const elem = graph.getElements().find((elem) => elem.id === this.state.id);
     if (this.state.id in WorkspaceElements) {
-      WorkspaceTerms[WorkspaceElements[this.state.id].iri].altLabels =
-        this.state.inputAltLabels;
-      WorkspaceTerms[WorkspaceElements[this.state.id].iri].definitions =
-        this.state.inputDefinitions;
+      WorkspaceTerms[this.state.id].altLabels = this.state.inputAltLabels;
+      WorkspaceTerms[this.state.id].definitions = this.state.inputDefinitions;
       WorkspaceElements[this.state.id].selectedLabel = this.state.selectedLabel;
-      WorkspaceTerms[WorkspaceElements[this.state.id].iri].labels =
-        this.state.inputLabels;
+      WorkspaceTerms[this.state.id].labels = this.state.inputLabels;
       if (elem) {
         drawGraphElement(
           elem,
@@ -168,15 +162,15 @@ export default class DetailElement extends React.Component<Props, State> {
     const otherStereotype = type
       ? this.state.inputTypeData
       : this.state.inputTypeType;
-    const stereotypes = WorkspaceTerms[
-      WorkspaceElements[this.state.id].iri
-    ].types.filter((stereotype) => !(stereotype in Stereotypes));
+    const stereotypes = WorkspaceTerms[this.state.id].types.filter(
+      (stereotype) => !(stereotype in Stereotypes)
+    );
     if (newStereotype !== "") stereotypes.push(newStereotype);
     if (otherStereotype !== "")
       type
         ? stereotypes.push(otherStereotype)
         : stereotypes.unshift(otherStereotype);
-    WorkspaceTerms[WorkspaceElements[this.state.id].iri].types = stereotypes;
+    WorkspaceTerms[this.state.id].types = stereotypes;
     this.setState({
       changes: true,
     });
@@ -215,13 +209,12 @@ export default class DetailElement extends React.Component<Props, State> {
                   label={
                     this.state.id
                       ? getLabelOrBlank(
-                          WorkspaceTerms[WorkspaceElements[this.state.id].iri]
-                            .labels,
+                          WorkspaceTerms[this.state.id].labels,
                           this.props.projectLanguage
                         )
                       : ""
                   }
-                  iri={WorkspaceElements[this.state.id].iri}
+                  iri={this.state.id}
                 />
               </h3>
             </div>
@@ -253,11 +246,8 @@ export default class DetailElement extends React.Component<Props, State> {
                         }
                       </h5>
                       <LabelTable
-                        iri={WorkspaceElements[this.state.id].iri}
-                        labels={
-                          WorkspaceTerms[WorkspaceElements[this.state.id].iri]
-                            .labels
-                        }
+                        iri={this.state.id}
+                        labels={WorkspaceTerms[this.state.id].labels}
                         default={
                           this.state.selectedLabel[this.props.projectLanguage]
                         }
@@ -301,9 +291,9 @@ export default class DetailElement extends React.Component<Props, State> {
                               ]
                             ) {
                               resL[this.props.projectLanguage] =
-                                WorkspaceTerms[
-                                  WorkspaceElements[this.state.id].iri
-                                ].labels[this.props.projectLanguage];
+                                WorkspaceTerms[this.state.id].labels[
+                                  this.props.projectLanguage
+                                ];
                             }
                             res.splice(i, 1);
                           } else {
@@ -395,10 +385,8 @@ export default class DetailElement extends React.Component<Props, State> {
                             }
                           </h5>
                           <IntrinsicTropeTable
-                            iri={WorkspaceElements[this.state.id].iri}
-                            tropes={getIntrinsicTropeTypeIDs(this.state.id).map(
-                              (id) => WorkspaceElements[id].iri
-                            )}
+                            iri={this.state.id}
+                            tropes={getIntrinsicTropeTypeIDs(this.state.id)}
                             onEdit={(id: string) =>
                               this.props.updateDetailPanel(id)
                             }
@@ -462,15 +450,12 @@ export default class DetailElement extends React.Component<Props, State> {
                         labels={
                           WorkspaceVocabularies[
                             getVocabularyFromScheme(
-                              WorkspaceTerms[
-                                WorkspaceElements[this.state.id].iri
-                              ].inScheme
+                              WorkspaceTerms[this.state.id].inScheme
                             )
                           ].labels
                         }
                         iri={getVocabularyFromScheme(
-                          WorkspaceTerms[WorkspaceElements[this.state.id].iri]
-                            .inScheme
+                          WorkspaceTerms[this.state.id].inScheme
                         )}
                       />
                       {Object.keys(Languages).length > 0 ? (
