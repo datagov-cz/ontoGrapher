@@ -188,9 +188,11 @@ export async function searchCache(
     "[] a con-inst:" + lucene + " ;",
     'con:query "' + term + '" ;',
     "con:entities ?entity .",
+    "graph ?vocabulary {",
     "?entity skos:prefLabel ?label.",
     "optional {?entity skos:definition ?definition.}",
     "?entity skos:inScheme ?scheme.",
+    "}",
     "?vocabulary <http://onto.fel.cvut.cz/ontologies/slovník/agendový/popis-dat/pojem/má-glosář> ?scheme.",
     "<" +
       AppSettings.cacheContext +
