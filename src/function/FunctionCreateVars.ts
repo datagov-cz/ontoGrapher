@@ -65,7 +65,7 @@ export function getDomainOf(iriElem: string): string[] {
 
 export function addToFlexSearch(...ids: string[]) {
   let numberID = Object.keys(FlexDocumentIDTable).length;
-  for (const id of ids) {
+  for (const id of ids.filter((id) => WorkspaceElements[id].active)) {
     if (!(id in WorkspaceElements))
       throw new Error(`ID ${id} not recognized as an element ID.`);
     const iri = WorkspaceElements[id].iri;

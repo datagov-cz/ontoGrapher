@@ -214,7 +214,9 @@ export function setRepresentation(
   AppSettings.selectedLink = "";
   let del = false;
   if (representation === Representation.COMPACT) {
-    for (const id of Object.keys(WorkspaceElements)) {
+    for (const id of Object.keys(WorkspaceElements).filter(
+      (id) => WorkspaceElements[id].iri in WorkspaceTerms
+    )) {
       if (
         WorkspaceTerms[WorkspaceElements[id].iri].types.includes(
           parsePrefix("z-sgov-pojem", "typ-vztahu")
