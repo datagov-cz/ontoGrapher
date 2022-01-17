@@ -213,7 +213,8 @@ export function setRepresentation(
   let del = false;
   if (representation === Representation.COMPACT) {
     for (const id of Object.keys(WorkspaceElements).filter(
-      (elem) => WorkspaceElements[elem].active
+      (elem) => WorkspaceElements[elem].active &&
+        elem in WorkspaceTerms
     )) {
       if (
         WorkspaceTerms[id].types.includes(
