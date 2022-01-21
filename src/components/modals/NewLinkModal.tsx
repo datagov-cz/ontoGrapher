@@ -130,8 +130,7 @@ export default class NewLinkModal extends React.Component<Props, State> {
               (conn) =>
                 WorkspaceLinks[conn].iri === link &&
                 WorkspaceLinks[conn].target ===
-                  this.props.configuration.targetID &&
-                WorkspaceLinks[conn].active
+                  this.props.configuration.targetID
             ) && (this.state.displayIncompatible ? true : this.filtering(link))
         );
       } else if (AppSettings.representation === Representation.COMPACT) {

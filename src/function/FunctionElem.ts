@@ -107,27 +107,27 @@ export function createNewConcept(
     WorkspaceVocabularies[vocabulary].glossary,
     name[language]
   );
-  const cls = new graphElement({ id: iri });
   const p = paper.clientToLocalPoint(point);
   addVocabularyElement(iri, WorkspaceVocabularies[vocabulary].glossary, [
     parsePrefix("skos", "Concept"),
     ...types,
   ]);
   addClass(iri);
-  WorkspaceElements[cls.id].hidden[AppSettings.selectedDiagram] = false;
+  addToFlexSearch(iri);
+  WorkspaceTerms[iri].labels = name;
+  WorkspaceElements[iri].hidden[AppSettings.selectedDiagram] = false;
+  const cls = new graphElement({ id: iri });
   if (p) {
     cls.set("position", { x: p.x, y: p.y });
-    WorkspaceElements[cls.id].position[AppSettings.selectedDiagram] = {
+    WorkspaceElements[iri].position[AppSettings.selectedDiagram] = {
       x: p.x,
       y: p.y,
     };
   }
-  WorkspaceTerms[iri].labels = name;
-  cls.addTo(graph);
-  const bbox = paper.findViewByModel(cls).getBBox();
-  if (bbox) cls.resize(bbox.width, bbox.height);
-  drawGraphElement(cls, language, AppSettings.representation);
-  addToFlexSearch(iri);
+  if (isElementVisible(iri, AppSettings.representation)) {
+    cls.addTo(graph);
+    drawGraphElement(cls, language, AppSettings.representation);
+  }
   return iri;
 }
 

@@ -109,7 +109,6 @@ export const CreationModals: React.FC<Props> = (props) => {
                 props.elemConfiguration.connections
               )
             );
-            setRepresentation(AppSettings.representation);
             if (props.elemConfiguration.connections.length === 1) {
               const elem = graph
                 .getElements()
