@@ -129,6 +129,21 @@ export function constructFullConnections(
   );
 }
 
+export function isLinkVisible(
+  iri: string,
+  type: LinkType,
+  representation: Representation
+): boolean {
+  switch (representation) {
+    case Representation.COMPACT:
+      return iri in WorkspaceTerms || type === LinkType.GENERALIZATION;
+    case Representation.FULL:
+      return iri in Links;
+    default:
+      throw new Error("Unrecognized representation");
+  }
+}
+
 export function saveNewLink(
   iri: string,
   sid: string,
@@ -138,53 +153,41 @@ export function saveNewLink(
   const type = iri in Links ? Links[iri].type : LinkType.DEFAULT;
   const link = getNewLink(type);
   setLinkBoundary(link, sid, tid);
-  link.addTo(graph);
-  const s = link.getSourceElement();
-  const t = link.getTargetElement();
-  if (s && t) {
-    const id = link.id as string;
-    const sid = s.id as string;
-    const tid = t.id as string;
-    if (sid === tid)
-      setSelfLoopConnectionPoints(link, paper.findViewByModel(sid).getBBox());
-    setLinkBoundary(link, sid, tid);
-    let queries: string[] = [];
-    if (
-      representation === Representation.FULL ||
-      type === LinkType.GENERALIZATION
-    ) {
-      queries.push(...updateConnection(sid, tid, id, type, iri, true));
-    } else {
-      const find = Object.keys(WorkspaceElements).find(
-        (elem) => WorkspaceElements[elem].active && elem === iri
-      );
-      if (!find) {
-        throw new Error(`Error initializing compact relationship ${id}.`);
-      }
-      const property = new graphElement({ id: find });
-      const source = getNewLink();
-      const target = getNewLink();
-      const sourceId = source.id as string;
-      const propertyId = property.id as string;
-      const targetId = target.id as string;
-      if (!find) addClass(iri);
-      queries.push(
-        updateProjectElement(true, propertyId),
-        ...updateConnection(propertyId, sid, sourceId, type, mvp1IRI),
-        ...updateConnection(propertyId, tid, targetId, type, mvp2IRI),
-        ...updateConnection(sid, tid, id, type, iri)
-      );
-    }
-    if (type === LinkType.DEFAULT)
-      setLabels(
-        link,
-        getLinkOrVocabElem(iri).labels[AppSettings.canvasLanguage]
-      );
-    return queries;
+  const id = link.id as string;
+  if (sid === tid)
+    setSelfLoopConnectionPoints(link, paper.findViewByModel(sid).getBBox());
+  setLinkBoundary(link, sid, tid);
+  let queries: string[] = [];
+  if (
+    representation === Representation.FULL ||
+    type === LinkType.GENERALIZATION
+  ) {
+    queries.push(...updateConnection(sid, tid, id, type, iri, true));
   } else {
-    link.remove();
-    return [""];
+    const find = Object.keys(WorkspaceElements).find(
+      (elem) => WorkspaceElements[elem].active && elem === iri
+    );
+    if (!find) {
+      throw new Error(`Error initializing compact relationship ${id}.`);
+    }
+    const property = new graphElement({ id: find });
+    const source = getNewLink();
+    const target = getNewLink();
+    const sourceId = source.id as string;
+    const propertyId = property.id as string;
+    const targetId = target.id as string;
+    if (!find) addClass(iri);
+    queries.push(
+      updateProjectElement(true, propertyId),
+      ...updateConnection(propertyId, sid, sourceId, type, mvp1IRI),
+      ...updateConnection(propertyId, tid, targetId, type, mvp2IRI),
+      ...updateConnection(sid, tid, id, type, iri)
+    );
   }
+  if (type === LinkType.DEFAULT)
+    setLabels(link, getLinkOrVocabElem(iri).labels[AppSettings.canvasLanguage]);
+  if (isLinkVisible(iri, type, AppSettings.representation)) link.addTo(graph);
+  return queries;
 }
 
 export function doesLinkHaveInverse(linkID: string) {
