@@ -114,7 +114,7 @@ export async function fetchConcepts(
     "PREFIX skos: <http://www.w3.org/2004/02/skos/core#>",
     "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>",
     "PREFIX z-sgov-pojem: <https://slovník.gov.cz/základní/pojem/>",
-    "SELECT DISTINCT ?term ?termLabel ?termAltLabel ?termType ?termDefinition ?topConcept ?inverseOf ?inverseOnProperty ?character ?restriction ?restrictionPred ?onProperty ?onClass ?target ?subClassOf",
+    "SELECT DISTINCT ?term ?termLabel ?termAltLabel ?termType ?termDefinition ?termDomain ?termRange ?topConcept ?inverseOf ?inverseOnProperty ?character ?restriction ?restrictionPred ?onProperty ?onClass ?target ?subClassOf",
     "WHERE {",
     graph && "GRAPH <" + graph + "> {",
     vocabulary
@@ -132,6 +132,8 @@ export async function fetchConcepts(
     "OPTIONAL {?term skos:altLabel ?termAltLabel.}",
     "OPTIONAL {?term skos:definition ?termDefinition.}",
     "OPTIONAL {?term z-sgov-pojem:charakterizuje ?character.}",
+    "OPTIONAL {?term rdfs:domain ?termDomain.}",
+    "OPTIONAL {?term rdfs:range ?termRange.}",
     "OPTIONAL {?term rdfs:subClassOf ?subClassOf. ",
     "filter (!isBlank(?subClassOf)) }",
     "OPTIONAL {?term owl:inverseOf ?inverseOf. }",
