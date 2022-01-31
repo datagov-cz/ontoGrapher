@@ -55,7 +55,10 @@ function constructDefaultLinkRestriction(
         qb.po(restriction, inverse && inverseTarget ? inverseTarget : target),
       ])
     );
-  return [buildFunction(false), ...(buildInverse ? [buildFunction(true)] : [])];
+  const restrictions: string[] = [];
+  if (target) restrictions.push(buildFunction(false));
+  if (buildInverse) restrictions.push(buildFunction(true));
+  return restrictions;
 }
 
 export function updateDefaultLink(id: string): string {
@@ -88,12 +91,20 @@ export function updateDefaultLink(id: string): string {
       .filter(
         (linkID) =>
           linkID in WorkspaceLinks &&
-          WorkspaceElements[WorkspaceLinks[linkID].target] &&
+          WorkspaceLinks[linkID].target in WorkspaceElements &&
           WorkspaceLinks[linkID].iri in Links &&
           WorkspaceLinks[linkID].type === LinkType.DEFAULT
       )
-      .map((linkID) =>
-        [
+      .map((linkID) => {
+        const targetCardMin =
+          WorkspaceLinks[linkID].targetCardinality.getFirstCardinality();
+        const targetCardMax =
+          WorkspaceLinks[linkID].targetCardinality.getSecondCardinality();
+        const sourceCardMin =
+          WorkspaceLinks[linkID].sourceCardinality.getFirstCardinality();
+        const sourceCardMax =
+          WorkspaceLinks[linkID].sourceCardinality.getSecondCardinality();
+        return [
           ...constructDefaultLinkRestriction(
             iri,
             "owl:someValuesFrom",
@@ -110,65 +121,27 @@ export function updateDefaultLink(id: string): string {
             doesLinkHaveInverse(linkID),
             qb.i(iri)
           ),
-          ...(isNumber(
-            WorkspaceLinks[linkID].targetCardinality.getFirstCardinality()
-          )
-            ? constructDefaultLinkRestriction(
-                iri,
-                "owl:minQualifiedCardinality",
-                WorkspaceLinks[linkID].iri,
-                qb.lt(
-                  WorkspaceLinks[
-                    linkID
-                  ].targetCardinality.getFirstCardinality(),
-                  "xsd:nonNegativeInteger"
-                ),
-                doesLinkHaveInverse(linkID) &&
-                  isNumber(
-                    WorkspaceLinks[
-                      linkID
-                    ].sourceCardinality.getFirstCardinality()
-                  ),
-                qb.lt(
-                  WorkspaceLinks[
-                    linkID
-                  ].sourceCardinality.getFirstCardinality(),
-                  "xsd:nonNegativeInteger"
-                ),
-                WorkspaceLinks[linkID].target
-              )
-            : []),
-          ...(isNumber(
-            WorkspaceLinks[linkID].targetCardinality.getSecondCardinality()
-          )
-            ? constructDefaultLinkRestriction(
-                iri,
-                "owl:maxQualifiedCardinality",
-                WorkspaceLinks[linkID].iri,
-                qb.lt(
-                  WorkspaceLinks[
-                    linkID
-                  ].targetCardinality.getSecondCardinality(),
-                  "xsd:nonNegativeInteger"
-                ),
-                doesLinkHaveInverse(linkID) &&
-                  isNumber(
-                    WorkspaceLinks[
-                      linkID
-                    ].sourceCardinality.getSecondCardinality()
-                  ),
-                qb.lt(
-                  WorkspaceLinks[
-                    linkID
-                  ].sourceCardinality.getSecondCardinality(),
-                  "xsd:nonNegativeInteger"
-                ),
-                WorkspaceLinks[linkID].target
-              )
-            : []),
+          ...constructDefaultLinkRestriction(
+            iri,
+            "owl:minQualifiedCardinality",
+            WorkspaceLinks[linkID].iri,
+            qb.lt(getNumber(targetCardMin), "xsd:nonNegativeInteger"),
+            isNumber(sourceCardMin),
+            qb.lt(sourceCardMin, "xsd:nonNegativeInteger"),
+            WorkspaceLinks[linkID].target
+          ),
+          ...constructDefaultLinkRestriction(
+            iri,
+            "owl:maxQualifiedCardinality",
+            WorkspaceLinks[linkID].iri,
+            qb.lt(getNumber(targetCardMax), "xsd:nonNegativeInteger"),
+            isNumber(sourceCardMax),
+            qb.lt(sourceCardMax, "xsd:nonNegativeInteger"),
+            WorkspaceLinks[linkID].target
+          ),
         ].join(`
-		`)
-      ),
+		`);
+      }),
     ...WorkspaceTerms[iri].restrictions
       .filter(
         (rest) =>
@@ -195,7 +168,6 @@ export function updateDefaultLink(id: string): string {
 			`)
       ),
   ])}`.build();
-
   return qb.combineQueries(del, insert);
 }
 
@@ -233,4 +205,8 @@ export function updateConnections(id: string): string {
 
 export function isNumber(str: string) {
   return !isNaN(parseInt(str, 10));
+}
+
+function getNumber(str: string) {
+  return isNumber(str) ? str : "";
 }

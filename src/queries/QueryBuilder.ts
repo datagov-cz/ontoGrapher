@@ -49,6 +49,7 @@ ${statements.join(`
   },
   //literal with type
   lt: (literal: string | boolean | number, type?: string) => {
+    if (typeof literal === "string" && !literal) return "";
     return `"${
       typeof literal === "string"
         ? literal.replace(/(["'\\])/g, "\\$1").replace(/[\n\r]/g, " ")
