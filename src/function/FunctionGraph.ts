@@ -44,6 +44,7 @@ import {
 } from "./FunctionLink";
 import { insertNewCacheTerms, insertNewRestrictions } from "./FunctionCache";
 import { updateDiagram } from "../queries/update/UpdateDiagramQueries";
+import { addLink } from "./FunctionCreateVars";
 
 export const mvp1IRI =
   "https://slovník.gov.cz/základní/pojem/má-vztažený-prvek-1";
@@ -213,8 +214,7 @@ export function setRepresentation(
   let del = false;
   if (representation === Representation.COMPACT) {
     for (const id of Object.keys(WorkspaceElements).filter(
-      (elem) => WorkspaceElements[elem].active &&
-        elem in WorkspaceTerms
+      (elem) => WorkspaceElements[elem].active && elem in WorkspaceTerms
     )) {
       if (
         WorkspaceTerms[id].types.includes(
@@ -246,10 +246,11 @@ export function setRepresentation(
                 WorkspaceLinks[link].target === target
             );
             if (!find) {
-              console.error(
-                `Compact relationship ${id} not initialized before displaying.`
-              );
-              continue;
+              const newLink = getNewLink();
+              const newLinkID = newLink.id as string;
+              addLink(newLinkID, id, source, target);
+              constructFullConnections(newLinkID, sourceLink, targetLink);
+              queries.push(updateProjectLink(false, newLinkID));
             }
             const newLink = getNewLink(LinkType.DEFAULT, find);
             if (sourceBox && targetBox) {
@@ -342,7 +343,7 @@ export function setRepresentation(
         );
       }
     }
-    for (let elem of graph.getElements()) {
+    for (const elem of graph.getElements()) {
       drawGraphElement(elem, AppSettings.canvasLanguage, representation);
       if (typeof elem.id === "string") {
         queries.push(
