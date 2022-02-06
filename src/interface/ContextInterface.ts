@@ -1,6 +1,7 @@
 import {
   AppSettings,
   WorkspaceElements,
+  WorkspaceLinks,
   WorkspaceTerms,
   WorkspaceVocabularies,
 } from "../config/Variables";
@@ -128,8 +129,26 @@ export async function getContext(
   )
     return false;
   addToFlexSearch(...Object.keys(WorkspaceElements));
+  const connections = initConnections(true);
+  const connectionsToDelete = connections.filter(
+    (link) => link in WorkspaceLinks
+  );
+  const connectionsToInitialize = connections.filter(
+    (link) => !(link in WorkspaceLinks)
+  );
+  for (const id of connectionsToDelete) {
+    // This is expected behaviour e.g. for imported diagrams,
+    // if they have references to links that no longer exist in the data.
+    console.warn(
+      `Link ID ${id} (${WorkspaceLinks[id].source} --${WorkspaceLinks[id].iri}-> ${WorkspaceLinks[id].target}) deactivated due its owl:Restriction counterpart missing.`
+    );
+    WorkspaceLinks[id].active = false;
+  }
   return await processTransaction(
     AppSettings.contextEndpoint,
-    qb.constructQuery(updateProjectLink(false, ...initConnections()))
+    qb.constructQuery(
+      updateProjectLink(false, ...connectionsToInitialize),
+      updateProjectLink(true, ...connectionsToDelete)
+    )
   );
 }
