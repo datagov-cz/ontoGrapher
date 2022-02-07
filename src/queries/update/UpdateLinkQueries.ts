@@ -93,15 +93,33 @@ export function updateDeleteProjectLinkVertex(
   ])}`.build();
 }
 
+export function updateDeleteProjectLink(...ids: string[]): string {
+  const statements = ids.map((id, idx) =>
+    qb.s(qb.i(WorkspaceLinks[id].linkIRI), `?p${idx}`, `?o${idx}`)
+  );
+  const filters = ids.map((_, idx) => `filter(?p${idx} not in (og:vertex))`);
+  const diagrams = Object.values(Diagrams)
+    .filter((diag) => diag.active)
+    .map((diagram) => diagram.graph);
+  return qb.combineQueries(
+    DELETE`${qb.g(getWorkspaceContextIRI(), statements)}`.WHERE`${qb.g(
+      getWorkspaceContextIRI(),
+      [...statements, ...filters]
+    )}`.build(),
+    DELETE`graph ?graphs {${statements.join(`
+        `)}}`.WHERE`${qb.gs(diagrams, [...statements, ...filters])}`.build()
+  );
+}
+
 export function updateProjectLink(del: boolean, ...ids: string[]): string {
   const insertBody: string[] = [];
-  const deletes: string[] = [];
+  const deletes: string = updateDeleteProjectLink(...ids);
   const insert: string[] = [];
   const diagrams = Object.values(Diagrams)
     .filter((diag) => diag.active)
     .map((diagram) => diagram.graph);
   if (ids.length === 0) return "";
-  for (let id of ids) {
+  for (const id of ids) {
     checkLink(id);
     const linkIRI = qb.i(WorkspaceLinks[id].linkIRI);
 
@@ -134,20 +152,6 @@ export function updateProjectLink(del: boolean, ...ids: string[]): string {
         qb.ll(WorkspaceLinks[id].targetCardinality.getSecondCardinality())
       )
     );
-
-    if (del)
-      deletes.push(
-        DELETE`${qb.g(getWorkspaceContextIRI(), [qb.s(linkIRI, "?p", "?o")])}`
-          .WHERE`${qb.g(getWorkspaceContextIRI(), [
-          qb.s(linkIRI, "?p", "?o"),
-          "filter(?p not in (og:vertex))",
-        ])}`.build(),
-        DELETE`graph ?graphs {${[qb.s(linkIRI, "?p", "?o")].join(`
-        `)}}`.WHERE`${qb.gs(diagrams, [
-          qb.s(linkIRI, "?p", "?o"),
-          "filter(?p not in (og:vertex))",
-        ])}`.build()
-      );
   }
   insert.push(
     ...diagrams.map((diagram) =>
@@ -156,7 +160,7 @@ export function updateProjectLink(del: boolean, ...ids: string[]): string {
     INSERT.DATA`${qb.g(getWorkspaceContextIRI(), insertBody)}`.build()
   );
 
-  return qb.combineQueries(...deletes, ...insert);
+  return qb.combineQueries(deletes, ...insert);
 }
 
 function checkLink(id: string) {

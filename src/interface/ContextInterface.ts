@@ -15,7 +15,10 @@ import {
 import { qb } from "../queries/QueryBuilder";
 import { updateProjectElement } from "../queries/update/UpdateElementQueries";
 import { deleteConcept, initElements } from "../function/FunctionEditVars";
-import { updateProjectLink } from "../queries/update/UpdateLinkQueries";
+import {
+  updateDeleteProjectLink,
+  updateProjectLink,
+} from "../queries/update/UpdateLinkQueries";
 import { initConnections } from "../function/FunctionRestriction";
 import { insertNewCacheTerms } from "../function/FunctionCache";
 import { addToFlexSearch } from "../function/FunctionCreateVars";
@@ -140,7 +143,7 @@ export async function getContext(
     // This is expected behaviour e.g. for imported diagrams,
     // if they have references to links that no longer exist in the data.
     console.warn(
-      `Link ID ${id} (${WorkspaceLinks[id].source} --${WorkspaceLinks[id].iri}-> ${WorkspaceLinks[id].target}) deactivated due its owl:Restriction counterpart missing.`
+      `Link ID ${id} ( ${WorkspaceLinks[id].source} -- ${WorkspaceLinks[id].iri} -> ${WorkspaceLinks[id].target} ) deactivated due its owl:Restriction counterpart(s) missing.`
     );
     WorkspaceLinks[id].active = false;
   }
@@ -148,7 +151,7 @@ export async function getContext(
     AppSettings.contextEndpoint,
     qb.constructQuery(
       updateProjectLink(false, ...connectionsToInitialize),
-      updateProjectLink(true, ...connectionsToDelete)
+      updateDeleteProjectLink(...connectionsToDelete)
     )
   );
 }
