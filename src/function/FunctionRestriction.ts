@@ -21,14 +21,24 @@ export function createRestriction(
   restrictions.push(restriction);
 }
 
-export function initConnections(): string[] {
+export function initConnections(removeOutdated: boolean = false): string[] {
   const linksToPush = [];
+  const linksToDelete: string[] = Object.keys(WorkspaceLinks);
   const restrictions = _.flatten(
     Object.keys(WorkspaceTerms).map((term) => WorkspaceTerms[term].restrictions)
   ).sort((a, b) => a.restriction.localeCompare(b.restriction));
   for (const restriction of restrictions) {
-    const newLink = restriction.initRestriction(restriction.source);
-    if (newLink) linksToPush.push(newLink);
+    const find = getActiveToConnections(restriction.source).find(
+      (conn) =>
+        WorkspaceLinks[conn].iri === restriction.onProperty &&
+        WorkspaceLinks[conn].target === restriction.target
+    );
+    if (find && restriction.target in WorkspaceTerms)
+      linksToDelete.splice(linksToDelete.indexOf(find), 1);
+    else {
+      const newLink = restriction.initRestriction(restriction.source);
+      if (newLink) linksToPush.push(newLink);
+    }
   }
   for (const iri in WorkspaceTerms) {
     for (const subClassOf of WorkspaceTerms[iri].subClassOf) {
@@ -36,12 +46,11 @@ export function initConnections(): string[] {
         const rangeID = Object.keys(WorkspaceElements).find(
           (element) => element === subClassOf
         );
-        if (
-          rangeID &&
-          !getActiveToConnections(iri).find(
-            (conn) => WorkspaceLinks[conn].target === subClassOf
-          )
-        ) {
+        const find = getActiveToConnections(iri).find(
+          (conn) => WorkspaceLinks[conn].target === subClassOf
+        );
+        if (find) linksToDelete.splice(linksToDelete.indexOf(find), 1);
+        if (rangeID && !find) {
           const linkGeneralization = getNewLink(LinkType.GENERALIZATION);
           const id = linkGeneralization.id as string;
           addLink(
@@ -78,6 +87,7 @@ export function initConnections(): string[] {
               WorkspaceLinks[link].source === source &&
               WorkspaceLinks[link].target === target
           );
+          if (find) linksToDelete.splice(linksToDelete.indexOf(find), 1);
           if (!find) {
             const newLink = getNewLink();
             const newLinkID = newLink.id as string;
@@ -89,5 +99,6 @@ export function initConnections(): string[] {
       }
     }
   }
+  if (removeOutdated) return linksToPush.concat(linksToDelete);
   return linksToPush;
 }
