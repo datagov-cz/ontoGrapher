@@ -120,7 +120,7 @@ export async function fetchRelationships(
   for (let i = 0; i < Math.ceil(terms.length / 25); i++) {
     const termSlice = terms.slice(i * 25, (i + 1) * 25);
     const query = [
-      "SELECT ?graph ?term ?restriction ?restrictionPred ?target ?onProperty ?onClass WHERE {",
+      "SELECT ?graph ?term ?restrictionPred ?target ?onProperty ?onClass WHERE {",
       "graph ?graph {",
       "?term rdfs:subClassOf ?restriction.",
       "filter(isBlank(?restriction))",
@@ -144,20 +144,16 @@ export async function fetchRelationships(
       .then((response) => response.json())
       .then((data) => {
         for (const row of data.results.bindings) {
-          if (!(row.term.value in result)) {
-            result[row.term.value] = [];
-          }
-          if (row.restriction) {
-            result[row.term.value].push(
-              new Restriction(
-                row.term.value,
-                row.restrictionPred.value,
-                row.onProperty.value,
-                row.target,
-                row.onClass ? row.onClass.value : undefined
-              )
-            );
-          }
+          if (!(row.term.value in result)) result[row.term.value] = [];
+          result[row.term.value].push(
+            new Restriction(
+              row.term.value,
+              row.restrictionPred.value,
+              row.onProperty.value,
+              row.target,
+              row.onClass ? row.onClass.value : undefined
+            )
+          );
         }
       })
       .catch((e) => {
