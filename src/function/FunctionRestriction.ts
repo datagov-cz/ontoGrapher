@@ -17,11 +17,7 @@ export function createRestriction(
   restriction: Restriction,
   restrictions: Restriction[]
 ) {
-  for (const rest of restrictions) {
-    if (rest.compare(restriction)) {
-      return;
-    }
-  }
+  for (const rest of restrictions) if (rest.compare(restriction)) return;
   restrictions.push(restriction);
 }
 

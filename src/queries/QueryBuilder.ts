@@ -18,6 +18,7 @@ export const qb: {
   combineQueries: (...queries: string[]) => string;
 } = {
   gs(contexts: string[], statements: string[]): string {
+    if (contexts.length === 0) return "";
     return `graph ?graphs {
 ${statements.join(`
 `)}
@@ -25,6 +26,7 @@ ${statements.join(`
 values ?graphs {<${contexts.filter((c) => c).join("> <")}>}`;
   },
   g: (context: string, statements: string[]) => {
+    if (!context) return "";
     return `graph <${context}> {
 ${statements.join(`
 `)}
