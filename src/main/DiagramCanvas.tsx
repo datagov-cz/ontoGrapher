@@ -138,7 +138,9 @@ export default class DiagramCanvas extends React.Component<Props, State> {
        */
       "blank:contextmenu": (evt) => {
         evt.preventDefault();
-        const vocabulary = Object.keys(WorkspaceVocabularies).find(vocab => !(WorkspaceVocabularies[vocab].readOnly))
+        const vocabulary = Object.keys(WorkspaceVocabularies).find(
+          (vocab) => !WorkspaceVocabularies[vocab].readOnly
+        );
         if (vocabulary) {
           this.props.handleCreation({
             strategy: ElemCreationStrategy.DEFAULT,
@@ -158,14 +160,14 @@ export default class DiagramCanvas extends React.Component<Props, State> {
       },
       /**
        * Pointer up on element:
-       * If the Control key is held, open the Detail Panel and add it to the selection array
+       * If the Shift key is held, open the Detail Panel and add it to the selection array
        * If in relationship creation mode, open the New Relationship Modal
        * Otherwise if the element position(s) changed, save the change, else open the Detail Panel
        */
       "element:pointerup": (cellView, evt) => {
         const { rect } = evt.data;
         if (rect) rect.remove();
-        if (!this.newLink && !evt.ctrlKey) {
+        if (!this.newLink && !evt.shiftKey) {
           if (isElementPositionOutdated(cellView.model)) {
             this.props.performTransaction(...moveElements(cellView.model, evt));
           } else {
@@ -174,7 +176,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
             this.props.updateElementPanel(cellView.model.id);
             this.props.updateDetailPanel(cellView.model.id);
           }
-        } else if (evt.ctrlKey) {
+        } else if (evt.shiftKey) {
           this.props.updateDetailPanel();
           const find = AppSettings.selectedElements.findIndex(
             (elem) => elem === cellView.model.id
@@ -248,11 +250,11 @@ export default class DiagramCanvas extends React.Component<Props, State> {
       },
       /**
        * Pointer down on canvas:
-       * If the left mouse button is held down: create the blue selection rectangle
-       * If the middle mouse button or left mouse button + shift key is held down: prepare for canvas panning
+       * If the left mouse button + shift key is held down: create the blue selection rectangle
+       * If the left mouse button is held down: prepare for canvas panning
        */
       "blank:pointerdown": (evt, x, y) => {
-        if (evt.button === 0 && !evt.shiftKey) {
+        if (evt.button === 0 && evt.shiftKey) {
           const translate = paper.translate();
           const point = {
             x: x * Diagrams[AppSettings.selectedDiagram].scale + translate.tx,
@@ -272,7 +274,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
             oy: point.y,
             bbox,
           };
-        } else if (evt.button === 1 || (evt.button === 0 && evt.shiftKey)) {
+        } else if (evt.button === 0) {
           const scale = paper.scale();
           this.drag = { x: x * scale.sx, y: y * scale.sy };
         }
@@ -290,7 +292,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
        */
       "blank:pointermove": function (evt, x, y) {
         const { ox, oy, rect } = evt.data;
-        if (evt.buttons === 1 && !evt.shiftKey) {
+        if (evt.button === 0 && evt.shiftKey) {
           const bbox = new joint.g.Rect(
             ox,
             oy,
@@ -306,7 +308,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
           bbox.normalize();
           rect.attr(bbox.toJSON());
           evt.data.bbox = bbox;
-        } else if (evt.buttons === 1 && evt.shiftKey && rect) {
+        } else if (evt.button === 0 && rect) {
           rect.remove();
         }
       },
@@ -361,6 +363,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
       "element:pointermove": (cellView, evt) => {
         if (
           evt.button === 0 &&
+          evt.shiftKey &&
           AppSettings.selectedElements.length > 1 &&
           AppSettings.selectedElements.find(
             (elem) => elem === cellView.model.id
@@ -388,7 +391,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
       "blank:pointerup": (evt) => {
         updateDiagramPosition(AppSettings.selectedDiagram);
         this.drag = undefined;
-        if (evt.button === 0 && !evt.shiftKey) {
+        if (evt.button === 0) {
           this.props.updateDetailPanel();
           resetDiagramSelection();
           if (this.newLink) {
