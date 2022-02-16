@@ -160,14 +160,14 @@ export default class DiagramCanvas extends React.Component<Props, State> {
       },
       /**
        * Pointer up on element:
-       * If the Shift key is held, open the Detail Panel and add it to the selection array
+       * If the Control key is held, open the Detail Panel and add it to the selection array
        * If in relationship creation mode, open the New Relationship Modal
        * Otherwise if the element position(s) changed, save the change, else open the Detail Panel
        */
       "element:pointerup": (cellView, evt) => {
         const { rect } = evt.data;
         if (rect) rect.remove();
-        if (!this.newLink && !evt.shiftKey) {
+        if (!this.newLink && !evt.ctrlKey) {
           if (isElementPositionOutdated(cellView.model)) {
             this.props.performTransaction(...moveElements(cellView.model, evt));
           } else {
@@ -176,7 +176,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
             this.props.updateElementPanel(cellView.model.id);
             this.props.updateDetailPanel(cellView.model.id);
           }
-        } else if (evt.shiftKey) {
+        } else if (evt.ctrlKey) {
           this.props.updateDetailPanel();
           const find = AppSettings.selectedElements.findIndex(
             (elem) => elem === cellView.model.id
@@ -363,7 +363,6 @@ export default class DiagramCanvas extends React.Component<Props, State> {
       "element:pointermove": (cellView, evt) => {
         if (
           evt.button === 0 &&
-          evt.shiftKey &&
           AppSettings.selectedElements.length > 1 &&
           AppSettings.selectedElements.find(
             (elem) => elem === cellView.model.id
@@ -413,8 +412,8 @@ export default class DiagramCanvas extends React.Component<Props, State> {
               const id = elem.model.id as string;
               highlightElement(id);
             });
-            this.props.updateElementPanel();
           }
+          this.props.updateElementPanel();
         }
       },
       /**
@@ -447,7 +446,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
         this.props.performTransaction(...updateVertices(id, link.vertices()));
       },
       /**
-       * Pointer double click on link:
+       * Pointer double-click on link:
        * Save changes of link vertices
        */
       "link:pointerdblclick": (cellView) => {

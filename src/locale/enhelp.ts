@@ -7,8 +7,7 @@ export const enHelp = {
     t1: "This cheat sheet lists all the keyboard and mouse interactions.",
     interactions: {
       Canvas: {
-        "Move the canvas:":
-          "Drag with scroll wheel button / Shift + drag with left mouse button",
+        "Move the canvas:": "Drag with left mouse button",
         "Zoom:": "Scroll with the wheel",
       },
       Terms: {
@@ -22,7 +21,7 @@ export const enHelp = {
         "Select/edit/view details of a term:":
           "Left click on term in canvas or left panel",
         "Select multiple terms:":
-          "Ctrl + left click on each term on the canvas or the left panel / click and drag with left mouse button on the canvas",
+          "Ctrl + left click on each term on the canvas or the left panel / click and drag with Shift + left mouse button on the canvas",
         "Select all terms on canvas:": "Ctrl + A",
         "Move a term:": "Left click and drag the term",
         "Move multiple terms:": "Left click and drag one of the selected terms",

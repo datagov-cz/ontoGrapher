@@ -1,6 +1,15 @@
 export const csChangelog: {
   [key: string]: { [key: string]: { [key: string]: string[] } };
 } = {
+  "2022": {
+    "2": {
+      "16": [
+        "Změna ovládání:",
+        "Kliknutím a tažením levého tlačítka myši se plátno posouvá,",
+        "Prostřední tlačítko myši (kliknutí kolečkem) neprovádí žádnou akci",
+      ],
+    },
+  },
   "2021": {
     "12": {
       "10": [

@@ -7,8 +7,7 @@ export const csHelp = {
     t1: 'Tento "tahák" popisuje všechny interakce myši či klávesnice.',
     interactions: {
       Plátno: {
-        "Posouvat plátno:":
-          "Táhněte tlačítkem kolečka myši / Shift + táhněte levým tlačítkem myši",
+        "Posouvat plátno:": "Táhněte levým tlačítkem myši",
         "Přibližovat/oddalovat v plátně:": "Použijte kolečko myši",
       },
       Pojmy: {
@@ -22,7 +21,7 @@ export const csHelp = {
         "Vybrat/editovat/zobrazit detaily pojmu:":
           "Klikněte na pojem v levém panelu nebo na plátně",
         "Vybrat pojmy:":
-          "Ctrl + levé tlačítko myši na každý pojem v levém panelu či na plátně / Podržte levé tlačítko myši + táhněte na plátně",
+          "Ctrl + levé tlačítko myši na každý pojem v levém panelu či na plátně / Podržte Shift + levé tlačítko myši a táhněte na plátně",
         "Vybrat všechny pojmy na plátně:": "Ctrl + A",
         "Přesunout pojem:": "Přetáhněte pojem levým tlačíkem myši",
         "Přesunout pojmy:":

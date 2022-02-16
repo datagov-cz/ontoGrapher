@@ -173,10 +173,10 @@ export function getVocabularyFromScheme(scheme: string): string {
  * Retrieves the day and month of the last entry in the changelog to display in the button.
  */
 export function getLastChangeDay() {
-  const year: string = Object.keys(enChangelog)[0];
+  const year: string = Object.keys(enChangelog).reverse()[0];
   const month: string = Object.keys(enChangelog[year]).reverse()[0];
   const day: string = Object.keys(enChangelog[year][month]).reverse()[0];
-  return `${day}. ${month}.`;
+  return `${day}. ${month}. ${year}`;
 }
 
 export function getWorkspaceContextIRI() {

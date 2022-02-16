@@ -1,6 +1,15 @@
 export const enChangelog: {
   [key: string]: { [key: string]: { [key: string]: string[] } };
 } = {
+  "2022": {
+    "2": {
+      "16": [
+        "Control scheme update:",
+        "Clicking and dragging the canvas with the left mouse button moves the canvas",
+        "Middle mouse button (scroll wheel click) does not perform any action",
+      ],
+    },
+  },
   "2021": {
     "12": {
       "10": [
