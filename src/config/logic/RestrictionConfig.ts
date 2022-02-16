@@ -32,16 +32,13 @@ export const RestrictionConfig: {
 } as const;
 
 function createConnection(iri: string, restriction: Restriction) {
-  if (restriction.inverse) return;
   const target = restriction.target;
-  if (
-    !getActiveToConnections(iri).find(
-      (conn) =>
-        WorkspaceLinks[conn].iri === restriction.onProperty &&
-        WorkspaceLinks[conn].target === target
-    ) &&
-    target in WorkspaceTerms
-  ) {
+  const find = getActiveToConnections(iri).find(
+    (conn) =>
+      WorkspaceLinks[conn].iri === restriction.onProperty &&
+      WorkspaceLinks[conn].target === target
+  );
+  if (!find && target in WorkspaceTerms) {
     const link = getNewLink(LinkType.DEFAULT);
     const linkID = link.id as string;
     addLink(linkID, restriction.onProperty, iri, target);

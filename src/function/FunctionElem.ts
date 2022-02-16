@@ -261,7 +261,7 @@ export async function putElementsOnCanvas(
   event: React.DragEvent<HTMLDivElement>,
   handleStatus: Function
 ): Promise<string[]> {
-  let queries: string[] = [];
+  const queries: string[] = [];
   if (event.dataTransfer) {
     const data = JSON.parse(event.dataTransfer.getData("newClass"));
     const iris = data.iri.filter((iri: string) => {
