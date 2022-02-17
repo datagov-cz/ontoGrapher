@@ -3,6 +3,7 @@ import { Button, Modal, Tab, Tabs } from "react-bootstrap";
 import { AppSettings } from "../../../config/Variables";
 import { Locale, LocaleChangelog } from "../../../config/Locale";
 import isUrl from "is-url";
+import { enChangelog } from "../../../locale/enchangelog";
 
 interface Props {
   modal: boolean;
@@ -27,7 +28,10 @@ export default class AboutModal extends React.Component<Props, State> {
           </Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <Tabs id={"changelog"}>
+          <Tabs
+            id={"changelog"}
+            defaultActiveKey={Object.keys(enChangelog).reverse()[0]}
+          >
             {Object.keys(LocaleChangelog[AppSettings.interfaceLanguage]).map(
               (year, key) => (
                 <Tab title={year} key={key++} eventKey={year}>

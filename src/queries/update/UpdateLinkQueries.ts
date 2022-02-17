@@ -94,6 +94,7 @@ export function updateDeleteProjectLinkVertex(
 }
 
 export function updateDeleteProjectLink(...ids: string[]): string {
+  if (ids.length === 0) return "";
   const statements = ids.map((id, idx) =>
     qb.s(qb.i(WorkspaceLinks[id].linkIRI), `?p${idx}`, `?o${idx}`)
   );

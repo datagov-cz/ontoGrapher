@@ -138,7 +138,9 @@ export default class DiagramCanvas extends React.Component<Props, State> {
        */
       "blank:contextmenu": (evt) => {
         evt.preventDefault();
-        const vocabulary = Object.keys(WorkspaceVocabularies).find(vocab => !(WorkspaceVocabularies[vocab].readOnly))
+        const vocabulary = Object.keys(WorkspaceVocabularies).find(
+          (vocab) => !WorkspaceVocabularies[vocab].readOnly
+        );
         if (vocabulary) {
           this.props.handleCreation({
             strategy: ElemCreationStrategy.DEFAULT,
@@ -248,11 +250,11 @@ export default class DiagramCanvas extends React.Component<Props, State> {
       },
       /**
        * Pointer down on canvas:
-       * If the left mouse button is held down: create the blue selection rectangle
-       * If the middle mouse button or left mouse button + shift key is held down: prepare for canvas panning
+       * If the left mouse button + shift key is held down: create the blue selection rectangle
+       * If the left mouse button is held down: prepare for canvas panning
        */
       "blank:pointerdown": (evt, x, y) => {
-        if (evt.button === 0 && !evt.shiftKey) {
+        if (evt.button === 0 && evt.shiftKey) {
           const translate = paper.translate();
           const point = {
             x: x * Diagrams[AppSettings.selectedDiagram].scale + translate.tx,
@@ -272,7 +274,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
             oy: point.y,
             bbox,
           };
-        } else if (evt.button === 1 || (evt.button === 0 && evt.shiftKey)) {
+        } else if (evt.button === 0) {
           const scale = paper.scale();
           this.drag = { x: x * scale.sx, y: y * scale.sy };
         }
@@ -290,7 +292,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
        */
       "blank:pointermove": function (evt, x, y) {
         const { ox, oy, rect } = evt.data;
-        if (evt.buttons === 1 && !evt.shiftKey) {
+        if (evt.button === 0 && evt.shiftKey) {
           const bbox = new joint.g.Rect(
             ox,
             oy,
@@ -306,7 +308,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
           bbox.normalize();
           rect.attr(bbox.toJSON());
           evt.data.bbox = bbox;
-        } else if (evt.buttons === 1 && evt.shiftKey && rect) {
+        } else if (evt.button === 0 && rect) {
           rect.remove();
         }
       },
@@ -388,7 +390,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
       "blank:pointerup": (evt) => {
         updateDiagramPosition(AppSettings.selectedDiagram);
         this.drag = undefined;
-        if (evt.button === 0 && !evt.shiftKey) {
+        if (evt.button === 0) {
           this.props.updateDetailPanel();
           resetDiagramSelection();
           if (this.newLink) {
@@ -410,8 +412,8 @@ export default class DiagramCanvas extends React.Component<Props, State> {
               const id = elem.model.id as string;
               highlightElement(id);
             });
-            this.props.updateElementPanel();
           }
+          this.props.updateElementPanel();
         }
       },
       /**
@@ -444,7 +446,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
         this.props.performTransaction(...updateVertices(id, link.vertices()));
       },
       /**
-       * Pointer double click on link:
+       * Pointer double-click on link:
        * Save changes of link vertices
        */
       "link:pointerdblclick": (cellView) => {
