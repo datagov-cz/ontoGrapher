@@ -238,42 +238,38 @@ export function setRepresentation(
             const targetBox = graph
               .getElements()
               .find((elem) => elem.id === target);
-            const find = Object.keys(WorkspaceLinks).find(
+            let linkID = Object.keys(WorkspaceLinks).find(
               (link) =>
                 WorkspaceLinks[link].active &&
                 WorkspaceLinks[link].iri === id &&
                 WorkspaceLinks[link].source === source &&
                 WorkspaceLinks[link].target === target
             );
-            if (!find) {
+            if (!linkID) {
               const newLink = getNewLink();
               const newLinkID = newLink.id as string;
               addLink(newLinkID, id, source, target);
               constructFullConnections(newLinkID, sourceLink, targetLink);
               queries.push(updateProjectLink(false, newLinkID));
+              linkID = newLinkID;
             }
-            const newLink = getNewLink(LinkType.DEFAULT, find);
+            const newLink = getNewLink(LinkType.DEFAULT, linkID);
             if (sourceBox && targetBox) {
-              const newLinkID = newLink.id as string;
               setLinkBoundary(newLink, source, target);
               newLink.addTo(graph);
-              if (
-                WorkspaceLinks[newLinkID].vertices[AppSettings.selectedDiagram]
-              )
+              if (WorkspaceLinks[linkID].vertices[AppSettings.selectedDiagram])
                 newLink.vertices(
-                  WorkspaceLinks[newLinkID].vertices[
-                    AppSettings.selectedDiagram
-                  ]
+                  WorkspaceLinks[linkID].vertices[AppSettings.selectedDiagram]
                 );
               if (
                 source === target &&
-                WorkspaceLinks[newLinkID].vertices[AppSettings.selectedDiagram]
+                WorkspaceLinks[linkID].vertices[AppSettings.selectedDiagram]
                   .length < 3
               )
                 setSelfLoopConnectionPoints(newLink, sourceBox.getBBox());
               WorkspaceLinks[newLink.id].vertices[AppSettings.selectedDiagram] =
                 newLink.vertices();
-              constructFullConnections(newLinkID, sourceLink, targetLink);
+              constructFullConnections(linkID, sourceLink, targetLink);
               setLabels(
                 newLink,
                 getDisplayLabel(id, AppSettings.canvasLanguage)
