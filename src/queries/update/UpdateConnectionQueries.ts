@@ -185,9 +185,7 @@ export function updateDefaultLink(id: string): string {
     );
   const insert = INSERT.DATA`${qb.g(
     contextIRI,
-    constructDefaultLinkRestrictions(
-      ..._.uniqWith(insertConnections, _.isEqual)
-    )
+    _.uniq(constructDefaultLinkRestrictions(...insertConnections))
   )}`.build();
   return qb.combineQueries(del, insert);
 }
