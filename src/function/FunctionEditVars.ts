@@ -107,8 +107,8 @@ export function initProjectSettings() {
   AppSettings.description = initLanguageObject("");
 }
 
-export function initLanguageObject(def: any) {
-  let result: { [key: string]: any } = {};
+export function initLanguageObject(def: string): { [key: string]: string } {
+  const result: { [key: string]: string } = {};
   for (const code in Languages) {
     result[code] = def;
   }

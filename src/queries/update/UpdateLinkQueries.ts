@@ -93,28 +93,32 @@ export function updateDeleteProjectLinkVertex(
   ])}`.build();
 }
 
-export function updateDeleteProjectLink(...ids: string[]): string {
+export function updateDeleteProjectLink(
+  deleteVertexTriples: boolean,
+  ...ids: string[]
+): string {
   if (ids.length === 0) return "";
-  const statements = ids.map((id, idx) =>
-    qb.s(qb.i(WorkspaceLinks[id].linkIRI), `?p${idx}`, `?o${idx}`)
-  );
-  const filters = ids.map((_, idx) => `filter(?p${idx} not in (og:vertex))`);
+  const queries = [];
   const diagrams = Object.values(Diagrams)
     .filter((diag) => diag.active)
     .map((diagram) => diagram.graph);
-  return qb.combineQueries(
-    DELETE`${qb.g(getWorkspaceContextIRI(), statements)}`.WHERE`${qb.g(
-      getWorkspaceContextIRI(),
-      [...statements, ...filters]
-    )}`.build(),
-    DELETE`graph ?graphs {${statements.join(`
-        `)}}`.WHERE`${qb.gs(diagrams, [...statements, ...filters])}`.build()
-  );
+  diagrams.push(getWorkspaceContextIRI());
+  for (const id of ids) {
+    const delStatement = qb.s(qb.i(WorkspaceLinks[id].linkIRI), `?p`, `?o`);
+    const filter = deleteVertexTriples ? "" : `filter(?p not in (og:vertex))`;
+    queries.push(
+      DELETE`graph ?graphs {${delStatement}}`.WHERE`${qb.gs(diagrams, [
+        delStatement,
+        filter,
+      ])}`.build()
+    );
+  }
+  return qb.combineQueries(...queries);
 }
 
 export function updateProjectLink(del: boolean, ...ids: string[]): string {
   const insertBody: string[] = [];
-  const deletes: string = updateDeleteProjectLink(...ids);
+  const deletes: string = updateDeleteProjectLink(false, ...ids);
   const insert: string[] = [];
   const diagrams = Object.values(Diagrams)
     .filter((diag) => diag.active)

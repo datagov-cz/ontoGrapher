@@ -82,6 +82,8 @@ export const NewElemForm: React.FC<Props> = (props) => {
       (pkg) => pkg === event.currentTarget.value
     );
     if (pkg) props.setSelectedVocabulary(pkg);
+    else
+      console.error(`Vocabulary ${pkg} not found within the vocabulary list.`);
     props.setErrorText(
       checkNames(
         WorkspaceVocabularies[props.selectedVocabulary].glossary,
@@ -127,10 +129,7 @@ export const NewElemForm: React.FC<Props> = (props) => {
         </Form.Label>
         <Form.Control
           as="select"
-          value={getLabelOrBlank(
-            WorkspaceVocabularies[props.selectedVocabulary].labels,
-            props.projectLanguage
-          )}
+          value={props.selectedVocabulary}
           onChange={(event) => handleChangeSelect(event)}
           disabled={
             Object.keys(WorkspaceVocabularies).filter(

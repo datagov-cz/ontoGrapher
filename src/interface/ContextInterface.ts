@@ -1,5 +1,6 @@
 import {
   AppSettings,
+  Diagrams,
   WorkspaceElements,
   WorkspaceLinks,
   WorkspaceTerms,
@@ -7,7 +8,11 @@ import {
 } from "../config/Variables";
 import { processQuery, processTransaction } from "./TransactionInterface";
 import { fetchConcepts, fetchVocabulary } from "../queries/get/FetchQueries";
-import { getElementsConfig, getLinksConfig } from "../queries/get/InitQueries";
+import {
+  getElementsConfig,
+  getLinksConfig,
+  getSettings,
+} from "../queries/get/InitQueries";
 import {
   fetchReadOnlyTerms,
   fetchVocabularies,
@@ -21,12 +26,89 @@ import {
 } from "../queries/update/UpdateLinkQueries";
 import { initConnections } from "../function/FunctionRestriction";
 import { insertNewCacheTerms } from "../function/FunctionCache";
-import { addToFlexSearch } from "../function/FunctionCreateVars";
+import { addDiagram, addToFlexSearch } from "../function/FunctionCreateVars";
+import { ContextLoadingStrategy, Representation } from "../config/Enum";
+import { Locale } from "../config/Locale";
+import { updateLegacyWorkspace } from "../queries/update/legacy/UpdateLegacyWorkspaceQueries";
+import { reconstructApplicationContextWithDiagrams } from "../queries/update/UpdateReconstructAppContext";
+import { updateWorkspaceContext } from "../queries/update/UpdateMiscQueries";
+import { updateCreateDiagram } from "../queries/update/UpdateDiagramQueries";
+import { finishUpdatingLegacyWorkspace } from "../queries/update/legacy/FinishUpdatingLegacyWorkspaceQueries";
 
-export async function getContext(
-  contextIRI: string,
-  contextEndpoint: string
-): Promise<boolean> {
+export function retrieveInfoFromURLParameters(): boolean {
+  const isURL = require("is-url");
+  const urlParams = new URLSearchParams(window.location.search);
+  const contextURI = urlParams.get("workspace");
+  if (contextURI && isURL(contextURI)) {
+    AppSettings.contextIRI = decodeURIComponent(contextURI);
+    return true;
+  } else {
+    console.error("Unable to parse workspace IRI from the URL.");
+    return false;
+  }
+}
+
+export async function updateContexts(): Promise<boolean> {
+  const strategy = await getSettings(AppSettings.contextEndpoint);
+  switch (strategy) {
+    case ContextLoadingStrategy.UPDATE_LEGACY_WORKSPACE:
+      const queries = await updateLegacyWorkspace(
+        AppSettings.contextIRI,
+        AppSettings.contextEndpoint
+      );
+      const ret = await processTransaction(
+        AppSettings.contextEndpoint,
+        qb.constructQuery(qb.combineQueries(...queries))
+      );
+      if (!ret) return false;
+      break;
+    case ContextLoadingStrategy.RECONSTRUCT_WORKSPACE:
+      const ret2 = await processTransaction(
+        AppSettings.contextEndpoint,
+        qb.constructQuery(await reconstructApplicationContextWithDiagrams())
+      );
+      if (!ret2) return false;
+      break;
+    case ContextLoadingStrategy.DEFAULT:
+      break;
+    default:
+      return false;
+  }
+  if (AppSettings.initWorkspace) {
+    const queries = [updateWorkspaceContext()];
+    if (Object.keys(Diagrams).length === 0) {
+      const id = addDiagram(
+        Locale[AppSettings.interfaceLanguage].untitled,
+        true,
+        Representation.COMPACT,
+        0
+      );
+      queries.push(updateCreateDiagram(id));
+    }
+    const ret = await processTransaction(
+      AppSettings.contextEndpoint,
+      qb.constructQuery(...queries)
+    );
+    if (!ret) return false;
+  }
+  AppSettings.selectedDiagram = Object.keys(Diagrams).reduce((a, b) =>
+    Diagrams[a].index < Diagrams[b].index ? a : b
+  );
+  if (
+    !AppSettings.initWorkspace &&
+    ContextLoadingStrategy.UPDATE_LEGACY_WORKSPACE === strategy
+  ) {
+    const queries = await finishUpdatingLegacyWorkspace();
+    const ret = await processTransaction(
+      AppSettings.contextEndpoint,
+      qb.constructQuery(qb.combineQueries(...queries))
+    );
+    if (!ret) return false;
+  }
+  return true;
+}
+
+export async function retrieveVocabularyData(): Promise<boolean> {
   await fetchVocabularies(
     AppSettings.contextEndpoint,
     AppSettings.cacheContext
@@ -40,7 +122,7 @@ export async function getContext(
     "PREFIX dcterms: <http://purl.org/dc/terms/>",
     "select ?vocab ?scheme ?label ?title ?vocabLabel ?vocabIRI",
     "where {",
-    "BIND(<" + contextIRI + "> as ?contextIRI) . ",
+    "BIND(<" + AppSettings.contextIRI + "> as ?contextIRI) . ",
     "OPTIONAL {?contextIRI rdfs:label ?label. }",
     "OPTIONAL {?contextIRI dcterms:title ?title. }",
     "graph ?contextIRI {",
@@ -53,59 +135,65 @@ export async function getContext(
     "?vocabIRI dcterms:title ?vocabLabel .",
     "}",
     "}",
-  ].join(" ");
-  const responseInit: { [key: string]: any }[] = await processQuery(
-    contextEndpoint,
-    vocabularyQ
-  )
-    .then((response) => response.json())
-    .then((data) => {
-      return data.results.bindings;
-    })
-    .catch(() => false);
-  if (responseInit.length === 0) return false;
-  let vocabularies: {
+  ].join(`
+  `);
+  const vocabularies: {
     [key: string]: {
       names: { [key: string]: string };
-      terms: any;
+      terms: typeof WorkspaceTerms;
       graph: string;
       glossary: string;
     };
   } = {};
-  if (responseInit)
-    for (const result of responseInit) {
-      if (!(result.vocabIRI.value in vocabularies)) {
-        vocabularies[result.vocabIRI.value] = {
-          names: {},
-          terms: {},
-          graph: result.vocab.value,
-          glossary: result.scheme.value,
-        };
+  const responseInit: boolean = await processQuery(
+    AppSettings.contextEndpoint,
+    vocabularyQ
+  )
+    .then((response) => response.json())
+    .then((data) => {
+      if (data.results.bindings.length === 0) return false;
+      for (const result of data.results.bindings) {
+        if (!(result.vocabIRI.value in vocabularies)) {
+          vocabularies[result.vocabIRI.value] = {
+            names: {},
+            terms: {},
+            graph: result.vocab.value,
+            glossary: result.scheme.value,
+          };
+        }
+        vocabularies[result.vocabIRI.value].names[
+          result.vocabLabel["xml:lang"]
+        ] = result.vocabLabel.value;
+        if (result.label)
+          AppSettings.name[result.label["xml:lang"]] = result.label.value;
+        if (result.title)
+          AppSettings.name[result.title["xml:lang"]] = result.title.value;
       }
-      vocabularies[result.vocabIRI.value].names[result.vocabLabel["xml:lang"]] =
-        result.vocabLabel.value;
-      if (result.label)
-        AppSettings.name[result.label["xml:lang"]] = result.label.value;
-      if (result.title)
-        AppSettings.name[result.title["xml:lang"]] = result.title.value;
-    }
+      return true;
+    })
+    .catch(() => false);
+  if (!responseInit) return false;
   await fetchVocabulary(
     Object.keys(vocabularies).map((vocab) => vocabularies[vocab].glossary),
     false,
-    contextEndpoint
+    AppSettings.contextEndpoint
   ).catch(() => false);
   for (const vocab in vocabularies) {
     await fetchConcepts(
-      contextEndpoint,
+      AppSettings.contextEndpoint,
       vocabularies[vocab].glossary,
       vocabularies[vocab].terms,
       vocab,
       vocabularies[vocab].graph
-    ).catch(() => false);
+    );
     WorkspaceVocabularies[vocab].readOnly = false;
     WorkspaceVocabularies[vocab].graph = vocabularies[vocab].graph;
     Object.assign(WorkspaceTerms, vocabularies[vocab].terms);
   }
+  return true;
+}
+
+export async function retrieveContextData(): Promise<boolean> {
   if (!(await getElementsConfig(AppSettings.contextEndpoint))) return false;
   if (!(await getLinksConfig(AppSettings.contextEndpoint))) return false;
   const missingTerms: string[] = Object.keys(WorkspaceElements).filter(
@@ -151,7 +239,7 @@ export async function getContext(
     AppSettings.contextEndpoint,
     qb.constructQuery(
       updateProjectLink(false, ...connectionsToInitialize),
-      updateDeleteProjectLink(...connectionsToDelete)
+      updateDeleteProjectLink(true, ...connectionsToDelete)
     )
   );
 }
