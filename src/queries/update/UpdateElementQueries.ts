@@ -11,11 +11,12 @@ import {
   getVocabularyFromScheme,
   getWorkspaceContextIRI,
 } from "../../function/FunctionGetVars";
+import { initLanguageObject } from "../../function/FunctionEditVars";
 
 export function updateProjectElement(del: boolean, ...iris: string[]): string {
-  let data: { [key: string]: string[] } = { [getWorkspaceContextIRI()]: [] };
-  let deletes: string[] = [];
-  let inserts: string[] = [];
+  const data: { [key: string]: string[] } = { [getWorkspaceContextIRI()]: [] };
+  const deletes: string[] = [];
+  const inserts: string[] = [];
   if (iris.length === 0) return "";
   for (const iri of iris) {
     checkElem(iri);
@@ -30,6 +31,11 @@ export function updateProjectElement(del: boolean, ...iris: string[]): string {
     const altLabels = vocabElem.altLabels.map((alt) =>
       qb.ll(alt.label, alt.language)
     );
+    const selectedLabels = Object.entries(
+      Object.keys(WorkspaceElements[iri].selectedLabel).length > 0
+        ? WorkspaceElements[iri].selectedLabel
+        : initLanguageObject("")
+    ).map(([key, value]) => qb.ll(value, key));
     const names = Object.entries(WorkspaceElements[iri].selectedLabel)
       .filter(
         ([key, value]) =>
@@ -66,14 +72,13 @@ export function updateProjectElement(del: boolean, ...iris: string[]): string {
       qb.s(qb.i(iri), "rdf:type", "og:element"),
       qb.s(qb.i(iri), "og:scheme", qb.i(scheme)),
       qb.s(qb.i(iri), "og:vocabulary", qb.i(getVocabularyFromScheme(scheme))),
-      qb.s(qb.i(iri), "og:name", qb.a(names)),
+      qb.s(qb.i(iri), "og:name", qb.a(selectedLabels)),
       qb.s(qb.i(iri), "og:active", qb.ll(WorkspaceElements[iri].active)),
     ];
 
     data[getWorkspaceContextIRI()].push(...ogStatements);
     const deleteStatements = [
       qb.s(qb.i(iri), "og:name", "?name"),
-      qb.s(qb.i(iri), "og:diagram", "?diagram"),
       qb.s(qb.i(iri), "og:active", "?active"),
     ];
 

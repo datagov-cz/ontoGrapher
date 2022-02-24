@@ -1,9 +1,10 @@
 import { AppSettings } from "../../config/Variables";
 import { qb } from "../QueryBuilder";
-import { parsePrefix } from "../../function/FunctionEditVars";
+import { initElements, parsePrefix } from "../../function/FunctionEditVars";
 import { getWorkspaceContextIRI } from "../../function/FunctionGetVars";
 import { processQuery } from "../../interface/TransactionInterface";
 import { updateWorkspaceContext } from "./UpdateMiscQueries";
+import { updateProjectElement } from "./UpdateElementQueries";
 
 export async function reconstructApplicationContextWithDiagrams(): Promise<string> {
   const linkPredicates = [
@@ -53,6 +54,10 @@ export async function reconstructApplicationContextWithDiagrams(): Promise<strin
       (iri) => `add <${iri}> to <${getWorkspaceContextIRI()}>`
     ).join(`;
     `);
-    return qb.combineQueries(updateWorkspaceContext(), transferQuery);
+    return qb.combineQueries(
+      updateWorkspaceContext(),
+      transferQuery,
+      updateProjectElement(false, ...initElements())
+    );
   } else return "";
 }

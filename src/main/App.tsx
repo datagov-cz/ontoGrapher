@@ -4,7 +4,6 @@ import VocabularyPanel from "../panels/VocabularyPanel";
 import DiagramCanvas from "./DiagramCanvas";
 import {
   AppSettings,
-  Diagrams,
   WorkspaceElements,
   WorkspaceLinks,
   WorkspaceTerms,
@@ -12,7 +11,12 @@ import {
 import DetailPanel from "../panels/DetailPanel";
 import { getVocabulariesFromRemoteJSON } from "../interface/JSONInterface";
 import { initVars } from "../function/FunctionEditVars";
-import { getContext } from "../interface/ContextInterface";
+import {
+  retrieveContextData,
+  retrieveInfoFromURLParameters,
+  retrieveVocabularyData,
+  updateContexts,
+} from "../interface/ContextInterface";
 import { graph } from "../graph/Graph";
 import { nameGraphLink } from "../function/FunctionGraph";
 import {
@@ -35,25 +39,14 @@ import {
   getVocabularyFromScheme,
   setSchemeColors,
 } from "../function/FunctionGetVars";
-import { getSettings } from "../queries/get/InitQueries";
-import { updateLegacyWorkspace } from "../queries/update/legacy/UpdateLegacyWorkspaceQueries";
-import { updateWorkspaceContext } from "../queries/update/UpdateMiscQueries";
 import {
   CreationModals,
   ElemCreationConfiguration,
   LinkCreationConfiguration,
 } from "../components/modals/CreationModals";
-import {
-  ContextLoadingStrategy,
-  ElemCreationStrategy,
-  Representation,
-} from "../config/Enum";
+import { ElemCreationStrategy } from "../config/Enum";
 import { getElementPosition } from "../function/FunctionElem";
-import { finishUpdatingLegacyWorkspace } from "../queries/update/legacy/FinishUpdatingLegacyWorkspaceQueries";
-import { updateCreateDiagram } from "../queries/update/UpdateDiagramQueries";
 import { en } from "../locale/en";
-import { reconstructApplicationContextWithDiagrams } from "../queries/update/UpdateReconstructAppContext";
-import { addDiagram } from "../function/FunctionCreateVars";
 
 interface DiagramAppProps {}
 
@@ -124,30 +117,51 @@ export default class App extends React.Component<
     this.handleChangeLanguage = this.handleChangeLanguage.bind(this);
     this.handleChangeInterfaceLanguage =
       this.handleChangeInterfaceLanguage.bind(this);
-    this.loadVocabularies = this.loadVocabularies.bind(this);
     this.handleStatus = this.handleStatus.bind(this);
     this.validate = this.validate.bind(this);
     this.performTransaction = this.performTransaction.bind(this);
   }
 
   componentDidMount(): void {
-    this.loadWorkspace();
+    this.loadAndPrepareData().then((r) => {
+      if (r)
+        this.handleStatus(
+          false,
+          Locale[AppSettings.interfaceLanguage].workspaceReady,
+          false
+        );
+      else this.handleLoadingError();
+    });
   }
 
-  loadWorkspace() {
-    const isURL = require("is-url");
-    const urlParams = new URLSearchParams(window.location.search);
-    let contextIRI = urlParams.get("workspace");
-    if (contextIRI && isURL(contextIRI)) {
-      contextIRI = decodeURIComponent(contextIRI);
-      this.loadVocabularies(contextIRI, AppSettings.contextEndpoint);
-    } else {
-      this.handleStatus(
-        false,
-        Locale[AppSettings.interfaceLanguage].pleaseReload,
-        true
-      );
-    }
+  async loadAndPrepareData(): Promise<boolean> {
+    const process0 = await getVocabulariesFromRemoteJSON(
+      "https://raw.githubusercontent.com/opendata-mvcr/ontoGrapher/main/src/config/Vocabularies.json"
+    );
+    if (!process0) return false;
+    const process1 = retrieveInfoFromURLParameters();
+    if (!process1) return false;
+    const process2 = await retrieveVocabularyData();
+    if (!process2) return false;
+    const process3 = await updateContexts();
+    if (!process3) return false;
+    const process4 = await retrieveContextData();
+    if (!process4) return false;
+    this.handleChangeLanguage(AppSettings.canvasLanguage);
+    document.title =
+      AppSettings.name[this.state.projectLanguage] +
+      " | " +
+      Locale[AppSettings.interfaceLanguage].ontoGrapher;
+    setSchemeColors(AppSettings.viewColorPool);
+    changeDiagrams();
+    this.itemPanel.current?.update();
+    this.checkLastViewedVersion();
+    this.handleStatus(
+      false,
+      Locale[AppSettings.interfaceLanguage].workspaceReady,
+      false
+    );
+    return true;
   }
 
   handleChangeInterfaceLanguage(languageCode: string) {
@@ -167,12 +181,12 @@ export default class App extends React.Component<
       " | " +
       Locale[AppSettings.interfaceLanguage].ontoGrapher;
     graph.getElements().forEach((cell) => {
-      if (WorkspaceElements[cell.id]) {
+      if (cell.id in WorkspaceElements) {
         drawGraphElement(cell, languageCode, AppSettings.representation);
       }
     });
     graph.getLinks().forEach((cell) => {
-      if (WorkspaceLinks[cell.id]) {
+      if (cell.id in WorkspaceLinks) {
         nameGraphLink(
           cell,
           getLinkOrVocabElem(WorkspaceLinks[cell.id].iri).labels,
@@ -239,131 +253,6 @@ export default class App extends React.Component<
     );
   }
 
-  loadVocabularies(contextIRI: string, contextEndpoint: string) {
-    AppSettings.contextEndpoint = contextEndpoint;
-    AppSettings.contextIRI = contextIRI;
-    getVocabulariesFromRemoteJSON(
-      "https://raw.githubusercontent.com/opendata-mvcr/ontoGrapher/main/src/config/Vocabularies.json"
-    ).then((result) => {
-      if (result) {
-        getSettings(AppSettings.contextEndpoint).then(async (result) => {
-          if (result !== undefined) {
-            await this.handleLoadingStrategy(result);
-          } else {
-            this.handleLoadingError();
-            return;
-          }
-          this.handleChangeLanguage(AppSettings.canvasLanguage);
-          document.title =
-            AppSettings.name[this.state.projectLanguage] +
-            " | " +
-            Locale[AppSettings.interfaceLanguage].ontoGrapher;
-          setSchemeColors(AppSettings.viewColorPool);
-          changeDiagrams();
-          this.itemPanel.current?.update();
-          this.handleStatus(
-            false,
-            Locale[AppSettings.interfaceLanguage].workspaceReady,
-            false
-          );
-          this.checkLastViewedVersion();
-        });
-      } else {
-        this.handleLoadingError();
-      }
-    });
-  }
-
-  async handleLoadingStrategy(strategy: ContextLoadingStrategy | undefined) {
-    if (strategy !== ContextLoadingStrategy.DEFAULT)
-      this.handleStatus(
-        true,
-        Locale[AppSettings.interfaceLanguage].updatingWorkspaceVersion,
-        true
-      );
-    switch (strategy) {
-      case ContextLoadingStrategy.UPDATE_LEGACY_WORKSPACE:
-        const queries = await updateLegacyWorkspace(
-          AppSettings.contextIRI,
-          AppSettings.contextEndpoint
-        );
-        if (
-          !(await processTransaction(
-            AppSettings.contextEndpoint,
-            qb.constructQuery(qb.combineQueries(...queries))
-          ))
-        ) {
-          this.handleLoadingError();
-          return;
-        }
-        break;
-      case ContextLoadingStrategy.RECONSTRUCT_WORKSPACE:
-        if (
-          !(await processTransaction(
-            AppSettings.contextEndpoint,
-            qb.constructQuery(await reconstructApplicationContextWithDiagrams())
-          ))
-        ) {
-          this.handleLoadingError();
-          return;
-        }
-        break;
-      default:
-        break;
-    }
-    if (AppSettings.initWorkspace) {
-      const queries = [updateWorkspaceContext()];
-      if (Object.keys(Diagrams).length === 0) {
-        const id = addDiagram(
-          Locale[AppSettings.interfaceLanguage].untitled,
-          true,
-          Representation.COMPACT,
-          0
-        );
-        queries.push(updateCreateDiagram(id));
-      }
-      if (
-        !(await processTransaction(
-          AppSettings.contextEndpoint,
-          qb.constructQuery(...queries)
-        ))
-      ) {
-        this.handleLoadingError();
-        return;
-      }
-    }
-    AppSettings.selectedDiagram = Object.keys(Diagrams).reduce((a, b) =>
-      Diagrams[a].index < Diagrams[b].index ? a : b
-    );
-    this.handleResumeLoading();
-    const success = await getContext(
-      AppSettings.contextIRI,
-      AppSettings.contextEndpoint
-    );
-    if (success) {
-      if (
-        !AppSettings.initWorkspace &&
-        ContextLoadingStrategy.UPDATE_LEGACY_WORKSPACE === strategy
-      ) {
-        if (
-          !(await processTransaction(
-            AppSettings.contextEndpoint,
-            qb.constructQuery(
-              qb.combineQueries(...(await finishUpdatingLegacyWorkspace()))
-            )
-          ))
-        ) {
-          this.handleLoadingError();
-          return;
-        }
-        this.handleResumeLoading();
-      }
-    } else {
-      this.handleLoadingError();
-      return;
-    }
-  }
-
   handleLoadingError(message: keyof typeof en = "connectionError") {
     this.handleStatus(
       false,
@@ -372,13 +261,13 @@ export default class App extends React.Component<
     );
   }
 
-  handleResumeLoading() {
-    this.handleStatus(
-      true,
-      Locale[AppSettings.interfaceLanguage].loading,
-      true
-    );
-  }
+  // handleResumeLoading() {
+  //   this.handleStatus(
+  //     true,
+  //     Locale[AppSettings.interfaceLanguage].loading,
+  //     true
+  //   );
+  // }
 
   handleWorkspaceReady(message: keyof typeof en = "savedChanges") {
     this.handleStatus(
