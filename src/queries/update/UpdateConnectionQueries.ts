@@ -15,6 +15,7 @@ import {
   getVocabularyFromScheme,
 } from "../../function/FunctionGetVars";
 import _ from "lodash";
+import { RestrictionConfig } from "../../config/logic/RestrictionConfig";
 
 type Connection = {
   iri: string;
@@ -103,7 +104,14 @@ export function updateDefaultLink(id: string): string {
       "filter(isBlank(?ib)).",
       qb.s("?ib", "owl:onProperty", "?ibo"),
       "filter(isBlank(?ibo)).",
+      "OPTIONAL {",
       qb.s("?ib", "owl:onClass", qb.i(iri)),
+      "} OPTIONAL {",
+      qb.s("?ib", "?iop", qb.i(iri)),
+      `values ?iop {<${Object.keys(RestrictionConfig)
+        .concat([parsePrefix("owl", "onClass")])
+        .join("> <")}>}`,
+      "}",
       qb.s("?ib", "?ip", "?io"),
       "}",
     ])}`.build();
