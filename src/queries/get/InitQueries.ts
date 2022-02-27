@@ -37,7 +37,7 @@ export async function getElementsConfig(
     "graph <" + getWorkspaceContextIRI() + "> {",
     "?elem a og:element .",
     "?elem og:active ?active .",
-    "?elem og:name ?name.",
+    "optional {?elem og:name ?name.}",
     "?elem og:scheme ?scheme .",
     "}}",
   ].join(`
