@@ -283,7 +283,7 @@ export async function putElementsOnCanvas(
       );
       const newIDs = initElements(true);
       queries.push(updateProjectElement(false, ...newIDs));
-      queries.push(updateProjectLink(false, ...initConnections()));
+      queries.push(updateProjectLink(false, ...initConnections().add));
       ids.push(...newIDs);
       addToFlexSearch(...ids);
     }

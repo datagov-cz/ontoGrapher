@@ -98,7 +98,7 @@ export async function spreadConnections(
     );
     const newIDs = initElements();
     queries.push(updateProjectElement(false, ...newIDs));
-    queries.push(updateProjectLink(false, ...initConnections()));
+    queries.push(updateProjectLink(false, ...initConnections().add));
     ids.push(...newIDs);
   }
   const elem = graph.getElements().find((elem) => elem.id === id);
