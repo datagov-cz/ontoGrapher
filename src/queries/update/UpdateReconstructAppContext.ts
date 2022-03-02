@@ -41,7 +41,7 @@ export async function reconstructApplicationContextWithDiagrams(): Promise<strin
     .then((data) => {
       const result = [];
       for (const diag of data.results.bindings) {
-        result.push(diag.diagram.value);
+        result.push(diag.graph.value);
       }
       return result;
     })

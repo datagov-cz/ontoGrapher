@@ -220,14 +220,8 @@ export async function retrieveContextData(): Promise<boolean> {
   )
     return false;
   addToFlexSearch(...Object.keys(WorkspaceElements));
-  const connections = initConnections(true);
-  const connectionsToDelete = connections.filter(
-    (link) => link in WorkspaceLinks
-  );
-  const connectionsToInitialize = connections.filter(
-    (link) => !(link in WorkspaceLinks)
-  );
-  for (const id of connectionsToDelete) {
+  const connections = initConnections();
+  for (const id of connections.del) {
     // This is expected behaviour e.g. for imported diagrams,
     // if they have references to links that no longer exist in the data.
     console.warn(
@@ -238,8 +232,8 @@ export async function retrieveContextData(): Promise<boolean> {
   return await processTransaction(
     AppSettings.contextEndpoint,
     qb.constructQuery(
-      updateProjectLink(false, ...connectionsToInitialize),
-      updateDeleteProjectLink(true, ...connectionsToDelete)
+      updateProjectLink(false, ...connections.add),
+      updateDeleteProjectLink(true, ...connections.del)
     )
   );
 }

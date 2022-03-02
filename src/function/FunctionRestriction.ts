@@ -21,7 +21,7 @@ export function createRestriction(
   restrictions.push(restriction);
 }
 
-export function initConnections(removeOutdated: boolean = false): string[] {
+export function initConnections(): { add: string[]; del: string[] } {
   const linksToPush = [];
   const linksToDelete: string[] = Object.keys(WorkspaceLinks);
   const restrictions = _.flatten(
@@ -99,6 +99,5 @@ export function initConnections(removeOutdated: boolean = false): string[] {
       }
     }
   }
-  if (removeOutdated) return linksToPush.concat(linksToDelete);
-  return linksToPush;
+  return { add: linksToPush, del: linksToDelete };
 }
