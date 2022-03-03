@@ -40,6 +40,7 @@ import {
 } from "../components/modals/CreationModals";
 import { ElemCreationStrategy } from "../config/Enum";
 import { Locale } from "../config/Locale";
+import { initTouchEvents } from "../function/FunctionTouch";
 
 interface Props {
   projectLanguage: string;
@@ -102,6 +103,9 @@ export default class DiagramCanvas extends React.Component<Props, State> {
 
   componentDidMount(): void {
     const node = this.canvasRef.current! as HTMLElement;
+    const hammer = require("hammerjs");
+    const hammerManager = new hammer.Manager(node, { domEvents: true });
+    initTouchEvents(hammerManager);
 
     paper = new joint.dia.Paper({
       el: node,
@@ -390,7 +394,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
       "blank:pointerup": (evt) => {
         updateDiagramPosition(AppSettings.selectedDiagram);
         this.drag = undefined;
-        if (evt.button === 0) {
+        if (evt.button === 0 || evt.type === "touchend") {
           this.props.updateDetailPanel();
           resetDiagramSelection();
           if (this.newLink) {
