@@ -72,6 +72,14 @@ export default class NewLinkModal extends React.Component<Props, State> {
       !this.props.configuration.targetID
     )
       return false;
+    if (
+      getActiveToConnections(this.props.configuration.sourceID).find(
+        (conn) =>
+          WorkspaceLinks[conn].iri === link &&
+          WorkspaceLinks[conn].target === this.props.configuration.targetID
+      )
+    )
+      return false;
     if (Links[link].type === LinkType.GENERALIZATION)
       return (
         this.props.configuration.sourceID !== this.props.configuration.targetID
