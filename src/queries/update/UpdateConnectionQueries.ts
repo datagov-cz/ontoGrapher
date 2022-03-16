@@ -85,9 +85,9 @@ function constructDefaultLinkRestrictions(
 
 export function updateDefaultLink(id: string): string {
   const iri = WorkspaceLinks[id].source;
-  const contextIRI =
-    WorkspaceVocabularies[getVocabularyFromScheme(WorkspaceTerms[iri].inScheme)]
-      .graph;
+  const vocabulary = getVocabularyFromScheme(WorkspaceTerms[iri].inScheme);
+  checkReadOnlyVocabulary(vocabulary);
+  const contextIRI = WorkspaceVocabularies[vocabulary].graph;
   const del: string = DELETE`${qb.g(contextIRI, [
     qb.s(qb.i(iri), "rdfs:subClassOf", qb.v("b")),
     qb.s(qb.v("b"), "?p", "?o"),
@@ -200,10 +200,9 @@ export function updateDefaultLink(id: string): string {
 
 export function updateGeneralizationLink(id: string): string {
   const iri = WorkspaceLinks[id].source;
-  const contextIRI =
-    WorkspaceVocabularies[getVocabularyFromScheme(WorkspaceTerms[iri].inScheme)]
-      .graph;
-
+  const vocabulary = getVocabularyFromScheme(WorkspaceTerms[iri].inScheme);
+  checkReadOnlyVocabulary(vocabulary);
+  const contextIRI = WorkspaceVocabularies[vocabulary].graph;
   const subClassOf: string[] = getActiveToConnections(WorkspaceLinks[id].source)
     .filter((conn) => WorkspaceLinks[conn].type === LinkType.GENERALIZATION)
     .map((conn) => qb.i(WorkspaceLinks[conn].target));
@@ -232,6 +231,13 @@ export function updateConnections(id: string): string {
 
 export function isNumber(str: string) {
   return !isNaN(parseInt(str, 10));
+}
+
+function checkReadOnlyVocabulary(graph: string) {
+  if (WorkspaceVocabularies[graph].readOnly)
+    throw new Error(
+      `Attempted to write to read-only graph ${WorkspaceVocabularies[graph].graph}`
+    );
 }
 
 function getNumber(str: string) {

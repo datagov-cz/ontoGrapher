@@ -163,4 +163,9 @@ function checkElem(iri: string) {
   if (!(iri in WorkspaceTerms)) {
     console.error("Element ID is not tied to a Concept IRI");
   }
+  const vocab = getVocabularyFromScheme(WorkspaceTerms[iri].inScheme);
+  if (WorkspaceVocabularies[vocab].readOnly)
+    throw new Error(
+      `Attempted to write to read-only graph ${WorkspaceVocabularies[vocab].graph}`
+    );
 }

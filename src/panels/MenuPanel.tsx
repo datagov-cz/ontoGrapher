@@ -4,7 +4,7 @@ import { AppSettings } from "../config/Variables";
 import { Locale } from "../config/Locale";
 import { Environment } from "../config/Environment";
 import MenuPanelReport from "./menu/right/MenuPanelReport";
-import MenuPanelView from "./menu/left/MenuPanelView";
+import MenuPanelSettings from "./menu/left/MenuPanelSettings";
 import MenuPanelHelp from "./menu/right/MenuPanelHelp";
 import { MenuPanelSaveDiagrams } from "./menu/left/MenuPanelSaveDiagrams";
 import ZoomWidget from "./menu/widget/ZoomWidget";
@@ -86,7 +86,7 @@ export default class MenuPanel extends React.Component<
           </div>
         </div>
         <div className={"lower" + (this.props.freeze ? " nointeract" : "")}>
-          <MenuPanelView
+          <MenuPanelSettings
             update={() => this.props.update()}
             performTransaction={this.props.performTransaction}
             handleChangeLanguage={this.props.handleChangeLanguage}

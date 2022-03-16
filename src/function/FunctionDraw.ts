@@ -129,7 +129,7 @@ export function unHighlightAll() {
 
 export function unHighlightSelected(ids: string[]) {
   for (const id of ids) {
-    let cell = graph.getCell(id);
+    const cell = graph.getCell(id);
     if (cell && typeof cell.id === "string") {
       unHighlightCell(cell.id);
     }

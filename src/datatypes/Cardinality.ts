@@ -18,8 +18,8 @@ export class Cardinality {
         this.second = first;
         if (this.checkCardinalities()) return;
       }
-      this.first = AppSettings.defaultCardinality1;
-      this.second = AppSettings.defaultCardinality2;
+      this.first = AppSettings.defaultCardinalitySource.getFirstCardinality();
+      this.second = AppSettings.defaultCardinalitySource.getSecondCardinality();
     }
   }
 
