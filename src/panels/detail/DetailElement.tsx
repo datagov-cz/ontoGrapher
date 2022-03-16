@@ -24,7 +24,6 @@ import IRILink from "../../components/IRILink";
 import LabelTable from "./components/LabelTable";
 import DescriptionTabs from "./components/DescriptionTabs";
 import { graph } from "../../graph/Graph";
-import StereotypeOptions from "./components/StereotypeOptions";
 import { Shapes } from "../../config/visual/Shapes";
 import { Locale } from "../../config/Locale";
 import {
@@ -43,6 +42,7 @@ import {
   updateConnection,
 } from "../../function/FunctionLink";
 import { isElementHidden } from "../../function/FunctionElem";
+import StereotypeOptions from "./components/element/StereotypeOptions";
 
 interface Props {
   projectLanguage: string;

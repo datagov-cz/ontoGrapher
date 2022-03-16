@@ -9,7 +9,7 @@ import { getActiveToConnections, getNewLink } from "./FunctionGetVars";
 import { LinkType } from "../config/Enum";
 import { addLink } from "./FunctionCreateVars";
 import { parsePrefix } from "./FunctionEditVars";
-import { constructFullConnections } from "./FunctionLink";
+import { setCompactLinkCardinalitiesFromFullComponents } from "./FunctionLink";
 import { mvp1IRI, mvp2IRI } from "./FunctionGraph";
 import _ from "lodash";
 
@@ -92,7 +92,11 @@ export function initConnections(): { add: string[]; del: string[] } {
             const newLink = getNewLink();
             const newLinkID = newLink.id as string;
             addLink(newLinkID, iri, source, target);
-            constructFullConnections(newLinkID, sourceLink, targetLink);
+            setCompactLinkCardinalitiesFromFullComponents(
+              newLinkID,
+              sourceLink,
+              targetLink
+            );
             linksToPush.push(newLinkID);
           }
         }

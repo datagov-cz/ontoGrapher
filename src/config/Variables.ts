@@ -139,8 +139,8 @@ export var AppSettings: {
   luceneConnector: string;
   initWorkspace: boolean;
   representation: Representation;
-  defaultCardinality1: string;
-  defaultCardinality2: string;
+  defaultCardinalitySource: Cardinality;
+  defaultCardinalityTarget: Cardinality;
   contextVersion: number;
   latestContextVersion: number;
   lastTransaction: string;
@@ -167,8 +167,8 @@ export var AppSettings: {
   cacheContext: "https://slovník.gov.cz",
   luceneConnector: "label_index",
   representation: Representation.COMPACT,
-  defaultCardinality1: "0",
-  defaultCardinality2: "*",
+  defaultCardinalitySource: new Cardinality("0", "*"),
+  defaultCardinalityTarget: new Cardinality("0", "*"),
   contextVersion: 4,
   latestContextVersion: 4,
   lastTransaction: "",

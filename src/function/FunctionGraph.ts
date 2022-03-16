@@ -38,8 +38,9 @@ import {
 import { initConnections } from "./FunctionRestriction";
 import isUrl from "is-url";
 import {
-  constructFullConnections,
   getOtherConnectionElementID,
+  setCompactLinkCardinalitiesFromFullComponents,
+  setLinkVertices,
   setSelfLoopConnectionPoints,
 } from "./FunctionLink";
 import { insertNewCacheTerms, insertNewRestrictions } from "./FunctionCache";
@@ -204,7 +205,7 @@ export function setRepresentation(
   result: boolean;
   transaction: string[];
 } {
-  let queries: string[] = [];
+  const queries: string[] = [];
   if (changeSettings) {
     AppSettings.representation = representation;
     Diagrams[AppSettings.selectedDiagram].representation = representation;
@@ -249,7 +250,11 @@ export function setRepresentation(
               const newLink = getNewLink();
               const newLinkID = newLink.id as string;
               addLink(newLinkID, id, source, target);
-              constructFullConnections(newLinkID, sourceLink, targetLink);
+              setCompactLinkCardinalitiesFromFullComponents(
+                newLinkID,
+                sourceLink,
+                targetLink
+              );
               queries.push(updateProjectLink(false, newLinkID));
               linkID = newLinkID;
             }
@@ -258,7 +263,8 @@ export function setRepresentation(
               setLinkBoundary(newLink, source, target);
               newLink.addTo(graph);
               if (WorkspaceLinks[linkID].vertices[AppSettings.selectedDiagram])
-                newLink.vertices(
+                setLinkVertices(
+                  newLink,
                   WorkspaceLinks[linkID].vertices[AppSettings.selectedDiagram]
                 );
               if (
@@ -269,7 +275,11 @@ export function setRepresentation(
                 setSelfLoopConnectionPoints(newLink, sourceBox.getBBox());
               WorkspaceLinks[newLink.id].vertices[AppSettings.selectedDiagram] =
                 newLink.vertices();
-              constructFullConnections(linkID, sourceLink, targetLink);
+              setCompactLinkCardinalitiesFromFullComponents(
+                linkID,
+                sourceLink,
+                targetLink
+              );
               setLabels(
                 newLink,
                 getDisplayLabel(id, AppSettings.canvasLanguage)
@@ -381,7 +391,7 @@ export function setupLink(
   link: string,
   restoreConnectionPosition: boolean = true
 ) {
-  let lnk = getNewLink(WorkspaceLinks[link].type, link);
+  const lnk = getNewLink(WorkspaceLinks[link].type, link);
   setLabels(
     lnk,
     getLinkOrVocabElem(WorkspaceLinks[link].iri).labels[
@@ -407,17 +417,23 @@ export function setupLink(
     WorkspaceLinks[link].vertices[AppSettings.selectedDiagram] = [];
   if (restoreConnectionPosition) {
     WorkspaceLinks[link].vertices[AppSettings.selectedDiagram].length > 0
-      ? lnk.vertices(WorkspaceLinks[link].vertices[AppSettings.selectedDiagram])
+      ? setLinkVertices(
+          lnk,
+          WorkspaceLinks[link].vertices[AppSettings.selectedDiagram]
+        )
       : findLinkSelfLoop(lnk);
     return undefined;
   } else {
-    let ret = _.cloneDeep(
+    const ret = _.cloneDeep(
       WorkspaceLinks[link].vertices[AppSettings.selectedDiagram]
     );
     findLinkSelfLoop(lnk);
     WorkspaceLinks[link].vertices[AppSettings.selectedDiagram] = lnk.vertices();
     if (WorkspaceLinks[link].vertices[AppSettings.selectedDiagram].length > 0)
-      lnk.vertices(WorkspaceLinks[link].vertices[AppSettings.selectedDiagram]);
+      setLinkVertices(
+        lnk,
+        WorkspaceLinks[link].vertices[AppSettings.selectedDiagram]
+      );
     return ret ? ret.length : undefined;
   }
 }
@@ -533,10 +549,12 @@ export function restoreHiddenElem(
             updateProjectElementDiagram(AppSettings.selectedDiagram, relID)
           );
           if (restoreFullConnectionPosition) {
-            domainLink.vertices(
+            setLinkVertices(
+              domainLink,
               WorkspaceLinks[link].vertices[AppSettings.selectedDiagram]
             );
-            rangeLink.vertices(
+            setLinkVertices(
+              rangeLink,
               WorkspaceLinks[targetLink].vertices[AppSettings.selectedDiagram]
             );
           } else {
