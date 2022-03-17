@@ -36,6 +36,7 @@ import AltLabelTable from "./components/AltLabelTable";
 import { updateProjectElement } from "../../queries/update/UpdateElementQueries";
 import LabelTable from "./components/LabelTable";
 import IRILabel from "../../components/IRILabel";
+import { setFullLinksCardinalitiesFromCompactLink } from "../../function/FunctionLink";
 
 interface Props {
   projectLanguage: string;
@@ -207,37 +208,14 @@ export default class DetailLink extends React.Component<Props, State> {
             WorkspaceTerms[this.state.iri].labels = this.state.inputLabels;
             queries.push(updateProjectElement(true, this.state.iri));
           }
-          const underlyingConnections = getUnderlyingFullConnections(link);
+          const underlyingConnections = getUnderlyingFullConnections(
+            this.state.id
+          );
           if (underlyingConnections) {
-            const sourceLinkSourceCardinality = new Cardinality(
-              targetCardinality.getFirstCardinality(),
-              targetCardinality.getSecondCardinality(),
-              true
-            );
-            const sourceLinkTargetCardinality = new Cardinality(
-              sourceCardinality.getFirstCardinality(),
-              sourceCardinality.getSecondCardinality(),
-              true
-            );
-            const targetLinkSourceCardinality = new Cardinality(
-              sourceCardinality.getFirstCardinality(),
-              sourceCardinality.getSecondCardinality(),
-              true
-            );
-            const targetLinkTargetCardinality = new Cardinality(
-              targetCardinality.getFirstCardinality(),
-              targetCardinality.getSecondCardinality(),
-              true
-            );
-            this.setCardinality(
+            setFullLinksCardinalitiesFromCompactLink(
+              this.state.id,
               underlyingConnections.src,
-              sourceLinkSourceCardinality,
-              sourceLinkTargetCardinality
-            );
-            this.setCardinality(
-              underlyingConnections.tgt,
-              targetLinkSourceCardinality,
-              targetLinkTargetCardinality
+              underlyingConnections.tgt
             );
             queries.push(
               updateProjectLink(

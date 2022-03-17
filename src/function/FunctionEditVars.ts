@@ -22,6 +22,7 @@ import {
   getLocalStorageKey,
   getVocabularyFromScheme,
   getWorkspaceContextIRI,
+  loadDefaultCardinality,
 } from "./FunctionGetVars";
 import { isElementVisible } from "./FunctionElem";
 
@@ -45,6 +46,7 @@ export function getStereotypeList(iris: string[], language: string): string[] {
 
 export function initVars() {
   loadLanguages();
+  loadDefaultCardinality();
   initProjectSettings();
   loadUML();
 }

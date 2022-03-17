@@ -19,6 +19,7 @@ import { enChangelog } from "../locale/enchangelog";
 import { Representation } from "../config/Enum";
 import { Locale } from "../config/Locale";
 import { en } from "../locale/en";
+import { LocalStorageVars } from "../config/LocalStorageVars";
 
 export function getVocabElementByElementID(id: string): { [key: string]: any } {
   return WorkspaceTerms[id];
@@ -28,7 +29,7 @@ export function getLinkOrVocabElem(iri: string): { [key: string]: any } {
   return iri in Links ? Links[iri] : WorkspaceTerms[iri];
 }
 
-export function getLocalStorageKey(name: string) {
+export function getLocalStorageKey(name: LocalStorageVars) {
   return `ontoGrapher:${name}`;
 }
 
@@ -55,16 +56,15 @@ export function checkLabels() {
     }
     Links[link].subClassOfDomain = [];
     Links[link].subClassOfRange = [];
-    Links[link].defaultSourceCardinality = getDefaultCardinality();
-    Links[link].defaultTargetCardinality = getDefaultCardinality();
+    Links[link].defaultSourceCardinality = new Cardinality(
+      AppSettings.defaultCardinalitySource.getFirstCardinality(),
+      AppSettings.defaultCardinalitySource.getSecondCardinality()
+    );
+    Links[link].defaultTargetCardinality = new Cardinality(
+      AppSettings.defaultCardinalityTarget.getFirstCardinality(),
+      AppSettings.defaultCardinalityTarget.getSecondCardinality()
+    );
   }
-}
-
-export function getDefaultCardinality() {
-  return new Cardinality(
-    AppSettings.defaultCardinality1,
-    AppSettings.defaultCardinality2
-  );
 }
 
 export function setSchemeColors(pool: string) {
@@ -113,6 +113,30 @@ export function getNewLink(type?: number, id?: string): joint.dia.Link {
   return link;
 }
 
+export function loadDefaultCardinality() {
+  const defaultCardinalitySource = localStorage.getItem(
+    getLocalStorageKey("defaultCardinalitySource")
+  );
+  const defaultCardinalityTarget = localStorage.getItem(
+    getLocalStorageKey("defaultCardinalityTarget")
+  );
+  if (defaultCardinalitySource) {
+    const sourceJSON = JSON.parse(defaultCardinalitySource);
+    AppSettings.defaultCardinalitySource = new Cardinality(
+      sourceJSON.first,
+      sourceJSON.second
+    );
+  }
+
+  if (defaultCardinalityTarget) {
+    const targetJSON = JSON.parse(defaultCardinalityTarget);
+    AppSettings.defaultCardinalityTarget = new Cardinality(
+      targetJSON.first,
+      targetJSON.second
+    );
+  }
+}
+
 export function getElementShape(id: string | number): string {
   const types = WorkspaceTerms[id].types;
   for (const type in Shapes) {
@@ -128,13 +152,12 @@ export function getActiveToConnections(iri: string): string[] {
 }
 
 export function getUnderlyingFullConnections(
-  link: joint.dia.Link
+  id: string
 ): { src: string; tgt: string } | undefined {
-  const id = link.id;
   const iri = WorkspaceLinks[id].iri;
   if (!(iri in WorkspaceTerms)) return;
-  const sourceElem = link.getSourceCell()?.id;
-  const targetElem = link.getTargetCell()?.id;
+  const sourceElem = WorkspaceLinks[id].source;
+  const targetElem = WorkspaceLinks[id].target;
   if (sourceElem && targetElem) {
     const preds = Object.keys(WorkspaceElements).filter((id) => id === iri);
     for (const pred of preds) {

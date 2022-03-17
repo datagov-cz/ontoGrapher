@@ -2,9 +2,10 @@ import React from "react";
 import { Dropdown } from "react-bootstrap";
 import { Locale } from "../../../config/Locale";
 import { AppSettings } from "../../../config/Variables";
-import MenuPanelSwitchColors from "../view/MenuPanelSwitchColors";
-import MenuPanelSwitchStereotypes from "../view/MenuPanelSwitchStereotypes";
-import { MenuPanelChangeLanguage } from "../view/MenuPanelChangeLanguage";
+import MenuPanelSwitchColors from "../settings/MenuPanelSwitchColors";
+import MenuPanelSwitchStereotypes from "../settings/MenuPanelSwitchStereotypes";
+import { MenuPanelChangeLanguage } from "../settings/MenuPanelChangeLanguage";
+import { MenuPanelChangeDefaultCardinality } from "../settings/MenuPanelChangeDefaultCardinality";
 
 interface Props {
   update: Function;
@@ -15,12 +16,12 @@ interface Props {
 
 interface State {}
 
-export default class MenuPanelView extends React.Component<Props, State> {
+export default class MenuPanelSettings extends React.Component<Props, State> {
   render() {
     return (
       <Dropdown className={"lower inert"}>
         <Dropdown.Toggle>
-          {Locale[AppSettings.interfaceLanguage].view}
+          {Locale[AppSettings.interfaceLanguage].menuPanelSettings}
         </Dropdown.Toggle>
         <Dropdown.Menu>
           <MenuPanelSwitchStereotypes update={() => this.props.update()} />
@@ -38,6 +39,12 @@ export default class MenuPanelView extends React.Component<Props, State> {
             handleChangeLanguage={this.props.handleChangeInterfaceLanguage}
             title={"setInterfaceLanguage"}
             languageType={"interfaceLanguage"}
+          />
+          <MenuPanelChangeDefaultCardinality
+            cardinality={"defaultCardinalitySource"}
+          />
+          <MenuPanelChangeDefaultCardinality
+            cardinality={"defaultCardinalityTarget"}
           />
         </Dropdown.Menu>
       </Dropdown>

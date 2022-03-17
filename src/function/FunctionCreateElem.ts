@@ -100,16 +100,10 @@ const CreateElemStrategy: {
       updateProjectElement(true, id),
       updateProjectElementDiagram(AppSettings.selectedDiagram, id),
       ...saveNewLink(
-        parsePrefix("z-sgov-pojem", "má-vztažený-prvek-1"),
         id,
         connections[0],
-        Representation.FULL
-      ),
-      ...saveNewLink(
-        parsePrefix("z-sgov-pojem", "má-vztažený-prvek-2"),
-        id,
         connections[1],
-        Representation.FULL
+        Representation.COMPACT
       ),
     ];
   },

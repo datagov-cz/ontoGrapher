@@ -136,7 +136,7 @@ export async function getElementsConfig(
               labels: CacheSearchVocabularies[vocab].labels,
               readOnly: true,
               namespace: CacheSearchVocabularies[vocab].namespace,
-              graph: AppSettings.cacheContext,
+              graph: vocab,
               color: "#FFF",
               count: createCount(),
               glossary: CacheSearchVocabularies[vocab].glossary,

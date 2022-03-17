@@ -1,10 +1,10 @@
 import React from "react";
 import { Form } from "react-bootstrap";
-import { AppSettings, Stereotypes } from "../../../config/Variables";
-import { getName } from "../../../function/FunctionEditVars";
-import { Shapes } from "../../../config/visual/Shapes";
-import { Locale } from "../../../config/Locale";
-import { RepresentationConfig } from "../../../config/logic/RepresentationConfig";
+import { Locale } from "../../../../config/Locale";
+import { getName } from "../../../../function/FunctionEditVars";
+import { AppSettings, Stereotypes } from "../../../../config/Variables";
+import { RepresentationConfig } from "../../../../config/logic/RepresentationConfig";
+import { Shapes } from "../../../../config/visual/Shapes";
 
 interface Props {
   readonly: boolean;

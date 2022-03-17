@@ -8,7 +8,6 @@ import {
 } from "../config/Variables";
 import { LinkType, Representation } from "../config/Enum";
 import {
-  getDefaultCardinality,
   getLinkOrVocabElem,
   getNewLink,
   getUnderlyingFullConnections,
@@ -16,8 +15,7 @@ import {
 } from "./FunctionGetVars";
 import { graph } from "../graph/Graph";
 import * as joint from "jointjs";
-import { graphElement } from "../graph/GraphElement";
-import { addClass, addLink } from "./FunctionCreateVars";
+import { addLink } from "./FunctionCreateVars";
 import { updateProjectElement } from "../queries/update/UpdateElementQueries";
 import { mvp1IRI, mvp2IRI, setLabels, setLinkBoundary } from "./FunctionGraph";
 import { paper } from "../main/DiagramCanvas";
@@ -32,6 +30,7 @@ import {
   updateConnections,
 } from "../queries/update/UpdateConnectionQueries";
 import { Cardinality } from "../datatypes/Cardinality";
+import _ from "lodash";
 
 export function getOtherConnectionElementID(
   linkID: string,
@@ -73,7 +72,7 @@ export function getConnectionElementID(linkID: string, elemID: string): string {
 //
 // B1 = min(rl1,b1)
 // B2 = max(rl2,b2)
-export function constructFullConnections(
+export function setCompactLinkCardinalitiesFromFullComponents(
   compactLinkID: string,
   mvp1linkID: string,
   mvp2linkID: string
@@ -129,6 +128,39 @@ export function constructFullConnections(
   );
 }
 
+export function setFullLinksCardinalitiesFromCompactLink(
+  compactLinkID: string,
+  mvp1linkID: string,
+  mvp2linkID: string
+) {
+  const sourceCardinality = WorkspaceLinks[compactLinkID].sourceCardinality;
+  const targetCardinality = WorkspaceLinks[compactLinkID].targetCardinality;
+  const sourceLinkSourceCardinality = new Cardinality(
+    targetCardinality.getFirstCardinality(),
+    targetCardinality.getSecondCardinality(),
+    true
+  );
+  const sourceLinkTargetCardinality = new Cardinality(
+    sourceCardinality.getFirstCardinality(),
+    sourceCardinality.getSecondCardinality(),
+    true
+  );
+  const targetLinkSourceCardinality = new Cardinality(
+    sourceCardinality.getFirstCardinality(),
+    sourceCardinality.getSecondCardinality(),
+    true
+  );
+  const targetLinkTargetCardinality = new Cardinality(
+    targetCardinality.getFirstCardinality(),
+    targetCardinality.getSecondCardinality(),
+    true
+  );
+  WorkspaceLinks[mvp1linkID].sourceCardinality = sourceLinkSourceCardinality;
+  WorkspaceLinks[mvp1linkID].targetCardinality = sourceLinkTargetCardinality;
+  WorkspaceLinks[mvp2linkID].sourceCardinality = targetLinkSourceCardinality;
+  WorkspaceLinks[mvp2linkID].targetCardinality = targetLinkTargetCardinality;
+}
+
 export function isLinkVisible(
   iri: string,
   type: LinkType,
@@ -157,31 +189,33 @@ export function saveNewLink(
   if (sid === tid)
     setSelfLoopConnectionPoints(link, paper.findViewByModel(sid).getBBox());
   setLinkBoundary(link, sid, tid);
-  let queries: string[] = [];
+  const queries: string[] = [];
   if (
     representation === Representation.FULL ||
     type === LinkType.GENERALIZATION
   ) {
     queries.push(...updateConnection(sid, tid, id, type, iri, true));
-  } else {
-    const find = Object.keys(WorkspaceElements).find(
+  } else if (representation === Representation.COMPACT) {
+    const propertyId = Object.keys(WorkspaceElements).find(
       (elem) => WorkspaceElements[elem].active && elem === iri
     );
-    if (!find) {
+    if (!propertyId) {
       throw new Error(`Error initializing compact relationship ${id}.`);
     }
-    const property = new graphElement({ id: find });
     const source = getNewLink();
     const target = getNewLink();
     const sourceId = source.id as string;
-    const propertyId = property.id as string;
     const targetId = target.id as string;
-    if (!find) addClass(iri);
+    addLink(sourceId, mvp1IRI, propertyId, sid, type);
+    addLink(targetId, mvp2IRI, propertyId, tid, type);
+    queries.push(...updateConnection(sid, tid, id, type, iri, true));
+    setFullLinksCardinalitiesFromCompactLink(id, sourceId, targetId);
     queries.push(
       updateProjectElement(true, propertyId),
-      ...updateConnection(propertyId, sid, sourceId, type, mvp1IRI),
-      ...updateConnection(propertyId, tid, targetId, type, mvp2IRI),
-      ...updateConnection(sid, tid, id, type, iri)
+      updateConnections(sourceId),
+      updateProjectLink(true, sourceId),
+      updateConnections(targetId),
+      updateProjectLink(true, targetId)
     );
   }
   if (type === LinkType.DEFAULT)
@@ -196,11 +230,24 @@ export function doesLinkHaveInverse(linkID: string) {
 
 export function checkDefaultCardinality(link: string) {
   if (!Links[link].defaultSourceCardinality.checkCardinalities()) {
-    Links[link].defaultSourceCardinality = getDefaultCardinality();
+    Links[link].defaultSourceCardinality = new Cardinality(
+      AppSettings.defaultCardinalitySource.getFirstCardinality(),
+      AppSettings.defaultCardinalitySource.getSecondCardinality()
+    );
   }
   if (!Links[link].defaultTargetCardinality.checkCardinalities()) {
-    Links[link].defaultTargetCardinality = getDefaultCardinality();
+    Links[link].defaultTargetCardinality = new Cardinality(
+      AppSettings.defaultCardinalityTarget.getFirstCardinality(),
+      AppSettings.defaultCardinalityTarget.getSecondCardinality()
+    );
   }
+}
+
+export function setLinkVertices(
+  link: joint.dia.Link,
+  vertices: joint.dia.Link.Vertex[]
+) {
+  link.vertices(_.compact(vertices));
 }
 
 export function updateConnection(
@@ -212,17 +259,15 @@ export function updateConnection(
   setCardinality: boolean = false
 ): string[] {
   addLink(linkID, iri, sid, tid, type);
-  if (iri in Links && type === LinkType.DEFAULT && setCardinality) {
-    WorkspaceLinks[linkID].sourceCardinality = Links[
-      iri
-    ].defaultSourceCardinality.isCardinalityNone()
-      ? getDefaultCardinality()
-      : Links[iri].defaultSourceCardinality;
-    WorkspaceLinks[linkID].targetCardinality = Links[
-      iri
-    ].defaultTargetCardinality.isCardinalityNone()
-      ? getDefaultCardinality()
-      : Links[iri].defaultTargetCardinality;
+  if (type === LinkType.DEFAULT && setCardinality) {
+    WorkspaceLinks[linkID].sourceCardinality = new Cardinality(
+      AppSettings.defaultCardinalitySource.getFirstCardinality(),
+      AppSettings.defaultCardinalitySource.getSecondCardinality()
+    );
+    WorkspaceLinks[linkID].targetCardinality = new Cardinality(
+      AppSettings.defaultCardinalityTarget.getFirstCardinality(),
+      AppSettings.defaultCardinalityTarget.getSecondCardinality()
+    );
   }
   return [updateConnections(linkID), updateProjectLink(true, linkID)];
 }
@@ -309,8 +354,10 @@ export function addLinkTools(
         }
         transaction(...queries);
       } else {
-        let deleteLinks = getUnderlyingFullConnections(view.model);
-        let queries: string[] = [];
+        const deleteLinks = getUnderlyingFullConnections(
+          view.model.id as string
+        );
+        const queries: string[] = [];
         if (
           deleteLinks &&
           WorkspaceLinks[deleteLinks.src] &&

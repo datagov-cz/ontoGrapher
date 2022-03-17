@@ -3,7 +3,6 @@ import { AppSettings, WorkspaceLinks, WorkspaceTerms } from "../Variables";
 import { addLink } from "../../function/FunctionCreateVars";
 import {
   getActiveToConnections,
-  getDefaultCardinality,
   getNewLink,
 } from "../../function/FunctionGetVars";
 import { LinkType } from "../Enum";
@@ -64,15 +63,18 @@ function createCardinality(iri: string, restriction: Restriction) {
       let newCardinality = new Cardinality(
         pos
           ? originalCardinality.getFirstCardinality() ||
-            AppSettings.defaultCardinality1
+            AppSettings.defaultCardinalitySource.getFirstCardinality()
           : restriction.target,
         pos
           ? restriction.target
           : originalCardinality.getSecondCardinality() ||
-            AppSettings.defaultCardinality2
+            AppSettings.defaultCardinalitySource.getSecondCardinality()
       );
       if (!newCardinality.checkCardinalities())
-        newCardinality = getDefaultCardinality();
+        newCardinality = new Cardinality(
+          AppSettings.defaultCardinalitySource.getFirstCardinality(),
+          AppSettings.defaultCardinalitySource.getSecondCardinality()
+        );
       if (restriction.inverse) {
         WorkspaceLinks[linkID].sourceCardinality = _.cloneDeep(newCardinality);
       } else {
