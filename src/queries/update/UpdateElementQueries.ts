@@ -22,8 +22,8 @@ export function updateProjectElement(del: boolean, ...iris: string[]): string {
     checkElem(iri);
     const vocabElem = WorkspaceTerms[iri];
     const scheme = vocabElem.inScheme;
-    const graph =
-      WorkspaceVocabularies[getVocabularyFromScheme(vocabElem.inScheme)].graph;
+    const vocab = getVocabularyFromScheme(vocabElem.inScheme);
+    const graph = WorkspaceVocabularies[vocab].graph;
     const types = vocabElem.types.map((type) => qb.i(type));
     const labels = Object.keys(vocabElem.labels)
       .filter((lang) => vocabElem.labels[lang])
@@ -46,10 +46,35 @@ export function updateProjectElement(del: boolean, ...iris: string[]): string {
       .filter((lang) => vocabElem.definitions[lang])
       .map((lang) => qb.ll(vocabElem.definitions[lang], lang));
 
-    if (!(graph in data)) data[graph] = [];
+    const ogStatements: string[] = [
+      qb.s(qb.i(iri), "rdf:type", "og:element"),
+      qb.s(qb.i(iri), "og:scheme", qb.i(scheme)),
+      qb.s(qb.i(iri), "og:vocabulary", qb.i(getVocabularyFromScheme(scheme))),
+      qb.s(qb.i(iri), "og:name", qb.a(selectedLabels)),
+      qb.s(qb.i(iri), "og:active", qb.ll(WorkspaceElements[iri].active)),
+    ];
+
+    data[getWorkspaceContextIRI()].push(...ogStatements);
+    const deleteStatements = [
+      qb.s(qb.i(iri), "og:name", "?name"),
+      qb.s(qb.i(iri), "og:active", "?active"),
+    ];
 
     if (del)
-      data[graph].push(
+      deletes.push(
+        ...deleteStatements.map((stmt) =>
+          DELETE`${qb.g(getWorkspaceContextIRI(), [stmt])}`.WHERE`${qb.g(
+            getWorkspaceContextIRI(),
+            [stmt]
+          )}`.build()
+        )
+      );
+
+    if (WorkspaceVocabularies[vocab].readOnly) continue;
+    if (!(vocab in data)) data[vocab] = [];
+
+    if (del)
+      data[vocab].push(
         qb.s(qb.i(iri), "rdf:type", qb.a(types), types.length > 0),
         qb.s(qb.i(iri), "skos:prefLabel", qb.a(labels), labels.length > 0),
         qb.s(qb.i(iri), "skos:altLabel", qb.a(altLabels), altLabels.length > 0),
@@ -68,19 +93,6 @@ export function updateProjectElement(del: boolean, ...iris: string[]): string {
           vocabElem.topConcept !== undefined
         )
       );
-    const ogStatements: string[] = [
-      qb.s(qb.i(iri), "rdf:type", "og:element"),
-      qb.s(qb.i(iri), "og:scheme", qb.i(scheme)),
-      qb.s(qb.i(iri), "og:vocabulary", qb.i(getVocabularyFromScheme(scheme))),
-      qb.s(qb.i(iri), "og:name", qb.a(selectedLabels)),
-      qb.s(qb.i(iri), "og:active", qb.ll(WorkspaceElements[iri].active)),
-    ];
-
-    data[getWorkspaceContextIRI()].push(...ogStatements);
-    const deleteStatements = [
-      qb.s(qb.i(iri), "og:name", "?name"),
-      qb.s(qb.i(iri), "og:active", "?active"),
-    ];
 
     if (del) {
       deletes.push(
@@ -103,9 +115,20 @@ export function updateProjectElement(del: boolean, ...iris: string[]): string {
     }
   }
 
-  for (const graph in data) {
-    inserts.push(INSERT.DATA`${qb.g(graph, data[graph])}`.build());
+  for (const vocab in data) {
+    if (vocab in WorkspaceVocabularies) {
+      const graph = WorkspaceVocabularies[vocab].graph;
+      if (WorkspaceVocabularies[vocab].readOnly)
+        throw new Error(`Attempted to write to read-only graph ${graph}`);
+      inserts.push(INSERT.DATA`${qb.g(graph, data[vocab])}`.build());
+    }
   }
+  inserts.push(
+    INSERT.DATA`${qb.g(
+      getWorkspaceContextIRI(),
+      data[getWorkspaceContextIRI()]
+    )}`.build()
+  );
   return qb.combineQueries(...deletes, ...inserts);
 }
 
@@ -163,9 +186,4 @@ function checkElem(iri: string) {
   if (!(iri in WorkspaceTerms)) {
     console.error("Element ID is not tied to a Concept IRI");
   }
-  const vocab = getVocabularyFromScheme(WorkspaceTerms[iri].inScheme);
-  if (WorkspaceVocabularies[vocab].readOnly)
-    throw new Error(
-      `Attempted to write to read-only graph ${WorkspaceVocabularies[vocab].graph}`
-    );
 }

@@ -34,6 +34,7 @@ export const enHelp = {
         "Create a relation:":
           "Move mouse onto term on the canvas + left click on arrow. Click on another term on the canvas and then pick a relation type",
         "Select/edit/view details of a relation:": "Left click on relation",
+        "Select/Deselect multiple relations:": "Ctrl + left click on relation",
         "Delete a relation:":
           "When selected, move mouse onto the relation and click ❌",
         "Create relation breakpoint:": "When selected, left click on relation",

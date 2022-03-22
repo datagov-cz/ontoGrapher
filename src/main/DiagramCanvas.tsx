@@ -18,8 +18,10 @@ import {
 import { highlightCell, unHighlightAll } from "../function/FunctionDraw";
 import {
   highlightElement,
+  highlightLink,
   resetDiagramSelection,
   unhighlightElement,
+  unhighlightLink,
   updateDiagramPosition,
   zoomDiagram,
 } from "../function/FunctionDiagram";
@@ -38,14 +40,14 @@ import {
   ElemCreationConfiguration,
   LinkCreationConfiguration,
 } from "../components/modals/CreationModals";
-import { ElemCreationStrategy } from "../config/Enum";
+import { DetailPanelMode, ElemCreationStrategy } from "../config/Enum";
 import { Locale } from "../config/Locale";
 import { initTouchEvents } from "../function/FunctionTouch";
 
 interface Props {
   projectLanguage: string;
   updateElementPanel: (id?: string, redoCacheSearch?: boolean) => void;
-  updateDetailPanel: (id?: string) => void;
+  updateDetailPanel: (mode: DetailPanelMode, id?: string) => void;
   freeze: boolean;
   performTransaction: (...queries: string[]) => void;
   handleCreation: (
@@ -93,7 +95,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
       (id) => (WorkspaceElements[id].hidden[AppSettings.selectedDiagram] = true)
     );
     if (_.intersection(AppSettings.selectedElements, ids).length > 0)
-      this.props.updateDetailPanel();
+      this.props.updateDetailPanel(DetailPanelMode.HIDDEN);
     _.pull(AppSettings.selectedElements, ...ids);
     this.props.updateElementPanel();
     this.props.performTransaction(
@@ -157,7 +159,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
         this.newLink = false;
         unHighlightAll();
         resetDiagramSelection();
-        this.props.updateDetailPanel();
+        this.props.updateDetailPanel(DetailPanelMode.HIDDEN);
       },
       "cell:contextmenu": (cellView, evt) => {
         evt.preventDefault();
@@ -178,10 +180,13 @@ export default class DiagramCanvas extends React.Component<Props, State> {
             resetDiagramSelection();
             highlightElement(cellView.model.id);
             this.props.updateElementPanel(cellView.model.id);
-            this.props.updateDetailPanel(cellView.model.id);
+            this.props.updateDetailPanel(
+              DetailPanelMode.TERM,
+              cellView.model.id
+            );
           }
         } else if (evt.ctrlKey) {
-          this.props.updateDetailPanel();
+          this.props.updateDetailPanel(DetailPanelMode.HIDDEN);
           const find = AppSettings.selectedElements.findIndex(
             (elem) => elem === cellView.model.id
           );
@@ -238,7 +243,10 @@ export default class DiagramCanvas extends React.Component<Props, State> {
        * If link is selected, show the delete button (if applicable) and the vertex manipulation tools
        */
       "link:mouseenter": (linkView) => {
-        if (AppSettings.selectedLink === linkView.model.id)
+        if (
+          AppSettings.selectedLinks.includes(linkView.model.id) &&
+          AppSettings.selectedLinks.length === 1
+        )
           addLinkTools(
             linkView,
             this.props.performTransaction,
@@ -395,7 +403,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
         updateDiagramPosition(AppSettings.selectedDiagram);
         this.drag = undefined;
         if (evt.button === 0 || evt.type === "touchend") {
-          this.props.updateDetailPanel();
+          this.props.updateDetailPanel(DetailPanelMode.HIDDEN);
           resetDiagramSelection();
           if (this.newLink) {
             this.newLink = false;
@@ -424,20 +432,36 @@ export default class DiagramCanvas extends React.Component<Props, State> {
        * Pointer click on link:
        * Highlight link and open the Detail panel
        */
-      "link:pointerclick": (linkView) => {
-        resetDiagramSelection();
-        if (this.newLink) {
-          this.newLink = false;
-          unHighlightAll();
+      "link:pointerclick": (linkView, evt) => {
+        if (evt.ctrlKey) {
+          this.props.updateDetailPanel(DetailPanelMode.HIDDEN);
+          const find = AppSettings.selectedLinks.findIndex(
+            (elem) => elem === linkView.model.id
+          );
+          find !== -1
+            ? unhighlightLink(linkView.model.id)
+            : highlightLink(linkView.model.id);
+          if (AppSettings.selectedLinks.length > 1)
+            this.props.updateDetailPanel(DetailPanelMode.MULTIPLE_LINKS);
+          else
+            this.props.updateDetailPanel(
+              DetailPanelMode.LINK,
+              linkView.model.id
+            );
+        } else {
+          resetDiagramSelection();
+          if (this.newLink) {
+            this.newLink = false;
+            unHighlightAll();
+          }
+          highlightLink(linkView.model.id);
+          addLinkTools(
+            linkView,
+            this.props.performTransaction,
+            this.props.updateElementPanel
+          );
+          this.props.updateDetailPanel(DetailPanelMode.LINK, linkView.model.id);
         }
-        AppSettings.selectedLink = linkView.model.id;
-        addLinkTools(
-          linkView,
-          this.props.performTransaction,
-          this.props.updateElementPanel
-        );
-        highlightCell(linkView.model.id);
-        this.props.updateDetailPanel(linkView.model.id);
       },
       /**
        * Pointer up on link:

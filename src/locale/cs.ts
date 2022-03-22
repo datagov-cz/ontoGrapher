@@ -27,8 +27,16 @@ export const cs: { [Property in keyof typeof en]: string } = {
   authenticationExpired: "Autentikace vypršela. Prosím, načtěte stránku znovu.",
   authenticationTimeout: "Dotaz na autentikační server vypršel.",
   logout: "Odhlásit",
-  detailPanelMultipleLinks: "vybrané vazby",
-  detailPanelMultipleRelationships: "vybrané vztahy",
+  detailPanelMultipleLinks: "Více vybraných vazeb",
+  detailPanelMultipleRelationships: "Více vybraných vztahů",
+  detailPanelMultipleLinksEditable:
+    "Z výběru lze přiřadit kardinality následujícím vazbám:",
+  detailPanelMultipleRelationshipsEditable:
+    "Z výběru lze přiřadit kardinality následujícím vztahům:",
+  detailPanelMultipleLinksNotEditable:
+    "Z výběru nelze přiřadit kardinality žádné vazbě.",
+  detailPanelMultipleRelationshipsNotEditable:
+    "Z výběru nelze přiřadit kardinality žádnému vztahu.",
   detailPanelPrefLabel: "Jméno",
   detailPanelAltLabel: "Synonyma",
   detailPanelInScheme: "Ve slovníku",

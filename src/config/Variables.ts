@@ -131,7 +131,6 @@ export var AppSettings: {
   description: { [key: string]: string };
   selectedDiagram: string;
   canvasLanguage: string;
-  selectedLink: string;
   contextIRI: string;
   contextEndpoint: string;
   ontographerContext: string;
@@ -153,12 +152,12 @@ export var AppSettings: {
   viewItemPanelTypes: boolean;
   interfaceLanguage: string;
   selectedElements: string[];
+  selectedLinks: string[];
 } = {
   name: {},
   description: {},
   selectedDiagram: "",
   canvasLanguage: Object.keys(Languages)[0],
-  selectedLink: "",
   contextIRI: "",
   initWorkspace: false,
   contextEndpoint: Environment.components["al-db-server"].url,
@@ -181,6 +180,7 @@ export var AppSettings: {
   viewItemPanelTypes: true,
   interfaceLanguage: "en",
   selectedElements: [],
+  selectedLinks: [],
 };
 
 export var CardinalityPool: Cardinality[] = [

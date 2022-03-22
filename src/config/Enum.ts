@@ -19,3 +19,10 @@ export enum ContextLoadingStrategy {
   UPDATE_LEGACY_WORKSPACE,
   RECONSTRUCT_WORKSPACE,
 }
+
+export enum DetailPanelMode {
+  HIDDEN,
+  TERM,
+  LINK,
+  MULTIPLE_LINKS,
+}

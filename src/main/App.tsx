@@ -44,7 +44,7 @@ import {
   ElemCreationConfiguration,
   LinkCreationConfiguration,
 } from "../components/modals/CreationModals";
-import { ElemCreationStrategy } from "../config/Enum";
+import { DetailPanelMode, ElemCreationStrategy } from "../config/Enum";
 import { getElementPosition } from "../function/FunctionElem";
 import { en } from "../locale/en";
 
@@ -291,9 +291,8 @@ export default class App extends React.Component<
     }
   }
 
-  handleUpdateDetailPanel(id?: string) {
-    if (id) this.detailPanel.current?.update(id);
-    else this.detailPanel.current?.hide();
+  handleUpdateDetailPanel(mode: DetailPanelMode, id?: string) {
+    this.detailPanel.current?.prepareDetails(mode, id);
     this.validationPanel.current?.forceUpdate();
   }
 
@@ -312,7 +311,7 @@ export default class App extends React.Component<
             this.itemPanel.current?.update();
           }}
           closeDetailPanel={() => {
-            this.detailPanel.current?.hide();
+            this.handleUpdateDetailPanel(DetailPanelMode.HIDDEN);
             resetDiagramSelection();
           }}
           freeze={this.state.freeze}
@@ -326,19 +325,19 @@ export default class App extends React.Component<
           projectLanguage={this.state.projectLanguage}
           freeze={this.state.freeze}
           update={() => {
-            this.detailPanel.current?.hide();
+            this.handleUpdateDetailPanel(DetailPanelMode.HIDDEN);
             resetDiagramSelection();
           }}
           performTransaction={this.performTransaction}
           updateDetailPanel={(id: string) => {
-            this.handleUpdateDetailPanel(id);
+            this.handleUpdateDetailPanel(DetailPanelMode.TERM, id);
           }}
         />
         <DiagramPanel
           freeze={this.state.freeze}
           update={() => {
             this.itemPanel.current?.update();
-            this.detailPanel.current?.hide();
+            this.handleUpdateDetailPanel(DetailPanelMode.HIDDEN);
             this.menuPanel.current?.update();
           }}
           performTransaction={this.performTransaction}
@@ -352,9 +351,6 @@ export default class App extends React.Component<
             this.detailPanel.current?.forceUpdate();
           }}
           performTransaction={this.performTransaction}
-          updateDetailPanel={(id: string) => {
-            this.handleUpdateDetailPanel(id);
-          }}
           updateDiagramCanvas={() => {
             this.canvas.current?.setState({ modalAddElem: true });
           }}
@@ -388,8 +384,8 @@ export default class App extends React.Component<
           updateElementPanel={(id?: string, redoCacheSearch?: boolean) => {
             this.itemPanel.current?.update(id, redoCacheSearch);
           }}
-          updateDetailPanel={(id?: string) => {
-            this.handleUpdateDetailPanel(id);
+          updateDetailPanel={(mode: DetailPanelMode, id?: string) => {
+            this.handleUpdateDetailPanel(mode, id);
           }}
           freeze={this.state.freeze}
           performTransaction={this.performTransaction}
