@@ -2,6 +2,13 @@ export const csChangelog: {
   [key: string]: { [key: string]: { [key: string]: string[] } };
 } = {
   "2022": {
+    "3": {
+      "22": [
+        "Multiselekce vazeb/vztahů:",
+        "Ctrl + kliknutí na vazby/vztahy umožňuje výběr více vazeb/vztahů",
+        "Tato akce ukáže panel, se kterým je možné přiřadit kardinality ke všem vybraným vazbám/vztahům",
+      ],
+    },
     "2": {
       "16": [
         "Změna ovládání:",

@@ -36,6 +36,8 @@ export const csHelp = {
         "Vytvořit vztah":
           "Přesuňte myš na pojem na plátně + klikněte na šipku. Klikněte na další pojem na plátně a vyberte vztah",
         "Vybrat/editovat/zobrazit detaily vztahu:": "Klikněte na vztah",
+        "Vybrat/zrušit výběr více vztahů:":
+          "Ctrl + levé tlačítko myši na vztah",
         "Smazat vztah:": "Přesuňte myš na vybraný pojem + klikněte na ❌",
         "Vytvořit vrchol ve vztahu:": "Klikněte na vybraný pojem",
         "Smazat vrchol ve vztahu:":

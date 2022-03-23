@@ -2,6 +2,13 @@ export const enChangelog: {
   [key: string]: { [key: string]: { [key: string]: string[] } };
 } = {
   "2022": {
+    "3": {
+      "22": [
+        "Link/relationship multiselection:",
+        "Using Ctrl + click on links allows (de)selection of multiple links/relationships",
+        "This brings up the detail panel, with which it is possible to set cardinalities to all selected links/relationships at the same time",
+      ],
+    },
     "2": {
       "16": [
         "Control scheme update:",

@@ -20,8 +20,16 @@ export const en = {
   authenticationExpired: "Authentication expired. Please refresh the page.",
   authenticationTimeout: "Request to authentication service timed out.",
   logout: "Log out",
-  detailPanelMultipleLinks: "selected links",
-  detailPanelMultipleRelationships: "selected relationships",
+  detailPanelMultipleLinks: "Multiple selected links",
+  detailPanelMultipleRelationships: "Multiple selected relationships",
+  detailPanelMultipleLinksEditable:
+    "Cardinalities can be assigned to the following links from the selection:",
+  detailPanelMultipleRelationshipsEditable:
+    "Cardinalities can be assigned to the following relationships from the selection:",
+  detailPanelMultipleLinksNotEditable:
+    "Cardinalities cannot be assigned to any links from the selection.",
+  detailPanelMultipleRelationshipsNotEditable:
+    "Cardinalities cannot be assigned to any relationships from the selection.",
   detailPanelPrefLabel: "Label",
   detailPanelAltLabel: "Synonyms",
   detailPanelInScheme: "In vocabulary",

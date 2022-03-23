@@ -374,7 +374,7 @@ export function addLinkTools(
         view.model.remove();
         WorkspaceLinks[view.model.id].active = false;
         update();
-        AppSettings.selectedLink = "";
+        AppSettings.selectedLinks = [];
         transaction(...queries);
       }
     },

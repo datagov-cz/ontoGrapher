@@ -14,15 +14,15 @@ import * as _ from "lodash";
 import { isElementHidden } from "./FunctionElem";
 
 export function changeDiagrams(diagram?: string) {
-  graph.clear();
-  AppSettings.selectedLink = "";
   if (!diagram)
     diagram = Object.keys(Diagrams).reduce((a, b) =>
       Diagrams[a].index < Diagrams[b].index ? a : b
     );
   if (diagram && Diagrams[diagram]) {
+    graph.clear();
+    AppSettings.selectedLinks = [];
+    AppSettings.selectedElements = [];
     AppSettings.selectedDiagram = diagram;
-    AppSettings.selectedLink = "";
     for (const id in WorkspaceElements) {
       if (
         !isElementHidden(id, diagram) &&
@@ -94,12 +94,12 @@ export function updateDiagramPosition(diagram: string) {
 }
 
 /**
- *  Resets the diagram's selections (deselects the link and/or the elements selected).
+ *  Resets the diagram's selections (deselects the links and/or the elements selected).
  */
 export function resetDiagramSelection() {
-  unHighlightCell(AppSettings.selectedLink);
   unHighlightSelected(AppSettings.selectedElements);
-  AppSettings.selectedLink = "";
+  unHighlightSelected(AppSettings.selectedLinks);
+  AppSettings.selectedLinks = [];
   AppSettings.selectedElements = [];
 }
 
@@ -121,5 +121,17 @@ export function highlightElement(id: string, color?: string) {
 export function unhighlightElement(id: string) {
   const index = AppSettings.selectedElements.indexOf(id);
   if (index !== -1) AppSettings.selectedElements.splice(index, 1);
+  unHighlightCell(id);
+}
+
+export function highlightLink(id: string, color?: string) {
+  if (!AppSettings.selectedLinks.includes(id))
+    AppSettings.selectedLinks.push(id);
+  highlightCell(id, color);
+}
+
+export function unhighlightLink(id: string) {
+  const index = AppSettings.selectedLinks.indexOf(id);
+  if (index !== -1) AppSettings.selectedLinks.splice(index, 1);
   unHighlightCell(id);
 }

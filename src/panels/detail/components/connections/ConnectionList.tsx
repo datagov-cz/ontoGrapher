@@ -26,7 +26,6 @@ interface Props {
   //Element ID from DetailElement
   id: string;
   projectLanguage: string;
-  update: Function;
   performTransaction: (...queries: string[]) => void;
 }
 
@@ -215,7 +214,6 @@ export default class ConnectionList extends React.Component<Props, State> {
                   (queries) => {
                     this.props.performTransaction(...queries);
                     this.getConnectionsFromOtherVocabularies();
-                    this.props.update(this.props.id);
                     this.setState({ selected: [] });
                   }
                 );
@@ -384,7 +382,6 @@ export default class ConnectionList extends React.Component<Props, State> {
                   projectLanguage={this.props.projectLanguage}
                   update={() => {
                     this.getConnectionsFromOtherVocabularies();
-                    this.props.update(this.props.id);
                     this.setState({ selected: [] });
                   }}
                   elemID={this.props.id}

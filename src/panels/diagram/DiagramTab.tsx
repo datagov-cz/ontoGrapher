@@ -18,7 +18,7 @@ export default class DiagramTab extends React.Component<Props, State> {
   changeDiagram() {
     changeDiagrams(this.props.diagram);
     this.props.update();
-    AppSettings.selectedLink = "";
+    AppSettings.selectedLinks = [];
   }
 
   handleChangeDiagramName(value: string) {
