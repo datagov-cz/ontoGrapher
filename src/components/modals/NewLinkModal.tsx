@@ -26,6 +26,7 @@ import {
 import { LinkCreationConfiguration } from "./CreationModals";
 import { NewElemForm } from "./NewElemForm";
 import _ from "lodash";
+import { mvp1IRI, mvp2IRI } from "../../function/FunctionGraph";
 
 interface Props {
   modal: boolean;
@@ -76,7 +77,9 @@ export default class NewLinkModal extends React.Component<Props, State> {
       getActiveToConnections(this.props.configuration.sourceID).find(
         (conn) =>
           WorkspaceLinks[conn].iri === link &&
-          WorkspaceLinks[conn].target === this.props.configuration.targetID
+          (WorkspaceLinks[conn].target === this.props.configuration.targetID ||
+            link === mvp1IRI ||
+            link === mvp2IRI)
       )
     )
       return false;
