@@ -31,6 +31,7 @@ export const RestrictionConfig: {
 } as const;
 
 function createConnection(iri: string, restriction: Restriction) {
+  if (restriction.inverse) return;
   const target = restriction.target;
   const find = getActiveToConnections(iri).find(
     (conn) =>

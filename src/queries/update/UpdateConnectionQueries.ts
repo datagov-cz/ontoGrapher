@@ -92,6 +92,8 @@ export function updateDefaultLink(id: string): string {
     qb.s(qb.i(iri), "rdfs:subClassOf", qb.v("b")),
     qb.s(qb.v("b"), "?p", "?o"),
     qb.s("?i", "rdfs:subClassOf", "?ib"),
+    qb.s("?ib", "owl:onProperty", "?ibo"),
+    qb.s("?ibo", "?ibop", "?iboo"),
     qb.s("?ib", "?ip", "?io"),
   ])}
 	`.WHERE`
@@ -104,14 +106,11 @@ export function updateDefaultLink(id: string): string {
       "filter(isBlank(?ib)).",
       qb.s("?ib", "owl:onProperty", "?ibo"),
       "filter(isBlank(?ibo)).",
-      "OPTIONAL {",
-      qb.s("?ib", "owl:onClass", qb.i(iri)),
-      "} OPTIONAL {",
+      "?ibo ?ibop ?iboo.",
       qb.s("?ib", "?iop", qb.i(iri)),
       `values ?iop {<${Object.keys(RestrictionConfig)
         .concat([parsePrefix("owl", "onClass")])
         .join("> <")}>}`,
-      "}",
       qb.s("?ib", "?ip", "?io"),
       "}",
     ])}`.build();
