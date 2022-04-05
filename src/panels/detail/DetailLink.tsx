@@ -390,7 +390,9 @@ export default class DetailLink extends React.Component<Props, State> {
                     }))
                   }
                 />
-                {AppSettings.representation === Representation.COMPACT && (
+                {(AppSettings.representation === Representation.COMPACT
+                  && this.props.id in WorkspaceLinks
+                  && WorkspaceLinks[this.props.id].type === LinkType.DEFAULT) && (
                   <div>
                     <h5>
                       {
