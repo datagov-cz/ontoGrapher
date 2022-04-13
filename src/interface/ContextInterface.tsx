@@ -32,8 +32,16 @@ import { Locale } from "../config/Locale";
 import { updateLegacyWorkspace } from "../queries/update/legacy/UpdateLegacyWorkspaceQueries";
 import { reconstructApplicationContextWithDiagrams } from "../queries/update/UpdateReconstructAppContext";
 import { updateWorkspaceContext } from "../queries/update/UpdateMiscQueries";
-import { updateCreateDiagram } from "../queries/update/UpdateDiagramQueries";
+import {
+  updateCreateDiagram,
+  updateDeleteDiagram,
+} from "../queries/update/UpdateDiagramQueries";
 import { finishUpdatingLegacyWorkspace } from "../queries/update/legacy/FinishUpdatingLegacyWorkspaceQueries";
+import { CacheSearchVocabularies } from "../datatypes/CacheSearchResults";
+import * as _ from "lodash";
+import { callCriticalAlert } from "../config/CriticalAlertData";
+import TableList from "../components/TableList";
+import { Alert } from "react-bootstrap";
 
 export function retrieveInfoFromURLParameters(): boolean {
   const isURL = require("is-url");
@@ -105,6 +113,7 @@ export async function updateContexts(): Promise<boolean> {
     );
     if (!ret) return false;
   }
+
   return true;
 }
 
@@ -190,6 +199,7 @@ export async function retrieveVocabularyData(): Promise<boolean> {
     WorkspaceVocabularies[vocab].graph = vocabularies[vocab].graph;
     Object.assign(WorkspaceTerms, vocabularies[vocab].terms);
   }
+  checkForObsoleteDiagrams();
   return true;
 }
 
@@ -236,4 +246,56 @@ export async function retrieveContextData(): Promise<boolean> {
       updateDeleteProjectLink(true, ...connections.del)
     )
   );
+}
+
+function checkForObsoleteDiagrams() {
+  const diagramsInCache = Object.keys(CacheSearchVocabularies).flatMap(
+    (vocab) => CacheSearchVocabularies[vocab].diagrams
+  );
+  const diagramsWithVocabularies = Object.keys(CacheSearchVocabularies)
+    .filter((vocab) => vocab in WorkspaceVocabularies)
+    .flatMap((vocab) => CacheSearchVocabularies[vocab].diagrams);
+  // Diagrams that
+  // ( are in cache
+  // *but* are not associated with vocabularies present in the workspace )
+  // *and* are in the workspace
+  // are to be deleted
+  const diagrams = _.intersection(
+    _.difference(diagramsInCache, diagramsWithVocabularies),
+    Object.values(Diagrams).map((diag) => diag.graph)
+  );
+  if (diagrams.length > 0) {
+    const diagramsToDelete = Object.keys(Diagrams).filter((diag) =>
+      diagrams.includes(Diagrams[diag].graph)
+    );
+    callCriticalAlert({
+      acceptFunction: async () => {
+        const updateQuery = qb.constructQuery(
+          ...diagramsToDelete.map((diag) => updateDeleteDiagram(diag))
+        );
+        await processTransaction(AppSettings.contextEndpoint, updateQuery);
+      },
+      acceptLabel:
+        Locale[AppSettings.interfaceLanguage]
+          .obsoleteDiagramsAlertDeleteDiagrams,
+      waitForFunctionBeforeModalClose: true,
+      innerContent: (
+        <div>
+          <p>
+            {Locale[AppSettings.interfaceLanguage].obsoleteDiagramsAlertIntro}
+          </p>
+          <TableList>
+            {diagramsToDelete.map((diag) => (
+              <tr>
+                <td>{Diagrams[diag].name}</td>
+              </tr>
+            ))}
+          </TableList>
+          <Alert variant={"primary"}>
+            {Locale[AppSettings.interfaceLanguage].obsoleteDiagramsAlertInfo}
+          </Alert>
+        </div>
+      ),
+    });
+  }
 }

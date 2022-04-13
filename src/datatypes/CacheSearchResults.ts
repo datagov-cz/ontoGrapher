@@ -15,5 +15,6 @@ export var CacheSearchVocabularies: {
     namespace: string;
     count: { [key in Representation]: number };
     glossary: string;
+    diagrams: string[];
   };
 } = {};

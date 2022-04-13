@@ -40,6 +40,7 @@
     "jquery": "^3.6.0",
     "lodash": "^4.17.21",
     "node-sass": "^7.0.0",
+    "pullstate": "^1.23.0",
     "rdf-js": "^1.0.2",
     "react": "^17.0.2",
     "react-bootstrap": "^1.5.2",

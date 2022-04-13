@@ -47,6 +47,8 @@ import {
 import { DetailPanelMode, ElemCreationStrategy } from "../config/Enum";
 import { getElementPosition } from "../function/FunctionElem";
 import { en } from "../locale/en";
+import { StoreAlerts } from "../config/Store";
+import { CriticalAlertModal } from "../components/modals/CriticalAlertModal";
 
 interface DiagramAppProps {}
 
@@ -61,6 +63,7 @@ interface DiagramAppState {
   tooltip: boolean;
   newElemConfiguration: ElemCreationConfiguration;
   newLinkConfiguration: LinkCreationConfiguration;
+  showCriticalAlert: boolean;
 }
 
 require("../scss/style.scss");
@@ -112,6 +115,7 @@ export default class App extends React.Component<
         vocabulary: "",
       },
       newLinkConfiguration: { sourceID: "", targetID: "" },
+      showCriticalAlert: false,
     };
     document.title = Locale[AppSettings.interfaceLanguage].ontoGrapher;
     this.handleChangeLanguage = this.handleChangeLanguage.bind(this);
@@ -120,6 +124,11 @@ export default class App extends React.Component<
     this.handleStatus = this.handleStatus.bind(this);
     this.validate = this.validate.bind(this);
     this.performTransaction = this.performTransaction.bind(this);
+
+    StoreAlerts.subscribe(
+      (s) => s.showCriticalAlert,
+      (state) => this.setState({ showCriticalAlert: state, freeze: state })
+    );
   }
 
   componentDidMount(): void {
@@ -261,14 +270,6 @@ export default class App extends React.Component<
     );
   }
 
-  // handleResumeLoading() {
-  //   this.handleStatus(
-  //     true,
-  //     Locale[AppSettings.interfaceLanguage].loading,
-  //     true
-  //   );
-  // }
-
   handleWorkspaceReady(message: keyof typeof en = "savedChanges") {
     this.handleStatus(
       false,
@@ -401,6 +402,7 @@ export default class App extends React.Component<
           projectLanguage={this.state.projectLanguage}
           update={() => this.itemPanel.current?.update()}
         />
+        <CriticalAlertModal show={this.state.showCriticalAlert} />
       </div>
     );
   }
