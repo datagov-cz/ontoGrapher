@@ -17,6 +17,8 @@ export var WorkspaceElements: {
     active: boolean;
     //selected label from pref/altLabels
     selectedLabel: { [key: string]: string };
+    //vocabulary (if known)
+    vocabulary?: string;
   };
 } = {};
 

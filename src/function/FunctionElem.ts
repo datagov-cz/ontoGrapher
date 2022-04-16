@@ -4,7 +4,11 @@ import {
   highlightCell,
   unHighlightCell,
 } from "./FunctionDraw";
-import { getElementShape } from "./FunctionGetVars";
+import {
+  getElementShape,
+  getElementVocabulary,
+  getWorkspaceContextIRI,
+} from "./FunctionGetVars";
 import { paper } from "../main/DiagramCanvas";
 import { graphElement } from "../graph/GraphElement";
 import {
@@ -12,8 +16,14 @@ import {
   addToFlexSearch,
   addVocabularyElement,
   createNewElemIRI,
+  removeFromFlexSearch,
 } from "./FunctionCreateVars";
-import { initElements, parsePrefix } from "./FunctionEditVars";
+import {
+  changeVocabularyCount,
+  deleteConcept,
+  initElements,
+  parsePrefix,
+} from "./FunctionEditVars";
 import {
   AppSettings,
   Diagrams,
@@ -43,6 +53,7 @@ import React from "react";
 import { insertNewCacheTerms, insertNewRestrictions } from "./FunctionCache";
 import _ from "lodash";
 import { RepresentationConfig } from "../config/logic/RepresentationConfig";
+import { updateDeleteTriples } from "../queries/update/UpdateMiscQueries";
 
 export function resizeElem(id: string, highlight: boolean = true) {
   let view = paper.findViewByModel(id);
@@ -330,4 +341,22 @@ export async function putElementsOnCanvas(
       );
   }
   return queries;
+}
+
+export function removeReadOnlyElement(elem: string): string[] {
+  removeFromFlexSearch(elem);
+  changeVocabularyCount(getElementVocabulary(elem), (count) => count - 1, elem);
+  return [
+    ...deleteConcept(elem),
+    updateDeleteTriples(
+      elem,
+      [
+        getWorkspaceContextIRI(),
+        ...Object.values(Diagrams).map((diag) => diag.graph),
+      ],
+      true,
+      true,
+      false
+    ),
+  ];
 }

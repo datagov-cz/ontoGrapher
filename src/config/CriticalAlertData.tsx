@@ -5,14 +5,18 @@ export var CriticalAlertData: {
   waitForFunctionBeforeModalClose: boolean;
   innerContent: JSX.Element;
   acceptLabel: string;
+  modalSize?: "sm" | "lg" | "xl";
 } = {
   acceptFunction: () => {},
   waitForFunctionBeforeModalClose: true,
   innerContent: <div />,
   acceptLabel: "",
+  modalSize: "sm",
 };
 
 export function callCriticalAlert(data: typeof CriticalAlertData) {
   CriticalAlertData = data;
-  StoreAlerts.update((s) => (s.showCriticalAlert = true));
+  StoreAlerts.update((s) => {
+    s.showCriticalAlert = true;
+  });
 }

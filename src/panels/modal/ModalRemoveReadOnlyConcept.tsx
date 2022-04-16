@@ -1,17 +1,8 @@
 import React from "react";
 import { Button, Form, Modal } from "react-bootstrap";
-import {
-  changeVocabularyCount,
-  deleteConcept,
-} from "../../function/FunctionEditVars";
-import { AppSettings, Diagrams, WorkspaceTerms } from "../../config/Variables";
+import { AppSettings } from "../../config/Variables";
 import { Locale } from "../../config/Locale";
-import { updateDeleteTriples } from "../../queries/update/UpdateMiscQueries";
-import {
-  getVocabularyFromScheme,
-  getWorkspaceContextIRI,
-} from "../../function/FunctionGetVars";
-import { removeFromFlexSearch } from "../../function/FunctionCreateVars";
+import { removeReadOnlyElement } from "../../function/FunctionElem";
 
 interface Props {
   modal: boolean;
@@ -27,27 +18,6 @@ export default class ModalRemoveReadOnlyConcept extends React.Component<
   Props,
   State
 > {
-  save() {
-    removeFromFlexSearch(this.props.id);
-    const vocabulary = getVocabularyFromScheme(
-      WorkspaceTerms[this.props.id].inScheme
-    );
-    changeVocabularyCount(vocabulary, (count) => count - 1, this.props.id);
-    this.props.performTransaction(
-      ...deleteConcept(this.props.id),
-      updateDeleteTriples(
-        this.props.id,
-        [
-          getWorkspaceContextIRI(),
-          ...Object.values(Diagrams).map((diag) => diag.graph),
-        ],
-        true,
-        true,
-        false
-      )
-    );
-  }
-
   render() {
     return (
       <Modal
@@ -77,7 +47,9 @@ export default class ModalRemoveReadOnlyConcept extends React.Component<
           <Form
             onSubmit={(event) => {
               event.preventDefault();
-              this.save();
+              this.props.performTransaction(
+                ...removeReadOnlyElement(this.props.id)
+              );
               this.props.close();
               this.props.update();
             }}

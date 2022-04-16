@@ -179,6 +179,6 @@ export const en = {
   obsoleteDiagramsAlertIntro:
     "OntoGrapher has detected that a vocabulary has been removed from the workspace. As such, these following diagrams in the workspace are unpublishable and should be deleted:",
   obsoleteDiagramsAlertInfo:
-    "Only the copies in this workspace are deleted; the originals are left untouched. You can choose to keep these, but any changes won't be published.",
+    "Only the copies in this workspace are deleted; the originals are left untouched. Keeping these diagrams ensures conflicts during publishing.",
   obsoleteDiagramsAlertDeleteDiagrams: "Delete these diagrams",
 } as const;

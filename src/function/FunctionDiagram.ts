@@ -15,9 +15,9 @@ import { isElementHidden } from "./FunctionElem";
 
 export function changeDiagrams(diagram?: string) {
   if (!diagram)
-    diagram = Object.keys(Diagrams).reduce((a, b) =>
-      Diagrams[a].index < Diagrams[b].index ? a : b
-    );
+    diagram = Object.keys(Diagrams)
+      .filter((diag) => Diagrams[diag].active)
+      .reduce((a, b) => (Diagrams[a].index < Diagrams[b].index ? a : b));
   if (diagram && Diagrams[diagram]) {
     graph.clear();
     AppSettings.selectedLinks = [];

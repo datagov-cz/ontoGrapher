@@ -179,6 +179,6 @@ export const cs: { [Property in keyof typeof en]: string } = {
   obsoleteDiagramsAlertIntro:
     "OntoGrapher detekoval, že byl z pracovního prostoru smazán slovník. V důsledku jsou tyto diagramy nepublikovatelné a měly by být smazány:",
   obsoleteDiagramsAlertInfo:
-    "Smazány jsou pouze kopie z toho pracovního prostoru; originály se nemažou. Mazat se nemusí, ale žádné změny nebudou publikovány.",
+    "Smazány jsou pouze kopie z toho pracovního prostoru; originály se nemažou. Ponechání těchto diagramů zajistí konflikty při publikování.",
   obsoleteDiagramsAlertDeleteDiagrams: "Smazat tyto diagramy",
 } as const;

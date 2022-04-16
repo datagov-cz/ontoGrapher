@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Button, Modal } from "react-bootstrap";
+import { Button, Modal, Spinner } from "react-bootstrap";
 import { AppSettings } from "../../config/Variables";
 import { Locale } from "../../config/Locale";
 import { StoreAlerts } from "../../config/Store";
@@ -13,7 +13,9 @@ export const CriticalAlertModal: React.FC<Props> = (props: Props) => {
   const [disabled, setDisabled] = useState<boolean>(false);
 
   const closeModal = () => {
-    StoreAlerts.update((s) => (s.showCriticalAlert = !props.show));
+    StoreAlerts.update((s) => {
+      s.showCriticalAlert = !props.show;
+    });
   };
 
   const acceptEvent = async () => {
@@ -29,7 +31,7 @@ export const CriticalAlertModal: React.FC<Props> = (props: Props) => {
       centered
       scrollable
       show={props.show}
-      size={"lg"}
+      size={CriticalAlertData.modalSize}
       backdrop={"static"}
       keyboard={false}
     >
@@ -45,7 +47,20 @@ export const CriticalAlertModal: React.FC<Props> = (props: Props) => {
           form={"createForm"}
           disabled={disabled}
           variant="primary"
+          onClick={() => acceptEvent()}
         >
+          {disabled && (
+            <span>
+              <Spinner
+                as="span"
+                animation="border"
+                size="sm"
+                role="status"
+                aria-hidden="true"
+              />
+              &nbsp;
+            </span>
+          )}
           {CriticalAlertData.acceptLabel}
         </Button>
         <Button onClick={() => closeModal()} variant="secondary">

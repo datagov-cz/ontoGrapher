@@ -127,7 +127,13 @@ export default class App extends React.Component<
 
     StoreAlerts.subscribe(
       (s) => s.showCriticalAlert,
-      (state) => this.setState({ showCriticalAlert: state, freeze: state })
+      (state) => {
+        this.setState({ showCriticalAlert: state, freeze: state });
+        if (!state) {
+          this.itemPanel.current?.update();
+          this.menuPanel.current?.update();
+        }
+      }
     );
   }
 
