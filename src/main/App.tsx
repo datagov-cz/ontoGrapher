@@ -321,6 +321,9 @@ export default class App extends React.Component<
             this.handleUpdateDetailPanel(DetailPanelMode.HIDDEN);
             resetDiagramSelection();
           }}
+          updateDetailPanel={() =>
+            this.handleUpdateDetailPanel(DetailPanelMode.PATTERN)
+          }
           freeze={this.state.freeze}
           validate={this.validate}
           handleStatus={this.handleStatus}

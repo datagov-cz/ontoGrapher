@@ -25,4 +25,5 @@ export enum DetailPanelMode {
   TERM,
   LINK,
   MULTIPLE_LINKS,
+  PATTERN,
 }

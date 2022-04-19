@@ -4,7 +4,7 @@ import {
 } from "@opendata-mvcr/assembly-line-shared";
 import { Components } from "@opendata-mvcr/assembly-line-shared/dist/env/types";
 
-type LocalVars = "PUBLIC_URL" | "AUTHENTICATION";
+type LocalVars = "PUBLIC_URL" | "AUTHENTICATION" | "PATTERN";
 
 setProcessEnv(process.env);
 const ENV = getEnvInstance<LocalVars>();
@@ -20,10 +20,13 @@ export const Environment: {
   url: string;
   // Authentication on/off switch
   auth: boolean;
+  // Pattern server location
+  pattern: string;
 } = {
   components: ENV.getComponents(),
   context: ENV.get("CONTEXT"),
   id: ENV.get("ID"),
   url: ENV.get("URL"),
   auth: ENV.get("AUTHENTICATION", "true") === "true",
+  pattern: ENV.get("PATTERN"),
 };

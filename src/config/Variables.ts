@@ -66,6 +66,7 @@ export var Prefixes: { [key: string]: string } = {
   dc: "http://purl.org/dc/terms/",
   og: "http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/",
   xsd: "http://www.w3.org/2001/XMLSchema#",
+  ottr: "http://ns.ottr.xyz/0.4/",
   "d-sgov-pracovní-prostor-pojem":
     "https://slovník.gov.cz/datový/pracovní-prostor/pojem/",
   "z-sgov-pojem": "https://slovník.gov.cz/základní/pojem/",
