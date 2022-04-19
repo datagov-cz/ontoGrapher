@@ -1,4 +1,4 @@
-import { Argument } from "./Argument";
+import Argument from "./Argument";
 
 export default class Pattern {
   public iri: string;

@@ -16,6 +16,7 @@ import {
 import IRILink from "../components/IRILink";
 import { unHighlightCell } from "../function/FunctionDraw";
 import { ResizableBox } from "react-resizable";
+import { DetailPatterns } from "../pattern/DetailPatterns";
 
 interface Props {
   projectLanguage: string;
@@ -141,6 +142,9 @@ export default class DetailPanel extends React.Component<Props, State> {
                   save={this.save}
                   updateDetailPanel={this.prepareDetails}
                 />
+              )}
+              {this.state.mode === DetailPanelMode.PATTERN && (
+                <DetailPatterns />
               )}
             </div>
           </ResizableBox>

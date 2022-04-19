@@ -1,6 +1,7 @@
 import React from "react";
 import { Accordion, Button, Card } from "react-bootstrap";
 import TableList from "../components/TableList";
+import { searchPatterns } from "./PatternQueries";
 
 type Props = {};
 
@@ -29,7 +30,9 @@ export const DetailPatterns: React.FC = (props: Props) => {
           </Card.Header>
           <Accordion.Collapse eventKey={"1"}>
             <Card.Body>
-              <p />
+              <div>
+                <Button onClick={() => searchPatterns()}>Refresh list</Button>
+              </div>
             </Card.Body>
           </Accordion.Collapse>
         </Card>
