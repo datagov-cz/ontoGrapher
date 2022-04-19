@@ -32,8 +32,22 @@ import { Locale } from "../config/Locale";
 import { updateLegacyWorkspace } from "../queries/update/legacy/UpdateLegacyWorkspaceQueries";
 import { reconstructApplicationContextWithDiagrams } from "../queries/update/UpdateReconstructAppContext";
 import { updateWorkspaceContext } from "../queries/update/UpdateMiscQueries";
-import { updateCreateDiagram } from "../queries/update/UpdateDiagramQueries";
+import {
+  updateCreateDiagram,
+  updateDeleteDiagram,
+} from "../queries/update/UpdateDiagramQueries";
 import { finishUpdatingLegacyWorkspace } from "../queries/update/legacy/FinishUpdatingLegacyWorkspaceQueries";
+import { CacheSearchVocabularies } from "../datatypes/CacheSearchResults";
+import * as _ from "lodash";
+import { callCriticalAlert } from "../config/CriticalAlertData";
+import TableList from "../components/TableList";
+import { Alert } from "react-bootstrap";
+import { changeDiagrams } from "../function/FunctionDiagram";
+import { isTermReadOnly } from "../function/FunctionGetVars";
+import {
+  isElementHidden,
+  removeReadOnlyElement,
+} from "../function/FunctionElem";
 
 export function retrieveInfoFromURLParameters(): boolean {
   const isURL = require("is-url");
@@ -202,6 +216,7 @@ export async function retrieveContextData(): Promise<boolean> {
   insertNewCacheTerms(
     await fetchReadOnlyTerms(AppSettings.contextEndpoint, missingTerms)
   );
+  checkForObsoleteDiagrams();
   Object.keys(WorkspaceElements)
     .filter((id) => !(id in WorkspaceTerms))
     .forEach((id) => {
@@ -236,4 +251,81 @@ export async function retrieveContextData(): Promise<boolean> {
       updateDeleteProjectLink(true, ...connections.del)
     )
   );
+}
+
+function checkForObsoleteDiagrams() {
+  const diagramsInCache = Object.keys(CacheSearchVocabularies).flatMap(
+    (vocab) => CacheSearchVocabularies[vocab].diagrams
+  );
+  const diagramsWithVocabularies = Object.keys(CacheSearchVocabularies)
+    .filter(
+      (vocab) =>
+        vocab in WorkspaceVocabularies && !WorkspaceVocabularies[vocab].readOnly
+    )
+    .flatMap((vocab) => CacheSearchVocabularies[vocab].diagrams);
+  // Diagrams that
+  // ( are in cache
+  // *but* are not associated with write-enabled vocabularies present in the workspace )
+  const diff = _.difference(diagramsInCache, diagramsWithVocabularies);
+  const workspaceDiagrams = Object.values(Diagrams).map((diag) => diag.iri);
+  // *and* are in the workspace
+  // are to be deleted
+  const diagrams = _.intersection(diff, workspaceDiagrams);
+  if (diagrams.length > 0) {
+    const diagramsToDelete = Object.keys(Diagrams).filter((diag) =>
+      diagrams.includes(Diagrams[diag].iri)
+    );
+    callCriticalAlert({
+      acceptFunction: async () => {
+        const queries: string[] = [];
+        queries.push(
+          ...Object.keys(WorkspaceElements)
+            .filter(
+              (term) =>
+                isTermReadOnly(term) &&
+                Object.keys(WorkspaceElements[term].hidden).every(
+                  (diag) =>
+                    isElementHidden(term, diag) ||
+                    diagramsToDelete.includes(diag)
+                )
+            )
+            .flatMap((elem) => removeReadOnlyElement(elem))
+        );
+        for (const diag of diagramsToDelete) {
+          Diagrams[diag].active = false;
+          queries.push(updateDeleteDiagram(diag));
+        }
+        if (diagramsToDelete.length === workspaceDiagrams.length) {
+          const id = addDiagram(Locale[AppSettings.interfaceLanguage].untitled);
+          queries.push(updateCreateDiagram(id));
+        }
+        changeDiagrams();
+        await processTransaction(
+          AppSettings.contextEndpoint,
+          qb.constructQuery(...queries)
+        );
+      },
+      acceptLabel:
+        Locale[AppSettings.interfaceLanguage]
+          .obsoleteDiagramsAlertDeleteDiagrams,
+      waitForFunctionBeforeModalClose: true,
+      innerContent: (
+        <div>
+          <p>
+            {Locale[AppSettings.interfaceLanguage].obsoleteDiagramsAlertIntro}
+          </p>
+          <TableList>
+            {diagramsToDelete.map((diag) => (
+              <tr key={diag}>
+                <td key={diag}>{Diagrams[diag].name}</td>
+              </tr>
+            ))}
+          </TableList>
+          <Alert variant={"primary"}>
+            {Locale[AppSettings.interfaceLanguage].obsoleteDiagramsAlertInfo}
+          </Alert>
+        </div>
+      ),
+    });
+  }
 }

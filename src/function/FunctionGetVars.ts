@@ -180,6 +180,12 @@ export function getUnderlyingFullConnections(
   }
 }
 
+export function getElementVocabulary(elemIRI: string): string {
+  if (!!WorkspaceElements[elemIRI].vocabulary)
+    return WorkspaceElements[elemIRI].vocabulary!;
+  return getVocabularyFromScheme(WorkspaceTerms[elemIRI].inScheme);
+}
+
 export function getVocabularyFromScheme(scheme: string): string {
   const vocab =
     Object.keys(WorkspaceVocabularies).find(
@@ -227,8 +233,7 @@ export function isLabelBlank(label: string) {
 export function isTermReadOnly(iri: string) {
   return (
     iri in WorkspaceTerms &&
-    WorkspaceVocabularies[getVocabularyFromScheme(WorkspaceTerms[iri].inScheme)]
-      .readOnly
+    WorkspaceVocabularies[getElementVocabulary(iri)].readOnly
   );
 }
 

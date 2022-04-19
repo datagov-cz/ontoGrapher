@@ -22,13 +22,14 @@ export async function fetchVocabularies(
 ): Promise<boolean> {
   const query = [
     "PREFIX skos: <http://www.w3.org/2004/02/skos/core#> ",
-    "SELECT ?vocabulary ?scheme ?title ?namespace ?term ?type where {",
+    "SELECT ?vocabulary ?scheme ?title ?namespace ?term ?type ?diagram where {",
     "graph <" + context + "> {",
     "<" +
       context +
       "> <https://slovník.gov.cz/datový/pracovní-prostor/pojem/odkazuje-na-kontext> ?vocabulary.}",
     "graph ?vocabulary {",
     "OPTIONAL {?vocabulary <http://purl.org/vocab/vann/preferredNamespaceUri> ?namespace.}",
+    "OPTIONAL {?vocabulary <https://slovník.gov.cz/datový/pracovní-prostor/pojem/má-přílohu> ?diagram.}",
     "?vocabulary <http://onto.fel.cvut.cz/ontologies/slovník/agendový/popis-dat/pojem/má-glosář> ?scheme.",
     "?vocabulary <http://purl.org/dc/terms/title> ?title.",
     "?term skos:inScheme ?scheme.",
@@ -47,9 +48,19 @@ export async function fetchVocabularies(
             namespace: row.namespace ? row.namespace.value : "",
             glossary: row.scheme.value,
             count: createCount(),
+            diagrams: [],
           };
           count[row.vocabulary.value] = {};
         }
+        if (
+          row.diagram &&
+          !CacheSearchVocabularies[row.vocabulary.value].diagrams.includes(
+            row.diagram.value
+          )
+        )
+          CacheSearchVocabularies[row.vocabulary.value].diagrams.push(
+            row.diagram.value
+          );
         CacheSearchVocabularies[row.vocabulary.value].labels[
           row.title["xml:lang"]
         ] = row.title.value;

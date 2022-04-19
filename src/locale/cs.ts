@@ -175,4 +175,10 @@ export const cs: { [Property in keyof typeof en]: string } = {
   updatingWorkspaceVersion: "Aktualizace verze pracovního prostoru...",
   vocabularyNotFullyRepresented:
     "Tento slovník není v pracovním prostoru zastoupen všemi jeho pojmy. Klikněte sem pro zobrazení všech pojmů tohoto slovníku.",
+  criticalAlert: "Důležité upozornění",
+  obsoleteDiagramsAlertIntro:
+    "OntoGrapher detekoval, že byl z pracovního prostoru smazán slovník. V důsledku jsou tyto diagramy nepublikovatelné a měly by být smazány:",
+  obsoleteDiagramsAlertInfo:
+    "Smazány jsou pouze kopie z toho pracovního prostoru; originály se nemažou. Ponechání těchto diagramů zajistí konflikty při publikování.",
+  obsoleteDiagramsAlertDeleteDiagrams: "Smazat tyto diagramy",
 } as const;

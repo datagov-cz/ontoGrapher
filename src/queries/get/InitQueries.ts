@@ -28,16 +28,18 @@ export async function getElementsConfig(
       hidden: { [key: string]: boolean };
       selectedName: { [key: string]: string };
       scheme: string;
+      vocabulary?: string;
     };
   } = {};
   const appContextQuery = [
     "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
     "PREFIX skos: <http://www.w3.org/2004/02/skos/core#> ",
-    "select ?elem ?scheme ?active ?name where {",
+    "select ?elem ?scheme ?active ?name ?vocabulary where {",
     "graph <" + getWorkspaceContextIRI() + "> {",
     "?elem a og:element .",
     "?elem og:active ?active .",
     "optional {?elem og:name ?name.}",
+    "optional {?elem og:vocabulary ?vocabulary.}",
     "?elem og:scheme ?scheme .",
     "}}",
   ].join(`
@@ -64,6 +66,8 @@ export async function getElementsConfig(
         if (result.name && !elements[iri].selectedName[result.name["xml:lang"]])
           elements[iri].selectedName[result.name["xml:lang"]] =
             result.name.value;
+        if (result.vocabulary)
+          elements[iri].vocabulary = result.vocabulary.value;
       }
       return true;
     })

@@ -175,4 +175,10 @@ export const en = {
   vocabularyNotFullyRepresented:
     "This workspace does not contain all terms from this vocabulary. Click here to show all terms of this vocabulary.",
   updatingWorkspaceVersion: "Updating workspace verion...",
+  criticalAlert: "Critical alert",
+  obsoleteDiagramsAlertIntro:
+    "OntoGrapher has detected that a vocabulary has been removed from the workspace. As such, these following diagrams in the workspace are unpublishable and should be deleted:",
+  obsoleteDiagramsAlertInfo:
+    "Only the copies in this workspace are deleted; the originals are left untouched. Keeping these diagrams ensures conflicts during publishing.",
+  obsoleteDiagramsAlertDeleteDiagrams: "Delete these diagrams",
 } as const;

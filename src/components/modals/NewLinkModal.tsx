@@ -238,14 +238,6 @@ export default class NewLinkModal extends React.Component<Props, State> {
                   this.props.closeLink(this.state.selectedLink);
               }}
             >
-              {/*<Form.Control*/}
-              {/*  type="text"*/}
-              {/*  value={this.state.search}*/}
-              {/*  onChange={(event) =>*/}
-              {/*    this.setState({ search: event.currentTarget.value })*/}
-              {/*  }*/}
-              {/*  id={"newLinkInputSearch"}*/}
-              {/*/>*/}
               <Form.Control
                 htmlSize={Object.keys(Links).length}
                 as="select"
@@ -293,17 +285,6 @@ export default class NewLinkModal extends React.Component<Props, State> {
               />
               {this.state.existing && (
                 <div>
-                  {/*<Form.Control*/}
-                  {/*  type="text"*/}
-                  {/*  placeholder={*/}
-                  {/*    Locale[AppSettings.interfaceLanguage].searchStereotypes*/}
-                  {/*  }*/}
-                  {/*  value={this.state.search}*/}
-                  {/*  onChange={(event) =>*/}
-                  {/*    this.setState({ search: event.currentTarget.value })*/}
-                  {/*  }*/}
-                  {/*  id={"newLinkInputSearch"}*/}
-                  {/*/>*/}
                   <Form.Control
                     htmlSize={Object.keys(Links).length}
                     as="select"
