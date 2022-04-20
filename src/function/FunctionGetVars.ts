@@ -208,16 +208,6 @@ export function getLastChangeDay() {
   return `${day}. ${month}. ${year}`;
 }
 
-export function getWorkspaceContextIRI() {
-  const projectID = AppSettings.contextIRI.substring(
-    AppSettings.contextIRI.lastIndexOf("/")
-  );
-  return parsePrefix(
-    "d-sgov-pracovní-prostor-pojem",
-    `aplikační-kontext${projectID}/ontographer`
-  );
-}
-
 export function getLinkIRI(linkID: string) {
   return `${AppSettings.ontographerContext}/link/instance-${linkID}`;
 }

@@ -19,7 +19,11 @@ import {
 } from "../queries/get/CacheQueries";
 import { qb } from "../queries/QueryBuilder";
 import { updateProjectElement } from "../queries/update/UpdateElementQueries";
-import { deleteConcept, initElements } from "../function/FunctionEditVars";
+import {
+  deleteConcept,
+  initElements,
+  parsePrefix,
+} from "../function/FunctionEditVars";
 import {
   updateDeleteProjectLink,
   updateProjectLink,
@@ -29,14 +33,12 @@ import { insertNewCacheTerms } from "../function/FunctionCache";
 import { addDiagram, addToFlexSearch } from "../function/FunctionCreateVars";
 import { ContextLoadingStrategy, Representation } from "../config/Enum";
 import { Locale } from "../config/Locale";
-import { updateLegacyWorkspace } from "../queries/update/legacy/UpdateLegacyWorkspaceQueries";
 import { reconstructApplicationContextWithDiagrams } from "../queries/update/UpdateReconstructAppContext";
 import { updateWorkspaceContext } from "../queries/update/UpdateMiscQueries";
 import {
   updateCreateDiagram,
   updateDeleteDiagram,
 } from "../queries/update/UpdateDiagramQueries";
-import { finishUpdatingLegacyWorkspace } from "../queries/update/legacy/FinishUpdatingLegacyWorkspaceQueries";
 import { CacheSearchVocabularies } from "../datatypes/CacheSearchResults";
 import * as _ from "lodash";
 import { callCriticalAlert } from "../config/CriticalAlertData";
@@ -48,34 +50,41 @@ import {
   isElementHidden,
   removeReadOnlyElement,
 } from "../function/FunctionElem";
+import { randomUUID } from "crypto";
 
 export function retrieveInfoFromURLParameters(): boolean {
   const isURL = require("is-url");
   const urlParams = new URLSearchParams(window.location.search);
-  const contextURI = urlParams.get("workspace");
-  if (contextURI && isURL(contextURI)) {
-    AppSettings.contextIRI = decodeURIComponent(contextURI);
+  const URIContexts = urlParams.getAll("workspace");
+  if (URIContexts.length > 0 && isURL(URIContexts)) {
+    for (const vocab of URIContexts)
+      AppSettings.contextIRIs.push(decodeURIComponent(vocab));
     return true;
   } else {
-    console.error("Unable to parse workspace IRI from the URL.");
+    console.error("Unable to parse vocabulary IRI(s) from the URL.");
     return false;
   }
 }
 
 export async function updateContexts(): Promise<boolean> {
   const strategy = await getSettings(AppSettings.contextEndpoint);
+  if (!AppSettings.applicationContext)
+    AppSettings.applicationContext = `${parsePrefix(
+      "d-sgov-pracovní-prostor-pojem",
+      "aplikační-kontext"
+    )}/${randomUUID()}/ontographer`;
   switch (strategy) {
-    case ContextLoadingStrategy.UPDATE_LEGACY_WORKSPACE:
-      const queries = await updateLegacyWorkspace(
-        AppSettings.contextIRI,
-        AppSettings.contextEndpoint
-      );
-      const ret = await processTransaction(
-        AppSettings.contextEndpoint,
-        qb.constructQuery(qb.combineQueries(...queries))
-      );
-      if (!ret) return false;
-      break;
+    // case ContextLoadingStrategy.UPDATE_LEGACY_WORKSPACE:
+    //   const queries = await updateLegacyWorkspace(
+    //     AppSettings.contextIRI,
+    //     AppSettings.contextEndpoint
+    //   );
+    //   const ret = await processTransaction(
+    //     AppSettings.contextEndpoint,
+    //     qb.constructQuery(qb.combineQueries(...queries))
+    //   );
+    //   if (!ret) return false;
+    //   break;
     case ContextLoadingStrategy.RECONSTRUCT_WORKSPACE:
       const ret2 = await processTransaction(
         AppSettings.contextEndpoint,
@@ -108,17 +117,17 @@ export async function updateContexts(): Promise<boolean> {
   AppSettings.selectedDiagram = Object.keys(Diagrams).reduce((a, b) =>
     Diagrams[a].index < Diagrams[b].index ? a : b
   );
-  if (
-    !AppSettings.initWorkspace &&
-    ContextLoadingStrategy.UPDATE_LEGACY_WORKSPACE === strategy
-  ) {
-    const queries = await finishUpdatingLegacyWorkspace();
-    const ret = await processTransaction(
-      AppSettings.contextEndpoint,
-      qb.constructQuery(qb.combineQueries(...queries))
-    );
-    if (!ret) return false;
-  }
+  // if (
+  //   !AppSettings.initWorkspace
+  //   && ContextLoadingStrategy.UPDATE_LEGACY_WORKSPACE === strategy
+  // ) {
+  //   const queries = await finishUpdatingLegacyWorkspace();
+  //   const ret = await processTransaction(
+  //     AppSettings.contextEndpoint,
+  //     qb.constructQuery(qb.combineQueries(...queries))
+  //   );
+  //   if (!ret) return false;
+  // }
   return true;
 }
 
@@ -134,20 +143,14 @@ export async function retrieveVocabularyData(): Promise<boolean> {
     "PREFIX termit: <http://onto.fel.cvut.cz/ontologies/application/termit/>",
     "PREFIX a-popis-dat-pojem: <http://onto.fel.cvut.cz/ontologies/slovník/agendový/popis-dat/pojem/>",
     "PREFIX dcterms: <http://purl.org/dc/terms/>",
-    "select ?vocab ?scheme ?label ?title ?vocabLabel ?vocabIRI",
+    "select ?contextIRI ?scheme ?vocabLabel ?vocabIRI",
     "where {",
-    "BIND(<" + AppSettings.contextIRI + "> as ?contextIRI) . ",
-    "OPTIONAL {?contextIRI rdfs:label ?label. }",
-    "OPTIONAL {?contextIRI dcterms:title ?title. }",
     "graph ?contextIRI {",
-    "?vocab a <https://slovník.gov.cz/datový/pracovní-prostor/pojem/slovníkový-kontext> ",
-    "filter not exists {?vocab a <https://slovník.gov.cz/datový/pracovní-prostor/pojem/slovníkový-kontext-pouze-pro-čtení>.}",
-    "}",
-    "graph ?vocab {",
     "?vocabIRI a a-popis-dat-pojem:slovník .",
     "?vocabIRI a-popis-dat-pojem:má-glosář ?scheme.",
     "?vocabIRI dcterms:title ?vocabLabel .",
     "}",
+    `values ?contextIRI {<${AppSettings.contextIRIs.join("> <")}>}`,
     "}",
   ].join(`
   `);
@@ -171,17 +174,13 @@ export async function retrieveVocabularyData(): Promise<boolean> {
           vocabularies[result.vocabIRI.value] = {
             names: {},
             terms: {},
-            graph: result.vocab.value,
+            graph: result.contextIRI.value,
             glossary: result.scheme.value,
           };
         }
         vocabularies[result.vocabIRI.value].names[
           result.vocabLabel["xml:lang"]
         ] = result.vocabLabel.value;
-        if (result.label)
-          AppSettings.name[result.label["xml:lang"]] = result.label.value;
-        if (result.title)
-          AppSettings.name[result.title["xml:lang"]] = result.title.value;
       }
       return true;
     })

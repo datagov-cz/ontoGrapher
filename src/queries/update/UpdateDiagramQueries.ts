@@ -2,7 +2,6 @@ import { DELETE, INSERT } from "@tpluscode/sparql-builder";
 import { qb } from "../QueryBuilder";
 import { AppSettings, Diagrams } from "../../config/Variables";
 import { parsePrefix } from "../../function/FunctionEditVars";
-import { getWorkspaceContextIRI } from "../../function/FunctionGetVars";
 
 function getDiagramTriples(diagram: string): string {
   const diagramIRI = qb.i(Diagrams[diagram].iri);
@@ -28,41 +27,38 @@ function getDiagramTriples(diagram: string): string {
 export function updateCreateDiagram(diagram: string): string {
   const diagramIRI = qb.i(Diagrams[diagram].iri);
   const diagramGraph = qb.i(Diagrams[diagram].graph);
-  const insertAppContext = INSERT.DATA`${qb.g(getWorkspaceContextIRI(), [
-    qb.s(qb.i(getWorkspaceContextIRI()), "og:diagram", qb.ll(diagram)),
+  const insertAppContext = INSERT.DATA`${qb.g(AppSettings.applicationContext, [
+    qb.s(qb.i(AppSettings.applicationContext), "og:diagram", qb.ll(diagram)),
   ])}`.build();
   const insertDiagramContext = getDiagramTriples(diagram);
-  const insertMetadataContext = INSERT.DATA`${qb.g(AppSettings.contextIRI, [
-    qb.s(
-      qb.i(AppSettings.contextIRI),
-      qb.i(
-        parsePrefix(
-          "d-sgov-pracovní-prostor-pojem",
-          `odkazuje-na-přílohový-kontext`
-        )
+  const insertVocabularyContext = AppSettings.contextIRIs.map((contextIRI) =>
+    INSERT.DATA`${qb.g(contextIRI, [
+      qb.s(
+        qb.i(contextIRI),
+        qb.i(parsePrefix("a-popis-dat-pojem", `má-přílohu`)),
+        diagramIRI
       ),
-      diagramIRI
-    ),
-    qb.s(
-      diagramGraph,
-      "rdf:type",
-      qb.i(parsePrefix("d-sgov-pracovní-prostor-pojem", "přílohový-kontext"))
-    ),
-    qb.s(
-      diagramGraph,
-      qb.i(parsePrefix("d-sgov-pracovní-prostor-pojem", "má-typ-přílohy")),
-      "og:diagram"
-    ),
-    qb.s(
-      diagramGraph,
-      qb.i(parsePrefix("d-sgov-pracovní-prostor-pojem", "vychází-z-verze")),
-      diagramIRI
-    ),
-  ])}`.build();
+      qb.s(
+        diagramGraph,
+        "rdf:type",
+        qb.i(parsePrefix("d-sgov-pracovní-prostor-pojem", "přílohový-kontext"))
+      ),
+      qb.s(
+        diagramGraph,
+        qb.i(parsePrefix("d-sgov-pracovní-prostor-pojem", "má-typ-přílohy")),
+        "og:diagram"
+      ),
+      qb.s(
+        diagramGraph,
+        qb.i(parsePrefix("d-sgov-pracovní-prostor-pojem", "vychází-z-verze")),
+        diagramIRI
+      ),
+    ])}`.build()
+  );
 
   return qb.combineQueries(
     insertAppContext,
-    insertMetadataContext,
+    ...insertVocabularyContext,
     insertDiagramContext
   );
 }
@@ -83,19 +79,21 @@ export function updateDeleteDiagram(diagram: string) {
   const diagramIRI = Diagrams[diagram].iri;
   const diagramGraph = Diagrams[diagram].graph;
   const deleteGraph = `DROP GRAPH <${diagramGraph}>`;
-  const deleteMetadataContext1 = DELETE`${qb.g(AppSettings.contextIRI, [
-    qb.s(qb.i(diagramGraph), "?p1", "?o1"),
-  ])}`.WHERE`${qb.g(diagramIRI, [
-    qb.s(qb.i(diagramGraph), "?p1", "?o1"),
-  ])}`.build();
-  const deleteMetadataContext2 = DELETE`${qb.g(AppSettings.contextIRI, [
-    qb.s("?s1", "?p1", qb.i(diagramGraph)),
-  ])}`.WHERE`${qb.g(diagramIRI, [
-    qb.s("?s1", "?p1", qb.i(diagramGraph)),
-  ])}`.build();
+  const deleteVocabularyContext1 = AppSettings.contextIRIs.map((contextIRI) =>
+    DELETE`${qb.g(contextIRI, [qb.s(qb.i(diagramGraph), "?p1", "?o1")])}`
+      .WHERE`${qb.g(contextIRI, [
+      qb.s(qb.i(diagramGraph), "?p1", "?o1"),
+    ])}`.build()
+  );
+  const deleteVocabularyContext2 = AppSettings.contextIRIs.map((contextIRI) =>
+    DELETE`${qb.g(contextIRI, [qb.s("?s1", "?p1", qb.i(diagramGraph))])}`
+      .WHERE`${qb.g(contextIRI, [
+      qb.s("?s1", "?p1", qb.i(diagramIRI)),
+    ])}`.build()
+  );
   return qb.combineQueries(
     deleteGraph,
-    deleteMetadataContext1,
-    deleteMetadataContext2
+    ...deleteVocabularyContext1,
+    ...deleteVocabularyContext2
   );
 }

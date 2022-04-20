@@ -7,7 +7,6 @@ import {
   WorkspaceVocabularies,
 } from "../../config/Variables";
 import { processQuery } from "../../interface/TransactionInterface";
-import { getWorkspaceContextIRI } from "../../function/FunctionGetVars";
 import { ContextLoadingStrategy, LinkType } from "../../config/Enum";
 import { Cardinality } from "../../datatypes/Cardinality";
 import {
@@ -35,7 +34,7 @@ export async function getElementsConfig(
     "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
     "PREFIX skos: <http://www.w3.org/2004/02/skos/core#> ",
     "select ?elem ?scheme ?active ?name ?vocabulary where {",
-    "graph <" + getWorkspaceContextIRI() + "> {",
+    "graph <" + AppSettings.applicationContext + "> {",
     "?elem a og:element .",
     "?elem og:active ?active .",
     "optional {?elem og:name ?name.}",
@@ -87,12 +86,10 @@ export async function getElementsConfig(
       "?diagram og:id ?diagramID.",
       "?diagram og:representation ?representation .",
       "}",
-      `${qb.i(AppSettings.contextIRI)} ${qb.i(
-        parsePrefix(
-          "d-sgov-pracovní-prostor-pojem",
-          `odkazuje-na-přílohový-kontext`
-        )
+      `?contextIRI ${qb.i(
+        parsePrefix("a-popis-dat-pojem", `má-kontext`)
       )} ?graph.`,
+      `values ?contextIRI {<${AppSettings.contextIRIs.join("> <")}>}`,
       "}",
     ].join(`
     `);
@@ -164,35 +161,36 @@ export async function getSettings(
 ): Promise<ContextLoadingStrategy | undefined> {
   const query = [
     "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
-    "select ?graph ?diagram ?index ?name ?color ?id ?representation ?context ?legacyContext where {",
-    "BIND(<" + AppSettings.contextIRI + "> as ?metaContext).",
-    "BIND(<" + getWorkspaceContextIRI() + "> as ?ogContext).",
+    "select ?diagramGraph ?diagram ?index ?name ?color ?id ?representation ?context ?legacyContext where {",
     "OPTIONAL {",
-    "graph ?metaContext {",
-    `?metaContext ${qb.i(
-      parsePrefix(
-        "d-sgov-pracovní-prostor-pojem",
-        `odkazuje-na-přílohový-kontext`
-      )
-    )} ?graph .`,
+    "graph ?vocabContext {",
+    `?vocabContext ${qb.i(
+      parsePrefix("a-popis-dat-pojem", `má-přílohu`)
+    )} ?diagramGraph .`,
+    "OPTIONAL {",
+    `?vocabContext ${qb.i(
+      parsePrefix("a-popis-dat-pojem", `má-aplikační-kontext`)
+    )} ?ogContext .`,
+    "?ogContext og:viewColor ?color .",
+    "?ogContext og:contextVersion ?context .",
     "}",
-    "graph ?graph {",
+    "}",
+    `values ?vocabContext {<${AppSettings.contextIRIs.join("> <")}>}`,
+    "graph ?diagramGraph {",
     "?diagram og:index ?index .",
     "?diagram og:name ?name .",
     "?diagram og:id ?id .",
     "?diagram og:representation ?representation .",
     "}",
     "}",
-    "OPTIONAL {",
-    "?ogContext og:viewColor ?color .",
-    "?ogContext og:contextVersion ?context .",
-    "}",
-    "OPTIONAL {",
-    `<${
-      AppSettings.ontographerContext +
-      AppSettings.contextIRI.substring(AppSettings.contextIRI.lastIndexOf("/"))
-    }> og:contextVersion ?legacyContext.`,
-    "}} order by asc(?index)",
+    // TODO?: compatibility
+    // "OPTIONAL {",
+    // `<${
+    //   AppSettings.ontographerContext +
+    //   AppSettings.contextIRI.substring(AppSettings.contextIRI.lastIndexOf("/"))
+    // }> og:contextVersion ?legacyContext.`,
+    // "}",
+    "} order by asc(?index)",
   ].join(`
   `);
   return await processQuery(contextEndpoint, query)
@@ -214,13 +212,14 @@ export async function getSettings(
             index,
             result.diagram.value,
             result.id.value,
-            result.graph.value
+            result.diagramGraph.value
           );
           indices.push(index);
           AppSettings.initWorkspace = false;
           if (result.context) {
             AppSettings.viewColorPool = result.color.value;
             AppSettings.contextVersion = parseInt(result.context.value, 10);
+            AppSettings.applicationContext = result.ogContext.value;
           } else {
             reconstructWorkspace = true;
           }
@@ -248,7 +247,7 @@ export async function getLinksConfig(
   const query = [
     "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
     "select ?id ?iri ?sourceID ?targetID ?active ?sourceCard1 ?sourceCard2 ?targetCard1 ?targetCard2 ?type ?link where {",
-    "graph <" + getWorkspaceContextIRI() + "> {",
+    "graph <" + AppSettings.applicationContext + "> {",
     "?link a og:link .",
     "?link og:id ?id .",
     "?link og:iri ?iri .",
@@ -319,20 +318,10 @@ export async function getLinksConfig(
     });
   if (!appContextLinkRetrieval) return false;
   else {
-    const linkPredicates = [
-      parsePrefix(
-        "d-sgov-pracovní-prostor-pojem",
-        "odkazuje-na-assetový-kontext"
-      ),
-      parsePrefix(
-        "d-sgov-pracovní-prostor-pojem",
-        "odkazuje-na-přílohový-kontext"
-      ),
-    ];
     const diagramContextQuery = [
       "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
       "select ?graph ?vertex ?diagram ?diagramID ?index ?posX ?posY ?id ?iri where {",
-      "graph <" + getWorkspaceContextIRI() + "> {",
+      "graph <" + AppSettings.applicationContext + "> {",
       "?link a og:link.",
       "?link og:iri ?iri.",
       "}",
@@ -345,8 +334,10 @@ export async function getLinksConfig(
       "?diagram og:id ?diagramID.",
       "?diagram og:representation ?representation.",
       "}",
-      `${qb.i(AppSettings.contextIRI)} ?linkPredicate ?graph.`,
-      `values ?linkPredicate { <${linkPredicates.join("> <")}> }`,
+      `?contextIRI ${qb.i(
+        parsePrefix("a-popis-dat-pojem", `má-kontext`)
+      )} ?graph.`,
+      `values ?contextIRI {<${AppSettings.contextIRIs.join("> <")}>}`,
       "}",
     ].join(`
     `);

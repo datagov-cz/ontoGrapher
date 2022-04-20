@@ -4,11 +4,7 @@ import {
   highlightCell,
   unHighlightCell,
 } from "./FunctionDraw";
-import {
-  getElementShape,
-  getElementVocabulary,
-  getWorkspaceContextIRI,
-} from "./FunctionGetVars";
+import { getElementShape, getElementVocabulary } from "./FunctionGetVars";
 import { paper } from "../main/DiagramCanvas";
 import { graphElement } from "../graph/GraphElement";
 import {
@@ -351,7 +347,7 @@ export function removeReadOnlyElement(elem: string): string[] {
     updateDeleteTriples(
       elem,
       [
-        getWorkspaceContextIRI(),
+        AppSettings.applicationContext,
         ...Object.values(Diagrams).map((diag) => diag.graph),
       ],
       true,

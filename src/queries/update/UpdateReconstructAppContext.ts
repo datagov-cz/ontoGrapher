@@ -1,30 +1,20 @@
 import { AppSettings } from "../../config/Variables";
 import { qb } from "../QueryBuilder";
 import { initElements, parsePrefix } from "../../function/FunctionEditVars";
-import { getWorkspaceContextIRI } from "../../function/FunctionGetVars";
 import { processQuery } from "../../interface/TransactionInterface";
 import { updateWorkspaceContext } from "./UpdateMiscQueries";
 import { updateProjectElement } from "./UpdateElementQueries";
 
 export async function reconstructApplicationContextWithDiagrams(): Promise<string> {
-  const linkPredicates = [
-    parsePrefix(
-      "d-sgov-pracovní-prostor-pojem",
-      "odkazuje-na-assetový-kontext"
-    ),
-    parsePrefix(
-      "d-sgov-pracovní-prostor-pojem",
-      "odkazuje-na-přílohový-kontext"
-    ),
-  ];
   const diagramRetrievalQuery = [
     "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
     "select ?diagram ?graph where {",
-    "BIND(<" + AppSettings.contextIRI + "> as ?metaContext).",
-    "graph ?metaContext {",
-    `?metaContext ?linkPredicate ?graph .`,
-    `values ?linkPredicate { <${linkPredicates.join("> <")}> }`,
+    "graph ?contextIRI {",
+    `?contextIRI ${qb.i(
+      parsePrefix("a-popis-dat-pojem", `má-kontext`)
+    )} ?graph.`,
     "}",
+    `values ?contextIRI {<${AppSettings.contextIRIs.join("> <")}>}`,
     "graph ?graph {",
     "?diagram a og:diagram.",
     "}",
@@ -51,7 +41,7 @@ export async function reconstructApplicationContextWithDiagrams(): Promise<strin
     });
   if (diagramIRIs) {
     const transferQuery = diagramIRIs.map(
-      (iri) => `add <${iri}> to <${getWorkspaceContextIRI()}>`
+      (iri) => `add <${iri}> to <${AppSettings.applicationContext}>`
     ).join(`;
     `);
     return qb.combineQueries(
