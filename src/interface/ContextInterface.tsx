@@ -76,18 +76,6 @@ export async function updateContexts(): Promise<boolean> {
       "aplikační-kontext"
     )}/${uuidv4()}/ontographer`;
   switch (strategy) {
-    // TODO?: compatibility
-    // case ContextLoadingStrategy.UPDATE_LEGACY_WORKSPACE:
-    //   const queries = await updateLegacyWorkspace(
-    //     AppSettings.contextIRI,
-    //     AppSettings.contextEndpoint
-    //   );
-    //   const ret = await processTransaction(
-    //     AppSettings.contextEndpoint,
-    //     qb.constructQuery(qb.combineQueries(...queries))
-    //   );
-    //   if (!ret) return false;
-    //   break;
     case ContextLoadingStrategy.RECONSTRUCT_WORKSPACE:
       const ret2 = await processTransaction(
         AppSettings.contextEndpoint,
@@ -154,18 +142,6 @@ export async function updateContexts(): Promise<boolean> {
     );
     if (!ret) return false;
   }
-  // TODO?: compatibility
-  // if (
-  //   !AppSettings.initWorkspace
-  //   && ContextLoadingStrategy.UPDATE_LEGACY_WORKSPACE === strategy
-  // ) {
-  //   const queries = await finishUpdatingLegacyWorkspace();
-  //   const ret = await processTransaction(
-  //     AppSettings.contextEndpoint,
-  //     qb.constructQuery(qb.combineQueries(...queries))
-  //   );
-  //   if (!ret) return false;
-  // }
   return true;
 }
 

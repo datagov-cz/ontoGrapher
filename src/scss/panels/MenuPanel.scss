@@ -14,8 +14,8 @@
     .title {
       overflow: hidden;
       text-overflow: ellipsis;
-      line-clamp: 1;
-      padding-bottom: 5px;
+      max-height: 30px;
+      padding-bottom: 2px;
     }
 
     form {

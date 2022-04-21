@@ -184,10 +184,12 @@ export async function getSettings(contextEndpoint: string): Promise<{
     `?vocabContext ${qb.i(
       parsePrefix("a-popis-dat-pojem", `má-aplikační-kontext`)
     )} ?ogContext .`,
+    "}",
+    "}",
+    "optional { graph ?ogContext {",
     "?ogContext og:viewColor ?color .",
     "?ogContext og:contextVersion ?context .",
-    "}",
-    "}",
+    "}}",
     `values ?vocabContext {<${AppSettings.contextIRIs.join("> <")}>}`,
     "graph ?diagramGraph {",
     "?diagram og:index ?index .",
@@ -196,13 +198,6 @@ export async function getSettings(contextEndpoint: string): Promise<{
     "?diagram og:representation ?representation .",
     "}",
     "}",
-    // TODO?: compatibility
-    // "OPTIONAL {",
-    // `<${
-    //   AppSettings.ontographerContext +
-    //   AppSettings.contextIRI.substring(AppSettings.contextIRI.lastIndexOf("/"))
-    // }> og:contextVersion ?legacyContext.`,
-    // "}",
     "} order by asc(?index)",
   ].join(`
   `);
@@ -255,11 +250,6 @@ export async function getSettings(contextEndpoint: string): Promise<{
             reconstructWorkspace = true;
           }
         }
-        // TODO?: compatibility
-        // else if (result.legacyContext) {
-        //   AppSettings.contextVersion = parseInt(result.legacyContext.value, 10);
-        //   return ContextLoadingStrategy.UPDATE_LEGACY_WORKSPACE;
-        // }
       }
       ret.contextsMissingAppContexts = Object.keys(contextInfo).filter(
         (context) => !contextInfo[context].appContext
