@@ -144,7 +144,7 @@ export default class DetailPanel extends React.Component<Props, State> {
                 />
               )}
               {this.state.mode === DetailPanelMode.PATTERN && (
-                <DetailPatterns />
+                <DetailPatterns iri={this.state.id} />
               )}
             </div>
           </ResizableBox>

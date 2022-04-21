@@ -59,6 +59,8 @@ export default class MenuPanel extends React.Component<
     this.forceUpdate();
   }
 
+  //TODO: locale
+
   render() {
     return (
       <nav className={"menuPanel"}>
