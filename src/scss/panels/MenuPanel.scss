@@ -11,6 +11,13 @@
       margin-left: 5px;
     }
 
+    .title {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      line-clamp: 1;
+      padding-bottom: 5px;
+    }
+
     form {
       position: absolute;
       right: 5px;

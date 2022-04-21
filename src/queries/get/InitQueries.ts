@@ -87,7 +87,7 @@ export async function getElementsConfig(
       "?diagram og:representation ?representation .",
       "}",
       `?contextIRI ${qb.i(
-        parsePrefix("a-popis-dat-pojem", `má-kontext`)
+        parsePrefix("a-popis-dat-pojem", `má-přílohu`)
       )} ?graph.`,
       `values ?contextIRI {<${AppSettings.contextIRIs.join("> <")}>}`,
       "}",
@@ -156,14 +156,27 @@ export async function getElementsConfig(
   }
 }
 
-export async function getSettings(
-  contextEndpoint: string
-): Promise<ContextLoadingStrategy | undefined> {
+export async function getSettings(contextEndpoint: string): Promise<{
+  strategy: ContextLoadingStrategy | undefined;
+  contextsMissingAppContexts: string[];
+  contextsMissingAttachments: string[];
+}> {
+  const ret: {
+    strategy: ContextLoadingStrategy | undefined;
+    contextsMissingAppContexts: string[];
+    contextsMissingAttachments: string[];
+  } = {
+    strategy: undefined,
+    contextsMissingAppContexts: [],
+    contextsMissingAttachments: [],
+  };
   const query = [
     "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
-    "select ?diagramGraph ?diagram ?index ?name ?color ?id ?representation ?context ?legacyContext where {",
+    "PREFIX a-popis-dat-pojem: <http://onto.fel.cvut.cz/ontologies/slovník/agendový/popis-dat/pojem/>",
+    "select ?vocabIRI ?diagramGraph ?diagram ?index ?name ?color ?id ?representation ?context ?legacyContext where {",
     "OPTIONAL {",
     "graph ?vocabContext {",
+    "?vocabIRI a a-popis-dat-pojem:slovník .",
     `?vocabContext ${qb.i(
       parsePrefix("a-popis-dat-pojem", `má-přílohu`)
     )} ?diagramGraph .`,
@@ -193,16 +206,33 @@ export async function getSettings(
     "} order by asc(?index)",
   ].join(`
   `);
-  return await processQuery(contextEndpoint, query)
+  await processQuery(contextEndpoint, query)
     .then((response) => {
       return response.json();
     })
     .then((data) => {
       const indices: number[] = [];
+      const contextInfo: {
+        [key: string]: { appContext: boolean; diagrams: string[] };
+      } = {};
+      AppSettings.contextIRIs.forEach(
+        (contextIRI) =>
+          (contextInfo[contextIRI] = { appContext: false, diagrams: [] })
+      );
       AppSettings.initWorkspace = true;
       let reconstructWorkspace = false;
       for (const result of data.results.bindings) {
-        if (result.id) {
+        if (
+          result.diagramGraph &&
+          result.vocabContext &&
+          !contextInfo[result.vocabContext.value].diagrams.includes(
+            result.diagramGraph.value
+          )
+        )
+          contextInfo[result.vocabContext.value].diagrams.push(
+            result.diagramGraph.value
+          );
+        if (result.id && !(result.id.value in Diagrams)) {
           let index = parseInt(result.index.value);
           while (indices.includes(index)) index++;
           addDiagram(
@@ -220,25 +250,36 @@ export async function getSettings(
             AppSettings.viewColorPool = result.color.value;
             AppSettings.contextVersion = parseInt(result.context.value, 10);
             AppSettings.applicationContext = result.ogContext.value;
+            contextInfo[result.vocabContext.value].appContext = true;
           } else {
             reconstructWorkspace = true;
           }
-        } else if (result.legacyContext) {
-          AppSettings.contextVersion = parseInt(result.legacyContext.value, 10);
-          return ContextLoadingStrategy.UPDATE_LEGACY_WORKSPACE;
         }
+        // TODO?: compatibility
+        // else if (result.legacyContext) {
+        //   AppSettings.contextVersion = parseInt(result.legacyContext.value, 10);
+        //   return ContextLoadingStrategy.UPDATE_LEGACY_WORKSPACE;
+        // }
       }
+      ret.contextsMissingAppContexts = Object.keys(contextInfo).filter(
+        (context) => !contextInfo[context].appContext
+      );
+      ret.contextsMissingAttachments = Object.keys(contextInfo).filter(
+        (context) =>
+          contextInfo[context].diagrams.length !==
+          Object.values(Diagrams).length
+      );
       Object.entries(Diagrams).forEach(([key, value]) => {
         if (!indices.includes(value.index)) Diagrams[key].active = false;
       });
-      return reconstructWorkspace
+      ret.strategy = reconstructWorkspace
         ? ContextLoadingStrategy.RECONSTRUCT_WORKSPACE
         : ContextLoadingStrategy.DEFAULT;
     })
     .catch((e) => {
       console.error(e);
-      return undefined;
     });
+  return ret;
 }
 
 export async function getLinksConfig(
@@ -335,7 +376,7 @@ export async function getLinksConfig(
       "?diagram og:representation ?representation.",
       "}",
       `?contextIRI ${qb.i(
-        parsePrefix("a-popis-dat-pojem", `má-kontext`)
+        parsePrefix("a-popis-dat-pojem", `má-přílohu`)
       )} ?graph.`,
       `values ?contextIRI {<${AppSettings.contextIRIs.join("> <")}>}`,
       "}",

@@ -1,16 +1,16 @@
 import { en } from "./en";
 
 export const cs: { [Property in keyof typeof en]: string } = {
-  untitledProject: "Nový pracovní prostor",
+  untitledProject: "OntoGrapher",
   unsorted: "Bez typu",
   updating: "Ukládání...",
   newVersion:
-    "Od vašeho posledního používání ontoGrapher získal nové funkce! Klikněte sem pro detailní popis změn.",
+    "Od vašeho posledního používání OntoGrapher získal nové funkce! Klikněte sem pro detailní popis změn.",
   retry: "Zopakovat akci?",
   errorUpdating: "❌ Chyba: ukládání se nezdařilo.",
-  workspaceReady: "✔ Pracovní prostor je připraven.",
+  workspaceReady: "✔ Připraveno k práci.",
   filterVocabulariesPlaceholder: "Vybrat slovník(y)...",
-  termsFromOtherLanguages: "Pojmy mimo pracovní prostor",
+  termsFromOtherVocabularies: "Pojmy z ostatních slovníků",
   modalNewElemLengthError: "Jméno musí mít mezi 2 a 150 znaky.",
   modalNewElemCharacterError: "Jméno nemůže mít jenom speciální znaky.",
   modalNewElemIRI: "Pojem bude vytvořen s tímto IRI:",
@@ -23,7 +23,7 @@ export const cs: { [Property in keyof typeof en]: string } = {
   authenticationUpdateError:
     "Chyba autentikace. Prosím, načtěte stránku znovu.",
   modalRemoveConceptConnectionsDescription:
-    "Varování: pojem, který se chystáte smazat, je spojen s pojmy mimo pracovní prostor relacemi, které zde nelze smazat. Tyto relace proto zůstanou v databázi:",
+    "Varování: pojem, který se chystáte smazat, je spojen s pojmy mimo vypsané slovníky relacemi, které zde nelze smazat. Tyto relace proto zůstanou v databázi:",
   authenticationExpired: "Autentikace vypršela. Prosím, načtěte stránku znovu.",
   authenticationTimeout: "Dotaz na autentikační server vypršel.",
   logout: "Odhlásit",
@@ -51,13 +51,13 @@ export const cs: { [Property in keyof typeof en]: string } = {
     "Některé pojmy a vazby jsou v kompaktním pohledu skryty. Přepněte zpět na úplný pohled pro jejich obnovení.",
   validationName: "Pojem",
   validationSeverity: "Závažnost",
-  errorConnectionLost: "Chyba: připojení k pracovnímu prostoru bylo přerušeno.",
+  errorConnectionLost: "Chyba: připojení k databázi bylo přerušeno.",
   diagramTab: "Diagramy",
   modalNewElemExistsError:
     "Pojem s tímto jménem již ve vybraném slovníku existuje.",
   addAltLabelPlaceholder: "Nové synonymum...",
   setAsDisplayName: "Nastavit jako zobrazované jméno",
-  conforms: "Pracovní prostor je podle serveru validní",
+  conforms: "Všechny pojmy a vztahy jsou validní",
   validationError: "Zpráva",
   validationReload: "Obnovit",
   validation: "Výsledky kontroly",
@@ -90,8 +90,8 @@ export const cs: { [Property in keyof typeof en]: string } = {
   validationLoadingError:
     "Připojení k validačnímu serveru se nezdařilo. Prosím, zkuste to znovu.",
   pleaseReload:
-    "Chyba: pracovní prostor nebyl nalezen. Prosím, zkontrolujte IRI pracovního prostoru.",
-  connectionError: "Chyba při načítání pracovního prostoru.",
+    "Chyba: nenalezen žádný slovník. Prosím, zkontrolujte IRI slovníku/ů.",
+  connectionError: "Chyba při načítání slovníku/ů.",
   spreadLinks: "Zobrazit všechny vazby na plátně",
   spreadRelationships: "Zobrazit všechny vztahy na plátně",
   links: "Vazby",
@@ -169,16 +169,18 @@ export const cs: { [Property in keyof typeof en]: string } = {
   connectionListShowSelection: "Vybrat zobrazené",
   connectionListShowFilter: "Zobrazit/skrýt filtr",
   connectionListEmptyFilter: "Zrušit filtr",
-  downloadingTerms: "Přidávání vybraných pojmů do pracovního prostoru...",
+  downloadingTerms: "Přidávání vybraných pojmů...",
   modalRemoveReadOnlyConceptDescription:
-    "Opravdu chcete smazat pojem? Daný pojem zůstane ve slovníku, pouze se odstraní z pracovního prostoru společně s vazbami směřujícími k pojmu.",
-  updatingWorkspaceVersion: "Aktualizace verze pracovního prostoru...",
+    "Opravdu chcete smazat pojem? Daný pojem zůstane ve svém slovníku, pouze se odstraní ze seznamu pojmů společně s vazbami směřujícími k tomuto pojmu.",
+  updatingWorkspaceVersion: "Aktualizace verze aplikačního kontextu...",
   vocabularyNotFullyRepresented:
-    "Tento slovník není v pracovním prostoru zastoupen všemi jeho pojmy. Klikněte sem pro zobrazení všech pojmů tohoto slovníku.",
+    "Tento slovník není v seznamu zastoupen všemi jeho pojmy. Klikněte sem pro zobrazení všech pojmů tohoto slovníku.",
   criticalAlert: "Důležité upozornění",
   obsoleteDiagramsAlertIntro:
-    "OntoGrapher detekoval, že byl z pracovního prostoru smazán slovník. V důsledku jsou tyto diagramy nepublikovatelné a měly by být smazány:",
+    "OntoGrapher detekoval, že byl smazán slovník. V důsledku jsou tyto diagramy nepublikovatelné a měly by být smazány:",
   obsoleteDiagramsAlertInfo:
-    "Smazány jsou pouze kopie z toho pracovního prostoru; originály se nemažou. Ponechání těchto diagramů zajistí konflikty při publikování.",
+    "Smazány jsou pouze kopie; originály se nemažou. Ponechání těchto diagramů zajistí konflikty při publikování.",
   obsoleteDiagramsAlertDeleteDiagrams: "Smazat tyto diagramy",
+  vocabulariesPlural: "slovníky",
+  vocabulariesMorePlural: "slovníků",
 } as const;

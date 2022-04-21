@@ -4,7 +4,7 @@ import { DELETE, INSERT } from "@tpluscode/sparql-builder";
 import { parsePrefix } from "../../function/FunctionEditVars";
 import { Environment } from "../../config/Environment";
 
-export function updateWorkspaceContext(): string {
+export function updateApplicationContext(): string {
   const projIRI = AppSettings.applicationContext;
 
   const insertAppContext = INSERT.DATA`${qb.g(projIRI, [

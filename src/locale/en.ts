@@ -1,14 +1,14 @@
 export const en = {
-  untitledProject: "Untitled workspace",
+  untitledProject: "OntoGrapher",
   unsorted: "No type",
   updating: "Saving...",
   newVersion:
-    "Ontographer has been updated with new functions since you were gone! Click here to see a detailed changelog.",
+    "OntoGrapher has been updated with new functions since you were gone! Click here to see a detailed changelog.",
   retry: "Retry?",
   errorUpdating: "❌ Error: update unsuccessful.",
-  workspaceReady: "✔ Workspace ready.",
+  workspaceReady: "✔ Ready for work.",
   filterVocabulariesPlaceholder: "Pick vocabularies...",
-  termsFromOtherLanguages: "Terms outside the workspace",
+  termsFromOtherVocabularies: "Terms from other vocabularies",
   modalNewElemLengthError: "The name must have between 2 and 150 characters.",
   modalNewElemCharacterError: "The name has to have non-special characters.",
   modalNewElemIRI: "The term will be created using IRI:",
@@ -44,13 +44,13 @@ export const en = {
     "Some terms or links are hidden in Compact view. To see them again, switch to Full view.",
   validationName: "Label",
   validationSeverity: "Severity",
-  errorConnectionLost: "Error: connection to workspace lost.",
+  errorConnectionLost: "Error: connection to database lost.",
   diagramTab: "Diagrams",
   modalNewElemExistsError:
     "A term with this label already exists in the vocabulary.",
   addAltLabelPlaceholder: "Add new synonym...",
   setAsDisplayName: "Set as display label",
-  conforms: "Workspace conforms according to validation server",
+  conforms: "All terms and relationships conform to validation rules",
   validationError: "Message",
   validationReload: "Refresh",
   validation: "Validation",
@@ -82,9 +82,10 @@ export const en = {
   loading: "Loading...",
   validationLoadingError:
     "Connection to validation server unsuccessful. Please reload to try again.",
-  pleaseReload: "Error: workspace not found. Please check the workspace IRI.",
+  pleaseReload:
+    "Error: Cannot find any vocabulary. Please check the vocabulary IRI(s).",
   connectionError:
-    "Error loading the workspace - please check the console for details.",
+    "Error loading a vocabulary - please check the console for details.",
   spreadLinks: "Explode links",
   spreadRelationships: "Explode relations",
   links: "Links",
@@ -98,7 +99,7 @@ export const en = {
   none: "",
   cancel: "Cancel",
   modalRemoveConceptConnectionsDescription:
-    "Warning: the term you are about to delete is connected to terms from outside the workspace with relations that cannot be deleted here. As such, these relations will remain in the database:",
+    "Warning: the term you are about to delete is connected to terms from outside the listed vocabularies with relations that cannot be deleted here. As such, these relations will remain in the database:",
   menuPanelHelp: "Help",
   zoomIn: "Zoom in",
   zoomOut: "Zoom out",
@@ -169,16 +170,18 @@ export const en = {
   connectionListShowSelection: "Select visible connections",
   connectionListShowFilter: "Show/hide filter options",
   connectionListEmptyFilter: "Disable filter",
-  downloadingTerms: "Adding selected terms into the workspace...",
+  downloadingTerms: "Adding selected term(s) into the term list...",
   modalRemoveReadOnlyConceptDescription:
-    "Are you sure you want to remove the term? This will remove the term and created connections to the term in the workspace, but won't delete the term from the vocabulary.",
+    "Are you sure you want to remove the term? This will remove the term and created connections to the term from the list, but won't delete the term from its own vocabulary.",
   vocabularyNotFullyRepresented:
-    "This workspace does not contain all terms from this vocabulary. Click here to show all terms of this vocabulary.",
-  updatingWorkspaceVersion: "Updating workspace verion...",
+    "The term list does not contain all terms from this vocabulary. Click here to show all terms of this vocabulary.",
+  updatingWorkspaceVersion: "Updating application context version...",
   criticalAlert: "Critical alert",
   obsoleteDiagramsAlertIntro:
-    "OntoGrapher has detected that a vocabulary has been removed from the workspace. As such, these following diagrams in the workspace are unpublishable and should be deleted:",
+    "OntoGrapher has detected that a vocabulary has been removed. As such, these following diagrams are unpublishable and should be deleted:",
   obsoleteDiagramsAlertInfo:
-    "Only the copies in this workspace are deleted; the originals are left untouched. Keeping these diagrams ensures conflicts during publishing.",
+    "Only the copies are deleted; the originals are left untouched. Keeping these diagrams ensures conflicts during publishing.",
   obsoleteDiagramsAlertDeleteDiagrams: "Delete these diagrams",
+  vocabulariesPlural: "vocabularies",
+  vocabulariesMorePlural: "vocabularies",
 } as const;

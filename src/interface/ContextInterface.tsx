@@ -34,7 +34,7 @@ import { addDiagram, addToFlexSearch } from "../function/FunctionCreateVars";
 import { ContextLoadingStrategy, Representation } from "../config/Enum";
 import { Locale } from "../config/Locale";
 import { reconstructApplicationContextWithDiagrams } from "../queries/update/UpdateReconstructAppContext";
-import { updateWorkspaceContext } from "../queries/update/UpdateMiscQueries";
+import { updateApplicationContext } from "../queries/update/UpdateMiscQueries";
 import {
   updateCreateDiagram,
   updateDeleteDiagram,
@@ -50,13 +50,14 @@ import {
   isElementHidden,
   removeReadOnlyElement,
 } from "../function/FunctionElem";
-import { randomUUID } from "crypto";
+import { v4 as uuidv4 } from "uuid";
+import { INSERT } from "@tpluscode/sparql-builder";
 
 export function retrieveInfoFromURLParameters(): boolean {
   const isURL = require("is-url");
   const urlParams = new URLSearchParams(window.location.search);
-  const URIContexts = urlParams.getAll("workspace");
-  if (URIContexts.length > 0 && isURL(URIContexts)) {
+  const URIContexts = urlParams.getAll("vocabulary");
+  if (URIContexts.filter((context) => isURL(context)).length > 0) {
     for (const vocab of URIContexts)
       AppSettings.contextIRIs.push(decodeURIComponent(vocab));
     return true;
@@ -67,13 +68,15 @@ export function retrieveInfoFromURLParameters(): boolean {
 }
 
 export async function updateContexts(): Promise<boolean> {
-  const strategy = await getSettings(AppSettings.contextEndpoint);
+  const { strategy, contextsMissingAppContexts, contextsMissingAttachments } =
+    await getSettings(AppSettings.contextEndpoint);
   if (!AppSettings.applicationContext)
     AppSettings.applicationContext = `${parsePrefix(
       "d-sgov-pracovní-prostor-pojem",
       "aplikační-kontext"
-    )}/${randomUUID()}/ontographer`;
+    )}/${uuidv4()}/ontographer`;
   switch (strategy) {
+    // TODO?: compatibility
     // case ContextLoadingStrategy.UPDATE_LEGACY_WORKSPACE:
     //   const queries = await updateLegacyWorkspace(
     //     AppSettings.contextIRI,
@@ -98,7 +101,7 @@ export async function updateContexts(): Promise<boolean> {
       return false;
   }
   if (AppSettings.initWorkspace) {
-    const queries = [updateWorkspaceContext()];
+    const queries = [updateApplicationContext()];
     if (Object.keys(Diagrams).length === 0) {
       const id = addDiagram(
         Locale[AppSettings.interfaceLanguage].untitled,
@@ -117,6 +120,41 @@ export async function updateContexts(): Promise<boolean> {
   AppSettings.selectedDiagram = Object.keys(Diagrams).reduce((a, b) =>
     Diagrams[a].index < Diagrams[b].index ? a : b
   );
+  if (contextsMissingAppContexts.length > 1) {
+    const ret = await processTransaction(
+      AppSettings.contextEndpoint,
+      qb.constructQuery(
+        ...contextsMissingAppContexts.map((context) =>
+          INSERT.DATA`
+      ${qb.g(context, [
+        qb.i(context),
+        qb.i(parsePrefix("a-popis-dat-pojem", "má-aplikační-kontext")),
+        qb.i(AppSettings.applicationContext),
+      ])}
+      `.build()
+        )
+      )
+    );
+    if (!ret) return false;
+  }
+  if (contextsMissingAttachments.length > 1) {
+    const ret = await processTransaction(
+      AppSettings.contextEndpoint,
+      qb.constructQuery(
+        ...contextsMissingAttachments.map((context) =>
+          INSERT.DATA`
+      ${qb.g(context, [
+        qb.i(context),
+        qb.i(parsePrefix("a-popis-dat-pojem", "má-přílohu")),
+        qb.a(Object.values(Diagrams).map((diag) => qb.i(diag.iri))),
+      ])}
+      `.build()
+        )
+      )
+    );
+    if (!ret) return false;
+  }
+  // TODO?: compatibility
   // if (
   //   !AppSettings.initWorkspace
   //   && ContextLoadingStrategy.UPDATE_LEGACY_WORKSPACE === strategy
@@ -202,6 +240,20 @@ export async function retrieveVocabularyData(): Promise<boolean> {
     WorkspaceVocabularies[vocab].readOnly = false;
     WorkspaceVocabularies[vocab].graph = vocabularies[vocab].graph;
     Object.assign(WorkspaceTerms, vocabularies[vocab].terms);
+  }
+  const numberOfVocabularies = Object.keys(vocabularies).length;
+  if (numberOfVocabularies === 1)
+    AppSettings.name = Object.values(vocabularies)[0].names;
+  else {
+    //TODO: refactor to i18n instead
+    for (const lang in AppSettings.name)
+      AppSettings.name[lang] = `${Object.keys(vocabularies).length} ${
+        Locale[AppSettings.interfaceLanguage][
+          numberOfVocabularies >= 5
+            ? "vocabulariesMorePlural"
+            : "vocabulariesPlural"
+        ]
+      }`;
   }
   return true;
 }

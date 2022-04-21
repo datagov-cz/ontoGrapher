@@ -2,7 +2,7 @@ import { AppSettings } from "../../config/Variables";
 import { qb } from "../QueryBuilder";
 import { initElements, parsePrefix } from "../../function/FunctionEditVars";
 import { processQuery } from "../../interface/TransactionInterface";
-import { updateWorkspaceContext } from "./UpdateMiscQueries";
+import { updateApplicationContext } from "./UpdateMiscQueries";
 import { updateProjectElement } from "./UpdateElementQueries";
 
 export async function reconstructApplicationContextWithDiagrams(): Promise<string> {
@@ -11,7 +11,7 @@ export async function reconstructApplicationContextWithDiagrams(): Promise<strin
     "select ?diagram ?graph where {",
     "graph ?contextIRI {",
     `?contextIRI ${qb.i(
-      parsePrefix("a-popis-dat-pojem", `má-kontext`)
+      parsePrefix("a-popis-dat-pojem", `má-přílohu`)
     )} ?graph.`,
     "}",
     `values ?contextIRI {<${AppSettings.contextIRIs.join("> <")}>}`,
@@ -45,7 +45,7 @@ export async function reconstructApplicationContextWithDiagrams(): Promise<strin
     ).join(`;
     `);
     return qb.combineQueries(
-      updateWorkspaceContext(),
+      updateApplicationContext(),
       transferQuery,
       updateProjectElement(false, ...initElements())
     );
