@@ -255,6 +255,7 @@ async function getLegacyDiagrams(
             representation: Representation.COMPACT,
             iri: getNewDiagramContextIRI(diagramID),
             graph: getNewDiagramContextIRI(diagramID),
+            saved: true,
           };
         }
       }

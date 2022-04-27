@@ -140,6 +140,7 @@ export function addDiagram(
     representation: representation,
     iri: iri ? iri : getNewDiagramContextIRI(diagramID),
     graph: graph ? graph : getNewDiagramContextIRI(diagramID),
+    saved: false,
   };
   return diagramID;
 }

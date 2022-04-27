@@ -54,6 +54,7 @@ import { insertNewCacheTerms, insertNewRestrictions } from "./FunctionCache";
 import _ from "lodash";
 import { RepresentationConfig } from "../config/logic/RepresentationConfig";
 import { updateDeleteTriples } from "../queries/update/UpdateMiscQueries";
+import { updateCreateDiagram } from "../queries/update/UpdateDiagramQueries";
 
 export function resizeElem(id: string, highlight: boolean = true) {
   let view = paper.findViewByModel(id);
@@ -278,7 +279,14 @@ export async function putElementsOnCanvas(
     const iris = data.iri.filter((iri: string) => {
       return !(iri in WorkspaceTerms && WorkspaceElements[iri].active);
     });
-    const ids = data.id;
+    const ids = data.id.filter((id: string) => !graph.getCell(id));
+    if (
+      (iris.length > 0 || ids.length > 0) &&
+      !Diagrams[AppSettings.selectedDiagram].saved
+    ) {
+      Diagrams[AppSettings.selectedDiagram].saved = true;
+      queries.push(updateCreateDiagram(AppSettings.selectedDiagram));
+    }
     if (iris.length > 0) {
       handleStatus(
         true,
@@ -300,41 +308,39 @@ export async function putElementsOnCanvas(
     }
     const matrixLength = Math.max(ids.length, iris.length);
     const matrixDimension = Math.ceil(Math.sqrt(matrixLength));
-    ids
-      .filter((id: string) => !graph.getCell(id))
-      .forEach((id: string, i: number) => {
-        const cls = new graphElement({ id: id });
-        const point = paper.clientToLocalPoint({
-          x: event.clientX,
-          y: event.clientY,
-        });
-        if (matrixLength > 1) {
-          const x = i % matrixDimension;
-          const y = Math.floor(i / matrixDimension);
-          cls.set("position", { x: point.x + x * 200, y: point.y + y * 200 });
-          WorkspaceElements[id].position[AppSettings.selectedDiagram] = {
-            x: point.x + x * 200,
-            y: point.y + y * 200,
-          };
-        } else {
-          cls.set("position", { x: point.x, y: point.y });
-          WorkspaceElements[id].position[AppSettings.selectedDiagram] = {
-            x: point.x,
-            y: point.y,
-          };
-        }
-        WorkspaceElements[id].hidden[AppSettings.selectedDiagram] = false;
-        cls.addTo(graph);
-        drawGraphElement(
-          cls,
-          AppSettings.canvasLanguage,
-          AppSettings.representation
-        );
-        queries.push(
-          ...restoreHiddenElem(id, cls, true, true, true),
-          updateProjectElementDiagram(AppSettings.selectedDiagram, id)
-        );
+    ids.forEach((id: string, i: number) => {
+      const cls = new graphElement({ id: id });
+      const point = paper.clientToLocalPoint({
+        x: event.clientX,
+        y: event.clientY,
       });
+      if (matrixLength > 1) {
+        const x = i % matrixDimension;
+        const y = Math.floor(i / matrixDimension);
+        cls.set("position", { x: point.x + x * 200, y: point.y + y * 200 });
+        WorkspaceElements[id].position[AppSettings.selectedDiagram] = {
+          x: point.x + x * 200,
+          y: point.y + y * 200,
+        };
+      } else {
+        cls.set("position", { x: point.x, y: point.y });
+        WorkspaceElements[id].position[AppSettings.selectedDiagram] = {
+          x: point.x,
+          y: point.y,
+        };
+      }
+      WorkspaceElements[id].hidden[AppSettings.selectedDiagram] = false;
+      cls.addTo(graph);
+      drawGraphElement(
+        cls,
+        AppSettings.canvasLanguage,
+        AppSettings.representation
+      );
+      queries.push(
+        ...restoreHiddenElem(id, cls, true, true, true),
+        updateProjectElementDiagram(AppSettings.selectedDiagram, id)
+      );
+    });
     if (AppSettings.representation === Representation.COMPACT)
       queries.push(
         ...setRepresentation(AppSettings.representation).transaction

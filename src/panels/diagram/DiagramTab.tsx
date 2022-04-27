@@ -2,7 +2,10 @@ import React from "react";
 import { AppSettings, Diagrams } from "../../config/Variables";
 import { changeDiagrams } from "../../function/FunctionDiagram";
 import InlineEdit, { InputType } from "riec";
-import { updateDiagram } from "../../queries/update/UpdateDiagramQueries";
+import {
+  updateCreateDiagram,
+  updateDiagram,
+} from "../../queries/update/UpdateDiagramQueries";
 import { removeNewlines } from "../../function/FunctionEditVars";
 
 interface Props {
@@ -23,8 +26,14 @@ export default class DiagramTab extends React.Component<Props, State> {
 
   handleChangeDiagramName(value: string) {
     if (value.length > 0) {
+      const queries = [];
       Diagrams[this.props.diagram].name = value;
-      this.props.performTransaction(updateDiagram(this.props.diagram));
+      if (!Diagrams[this.props.diagram].saved) {
+        Diagrams[this.props.diagram].saved = true;
+        queries.push(updateCreateDiagram(this.props.diagram));
+      }
+      queries.push(updateDiagram(this.props.diagram));
+      this.props.performTransaction(...queries);
       this.forceUpdate();
       this.props.update();
     }

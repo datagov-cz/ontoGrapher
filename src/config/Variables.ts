@@ -125,6 +125,7 @@ export var Diagrams: {
     index: number;
     iri: string;
     graph: string;
+    saved: boolean;
   };
 } = {};
 
