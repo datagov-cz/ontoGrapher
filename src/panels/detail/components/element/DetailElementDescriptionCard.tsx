@@ -110,6 +110,10 @@ export class DetailElementDescriptionCard extends React.Component<
       });
   }
 
+  componentWillUnmount() {
+    this.save();
+  }
+
   componentDidUpdate(
     prevProps: Readonly<Props>,
     prevState: Readonly<State>,
