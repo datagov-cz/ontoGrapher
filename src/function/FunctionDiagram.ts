@@ -67,17 +67,23 @@ export function centerDiagram() {
   updateDiagramPosition(AppSettings.selectedDiagram);
 }
 
-export function zoomDiagram(x: number, y: number, delta: number) {
-  const oldTranslate = paper.translate();
-  const oldScale = paper.scale().sx;
+export function zoomDiagram(
+  x: number,
+  y: number,
+  delta: number,
+  jointPaper: joint.dia.Paper = paper,
+  update: boolean = true
+) {
+  const oldTranslate = jointPaper.translate();
+  const oldScale = jointPaper.scale().sx;
   const nextScale = delta === 0 ? 1 : _.round(delta * 0.1 + oldScale, 1);
   if (nextScale >= 0.1 && nextScale <= 2.1) {
-    paper.translate(
+    jointPaper.translate(
       oldTranslate.tx + x * (oldScale - nextScale),
       oldTranslate.ty + y * (oldScale - nextScale)
     );
-    paper.scale(nextScale, nextScale);
-    updateDiagramPosition(AppSettings.selectedDiagram);
+    jointPaper.scale(nextScale, nextScale);
+    if (update) updateDiagramPosition(AppSettings.selectedDiagram);
   }
 }
 

@@ -1,5 +1,5 @@
 import React from "react";
-import { Form, Nav, OverlayTrigger, Tooltip } from "react-bootstrap";
+import { Form, OverlayTrigger, Tooltip } from "react-bootstrap";
 import { AppSettings } from "../config/Variables";
 import { Locale } from "../config/Locale";
 import { Environment } from "../config/Environment";
@@ -16,6 +16,7 @@ import MenuPanelValidate from "./menu/left/MenuPanelValidate";
 import FitContentWidget from "./menu/widget/FitContentWidget";
 import InterfaceStatus from "../components/InterfaceStatus";
 import MenuPanelSwitchRepresentation from "./menu/left/MenuPanelSwitchRepresentation";
+import { MenuPanelPatterns } from "../pattern/MenuPanelPatterns";
 
 interface MenuPanelProps {
   readOnly?: boolean;
@@ -106,13 +107,7 @@ export default class MenuPanel extends React.Component<
             <MenuPanelValidate validate={() => this.props.validate()} />
           )}
           <MenuPanelSaveDiagrams />
-          {Environment.pattern && (
-            <div className={"inert"}>
-              <Nav.Link onClick={() => this.props.updateDetailPanel()}>
-                Patterns
-              </Nav.Link>
-            </div>
-          )}
+          {Environment.pattern && <MenuPanelPatterns />}
           <ZoomWidget />
           <ViewWidget />
           <FitContentWidget />

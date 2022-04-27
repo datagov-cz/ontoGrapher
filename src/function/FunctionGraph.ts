@@ -89,7 +89,7 @@ export async function spreadConnections(
     .filter((link) => !isUrl(link))
     .map((link) => getOtherConnectionElementID(link, id));
   const iris = elements.filter((iri) => isUrl(iri));
-  let queries: string[] = [];
+  const queries: string[] = [];
   if (iris.length > 0) {
     insertNewCacheTerms(
       await fetchReadOnlyTerms(AppSettings.contextEndpoint, iris)

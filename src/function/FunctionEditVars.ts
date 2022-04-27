@@ -34,8 +34,11 @@ export function getName(element: string, language: string): string {
   }
 }
 
-export function getStereotypeList(iris: string[], language: string): string[] {
-  let result: string[] = [];
+export function getStereotypeList(
+  iris: string[],
+  language: string = AppSettings.canvasLanguage
+): string[] {
+  const result: string[] = [];
   iris.forEach((iri) => {
     if (iri in Stereotypes) {
       result.push(Stereotypes[iri].labels[language]);

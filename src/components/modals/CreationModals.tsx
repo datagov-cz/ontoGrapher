@@ -15,6 +15,7 @@ import { graph } from "../../graph/Graph";
 import { drawGraphElement } from "../../function/FunctionDraw";
 import { initConnections } from "../../function/FunctionRestriction";
 import { updateProjectLink } from "../../queries/update/UpdateLinkQueries";
+import { PatternCreationModal } from "../../pattern/PatternCreationModal";
 
 export type ElemCreationConfiguration = {
   strategy: ElemCreationStrategy;
@@ -26,17 +27,21 @@ export type ElemCreationConfiguration = {
 
 export type LinkCreationConfiguration = { sourceID: string; targetID: string };
 
+export type PatternCreationConfiguration = { elements: string[] };
+
 interface Props {
   update: () => void;
   projectLanguage: string;
   performTransaction: (...queries: string[]) => void;
   elemConfiguration: ElemCreationConfiguration;
   linkConfiguration: LinkCreationConfiguration;
+  patternConfiguration: PatternCreationConfiguration;
 }
 
 export const CreationModals: React.FC<Props> = (props) => {
   const [modalAddLink, setModalAddLink] = useState<boolean>(false);
   const [modalAddElem, setModalAddElem] = useState<boolean>(false);
+  const [modalAddPattern, setModalAddPattern] = useState<boolean>(false);
 
   useEffect(() => {
     if (props.elemConfiguration.header !== "") setModalAddElem(true);
@@ -44,6 +49,10 @@ export const CreationModals: React.FC<Props> = (props) => {
   useEffect(() => {
     if (props.linkConfiguration.sourceID !== "") setModalAddLink(true);
   }, [props.linkConfiguration]);
+  useEffect(() => {
+    if (props.patternConfiguration.elements.length > 0)
+      setModalAddPattern(true);
+  }, [props.patternConfiguration]);
 
   return (
     <div>
@@ -127,6 +136,11 @@ export const CreationModals: React.FC<Props> = (props) => {
             props.update();
           }
         }}
+      />
+      <PatternCreationModal
+        modal={modalAddPattern}
+        close={() => setModalAddPattern(false)}
+        configuration={props.patternConfiguration}
       />
     </div>
   );

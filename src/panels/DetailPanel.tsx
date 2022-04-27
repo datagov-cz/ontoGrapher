@@ -16,7 +16,8 @@ import {
 import IRILink from "../components/IRILink";
 import { unHighlightCell } from "../function/FunctionDraw";
 import { ResizableBox } from "react-resizable";
-import { DetailPatterns } from "../pattern/DetailPatterns";
+import { DetailInstance } from "../pattern/DetailInstance";
+import { Instances, Patterns } from "../pattern/PatternTypes";
 
 interface Props {
   projectLanguage: string;
@@ -80,6 +81,14 @@ export default class DetailPanel extends React.Component<Props, State> {
           [Representation.FULL]: "detailPanelMultipleLinks",
         });
         return <span>{content}</span>;
+      case DetailPanelMode.PATTERN:
+        return (
+          <span>
+            {this.state.id in Instances
+              ? Patterns[Instances[this.state.id].iri].title
+              : ""}
+          </span>
+        );
       default:
         return <span />;
     }
@@ -143,9 +152,10 @@ export default class DetailPanel extends React.Component<Props, State> {
                   updateDetailPanel={this.prepareDetails}
                 />
               )}
-              {this.state.mode === DetailPanelMode.PATTERN && (
-                <DetailPatterns iri={this.state.id} />
-              )}
+              {this.state.mode === DetailPanelMode.PATTERN &&
+                this.state.id in Instances && (
+                  <DetailInstance id={this.state.id} />
+                )}
             </div>
           </ResizableBox>
         )}

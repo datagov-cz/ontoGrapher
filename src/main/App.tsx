@@ -43,6 +43,7 @@ import {
   CreationModals,
   ElemCreationConfiguration,
   LinkCreationConfiguration,
+  PatternCreationConfiguration,
 } from "../components/modals/CreationModals";
 import { DetailPanelMode, ElemCreationStrategy } from "../config/Enum";
 import { getElementPosition } from "../function/FunctionElem";
@@ -63,6 +64,7 @@ interface DiagramAppState {
   tooltip: boolean;
   newElemConfiguration: ElemCreationConfiguration;
   newLinkConfiguration: LinkCreationConfiguration;
+  newPatternConfiguration: PatternCreationConfiguration;
   showCriticalAlert: boolean;
 }
 
@@ -115,6 +117,7 @@ export default class App extends React.Component<
         vocabulary: "",
       },
       newLinkConfiguration: { sourceID: "", targetID: "" },
+      newPatternConfiguration: { elements: [] },
       showCriticalAlert: false,
     };
     document.title = Locale[AppSettings.interfaceLanguage].ontoGrapher;
@@ -289,12 +292,17 @@ export default class App extends React.Component<
   }
 
   handleCreation(
-    configuration: ElemCreationConfiguration | LinkCreationConfiguration
+    configuration:
+      | ElemCreationConfiguration
+      | LinkCreationConfiguration
+      | PatternCreationConfiguration
   ) {
     if ("strategy" in configuration) {
       this.setState({ newElemConfiguration: configuration });
     } else if ("sourceID" in configuration) {
       this.setState({ newLinkConfiguration: configuration });
+    } else if ("elements" in configuration) {
+      this.setState({ newPatternConfiguration: configuration });
     }
   }
 
@@ -407,6 +415,7 @@ export default class App extends React.Component<
         <CreationModals
           elemConfiguration={this.state.newElemConfiguration}
           linkConfiguration={this.state.newLinkConfiguration}
+          patternConfiguration={this.state.newPatternConfiguration}
           performTransaction={this.performTransaction}
           projectLanguage={this.state.projectLanguage}
           update={() => this.itemPanel.current?.update()}

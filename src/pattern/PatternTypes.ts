@@ -1,14 +1,32 @@
+import { Quad } from "n3";
+
 export type Argument = {
   name: string;
   type: string;
+  optional?: boolean;
 };
 
-export var Instances: { iri: string; parameters: Set<string> }[] = [];
+export type Instance = { iri: string; parameters: string[] };
+
+export type Pattern = {
+  title: string;
+  author: string;
+  arguments: Argument[];
+};
+
+export var Instances: {
+  [key: string]: Instance;
+} = {};
 
 export var Patterns: {
-  [key: string]: {
-    title: string;
-    author: string;
-    arguments: Set<Argument>;
-  };
+  [key: string]: Pattern;
+} = {};
+
+export type PatternRefactorResults = {
+  replaces: Quad[];
+  instance: Instance;
+};
+
+export var PatternUsage: {
+  [key: string]: { instance: Instance; model: string; diagram?: string }[];
 } = {};

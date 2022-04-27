@@ -39,6 +39,7 @@ import * as _ from "lodash";
 import {
   ElemCreationConfiguration,
   LinkCreationConfiguration,
+  PatternCreationConfiguration,
 } from "../components/modals/CreationModals";
 import { DetailPanelMode, ElemCreationStrategy } from "../config/Enum";
 import { Locale } from "../config/Locale";
@@ -51,7 +52,10 @@ interface Props {
   freeze: boolean;
   performTransaction: (...queries: string[]) => void;
   handleCreation: (
-    configuration: LinkCreationConfiguration | ElemCreationConfiguration
+    configuration:
+      | LinkCreationConfiguration
+      | ElemCreationConfiguration
+      | PatternCreationConfiguration
   ) => void;
   handleStatus: Function;
 }
@@ -144,17 +148,21 @@ export default class DiagramCanvas extends React.Component<Props, State> {
        */
       "blank:contextmenu": (evt) => {
         evt.preventDefault();
-        const vocabulary = Object.keys(WorkspaceVocabularies).find(
-          (vocab) => !WorkspaceVocabularies[vocab].readOnly
-        );
-        if (vocabulary) {
-          this.props.handleCreation({
-            strategy: ElemCreationStrategy.DEFAULT,
-            position: { x: evt.clientX, y: evt.clientY },
-            vocabulary: vocabulary,
-            header: Locale[AppSettings.interfaceLanguage].modalNewElemTitle,
-            connections: [],
-          });
+        if (AppSettings.selectedElements.length > 1) {
+          this.props.handleCreation({ elements: AppSettings.selectedElements });
+        } else {
+          const vocabulary = Object.keys(WorkspaceVocabularies).find(
+            (vocab) => !WorkspaceVocabularies[vocab].readOnly
+          );
+          if (vocabulary) {
+            this.props.handleCreation({
+              strategy: ElemCreationStrategy.DEFAULT,
+              position: { x: evt.clientX, y: evt.clientY },
+              vocabulary: vocabulary,
+              header: Locale[AppSettings.interfaceLanguage].modalNewElemTitle,
+              connections: [],
+            });
+          }
         }
         this.newLink = false;
         unHighlightAll();
