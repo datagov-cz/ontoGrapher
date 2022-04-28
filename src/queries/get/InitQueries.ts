@@ -216,6 +216,7 @@ export async function getSettings(
             result.id.value,
             result.graph.value
           );
+          Diagrams[result.id.value].saved = true;
           indices.push(index);
           AppSettings.initWorkspace = false;
           if (result.context) {

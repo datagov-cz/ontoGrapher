@@ -32,10 +32,7 @@ import { Locale } from "../config/Locale";
 import { updateLegacyWorkspace } from "../queries/update/legacy/UpdateLegacyWorkspaceQueries";
 import { reconstructApplicationContextWithDiagrams } from "../queries/update/UpdateReconstructAppContext";
 import { updateWorkspaceContext } from "../queries/update/UpdateMiscQueries";
-import {
-  updateCreateDiagram,
-  updateDeleteDiagram,
-} from "../queries/update/UpdateDiagramQueries";
+import { updateDeleteDiagram } from "../queries/update/UpdateDiagramQueries";
 import { finishUpdatingLegacyWorkspace } from "../queries/update/legacy/FinishUpdatingLegacyWorkspaceQueries";
 import { CacheSearchVocabularies } from "../datatypes/CacheSearchResults";
 import * as _ from "lodash";
@@ -91,13 +88,12 @@ export async function updateContexts(): Promise<boolean> {
   if (AppSettings.initWorkspace) {
     const queries = [updateWorkspaceContext()];
     if (Object.keys(Diagrams).length === 0) {
-      const id = addDiagram(
+      addDiagram(
         Locale[AppSettings.interfaceLanguage].untitled,
         true,
         Representation.COMPACT,
         0
       );
-      queries.push(updateCreateDiagram(id));
     }
     const ret = await processTransaction(
       AppSettings.contextEndpoint,
@@ -296,8 +292,7 @@ function checkForObsoleteDiagrams() {
           queries.push(updateDeleteDiagram(diag));
         }
         if (diagramsToDelete.length === workspaceDiagrams.length) {
-          const id = addDiagram(Locale[AppSettings.interfaceLanguage].untitled);
-          queries.push(updateCreateDiagram(id));
+          addDiagram(Locale[AppSettings.interfaceLanguage].untitled);
         }
         changeDiagrams();
         await processTransaction(

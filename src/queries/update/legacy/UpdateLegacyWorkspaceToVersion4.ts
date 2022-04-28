@@ -207,6 +207,7 @@ export async function updateLegacyWorkspaceToVersion4(
       getNewDiagramContextIRI(diagram),
       diagram
     );
+    Diagrams[diagram].saved = true;
   });
   return triples;
 }
@@ -251,6 +252,7 @@ async function getLegacyDiagrams(
             representation: parseInt(result.representation.value),
             iri: getNewDiagramContextIRI(id),
             graph: getNewDiagramContextIRI(id),
+            saved: true,
           };
         }
       }

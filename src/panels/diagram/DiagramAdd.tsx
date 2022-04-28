@@ -6,7 +6,6 @@ import {
 } from "../../config/Variables";
 import { Locale } from "../../config/Locale";
 import { addDiagram } from "../../function/FunctionCreateVars";
-import { updateCreateDiagram } from "../../queries/update/UpdateDiagramQueries";
 import { Representation } from "../../config/Enum";
 
 interface Props {
@@ -29,7 +28,6 @@ export default class DiagramAdd extends React.Component<Props, State> {
     Object.keys(WorkspaceLinks).forEach(
       (link) => (WorkspaceLinks[link].vertices[id] = [])
     );
-    this.props.performTransaction(updateCreateDiagram(id));
     this.props.update();
   }
 
