@@ -15,8 +15,9 @@ import MenuPanelAbout from "./menu/right/MenuPanelAbout";
 import MenuPanelValidate from "./menu/left/MenuPanelValidate";
 import FitContentWidget from "./menu/widget/FitContentWidget";
 import InterfaceStatus from "../components/InterfaceStatus";
-import MenuPanelSwitchRepresentation from "./menu/left/MenuPanelSwitchRepresentation";
 import { MenuPanelPatterns } from "../pattern/MenuPanelPatterns";
+import MenuPanelToggleView from "../pattern/MenuPanelToggleView";
+import MenuPanelSwitchRepresentation from "./menu/left/MenuPanelSwitchRepresentation";
 
 interface MenuPanelProps {
   readOnly?: boolean;
@@ -60,8 +61,6 @@ export default class MenuPanel extends React.Component<
     this.forceUpdate();
   }
 
-  //TODO: locale
-
   render() {
     return (
       <nav className={"menuPanel"}>
@@ -98,11 +97,20 @@ export default class MenuPanel extends React.Component<
               this.props.handleChangeInterfaceLanguage
             }
           />
-          <MenuPanelSwitchRepresentation
-            update={() => this.props.update()}
-            close={() => this.props.closeDetailPanel()}
-            performTransaction={this.props.performTransaction}
-          />
+          {!Environment.pattern && (
+            <MenuPanelSwitchRepresentation
+              update={() => this.props.update()}
+              close={() => this.props.closeDetailPanel()}
+              performTransaction={this.props.performTransaction}
+            />
+          )}
+          {!!Environment.pattern && (
+            <MenuPanelToggleView
+              update={() => this.props.update()}
+              close={() => this.props.closeDetailPanel()}
+              performTransaction={this.props.performTransaction}
+            />
+          )}
           {Environment.auth && (
             <MenuPanelValidate validate={() => this.props.validate()} />
           )}

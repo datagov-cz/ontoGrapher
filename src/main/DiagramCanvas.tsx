@@ -149,7 +149,9 @@ export default class DiagramCanvas extends React.Component<Props, State> {
       "blank:contextmenu": (evt) => {
         evt.preventDefault();
         if (AppSettings.selectedElements.length > 1) {
-          this.props.handleCreation({ elements: AppSettings.selectedElements });
+          this.props.handleCreation({
+            elements: _.clone(AppSettings.selectedElements),
+          });
         } else {
           const vocabulary = Object.keys(WorkspaceVocabularies).find(
             (vocab) => !WorkspaceVocabularies[vocab].readOnly

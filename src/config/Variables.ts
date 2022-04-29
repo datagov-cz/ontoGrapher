@@ -67,6 +67,8 @@ export var Prefixes: { [key: string]: string } = {
   og: "http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/",
   xsd: "http://www.w3.org/2001/XMLSchema#",
   ottr: "http://ns.ottr.xyz/0.4/",
+  docttr: "http://tpl.ottr.xyz/p/docttr/0.1/",
+  pav: "http://purl.org/pav/",
   "d-sgov-pracovní-prostor-pojem":
     "https://slovník.gov.cz/datový/pracovní-prostor/pojem/",
   "z-sgov-pojem": "https://slovník.gov.cz/základní/pojem/",
@@ -141,6 +143,7 @@ export var AppSettings: {
   luceneConnector: string;
   initWorkspace: boolean;
   representation: Representation;
+  patternView: boolean;
   defaultCardinalitySource: Cardinality;
   defaultCardinalityTarget: Cardinality;
   contextVersion: number;
@@ -182,6 +185,7 @@ export var AppSettings: {
   viewColorPool: "pastelLow",
   viewItemPanelTypes: true,
   interfaceLanguage: "en",
+  patternView: true,
   selectedElements: [],
   selectedLinks: [],
 };

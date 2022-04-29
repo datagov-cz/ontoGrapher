@@ -105,7 +105,7 @@ export const PatternAlgorithmModal: React.FC<Props> = (props: Props) => {
               <div>
                 <Table>
                   <thead>
-                    <th>Newly created instance</th>
+                    <td>Newly created instance</td>
                     <th>Actions</th>
                   </thead>
                   <tbody>
