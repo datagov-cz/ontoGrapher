@@ -179,6 +179,12 @@ export default class App extends React.Component<
       Locale[AppSettings.interfaceLanguage].workspaceReady,
       false
     );
+    this.handleCreation({
+      elements: [
+        "https://slovník.gov.cz/legislativní/sbírka/361/2000/pojem/mezinárodní-řidičský-průkaz",
+        "https://slovník.gov.cz/legislativní/sbírka/361/2000/pojem/autobus",
+      ],
+    });
     return true;
   }
 

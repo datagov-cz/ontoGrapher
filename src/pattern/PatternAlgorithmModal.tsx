@@ -1,30 +1,66 @@
 import React, { useState } from "react";
-import { Button, Form, Modal, Tab, Table, Tabs } from "react-bootstrap";
+import {
+  Button,
+  Col,
+  Container,
+  Form,
+  Modal,
+  Row,
+  Tab,
+  Table,
+  Tabs,
+} from "react-bootstrap";
 import { callRefactorAlgorithm } from "./PatternQueries";
 import { Diagrams } from "../config/Variables";
-import { Instance, Patterns } from "./PatternTypes";
-import { Quad } from "n3";
+import { Instance, Pattern, Patterns } from "./PatternTypes";
+import * as _ from "lodash";
+import PatternInternalView from "./PatternInternalView";
 
 type Props = { open: boolean; close: Function };
 
-type Results = {
+type Algo1Results = {
   instance: Instance;
-  replacing: Quad[];
-  details: boolean;
-}[];
+  use: boolean;
+};
+
+type Algo2Results = {
+  pattern: Pattern;
+  instances: Instance[];
+  use: boolean;
+};
 
 export const PatternAlgorithmModal: React.FC<Props> = (props: Props) => {
   const [algo1Loading, setAlgo1Loading] = useState<boolean>(false);
   const [algo2Loading, setAlgo2Loading] = useState<boolean>(false);
   const [algo1Where, setAlgo1Where] = useState<string>("");
   const [algo2Where, setAlgo2Where] = useState<string>("");
-  const [algo1Results, setAlgo1Results] = useState<Results>([]);
-  const [algo2Results, setAlgo2Results] = useState<Results>([]);
+  const [algo1Detail, setAlgo1Detail] = useState<number>(-1);
+  const [algo2Detail, setAlgo2Detail] = useState<number>(-1);
+  const [algo1Results, setAlgo1Results] = useState<Algo1Results[]>([]);
+  const [algo2Results, setAlgo2Results] = useState<Algo2Results[]>([]);
 
   const callAlgo1 = async () => {
     setAlgo1Loading(true);
     await callRefactorAlgorithm();
   };
+
+  const callAlgo2 = async () => {
+    setAlgo2Loading(true);
+    await callRefactorAlgorithm();
+  };
+
+  const modifyAlgo1Results = (data: Algo1Results, index: number) => {
+    const copy = _.clone(algo1Results);
+    copy[index] = data;
+    setAlgo1Results(copy);
+  };
+
+  const modifyAlgo2Results = (data: Algo2Results, index: number) => {
+    const copy = _.clone(algo2Results);
+    copy[index] = data;
+    setAlgo2Results(copy);
+  };
+
   return (
     <Modal
       size={"xl"}
@@ -38,8 +74,12 @@ export const PatternAlgorithmModal: React.FC<Props> = (props: Props) => {
         <Modal.Title>Call pattern algorithms</Modal.Title>
       </Modal.Header>
       <Modal.Body>
-        <Tabs>
-          <Tab disabled={algo2Loading} title={"Refactor existing model"}>
+        <Tabs defaultActiveKey={"create"}>
+          <Tab
+            disabled={algo2Loading}
+            eventKey={"refactor"}
+            title={"Refactor existing model"}
+          >
             {algo1Results.length === 0 && (
               <div>
                 <p>
@@ -71,8 +111,23 @@ export const PatternAlgorithmModal: React.FC<Props> = (props: Props) => {
                       <tr>
                         <td>Instance of {Patterns[res.instance.iri].title}</td>
                         <td>
-                          <Button>View details</Button>
-                          <Button>Do not use</Button>
+                          <Button
+                            size={"sm"}
+                            onClick={() => setAlgo1Detail(index)}
+                          >
+                            View details
+                          </Button>
+                          <Button
+                            size={"sm"}
+                            onClick={() =>
+                              modifyAlgo1Results(
+                                { ...res, use: !res.use },
+                                index
+                              )
+                            }
+                          >
+                            {res.use ? "Do not apply" : "Apply instance"}
+                          </Button>
                         </td>
                       </tr>
                     ))}
@@ -81,7 +136,11 @@ export const PatternAlgorithmModal: React.FC<Props> = (props: Props) => {
               </div>
             )}
           </Tab>
-          <Tab disabled={algo1Loading} title={"Create patterns automatically"}>
+          <Tab
+            disabled={algo1Loading}
+            key={"create"}
+            title={"Create patterns automatically"}
+          >
             {algo2Results.length === 0 && (
               <div>
                 <p>
@@ -102,25 +161,88 @@ export const PatternAlgorithmModal: React.FC<Props> = (props: Props) => {
               </div>
             )}
             {algo2Results.length > 0 && (
-              <div>
-                <Table>
-                  <thead>
-                    <th>Newly created instance</th>
-                    <th>Actions</th>
-                  </thead>
-                  <tbody>
-                    {algo1Results.map((res, index) => (
-                      <tr>
-                        <td>{Patterns[res.instance.iri].title}</td>
-                        <td>
-                          <Button>View details</Button>
-                          <Button>Do not use</Button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </Table>
-              </div>
+              <Container>
+                <Row>
+                  <Col>
+                    <div>
+                      <Table>
+                        <thead>
+                          <td>Newly created instance</td>
+                          <th>Actions</th>
+                        </thead>
+                        <tbody>
+                          {algo2Results.map((res, index) => (
+                            <tr>
+                              <td>{res.pattern.title}</td>
+                              <td>
+                                <Button
+                                  size={"sm"}
+                                  onClick={() => setAlgo2Detail(index)}
+                                >
+                                  View details
+                                </Button>
+                                <Button
+                                  size={"sm"}
+                                  onClick={() =>
+                                    modifyAlgo2Results(
+                                      { ...res, use: !res.use },
+                                      index
+                                    )
+                                  }
+                                >
+                                  {res.use ? "Do not use" : "Use pattern"}
+                                </Button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </Table>
+                    </div>
+                  </Col>
+                  <Col>
+                    {algo2Detail !== 1 && (
+                      <div>
+                        <PatternInternalView
+                          width={"100%"}
+                          height={"500px"}
+                          fitContent={true}
+                          terms={}
+                          conns={}
+                          parameters={}
+                        />
+                        <br />
+                        <Form.Group controlId="formTitle">
+                          <Form.Label>Title</Form.Label>
+                          <Form.Control
+                            value={algo2Results[algo2Detail].pattern.title}
+                            disabled
+                            type="text"
+                          />
+                        </Form.Group>
+                        <Form.Group controlId="formAuthor">
+                          <Form.Label>Author</Form.Label>
+                          <Form.Control
+                            value={algo2Results[algo2Detail].pattern.author}
+                            disabled
+                            type="text"
+                          />
+                        </Form.Group>
+                        <Form.Group controlId="formDescription">
+                          <Form.Label>Description</Form.Label>
+                          <Form.Control
+                            value={
+                              algo2Results[algo2Detail].pattern.description
+                            }
+                            disabled
+                            as={"textarea"}
+                            rows={3}
+                          />
+                        </Form.Group>
+                      </div>
+                    )}
+                  </Col>
+                </Row>
+              </Container>
             )}
           </Tab>
         </Tabs>

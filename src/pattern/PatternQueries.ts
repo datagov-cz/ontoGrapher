@@ -1,7 +1,6 @@
 import { Environment } from "../config/Environment";
 import * as N3 from "n3";
-import { DataFactory, Quad } from "n3";
-import { parsePrefix } from "../function/FunctionEditVars";
+import { Quad } from "n3";
 import {
   AppSettings,
   WorkspaceElements,
@@ -9,40 +8,37 @@ import {
 } from "../config/Variables";
 import { isElementHidden } from "../function/FunctionElem";
 import { processQuery } from "../interface/TransactionInterface";
-import { Pattern } from "./PatternTypes";
-import namedNode = DataFactory.namedNode;
-import literal = DataFactory.literal;
-import blankNode = DataFactory.blankNode;
 
 function returnPatterns(quads: Quad[]) {}
 
-export function getPattern(iri: string) {
-  fetch(`${Environment.pattern}/template?iri=${iri}`, {
-    method: "GET",
-  })
-    .then((r) => r.text())
-    .then((text) => {
-      const parser = new N3.Parser();
-      const quads: Quad[] = parser.parse(text);
-      const pattern: Pattern = {
-        title: "",
-        author: "",
-        arguments: [],
-      };
-      for (const quad of quads) {
-        if (quad.predicate.value === parsePrefix("dc", "title")) {
-          pattern.title = quad.object.value;
-        }
-        if (quad.predicate.value === parsePrefix("dc", "creator")) {
-          pattern.author = quad.object.value;
-        }
-        if (quad.predicate.value === parsePrefix("ottr", "parameters")) {
-        }
-        if (quad.predicate.value === parsePrefix("ottr", "pattern")) {
-        }
-      }
-    });
-}
+// export function getPattern(iri: string) {
+//   fetch(`${Environment.pattern}/template?iri=${iri}`, {
+//     method: "GET",
+//   })
+//     .then((r) => r.text())
+//     .then((text) => {
+//       const parser = new N3.Parser();
+//       const quads: Quad[] = parser.parse(text);
+//       const pattern: Pattern = {
+//         title: "",
+//         author: "",
+//         date: "",
+//         description: "",
+//       };
+//       for (const quad of quads) {
+//         if (quad.predicate.value === parsePrefix("dc", "title")) {
+//           pattern.title = quad.object.value;
+//         }
+//         if (quad.predicate.value === parsePrefix("dc", "creator")) {
+//           pattern.author = quad.object.value;
+//         }
+//         if (quad.predicate.value === parsePrefix("ottr", "parameters")) {
+//         }
+//         if (quad.predicate.value === parsePrefix("ottr", "pattern")) {
+//         }
+//       }
+//     });
+// }
 const defaultQuery = "";
 
 export async function searchPatterns(query: string = defaultQuery) {
@@ -93,28 +89,27 @@ async function getModel(terms: string[], diagram?: string): Promise<string> {
   await processQuery(AppSettings.contextEndpoint, query, true)
     .then((r) => r.json())
     .then((json) => {
-      for (const result of json.result.bindings) {
-        let object = undefined;
-        switch (result.o.type) {
-          case "uri":
-            object = namedNode(result.o.value);
-            break;
-          case "literal":
-            object = literal(result.o.value, namedNode(result.o.datatype));
-            break;
-          case "bnode":
-            object = blankNode(result.o.value);
-        }
-        if (object)
-          store.addQuad(
-            new N3.Quad(
-              namedNode(result.s.value),
-              namedNode(result.p.value),
-              object,
-              namedNode(result.graph.value)
-            )
-          );
-      }
+      // for (const result of json.result.bindings) {
+      //   let object = undefined;
+      //   switch (result.o.type) {
+      //     case "uri":
+      //       object = namedNode(result.o.value);
+      //       break;
+      //     case "literal":
+      //       object = literal(result.o.value, namedNode(result.o.datatype));
+      //       break;
+      //     case "bnode":
+      //       object = blankNode(result.o.value);
+      //   }
+      //   if (object)
+      //     store.addQuad(
+      //       new N3.Quad(
+      //         namedNode(result.s.value),
+      //         namedNode(result.p.value),
+      //         object,
+      //         namedNode(result.graph.value)
+      //       )
+      //     );
     });
   let r = "";
   store.end((error, result) => (r = result));
@@ -145,5 +140,5 @@ export async function callSuggestionAlgorithm(
   return await fetch(`${Environment.pattern}/suggest`, {
     method: "POST",
     body: r,
-  }).then((r) => r.text());
+  }).then((r) => r.json());
 }
