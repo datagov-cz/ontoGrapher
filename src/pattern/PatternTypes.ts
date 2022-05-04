@@ -1,22 +1,9 @@
-import { Quad } from "n3";
+import { LinkType } from "../config/Enum";
 
 export type Instance = {
   iri: string;
-  terms: {
-    iri: string;
-    name: string;
-    scheme: string;
-    qualities: string[];
-  }[];
-  conns: {
-    iri: string;
-    name: string;
-    scheme: string;
-    to: string;
-    from: string;
-    sourceCardinality: string;
-    targetCardinality: string;
-  }[];
+  terms: string[];
+  conns: string[];
   x: number;
   y: number;
 };
@@ -27,21 +14,24 @@ export type Pattern = {
   date: string;
   description: string;
   terms: {
-    name: string;
-    types: string[];
-    parameter: boolean;
-    qualities: string[];
-    optional?: boolean;
-    multiple?: boolean;
-    convolution?: boolean;
-  }[];
+    [key: string]: {
+      name: string;
+      types: string[];
+      parameter?: boolean;
+      optional?: boolean;
+      multiple?: boolean;
+    };
+  };
   conns: {
-    name: string;
-    to: string;
-    from: string;
-    sourceCardinality: string;
-    targetCardinality: string;
-  }[];
+    [key: string]: {
+      name: string;
+      to: string;
+      from: string;
+      sourceCardinality: string;
+      targetCardinality: string;
+      linkType: LinkType;
+    };
+  };
 };
 
 export var Instances: {
@@ -50,54 +40,7 @@ export var Instances: {
 
 export var Patterns: {
   [key: string]: Pattern;
-} = {
-  text: {
-    title: "test",
-    author: "jíá",
-    date: "2022-05-02T11:46:18.638Z",
-    description: "ff",
-    terms: [
-      {
-        parameter: false,
-        types: [
-          "http://www.w3.org/2002/07/owl#Class",
-          "http://www.w3.org/2004/02/skos/core#Concept",
-          "https://slovník.gov.cz/základní/pojem/typ-objektu",
-        ],
-        name: "Mezinárodní řidičský průkaz",
-        qualities: [],
-      },
-      {
-        parameter: false,
-        types: [
-          "http://www.w3.org/2002/07/owl#Class",
-          "http://www.w3.org/2004/02/skos/core#Concept",
-          "https://slovník.gov.cz/základní/pojem/typ-objektu",
-        ],
-        name: "Autobus",
-        qualities: [
-          "https://slovník.gov.cz/legislativní/sbírka/361/2000/pojem/mnohem-delší-vlastnost",
-          "https://slovník.gov.cz/legislativní/sbírka/361/2000/pojem/počet-míst",
-          "https://slovník.gov.cz/legislativní/sbírka/361/2000/pojem/a-ještě-ta-nejdelší-vlastnost-ze-všech-ostatních",
-        ],
-      },
-    ],
-    conns: [
-      {
-        name: "tčtččč",
-        from: "https://slovník.gov.cz/legislativní/sbírka/361/2000/pojem/autobus",
-        to: "https://slovník.gov.cz/legislativní/sbírka/361/2000/pojem/mezinárodní-řidičský-průkaz",
-        sourceCardinality: "3",
-        targetCardinality: "6",
-      },
-    ],
-  },
-};
-
-export type PatternRefactorResults = {
-  replaces: Quad[];
-  instance: Instance;
-};
+} = {};
 
 export var PatternUsage: {
   [key: string]: { instance: Instance; model: string; diagram?: string }[];

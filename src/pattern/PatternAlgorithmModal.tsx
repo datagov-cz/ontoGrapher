@@ -29,6 +29,8 @@ type Algo2Results = {
   use: boolean;
 };
 
+//TODO: implement algo1 modal
+//TODO: implement algo2 modal
 export const PatternAlgorithmModal: React.FC<Props> = (props: Props) => {
   const [algo1Loading, setAlgo1Loading] = useState<boolean>(false);
   const [algo2Loading, setAlgo2Loading] = useState<boolean>(false);
@@ -206,9 +208,8 @@ export const PatternAlgorithmModal: React.FC<Props> = (props: Props) => {
                           width={"100%"}
                           height={"500px"}
                           fitContent={true}
-                          terms={}
-                          conns={}
-                          parameters={}
+                          terms={algo2Results[algo2Detail].pattern.terms}
+                          conns={algo2Results[algo2Detail].pattern.conns}
                         />
                         <br />
                         <Form.Group controlId="formTitle">

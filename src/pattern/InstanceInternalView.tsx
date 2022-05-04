@@ -1,11 +1,22 @@
 import * as joint from "jointjs";
 import React from "react";
-import { getNewLink } from "../function/FunctionGetVars";
+import {
+  getIntrinsicTropeTypeIDs,
+  getLabelOrBlank,
+  getLinkOrVocabElem,
+  getNewLink,
+} from "../function/FunctionGetVars";
 import { zoomDiagram } from "../function/FunctionDiagram";
 import { graphElement } from "../graph/GraphElement";
-import { CardinalityPool } from "../config/Variables";
-import { LinkType } from "../config/Enum";
 import { getStereotypeList } from "../function/FunctionEditVars";
+import _ from "lodash";
+import {
+  AppSettings,
+  WorkspaceLinks,
+  WorkspaceTerms,
+} from "../config/Variables";
+import { getDisplayLabel } from "../function/FunctionDraw";
+import { setLabels } from "../function/FunctionGraph";
 
 type State = {};
 
@@ -13,30 +24,16 @@ type Props = {
   width: string;
   height: string;
   fitContent: boolean;
-  terms: {
-    [key: string]: {
-      name: string;
-      types: string[];
-      parameter?: boolean;
-      optional?: boolean;
-      multiple?: boolean;
-    };
-  };
-  conns: {
-    [key: string]: {
-      name: string;
-      to: string;
-      from: string;
-      sourceCardinality: string;
-      targetCardinality: string;
-      linkType: LinkType;
-    };
-  };
+  terms: string[];
+  conns: string[];
 };
 
 var paper: joint.dia.Paper;
 
-export default class PatternInternalView extends React.Component<Props, State> {
+export default class InstanceInternalView extends React.Component<
+  Props,
+  State
+> {
   private graph: joint.dia.Graph = new joint.dia.Graph();
   private readonly canvasRef: React.RefObject<HTMLDivElement> =
     React.createRef();
@@ -48,87 +45,66 @@ export default class PatternInternalView extends React.Component<Props, State> {
     snapshot?: any
   ) {
     this.graph.clear();
-    const numberOfElements = Object.keys(this.props.terms).length;
+    const numberOfElements = this.props.terms.length;
     const centerX = paper.getComputedSize().width / 2;
     const centerY = paper.getComputedSize().height / 2;
     const radius = 200 + numberOfElements * 50;
-    Object.keys(this.props.terms).forEach((p, i) => {
+    this.props.terms.forEach((term, i) => {
       const x =
         centerX + radius * Math.cos((i * 2 * Math.PI) / numberOfElements);
       const y =
         centerY + radius * Math.sin((i * 2 * Math.PI) / numberOfElements);
-      const element = new graphElement({ id: p });
+      const element = new graphElement({ id: term });
       element.position(x, y);
       element.addTo(this.graph);
       const labels: string[] = [];
-      getStereotypeList(this.props.terms[p].types).forEach((str) =>
+      getStereotypeList(WorkspaceTerms[term].types).forEach((str) =>
         labels.push("«" + str.toLowerCase() + "»")
       );
-      labels.push(this.props.terms[p].name);
+      labels.push(
+        getLabelOrBlank(WorkspaceTerms[term].labels, AppSettings.canvasLanguage)
+      );
       element.prop("attrs/label/text", labels.join("\n"));
+      const text: string[] = [];
+      text.push(
+        ..._.uniq(getIntrinsicTropeTypeIDs(term)).map((id) =>
+          getDisplayLabel(id, AppSettings.canvasLanguage)
+        )
+      );
+      element.prop("attrs/labelAttrs/text", text.join("\n"));
       const width = Math.max(
         labels.reduce((a, b) => (a.length > b.length ? a : b), "").length * 10 +
           4,
-        0
+        text.length > 0
+          ? 8 * text.reduce((a, b) => (a.length > b.length ? a : b), "").length
+          : 0
       );
       element.prop("attrs/text/x", width / 2);
       const attrHeight = 24 + (labels.length - 1) * 18;
-      const height = attrHeight;
+      const height = (text.length > 0 ? 4 + text.length * 14 : 0) + attrHeight;
       element.prop("attrs/labelAttrs/y", attrHeight);
       element.resize(width, height);
-      if (this.props.terms[i].optional) {
-        element.attr({
-          bodyBox: {
-            display: "block",
-            width: width,
-            height: height,
-            fill: "#FFFFFF",
-          },
-        });
-      }
-      if (this.props.terms[i].optional) {
-        element.attr({
-          bodyBox: { fillOpacity: "0.5" },
-        });
-      }
-      if (this.props.terms[i].multiple) {
-        element.attr({
-          bodyBox: {
-            strokeDasharray: "5,5",
-            stroke: "green",
-          },
-        });
-      }
-    });
-    Object.keys(this.props.conns).forEach((conn) => {
-      const link = getNewLink(this.props.conns[conn].linkType);
-      link.source({ id: this.props.conns[conn].from });
-      link.target({ id: this.props.conns[conn].to });
-      link.labels([]);
-      link.appendLabel({
-        attrs: { text: { text: this.props.conns[conn].name } },
-        position: { distance: 0.5 },
+      element.attr({
+        bodyBox: {
+          display: "block",
+          width: width,
+          height: height,
+          strokeDasharray: "none",
+          stroke: "black",
+          fill: "#FFFFFF",
+        },
       });
-      const sourceCardinality =
-        CardinalityPool[parseInt(this.props.conns[conn].sourceCardinality, 10)];
-      const targetCardinality =
-        CardinalityPool[parseInt(this.props.conns[conn].targetCardinality, 10)];
-      if (sourceCardinality && sourceCardinality.getString() !== "") {
-        link.appendLabel({
-          attrs: {
-            text: { text: sourceCardinality.getString() },
-          },
-          position: { distance: 20 },
-        });
-      }
-      if (targetCardinality && targetCardinality.getString() !== "") {
-        link.appendLabel({
-          attrs: {
-            text: { text: targetCardinality.getString() },
-          },
-          position: { distance: -20 },
-        });
-      }
+    });
+    this.props.conns.forEach((conn) => {
+      const link = new joint.shapes.standard.Link();
+      link.source({ id: WorkspaceLinks[conn].source });
+      link.target({ id: WorkspaceLinks[conn].target });
+      setLabels(
+        link,
+        getLinkOrVocabElem(WorkspaceLinks[conn].iri).labels[
+          AppSettings.canvasLanguage
+        ]
+      );
       link.addTo(this.graph);
     });
     paper.scaleContentToFit({

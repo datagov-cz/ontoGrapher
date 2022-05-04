@@ -9,7 +9,20 @@ import {
 import { isElementHidden } from "../function/FunctionElem";
 import { processQuery } from "../interface/TransactionInterface";
 
+//TODO: implement pattern & instance loading
+//TODO: implement algo1 contact
+//TODO: implement algo2 contact
+//TODO: implement algo3 contact
+//TODO: implement algo4 contact
+//TODO: implement algo5 contact
+//TODO: implement algo6 contact
+//TODO: implement algo7 contact
+//TODO: implement algo8 contact
 function returnPatterns(quads: Quad[]) {}
+
+export async function getAllPatterns(): Promise<string[]> {
+  return [];
+}
 
 // export function getPattern(iri: string) {
 //   fetch(`${Environment.pattern}/template?iri=${iri}`, {
@@ -142,3 +155,7 @@ export async function callSuggestionAlgorithm(
     body: r,
   }).then((r) => r.json());
 }
+
+export async function callStatisticsAlgorithmOnPattern(iri: string) {}
+
+export async function callStatisticsAlgorithmOnModel(iri: string) {}

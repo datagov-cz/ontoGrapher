@@ -50,6 +50,7 @@ import { getElementPosition } from "../function/FunctionElem";
 import { en } from "../locale/en";
 import { StoreAlerts } from "../config/Store";
 import { CriticalAlertModal } from "../components/modals/CriticalAlertModal";
+import { callCriticalAlert } from "../config/CriticalAlertData";
 
 interface DiagramAppProps {}
 
@@ -179,11 +180,36 @@ export default class App extends React.Component<
       Locale[AppSettings.interfaceLanguage].workspaceReady,
       false
     );
-    this.handleCreation({
-      elements: [
-        "https://slovník.gov.cz/legislativní/sbírka/361/2000/pojem/mezinárodní-řidičský-průkaz",
-        "https://slovník.gov.cz/legislativní/sbírka/361/2000/pojem/autobus",
-      ],
+    callCriticalAlert({
+      acceptFunction: () => {},
+      waitForFunctionBeforeModalClose: false,
+      acceptLabel: "",
+      modalSize: undefined,
+      innerContent: (
+        <div>
+          <p>
+            Vítejte ve verzi OntoGrapheru vytvořené pro testování implementace
+            šablon (Ontology Design Pattern)! Mockrát děkuji, že jste si pro
+            test udělali čas - mělo by vám to zabrat kolem patnácti minut. Pro
+            návod, testovací scénář a formulář pro záznam zpětné vazby prosím
+            navštivte:
+          </p>
+          <p>
+            <a href={"http://kbss.felk.cvut.cz:15889/testing.html"}></a>
+          </p>
+          <p>
+            Ráda bych poprosila, abyste zpětnou vazbu odeslali do 19. května
+            (čtvrtek), s tím, že toto testovací prostředí vydrží alespoň do 20.
+            května. Pokud při vašem testování naleznete fatální chybu, která vám
+            zabraňuje pokračovat, nahlaste ji prosím přes žluté tlačítko vpravo
+            nahoře (Report an issue/Nahlásit chybu). V této verzi vás toto
+            tlačítko přesměruje na speciální issue šablonu sepsanou pro tuto
+            verzi - jakoukoliv komunikaci kolem issue budu provádět na stránce
+            issue.
+          </p>
+          <span className={"right"}>- Alice B.</span>
+        </div>
+      ),
     });
     return true;
   }

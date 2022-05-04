@@ -15,31 +15,23 @@ import {
   WorkspaceLinks,
   WorkspaceTerms,
 } from "../config/Variables";
-import {
-  getIntrinsicTropeTypeIDs,
-  getLabelOrBlank,
-} from "../function/FunctionGetVars";
-import { getName, getStereotypeList } from "../function/FunctionEditVars";
+import { getLabelOrBlank } from "../function/FunctionGetVars";
+import { getName } from "../function/FunctionEditVars";
 import * as _ from "lodash";
 import { v4 as uuidv4 } from "uuid";
-import { Patterns } from "./PatternTypes";
 import { PatternCreationConfiguration } from "../components/modals/CreationModals";
 import PatternInternalView from "./PatternInternalView";
-import { getDisplayLabel } from "../function/FunctionDraw";
+import { Pattern } from "./PatternTypes";
+import { LinkType } from "../config/Enum";
 
-type newPatternQualities = {
-  [key: string]: { [key: string]: boolean };
-};
+type newPatternTerms = string[];
 
 type newPatternParameter = {
   [key: string]: {
     name: string;
-    type: string[];
+    types: string[];
     optional: boolean;
     multiple: boolean;
-    multipleIRI: string;
-    convolution: string;
-    qualities: string[];
     active: boolean;
   };
 };
@@ -51,19 +43,55 @@ type newPatternData = {
 };
 
 type newPatternRelationship = {
-  name: string;
-  from: string;
-  to: string;
-  sourceCardinality: string;
-  targetCardinality: string;
-  active: boolean;
+  [key: string]: {
+    name: string;
+    from: string;
+    to: string;
+    sourceCardinality: string;
+    targetCardinality: string;
+    linkType: LinkType;
+    active: boolean;
+  };
 };
 
-type Props = { configuration: PatternCreationConfiguration };
+type Props = {
+  configuration: PatternCreationConfiguration;
+  submit: (pattern: Pattern) => void;
+};
 
 export const PatternCreationModalNew: React.FC<Props> = (props: Props) => {
+  const getTermsForGraph = () => {
+    const t: {
+      [key: string]: {
+        name: string;
+        types: string[];
+        parameter?: boolean;
+        optional?: boolean;
+        multiple?: boolean;
+      };
+    } = {};
+    for (const term of newPatternTermData) {
+      t[term] = {
+        name: getLabelOrBlank(
+          WorkspaceTerms[term].labels,
+          AppSettings.canvasLanguage
+        ),
+        types: WorkspaceTerms[term].types,
+      };
+    }
+    for (const param in newPatternParameterData) {
+      t[param] = {
+        name: newPatternParameterData[param].name,
+        types: newPatternParameterData[param].types,
+        parameter: true,
+        optional: newPatternParameterData[param].optional,
+        multiple: newPatternParameterData[param].multiple,
+      };
+    }
+    return t;
+  };
+
   useEffect(() => {
-    // compact only!
     const rels = Object.keys(WorkspaceLinks).filter(
       (l) =>
         props.configuration.elements.includes(WorkspaceLinks[l].source) &&
@@ -72,8 +100,7 @@ export const PatternCreationModalNew: React.FC<Props> = (props: Props) => {
     );
     // create parameters
     const parameters: newPatternParameter = {};
-    const relationships: newPatternRelationship[] = [];
-    const qualities: newPatternQualities = {};
+    const relationships: newPatternRelationship = {};
     rels
       .filter(
         (l) => !props.configuration.elements.includes(WorkspaceLinks[l].target)
@@ -83,19 +110,16 @@ export const PatternCreationModalNew: React.FC<Props> = (props: Props) => {
           const term = WorkspaceTerms[WorkspaceLinks[l].target];
           parameters[WorkspaceLinks[l].target] = {
             name: getLabelOrBlank(term.labels, AppSettings.canvasLanguage),
-            type: term.types,
+            types: [""],
             optional: false,
             multiple: false,
-            multipleIRI: "",
-            convolution: "",
-            qualities: getIntrinsicTropeTypeIDs(WorkspaceLinks[l].target),
             active: true,
           };
         }
       });
     // create relationships
     rels.forEach((r) => {
-      relationships.push({
+      relationships[r] = {
         name: getLabelOrBlank(
           WorkspaceTerms[WorkspaceLinks[r].iri].labels,
           AppSettings.canvasLanguage
@@ -108,37 +132,37 @@ export const PatternCreationModalNew: React.FC<Props> = (props: Props) => {
         targetCardinality: CardinalityPool.indexOf(
           WorkspaceLinks[r].targetCardinality
         ).toString(10),
+        linkType: WorkspaceLinks[r].type,
         active: true,
-      });
-    });
-    // create qualities
-    props.configuration.elements.forEach((e) => {
-      if (!(e in qualities)) qualities[e] = {};
-      getIntrinsicTropeTypeIDs(e).forEach((t) => (qualities[e][t] = true));
+      };
     });
     // init info
     setNewPatternData({ name: "", author: "", description: "" });
-    setNewPatternQualityData(qualities);
     setNewPatternRelationshipData(relationships);
+    setNewPatternTermData(props.configuration.elements);
     setNewPatternParameterData(parameters);
   }, []);
 
   const [newPatternParameterData, setNewPatternParameterData] =
     useState<newPatternParameter>({});
-  const [newPatternRelationshipData, setNewPatternRelationshipData] = useState<
-    newPatternRelationship[]
-  >([]);
+  const [newPatternRelationshipData, setNewPatternRelationshipData] =
+    useState<newPatternRelationship>({});
   const [newPatternData, setNewPatternData] = useState<newPatternData>({
     name: "",
     author: "",
     description: "",
   });
-  const [newPatternQualityData, setNewPatternQualityData] =
-    useState<newPatternQualities>({});
+  const [newPatternTermData, setNewPatternTermData] = useState<newPatternTerms>(
+    []
+  );
+  useEffect(
+    () => setNewPatternTermData(props.configuration.elements),
+    [props.configuration]
+  );
 
   const modifyRelationshipData: (
-    index: number,
-    data: newPatternRelationship
+    index: string,
+    data: newPatternRelationship[keyof newPatternRelationship]
   ) => void = (index, data) => {
     const copy = _.clone(newPatternRelationshipData);
     copy[index] = data;
@@ -147,16 +171,7 @@ export const PatternCreationModalNew: React.FC<Props> = (props: Props) => {
 
   const modifyPatternData = (
     id: string,
-    data: {
-      name: string;
-      type: string[];
-      optional: boolean;
-      multiple: boolean;
-      multipleIRI: string;
-      convolution: string;
-      qualities: string[];
-      active: boolean;
-    }
+    data: newPatternParameter[keyof newPatternParameter]
   ) => {
     const copy = _.clone(newPatternParameterData);
     copy[id] = data;
@@ -164,48 +179,42 @@ export const PatternCreationModalNew: React.FC<Props> = (props: Props) => {
   };
 
   const createPattern = () => {
-    Patterns[uuidv4()] = {
+    const t: {
+      [key: string]: {
+        name: string;
+        types: string[];
+        parameter?: boolean;
+        optional?: boolean;
+        multiple?: boolean;
+      };
+    } = {};
+    props.configuration.elements.forEach((e) => {
+      t[e] = {
+        name: getLabelOrBlank(
+          WorkspaceTerms[e].labels,
+          AppSettings.canvasLanguage
+        ),
+        types: WorkspaceTerms[e].types,
+      };
+    });
+    for (const param in newPatternParameterData) {
+      t[param] = {
+        name: newPatternParameterData[param].name,
+        types: newPatternParameterData[param].types,
+        parameter: true,
+        optional: newPatternParameterData[param].optional,
+        multiple: newPatternParameterData[param].multiple,
+      };
+    }
+
+    props.submit({
       title: newPatternData.name,
       author: newPatternData.author,
       date: new Date().toJSON(),
       description: newPatternData.description,
-      terms: props.configuration.elements
-        .map((e) => ({
-          parameter: false,
-          types: WorkspaceTerms[e].types,
-          name: getLabelOrBlank(
-            WorkspaceTerms[e].labels,
-            AppSettings.canvasLanguage
-          ),
-          qualities: Object.keys(newPatternQualityData[e]).filter(
-            (q) => newPatternQualityData[e][q]
-          ),
-        }))
-        .concat(
-          Object.keys(newPatternParameterData).map((d) => ({
-            parameter: true,
-            types: newPatternParameterData[d].type,
-            name: newPatternParameterData[d].name,
-            qualities: newPatternParameterData[d].qualities,
-            optional: newPatternParameterData[d].optional,
-            multiple: newPatternParameterData[d].multiple,
-            convolution: newPatternParameterData[d].convolution,
-          }))
-        ),
-      conns: newPatternRelationshipData.map((d) => ({
-        name: d.name,
-        from: d.from,
-        to: d.to,
-        sourceCardinality: d.sourceCardinality,
-        targetCardinality: d.targetCardinality,
-      })),
-    };
-  };
-
-  const modifyQualityData = (i: string, q: string, b: boolean) => {
-    const copy = _.clone(newPatternQualityData);
-    copy[i][q] = b;
-    setNewPatternQualityData(copy);
+      terms: t,
+      conns: newPatternRelationshipData,
+    });
   };
 
   let key = 0;
@@ -223,7 +232,7 @@ export const PatternCreationModalNew: React.FC<Props> = (props: Props) => {
               </tr>
             </thead>
             <tbody>
-              {Object.keys(newPatternQualityData).map((elem) => (
+              {newPatternTermData.map((elem) => (
                 <tr key={key++}>
                   <td key={key++}>
                     {getLabelOrBlank(
@@ -254,9 +263,9 @@ export const PatternCreationModalNew: React.FC<Props> = (props: Props) => {
               </tr>
             </thead>
             <tbody>
-              {newPatternRelationshipData
-                .filter((data) => data.active)
-                .map((data, index) => (
+              {Object.keys(newPatternRelationshipData)
+                .filter((data) => newPatternRelationshipData[data].active)
+                .map((data) => (
                   <tr key={key++}>
                     <td key={key++}>
                       <Form.Control
@@ -264,12 +273,12 @@ export const PatternCreationModalNew: React.FC<Props> = (props: Props) => {
                         size={"sm"}
                         type={"text"}
                         onChange={(event) =>
-                          modifyRelationshipData(index, {
-                            ...data,
+                          modifyRelationshipData(data, {
+                            ...newPatternRelationshipData[data],
                             name: event.currentTarget.value,
                           })
                         }
-                        value={data.name}
+                        value={newPatternRelationshipData[data].name}
                       />
                     </td>
                     <td key={key++}>
@@ -279,10 +288,10 @@ export const PatternCreationModalNew: React.FC<Props> = (props: Props) => {
                             key={key++}
                             size={"sm"}
                             as="select"
-                            value={data.from}
+                            value={newPatternRelationshipData[data].from}
                             onChange={(event) =>
-                              modifyRelationshipData(index, {
-                                ...data,
+                              modifyRelationshipData(data, {
+                                ...newPatternRelationshipData[data],
                                 from: event.currentTarget.value,
                               })
                             }
@@ -309,10 +318,12 @@ export const PatternCreationModalNew: React.FC<Props> = (props: Props) => {
                             size={"sm"}
                             key={key++}
                             as="select"
-                            value={data.sourceCardinality}
+                            value={
+                              newPatternRelationshipData[data].sourceCardinality
+                            }
                             onChange={(event) =>
-                              modifyRelationshipData(index, {
-                                ...data,
+                              modifyRelationshipData(data, {
+                                ...newPatternRelationshipData[data],
                                 sourceCardinality: event.currentTarget.value,
                               })
                             }
@@ -339,10 +350,12 @@ export const PatternCreationModalNew: React.FC<Props> = (props: Props) => {
                             size={"sm"}
                             as="select"
                             key={key++}
-                            value={data.targetCardinality}
+                            value={
+                              newPatternRelationshipData[data].targetCardinality
+                            }
                             onChange={(event) =>
-                              modifyRelationshipData(index, {
-                                ...data,
+                              modifyRelationshipData(data, {
+                                ...newPatternRelationshipData[data],
                                 targetCardinality: event.currentTarget.value,
                               })
                             }
@@ -359,10 +372,10 @@ export const PatternCreationModalNew: React.FC<Props> = (props: Props) => {
                             size={"sm"}
                             key={key++}
                             as="select"
-                            value={data.to}
+                            value={newPatternRelationshipData[data].to}
                             onChange={(event) =>
-                              modifyRelationshipData(index, {
-                                ...data,
+                              modifyRelationshipData(data, {
+                                ...newPatternRelationshipData[data],
                                 to: event.currentTarget.value,
                               })
                             }
@@ -390,8 +403,8 @@ export const PatternCreationModalNew: React.FC<Props> = (props: Props) => {
                       <Button
                         key={key++}
                         onClick={() =>
-                          modifyRelationshipData(index, {
-                            ...data,
+                          modifyRelationshipData(data, {
+                            ...newPatternRelationshipData[data],
                             active: false,
                           })
                         }
@@ -408,14 +421,15 @@ export const PatternCreationModalNew: React.FC<Props> = (props: Props) => {
                     size={"sm"}
                     onClick={() => {
                       const copy = _.clone(newPatternRelationshipData);
-                      copy.push({
+                      copy[uuidv4()] = {
                         active: true,
-                        from: Object.keys(newPatternQualityData)[0],
+                        from: newPatternTermData[0],
                         name: "",
                         sourceCardinality: "0",
                         targetCardinality: "0",
-                        to: Object.keys(newPatternQualityData)[0],
-                      });
+                        to: newPatternTermData[0],
+                        linkType: LinkType.DEFAULT,
+                      };
                       setNewPatternRelationshipData(copy);
                     }}
                   >
@@ -510,12 +524,9 @@ export const PatternCreationModalNew: React.FC<Props> = (props: Props) => {
                     onClick={() =>
                       modifyPatternData(uuidv4(), {
                         name: "",
-                        type: [],
+                        types: [""],
                         optional: false,
                         multiple: false,
-                        multipleIRI: "",
-                        convolution: "",
-                        qualities: [],
                         active: true,
                       })
                     }
@@ -533,37 +544,8 @@ export const PatternCreationModalNew: React.FC<Props> = (props: Props) => {
             width={"100%"}
             height={"500px"}
             fitContent={true}
-            terms={Object.keys(newPatternQualityData).map((elem) => {
-              return {
-                name: elem,
-                iri: elem,
-                types: getStereotypeList(
-                  WorkspaceTerms[elem].types,
-                  AppSettings.canvasLanguage
-                ),
-                parameter: false,
-                qualities: Object.keys(newPatternQualityData[elem])
-                  .filter((q) => newPatternQualityData[elem][q])
-                  .map((id) => getDisplayLabel(id, AppSettings.canvasLanguage)),
-              };
-            })}
-            conns={newPatternRelationshipData.map((data) => {
-              return {
-                name: data.name,
-                to: data.to,
-                from: data.from,
-                sourceCardinality: data.sourceCardinality,
-                targetCardinality: data.targetCardinality,
-              };
-            })}
-            parameters={Object.keys(newPatternParameterData).map((data) => {
-              return {
-                name: newPatternParameterData[data].name,
-                id: data,
-                types: newPatternParameterData[data].type,
-                qualities: newPatternParameterData[data].qualities,
-              };
-            })}
+            terms={getTermsForGraph()}
+            conns={newPatternRelationshipData}
           />
           <p style={{ paddingTop: "5px" }}>
             <h5>Pattern information</h5>
@@ -608,9 +590,6 @@ export const PatternCreationModalNew: React.FC<Props> = (props: Props) => {
               rows={3}
             />
           </Form.Group>
-          <p>
-            <Button onClick={() => createPattern()}>Create pattern</Button>
-          </p>
         </Col>
       </Row>
     </Container>

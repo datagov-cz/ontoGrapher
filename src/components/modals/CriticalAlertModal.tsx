@@ -19,9 +19,11 @@ export const CriticalAlertModal: React.FC<Props> = (props: Props) => {
   };
 
   const acceptEvent = async () => {
-    if (CriticalAlertData.waitForFunctionBeforeModalClose) setDisabled(true);
-    await CriticalAlertData.acceptFunction();
-    setDisabled(false);
+    if (CriticalAlertData.acceptFunction) {
+      if (CriticalAlertData.waitForFunctionBeforeModalClose) setDisabled(true);
+      await CriticalAlertData.acceptFunction();
+      setDisabled(false);
+    }
     closeModal();
   };
 
@@ -42,27 +44,29 @@ export const CriticalAlertModal: React.FC<Props> = (props: Props) => {
       </Modal.Header>
       <Modal.Body>{CriticalAlertData.innerContent}</Modal.Body>
       <Modal.Footer>
-        <Button
-          type={"submit"}
-          form={"createForm"}
-          disabled={disabled}
-          variant="primary"
-          onClick={() => acceptEvent()}
-        >
-          {disabled && (
-            <span>
-              <Spinner
-                as="span"
-                animation="border"
-                size="sm"
-                role="status"
-                aria-hidden="true"
-              />
-              &nbsp;
-            </span>
-          )}
-          {CriticalAlertData.acceptLabel}
-        </Button>
+        {CriticalAlertData.acceptLabel && (
+          <Button
+            type={"submit"}
+            form={"createForm"}
+            disabled={disabled}
+            variant="primary"
+            onClick={() => acceptEvent()}
+          >
+            {disabled && (
+              <span>
+                <Spinner
+                  as="span"
+                  animation="border"
+                  size="sm"
+                  role="status"
+                  aria-hidden="true"
+                />
+                &nbsp;
+              </span>
+            )}
+            {CriticalAlertData.acceptLabel}
+          </Button>
+        )}
         <Button onClick={() => closeModal()} variant="secondary">
           {Locale[AppSettings.interfaceLanguage].cancel}
         </Button>

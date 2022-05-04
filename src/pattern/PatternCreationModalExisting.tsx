@@ -9,7 +9,7 @@ import {
   Row,
   Table,
 } from "react-bootstrap";
-import { Instances, Patterns } from "./PatternTypes";
+import { Patterns } from "./PatternTypes";
 import {
   AppSettings,
   CardinalityPool,
@@ -18,10 +18,13 @@ import {
   WorkspaceTerms,
   WorkspaceVocabularies,
 } from "../config/Variables";
-import { getName } from "../function/FunctionEditVars";
+import {
+  getName,
+  initLanguageObject,
+  parsePrefix,
+} from "../function/FunctionEditVars";
 import * as _ from "lodash";
 import { callSuggestionAlgorithm } from "./PatternQueries";
-import { v4 as uuidv4 } from "uuid";
 import { PatternCreationConfiguration } from "../components/modals/CreationModals";
 import Select from "react-select";
 import {
@@ -30,8 +33,20 @@ import {
 } from "../function/FunctionGetVars";
 import PatternInternalView from "./PatternInternalView";
 import { createNewElemIRI } from "../function/FunctionCreateVars";
+import { paper } from "../main/DiagramCanvas";
+import { createNewConcept } from "../function/FunctionElem";
+import {
+  updateProjectElement,
+  updateProjectElementDiagram,
+} from "../queries/update/UpdateElementQueries";
+import { saveNewLink } from "../function/FunctionLink";
+import { Representation } from "../config/Enum";
 
-type Props = { configuration: PatternCreationConfiguration };
+type Props = {
+  configuration: PatternCreationConfiguration;
+  setSubmit: (val: boolean) => void;
+  pattern: string;
+};
 type formElementData = {
   name: string;
   iri: string;
@@ -39,7 +54,6 @@ type formElementData = {
   parameter: boolean;
   create: boolean;
   value: { label: string; value: string };
-  qualities: string[];
   optional?: boolean;
   scheme: string;
   multiple?: boolean;
@@ -61,6 +75,9 @@ export const PatternCreationModalExisting: React.FC<Props> = (props: Props) => {
   const [errorElements, setErrorElements] = useState<string>("");
   const [errorRelationships, setErrorRelationships] = useState<string>("");
   const [openFilter, setOpenFilter] = useState<boolean>(false);
+  const [filterName, setFilterName] = useState<string>("");
+  const [filterAuthor, setFilterAuthor] = useState<string>("");
+  const [filterSuggest, setFilterSuggest] = useState<boolean>(false);
   const [detailPattern, setDetailPattern] = useState<string>("");
   const [patternElementFormData, setPatternElementFormData] = useState<
     formElementData[]
@@ -74,40 +91,68 @@ export const PatternCreationModalExisting: React.FC<Props> = (props: Props) => {
     setPatternElementFormData(copy);
   };
 
-  const suggestPatterns = () => {
-    callSuggestionAlgorithm(AppSettings.selectedElements).then((r) =>
-      setSearchResults(r)
-    );
+  const suggestPatterns: () => Promise<string[]> = async () => {
+    return await callSuggestionAlgorithm(AppSettings.selectedElements);
   };
 
+  useEffect(() => {
+    if (props.pattern) {
+      selectPattern(props.pattern);
+    }
+  }, [props.pattern]);
+
   const createInstance = () => {
-    Instances[uuidv4()] = {
-      iri: detailPattern,
-      terms: patternElementFormData.map((e) => ({
-        iri: e.name,
-        qualities: e.qualities,
-      })),
-      conns: patternRelationshipFormData.map((e) => ({
-        iri: e.name,
-        sourceCardinality: e.sourceCardinality,
-        targetCardinality: e.targetCardinality,
-        to: e.to,
-        from: e.from,
-      })),
-      x: 0,
-      y: 0,
-    };
+    const queries: string[] = [];
+    const matrixLength = Math.max(
+      patternElementFormData.length + patternRelationshipFormData.length
+    );
+    const matrixDimension = Math.ceil(Math.sqrt(matrixLength));
+    const startingCoords = paper.clientToLocalPoint({
+      x: window.innerWidth / 2,
+      y: window.innerHeight / 2,
+    });
+    patternElementFormData.forEach((t, i) => {
+      const x = i % matrixDimension;
+      const y = Math.floor(i / matrixDimension);
+      const id = createNewConcept(
+        { x: startingCoords.x + x * 200, y: startingCoords.y + y * 200 },
+        initLanguageObject(t.name),
+        AppSettings.canvasLanguage,
+        getVocabularyFromScheme(t.scheme),
+        t.types
+      );
+      queries.push(id);
+    });
+    patternRelationshipFormData.forEach((c, i) => {
+      const x = (i + patternElementFormData.length) % matrixDimension;
+      const y = Math.floor(
+        (i + patternElementFormData.length) / matrixDimension
+      );
+      const id = createNewConcept(
+        { x: startingCoords.x + x * 200, y: startingCoords.y + y * 200 },
+        initLanguageObject(c.name),
+        AppSettings.canvasLanguage,
+        getVocabularyFromScheme(c.scheme),
+        [parsePrefix("z-sgov-pojem", "typ-vztahu")]
+      );
+      queries.push(
+        updateProjectElement(true, id),
+        updateProjectElementDiagram(AppSettings.selectedDiagram, id),
+        ...saveNewLink(id, c.from, c.to, Representation.COMPACT)
+      );
+    });
+    return queries;
   };
 
   const selectPattern = (pattern: string) => {
     setDetailPattern(pattern);
     setPatternElementFormData(
-      Patterns[pattern].terms
-        .filter((t) => t.parameter)
+      Object.keys(Patterns[pattern].terms)
+        .filter((t) => Patterns[pattern].terms[t].parameter)
         .map((t) => ({
-          name: t.name,
+          name: Patterns[pattern].terms[t].name,
           iri: "",
-          types: t.types,
+          types: Patterns[pattern].terms[t].types,
           parameter: true,
           create: true,
           value: { value: "", label: "" },
@@ -117,12 +162,12 @@ export const PatternCreationModalExisting: React.FC<Props> = (props: Props) => {
     );
     setPatternElementFormData((prevState) => [
       ...prevState,
-      ...Patterns[pattern].terms
-        .filter((t) => !t.parameter)
+      ...Object.keys(Patterns[pattern].terms)
+        .filter((t) => !Patterns[pattern].terms[t].parameter)
         .map((t) => ({
-          name: t.name,
+          name: Patterns[pattern].terms[t].name,
           iri: "",
-          types: t.types,
+          types: Patterns[pattern].terms[t].types,
           parameter: false,
           create: true,
           value: { value: "", label: "" },
@@ -131,18 +176,16 @@ export const PatternCreationModalExisting: React.FC<Props> = (props: Props) => {
         })),
     ]);
     setPatternRelationshipFormData(
-      Patterns[pattern].conns.map((c) => ({
-        name: c.name,
-        from: c.from,
-        to: c.to,
-        sourceCardinality: c.sourceCardinality,
-        targetCardinality: c.targetCardinality,
+      Object.keys(Patterns[pattern].conns).map((c) => ({
+        name: Patterns[pattern].conns[c].name,
+        from: Patterns[pattern].conns[c].from,
+        to: Patterns[pattern].conns[c].to,
+        sourceCardinality: Patterns[pattern].conns[c].sourceCardinality,
+        targetCardinality: Patterns[pattern].conns[c].targetCardinality,
         scheme: "",
       }))
     );
   };
-
-  useEffect(() => selectPattern("text"), []);
 
   const modifyRelationshipData: (
     index: number,
@@ -206,7 +249,7 @@ export const PatternCreationModalExisting: React.FC<Props> = (props: Props) => {
     relationship: boolean,
     index: number
   ) => {
-    let num = "";
+    let num: string;
     switch (index) {
       case 1:
         num = "st";
@@ -247,19 +290,89 @@ export const PatternCreationModalExisting: React.FC<Props> = (props: Props) => {
       : setErrorElements(errorText);
   };
 
+  useEffect(() => {
+    if (filterSuggest)
+      suggestPatterns().then((results) =>
+        setSearchResults(
+          results.filter(
+            (r) =>
+              (filterName
+                ? Patterns[r].title
+                    .toLowerCase()
+                    .includes(filterName.toLowerCase())
+                : true) &&
+              (filterAuthor
+                ? Patterns[r].author
+                    .toLowerCase()
+                    .includes(filterAuthor.toLowerCase())
+                : true)
+          )
+        )
+      );
+    else
+      setSearchResults(
+        Object.keys(Patterns).filter(
+          (r) =>
+            (filterName
+              ? Patterns[r].title
+                  .toLowerCase()
+                  .includes(filterName.toLowerCase())
+              : true) &&
+            (filterAuthor
+              ? Patterns[r].author
+                  .toLowerCase()
+                  .includes(filterAuthor.toLowerCase())
+              : true)
+        )
+      );
+  }, [filterName, filterAuthor, filterSuggest]);
+
   return (
     <Container>
       <Row>
         <Col>
-          <Button onClick={() => setOpenFilter(!openFilter)}>
-            Toggle filter
-          </Button>
-          <Button onClick={() => suggestPatterns()}>Suggest patterns</Button>
-          <Table size={"sm"} bordered striped>
+          <div>
+            <Button size={"sm"} onClick={() => setOpenFilter(!openFilter)}>
+              Toggle filter
+            </Button>
+            {openFilter && (
+              <div>
+                <Form.Control
+                  size={"sm"}
+                  type={"text"}
+                  placeholder={"Pattern title"}
+                  value={filterName}
+                  onChange={(event) => setFilterName(event.currentTarget.value)}
+                />
+                <Form.Control
+                  size={"sm"}
+                  type={"text"}
+                  placeholder={"Pattern author"}
+                  value={filterAuthor}
+                  onChange={(event) =>
+                    setFilterAuthor(event.currentTarget.value)
+                  }
+                />
+                <Form.Check
+                  label="Suggest only patterns that conform to selection"
+                  checked={filterSuggest}
+                  onChange={(event) =>
+                    setFilterSuggest(event.currentTarget.checked)
+                  }
+                />
+              </div>
+            )}
+          </div>
+          <Table size={"sm"} borderless striped>
             {searchResults.map((r) => (
               <tr>
                 <td>
-                  <a onClick={() => selectPattern(r)}>{Patterns[r].title}</a>
+                  <Button
+                    className={"buttonlink"}
+                    onClick={() => selectPattern(r)}
+                  >
+                    {Patterns[r].title}
+                  </Button>
                 </td>
               </tr>
             ))}
@@ -275,7 +388,6 @@ export const PatternCreationModalExisting: React.FC<Props> = (props: Props) => {
                 fitContent={true}
                 terms={Patterns[detailPattern].terms}
                 conns={Patterns[detailPattern].conns}
-                parameters={[]}
               />
               <br />
               <h5>Set terms</h5>

@@ -15,7 +15,11 @@ interface State {
   alert: boolean;
 }
 
-export default class MenuPanelToggleView extends React.Component<Props, State> {
+//TODO: implement pattern view
+export default class MenuPanelTogglePatternView extends React.Component<
+  Props,
+  State
+> {
   constructor(props: Props) {
     super(props);
     this.state = {
@@ -35,9 +39,7 @@ export default class MenuPanelToggleView extends React.Component<Props, State> {
           graph
             .getElements()
             .filter((elem) =>
-              Instances[instance].terms
-                .map((t) => t.iri)
-                .includes(elem.id as string)
+              Instances[instance].terms.includes(elem.id as string)
             )
         );
         const instanceElem = new graphElement({ id: instance });

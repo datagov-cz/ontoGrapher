@@ -1,10 +1,10 @@
 import { StoreAlerts } from "./Store";
 
 export var CriticalAlertData: {
-  acceptFunction: Function;
+  acceptFunction?: Function;
   waitForFunctionBeforeModalClose: boolean;
   innerContent: JSX.Element;
-  acceptLabel: string;
+  acceptLabel?: string;
   modalSize?: "sm" | "lg" | "xl";
 } = {
   acceptFunction: () => {},

@@ -16,7 +16,7 @@ import MenuPanelValidate from "./menu/left/MenuPanelValidate";
 import FitContentWidget from "./menu/widget/FitContentWidget";
 import InterfaceStatus from "../components/InterfaceStatus";
 import { MenuPanelPatterns } from "../pattern/MenuPanelPatterns";
-import MenuPanelToggleView from "../pattern/MenuPanelToggleView";
+import MenuPanelTogglePatternView from "../pattern/MenuPanelTogglePatternView";
 import MenuPanelSwitchRepresentation from "./menu/left/MenuPanelSwitchRepresentation";
 
 interface MenuPanelProps {
@@ -105,7 +105,7 @@ export default class MenuPanel extends React.Component<
             />
           )}
           {!!Environment.pattern && (
-            <MenuPanelToggleView
+            <MenuPanelTogglePatternView
               update={() => this.props.update()}
               close={() => this.props.closeDetailPanel()}
               performTransaction={this.props.performTransaction}
