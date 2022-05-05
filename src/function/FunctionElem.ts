@@ -294,16 +294,25 @@ export async function putElementsOnCanvas(
         true,
         false
       );
-      insertNewCacheTerms(
-        await fetchReadOnlyTerms(AppSettings.contextEndpoint, iris)
+      const relationships = await fetchRelationships(
+        AppSettings.contextEndpoint,
+        iris
       );
-      insertNewRestrictions(
-        await fetchRelationships(AppSettings.contextEndpoint, iris)
+      const readOnlyTerms = await fetchReadOnlyTerms(
+        AppSettings.contextEndpoint,
+        iris.concat(
+          Representation.COMPACT === AppSettings.representation
+            ? Object.keys(relationships)
+            : []
+        )
       );
-      const newIDs = initElements(true);
-      queries.push(updateProjectElement(false, ...newIDs));
-      queries.push(updateProjectLink(false, ...initConnections().add));
-      ids.push(...newIDs);
+      insertNewCacheTerms(readOnlyTerms);
+      insertNewRestrictions(relationships);
+      const newElements = initElements(true);
+      const newConnections = initConnections().add;
+      queries.push(updateProjectElement(false, ...newElements));
+      queries.push(updateProjectLink(false, ...newConnections));
+      ids.push(...newElements);
       addToFlexSearch(...ids);
     }
     const matrixLength = Math.max(ids.length, iris.length);
