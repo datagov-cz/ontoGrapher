@@ -4,6 +4,7 @@ import {
   Links,
   WorkspaceElements,
   WorkspaceLinks,
+  WorkspaceTerms,
   WorkspaceVocabularies,
 } from "../../config/Variables";
 import { processQuery } from "../../interface/TransactionInterface";
@@ -54,6 +55,7 @@ export async function getElementsConfig(
     .then((data) => {
       for (const result of data.results.bindings) {
         const iri = result.elem.value;
+        if (!(iri in WorkspaceTerms)) continue;
         if (!(iri in elements)) {
           elements[iri] = {
             active: result.active.value === "true",
@@ -106,7 +108,8 @@ export async function getElementsConfig(
       .then((data) => {
         for (const result of data.results.bindings) {
           const iri = result.iri.value;
-          if (iri in elements) {
+          if (!(result.iri.value in WorkspaceTerms)) continue;
+          if (iri in elements && iri in WorkspaceTerms) {
             if (!(result.diagramID.value in elements[iri].hidden)) {
               elements[iri].diagramPosition[result.diagramID.value] = {
                 x: parseInt(result.posX.value),
@@ -285,6 +288,8 @@ export async function getLinksConfig(
     })
     .then((data) => {
       for (const result of data.results.bindings) {
+        if (!(result.iri.value in WorkspaceTerms && result.iri.values in Links))
+          continue;
         if (
           !Object.values(links).find(
             (link) =>
@@ -357,6 +362,10 @@ export async function getLinksConfig(
       })
       .then((data) => {
         for (const result of data.results.bindings) {
+          if (
+            !(result.iri.value in WorkspaceTerms && result.iri.values in Links)
+          )
+            continue;
           if (!(result.id.value in links)) continue;
           const id = result.id.value;
           if (!(result.diagramID.value in links[id].vertices))

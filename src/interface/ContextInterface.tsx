@@ -194,7 +194,8 @@ export async function retrieveVocabularyData(): Promise<boolean> {
       vocabularies[vocab].glossary,
       vocabularies[vocab].terms,
       vocab,
-      vocabularies[vocab].graph
+      vocabularies[vocab].graph,
+      true
     );
     WorkspaceVocabularies[vocab].readOnly = false;
     WorkspaceVocabularies[vocab].graph = vocabularies[vocab].graph;
