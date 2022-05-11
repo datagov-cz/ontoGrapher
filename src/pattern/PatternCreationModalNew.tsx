@@ -57,6 +57,7 @@ type newPatternRelationship = {
 type Props = {
   configuration: PatternCreationConfiguration;
   submit: (pattern: Pattern) => void;
+  initSubmit: boolean;
 };
 
 export const PatternCreationModalNew: React.FC<Props> = (props: Props) => {
@@ -92,6 +93,10 @@ export const PatternCreationModalNew: React.FC<Props> = (props: Props) => {
   };
 
   useEffect(() => {
+    if (props.initSubmit) props.submit(createPattern());
+  }, [props.initSubmit]);
+
+  useEffect(() => {
     const rels = Object.keys(WorkspaceLinks).filter(
       (l) =>
         props.configuration.elements.includes(WorkspaceLinks[l].source) &&
@@ -119,6 +124,12 @@ export const PatternCreationModalNew: React.FC<Props> = (props: Props) => {
       });
     // create relationships
     rels.forEach((r) => {
+      const sc = CardinalityPool.findIndex(
+        (c) => c.getString() === WorkspaceLinks[r].sourceCardinality.getString()
+      ).toString(10);
+      const tc = CardinalityPool.findIndex(
+        (c) => c.getString() === WorkspaceLinks[r].targetCardinality.getString()
+      ).toString(10);
       relationships[r] = {
         name: getLabelOrBlank(
           WorkspaceTerms[WorkspaceLinks[r].iri].labels,
@@ -126,12 +137,8 @@ export const PatternCreationModalNew: React.FC<Props> = (props: Props) => {
         ),
         from: WorkspaceLinks[r].source,
         to: WorkspaceLinks[r].target,
-        sourceCardinality: CardinalityPool.indexOf(
-          WorkspaceLinks[r].sourceCardinality
-        ).toString(10),
-        targetCardinality: CardinalityPool.indexOf(
-          WorkspaceLinks[r].targetCardinality
-        ).toString(10),
+        sourceCardinality: sc === "-1" ? "0" : sc,
+        targetCardinality: tc === "-1" ? "0" : tc,
         linkType: WorkspaceLinks[r].type,
         active: true,
       };
@@ -188,6 +195,16 @@ export const PatternCreationModalNew: React.FC<Props> = (props: Props) => {
         multiple?: boolean;
       };
     } = {};
+    const c: {
+      [key: string]: {
+        name: string;
+        to: string;
+        from: string;
+        sourceCardinality: string;
+        targetCardinality: string;
+        linkType: LinkType;
+      };
+    } = {};
     props.configuration.elements.forEach((e) => {
       t[e] = {
         name: getLabelOrBlank(
@@ -206,15 +223,24 @@ export const PatternCreationModalNew: React.FC<Props> = (props: Props) => {
         multiple: newPatternParameterData[param].multiple,
       };
     }
-
-    props.submit({
+    for (const param in newPatternRelationshipData) {
+      c[param] = {
+        name: newPatternRelationshipData[param].name,
+        to: newPatternRelationshipData[param].to,
+        from: newPatternRelationshipData[param].from,
+        sourceCardinality: newPatternRelationshipData[param].sourceCardinality,
+        targetCardinality: newPatternRelationshipData[param].targetCardinality,
+        linkType: newPatternRelationshipData[param].linkType,
+      };
+    }
+    return {
       title: newPatternData.name,
       author: newPatternData.author,
       date: new Date().toJSON(),
       description: newPatternData.description,
       terms: t,
-      conns: newPatternRelationshipData,
-    });
+      conns: c,
+    };
   };
 
   let key = 0;
@@ -258,7 +284,7 @@ export const PatternCreationModalNew: React.FC<Props> = (props: Props) => {
             <thead>
               <tr>
                 <th>Name</th>
-                <th>Detail</th>
+                <th>Relationship detail</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -280,6 +306,9 @@ export const PatternCreationModalNew: React.FC<Props> = (props: Props) => {
                         }
                         value={newPatternRelationshipData[data].name}
                       />
+                      {!newPatternRelationshipData[data].name && (
+                        <p className={"red"}>Please choose a name.</p>
+                      )}
                     </td>
                     <td key={key++}>
                       <span>
@@ -337,13 +366,39 @@ export const PatternCreationModalNew: React.FC<Props> = (props: Props) => {
                         </span>
                       </span>
                       <br />
-                      <svg
-                        width="15px"
-                        height="15px"
-                        preserveAspectRatio="none"
+                      <button
+                        onClick={() =>
+                          modifyRelationshipData(data, {
+                            ...newPatternRelationshipData[data],
+                            linkType:
+                              newPatternRelationshipData[data].linkType ===
+                              LinkType.DEFAULT
+                                ? LinkType.GENERALIZATION
+                                : LinkType.DEFAULT,
+                          })
+                        }
+                        className={"buttonlink linktype"}
                       >
-                        <path d="M 0 0 L 10 5 L 0 10 z" fill="#333333" />
-                      </svg>
+                        <svg
+                          width="15px"
+                          height="15px"
+                          preserveAspectRatio="none"
+                        >
+                          {newPatternRelationshipData[data].linkType ===
+                            LinkType.DEFAULT && (
+                            <path d="M 0 0 L 10 5 L 0 10 z" fill="#333333" />
+                          )}
+                          {newPatternRelationshipData[data].linkType ===
+                            LinkType.GENERALIZATION && (
+                            <path
+                              d="M 0 0 L 10 5 L 0 10 z"
+                              stroke="#333333"
+                              strokeWidth="1"
+                              fill="#FFFFFF"
+                            />
+                          )}
+                        </svg>
+                      </button>
                       <span>
                         <span className={"toCard"}>
                           <Form.Control
@@ -401,6 +456,7 @@ export const PatternCreationModalNew: React.FC<Props> = (props: Props) => {
                     </td>
                     <td key={key++} style={{ wordBreak: "keep-all" }}>
                       <Button
+                        size={"sm"}
                         key={key++}
                         onClick={() =>
                           modifyRelationshipData(data, {
@@ -442,11 +498,13 @@ export const PatternCreationModalNew: React.FC<Props> = (props: Props) => {
           <h5>Parameters</h5>
           <Table size={"sm"} borderless={true} striped={true}>
             <thead>
-              <th>Name</th>
-              <th>Type</th>
-              <th>Optional</th>
-              <th>Multiple</th>
-              <th>Actions</th>
+              <tr>
+                <th>Name</th>
+                <th>Type</th>
+                <th style={{ wordBreak: "keep-all" }}>Optional</th>
+                <th style={{ wordBreak: "keep-all" }}>Multiple</th>
+                <th>Actions</th>
+              </tr>
             </thead>
             <tbody>
               {Object.keys(newPatternParameterData).map((data) => {
@@ -465,14 +523,36 @@ export const PatternCreationModalNew: React.FC<Props> = (props: Props) => {
                           })
                         }
                       />
+                      {!newPatternParameterData[data].name && (
+                        <p className={"red"}>Please choose a name.</p>
+                      )}
                     </td>
                     <td>
-                      <Form.Control size="sm" as="select">
-                        {Object.keys(Stereotypes).map((s) => (
-                          <option value={s}>
-                            {getName(s, AppSettings.canvasLanguage)}
-                          </option>
-                        ))}
+                      <Form.Control
+                        onChange={(event) =>
+                          modifyPatternData(data, {
+                            ...newPatternParameterData[data],
+                            types: [event.currentTarget.value],
+                          })
+                        }
+                        value={newPatternParameterData[data].types[0]}
+                        size="sm"
+                        as="select"
+                      >
+                        <option value={""}>No type</option>
+                        {Object.keys(Stereotypes)
+                          .filter(
+                            (s) =>
+                              ![
+                                "https://slovník.gov.cz/základní/pojem/typ-vztahu",
+                                "https://slovník.gov.cz/základní/pojem/typ-vlastnosti",
+                              ].includes(s)
+                          )
+                          .map((s) => (
+                            <option value={s}>
+                              {getName(s, AppSettings.canvasLanguage)}
+                            </option>
+                          ))}
                       </Form.Control>
                     </td>
                     <td>
@@ -511,7 +591,7 @@ export const PatternCreationModalNew: React.FC<Props> = (props: Props) => {
                         }
                         variant={"danger"}
                       >
-                        {"Remove from pattern"}
+                        {"Remove"}
                       </Button>
                     </td>
                   </tr>
@@ -547,11 +627,9 @@ export const PatternCreationModalNew: React.FC<Props> = (props: Props) => {
             terms={getTermsForGraph()}
             conns={newPatternRelationshipData}
           />
-          <p style={{ paddingTop: "5px" }}>
-            <h5>Pattern information</h5>
-          </p>
+          <h5 style={{ paddingTop: "5px" }}>Pattern information</h5>
           <Form.Group controlId="formTitle">
-            <Form.Label>Title</Form.Label>
+            <Form.Label>Title*</Form.Label>
             <Form.Control
               value={newPatternData.name}
               onChange={(event) =>
@@ -562,6 +640,9 @@ export const PatternCreationModalNew: React.FC<Props> = (props: Props) => {
               }
               type="text"
             />
+            {!newPatternData.name && (
+              <p className={"red"}>Please choose a title.</p>
+            )}
           </Form.Group>
           <Form.Group controlId="formAuthor">
             <Form.Label>Author</Form.Label>

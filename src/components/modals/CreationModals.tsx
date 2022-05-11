@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import NewLinkModal from "./NewLinkModal";
-import NewElemModal from "./NewElemModal";
 import {
   highlightElement,
   resetDiagramSelection,
@@ -16,6 +15,7 @@ import { drawGraphElement } from "../../function/FunctionDraw";
 import { initConnections } from "../../function/FunctionRestriction";
 import { updateProjectLink } from "../../queries/update/UpdateLinkQueries";
 import { PatternCreationModal } from "../../pattern/PatternCreationModal";
+import { NewElemModal } from "./NewElemModal";
 
 export type ElemCreationConfiguration = {
   strategy: ElemCreationStrategy;
@@ -38,7 +38,6 @@ interface Props {
   patternConfiguration: PatternCreationConfiguration;
 }
 
-// TODO: create new instance modal from scratch tab
 export const CreationModals: React.FC<Props> = (props) => {
   const [modalAddLink, setModalAddLink] = useState<boolean>(false);
   const [modalAddElem, setModalAddElem] = useState<boolean>(false);
@@ -139,6 +138,7 @@ export const CreationModals: React.FC<Props> = (props) => {
         }}
       />
       <PatternCreationModal
+        performTransaction={props.performTransaction}
         modal={modalAddPattern}
         close={() => setModalAddPattern(false)}
         configuration={props.patternConfiguration}

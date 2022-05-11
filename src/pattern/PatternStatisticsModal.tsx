@@ -21,6 +21,7 @@ import {
   getLabelOrBlank,
   getVocabularyFromScheme,
 } from "../function/FunctionGetVars";
+import InstanceInternalView from "./InstanceInternalView";
 
 type Props = { open: boolean; close: Function; id: string };
 
@@ -124,7 +125,15 @@ export const PatternStatisticsModal: React.FC<Props> = (props: Props) => {
                           </Accordion.Toggle>
                         </Card.Header>
                         <Accordion.Collapse eventKey={i.toString(10)}>
-                          <Card.Body></Card.Body>
+                          <Card.Body>
+                            <InstanceInternalView
+                              width={"100%"}
+                              height={"100%"}
+                              fitContent={true}
+                              terms={instance.instance.terms}
+                              conns={instance.instance.conns}
+                            />
+                          </Card.Body>
                         </Accordion.Collapse>
                       </Card>
                     ))}

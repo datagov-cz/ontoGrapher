@@ -76,22 +76,20 @@ export default class PatternInternalView extends React.Component<Props, State> {
       const height = attrHeight;
       element.prop("attrs/labelAttrs/y", attrHeight);
       element.resize(width, height);
-      if (this.props.terms[i].optional) {
-        element.attr({
-          bodyBox: {
-            display: "block",
-            width: width,
-            height: height,
-            fill: "#FFFFFF",
-          },
-        });
-      }
-      if (this.props.terms[i].optional) {
+      element.attr({
+        bodyBox: {
+          display: "block",
+          width: width,
+          height: height,
+          fill: "#FFFFFF",
+        },
+      });
+      if (this.props.terms[p].optional) {
         element.attr({
           bodyBox: { fillOpacity: "0.5" },
         });
       }
-      if (this.props.terms[i].multiple) {
+      if (this.props.terms[p].multiple) {
         element.attr({
           bodyBox: {
             strokeDasharray: "5,5",
@@ -118,7 +116,7 @@ export default class PatternInternalView extends React.Component<Props, State> {
           attrs: {
             text: { text: sourceCardinality.getString() },
           },
-          position: { distance: 20 },
+          position: { distance: 50 },
         });
       }
       if (targetCardinality && targetCardinality.getString() !== "") {
@@ -126,7 +124,7 @@ export default class PatternInternalView extends React.Component<Props, State> {
           attrs: {
             text: { text: targetCardinality.getString() },
           },
-          position: { distance: -20 },
+          position: { distance: -50 },
         });
       }
       link.addTo(this.graph);
