@@ -464,7 +464,7 @@ export function restoreHiddenElem(
               AppSettings.ontographerContext
             )))
     ) {
-      let oldPos = setupLink(link, restoreSimpleConnectionPosition);
+      const oldPos = setupLink(link, restoreSimpleConnectionPosition);
       if (oldPos)
         queries.push(
           updateDeleteProjectLinkVertex(

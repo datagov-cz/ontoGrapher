@@ -165,7 +165,7 @@ export function updateProjectLink(del: boolean, ...ids: string[]): string {
     INSERT.DATA`${qb.g(getWorkspaceContextIRI(), insertBody)}`.build()
   );
 
-  return qb.combineQueries(deletes, ...insert);
+  return qb.combineQueries(...(del ? [deletes, ...insert] : [...insert]));
 }
 
 function checkLink(id: string) {

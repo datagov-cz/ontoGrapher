@@ -199,7 +199,7 @@ export default class VocabularyPanel extends React.Component<Props, State> {
         .sort((a, b) => this.sort(a, b))
         .filter(
           (id) =>
-            flexSearchResults.includes(id) &&
+            (!this.state.search || flexSearchResults.includes(id)) &&
             (AppSettings.representation === Representation.FULL ||
               (AppSettings.representation === Representation.COMPACT &&
                 isElementVisible(id, Representation.COMPACT)))
