@@ -3,24 +3,20 @@ import { Button, Form, Modal, Tab, Tabs } from "react-bootstrap";
 import { Locale } from "../config/Locale";
 import { AppSettings } from "../config/Variables";
 import { PatternCreationConfiguration } from "../components/modals/CreationModals";
-import {
-  formElementData,
-  formRelationshipData,
-  PatternCreationModalExisting,
-} from "./PatternCreationModalExisting";
+import { PatternCreationModalExisting } from "./PatternCreationModalExisting";
 import { PatternCreationModalNew } from "./PatternCreationModalNew";
-import { Pattern, Patterns } from "./PatternTypes";
+import { Instances, Pattern, Patterns } from "./PatternTypes";
 import { v4 } from "uuid";
 import { paper } from "../main/DiagramCanvas";
 import { createNewConcept } from "../function/FunctionElem";
 import { initLanguageObject, parsePrefix } from "../function/FunctionEditVars";
-import { getVocabularyFromScheme } from "../function/FunctionGetVars";
 import {
   updateProjectElement,
   updateProjectElementDiagram,
 } from "../queries/update/UpdateElementQueries";
 import { saveNewLink } from "../function/FunctionLink";
 import { Representation } from "../config/Enum";
+import { formElementData, formRelationshipData } from "./PatternViewColumn";
 
 type Props = {
   modal: boolean;
@@ -30,15 +26,15 @@ type Props = {
 };
 
 export const PatternCreationModal: React.FC<Props> = (props: Props) => {
-  const [submitDisabled, setSubmitDisabled] = useState<boolean>(false);
   const [submitLabel, setSubmitLabel] = useState<string>("Create pattern");
   const [tab, setTab] = useState<string>("pattern");
   const [existingPattern, setExistingPattern] = useState<string>("");
   const [createInstance, setCreateInstance] = useState<boolean>(true);
-  const [initSubmit, setInitSubmit] = useState<boolean>(false);
+  const [initSubmitNew, setInitSubmitNew] = useState<boolean>(false);
+  const [initSubmitEx, setInitSubmitEx] = useState<boolean>(false);
 
   const submitNew = (pattern: Pattern) => {
-    setInitSubmit(false);
+    setInitSubmitNew(false);
     if (!pattern.title) return;
     if (!Object.values(pattern.conns).every((c) => c.name)) return;
     if (!Object.values(pattern.terms).every((c) => c.name)) return;
@@ -47,6 +43,8 @@ export const PatternCreationModal: React.FC<Props> = (props: Props) => {
     if (createInstance) {
       setTab("instance");
       setExistingPattern(id);
+    } else {
+      props.close();
     }
   };
 
@@ -55,6 +53,11 @@ export const PatternCreationModal: React.FC<Props> = (props: Props) => {
     elements: { [key: string]: formElementData },
     connections: { [key: string]: formRelationshipData }
   ) => {
+    setInitSubmitEx(false);
+    const instanceTerms: string[] = Object.values(elements).map((e) => e.iri);
+    const instanceConns: string[] = Object.values(connections).map(
+      (e) => e.iri
+    );
     const queries: string[] = [];
     const matrixLength = Math.max(
       Object.keys(elements).length + Object.keys(connections).length
@@ -64,36 +67,53 @@ export const PatternCreationModal: React.FC<Props> = (props: Props) => {
       x: window.innerWidth / 2,
       y: window.innerHeight / 2,
     });
-    Object.values(elements).forEach((t, i) => {
-      const x = i % matrixDimension;
-      const y = Math.floor(i / matrixDimension);
-      const id = createNewConcept(
-        { x: startingCoords.x + x * 200, y: startingCoords.y + y * 200 },
-        initLanguageObject(t.name),
-        AppSettings.canvasLanguage,
-        getVocabularyFromScheme(t.scheme),
-        t.types
-      );
-      queries.push(id);
-    });
-    Object.values(connections).forEach((c, i) => {
-      const x = (i + Object.keys(elements).length) % matrixDimension;
-      const y = Math.floor(
-        (i + Object.keys(elements).length) / matrixDimension
-      );
-      const id = createNewConcept(
-        { x: startingCoords.x + x * 200, y: startingCoords.y + y * 200 },
-        initLanguageObject(c.name),
-        AppSettings.canvasLanguage,
-        getVocabularyFromScheme(c.scheme),
-        [parsePrefix("z-sgov-pojem", "typ-vztahu")]
-      );
-      queries.push(
-        updateProjectElement(true, id),
-        updateProjectElementDiagram(AppSettings.selectedDiagram, id),
-        ...saveNewLink(id, c.from, c.to, Representation.COMPACT)
-      );
-    });
+    Object.values(elements)
+      .filter((t) => t.create)
+      .forEach((t, i) => {
+        const x = i % matrixDimension;
+        const y = Math.floor(i / matrixDimension);
+        const id = createNewConcept(
+          { x: startingCoords.x + x * 200, y: startingCoords.y + y * 200 },
+          initLanguageObject(t.name),
+          AppSettings.canvasLanguage,
+          t.scheme,
+          t.types
+        );
+        queries.push(id);
+      });
+    Object.values(connections)
+      .filter((t) => t.create)
+      .forEach((c, i) => {
+        const x = (i + Object.keys(elements).length) % matrixDimension;
+        const y = Math.floor(
+          (i + Object.keys(elements).length) / matrixDimension
+        );
+        const id = createNewConcept(
+          { x: startingCoords.x + x * 200, y: startingCoords.y + y * 200 },
+          initLanguageObject(c.name),
+          AppSettings.canvasLanguage,
+          c.scheme,
+          [parsePrefix("z-sgov-pojem", "typ-vztahu")]
+        );
+        queries.push(
+          updateProjectElement(true, id),
+          updateProjectElementDiagram(AppSettings.selectedDiagram, id),
+          ...saveNewLink(
+            id,
+            elements[c.from].iri,
+            elements[c.to].iri,
+            Representation.COMPACT
+          )
+        );
+      });
+    Instances[v4()] = {
+      iri: pattern,
+      terms: instanceTerms,
+      conns: instanceConns,
+      x: window.innerWidth / 2,
+      y: window.innerHeight / 2,
+    };
+    props.close();
     return queries;
   };
 
@@ -128,14 +148,14 @@ export const PatternCreationModal: React.FC<Props> = (props: Props) => {
             <PatternCreationModalNew
               configuration={props.configuration}
               submit={(pattern) => submitNew(pattern)}
-              initSubmit={initSubmit}
+              initSubmit={initSubmitNew}
             />
           </Tab>
           <Tab eventKey={"instance"} title={"Apply existing pattern"}>
             <PatternCreationModalExisting
               configuration={props.configuration}
               pattern={existingPattern}
-              initSubmit={initSubmit}
+              initSubmit={initSubmitEx}
               submit={(
                 pattern: string,
                 elements: { [key: string]: formElementData },
@@ -158,7 +178,7 @@ export const PatternCreationModal: React.FC<Props> = (props: Props) => {
             />
             <Button
               type={"submit"}
-              onClick={() => setInitSubmit(true)}
+              onClick={() => setInitSubmitNew(true)}
               variant="primary"
             >
               {submitLabel}
@@ -169,7 +189,7 @@ export const PatternCreationModal: React.FC<Props> = (props: Props) => {
           <span>
             <Button
               type={"submit"}
-              onClick={() => setInitSubmit(true)}
+              onClick={() => setInitSubmitEx(true)}
               variant="primary"
             >
               {submitLabel}

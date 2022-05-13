@@ -342,28 +342,32 @@ export const PatternCreationModalNew: React.FC<Props> = (props: Props) => {
                             )}
                           </Form.Control>
                         </span>
-                        <span className={"fromCard"}>
-                          <Form.Control
-                            size={"sm"}
-                            key={key++}
-                            as="select"
-                            value={
-                              newPatternRelationshipData[data].sourceCardinality
-                            }
-                            onChange={(event) =>
-                              modifyRelationshipData(data, {
-                                ...newPatternRelationshipData[data],
-                                sourceCardinality: event.currentTarget.value,
-                              })
-                            }
-                          >
-                            {CardinalityPool.map((card, i) => (
-                              <option key={key++} value={i.toString(10)}>
-                                {card.getString()}
-                              </option>
-                            ))}
-                          </Form.Control>
-                        </span>
+                        {newPatternRelationshipData[data].linkType ===
+                          LinkType.DEFAULT && (
+                          <span className={"fromCard"}>
+                            <Form.Control
+                              size={"sm"}
+                              key={key++}
+                              as="select"
+                              value={
+                                newPatternRelationshipData[data]
+                                  .sourceCardinality
+                              }
+                              onChange={(event) =>
+                                modifyRelationshipData(data, {
+                                  ...newPatternRelationshipData[data],
+                                  sourceCardinality: event.currentTarget.value,
+                                })
+                              }
+                            >
+                              {CardinalityPool.map((card, i) => (
+                                <option key={key++} value={i.toString(10)}>
+                                  {card.getString()}
+                                </option>
+                              ))}
+                            </Form.Control>
+                          </span>
+                        )}
                       </span>
                       <br />
                       <button
@@ -400,28 +404,32 @@ export const PatternCreationModalNew: React.FC<Props> = (props: Props) => {
                         </svg>
                       </button>
                       <span>
-                        <span className={"toCard"}>
-                          <Form.Control
-                            size={"sm"}
-                            as="select"
-                            key={key++}
-                            value={
-                              newPatternRelationshipData[data].targetCardinality
-                            }
-                            onChange={(event) =>
-                              modifyRelationshipData(data, {
-                                ...newPatternRelationshipData[data],
-                                targetCardinality: event.currentTarget.value,
-                              })
-                            }
-                          >
-                            {CardinalityPool.map((card, i) => (
-                              <option key={key++} value={i.toString(10)}>
-                                {card.getString()}
-                              </option>
-                            ))}
-                          </Form.Control>
-                        </span>
+                        {newPatternRelationshipData[data].linkType ===
+                          LinkType.DEFAULT && (
+                          <span className={"toCard"}>
+                            <Form.Control
+                              size={"sm"}
+                              as="select"
+                              key={key++}
+                              value={
+                                newPatternRelationshipData[data]
+                                  .targetCardinality
+                              }
+                              onChange={(event) =>
+                                modifyRelationshipData(data, {
+                                  ...newPatternRelationshipData[data],
+                                  targetCardinality: event.currentTarget.value,
+                                })
+                              }
+                            >
+                              {CardinalityPool.map((card, i) => (
+                                <option key={key++} value={i.toString(10)}>
+                                  {card.getString()}
+                                </option>
+                              ))}
+                            </Form.Control>
+                          </span>
+                        )}
                         <span className={"toLink"}>
                           <Form.Control
                             size={"sm"}

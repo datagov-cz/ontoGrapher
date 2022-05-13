@@ -15,7 +15,7 @@ import { drawGraphElement } from "../../function/FunctionDraw";
 import { initConnections } from "../../function/FunctionRestriction";
 import { updateProjectLink } from "../../queries/update/UpdateLinkQueries";
 import { PatternCreationModal } from "../../pattern/PatternCreationModal";
-import { NewElemModal } from "./NewElemModal";
+import { NewTermOrPatternModal } from "./NewTermOrPatternModal";
 
 export type ElemCreationConfiguration = {
   strategy: ElemCreationStrategy;
@@ -99,7 +99,7 @@ export const CreationModals: React.FC<Props> = (props) => {
           }
         }}
       />
-      <NewElemModal
+      <NewTermOrPatternModal
         projectLanguage={props.projectLanguage}
         modal={modalAddElem}
         configuration={props.elemConfiguration}

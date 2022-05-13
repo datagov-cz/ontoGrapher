@@ -153,6 +153,73 @@ export default class InstanceInternalView extends React.Component<
         this.drag = undefined;
       },
     });
+    const numberOfElements = this.props.terms.length;
+    const centerX = paper.getComputedSize().width / 2;
+    const centerY = paper.getComputedSize().height / 2;
+    const radius = 200 + numberOfElements * 50;
+    this.props.terms.forEach((term, i) => {
+      const x =
+        centerX + radius * Math.cos((i * 2 * Math.PI) / numberOfElements);
+      const y =
+        centerY + radius * Math.sin((i * 2 * Math.PI) / numberOfElements);
+      const element = new graphElement({ id: term });
+      element.position(x, y);
+      element.addTo(this.graph);
+      const labels: string[] = [];
+      getStereotypeList(WorkspaceTerms[term].types).forEach((str) =>
+        labels.push("«" + str.toLowerCase() + "»")
+      );
+      labels.push(
+        getLabelOrBlank(WorkspaceTerms[term].labels, AppSettings.canvasLanguage)
+      );
+      element.prop("attrs/label/text", labels.join("\n"));
+      const text: string[] = [];
+      text.push(
+        ..._.uniq(getIntrinsicTropeTypeIDs(term)).map((id) =>
+          getDisplayLabel(id, AppSettings.canvasLanguage)
+        )
+      );
+      element.prop("attrs/labelAttrs/text", text.join("\n"));
+      const width = Math.max(
+        labels.reduce((a, b) => (a.length > b.length ? a : b), "").length * 10 +
+          4,
+        text.length > 0
+          ? 8 * text.reduce((a, b) => (a.length > b.length ? a : b), "").length
+          : 0
+      );
+      element.prop("attrs/text/x", width / 2);
+      const attrHeight = 24 + (labels.length - 1) * 18;
+      const height = (text.length > 0 ? 4 + text.length * 14 : 0) + attrHeight;
+      element.prop("attrs/labelAttrs/y", attrHeight);
+      element.resize(width, height);
+      element.attr({
+        bodyBox: {
+          display: "block",
+          width: width,
+          height: height,
+          strokeDasharray: "none",
+          stroke: "black",
+          fill: "#FFFFFF",
+        },
+      });
+    });
+    this.props.conns.forEach((conn) => {
+      const link = new joint.shapes.standard.Link();
+      link.source({ id: WorkspaceLinks[conn].source });
+      link.target({ id: WorkspaceLinks[conn].target });
+      setLabels(
+        link,
+        getLinkOrVocabElem(WorkspaceLinks[conn].iri).labels[
+          AppSettings.canvasLanguage
+        ]
+      );
+      link.addTo(this.graph);
+    });
+    paper.scaleContentToFit({
+      padding: 10,
+      maxScale: 2,
+      minScale: 0.1,
+    });
   }
 
   render() {
