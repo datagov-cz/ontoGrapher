@@ -10,11 +10,11 @@ import {
   Table,
   Tabs,
 } from "react-bootstrap";
-import { callRefactorAlgorithm } from "./PatternQueries";
-import { Diagrams } from "../config/Variables";
-import { Instance, Pattern, Patterns } from "./PatternTypes";
 import * as _ from "lodash";
-import PatternInternalView from "./PatternInternalView";
+import { Instance, Pattern, Patterns } from "../function/PatternTypes";
+import { callRefactorAlgorithm } from "../function/PatternQueries";
+import EditingPatternInternalView from "../structures/EditingPatternInternalView";
+import { Diagrams } from "../../config/Variables";
 
 type Props = { open: boolean; close: Function };
 
@@ -66,6 +66,7 @@ export const PatternAlgorithmModal: React.FC<Props> = (props: Props) => {
   return (
     <Modal
       size={"xl"}
+      dialogClassName={"patternModal"}
       centered
       onEntering={() => {
         setAlgo1Results([]);
@@ -94,9 +95,13 @@ export const PatternAlgorithmModal: React.FC<Props> = (props: Props) => {
                   value={algo1Where}
                   onChange={(event) => setAlgo1Where(event.currentTarget.value)}
                 >
-                  <option value={""}>all diagrams</option>
+                  <option key={""} value={""}>
+                    all diagrams
+                  </option>
                   {Object.keys(Diagrams).map((diag) => (
-                    <option value={diag}>{Diagrams[diag].name}</option>
+                    <option key={diag} value={diag}>
+                      {Diagrams[diag].name}
+                    </option>
                   ))}
                 </Form.Control>
               </div>
@@ -155,9 +160,13 @@ export const PatternAlgorithmModal: React.FC<Props> = (props: Props) => {
                   onChange={(event) => setAlgo2Where(event.currentTarget.value)}
                   value={algo2Where}
                 >
-                  <option value={""}>all diagrams</option>
+                  <option key={""} value={""}>
+                    all diagrams
+                  </option>
                   {Object.keys(Diagrams).map((diag) => (
-                    <option value={diag}>{Diagrams[diag].name}</option>
+                    <option key={diag} value={diag}>
+                      {Diagrams[diag].name}
+                    </option>
                   ))}
                 </Form.Control>
               </div>
@@ -204,7 +213,7 @@ export const PatternAlgorithmModal: React.FC<Props> = (props: Props) => {
                   <Col>
                     {algo2Detail !== 1 && (
                       <div>
-                        <PatternInternalView
+                        <EditingPatternInternalView
                           width={"100%"}
                           height={"500px"}
                           fitContent={true}

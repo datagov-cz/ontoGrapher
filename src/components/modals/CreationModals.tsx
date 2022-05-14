@@ -14,8 +14,8 @@ import { graph } from "../../graph/Graph";
 import { drawGraphElement } from "../../function/FunctionDraw";
 import { initConnections } from "../../function/FunctionRestriction";
 import { updateProjectLink } from "../../queries/update/UpdateLinkQueries";
-import { PatternCreationModal } from "../../pattern/PatternCreationModal";
 import { NewTermOrPatternModal } from "./NewTermOrPatternModal";
+import { PatternCreationModal } from "../../pattern/creation/PatternCreationModal";
 
 export type ElemCreationConfiguration = {
   strategy: ElemCreationStrategy;

@@ -194,9 +194,8 @@ export default class App extends React.Component<
     //         navštivte <a href={"./testing.html"}>stránku pro testování</a>.
     //       </p>
     //       <p>
-    //         Ráda bych poprosila, abyste zpětnou vazbu odeslali do 19. května
-    //         (čtvrtek), s tím, že toto testovací prostředí vydrží alespoň do 20.
-    //         května. Pokud při vašem testování naleznete fatální chybu, která vám
+    //         Ráda bych poprosila, abyste zpětnou vazbu odeslali do 20. května
+    //         (pátek) ve 20:00. Pokud při vašem testování naleznete fatální chybu, která vám
     //         zabraňuje pokračovat, nahlaste ji prosím přes žluté tlačítko vpravo
     //         nahoře (Report an issue/Nahlásit chybu). V této verzi vás toto
     //         tlačítko přesměruje na speciální issue šablonu sepsanou pro tuto

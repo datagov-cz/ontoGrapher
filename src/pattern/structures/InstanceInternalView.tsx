@@ -1,22 +1,23 @@
 import * as joint from "jointjs";
 import React from "react";
-import {
-  getIntrinsicTropeTypeIDs,
-  getLabelOrBlank,
-  getLinkOrVocabElem,
-  getNewLink,
-} from "../function/FunctionGetVars";
-import { zoomDiagram } from "../function/FunctionDiagram";
-import { graphElement } from "../graph/GraphElement";
-import { getStereotypeList } from "../function/FunctionEditVars";
 import _ from "lodash";
 import {
   AppSettings,
   WorkspaceLinks,
   WorkspaceTerms,
-} from "../config/Variables";
-import { getDisplayLabel } from "../function/FunctionDraw";
-import { setLabels } from "../function/FunctionGraph";
+} from "../../config/Variables";
+import {
+  getIntrinsicTropeTypeIDs,
+  getLabelOrBlank,
+  getLinkOrVocabElem,
+  getNewLink,
+} from "../../function/FunctionGetVars";
+import { graphElement } from "../../graph/GraphElement";
+import { getDisplayLabel } from "../../function/FunctionDraw";
+import { LinkType } from "../../config/Enum";
+import { setLabels } from "../../function/FunctionGraph";
+import { zoomDiagram } from "../../function/FunctionDiagram";
+import { getStereotypeList } from "../../function/FunctionEditVars";
 
 type State = {};
 
@@ -96,15 +97,17 @@ export default class InstanceInternalView extends React.Component<
       });
     });
     this.props.conns.forEach((conn) => {
-      const link = new joint.shapes.standard.Link();
+      const link = getNewLink(WorkspaceLinks[conn].type, conn);
       link.source({ id: WorkspaceLinks[conn].source });
       link.target({ id: WorkspaceLinks[conn].target });
-      setLabels(
-        link,
-        getLinkOrVocabElem(WorkspaceLinks[conn].iri).labels[
-          AppSettings.canvasLanguage
-        ]
-      );
+      if (WorkspaceLinks[conn].type === LinkType.DEFAULT) {
+        setLabels(
+          link,
+          getLinkOrVocabElem(WorkspaceLinks[conn].iri).labels[
+            AppSettings.canvasLanguage
+          ]
+        );
+      }
       link.addTo(this.graph);
     });
     paper.scaleContentToFit({

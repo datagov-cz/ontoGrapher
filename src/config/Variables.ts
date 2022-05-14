@@ -185,7 +185,7 @@ export var AppSettings: {
   viewColorPool: "pastelLow",
   viewItemPanelTypes: true,
   interfaceLanguage: "en",
-  patternView: true,
+  patternView: false,
   selectedElements: [],
   selectedLinks: [],
 };

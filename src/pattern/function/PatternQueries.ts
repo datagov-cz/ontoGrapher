@@ -1,13 +1,13 @@
-import { Environment } from "../config/Environment";
 import * as N3 from "n3";
 import { Quad } from "n3";
 import {
   AppSettings,
   WorkspaceElements,
   WorkspaceVocabularies,
-} from "../config/Variables";
-import { isElementHidden } from "../function/FunctionElem";
-import { processQuery } from "../interface/TransactionInterface";
+} from "../../config/Variables";
+import { processQuery } from "../../interface/TransactionInterface";
+import { isElementHidden } from "../../function/FunctionElem";
+import { Environment } from "../../config/Environment";
 
 //TODO: implement pattern & instance loading
 //TODO: implement algo1 contact

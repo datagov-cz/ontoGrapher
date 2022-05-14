@@ -9,19 +9,19 @@ import {
   Row,
   Table,
 } from "react-bootstrap";
-import { Locale } from "../config/Locale";
 import {
   AppSettings,
   WorkspaceTerms,
   WorkspaceVocabularies,
-} from "../config/Variables";
-import { Patterns, PatternUsage } from "./PatternTypes";
-import PatternInternalView from "./PatternInternalView";
+} from "../../config/Variables";
+import { Locale } from "../../config/Locale";
 import {
   getLabelOrBlank,
   getVocabularyFromScheme,
-} from "../function/FunctionGetVars";
-import InstanceInternalView from "./InstanceInternalView";
+} from "../../function/FunctionGetVars";
+import EditingPatternInternalView from "../structures/EditingPatternInternalView";
+import { Patterns, PatternUsage } from "../function/PatternTypes";
+import InstanceInternalView from "../structures/InstanceInternalView";
 
 type Props = { open: boolean; close: Function; id: string };
 
@@ -42,6 +42,7 @@ export const PatternStatisticsModal: React.FC<Props> = (props: Props) => {
     <Modal
       centered
       size={"xl"}
+      dialogClassName={"patternModal"}
       onEntering={() => {
         refresh();
         if (props.id) select(props.id);
@@ -103,7 +104,7 @@ export const PatternStatisticsModal: React.FC<Props> = (props: Props) => {
                             variant={"link"}
                             eventKey={i.toString(10)}
                           >
-                            {instance.instance.terms
+                            {Object.values(instance.instance.terms)
                               .map((t) => (
                                 <span
                                   style={{
@@ -130,15 +131,15 @@ export const PatternStatisticsModal: React.FC<Props> = (props: Props) => {
                               width={"100%"}
                               height={"100%"}
                               fitContent={true}
-                              terms={instance.instance.terms}
-                              conns={instance.instance.conns}
+                              terms={Object.values(instance.instance.terms)}
+                              conns={Object.values(instance.instance.conns)}
                             />
                           </Card.Body>
                         </Accordion.Collapse>
                       </Card>
                     ))}
                   </Accordion>
-                  <PatternInternalView
+                  <EditingPatternInternalView
                     width={"100%"}
                     height={"500px"}
                     fitContent={true}

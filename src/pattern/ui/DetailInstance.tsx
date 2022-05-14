@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import { Accordion, Button, Card } from "react-bootstrap";
-import { Instances, Patterns } from "./PatternTypes";
-import { InstanceStructureModal } from "./InstanceStructureModal";
-import { LocalePattern } from "../config/Locale";
-import { AppSettings } from "../config/Variables";
+import { Instances, Patterns } from "../function/PatternTypes";
+import { InstanceStructureModal } from "../modals/InstanceStructureModal";
+import { AppSettings } from "../../config/Variables";
+import { LocalePattern } from "../../config/Locale";
 
 type Props = {
   id: string;

@@ -16,8 +16,8 @@ import {
 import IRILink from "../components/IRILink";
 import { unHighlightCell } from "../function/FunctionDraw";
 import { ResizableBox } from "react-resizable";
-import { DetailInstance } from "../pattern/DetailInstance";
-import { Instances, Patterns } from "../pattern/PatternTypes";
+import { Instances, Patterns } from "../pattern/function/PatternTypes";
+import { DetailInstance } from "../pattern/ui/DetailInstance";
 
 interface Props {
   projectLanguage: string;

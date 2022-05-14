@@ -1,11 +1,11 @@
 import * as joint from "jointjs";
 import React from "react";
-import { getNewLink } from "../function/FunctionGetVars";
-import { zoomDiagram } from "../function/FunctionDiagram";
-import { graphElement } from "../graph/GraphElement";
-import { CardinalityPool } from "../config/Variables";
-import { LinkType } from "../config/Enum";
-import { getStereotypeList } from "../function/FunctionEditVars";
+import { graphElement } from "../../graph/GraphElement";
+import { getNewLink } from "../../function/FunctionGetVars";
+import { CardinalityPool } from "../../config/Variables";
+import { LinkType } from "../../config/Enum";
+import { zoomDiagram } from "../../function/FunctionDiagram";
+import { getStereotypeList } from "../../function/FunctionEditVars";
 
 type State = {};
 
@@ -36,7 +36,10 @@ type Props = {
 
 var paper: joint.dia.Paper;
 
-export default class PatternInternalView extends React.Component<Props, State> {
+export default class NewPatternInternalView extends React.Component<
+  Props,
+  State
+> {
   private graph: joint.dia.Graph = new joint.dia.Graph();
   private readonly canvasRef: React.RefObject<HTMLDivElement> =
     React.createRef();
@@ -98,37 +101,43 @@ export default class PatternInternalView extends React.Component<Props, State> {
         });
       }
     });
-    Object.keys(this.props.conns).forEach((conn) => {
+    for (const conn in this.props.conns) {
       const link = getNewLink(this.props.conns[conn].linkType);
       link.source({ id: this.props.conns[conn].from });
       link.target({ id: this.props.conns[conn].to });
       link.labels([]);
-      link.appendLabel({
-        attrs: { text: { text: this.props.conns[conn].name } },
-        position: { distance: 0.5 },
-      });
-      const sourceCardinality =
-        CardinalityPool[parseInt(this.props.conns[conn].sourceCardinality, 10)];
-      const targetCardinality =
-        CardinalityPool[parseInt(this.props.conns[conn].targetCardinality, 10)];
-      if (sourceCardinality && sourceCardinality.getString() !== "") {
+      if (this.props.conns[conn].linkType === LinkType.DEFAULT) {
         link.appendLabel({
-          attrs: {
-            text: { text: sourceCardinality.getString() },
-          },
-          position: { distance: 50 },
+          attrs: { text: { text: this.props.conns[conn].name } },
+          position: { distance: 0.5 },
         });
-      }
-      if (targetCardinality && targetCardinality.getString() !== "") {
-        link.appendLabel({
-          attrs: {
-            text: { text: targetCardinality.getString() },
-          },
-          position: { distance: -50 },
-        });
+        const sourceCardinality =
+          CardinalityPool[
+            parseInt(this.props.conns[conn].sourceCardinality, 10)
+          ];
+        const targetCardinality =
+          CardinalityPool[
+            parseInt(this.props.conns[conn].targetCardinality, 10)
+          ];
+        if (sourceCardinality && sourceCardinality.getString() !== "") {
+          link.appendLabel({
+            attrs: {
+              text: { text: sourceCardinality.getString() },
+            },
+            position: { distance: 50 },
+          });
+        }
+        if (targetCardinality && targetCardinality.getString() !== "") {
+          link.appendLabel({
+            attrs: {
+              text: { text: targetCardinality.getString() },
+            },
+            position: { distance: -50 },
+          });
+        }
       }
       link.addTo(this.graph);
-    });
+    }
     paper.scaleContentToFit({
       padding: 10,
       maxScale: 2,

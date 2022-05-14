@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { Button, Col, Container, Form, Row, Table } from "react-bootstrap";
-import { Patterns } from "./PatternTypes";
-import { AppSettings, WorkspaceVocabularies } from "../config/Variables";
-import { callSuggestionAlgorithm } from "./PatternQueries";
-import { PatternCreationConfiguration } from "../components/modals/CreationModals";
 import {
   formElementData,
   formRelationshipData,
   PatternViewColumn,
 } from "./PatternViewColumn";
+import { PatternCreationConfiguration } from "../../components/modals/CreationModals";
+import { AppSettings } from "../../config/Variables";
+import { Patterns } from "../function/PatternTypes";
+import { callSuggestionAlgorithm } from "../function/PatternQueries";
 
 type Props = {
   configuration: PatternCreationConfiguration;
@@ -29,12 +29,6 @@ export const PatternCreationModalExisting: React.FC<Props> = (props: Props) => {
   const [filterAuthor, setFilterAuthor] = useState<string>("");
   const [filterSuggest, setFilterSuggest] = useState<boolean>(false);
   const [detailPattern, setDetailPattern] = useState<string>("");
-  const [patternElementFormData, setPatternElementFormData] = useState<{
-    [key: string]: formElementData;
-  }>({});
-  const [patternRelationshipFormData, setPatternRelationshipFormData] =
-    useState<{ [key: string]: formRelationshipData }>({});
-
   useEffect(() => setSearchResults(Object.keys(Patterns)), []);
 
   const suggestPatterns: () => Promise<string[]> = async () => {
@@ -42,50 +36,10 @@ export const PatternCreationModalExisting: React.FC<Props> = (props: Props) => {
   };
 
   useEffect(() => {
-    if (props.initSubmit)
-      props.submit(
-        detailPattern,
-        patternElementFormData,
-        patternRelationshipFormData
-      );
-  }, [props.initSubmit]);
-
-  useEffect(() => {
     if (props.pattern) {
-      selectPattern(props.pattern);
+      setDetailPattern(props.pattern);
     }
   }, [props.pattern]);
-
-  const selectPattern = (pattern: string) => {
-    const elementFormData: { [key: string]: formElementData } = {};
-    for (const term in Patterns[pattern].terms) {
-      elementFormData[term] = {
-        ...Patterns[pattern].terms[term],
-        iri: term,
-        create: true,
-        value: { value: "", label: "" },
-        scheme: Object.keys(WorkspaceVocabularies).find(
-          (vocab) => !WorkspaceVocabularies[vocab].readOnly
-        )!,
-        use: true,
-      };
-    }
-    setPatternElementFormData(elementFormData);
-    const relationshipFormData: { [key: string]: formRelationshipData } = {};
-    for (const term in Patterns[pattern].conns) {
-      relationshipFormData[term] = {
-        ...Patterns[pattern].conns[term],
-        create: true,
-        scheme: Object.keys(WorkspaceVocabularies).find(
-          (vocab) => !WorkspaceVocabularies[vocab].readOnly
-        )!,
-        iri: term,
-      };
-    }
-    setPatternRelationshipFormData(relationshipFormData);
-    setDetailPattern(pattern);
-    updateResults();
-  };
 
   const updateResults = () => {
     if (filterSuggest)
@@ -127,7 +81,7 @@ export const PatternCreationModalExisting: React.FC<Props> = (props: Props) => {
   useEffect(() => updateResults(), [filterName, filterAuthor, filterSuggest]);
 
   return (
-    <Container>
+    <Container style={{ minWidth: "95%" }}>
       <Row>
         <Col>
           <div style={{ marginTop: "10px" }}>
@@ -165,7 +119,7 @@ export const PatternCreationModalExisting: React.FC<Props> = (props: Props) => {
                   <td>
                     <Button
                       className={"buttonlink"}
-                      onClick={() => selectPattern(r)}
+                      onClick={() => setDetailPattern(r)}
                     >
                       {Patterns[r].title}
                     </Button>
@@ -183,7 +137,7 @@ export const PatternCreationModalExisting: React.FC<Props> = (props: Props) => {
         <Col>
           <PatternViewColumn
             configuration={props.configuration}
-            pattern={props.pattern}
+            pattern={detailPattern}
             initSubmit={props.initSubmit}
             submit={props.submit}
           />

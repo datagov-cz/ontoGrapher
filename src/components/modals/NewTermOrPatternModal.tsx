@@ -13,27 +13,19 @@ import {
 import { AppSettings, WorkspaceVocabularies } from "../../config/Variables";
 import _ from "lodash";
 import { ElemCreationConfiguration } from "./CreationModals";
-import {
-  initLanguageObject,
-  parsePrefix,
-} from "../../function/FunctionEditVars";
+import { initLanguageObject } from "../../function/FunctionEditVars";
 import { Locale } from "../../config/Locale";
 import { NewElemForm } from "./NewElemForm";
-import { Instances, Patterns } from "../../pattern/PatternTypes";
 import {
   formElementData,
   formRelationshipData,
   PatternViewColumn,
-} from "../../pattern/PatternViewColumn";
-import { paper } from "../../main/DiagramCanvas";
-import { createNewConcept } from "../../function/FunctionElem";
+} from "../../pattern/creation/PatternViewColumn";
 import {
-  updateProjectElement,
-  updateProjectElementDiagram,
-} from "../../queries/update/UpdateElementQueries";
-import { saveNewLink } from "../../function/FunctionLink";
-import { Representation } from "../../config/Enum";
-import { v4 } from "uuid";
+  createInstance,
+  putInstanceOnCanvas,
+} from "../../pattern/function/FunctionPattern";
+import { Patterns } from "../../pattern/function/PatternTypes";
 
 interface Props {
   modal: boolean;
@@ -50,6 +42,7 @@ interface State {
 }
 
 export const NewTermOrPatternModal: React.FC<Props> = (props: Props) => {
+  const [tab, setTab] = useState<string>("0");
   const [initSubmitEx, setInitSubmitEx] = useState<boolean>(false);
   const [searchResults, setSearchResults] = useState<string[]>(
     Object.keys(Patterns)
@@ -66,14 +59,6 @@ export const NewTermOrPatternModal: React.FC<Props> = (props: Props) => {
   );
   const [size, setSize] = useState<undefined | "xl">(undefined);
 
-  useEffect(() => {
-    const vocab = Object.keys(WorkspaceVocabularies).find(
-      (vocab) => !WorkspaceVocabularies[vocab].readOnly
-    );
-    if (!vocab) props.close();
-    else setSelectedVocabulary(vocab);
-  }, []);
-
   const save = () => {
     if (errorText === "") {
       const names = _.mapValues(termName, (name) => name.trim());
@@ -87,63 +72,12 @@ export const NewTermOrPatternModal: React.FC<Props> = (props: Props) => {
     connections: { [key: string]: formRelationshipData }
   ) => {
     setInitSubmitEx(false);
-    const instanceTerms: string[] = [];
-    const instanceConns: string[] = [];
-    const queries: string[] = [];
-    const matrixLength = Math.max(
-      Object.keys(elements).length + Object.keys(connections).length
+    const { instance, queries } = createInstance(
+      pattern,
+      elements,
+      connections
     );
-    const matrixDimension = Math.ceil(Math.sqrt(matrixLength));
-    const startingCoords = paper.clientToLocalPoint({
-      x: window.innerWidth / 2,
-      y: window.innerHeight / 2,
-    });
-    Object.values(elements)
-      .filter((t) => t.create)
-      .forEach((t, i) => {
-        const x = i % matrixDimension;
-        const y = Math.floor(i / matrixDimension);
-        const id = createNewConcept(
-          { x: startingCoords.x + x * 200, y: startingCoords.y + y * 200 },
-          initLanguageObject(t.name),
-          AppSettings.canvasLanguage,
-          t.scheme,
-          t.types
-        );
-        queries.push(id);
-      });
-    Object.values(connections)
-      .filter((t) => t.create)
-      .forEach((c, i) => {
-        const x = (i + Object.keys(elements).length) % matrixDimension;
-        const y = Math.floor(
-          (i + Object.keys(elements).length) / matrixDimension
-        );
-        const id = createNewConcept(
-          { x: startingCoords.x + x * 200, y: startingCoords.y + y * 200 },
-          initLanguageObject(c.name),
-          AppSettings.canvasLanguage,
-          c.scheme,
-          [parsePrefix("z-sgov-pojem", "typ-vztahu")]
-        );
-        queries.push(
-          updateProjectElement(true, id),
-          updateProjectElementDiagram(AppSettings.selectedDiagram, id),
-          ...saveNewLink(
-            id,
-            elements[c.from].iri,
-            elements[c.to].iri,
-            Representation.COMPACT
-          )
-        );
-      });
-    Instances[v4()] = {
-      iri: pattern,
-      terms: instanceTerms,
-      conns: instanceConns,
-      x: window.innerWidth / 2,
-      y: window.innerHeight / 2,
-    };
+    if (AppSettings.patternView) putInstanceOnCanvas(instance);
     props.close();
     return queries;
   };
@@ -173,6 +107,7 @@ export const NewTermOrPatternModal: React.FC<Props> = (props: Props) => {
       keyboard={true}
       onEscapeKeyDown={() => props.close()}
       onHide={() => props.close()}
+      dialogClassName={tab === "1" ? "patternModal" : ""}
       onEntering={() => {
         setSearchResults(Object.keys(Patterns));
         if (!selectedVocabulary) {
@@ -203,8 +138,11 @@ export const NewTermOrPatternModal: React.FC<Props> = (props: Props) => {
       <Modal.Body>
         <Tabs
           id={"elem-or-pattern-tabs"}
-          defaultActiveKey={"0"}
-          onSelect={(eventKey) => setSize(eventKey === "0" ? undefined : "xl")}
+          eventKey={tab}
+          onSelect={(eventKey) => {
+            setTab(eventKey!);
+            setSize(eventKey === "0" ? undefined : "xl");
+          }}
         >
           <Tab eventKey={"0"} title={props.configuration.header}>
             {selectedVocabulary && (
@@ -223,7 +161,7 @@ export const NewTermOrPatternModal: React.FC<Props> = (props: Props) => {
           </Tab>
           {props.configuration.connections.length === 0 && (
             <Tab eventKey={"1"} title={"Create instance"}>
-              <Container>
+              <Container style={{ minWidth: "95%" }}>
                 <Row>
                   <Col>
                     <div style={{ marginTop: "10px" }}>
@@ -290,9 +228,9 @@ export const NewTermOrPatternModal: React.FC<Props> = (props: Props) => {
         <Button
           type={"submit"}
           onClick={() => {
-            if (errorText === "") save();
+            if (tab === "0" && errorText === "") save();
           }}
-          disabled={errorText !== ""}
+          disabled={tab === "0" ? errorText !== "" : false}
           variant="primary"
         >
           {Locale[AppSettings.interfaceLanguage].confirm}

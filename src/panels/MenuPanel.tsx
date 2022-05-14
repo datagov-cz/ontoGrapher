@@ -15,9 +15,9 @@ import MenuPanelAbout from "./menu/right/MenuPanelAbout";
 import MenuPanelValidate from "./menu/left/MenuPanelValidate";
 import FitContentWidget from "./menu/widget/FitContentWidget";
 import InterfaceStatus from "../components/InterfaceStatus";
-import { MenuPanelPatterns } from "../pattern/MenuPanelPatterns";
-import MenuPanelTogglePatternView from "../pattern/MenuPanelTogglePatternView";
 import MenuPanelSwitchRepresentation from "./menu/left/MenuPanelSwitchRepresentation";
+import MenuPanelTogglePatternView from "../pattern/ui/MenuPanelTogglePatternView";
+import { MenuPanelPatterns } from "../pattern/ui/MenuPanelPatterns";
 
 interface MenuPanelProps {
   readOnly?: boolean;

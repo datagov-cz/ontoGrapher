@@ -1,30 +1,20 @@
 import React, { useEffect, useState } from "react";
-import {
-  Badge,
-  Button,
-  Col,
-  Container,
-  Form,
-  Row,
-  Table,
-} from "react-bootstrap";
+import { Button, Col, Container, Form, Row, Table } from "react-bootstrap";
+import * as _ from "lodash";
+import { v4 as uuidv4 } from "uuid";
+import { PatternCreationConfiguration } from "../../components/modals/CreationModals";
 import {
   AppSettings,
   CardinalityPool,
   Stereotypes,
   WorkspaceLinks,
   WorkspaceTerms,
-} from "../config/Variables";
-import { getLabelOrBlank } from "../function/FunctionGetVars";
-import { getName } from "../function/FunctionEditVars";
-import * as _ from "lodash";
-import { v4 as uuidv4 } from "uuid";
-import { PatternCreationConfiguration } from "../components/modals/CreationModals";
-import PatternInternalView from "./PatternInternalView";
-import { Pattern } from "./PatternTypes";
-import { LinkType } from "../config/Enum";
-
-type newPatternTerms = string[];
+} from "../../config/Variables";
+import { Pattern } from "../function/PatternTypes";
+import { getLabelOrBlank } from "../../function/FunctionGetVars";
+import { getName } from "../../function/FunctionEditVars";
+import { LinkType } from "../../config/Enum";
+import NewPatternInternalView from "../structures/NewPatternInternalView";
 
 type newPatternParameter = {
   [key: string]: {
@@ -32,6 +22,7 @@ type newPatternParameter = {
     types: string[];
     optional: boolean;
     multiple: boolean;
+    iri?: string;
     active: boolean;
   };
 };
@@ -71,15 +62,6 @@ export const PatternCreationModalNew: React.FC<Props> = (props: Props) => {
         multiple?: boolean;
       };
     } = {};
-    for (const term of newPatternTermData) {
-      t[term] = {
-        name: getLabelOrBlank(
-          WorkspaceTerms[term].labels,
-          AppSettings.canvasLanguage
-        ),
-        types: WorkspaceTerms[term].types,
-      };
-    }
     for (const param in newPatternParameterData) {
       t[param] = {
         name: newPatternParameterData[param].name,
@@ -106,6 +88,19 @@ export const PatternCreationModalNew: React.FC<Props> = (props: Props) => {
     // create parameters
     const parameters: newPatternParameter = {};
     const relationships: newPatternRelationship = {};
+    props.configuration.elements.forEach((elem) => {
+      parameters[elem] = {
+        name: getLabelOrBlank(
+          WorkspaceTerms[elem].labels,
+          AppSettings.canvasLanguage
+        ),
+        types: [WorkspaceTerms[elem].types.find((t) => t in Stereotypes)!],
+        optional: false,
+        multiple: false,
+        active: true,
+        iri: elem,
+      };
+    });
     rels
       .filter(
         (l) => !props.configuration.elements.includes(WorkspaceLinks[l].target)
@@ -146,7 +141,6 @@ export const PatternCreationModalNew: React.FC<Props> = (props: Props) => {
     // init info
     setNewPatternData({ name: "", author: "", description: "" });
     setNewPatternRelationshipData(relationships);
-    setNewPatternTermData(props.configuration.elements);
     setNewPatternParameterData(parameters);
   }, []);
 
@@ -159,13 +153,6 @@ export const PatternCreationModalNew: React.FC<Props> = (props: Props) => {
     author: "",
     description: "",
   });
-  const [newPatternTermData, setNewPatternTermData] = useState<newPatternTerms>(
-    []
-  );
-  useEffect(
-    () => setNewPatternTermData(props.configuration.elements),
-    [props.configuration]
-  );
 
   const modifyRelationshipData: (
     index: string,
@@ -249,34 +236,128 @@ export const PatternCreationModalNew: React.FC<Props> = (props: Props) => {
     <Container className={"newPattern"} fluid={true}>
       <Row>
         <Col>
-          <h5>Terms</h5>
+          <h5>Parameters</h5>
           <Table size={"sm"} borderless={true} striped={true}>
             <thead>
               <tr>
                 <th>Name</th>
-                <th>Type(s)</th>
+                <th>Type</th>
+                <th style={{ wordBreak: "keep-all" }}>Optional</th>
+                <th style={{ wordBreak: "keep-all" }}>Multiple</th>
+                <th style={{ minWidth: "80px" }}>Actions</th>
               </tr>
             </thead>
             <tbody>
-              {newPatternTermData.map((elem) => (
-                <tr key={key++}>
-                  <td key={key++}>
-                    {getLabelOrBlank(
-                      WorkspaceTerms[elem].labels,
-                      AppSettings.canvasLanguage
-                    )}
-                  </td>
-                  <td key={key++}>
-                    {WorkspaceTerms[elem].types
-                      .filter((type) => type in Stereotypes)
-                      .map((stereotype) => (
-                        <Badge variant={"info"}>
-                          {getName(stereotype, AppSettings.canvasLanguage)}
-                        </Badge>
-                      ))}
-                  </td>
-                </tr>
-              ))}
+              {Object.keys(newPatternParameterData).map((data) => {
+                return (
+                  <tr key={key++}>
+                    <td>
+                      <Form.Control
+                        size={"sm"}
+                        type={"text"}
+                        placeholder={"Parameter name"}
+                        value={newPatternParameterData[data].name}
+                        onChange={(event) =>
+                          modifyPatternData(data, {
+                            ...newPatternParameterData[data],
+                            name: event.currentTarget.value,
+                          })
+                        }
+                      />
+                      {!newPatternParameterData[data].name && (
+                        <p className={"red"}>Please choose a name.</p>
+                      )}
+                    </td>
+                    <td>
+                      <Form.Control
+                        onChange={(event) =>
+                          modifyPatternData(data, {
+                            ...newPatternParameterData[data],
+                            types: [event.currentTarget.value],
+                          })
+                        }
+                        value={newPatternParameterData[data].types[0]}
+                        size="sm"
+                        as="select"
+                      >
+                        <option key={""} value={""}>
+                          No type
+                        </option>
+                        {Object.keys(Stereotypes)
+                          .filter(
+                            (s) =>
+                              ![
+                                "https://slovník.gov.cz/základní/pojem/typ-vztahu",
+                                "https://slovník.gov.cz/základní/pojem/typ-vlastnosti",
+                              ].includes(s)
+                          )
+                          .map((s) => (
+                            <option key={s} value={s}>
+                              {getName(s, AppSettings.canvasLanguage)}
+                            </option>
+                          ))}
+                      </Form.Control>
+                    </td>
+                    <td>
+                      <Form.Check
+                        type="checkbox"
+                        onChange={(event) =>
+                          modifyPatternData(data, {
+                            ...newPatternParameterData[data],
+                            optional: event.currentTarget.checked,
+                          })
+                        }
+                        checked={newPatternParameterData[data].optional}
+                      />
+                    </td>
+                    <td>
+                      <Form.Check
+                        type="checkbox"
+                        onChange={(event) =>
+                          modifyPatternData(data, {
+                            ...newPatternParameterData[data],
+                            multiple: event.currentTarget.checked,
+                          })
+                        }
+                        checked={newPatternParameterData[data].multiple}
+                      />
+                    </td>
+                    <td>
+                      <Button
+                        size={"sm"}
+                        key={key++}
+                        onClick={() =>
+                          modifyPatternData(data, {
+                            ...newPatternParameterData[data],
+                            active: false,
+                          })
+                        }
+                        variant={"danger"}
+                      >
+                        {"Remove"}
+                      </Button>
+                    </td>
+                  </tr>
+                );
+              })}
+              <tr>
+                <td colSpan={5}>
+                  <Button
+                    size={"sm"}
+                    onClick={() =>
+                      modifyPatternData(uuidv4(), {
+                        name: "",
+                        types: [""],
+                        optional: false,
+                        multiple: false,
+                        active: true,
+                      })
+                    }
+                  >
+                    Add parameter
+                  </Button>
+                </td>
+              </tr>
             </tbody>
           </Table>
           <h5>Relationships</h5>
@@ -325,14 +406,6 @@ export const PatternCreationModalNew: React.FC<Props> = (props: Props) => {
                               })
                             }
                           >
-                            {props.configuration.elements.map((elem) => (
-                              <option key={key++} value={elem}>
-                                {getLabelOrBlank(
-                                  WorkspaceTerms[elem].labels,
-                                  AppSettings.canvasLanguage
-                                )}
-                              </option>
-                            ))}
                             {Object.keys(newPatternParameterData).map(
                               (param) => (
                                 <option key={key++} value={param}>
@@ -443,14 +516,6 @@ export const PatternCreationModalNew: React.FC<Props> = (props: Props) => {
                               })
                             }
                           >
-                            {props.configuration.elements.map((elem) => (
-                              <option key={key++} value={elem}>
-                                {getLabelOrBlank(
-                                  WorkspaceTerms[elem].labels,
-                                  AppSettings.canvasLanguage
-                                )}
-                              </option>
-                            ))}
                             {Object.keys(newPatternParameterData).map(
                               (param) => (
                                 <option key={key++} value={param}>
@@ -487,11 +552,11 @@ export const PatternCreationModalNew: React.FC<Props> = (props: Props) => {
                       const copy = _.clone(newPatternRelationshipData);
                       copy[uuidv4()] = {
                         active: true,
-                        from: newPatternTermData[0],
+                        from: Object.keys(newPatternParameterData)[0],
                         name: "",
                         sourceCardinality: "0",
                         targetCardinality: "0",
-                        to: newPatternTermData[0],
+                        to: Object.keys(newPatternParameterData)[0],
                         linkType: LinkType.DEFAULT,
                       };
                       setNewPatternRelationshipData(copy);
@@ -503,132 +568,10 @@ export const PatternCreationModalNew: React.FC<Props> = (props: Props) => {
               </tr>
             </tbody>
           </Table>
-          <h5>Parameters</h5>
-          <Table size={"sm"} borderless={true} striped={true}>
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Type</th>
-                <th style={{ wordBreak: "keep-all" }}>Optional</th>
-                <th style={{ wordBreak: "keep-all" }}>Multiple</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {Object.keys(newPatternParameterData).map((data) => {
-                return (
-                  <tr>
-                    <td>
-                      <Form.Control
-                        size={"sm"}
-                        type={"text"}
-                        placeholder={"Parameter name"}
-                        value={newPatternParameterData[data].name}
-                        onChange={(event) =>
-                          modifyPatternData(data, {
-                            ...newPatternParameterData[data],
-                            name: event.currentTarget.value,
-                          })
-                        }
-                      />
-                      {!newPatternParameterData[data].name && (
-                        <p className={"red"}>Please choose a name.</p>
-                      )}
-                    </td>
-                    <td>
-                      <Form.Control
-                        onChange={(event) =>
-                          modifyPatternData(data, {
-                            ...newPatternParameterData[data],
-                            types: [event.currentTarget.value],
-                          })
-                        }
-                        value={newPatternParameterData[data].types[0]}
-                        size="sm"
-                        as="select"
-                      >
-                        <option value={""}>No type</option>
-                        {Object.keys(Stereotypes)
-                          .filter(
-                            (s) =>
-                              ![
-                                "https://slovník.gov.cz/základní/pojem/typ-vztahu",
-                                "https://slovník.gov.cz/základní/pojem/typ-vlastnosti",
-                              ].includes(s)
-                          )
-                          .map((s) => (
-                            <option value={s}>
-                              {getName(s, AppSettings.canvasLanguage)}
-                            </option>
-                          ))}
-                      </Form.Control>
-                    </td>
-                    <td>
-                      <Form.Check
-                        type="checkbox"
-                        onChange={(event) =>
-                          modifyPatternData(data, {
-                            ...newPatternParameterData[data],
-                            optional: event.currentTarget.checked,
-                          })
-                        }
-                        checked={newPatternParameterData[data].optional}
-                      />
-                    </td>
-                    <td>
-                      <Form.Check
-                        type="checkbox"
-                        onChange={(event) =>
-                          modifyPatternData(data, {
-                            ...newPatternParameterData[data],
-                            multiple: event.currentTarget.checked,
-                          })
-                        }
-                        checked={newPatternParameterData[data].multiple}
-                      />
-                    </td>
-                    <td>
-                      <Button
-                        size={"sm"}
-                        key={key++}
-                        onClick={() =>
-                          modifyPatternData(data, {
-                            ...newPatternParameterData[data],
-                            active: false,
-                          })
-                        }
-                        variant={"danger"}
-                      >
-                        {"Remove"}
-                      </Button>
-                    </td>
-                  </tr>
-                );
-              })}
-              <tr>
-                <td colSpan={5}>
-                  <Button
-                    size={"sm"}
-                    onClick={() =>
-                      modifyPatternData(uuidv4(), {
-                        name: "",
-                        types: [""],
-                        optional: false,
-                        multiple: false,
-                        active: true,
-                      })
-                    }
-                  >
-                    Add parameter
-                  </Button>
-                </td>
-              </tr>
-            </tbody>
-          </Table>
         </Col>
         <Col>
           <h5>Pattern structure</h5>
-          <PatternInternalView
+          <NewPatternInternalView
             width={"100%"}
             height={"500px"}
             fitContent={true}

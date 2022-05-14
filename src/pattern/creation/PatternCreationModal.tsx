@@ -1,22 +1,18 @@
 import React, { useState } from "react";
 import { Button, Form, Modal, Tab, Tabs } from "react-bootstrap";
-import { Locale } from "../config/Locale";
-import { AppSettings } from "../config/Variables";
-import { PatternCreationConfiguration } from "../components/modals/CreationModals";
+
 import { PatternCreationModalExisting } from "./PatternCreationModalExisting";
 import { PatternCreationModalNew } from "./PatternCreationModalNew";
-import { Instances, Pattern, Patterns } from "./PatternTypes";
 import { v4 } from "uuid";
-import { paper } from "../main/DiagramCanvas";
-import { createNewConcept } from "../function/FunctionElem";
-import { initLanguageObject, parsePrefix } from "../function/FunctionEditVars";
-import {
-  updateProjectElement,
-  updateProjectElementDiagram,
-} from "../queries/update/UpdateElementQueries";
-import { saveNewLink } from "../function/FunctionLink";
-import { Representation } from "../config/Enum";
 import { formElementData, formRelationshipData } from "./PatternViewColumn";
+import { PatternCreationConfiguration } from "../../components/modals/CreationModals";
+import { Locale } from "../../config/Locale";
+import { Pattern, Patterns } from "../function/PatternTypes";
+import {
+  createInstance,
+  putInstanceOnCanvas,
+} from "../function/FunctionPattern";
+import { AppSettings } from "../../config/Variables";
 
 type Props = {
   modal: boolean;
@@ -27,9 +23,10 @@ type Props = {
 
 export const PatternCreationModal: React.FC<Props> = (props: Props) => {
   const [submitLabel, setSubmitLabel] = useState<string>("Create pattern");
-  const [tab, setTab] = useState<string>("pattern");
-  const [existingPattern, setExistingPattern] = useState<string>("");
-  const [createInstance, setCreateInstance] = useState<boolean>(true);
+  const [tab, setTab] = useState<string>("instance");
+  const [existingPattern, setExistingPattern] = useState<string>("test");
+  const [createInstanceFromNewPattern, setCreateInstanceFromNewPattern] =
+    useState<boolean>(true);
   const [initSubmitNew, setInitSubmitNew] = useState<boolean>(false);
   const [initSubmitEx, setInitSubmitEx] = useState<boolean>(false);
 
@@ -40,7 +37,8 @@ export const PatternCreationModal: React.FC<Props> = (props: Props) => {
     if (!Object.values(pattern.terms).every((c) => c.name)) return;
     const id = v4();
     Patterns[id] = pattern;
-    if (createInstance) {
+    console.log(id, pattern);
+    if (createInstanceFromNewPattern) {
       setTab("instance");
       setExistingPattern(id);
     } else {
@@ -54,65 +52,12 @@ export const PatternCreationModal: React.FC<Props> = (props: Props) => {
     connections: { [key: string]: formRelationshipData }
   ) => {
     setInitSubmitEx(false);
-    const instanceTerms: string[] = Object.values(elements).map((e) => e.iri);
-    const instanceConns: string[] = Object.values(connections).map(
-      (e) => e.iri
+    const { instance, queries } = createInstance(
+      pattern,
+      elements,
+      connections
     );
-    const queries: string[] = [];
-    const matrixLength = Math.max(
-      Object.keys(elements).length + Object.keys(connections).length
-    );
-    const matrixDimension = Math.ceil(Math.sqrt(matrixLength));
-    const startingCoords = paper.clientToLocalPoint({
-      x: window.innerWidth / 2,
-      y: window.innerHeight / 2,
-    });
-    Object.values(elements)
-      .filter((t) => t.create)
-      .forEach((t, i) => {
-        const x = i % matrixDimension;
-        const y = Math.floor(i / matrixDimension);
-        const id = createNewConcept(
-          { x: startingCoords.x + x * 200, y: startingCoords.y + y * 200 },
-          initLanguageObject(t.name),
-          AppSettings.canvasLanguage,
-          t.scheme,
-          t.types
-        );
-        queries.push(id);
-      });
-    Object.values(connections)
-      .filter((t) => t.create)
-      .forEach((c, i) => {
-        const x = (i + Object.keys(elements).length) % matrixDimension;
-        const y = Math.floor(
-          (i + Object.keys(elements).length) / matrixDimension
-        );
-        const id = createNewConcept(
-          { x: startingCoords.x + x * 200, y: startingCoords.y + y * 200 },
-          initLanguageObject(c.name),
-          AppSettings.canvasLanguage,
-          c.scheme,
-          [parsePrefix("z-sgov-pojem", "typ-vztahu")]
-        );
-        queries.push(
-          updateProjectElement(true, id),
-          updateProjectElementDiagram(AppSettings.selectedDiagram, id),
-          ...saveNewLink(
-            id,
-            elements[c.from].iri,
-            elements[c.to].iri,
-            Representation.COMPACT
-          )
-        );
-      });
-    Instances[v4()] = {
-      iri: pattern,
-      terms: instanceTerms,
-      conns: instanceConns,
-      x: window.innerWidth / 2,
-      y: window.innerHeight / 2,
-    };
+    if (AppSettings.patternView) putInstanceOnCanvas(instance);
     props.close();
     return queries;
   };
@@ -126,7 +71,10 @@ export const PatternCreationModal: React.FC<Props> = (props: Props) => {
       size={"xl"}
       onEscapeKeyDown={() => props.close()}
       onHide={() => props.close}
-      onEntering={() => {}}
+      onEntering={() => {
+        setExistingPattern("");
+      }}
+      dialogClassName="patternModal"
     >
       <Modal.Header>
         <Modal.Title>Create or apply pattern</Modal.Title>
@@ -156,11 +104,7 @@ export const PatternCreationModal: React.FC<Props> = (props: Props) => {
               configuration={props.configuration}
               pattern={existingPattern}
               initSubmit={initSubmitEx}
-              submit={(
-                pattern: string,
-                elements: { [key: string]: formElementData },
-                connections: { [key: string]: formRelationshipData }
-              ) => submitExisting(pattern, elements, connections)}
+              submit={submitExisting}
             />
           </Tab>
         </Tabs>
@@ -170,9 +114,9 @@ export const PatternCreationModal: React.FC<Props> = (props: Props) => {
           <span>
             <Form.Check
               style={{ display: "inline-block", marginRight: "20px" }}
-              checked={createInstance}
+              checked={createInstanceFromNewPattern}
               onChange={(event) =>
-                setCreateInstance(event.currentTarget.checked)
+                setCreateInstanceFromNewPattern(event.currentTarget.checked)
               }
               label={"Create an instance from this pattern"}
             />

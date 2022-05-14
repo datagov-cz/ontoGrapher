@@ -1,6 +1,6 @@
 import React from "react";
 import DiagramAdd from "./diagram/DiagramAdd";
-import { Diagrams } from "../config/Variables";
+import { AppSettings, Diagrams } from "../config/Variables";
 import DiagramTab from "./diagram/DiagramTab";
 import ModalRemoveDiagram from "./modal/ModalRemoveDiagram";
 
@@ -27,33 +27,39 @@ export default class DiagramPanel extends React.Component<Props, State> {
   render() {
     return (
       <div className={"diagramPanel" + (this.props.freeze ? " disabled" : "")}>
-        {Object.keys(Diagrams)
-          .filter((diag) => Diagrams[diag].active)
-          .sort((a, b) => Diagrams[a].index - Diagrams[b].index)
-          .map((diag, i) => (
-            <DiagramTab
-              key={i}
-              diagram={diag}
-              update={() => {
-                this.forceUpdate();
-                this.props.update();
-              }}
-              performTransaction={this.props.performTransaction}
-              deleteDiagram={(diag: string) => {
-                this.setState({
-                  selectedDiagram: diag,
-                  modalRemoveDiagram: true,
-                });
-              }}
-            />
-          ))}
-        <DiagramAdd
-          update={() => {
-            this.forceUpdate();
-            this.props.update();
-          }}
-          performTransaction={this.props.performTransaction}
-        />
+        {!AppSettings.patternView &&
+          Object.keys(Diagrams)
+            .filter((diag) => Diagrams[diag].active)
+            .sort((a, b) => Diagrams[a].index - Diagrams[b].index)
+            .map((diag, i) => (
+              <DiagramTab
+                key={i}
+                diagram={diag}
+                update={() => {
+                  this.forceUpdate();
+                  this.props.update();
+                }}
+                performTransaction={this.props.performTransaction}
+                deleteDiagram={(diag: string) => {
+                  this.setState({
+                    selectedDiagram: diag,
+                    modalRemoveDiagram: true,
+                  });
+                }}
+              />
+            ))}
+        {AppSettings.patternView && (
+          <div className={"diagramTab selected"}>Pattern view mode</div>
+        )}
+        {!AppSettings.patternView && (
+          <DiagramAdd
+            update={() => {
+              this.forceUpdate();
+              this.props.update();
+            }}
+            performTransaction={this.props.performTransaction}
+          />
+        )}
         <ModalRemoveDiagram
           modal={this.state.modalRemoveDiagram}
           diagram={this.state.selectedDiagram}

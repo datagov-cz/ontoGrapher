@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { Dropdown } from "react-bootstrap";
-import { PatternAlgorithmModal } from "./PatternAlgorithmModal";
-import { PatternStatisticsModal } from "./PatternStatisticsModal";
-import { StorePattern } from "./StorePattern";
+import { PatternStatisticsModal } from "../modals/PatternStatisticsModal";
+import { StorePattern } from "../function/StorePattern";
+import { PatternAlgorithmModal } from "../modals/PatternAlgorithmModal";
 
 type Props = {};
 
