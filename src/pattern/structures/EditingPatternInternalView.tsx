@@ -59,7 +59,6 @@ export default class EditingPatternInternalView extends React.Component<
           this.props.terms[term].optional
       )
       .forEach((p, i) => {
-        console.log(p);
         const x =
           centerX + radius * Math.cos((i * 2 * Math.PI) / numberOfElements);
         const y =

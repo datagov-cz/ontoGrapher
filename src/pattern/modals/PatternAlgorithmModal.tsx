@@ -12,7 +12,7 @@ import {
 } from "react-bootstrap";
 import * as _ from "lodash";
 import { Instance, Pattern, Patterns } from "../function/PatternTypes";
-import { callRefactorAlgorithm } from "../function/PatternQueries";
+// import { callRefactorAlgorithm } from "../function/PatternQueries";
 import EditingPatternInternalView from "../structures/EditingPatternInternalView";
 import { Diagrams } from "../../config/Variables";
 
@@ -41,15 +41,15 @@ export const PatternAlgorithmModal: React.FC<Props> = (props: Props) => {
   const [algo1Results, setAlgo1Results] = useState<Algo1Results[]>([]);
   const [algo2Results, setAlgo2Results] = useState<Algo2Results[]>([]);
 
-  const callAlgo1 = async () => {
-    setAlgo1Loading(true);
-    await callRefactorAlgorithm();
-  };
-
-  const callAlgo2 = async () => {
-    setAlgo2Loading(true);
-    await callRefactorAlgorithm();
-  };
+  // const callAlgo1 = async () => {
+  //   setAlgo1Loading(true);
+  //   await callRefactorAlgorithm();
+  // };
+  //
+  // const callAlgo2 = async () => {
+  //   setAlgo2Loading(true);
+  //   await callRefactorAlgorithm();
+  // };
 
   const modifyAlgo1Results = (data: Algo1Results, index: number) => {
     const copy = _.clone(algo1Results);

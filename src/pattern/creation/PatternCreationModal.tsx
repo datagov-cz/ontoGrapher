@@ -35,9 +35,8 @@ export const PatternCreationModal: React.FC<Props> = (props: Props) => {
     if (!pattern.title) return;
     if (!Object.values(pattern.conns).every((c) => c.name)) return;
     if (!Object.values(pattern.terms).every((c) => c.name)) return;
-    const id = v4();
+    const id = `${AppSettings.ontographerContext}/pattern/${v4()}`;
     Patterns[id] = pattern;
-    console.log(id, pattern);
     if (createInstanceFromNewPattern) {
       setTab("instance");
       setExistingPattern(id);

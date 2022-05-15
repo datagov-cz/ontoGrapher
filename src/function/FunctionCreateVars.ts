@@ -52,6 +52,7 @@ export function createNewElemIRI(scheme: string, name: string): string {
 
 export function addToFlexSearch(...ids: string[]) {
   let numberID = Object.keys(FlexDocumentIDTable).length;
+  while (numberID.toString(10) in FlexDocumentIDTable) numberID++;
   for (const iri of ids.filter((id) => WorkspaceElements[id].active)) {
     if (!(iri in WorkspaceElements))
       throw new Error(`ID ${iri} not recognized as an element ID.`);

@@ -6,9 +6,7 @@ import {
   PatternViewColumn,
 } from "./PatternViewColumn";
 import { PatternCreationConfiguration } from "../../components/modals/CreationModals";
-import { AppSettings } from "../../config/Variables";
 import { Patterns } from "../function/PatternTypes";
-import { callSuggestionAlgorithm } from "../function/PatternQueries";
 
 type Props = {
   configuration: PatternCreationConfiguration;
@@ -31,9 +29,9 @@ export const PatternCreationModalExisting: React.FC<Props> = (props: Props) => {
   const [detailPattern, setDetailPattern] = useState<string>("");
   useEffect(() => setSearchResults(Object.keys(Patterns)), []);
 
-  const suggestPatterns: () => Promise<string[]> = async () => {
-    return await callSuggestionAlgorithm(AppSettings.selectedElements);
-  };
+  // const suggestPatterns: () => Promise<string[]> = async () => {
+  //   return await callSuggestionAlgorithm(AppSettings.selectedElements);
+  // };
 
   useEffect(() => {
     if (props.pattern) {
@@ -42,24 +40,25 @@ export const PatternCreationModalExisting: React.FC<Props> = (props: Props) => {
   }, [props.pattern]);
 
   const updateResults = () => {
-    if (filterSuggest)
-      suggestPatterns().then((results) =>
-        setSearchResults(
-          results.filter(
-            (r) =>
-              (filterName
-                ? Patterns[r].title
-                    .toLowerCase()
-                    .includes(filterName.toLowerCase())
-                : true) &&
-              (filterAuthor
-                ? Patterns[r].author
-                    .toLowerCase()
-                    .includes(filterAuthor.toLowerCase())
-                : true)
-          )
-        )
-      );
+    if (filterSuggest) {
+    }
+    // suggestPatterns().then((results) =>
+    //   setSearchResults(
+    //     results.filter(
+    //       (r) =>
+    //         (filterName
+    //           ? Patterns[r].title
+    //               .toLowerCase()
+    //               .includes(filterName.toLowerCase())
+    //           : true) &&
+    //         (filterAuthor
+    //           ? Patterns[r].author
+    //               .toLowerCase()
+    //               .includes(filterAuthor.toLowerCase())
+    //           : true)
+    //     )
+    //   )
+    // );
     else
       setSearchResults(
         Object.keys(Patterns).filter(

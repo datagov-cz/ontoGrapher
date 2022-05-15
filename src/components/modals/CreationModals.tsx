@@ -133,8 +133,8 @@ export const CreationModals: React.FC<Props> = (props) => {
                 highlightElement(props.elemConfiguration.connections[0]);
               }
             }
-            props.update();
           }
+          props.update();
         }}
       />
       <PatternCreationModal

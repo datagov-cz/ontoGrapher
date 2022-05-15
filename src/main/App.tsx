@@ -165,6 +165,8 @@ export default class App extends React.Component<
     if (!process3) return false;
     const process4 = await retrieveContextData();
     if (!process4) return false;
+    // const process5 = await retrievePatternAndInstanceData();
+    // if (!process5) return false;
     this.handleChangeLanguage(AppSettings.canvasLanguage);
     document.title =
       AppSettings.name[this.state.projectLanguage] +
@@ -206,12 +208,12 @@ export default class App extends React.Component<
     //     </div>
     //   ),
     // });
-    this.handleCreation({
-      elements: [
-        "https://slovník.gov.cz/legislativní/sbírka/361/2000/pojem/mezinárodní-řidičský-průkaz",
-        "https://slovník.gov.cz/legislativní/sbírka/361/2000/pojem/autobus",
-      ],
-    });
+    // this.handleCreation({
+    //   elements: [
+    //     "https://slovník.gov.cz/legislativní/sbírka/361/2000/pojem/mezinárodní-řidičský-průkaz",
+    //     "https://slovník.gov.cz/legislativní/sbírka/361/2000/pojem/autobus",
+    //   ],
+    // });
     return true;
   }
 

@@ -123,9 +123,9 @@ export function createNewConcept(
     parsePrefix("skos", "Concept"),
     ...types,
   ]);
+  WorkspaceTerms[iri].labels = name;
   addClass(iri);
   addToFlexSearch(iri);
-  WorkspaceTerms[iri].labels = name;
   WorkspaceElements[iri].hidden[AppSettings.selectedDiagram] = false;
   const cls = new graphElement({ id: iri });
   if (p) {

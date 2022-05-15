@@ -94,11 +94,22 @@ export const PatternViewColumn: React.FC<Props> = (props: Props) => {
     for (const term in Patterns[pattern].terms) {
       elementFormData[term] = {
         ...Patterns[pattern].terms[term],
-        iri: term,
-        create: !(term in WorkspaceTerms),
-        types: !(term in WorkspaceTerms)
-          ? Patterns[pattern].terms[term].types
-          : WorkspaceTerms[term].types,
+        iri: props.configuration
+          ? term
+          : createNewElemIRI(
+              WorkspaceVocabularies[
+                Object.keys(WorkspaceVocabularies).find(
+                  (vocab) => !WorkspaceVocabularies[vocab].readOnly
+                )!
+              ].glossary,
+              Patterns[pattern].terms[term].name
+            ),
+        create: props.configuration ? !(term in WorkspaceTerms) : true,
+        types: props.configuration
+          ? !(term in WorkspaceTerms)
+            ? Patterns[pattern].terms[term].types
+            : WorkspaceTerms[term].types
+          : Patterns[pattern].terms[term].types,
         value:
           term in WorkspaceTerms && props.configuration
             ? {
@@ -132,7 +143,14 @@ export const PatternViewColumn: React.FC<Props> = (props: Props) => {
         scheme: Object.keys(WorkspaceVocabularies).find(
           (vocab) => !WorkspaceVocabularies[vocab].readOnly
         )!,
-        iri: conn,
+        iri: createNewElemIRI(
+          WorkspaceVocabularies[
+            Object.keys(WorkspaceVocabularies).find(
+              (vocab) => !WorkspaceVocabularies[vocab].readOnly
+            )!
+          ].glossary,
+          Patterns[pattern].conns[conn].name
+        ),
         id: existingConn,
       };
     }
@@ -188,6 +206,7 @@ export const PatternViewColumn: React.FC<Props> = (props: Props) => {
         linkType: patternRelationshipFormData[r].linkType,
         create: patternRelationshipFormData[r].create,
         iri: patternRelationshipFormData[r].iri,
+        id: patternRelationshipFormData[r].id,
         multipleSource: r,
       };
     }
@@ -291,36 +310,38 @@ export const PatternViewColumn: React.FC<Props> = (props: Props) => {
                       }
                     </td>
                     <td style={{ minWidth: "200px" }}>
-                      {patternElementFormData[
-                        term.multipleSource ? term.multipleSource : t
-                      ].create && (
+                      {patternElementFormData[t].create && (
                         <span>
                           <Form.Control
                             size={"sm"}
-                            value={
-                              patternElementFormData[
-                                term.multipleSource ? term.multipleSource : t
-                              ].name
-                            }
+                            value={patternElementFormData[t].name}
                             onChange={(event) => {
                               modifyFormData(t, {
                                 ...term,
                                 name: event.currentTarget.value,
+                                iri: createNewElemIRI(
+                                  WorkspaceVocabularies[
+                                    patternElementFormData[t].scheme
+                                  ].glossary,
+                                  event.currentTarget.value
+                                ),
                               });
                             }}
                           />
                           <Form.Control
                             size={"sm"}
                             as={"select"}
-                            value={
-                              patternElementFormData[
-                                term.multipleSource ? term.multipleSource : t
-                              ].scheme
-                            }
+                            value={patternElementFormData[t].scheme}
                             onChange={(event) => {
                               modifyFormData(t, {
                                 ...term,
                                 scheme: event.currentTarget.value,
+                                iri: createNewElemIRI(
+                                  WorkspaceVocabularies[
+                                    event.currentTarget.value
+                                  ].glossary,
+                                  patternElementFormData[t].name
+                                ),
                               });
                             }}
                           >
@@ -348,11 +369,8 @@ export const PatternViewColumn: React.FC<Props> = (props: Props) => {
                           </Form.Control>
                         </span>
                       )}
-                      {!patternElementFormData[
-                        term.multipleSource ? term.multipleSource : t
-                      ].create && (
+                      {!patternElementFormData[t].create && (
                         <Select
-                          isDisabled={!!term.multipleSource}
                           options={Object.keys(WorkspaceTerms)
                             .filter((term) =>
                               patternElementFormData[t].types.every((type) =>
@@ -366,11 +384,7 @@ export const PatternViewColumn: React.FC<Props> = (props: Props) => {
                               ),
                               value: t,
                             }))}
-                          value={
-                            patternElementFormData[
-                              term.multipleSource ? term.multipleSource : t
-                            ].value
-                          }
+                          value={patternElementFormData[t].value}
                           onChange={(value) =>
                             modifyFormData(t, {
                               ...term,
@@ -384,18 +398,82 @@ export const PatternViewColumn: React.FC<Props> = (props: Props) => {
                           }
                         />
                       )}
+                      {!patternElementFormData[t].create &&
+                        !patternElementFormData[t].iri && (
+                          <p className={"red"}>Please input a term.</p>
+                        )}
+                      {!patternElementFormData[t].create &&
+                        Object.keys(patternElementFormData).find(
+                          (elem) =>
+                            patternElementFormData[elem].iri === term.iri &&
+                            t !== elem
+                        ) && (
+                          <p className={"red"}>
+                            This term is already taken by another parameter.
+                          </p>
+                        )}
+                      {!patternElementFormData[t].name && (
+                        <p className={"red"}>Please input a name.</p>
+                      )}
+                      {patternElementFormData[t].create &&
+                        checkExists(
+                          WorkspaceVocabularies[
+                            patternElementFormData[t].scheme
+                          ].glossary,
+                          patternElementFormData[t].name
+                        ) && (
+                          <p className={"red"}>
+                            This name is already taken for this vocabulary.
+                          </p>
+                        )}
                     </td>
                     <td>
                       <Form.Check
-                        checked={
-                          patternElementFormData[
-                            term.multipleSource ? term.multipleSource : t
-                          ].create
-                        }
+                        checked={patternElementFormData[t].create}
                         onChange={(event) =>
                           modifyFormData(t, {
                             ...term,
                             create: event.currentTarget.checked,
+                            value: {
+                              value: Object.keys(WorkspaceTerms).filter(
+                                (term) =>
+                                  patternElementFormData[t].types.every(
+                                    (type) =>
+                                      WorkspaceTerms[term].types.includes(type)
+                                  )
+                              )[0],
+                              label:
+                                WorkspaceTerms[
+                                  Object.keys(WorkspaceTerms).filter((term) =>
+                                    patternElementFormData[t].types.every(
+                                      (type) =>
+                                        WorkspaceTerms[term].types.includes(
+                                          type
+                                        )
+                                    )
+                                  )[0]
+                                ].labels[AppSettings.canvasLanguage],
+                            },
+                            iri: event.currentTarget.checked
+                              ? createNewElemIRI(
+                                  WorkspaceVocabularies[
+                                    Object.keys(WorkspaceVocabularies).find(
+                                      (vocab) =>
+                                        !WorkspaceVocabularies[vocab].readOnly
+                                    )!
+                                  ].glossary,
+                                  Patterns[detailPattern].terms[
+                                    term.multipleSource
+                                      ? term.multipleSource
+                                      : t
+                                  ].name
+                                )
+                              : Object.keys(WorkspaceTerms).filter((term) =>
+                                  patternElementFormData[t].types.every(
+                                    (type) =>
+                                      WorkspaceTerms[term].types.includes(type)
+                                  )
+                                )[0],
                           })
                         }
                       />
@@ -431,18 +509,19 @@ export const PatternViewColumn: React.FC<Props> = (props: Props) => {
                           }`}
                         </Button>
                       )}
-                      {patternElementFormData[
-                        term.multipleSource ? term.multipleSource : t
-                      ].multiple && (
-                        <Button
-                          size={"sm"}
-                          disabled={!!term.multipleSource}
-                          onClick={() => addMultipleTermAndRelationships(t)}
-                          variant={"secondary"}
-                        >
-                          Cloneable - Clone
-                        </Button>
-                      )}
+                      {!patternElementFormData[t].multipleSource &&
+                        patternElementFormData[
+                          term.multipleSource ? term.multipleSource : t
+                        ].multiple && (
+                          <Button
+                            size={"sm"}
+                            disabled={!!term.multipleSource}
+                            onClick={() => addMultipleTermAndRelationships(t)}
+                            variant={"secondary"}
+                          >
+                            Cloneable - Clone
+                          </Button>
+                        )}
                       {!!patternElementFormData[t].multipleSource && (
                         <Button
                           size={"sm"}
@@ -463,15 +542,14 @@ export const PatternViewColumn: React.FC<Props> = (props: Props) => {
           <Table size={"sm"} striped borderless>
             <thead>
               <tr>
-                <th>Name</th>
-                <th>Relationship</th>
+                <th colSpan={2}>Relationship</th>
                 <th colSpan={5}>Relationship detail</th>
               </tr>
             </thead>
             <tbody>
               {Object.entries(patternRelationshipFormData).map(([d, data]) => (
                 <tr>
-                  <td>
+                  <td style={{ minWidth: "100px" }}>
                     {
                       Patterns[detailPattern].conns[
                         data.multipleSource ? data.multipleSource : d
@@ -483,9 +561,6 @@ export const PatternViewColumn: React.FC<Props> = (props: Props) => {
                     <td style={{ display: "inline-flex" }}>
                       {patternRelationshipFormData[d].id && (
                         <Button
-                          disabled={
-                            !!patternRelationshipFormData[d].multipleSource
-                          }
                           onClick={() =>
                             modifyRelationshipData(d, {
                               ...data,
@@ -494,15 +569,10 @@ export const PatternViewColumn: React.FC<Props> = (props: Props) => {
                           }
                           className={"buttonlink"}
                         >
-                          {patternRelationshipFormData[
-                            patternRelationshipFormData[d].multipleSource
-                              ? patternRelationshipFormData[d].multipleSource!
-                              : d
-                          ].create
-                            ? "✏ "
-                            : "🏷 "}
+                          {patternRelationshipFormData[d].create ? "✏ " : "🏷 "}
                         </Button>
                       )}
+                      &nbsp;
                       {!patternRelationshipFormData[d].create &&
                         patternRelationshipFormData[d].id && (
                           <Form.Control
@@ -512,6 +582,16 @@ export const PatternViewColumn: React.FC<Props> = (props: Props) => {
                             value={patternRelationshipFormData[d].name}
                           />
                         )}
+                      {Object.keys(patternRelationshipFormData).find(
+                        (rel) =>
+                          patternRelationshipFormData[rel].name === data.name &&
+                          rel !== d
+                      ) && (
+                        <p className={"red"}>
+                          This relationship name is already taken by another
+                          parameter.
+                        </p>
+                      )}
                       {patternRelationshipFormData[d].create &&
                         patternRelationshipFormData[d].linkType ===
                           LinkType.DEFAULT && (
@@ -519,9 +599,6 @@ export const PatternViewColumn: React.FC<Props> = (props: Props) => {
                             <Form.Control
                               type={"text"}
                               size={"sm"}
-                              disabled={
-                                !!patternRelationshipFormData[d].multipleSource
-                              }
                               onChange={(event) =>
                                 modifyRelationshipData(d, {
                                   ...data,
@@ -530,40 +607,23 @@ export const PatternViewColumn: React.FC<Props> = (props: Props) => {
                                     WorkspaceVocabularies[
                                       patternRelationshipFormData[d].scheme
                                     ].glossary,
-                                    patternRelationshipFormData[d].name
+                                    event.currentTarget.value
                                   ),
                                 })
                               }
-                              value={
-                                patternRelationshipFormData[
-                                  patternRelationshipFormData[d].multipleSource
-                                    ? patternRelationshipFormData[d]
-                                        .multipleSource!
-                                    : d
-                                ].name
-                              }
+                              value={patternRelationshipFormData[d].name}
                             />
                             <Form.Control
                               size={"sm"}
                               as={"select"}
-                              disabled={
-                                !!patternRelationshipFormData[d].multipleSource
-                              }
-                              value={
-                                patternRelationshipFormData[
-                                  patternRelationshipFormData[d].multipleSource
-                                    ? patternRelationshipFormData[d]
-                                        .multipleSource!
-                                    : d
-                                ].scheme
-                              }
+                              value={patternRelationshipFormData[d].scheme}
                               onChange={(event) => {
                                 modifyRelationshipData(d, {
                                   ...data,
                                   scheme: event.currentTarget.value,
                                   iri: createNewElemIRI(
                                     WorkspaceVocabularies[
-                                      patternRelationshipFormData[d].scheme
+                                      event.currentTarget.value
                                     ].glossary,
                                     patternRelationshipFormData[d].name
                                   ),
@@ -621,7 +681,13 @@ export const PatternViewColumn: React.FC<Props> = (props: Props) => {
                   {patternRelationshipFormData[d].linkType ===
                     LinkType.GENERALIZATION && <td>Generalization</td>}
                   <td style={{ wordBreak: "keep-all" }}>
-                    {patternElementFormData[data.from].name}
+                    {patternElementFormData[data.from].create
+                      ? patternElementFormData[data.from].name
+                      : getLabelOrBlank(
+                          WorkspaceTerms[patternElementFormData[data.from].iri]
+                            .labels,
+                          AppSettings.canvasLanguage
+                        )}
                   </td>
                   <td>
                     {patternRelationshipFormData[d].linkType ===
@@ -656,7 +722,13 @@ export const PatternViewColumn: React.FC<Props> = (props: Props) => {
                     )}
                   </td>
                   <td style={{ wordBreak: "keep-all" }}>
-                    {patternElementFormData[data.to].name}
+                    {patternElementFormData[data.to].create
+                      ? patternElementFormData[data.to].name
+                      : getLabelOrBlank(
+                          WorkspaceTerms[patternElementFormData[data.to].iri]
+                            .labels,
+                          AppSettings.canvasLanguage
+                        )}
                   </td>
                 </tr>
               ))}

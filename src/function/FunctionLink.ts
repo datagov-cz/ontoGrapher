@@ -1,5 +1,6 @@
 import {
   AppSettings,
+  CardinalityPool,
   Links,
   WorkspaceElements,
   WorkspaceLinks,
@@ -52,12 +53,6 @@ export function setSelfLoopConnectionPoints(
     new joint.g.Point(sourcePoint.x + offsetX, sourcePoint.y + 100),
     new joint.g.Point(sourcePoint.x + offsetX, sourcePoint.y),
   ]);
-}
-
-export function getConnectionElementID(linkID: string, elemID: string): string {
-  return WorkspaceLinks[linkID].target === elemID
-    ? WorkspaceLinks[linkID].target
-    : WorkspaceLinks[linkID].source;
 }
 
 // full mode:
@@ -180,7 +175,9 @@ export function saveNewLink(
   iri: string,
   sid: string,
   tid: string,
-  representation: Representation = AppSettings.representation
+  representation: Representation = AppSettings.representation,
+  sourceCardinality?: string,
+  targetCardinality?: string
 ): string[] {
   const type = iri in Links ? Links[iri].type : LinkType.DEFAULT;
   const link = getNewLink(type);
@@ -194,7 +191,16 @@ export function saveNewLink(
     representation === Representation.FULL ||
     type === LinkType.GENERALIZATION
   ) {
-    queries.push(...updateConnection(sid, tid, id, type, iri, true));
+    queries.push(
+      ...updateConnection(
+        sid,
+        tid,
+        id,
+        type,
+        iri,
+        !(!!sourceCardinality && !!targetCardinality)
+      )
+    );
   } else if (representation === Representation.COMPACT) {
     const propertyId = Object.keys(WorkspaceElements).find(
       (elem) => WorkspaceElements[elem].active && elem === iri
@@ -209,6 +215,12 @@ export function saveNewLink(
     addLink(sourceId, mvp1IRI, propertyId, sid, type);
     addLink(targetId, mvp2IRI, propertyId, tid, type);
     queries.push(...updateConnection(sid, tid, id, type, iri, true));
+    if (sourceCardinality && targetCardinality) {
+      WorkspaceLinks[id].sourceCardinality =
+        CardinalityPool[parseInt(sourceCardinality, 10)];
+      WorkspaceLinks[id].targetCardinality =
+        CardinalityPool[parseInt(targetCardinality, 10)];
+    }
     setFullLinksCardinalitiesFromCompactLink(id, sourceId, targetId);
     queries.push(
       updateProjectElement(true, propertyId),
@@ -222,10 +234,6 @@ export function saveNewLink(
     setLabels(link, getLinkOrVocabElem(iri).labels[AppSettings.canvasLanguage]);
   if (isLinkVisible(iri, type, AppSettings.representation)) link.addTo(graph);
   return queries;
-}
-
-export function doesLinkHaveInverse(linkID: string) {
-  return linkID in WorkspaceLinks && WorkspaceLinks[linkID].hasInverse;
 }
 
 export function checkDefaultCardinality(link: string) {

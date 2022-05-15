@@ -192,7 +192,7 @@ export const NewTermOrPatternModal: React.FC<Props> = (props: Props) => {
                       </thead>
                       <tbody>
                         {searchResults.map((r) => (
-                          <tr>
+                          <tr key={r}>
                             <td>
                               <Button
                                 className={"buttonlink"}
@@ -229,6 +229,7 @@ export const NewTermOrPatternModal: React.FC<Props> = (props: Props) => {
           type={"submit"}
           onClick={() => {
             if (tab === "0" && errorText === "") save();
+            if (tab === "1") setInitSubmitEx(true);
           }}
           disabled={tab === "0" ? errorText !== "" : false}
           variant="primary"
