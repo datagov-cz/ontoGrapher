@@ -105,11 +105,12 @@ export async function abortTransaction(transaction: string): Promise<boolean> {
 export function processQuery(
   endpoint: string,
   query: string,
-  auth: boolean = Environment.auth && endpoint === AppSettings.contextEndpoint
+  auth: boolean = Environment.auth && endpoint === AppSettings.contextEndpoint,
+  key: string = "query"
 ): Promise<Response> {
   return fetch(endpoint, {
     method: "POST",
-    body: "query=" + encodeURIComponent(query),
+    body: key + "=" + encodeURIComponent(query),
     headers: {
       "Content-Type": "application/x-www-form-urlencoded",
       Accept: "application/json",

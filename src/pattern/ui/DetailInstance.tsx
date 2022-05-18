@@ -4,6 +4,7 @@ import { Instances, Patterns } from "../function/PatternTypes";
 import { InstanceStructureModal } from "../modals/InstanceStructureModal";
 import { AppSettings } from "../../config/Variables";
 import { LocalePattern } from "../../config/Locale";
+import { StorePattern } from "../function/StorePattern";
 
 type Props = {
   id: string;
@@ -22,8 +23,6 @@ export const DetailInstance: React.FC<Props> = (props: Props) => {
           </Card.Header>
           <Accordion.Collapse eventKey={"0"}>
             <Card.Body>
-              <h6>{LocalePattern[AppSettings.interfaceLanguage].title}</h6>
-              {Patterns[Instances[props.id].iri].title}
               <h6>{LocalePattern[AppSettings.interfaceLanguage].author}</h6>
               {Patterns[Instances[props.id].iri].author}
               <h6>
@@ -37,9 +36,15 @@ export const DetailInstance: React.FC<Props> = (props: Props) => {
               </h6>
               <p>{Patterns[Instances[props.id].iri].description}</p>
               <Button onClick={() => setInternalViewModal(true)}>
-                {LocalePattern[AppSettings.interfaceLanguage].viewStatistics}
+                {LocalePattern[AppSettings.interfaceLanguage].viewStructure}
               </Button>
-              <Button onClick={() => setInternalViewModal(true)}>
+              <Button
+                onClick={() => {
+                  StorePattern.update((s) => {
+                    s.selectedPattern = Instances[props.id].iri;
+                  });
+                }}
+              >
                 {LocalePattern[AppSettings.interfaceLanguage].viewStatistics}
               </Button>
             </Card.Body>

@@ -50,6 +50,11 @@ import { getElementPosition } from "../function/FunctionElem";
 import { en } from "../locale/en";
 import { StoreAlerts } from "../config/Store";
 import { CriticalAlertModal } from "../components/modals/CriticalAlertModal";
+import {
+  retrievePatternAndInstanceData,
+  sendInstance,
+  sendPattern,
+} from "../pattern/function/PatternQueries";
 
 interface DiagramAppProps {}
 
@@ -127,6 +132,9 @@ export default class App extends React.Component<
     this.handleStatus = this.handleStatus.bind(this);
     this.validate = this.validate.bind(this);
     this.performTransaction = this.performTransaction.bind(this);
+    this.performInstanceTransaction =
+      this.performInstanceTransaction.bind(this);
+    this.performPatternTransaction = this.performPatternTransaction.bind(this);
 
     StoreAlerts.subscribe(
       (s) => s.showCriticalAlert,
@@ -165,8 +173,8 @@ export default class App extends React.Component<
     if (!process3) return false;
     const process4 = await retrieveContextData();
     if (!process4) return false;
-    // const process5 = await retrievePatternAndInstanceData();
-    // if (!process5) return false;
+    const process5 = await retrievePatternAndInstanceData();
+    if (!process5) return false;
     this.handleChangeLanguage(AppSettings.canvasLanguage);
     document.title =
       AppSettings.name[this.state.projectLanguage] +
@@ -207,12 +215,6 @@ export default class App extends React.Component<
     //       <span className={"right"}>- Alice B.</span>
     //     </div>
     //   ),
-    // });
-    // this.handleCreation({
-    //   elements: [
-    //     "https://slovník.gov.cz/legislativní/sbírka/361/2000/pojem/mezinárodní-řidičský-průkaz",
-    //     "https://slovník.gov.cz/legislativní/sbírka/361/2000/pojem/autobus",
-    //   ],
     // });
     return true;
   }
@@ -276,6 +278,48 @@ export default class App extends React.Component<
         }
       }
     );
+  }
+
+  performPatternTransaction(iri: string) {
+    this.handleStatus(
+      true,
+      Locale[AppSettings.interfaceLanguage].updating,
+      false,
+      false
+    );
+    sendPattern(iri).then((result) => {
+      if (result) {
+        this.handleWorkspaceReady();
+      } else {
+        this.handleStatus(
+          false,
+          Locale[AppSettings.interfaceLanguage].errorUpdating,
+          true,
+          true
+        );
+      }
+    });
+  }
+
+  performInstanceTransaction(iri: string) {
+    this.handleStatus(
+      true,
+      Locale[AppSettings.interfaceLanguage].updating,
+      false,
+      false
+    );
+    sendInstance(iri).then((result) => {
+      if (result) {
+        this.handleWorkspaceReady();
+      } else {
+        this.handleStatus(
+          false,
+          Locale[AppSettings.interfaceLanguage].errorUpdating,
+          true,
+          true
+        );
+      }
+    });
   }
 
   handleStatus(
@@ -371,6 +415,7 @@ export default class App extends React.Component<
           validate={this.validate}
           handleStatus={this.handleStatus}
           performTransaction={this.performTransaction}
+          performPatternTransaction={this.performPatternTransaction}
           tooltip={this.state.tooltip}
         />
         <VocabularyPanel
@@ -451,6 +496,8 @@ export default class App extends React.Component<
           elemConfiguration={this.state.newElemConfiguration}
           linkConfiguration={this.state.newLinkConfiguration}
           patternConfiguration={this.state.newPatternConfiguration}
+          performInstanceTransaction={this.performInstanceTransaction}
+          performPatternTransaction={this.performPatternTransaction}
           performTransaction={this.performTransaction}
           projectLanguage={this.state.projectLanguage}
           update={() => this.itemPanel.current?.update()}

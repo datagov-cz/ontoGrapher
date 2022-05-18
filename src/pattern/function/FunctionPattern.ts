@@ -19,8 +19,12 @@ import {
   updateProjectElement,
   updateProjectElementDiagram,
 } from "../../queries/update/UpdateElementQueries";
-import { Representation } from "../../config/Enum";
-import { saveNewLink } from "../../function/FunctionLink";
+import { LinkType, Representation } from "../../config/Enum";
+import {
+  saveNewLink,
+  setSelfLoopConnectionPoints,
+  updateConnection,
+} from "../../function/FunctionLink";
 import { graph } from "../../graph/Graph";
 import { graphElement } from "../../graph/GraphElement";
 import {
@@ -30,27 +34,39 @@ import {
 } from "../../function/FunctionGetVars";
 import * as joint from "jointjs";
 import * as _ from "lodash";
-import { setLabels, setRepresentation } from "../../function/FunctionGraph";
+import {
+  setLabels,
+  setLinkBoundary,
+  setRepresentation,
+} from "../../function/FunctionGraph";
 import { Shapes } from "../../config/visual/Shapes";
+import { paper } from "../../main/DiagramCanvas";
 
 export function produceOttrInstance(instance: string) {
   const instanceOBJ = Instances[instance];
   return [
-    `[ottr:of <${instanceOBJ.iri}>`,
-    `ottr:values (`,
-    ...Object.values(instanceOBJ.terms).map((term) => ` <${term}> `),
-    ...Object.values(instanceOBJ.conns).map((term) => ` <${term}> `),
-    `)`,
+    `<${instance}> ottr:of <${instanceOBJ.iri}>.`,
+    `<${instance}> og:position-x "${instanceOBJ.x}".`,
+    `<${instance}> og:position-y "${instanceOBJ.y}".`,
+    `<${instance}> og:context <${AppSettings.contextIRI}>.`,
+    `<${instance}> ottr:values (`,
+    ...Object.values(instanceOBJ.terms).flatMap((term) => ` <${term}> `),
+    ...Object.values(instanceOBJ.conns).map((term) => ` "${term}" `),
+    `).`,
+    `<${instance}> og:name (`,
+    ...Object.keys(instanceOBJ.terms).map((name) => ` <${name}> `),
+    ...Object.keys(instanceOBJ.conns).map((name) => ` <${name}> `),
+    ")",
   ].join(`
   `);
 }
 
 export function produceOttrPattern(pattern: string) {
   return [
-    `<${pattern}> a ottr:Pattern.`,
+    `<${pattern}> rdf:type ottr:Pattern.`,
     `<${pattern}> skos:prefLabel "${Patterns[pattern].title}".`,
     `<${pattern}> dc:creator "${Patterns[pattern].author}".`,
-    `<${pattern}> pav:createdOn "${Patterns[pattern].date}"^xsd:dateTime.`,
+    `<${pattern}> pav:createdOn "${Patterns[pattern].date}".`,
     `<${pattern}> dc:description "${Patterns[pattern].description}".`,
     `<${pattern}> ottr:parameters (`,
     ...Object.keys(Patterns[pattern].terms)
@@ -79,18 +95,16 @@ export function produceOttrPattern(pattern: string) {
         ].join("")
       ),
     ...Object.keys(Patterns[pattern].conns).map((c) => {
-      return [
-        "[",
-        `ottr:type ottr:IRI;`,
-        `ottr:variable  <${pattern}/${c}>]`,
-      ].join("");
+      return ["[", `ottr:type ottr:IRI;`, `ottr:variable  <${pattern}/${c}>]`]
+        .join(`
+  `);
     }),
     // end of parameters
     ");",
     ...Object.keys(Patterns[pattern].terms).map((t) =>
       [
         "ottr:pattern [ottr:of ottr:Triple;",
-        `ottr:values (<${pattern}/${t}> a og:term)`,
+        `ottr:values (<${pattern}/${t}> rdf:type og:term)`,
         "];",
       ].join("")
     ),
@@ -106,30 +120,33 @@ export function produceOttrPattern(pattern: string) {
       .map((t) =>
         [
           "ottr:pattern [ottr:of ottr:Triple;",
-          `ottr:values (<${pattern}/${t}> a "${Patterns[pattern].terms[t].types[0]}")`,
+          `ottr:values (<${pattern}/${t}> rdf:type "${Patterns[pattern].terms[t].types[0]}")`,
           "];",
         ].join("")
       ),
     ...Object.keys(Patterns[pattern].conns).map((c) => {
       return [
         "ottr:pattern [ottr:of ottr:Triple;",
-        `ottr:values (<${pattern}/${c}> a og:conn)`,
+        `ottr:values (<${pattern}/${c}> rdf:type og:conn)`,
         "];",
-      ].join("");
+      ].join(`
+  `);
     }),
     ...Object.keys(Patterns[pattern].conns).map((c) => {
       return [
         "ottr:pattern [ottr:of ottr:Triple;",
         `ottr:values (<${pattern}/${c}> og:name "${Patterns[pattern].conns[c].name}")`,
         "];",
-      ].join("");
+      ].join(`
+  `);
     }),
     ...Object.keys(Patterns[pattern].conns).map((c) => {
       return [
         "ottr:pattern [ottr:of ottr:Triple;",
         `ottr:values (<${pattern}/${c}> og:type "${Patterns[pattern].conns[c].linkType}")`,
         "];",
-      ].join("");
+      ].join(`
+  `);
     }),
     ...Object.keys(Patterns[pattern].conns)
       .filter(
@@ -140,9 +157,10 @@ export function produceOttrPattern(pattern: string) {
       .map((c) => {
         return [
           "ottr:pattern [ottr:of ottr:Triple;",
-          `ottr:values (<${pattern}/${c}> og:from <${Patterns[pattern].conns[c].from}>)`,
+          `ottr:values (<${pattern}/${c}> og:from <${pattern}/${Patterns[pattern].conns[c].from}>)`,
           "];",
-        ].join("");
+        ].join(`
+  `);
       }),
     ...Object.keys(Patterns[pattern].conns)
       .filter(
@@ -153,9 +171,10 @@ export function produceOttrPattern(pattern: string) {
       .map((c) => {
         return [
           "ottr:pattern [ottr:of ottr:Triple;",
-          `ottr:values (<${pattern}/${c}> og:to <${Patterns[pattern].conns[c].to}>)`,
+          `ottr:values (<${pattern}/${c}> og:to <${pattern}/${Patterns[pattern].conns[c].to}>)`,
           "];",
-        ].join("");
+        ].join(`
+  `);
       }),
     ...Object.keys(Patterns[pattern].conns)
       .filter(
@@ -168,7 +187,8 @@ export function produceOttrPattern(pattern: string) {
           "ottr:pattern [ottr:of ottr:Triple;",
           `ottr:values (<${pattern}/${c}> og:sc "${Patterns[pattern].conns[c].sourceCardinality}")`,
           "];",
-        ].join("");
+        ].join(`
+  `);
       }),
     ...Object.keys(Patterns[pattern].conns)
       .filter(
@@ -181,7 +201,8 @@ export function produceOttrPattern(pattern: string) {
           "ottr:pattern [ottr:of ottr:Triple;",
           `ottr:values (<${pattern}/${c}> og:tc "${Patterns[pattern].conns[c].targetCardinality}")`,
           "];",
-        ].join("");
+        ].join(`
+  `);
       }),
     ...Object.keys(Patterns[pattern].conns)
       .filter(
@@ -193,9 +214,10 @@ export function produceOttrPattern(pattern: string) {
         return [
           "ottr:pattern [ottr:of ottr:Triple;",
           "ottr:modifier ottr:cross;",
-          `ottr:values (<${pattern}/${c}> og:from <${Patterns[pattern].conns[c].from}>)`,
+          `ottr:values (<${pattern}/${c}> og:from <${pattern}/${Patterns[pattern].conns[c].from}>)`,
           "];",
-        ].join("");
+        ].join(`
+  `);
       }),
     ...Object.keys(Patterns[pattern].conns)
       .filter(
@@ -206,9 +228,10 @@ export function produceOttrPattern(pattern: string) {
       .map((c) => {
         return [
           "ottr:pattern [ottr:of ottr:Triple;",
-          `ottr:values (<${pattern}/${c}> og:to <${Patterns[pattern].conns[c].to}>)`,
+          `ottr:values (<${pattern}/${c}> og:to <${pattern}/${Patterns[pattern].conns[c].to}>)`,
           "];",
-        ].join("");
+        ].join(`
+  `);
       }),
     ...Object.keys(Patterns[pattern].conns)
       .filter(
@@ -221,7 +244,8 @@ export function produceOttrPattern(pattern: string) {
           "ottr:pattern [ottr:of ottr:Triple;",
           `ottr:values (<${pattern}/${c}> og:sc "${Patterns[pattern].conns[c].sourceCardinality}")`,
           "];",
-        ].join("");
+        ].join(`
+  `);
       }),
     ...Object.keys(Patterns[pattern].conns)
       .filter(
@@ -234,7 +258,8 @@ export function produceOttrPattern(pattern: string) {
           "ottr:pattern [ottr:of ottr:Triple;",
           `ottr:values (<${pattern}/${c}> og:tc "${Patterns[pattern].conns[c].targetCardinality}")`,
           "];",
-        ].join("");
+        ].join(`
+  `);
       }),
     ...Object.keys(Patterns[pattern].conns)
       .filter(
@@ -247,7 +272,8 @@ export function produceOttrPattern(pattern: string) {
           "ottr:pattern [ottr:of ottr:Triple;",
           `ottr:values (<${pattern}/${c}> og:from <${pattern}/${Patterns[pattern].conns[c].from}>)`,
           "];",
-        ].join("");
+        ].join(`
+  `);
       }),
     ...Object.keys(Patterns[pattern].conns)
       .filter(
@@ -261,7 +287,8 @@ export function produceOttrPattern(pattern: string) {
           "ottr:modifier ottr:cross;",
           `ottr:values (<${pattern}/${c}> og:to <${pattern}/${Patterns[pattern].conns[c].to}>)`,
           "];",
-        ].join("");
+        ].join(`
+  `);
       }),
     ...Object.keys(Patterns[pattern].conns)
       .filter(
@@ -274,7 +301,8 @@ export function produceOttrPattern(pattern: string) {
           "ottr:pattern [ottr:of ottr:Triple;",
           `ottr:values (<${pattern}/${c}> og:sc "${Patterns[pattern].conns[c].sourceCardinality}")`,
           "];",
-        ].join("");
+        ].join(`
+  `);
       }),
     ...Object.keys(Patterns[pattern].conns)
       .filter(
@@ -287,7 +315,8 @@ export function produceOttrPattern(pattern: string) {
           "ottr:pattern [ottr:of ottr:Triple;",
           `ottr:values (<${pattern}/${c}> og:tc "${Patterns[pattern].conns[c].targetCardinality}")`,
           "];",
-        ].join("");
+        ].join(`
+  `);
       }),
     ...Object.keys(Patterns[pattern].conns)
       .filter(
@@ -301,7 +330,8 @@ export function produceOttrPattern(pattern: string) {
           "ottr:modifier ottr:cross;",
           `ottr:values (<${pattern}/${c}> og:from <${pattern}/${Patterns[pattern].conns[c].from}>)`,
           "];",
-        ].join("");
+        ].join(`
+  `);
       }),
     ...Object.keys(Patterns[pattern].conns)
       .filter(
@@ -315,7 +345,8 @@ export function produceOttrPattern(pattern: string) {
           "ottr:modifier ottr:cross;",
           `ottr:values (<${pattern}/${c}> og:to <${pattern}/${Patterns[pattern].conns[c].to}>)`,
           "];",
-        ].join("");
+        ].join(`
+  `);
       }),
     ...Object.keys(Patterns[pattern].conns)
       .filter(
@@ -328,7 +359,8 @@ export function produceOttrPattern(pattern: string) {
           "ottr:pattern [ottr:of ottr:Triple;",
           `ottr:values (<${pattern}/${c}> og:sc "${Patterns[pattern].conns[c].sourceCardinality}")`,
           "];",
-        ].join("");
+        ].join(`
+  `);
       }),
     ...Object.keys(Patterns[pattern].conns)
       .filter(
@@ -341,9 +373,11 @@ export function produceOttrPattern(pattern: string) {
           "ottr:pattern [ottr:of ottr:Triple;",
           `ottr:values (<${pattern}/${c}> og:tc "${Patterns[pattern].conns[c].targetCardinality}")`,
           "];",
-        ].join("");
+        ].join(`
+  `);
       }),
-  ].join("");
+  ].join(`
+  `);
 }
 
 export function createInstance(
@@ -354,16 +388,22 @@ export function createInstance(
     AppSettings.selectedDiagram
   ].origin
 ): { instance: string; queries: string[] } {
-  console.log(elements, connections);
-  const instanceTerms: { [key: string]: string } = {};
+  const instanceTerms: { [key: string]: string[] } = {};
+  const termIDs: { [key: string]: string[] } = {};
   const instanceConns: { [key: string]: string } = {};
+  const connIDs: { [key: string]: string } = {};
   for (const e in elements) {
+    if (!instanceTerms[elements[e].parameter]) {
+      instanceTerms[elements[e].parameter] = [];
+      termIDs[elements[e].parameter] = [];
+    }
     if (!elements[e].iri) return { instance: "", queries: [] };
-    instanceTerms[e] = elements[e].iri;
+    instanceTerms[elements[e].parameter].push(elements[e].iri);
   }
   for (const c in connections) {
     if (!connections[c].iri) return { instance: "", queries: [] };
     instanceConns[c] = connections[c].iri;
+    connIDs[c] = "";
   }
   const queries: string[] = [];
   const matrixLength = Math.max(
@@ -374,7 +414,6 @@ export function createInstance(
   Object.values(elements)
     .filter((t) => t.create && t.use)
     .forEach((t, i) => {
-      console.log(t);
       const x = i % matrixDimension;
       const y = Math.floor(i / matrixDimension);
       const id = createNewConcept(
@@ -384,42 +423,70 @@ export function createInstance(
         t.scheme,
         t.types
       );
-      queries.push(id);
-    });
-  Object.values(connections)
-    .filter((t) => t.create)
-    .forEach((c, i) => {
-      console.log(c);
-      const x = (i + Object.keys(elements).length) % matrixDimension;
-      const y = Math.floor(
-        (i + Object.keys(elements).length) / matrixDimension
-      );
-      const id = createNewConcept(
-        { x: origin.x + x * 200, y: origin.y + y * 200 },
-        initLanguageObject(c.name),
-        AppSettings.canvasLanguage,
-        c.scheme,
-        [parsePrefix("z-sgov-pojem", "typ-vztahu")]
-      );
-      console.log(elements[c.from].iri, elements[c.to].iri);
+      termIDs[t.parameter].push(id);
       queries.push(
         updateProjectElement(true, id),
-        updateProjectElementDiagram(AppSettings.selectedDiagram, id),
-        ...saveNewLink(
-          id,
-          elements[c.from].iri,
-          elements[c.to].iri,
-          Representation.COMPACT,
-          c.sourceCardinality,
-          c.targetCardinality
-        )
+        updateProjectElementDiagram(AppSettings.selectedDiagram, id)
       );
+    });
+  Object.entries(connections)
+    .filter(([_, t]) => t.create)
+    .forEach(([k, c], i) => {
+      if (c.linkType === LinkType.DEFAULT) {
+        const x = (i + Object.keys(elements).length) % matrixDimension;
+        const y = Math.floor(
+          (i + Object.keys(elements).length) / matrixDimension
+        );
+        const id = createNewConcept(
+          { x: origin.x + x * 200, y: origin.y + y * 200 },
+          initLanguageObject(c.name),
+          AppSettings.canvasLanguage,
+          c.scheme,
+          [parsePrefix("z-sgov-pojem", "typ-vztahu")]
+        );
+        connIDs[k] = id;
+        queries.push(
+          updateProjectElement(true, id),
+          updateProjectElementDiagram(AppSettings.selectedDiagram, id),
+          ...saveNewLink(
+            id,
+            elements[c.from].iri,
+            elements[c.to].iri,
+            Representation.COMPACT,
+            c.sourceCardinality,
+            c.targetCardinality
+          )
+        );
+      } else if (c.linkType === LinkType.GENERALIZATION) {
+        const link = getNewLink(c.linkType);
+        const sid = elements[c.from].iri;
+        const tid = elements[c.to].iri;
+        setLinkBoundary(link, sid, tid);
+        const id = link.id as string;
+        connIDs[k] = id;
+        if (sid === tid)
+          setSelfLoopConnectionPoints(
+            link,
+            paper.findViewByModel(sid).getBBox()
+          );
+        setLinkBoundary(link, sid, tid);
+        queries.push(
+          ...updateConnection(
+            sid,
+            tid,
+            id,
+            c.linkType,
+            c.iri,
+            !(!!c.sourceCardinality && !!c.targetCardinality)
+          )
+        );
+      }
     });
   const id = `${AppSettings.ontographerContext}/instance/${v4()}`;
   Instances[id] = {
     iri: pattern,
     terms: instanceTerms,
-    conns: instanceConns,
+    conns: connIDs,
     x: window.innerWidth / 2,
     y: window.innerHeight / 2,
   };
@@ -490,11 +557,11 @@ export function adjustVertices(
 
 export function putInstanceOnCanvas(instance: string) {
   graph.removeCells(
-    graph
-      .getElements()
-      .filter((elem) =>
-        Object.values(Instances[instance].terms).includes(elem.id as string)
-      )
+    graph.getElements().filter((elem) =>
+      Object.values(Instances[instance].terms)
+        .flat()
+        .includes(elem.id as string)
+    )
   );
   const elem = new graphElement({ id: instance });
   const label = Patterns[Instances[instance].iri].title;
@@ -502,17 +569,18 @@ export function putInstanceOnCanvas(instance: string) {
   labels.push(label === "" ? "<blank>" : label);
   elem.prop("attrs/label/text", labels.join("\n"));
   const text: string[] = [];
-  text.push(
-    ...Object.entries(Instances[instance].terms).map(
-      ([name, iri]) =>
+  for (const [name, iri] of Object.entries(Instances[instance].terms)) {
+    for (const i of iri) {
+      text.push(
         `${
           Patterns[Instances[instance].iri].terms[name].name
         }: ${getLabelOrBlank(
-          WorkspaceTerms[iri].labels,
+          WorkspaceTerms[i].labels,
           AppSettings.canvasLanguage
         )}`
-    )
-  );
+      );
+    }
+  }
   elem.prop("attrs/labelAttrs/text", text.join("\n"));
   const width = Math.max(
     labels.reduce((a, b) => (a.length > b.length ? a : b), "").length * 10 + 4,
@@ -539,14 +607,16 @@ export function putInstanceOnCanvas(instance: string) {
       fill: "#FFFFFF",
     },
   });
-  const elems: string[] = _.uniq([...Object.values(Instances[instance].terms)]);
+  const elems: string[] = _.uniq([
+    ...Object.values(Instances[instance].terms).flat(),
+  ]);
   const links: string[] = _.uniq([...Object.values(Instances[instance].conns)]);
   const linkIDs: string[] = Object.keys(WorkspaceLinks).filter((link) =>
     links.includes(WorkspaceLinks[link].iri)
   );
   for (const elem of elems) {
     const elemInstance = Object.keys(Instances).find((instance) =>
-      Object.values(Instances[instance].terms).includes(elem)
+      Object.values(Instances[instance].terms).flat().includes(elem)
     );
     const elemLinks = linkIDs.filter(
       (link) => WorkspaceLinks[link].source === elem
@@ -554,15 +624,15 @@ export function putInstanceOnCanvas(instance: string) {
     for (const link of elemLinks) {
       const otherElem = WorkspaceLinks[link].target;
       const otherElemInstance = Object.keys(Instances).find((instance) =>
-        Object.values(Instances[instance].terms).includes(otherElem)
+        Object.values(Instances[instance].terms).flat().includes(otherElem)
       );
       if (
         elemInstance &&
         otherElemInstance &&
         otherElemInstance !== elemInstance
       ) {
-        const label = Object.keys(Instances[elemInstance].terms).find(
-          (name) => Instances[elemInstance].terms[name] === elem
+        const label = Object.keys(Instances[elemInstance].terms).find((name) =>
+          Instances[elemInstance].terms[name].includes(elem)
         );
         const lnk = getNewLink(WorkspaceLinks[link].type, link);
         setLabels(
@@ -585,92 +655,29 @@ export function putInstanceOnCanvas(instance: string) {
             },
           },
         });
+        lnk.attr({
+          line: {
+            targetMarker: {
+              stroke: "none",
+              fill: "none",
+            },
+          },
+        });
         lnk.on({ change: () => adjustVertices(graph, lnk) });
         lnk.addTo(graph);
       }
     }
   }
-  // for (const term of Object.values(Instances[instance].terms)) {
-  //   getActiveToConnections(term)
-  //     .filter((link) =>
-  //       graph
-  //         .getElements()
-  //         .find((elem) => elem.id === WorkspaceLinks[link].target)
-  //     )
-  //     .forEach((link) => {
-  //       const lnk = getNewLink(WorkspaceLinks[link].type, link);
-  //       setLabels(
-  //         lnk,
-  //         getLinkOrVocabElem(WorkspaceLinks[link].iri).labels[
-  //           AppSettings.canvasLanguage
-  //         ]
-  //       );
-  //       lnk.source({
-  //         id: instance,
-  //         connectionPoint: {
-  //           name: "boundary",
-  //           args: { selector: Shapes["default"].body },
-  //         },
-  //       });
-  //       lnk.target({
-  //         id: WorkspaceLinks[link].target,
-  //         connectionPoint: {
-  //           name: "boundary",
-  //           args: {
-  //             selector: getElementShape(WorkspaceLinks[link].target),
-  //           },
-  //         },
-  //       });
-  //       lnk.on({ change: () => adjustVertices(graph, lnk) });
-  //       lnk.addTo(graph);
-  //     });
-  //   for (const link of Object.keys(WorkspaceLinks).filter(
-  //     (link) =>
-  //       WorkspaceLinks[link].active &&
-  //       WorkspaceLinks[link].target === term &&
-  //       graph
-  //         .getElements()
-  //         .find((elem) => elem.id === WorkspaceLinks[link].source)
-  //   )) {
-  //     const lnk = getNewLink(WorkspaceLinks[link].type, link);
-  //     setLabels(
-  //       lnk,
-  //       getLinkOrVocabElem(WorkspaceLinks[link].iri).labels[
-  //         AppSettings.canvasLanguage
-  //       ]
-  //     );
-  //     lnk.source({
-  //       id: WorkspaceLinks[link].source,
-  //       connectionPoint: {
-  //         name: "boundary",
-  //         args: {
-  //           selector: getElementShape(WorkspaceLinks[link].source),
-  //         },
-  //       },
-  //     });
-  //     lnk.target({
-  //       id: instance,
-  //       connectionPoint: {
-  //         name: "boundary",
-  //         args: {
-  //           selector: Shapes["default"].body,
-  //         },
-  //       },
-  //     });
-  //     lnk.on({ change: () => adjustVertices(graph, lnk) });
-  //     lnk.addTo(graph);
-  //   }
-  // }
 }
 for (const instance of Object.keys(Instances)) {
   for (const conn of Object.values(Instances[instance].conns)) {
     const fromElement = WorkspaceLinks[conn].source;
     const toElement = WorkspaceLinks[conn].target;
     const fromInstance = Object.keys(Instances).find((instance) =>
-      Object.values(Instances[instance].terms).includes(fromElement)
+      Object.values(Instances[instance].terms).flat().includes(fromElement)
     );
     const toInstance = Object.keys(Instances).find((instance) =>
-      Object.values(Instances[instance].terms).includes(toElement)
+      Object.values(Instances[instance].terms).flat().includes(toElement)
     );
     if (fromInstance && toInstance && fromInstance !== toInstance) {
       const lnk = getNewLink(WorkspaceLinks[conn].type, conn);

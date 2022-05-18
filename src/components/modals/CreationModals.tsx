@@ -14,7 +14,7 @@ import { graph } from "../../graph/Graph";
 import { drawGraphElement } from "../../function/FunctionDraw";
 import { initConnections } from "../../function/FunctionRestriction";
 import { updateProjectLink } from "../../queries/update/UpdateLinkQueries";
-import { NewTermOrPatternModal } from "./NewTermOrPatternModal";
+import { NewTermOrInstanceModal } from "./NewTermOrInstanceModal";
 import { PatternCreationModal } from "../../pattern/creation/PatternCreationModal";
 
 export type ElemCreationConfiguration = {
@@ -33,6 +33,8 @@ interface Props {
   update: () => void;
   projectLanguage: string;
   performTransaction: (...queries: string[]) => void;
+  performInstanceTransaction: (iri: string) => void;
+  performPatternTransaction: (iri: string) => void;
   elemConfiguration: ElemCreationConfiguration;
   linkConfiguration: LinkCreationConfiguration;
   patternConfiguration: PatternCreationConfiguration;
@@ -99,11 +101,15 @@ export const CreationModals: React.FC<Props> = (props) => {
           }
         }}
       />
-      <NewTermOrPatternModal
+      <NewTermOrInstanceModal
         projectLanguage={props.projectLanguage}
         modal={modalAddElem}
         configuration={props.elemConfiguration}
-        close={(
+        closeInstance={(queries, iri) => {
+          props.performTransaction(...queries);
+          props.performInstanceTransaction(iri);
+        }}
+        closeElem={(
           conceptName?: { [key: string]: string },
           vocabulary?: string
         ) => {
@@ -139,6 +145,8 @@ export const CreationModals: React.FC<Props> = (props) => {
       />
       <PatternCreationModal
         performTransaction={props.performTransaction}
+        performInstanceTransaction={props.performInstanceTransaction}
+        performPatternTransaction={props.performPatternTransaction}
         modal={modalAddPattern}
         close={() => setModalAddPattern(false)}
         configuration={props.patternConfiguration}

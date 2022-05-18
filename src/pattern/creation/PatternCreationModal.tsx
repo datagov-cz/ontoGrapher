@@ -19,12 +19,15 @@ type Props = {
   close: Function;
   configuration: PatternCreationConfiguration;
   performTransaction: (...queries: string[]) => void;
+  performInstanceTransaction: (iri: string) => void;
+  performPatternTransaction: (iri: string) => void;
 };
 
 export const PatternCreationModal: React.FC<Props> = (props: Props) => {
+  const [disabled, setDisabled] = useState<boolean>(true);
   const [submitLabel, setSubmitLabel] = useState<string>("Create pattern");
   const [tab, setTab] = useState<string>("instance");
-  const [existingPattern, setExistingPattern] = useState<string>("test");
+  const [existingPattern, setExistingPattern] = useState<string>("");
   const [createInstanceFromNewPattern, setCreateInstanceFromNewPattern] =
     useState<boolean>(true);
   const [initSubmitNew, setInitSubmitNew] = useState<boolean>(false);
@@ -37,6 +40,7 @@ export const PatternCreationModal: React.FC<Props> = (props: Props) => {
     if (!Object.values(pattern.terms).every((c) => c.name)) return;
     const id = `${AppSettings.ontographerContext}/pattern/${v4()}`;
     Patterns[id] = pattern;
+    props.performPatternTransaction(id);
     if (createInstanceFromNewPattern) {
       setTab("instance");
       setExistingPattern(id);
@@ -57,8 +61,9 @@ export const PatternCreationModal: React.FC<Props> = (props: Props) => {
       connections
     );
     if (AppSettings.patternView) putInstanceOnCanvas(instance);
+    props.performTransaction(...queries);
+    props.performInstanceTransaction(instance);
     props.close();
-    return queries;
   };
 
   return (
@@ -96,6 +101,7 @@ export const PatternCreationModal: React.FC<Props> = (props: Props) => {
               configuration={props.configuration}
               submit={(pattern) => submitNew(pattern)}
               initSubmit={initSubmitNew}
+              validate={(val) => setDisabled(!val)}
             />
           </Tab>
           <Tab eventKey={"instance"} title={"Apply existing pattern"}>
@@ -104,6 +110,7 @@ export const PatternCreationModal: React.FC<Props> = (props: Props) => {
               pattern={existingPattern}
               initSubmit={initSubmitEx}
               submit={submitExisting}
+              validate={(val) => setDisabled(!val)}
             />
           </Tab>
         </Tabs>
@@ -122,6 +129,7 @@ export const PatternCreationModal: React.FC<Props> = (props: Props) => {
             <Button
               type={"submit"}
               onClick={() => setInitSubmitNew(true)}
+              disabled={disabled}
               variant="primary"
             >
               {submitLabel}
@@ -133,6 +141,7 @@ export const PatternCreationModal: React.FC<Props> = (props: Props) => {
             <Button
               type={"submit"}
               onClick={() => setInitSubmitEx(true)}
+              disabled={disabled}
               variant="primary"
             >
               {submitLabel}

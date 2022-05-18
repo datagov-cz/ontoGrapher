@@ -7,6 +7,8 @@ import {
 } from "./PatternViewColumn";
 import { PatternCreationConfiguration } from "../../components/modals/CreationModals";
 import { Patterns } from "../function/PatternTypes";
+import { WorkspaceTerms } from "../../config/Variables";
+import * as _ from "lodash";
 
 type Props = {
   configuration: PatternCreationConfiguration;
@@ -17,6 +19,7 @@ type Props = {
     elements: { [key: string]: formElementData },
     connections: { [key: string]: formRelationshipData }
   ) => void;
+  validate: (val: boolean) => void;
 };
 
 export const PatternCreationModalExisting: React.FC<Props> = (props: Props) => {
@@ -29,37 +32,52 @@ export const PatternCreationModalExisting: React.FC<Props> = (props: Props) => {
   const [detailPattern, setDetailPattern] = useState<string>("");
   useEffect(() => setSearchResults(Object.keys(Patterns)), []);
 
-  // const suggestPatterns: () => Promise<string[]> = async () => {
-  //   return await callSuggestionAlgorithm(AppSettings.selectedElements);
-  // };
-
   useEffect(() => {
     if (props.pattern) {
       setDetailPattern(props.pattern);
     }
   }, [props.pattern]);
 
-  const updateResults = () => {
+  useEffect(() => {
     if (filterSuggest) {
-    }
-    // suggestPatterns().then((results) =>
-    //   setSearchResults(
-    //     results.filter(
-    //       (r) =>
-    //         (filterName
-    //           ? Patterns[r].title
-    //               .toLowerCase()
-    //               .includes(filterName.toLowerCase())
-    //           : true) &&
-    //         (filterAuthor
-    //           ? Patterns[r].author
-    //               .toLowerCase()
-    //               .includes(filterAuthor.toLowerCase())
-    //           : true)
-    //     )
-    //   )
-    // );
-    else
+      const patterns: string[] = [];
+      const types: { [key: string]: string[] } = {};
+      for (const elem of props.configuration.elements) {
+        types[elem] = WorkspaceTerms[elem].types;
+      }
+      for (const [id, pattern] of Object.entries(Patterns)) {
+        const found: string[] = [];
+        for (const term in pattern.terms) {
+          for (const elem of props.configuration.elements) {
+            if (
+              _.intersection(pattern.terms[term].types, types[elem]).length !==
+                0 &&
+              !found.includes(elem)
+            ) {
+              found.push(elem);
+            }
+          }
+        }
+        if (found.length === props.configuration.elements.length) {
+          patterns.push(id);
+        }
+      }
+      setSearchResults(
+        patterns.filter(
+          (r) =>
+            (filterName
+              ? Patterns[r].title
+                  .toLowerCase()
+                  .includes(filterName.toLowerCase())
+              : true) &&
+            (filterAuthor
+              ? Patterns[r].author
+                  .toLowerCase()
+                  .includes(filterAuthor.toLowerCase())
+              : true)
+        )
+      );
+    } else
       setSearchResults(
         Object.keys(Patterns).filter(
           (r) =>
@@ -75,9 +93,7 @@ export const PatternCreationModalExisting: React.FC<Props> = (props: Props) => {
               : true)
         )
       );
-  };
-
-  useEffect(() => updateResults(), [filterName, filterAuthor, filterSuggest]);
+  }, [filterName, filterAuthor, filterSuggest, props.configuration.elements]);
 
   return (
     <Container style={{ minWidth: "95%" }}>
@@ -114,7 +130,7 @@ export const PatternCreationModalExisting: React.FC<Props> = (props: Props) => {
             </thead>
             <tbody>
               {searchResults.map((r) => (
-                <tr>
+                <tr key={r}>
                   <td>
                     <Button
                       className={"buttonlink"}
@@ -139,6 +155,7 @@ export const PatternCreationModalExisting: React.FC<Props> = (props: Props) => {
             pattern={detailPattern}
             initSubmit={props.initSubmit}
             submit={props.submit}
+            validate={props.validate}
           />
         </Col>
       </Row>

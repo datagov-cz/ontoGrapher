@@ -6,6 +6,7 @@ import { CardinalityPool } from "../../config/Variables";
 import { LinkType } from "../../config/Enum";
 import { zoomDiagram } from "../../function/FunctionDiagram";
 import { getStereotypeList } from "../../function/FunctionEditVars";
+import { Shapes } from "../../config/visual/Shapes";
 
 type State = {};
 
@@ -45,11 +46,7 @@ export default class NewPatternInternalView extends React.Component<
     React.createRef();
   private drag: { x: any; y: any } | undefined = undefined;
 
-  componentDidUpdate(
-    prevProps: Readonly<Props>,
-    prevState: Readonly<State>,
-    snapshot?: any
-  ) {
+  generateGraph = () => {
     this.graph.clear();
     const numberOfElements = Object.keys(this.props.terms).length;
     const centerX = paper.getComputedSize().width / 2;
@@ -86,6 +83,7 @@ export default class NewPatternInternalView extends React.Component<
           height: height,
           fill: "#FFFFFF",
         },
+        label: { color: "black" },
       });
       if (this.props.terms[p].optional) {
         element.attr({
@@ -103,8 +101,20 @@ export default class NewPatternInternalView extends React.Component<
     });
     for (const conn in this.props.conns) {
       const link = getNewLink(this.props.conns[conn].linkType);
-      link.source({ id: this.props.conns[conn].from });
-      link.target({ id: this.props.conns[conn].to });
+      link.source({
+        id: this.props.conns[conn].from,
+        connectionPoint: {
+          name: "boundary",
+          args: { selector: Shapes["default"].body },
+        },
+      });
+      link.target({
+        id: this.props.conns[conn].to,
+        connectionPoint: {
+          name: "boundary",
+          args: { selector: Shapes["default"].body },
+        },
+      });
       link.labels([]);
       if (this.props.conns[conn].linkType === LinkType.DEFAULT) {
         link.appendLabel({
@@ -143,6 +153,14 @@ export default class NewPatternInternalView extends React.Component<
       maxScale: 2,
       minScale: 0.1,
     });
+  };
+
+  componentDidUpdate(
+    prevProps: Readonly<Props>,
+    prevState: Readonly<State>,
+    snapshot?: any
+  ) {
+    this.generateGraph();
   }
 
   componentDidMount() {
@@ -184,92 +202,7 @@ export default class NewPatternInternalView extends React.Component<
         this.drag = undefined;
       },
     });
-    const numberOfElements = Object.keys(this.props.terms).length;
-    const centerX = paper.getComputedSize().width / 2;
-    const centerY = paper.getComputedSize().height / 2;
-    const radius = 200 + numberOfElements * 50;
-    Object.keys(this.props.terms).forEach((p, i) => {
-      const x =
-        centerX + radius * Math.cos((i * 2 * Math.PI) / numberOfElements);
-      const y =
-        centerY + radius * Math.sin((i * 2 * Math.PI) / numberOfElements);
-      const element = new graphElement({ id: p });
-      element.position(x, y);
-      element.addTo(this.graph);
-      const labels: string[] = [];
-      getStereotypeList(this.props.terms[p].types).forEach((str) =>
-        labels.push("«" + str.toLowerCase() + "»")
-      );
-      labels.push(this.props.terms[p].name);
-      element.prop("attrs/label/text", labels.join("\n"));
-      const width = Math.max(
-        labels.reduce((a, b) => (a.length > b.length ? a : b), "").length * 10 +
-          4,
-        0
-      );
-      element.prop("attrs/text/x", width / 2);
-      const attrHeight = 24 + (labels.length - 1) * 18;
-      const height = attrHeight;
-      element.prop("attrs/labelAttrs/y", attrHeight);
-      element.resize(width, height);
-      element.attr({
-        bodyBox: {
-          display: "block",
-          width: width,
-          height: height,
-          fill: "#FFFFFF",
-        },
-      });
-      if (this.props.terms[p].optional) {
-        element.attr({
-          bodyBox: { fillOpacity: "0.5" },
-        });
-      }
-      if (this.props.terms[p].multiple) {
-        element.attr({
-          bodyBox: {
-            strokeDasharray: "5,5",
-            stroke: "green",
-          },
-        });
-      }
-    });
-    Object.keys(this.props.conns).forEach((conn) => {
-      const link = getNewLink(this.props.conns[conn].linkType);
-      link.source({ id: this.props.conns[conn].from });
-      link.target({ id: this.props.conns[conn].to });
-      link.labels([]);
-      link.appendLabel({
-        attrs: { text: { text: this.props.conns[conn].name } },
-        position: { distance: 0.5 },
-      });
-      const sourceCardinality =
-        CardinalityPool[parseInt(this.props.conns[conn].sourceCardinality, 10)];
-      const targetCardinality =
-        CardinalityPool[parseInt(this.props.conns[conn].targetCardinality, 10)];
-      if (sourceCardinality && sourceCardinality.getString() !== "") {
-        link.appendLabel({
-          attrs: {
-            text: { text: sourceCardinality.getString() },
-          },
-          position: { distance: 50 },
-        });
-      }
-      if (targetCardinality && targetCardinality.getString() !== "") {
-        link.appendLabel({
-          attrs: {
-            text: { text: targetCardinality.getString() },
-          },
-          position: { distance: -50 },
-        });
-      }
-      link.addTo(this.graph);
-    });
-    paper.scaleContentToFit({
-      padding: 10,
-      maxScale: 2,
-      minScale: 0.1,
-    });
+    this.generateGraph();
   }
 
   render() {

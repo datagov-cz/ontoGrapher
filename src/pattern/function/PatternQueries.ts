@@ -4,17 +4,38 @@ import { Environment } from "../../config/Environment";
 import { parsePrefix } from "../../function/FunctionEditVars";
 import { LinkType } from "../../config/Enum";
 import { AppSettings, WorkspaceTerms } from "../../config/Variables";
+import { INSERT } from "@tpluscode/sparql-builder";
+import { produceOttrInstance, produceOttrPattern } from "./FunctionPattern";
+import { qb } from "../../queries/QueryBuilder";
 
-// export async function callSuggestionAlgorithm(): Promise<string[]> {
-//   const ret = [];
-//
-//   return ret;
-// }
+export async function callSuggestionAlgorithm(
+  terms: string[]
+): Promise<string[]> {
+  const patterns: string[] = [];
+
+  return patterns;
+}
+
+export async function sendPattern(iri: string): Promise<boolean> {
+  return await fetch(`${Environment.pattern}/update`, {
+    method: "POST",
+    body: encodeURIComponent(
+      qb.constructQuery(INSERT.DATA`${produceOttrPattern(iri)}`.build())
+    ),
+  }).then((r) => r.ok);
+}
+
+export async function sendInstance(iri: string): Promise<boolean> {
+  return await fetch(`${Environment.pattern}/update`, {
+    method: "POST",
+    body: qb.constructQuery(INSERT.DATA`${produceOttrInstance(iri)}`.build()),
+  }).then((r) => r.ok);
+}
 
 export async function retrievePatternAndInstanceData(): Promise<boolean> {
   const patterns = await retrievePatterns();
-  const instances = await retrieveInstances();
   Object.assign(Patterns, patterns);
+  const instances = await retrieveInstances();
   Object.assign(Instances, instances);
   return true;
 }
@@ -46,7 +67,8 @@ export async function retrievePatterns(
     "?pattern dc:creator ?creator.",
     "optional {?pattern dc:description ?description}",
     "?pattern pav:createdOn ?creationDate.",
-    "?pattern ottr:parameters (",
+    "?pattern ottr:parameters ?parameterList.",
+    "?parameterList rdf:rest*/rdf:first ?parameter.",
     "optional {",
     "?parameter ottr:type ?type",
     "}",
@@ -55,9 +77,8 @@ export async function retrievePatterns(
     "}",
     "?parameter ottr:variable ?variable.",
     "optional {?parameter ottr:modifier ?optional}",
-    ").",
     "?pattern ottr:pattern ?internalPattern.",
-    "?internalPattern ottr:of ?internalPatternType",
+    "?internalPattern ottr:of ?internalPatternType.",
     "?internalPattern ottr:values (",
     "?internalPattern1 ?internalPattern2 ?internalPattern3",
     ").",
@@ -66,7 +87,7 @@ export async function retrievePatterns(
     "}",
   ].join(`
   `);
-  await processQuery(`${Environment.pattern}/query`, query)
+  await processQuery(`${Environment.pattern}/query`, qb.constructQuery(query))
     .then((r) => r.json())
     .then((data) => {
       for (const result of data.results.bindings) {
@@ -84,16 +105,18 @@ export async function retrievePatterns(
         patterns[iri].title = result.title.value;
         patterns[iri].author = result.creator.value;
         patterns[iri].date = result.creationDate.value;
+        if (!(iri in parameters)) parameters[iri] = {};
         parameters[iri][result.variable.value] = {
           type: result.type.value,
           optional: !!result.optional,
           multiple: !!result.multiple,
         };
-        internalPatterns[iri][result.internalPattern.value] = {
+        if (!(iri in internalPatterns)) internalPatterns[iri] = [];
+        internalPatterns[iri].push({
           s: result.internalPattern1.value,
           p: result.internalPattern2.value,
           o: result.internalPattern3.value,
-        };
+        });
       }
     });
   const terms: {
@@ -120,8 +143,10 @@ export async function retrievePatterns(
     };
   } = {};
   for (const pattern of Object.keys(patterns)) {
+    terms[pattern] = {};
+    conns[pattern] = {};
     for (const triple of Object.values(internalPatterns[pattern])) {
-      if (triple.p === parsePrefix("og", "term"))
+      if (triple.o === parsePrefix("og", "term"))
         terms[pattern][triple.s] = {
           name: "",
           types: [""],
@@ -129,7 +154,7 @@ export async function retrievePatterns(
           optional: parameters[pattern][triple.s].optional,
           multiple: parameters[pattern][triple.s].multiple,
         };
-      if (triple.p === parsePrefix("og", "conn"))
+      if (triple.o === parsePrefix("og", "conn"))
         conns[pattern][triple.s] = {
           name: "",
           to: "",
@@ -143,10 +168,13 @@ export async function retrievePatterns(
   for (const pattern of Object.keys(patterns)) {
     for (const triple of Object.values(internalPatterns[pattern])) {
       if (triple.p === parsePrefix("rdf", "type"))
-        terms[pattern][triple.s].name = triple.o;
+        if (triple.s in terms[pattern])
+          terms[pattern][triple.s].types = [triple.o];
       if (triple.p === parsePrefix("og", "name")) {
-        if (triple.s in terms) terms[pattern][triple.s].name = triple.o;
-        if (triple.s in conns) conns[pattern][triple.s].name = triple.o;
+        if (triple.s in terms[pattern])
+          terms[pattern][triple.s].name = triple.o;
+        if (triple.s in conns[pattern])
+          conns[pattern][triple.s].name = triple.o;
       }
       if (triple.p === parsePrefix("og", "sc")) {
         conns[pattern][triple.s].sourceCardinality = triple.o;
@@ -176,24 +204,27 @@ export async function retrieveInstances(
   iris?: string[]
 ): Promise<typeof Instances> {
   const instances: typeof Instances = {};
-  const query = [
-    "select distinct * where {",
+  const query1 = [
+    "select distinct ?instance ?pattern ?context ?x ?y ?name where {",
     "?instance ottr:of ?pattern.",
     "?instance og:context ?context.",
     "?instance og:position-x ?x.",
     "?instance og:position-y ?y.",
-    "ottr:values ( ?value )",
-    "optional {?value rdf:rest*/rdf:first ?valueMember}",
+    "?instance og:name ?names.",
+    "optional {?names rdf:rest*/rdf:first ?name}",
     iris ? "values ?instance {<" + iris.join("> <") + ">}" : "",
     "}",
   ].join(`
   `);
-  await processQuery(`${Environment.pattern}/query`, query)
+  const names: { [key: string]: string[] } = {};
+  const things: { [key: string]: string[] } = {};
+  await processQuery(`${Environment.pattern}/query`, qb.constructQuery(query1))
     .then((r) => r.json())
     .then((data) => {
       for (const result of data.results.bindings) {
         if (result.context.value !== AppSettings.contextIRI) continue;
-        if (!result.instance.value)
+        if (!(result.pattern.value in Patterns)) continue;
+        if (!(result.instance.value in instances)) {
           instances[result.instance.value] = {
             x: parseInt(result.x.value, 10),
             y: parseInt(result.y.value, 10),
@@ -201,45 +232,57 @@ export async function retrieveInstances(
             terms: {},
             conns: {},
           };
-        if (result.valueMember) {
-          if (
-            result.valueMember.value in WorkspaceTerms &&
-            WorkspaceTerms[result.valueMember.value].types.includes(
-              parsePrefix("z-sgov-pojem", "typ-vztahu")
-            )
-          ) {
-            instances[result.instance.value].conns[result.valueMember.value] =
-              result.valueMember.value;
-          }
-          if (
-            result.valueMember.value in WorkspaceTerms &&
-            !WorkspaceTerms[result.valueMember.value].types.includes(
-              parsePrefix("z-sgov-pojem", "typ-vztahu")
-            )
-          ) {
-            instances[result.instance.value].terms[result.valueMember.value] =
-              result.valueMember.value;
-          }
+          names[result.instance.value] = [];
+          things[result.instance.value] = [];
         }
-        if (
-          result.value.value in WorkspaceTerms &&
-          WorkspaceTerms[result.value.value].types.includes(
-            parsePrefix("z-sgov-pojem", "typ-vztahu")
+        if (result.name) {
+          names[result.instance.value].push(result.name.value);
+          if (
+            !(result.name.value in instances[result.instance.value].terms) &&
+            result.name.value in Patterns[result.pattern.value].terms
           )
-        ) {
-          instances[result.instance.value].conns[result.value.value] =
-            result.value.value;
-        }
-        if (
-          result.value.value in WorkspaceTerms &&
-          !WorkspaceTerms[result.value.value].types.includes(
-            parsePrefix("z-sgov-pojem", "typ-vztahu")
+            instances[result.instance.value].terms[result.name.value] = [];
+          if (
+            !(result.name.value in instances[result.instance.value].conns) &&
+            result.name.value in Patterns[result.pattern.value].conns
           )
-        ) {
-          instances[result.instance.value].terms[result.value.value] =
-            result.value.value;
+            instances[result.instance.value].conns[result.name.value] = "";
         }
       }
     });
+  const query2 = [
+    "select distinct ?instance ?pattern ?context ?x ?y ?valueMember where {",
+    "?instance ottr:values ?value.",
+    "optional {?value rdf:rest*/rdf:first ?valueMember}",
+    "values ?instance {<" + Object.keys(instances).join("> <") + ">}",
+    "}",
+  ].join(`
+  `);
+  await processQuery(`${Environment.pattern}/query`, qb.constructQuery(query2))
+    .then((r) => r.json())
+    .then((data) => {
+      for (const result of data.results.bindings) {
+        if (result.valueMember && result.valueMember.value in WorkspaceTerms) {
+          things[result.instance.value].push(result.valueMember.value);
+        }
+      }
+    });
+  for (const instance of Object.keys(instances)) {
+    if (
+      Object.values(things[instance]).length !==
+      Object.values(names[instance]).length
+    ) {
+      delete instances[instance];
+      continue;
+    }
+    for (const thing of things[instance]) {
+      const index = things[instance].indexOf(thing);
+      const name = names[instance][index];
+      if (name in Patterns[instances[instance].iri].terms)
+        instances[instance].terms[name].push(thing);
+      if (name in Patterns[instances[instance].iri].conns)
+        instances[instance].conns[name] = thing;
+    }
+  }
   return instances;
 }

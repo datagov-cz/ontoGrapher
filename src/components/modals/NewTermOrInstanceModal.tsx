@@ -29,7 +29,8 @@ import { Patterns } from "../../pattern/function/PatternTypes";
 
 interface Props {
   modal: boolean;
-  close: (names?: State["termName"], vocabulary?: string) => void;
+  closeElem: (names?: State["termName"], vocabulary?: string) => void;
+  closeInstance: (queries: string[], iri: string) => void;
   projectLanguage: string;
   configuration: ElemCreationConfiguration;
 }
@@ -41,7 +42,8 @@ interface State {
   size: undefined | "xl";
 }
 
-export const NewTermOrPatternModal: React.FC<Props> = (props: Props) => {
+export const NewTermOrInstanceModal: React.FC<Props> = (props: Props) => {
+  const [disabled, setDisabled] = useState<boolean>(true);
   const [tab, setTab] = useState<string>("0");
   const [initSubmitEx, setInitSubmitEx] = useState<boolean>(false);
   const [searchResults, setSearchResults] = useState<string[]>(
@@ -62,7 +64,7 @@ export const NewTermOrPatternModal: React.FC<Props> = (props: Props) => {
   const save = () => {
     if (errorText === "") {
       const names = _.mapValues(termName, (name) => name.trim());
-      props.close(names, selectedVocabulary);
+      props.closeElem(names, selectedVocabulary);
     }
   };
 
@@ -78,8 +80,7 @@ export const NewTermOrPatternModal: React.FC<Props> = (props: Props) => {
       connections
     );
     if (AppSettings.patternView) putInstanceOnCanvas(instance);
-    props.close();
-    return queries;
+    props.closeInstance(queries, instance);
   };
 
   useEffect(() => {
@@ -105,8 +106,8 @@ export const NewTermOrPatternModal: React.FC<Props> = (props: Props) => {
       size={size}
       show={props.modal}
       keyboard={true}
-      onEscapeKeyDown={() => props.close()}
-      onHide={() => props.close()}
+      onEscapeKeyDown={() => props.closeElem()}
+      onHide={() => props.closeElem()}
       dialogClassName={tab === "1" ? "patternModal" : ""}
       onEntering={() => {
         setSearchResults(Object.keys(Patterns));
@@ -114,7 +115,7 @@ export const NewTermOrPatternModal: React.FC<Props> = (props: Props) => {
           const vocab = Object.keys(WorkspaceVocabularies).find(
             (vocab) => !WorkspaceVocabularies[vocab].readOnly
           );
-          if (!vocab) props.close();
+          if (!vocab) props.closeElem();
           else {
             setTermName(initLanguageObject(""));
             setErrorText(
@@ -216,6 +217,7 @@ export const NewTermOrPatternModal: React.FC<Props> = (props: Props) => {
                       pattern={detailPattern}
                       initSubmit={initSubmitEx}
                       submit={submitExisting}
+                      validate={(val) => setDisabled(!val)}
                     />
                   </Col>
                 </Row>
@@ -231,14 +233,14 @@ export const NewTermOrPatternModal: React.FC<Props> = (props: Props) => {
             if (tab === "0" && errorText === "") save();
             if (tab === "1") setInitSubmitEx(true);
           }}
-          disabled={tab === "0" ? errorText !== "" : false}
+          disabled={tab === "0" ? errorText !== "" : disabled}
           variant="primary"
         >
           {Locale[AppSettings.interfaceLanguage].confirm}
         </Button>
         <Button
           onClick={() => {
-            props.close();
+            props.closeElem();
           }}
           variant="secondary"
         >

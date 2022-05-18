@@ -79,8 +79,8 @@ ${statements.join(`
     return `${option ? `${p} ${o}` : ""}`;
   },
   constructQuery: (...queries) => {
-    let filter = queries.filter((query) => query);
-    let result = Object.keys(Prefixes)
+    const filter = queries.filter((query) => query);
+    const result = Object.keys(Prefixes)
       .map(
         (prefix) =>
           `PREFIX ${prefix}: <${Prefixes[prefix]}> 

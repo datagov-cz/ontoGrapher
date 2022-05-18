@@ -7,6 +7,7 @@ import { CardinalityPool } from "../../config/Variables";
 import { LinkType } from "../../config/Enum";
 import { zoomDiagram } from "../../function/FunctionDiagram";
 import { getStereotypeList } from "../../function/FunctionEditVars";
+import { Shapes } from "../../config/visual/Shapes";
 
 type State = {};
 
@@ -18,7 +19,7 @@ type Props = {
     [key: string]: {
       name: string;
       types: string[];
-      parameter?: boolean;
+      parameter: string;
       optional?: boolean;
       multiple?: boolean;
     };
@@ -90,6 +91,7 @@ export default class EditingPatternInternalView extends React.Component<
             height: height,
             fill: "#FFFFFF",
           },
+          label: { color: "black" },
         });
         if (this.props.terms[p].optional) {
           element.attr({
@@ -114,8 +116,20 @@ export default class EditingPatternInternalView extends React.Component<
       )
         continue;
       const link = getNewLink(this.props.conns[conn].linkType);
-      link.source({ id: this.props.conns[conn].from });
-      link.target({ id: this.props.conns[conn].to });
+      link.source({
+        id: this.props.conns[conn].from,
+        connectionPoint: {
+          name: "boundary",
+          args: { selector: Shapes["default"].body },
+        },
+      });
+      link.target({
+        id: this.props.conns[conn].to,
+        connectionPoint: {
+          name: "boundary",
+          args: { selector: Shapes["default"].body },
+        },
+      });
       link.labels([]);
       if (this.props.conns[conn].linkType === LinkType.DEFAULT) {
         link.appendLabel({

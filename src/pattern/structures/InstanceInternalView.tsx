@@ -3,21 +3,26 @@ import React from "react";
 import _ from "lodash";
 import {
   AppSettings,
+  WorkspaceElements,
   WorkspaceLinks,
   WorkspaceTerms,
 } from "../../config/Variables";
 import {
   getIntrinsicTropeTypeIDs,
-  getLabelOrBlank,
   getLinkOrVocabElem,
   getNewLink,
 } from "../../function/FunctionGetVars";
 import { graphElement } from "../../graph/GraphElement";
 import { getDisplayLabel } from "../../function/FunctionDraw";
-import { LinkType } from "../../config/Enum";
-import { setLabels } from "../../function/FunctionGraph";
+import { LinkType, Representation } from "../../config/Enum";
+import { nameGraphLink, setLabels } from "../../function/FunctionGraph";
 import { zoomDiagram } from "../../function/FunctionDiagram";
-import { getStereotypeList } from "../../function/FunctionEditVars";
+import {
+  getStereotypeList,
+  setElementShape,
+} from "../../function/FunctionEditVars";
+import { Shapes } from "../../config/visual/Shapes";
+import { graph } from "../../graph/Graph";
 
 type State = {};
 
@@ -40,11 +45,8 @@ export default class InstanceInternalView extends React.Component<
     React.createRef();
   private drag: { x: any; y: any } | undefined = undefined;
 
-  componentDidUpdate(
-    prevProps: Readonly<Props>,
-    prevState: Readonly<State>,
-    snapshot?: any
-  ) {
+  generateGraph() {
+    paper.dumpViews();
     this.graph.clear();
     const numberOfElements = this.props.terms.length;
     const centerX = paper.getComputedSize().width / 2;
@@ -55,66 +57,112 @@ export default class InstanceInternalView extends React.Component<
         centerX + radius * Math.cos((i * 2 * Math.PI) / numberOfElements);
       const y =
         centerY + radius * Math.sin((i * 2 * Math.PI) / numberOfElements);
-      const element = new graphElement({ id: term });
-      element.position(x, y);
-      element.addTo(this.graph);
-      const labels: string[] = [];
-      getStereotypeList(WorkspaceTerms[term].types).forEach((str) =>
-        labels.push("«" + str.toLowerCase() + "»")
-      );
-      labels.push(
-        getLabelOrBlank(WorkspaceTerms[term].labels, AppSettings.canvasLanguage)
-      );
-      element.prop("attrs/label/text", labels.join("\n"));
-      const text: string[] = [];
-      text.push(
-        ..._.uniq(getIntrinsicTropeTypeIDs(term)).map((id) =>
-          getDisplayLabel(id, AppSettings.canvasLanguage)
-        )
-      );
-      element.prop("attrs/labelAttrs/text", text.join("\n"));
-      const width = Math.max(
-        labels.reduce((a, b) => (a.length > b.length ? a : b), "").length * 10 +
-          4,
-        text.length > 0
-          ? 8 * text.reduce((a, b) => (a.length > b.length ? a : b), "").length
-          : 0
-      );
-      element.prop("attrs/text/x", width / 2);
-      const attrHeight = 24 + (labels.length - 1) * 18;
-      const height = (text.length > 0 ? 4 + text.length * 14 : 0) + attrHeight;
-      element.prop("attrs/labelAttrs/y", attrHeight);
-      element.resize(width, height);
-      element.attr({
-        bodyBox: {
-          display: "block",
-          width: width,
-          height: height,
-          strokeDasharray: "none",
-          stroke: "black",
-          fill: "#FFFFFF",
-        },
-      });
+      const elem = new graphElement({ id: term });
+      elem.position(x, y);
+      elem.addTo(this.graph);
+      if (typeof elem.id === "string") {
+        const types = WorkspaceTerms[elem.id].types;
+        getDisplayLabel(elem.id, AppSettings.canvasLanguage);
+        const label =
+          WorkspaceElements[elem.id].selectedLabel[AppSettings.canvasLanguage];
+        const labels: string[] = [];
+        if (AppSettings.viewStereotypes)
+          getStereotypeList(types, AppSettings.canvasLanguage).forEach((str) =>
+            labels.push("«" + str.toLowerCase() + "»")
+          );
+        labels.push(label === "" ? "<blank>" : label);
+        elem.prop("attrs/label/text", labels.join("\n"));
+        const text: string[] = [];
+        if (AppSettings.representation === Representation.COMPACT) {
+          text.push(
+            ..._.uniq(getIntrinsicTropeTypeIDs(elem.id)).map((id) =>
+              getDisplayLabel(id, AppSettings.canvasLanguage)
+            )
+          );
+        }
+        elem.prop("attrs/labelAttrs/text", text.join("\n"));
+        const width =
+          AppSettings.representation === Representation.COMPACT
+            ? Math.max(
+                labels.reduce((a, b) => (a.length > b.length ? a : b), "")
+                  .length *
+                  10 +
+                  4,
+                text.length > 0
+                  ? 8 *
+                      text.reduce((a, b) => (a.length > b.length ? a : b), "")
+                        .length
+                  : 0
+              )
+            : labels.reduce((a, b) => (a.length > b.length ? a : b), "")
+                .length *
+                10 +
+              4;
+        elem.prop("attrs/text/x", width / 2);
+        const attrHeight = 24 + (labels.length - 1) * 18;
+        const height =
+          (text.length > 0 ? 4 + text.length * 14 : 0) + attrHeight;
+        elem.prop("attrs/labelAttrs/y", attrHeight);
+        setElementShape(elem, width, height);
+        elem.resize(width, height);
+      }
     });
     this.props.conns.forEach((conn) => {
-      const link = getNewLink(WorkspaceLinks[conn].type, conn);
-      link.source({ id: WorkspaceLinks[conn].source });
-      link.target({ id: WorkspaceLinks[conn].target });
-      if (WorkspaceLinks[conn].type === LinkType.DEFAULT) {
+      let id = conn;
+      if (id in WorkspaceTerms) {
+        id = Object.keys(WorkspaceLinks).find(
+          (link) => WorkspaceLinks[link].iri === conn
+        )!;
+      }
+      const link = getNewLink(WorkspaceLinks[id].type, id);
+      link.source({
+        id: WorkspaceLinks[id].source,
+        connectionPoint: {
+          name: "boundary",
+          args: { selector: Shapes["default"].body },
+        },
+      });
+      link.target({
+        id: WorkspaceLinks[id].target,
+        connectionPoint: {
+          name: "boundary",
+          args: { selector: Shapes["default"].body },
+        },
+      });
+      link.addTo(this.graph);
+      if (WorkspaceLinks[id].type === LinkType.DEFAULT) {
         setLabels(
           link,
-          getLinkOrVocabElem(WorkspaceLinks[conn].iri).labels[
+          getLinkOrVocabElem(WorkspaceLinks[id].iri).labels[
             AppSettings.canvasLanguage
           ]
         );
       }
-      link.addTo(this.graph);
     });
+    graph.getLinks().forEach((cell) => {
+      if (WorkspaceLinks[cell.id]) {
+        nameGraphLink(
+          cell,
+          getLinkOrVocabElem(WorkspaceLinks[cell.id].iri).labels,
+          AppSettings.canvasLanguage
+        );
+      }
+    });
+    paper.dumpViews();
     paper.scaleContentToFit({
       padding: 10,
       maxScale: 2,
       minScale: 0.1,
     });
+    paper.translate(300, 0);
+  }
+
+  componentDidUpdate(
+    prevProps: Readonly<Props>,
+    prevState: Readonly<State>,
+    snapshot?: any
+  ) {
+    this.generateGraph();
   }
 
   componentDidMount() {
@@ -156,73 +204,7 @@ export default class InstanceInternalView extends React.Component<
         this.drag = undefined;
       },
     });
-    const numberOfElements = this.props.terms.length;
-    const centerX = paper.getComputedSize().width / 2;
-    const centerY = paper.getComputedSize().height / 2;
-    const radius = 200 + numberOfElements * 50;
-    this.props.terms.forEach((term, i) => {
-      const x =
-        centerX + radius * Math.cos((i * 2 * Math.PI) / numberOfElements);
-      const y =
-        centerY + radius * Math.sin((i * 2 * Math.PI) / numberOfElements);
-      const element = new graphElement({ id: term });
-      element.position(x, y);
-      element.addTo(this.graph);
-      const labels: string[] = [];
-      getStereotypeList(WorkspaceTerms[term].types).forEach((str) =>
-        labels.push("«" + str.toLowerCase() + "»")
-      );
-      labels.push(
-        getLabelOrBlank(WorkspaceTerms[term].labels, AppSettings.canvasLanguage)
-      );
-      element.prop("attrs/label/text", labels.join("\n"));
-      const text: string[] = [];
-      text.push(
-        ..._.uniq(getIntrinsicTropeTypeIDs(term)).map((id) =>
-          getDisplayLabel(id, AppSettings.canvasLanguage)
-        )
-      );
-      element.prop("attrs/labelAttrs/text", text.join("\n"));
-      const width = Math.max(
-        labels.reduce((a, b) => (a.length > b.length ? a : b), "").length * 10 +
-          4,
-        text.length > 0
-          ? 8 * text.reduce((a, b) => (a.length > b.length ? a : b), "").length
-          : 0
-      );
-      element.prop("attrs/text/x", width / 2);
-      const attrHeight = 24 + (labels.length - 1) * 18;
-      const height = (text.length > 0 ? 4 + text.length * 14 : 0) + attrHeight;
-      element.prop("attrs/labelAttrs/y", attrHeight);
-      element.resize(width, height);
-      element.attr({
-        bodyBox: {
-          display: "block",
-          width: width,
-          height: height,
-          strokeDasharray: "none",
-          stroke: "black",
-          fill: "#FFFFFF",
-        },
-      });
-    });
-    this.props.conns.forEach((conn) => {
-      const link = new joint.shapes.standard.Link();
-      link.source({ id: WorkspaceLinks[conn].source });
-      link.target({ id: WorkspaceLinks[conn].target });
-      setLabels(
-        link,
-        getLinkOrVocabElem(WorkspaceLinks[conn].iri).labels[
-          AppSettings.canvasLanguage
-        ]
-      );
-      link.addTo(this.graph);
-    });
-    paper.scaleContentToFit({
-      padding: 10,
-      maxScale: 2,
-      minScale: 0.1,
-    });
+    this.generateGraph();
   }
 
   render() {

@@ -33,12 +33,14 @@ interface MenuPanelProps {
   updateDetailPanel: Function;
   handleStatus: Function;
   performTransaction: (...queries: string[]) => void;
+  performPatternTransaction: (iri: string) => void;
   retry: boolean;
   tooltip: boolean;
 }
 
 interface MenuPanelState {
   tooltip: boolean;
+  statisticsModal: boolean;
 }
 
 export default class MenuPanel extends React.Component<
@@ -49,6 +51,7 @@ export default class MenuPanel extends React.Component<
     super(props);
     this.state = {
       tooltip: false,
+      statisticsModal: false,
     };
     this.handleChangeLanguage = this.handleChangeLanguage.bind(this);
   }

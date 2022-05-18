@@ -16,7 +16,7 @@ import { getName } from "../../function/FunctionEditVars";
 import { LinkType } from "../../config/Enum";
 import NewPatternInternalView from "../structures/NewPatternInternalView";
 
-type newPatternParameter = {
+export type newPatternParameter = {
   [key: string]: {
     name: string;
     types: string[];
@@ -27,13 +27,13 @@ type newPatternParameter = {
   };
 };
 
-type newPatternData = {
+export type newPatternData = {
   name: string;
   author: string;
   description: string;
 };
 
-type newPatternRelationship = {
+export type newPatternRelationship = {
   [key: string]: {
     name: string;
     from: string;
@@ -49,6 +49,7 @@ type Props = {
   configuration: PatternCreationConfiguration;
   submit: (pattern: Pattern) => void;
   initSubmit: boolean;
+  validate: (val: boolean) => void;
 };
 
 export const PatternCreationModalNew: React.FC<Props> = (props: Props) => {
@@ -63,6 +64,7 @@ export const PatternCreationModalNew: React.FC<Props> = (props: Props) => {
       };
     } = {};
     for (const param in newPatternParameterData) {
+      if (!newPatternParameterData[param].active) continue;
       t[param] = {
         name: newPatternParameterData[param].name,
         types: newPatternParameterData[param].types,
@@ -74,9 +76,89 @@ export const PatternCreationModalNew: React.FC<Props> = (props: Props) => {
     return t;
   };
 
+  const validateForm = (
+    title: string,
+    params: newPatternParameter,
+    conns: typeof newPatternRelationshipData
+  ) => {
+    let ret = true;
+    for (const t of Object.keys(params)) {
+      if (!params[t].name) {
+        ret = false;
+      }
+    }
+    for (const d of Object.keys(conns)) {
+      if (!conns[d].name) {
+        ret = false;
+      }
+    }
+    if (!title) ret = false;
+    props.validate(ret);
+  };
+
   useEffect(() => {
-    if (props.initSubmit) props.submit(createPattern());
-  }, [props.initSubmit]);
+    if (props.initSubmit) {
+      const t: {
+        [key: string]: {
+          name: string;
+          types: string[];
+          parameter?: boolean;
+          optional?: boolean;
+          multiple?: boolean;
+        };
+      } = {};
+      const c: {
+        [key: string]: {
+          name: string;
+          to: string;
+          from: string;
+          sourceCardinality: string;
+          targetCardinality: string;
+          linkType: LinkType;
+        };
+      } = {};
+      props.configuration.elements.forEach((e) => {
+        t[e] = {
+          name: getLabelOrBlank(
+            WorkspaceTerms[e].labels,
+            AppSettings.canvasLanguage
+          ),
+          types: WorkspaceTerms[e].types,
+        };
+      });
+      for (const param in newPatternParameterData) {
+        if (!newPatternParameterData[param].active) continue;
+        t[param] = {
+          name: newPatternParameterData[param].name,
+          types: newPatternParameterData[param].types,
+          parameter: true,
+          optional: newPatternParameterData[param].optional,
+          multiple: newPatternParameterData[param].multiple,
+        };
+      }
+      for (const param in newPatternRelationshipData) {
+        c[param] = {
+          name: newPatternRelationshipData[param].name,
+          to: newPatternRelationshipData[param].to,
+          from: newPatternRelationshipData[param].from,
+          sourceCardinality:
+            newPatternRelationshipData[param].sourceCardinality,
+          targetCardinality:
+            newPatternRelationshipData[param].targetCardinality,
+          linkType: newPatternRelationshipData[param].linkType,
+        };
+      }
+      props.submit({
+        title: newPatternData.name,
+        author: newPatternData.author,
+        date: new Date().toJSON(),
+        description: newPatternData.description,
+        terms: t,
+        conns: c,
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [props]);
 
   useEffect(() => {
     const rels = Object.keys(WorkspaceLinks).filter(
@@ -110,8 +192,12 @@ export const PatternCreationModalNew: React.FC<Props> = (props: Props) => {
           const term = WorkspaceTerms[WorkspaceLinks[l].target];
           parameters[WorkspaceLinks[l].target] = {
             name: getLabelOrBlank(term.labels, AppSettings.canvasLanguage),
-            types: [""],
-            optional: false,
+            types: [
+              WorkspaceTerms[WorkspaceLinks[l].target].types.find(
+                (t) => t in Stereotypes
+              )!,
+            ],
+            optional: true,
             multiple: false,
             active: true,
           };
@@ -142,7 +228,7 @@ export const PatternCreationModalNew: React.FC<Props> = (props: Props) => {
     setNewPatternData({ name: "", author: "", description: "" });
     setNewPatternRelationshipData(relationships);
     setNewPatternParameterData(parameters);
-  }, []);
+  }, [props.configuration.elements]);
 
   const [newPatternParameterData, setNewPatternParameterData] =
     useState<newPatternParameter>({});
@@ -161,6 +247,7 @@ export const PatternCreationModalNew: React.FC<Props> = (props: Props) => {
     const copy = _.clone(newPatternRelationshipData);
     copy[index] = data;
     setNewPatternRelationshipData(copy);
+    validateForm(newPatternData.name, newPatternParameterData, copy);
   };
 
   const modifyPatternData = (
@@ -170,64 +257,7 @@ export const PatternCreationModalNew: React.FC<Props> = (props: Props) => {
     const copy = _.clone(newPatternParameterData);
     copy[id] = data;
     setNewPatternParameterData(copy);
-  };
-
-  const createPattern = () => {
-    const t: {
-      [key: string]: {
-        name: string;
-        types: string[];
-        parameter?: boolean;
-        optional?: boolean;
-        multiple?: boolean;
-      };
-    } = {};
-    const c: {
-      [key: string]: {
-        name: string;
-        to: string;
-        from: string;
-        sourceCardinality: string;
-        targetCardinality: string;
-        linkType: LinkType;
-      };
-    } = {};
-    props.configuration.elements.forEach((e) => {
-      t[e] = {
-        name: getLabelOrBlank(
-          WorkspaceTerms[e].labels,
-          AppSettings.canvasLanguage
-        ),
-        types: WorkspaceTerms[e].types,
-      };
-    });
-    for (const param in newPatternParameterData) {
-      t[param] = {
-        name: newPatternParameterData[param].name,
-        types: newPatternParameterData[param].types,
-        parameter: true,
-        optional: newPatternParameterData[param].optional,
-        multiple: newPatternParameterData[param].multiple,
-      };
-    }
-    for (const param in newPatternRelationshipData) {
-      c[param] = {
-        name: newPatternRelationshipData[param].name,
-        to: newPatternRelationshipData[param].to,
-        from: newPatternRelationshipData[param].from,
-        sourceCardinality: newPatternRelationshipData[param].sourceCardinality,
-        targetCardinality: newPatternRelationshipData[param].targetCardinality,
-        linkType: newPatternRelationshipData[param].linkType,
-      };
-    }
-    return {
-      title: newPatternData.name,
-      author: newPatternData.author,
-      date: new Date().toJSON(),
-      description: newPatternData.description,
-      terms: t,
-      conns: c,
-    };
+    validateForm(newPatternData.name, copy, newPatternRelationshipData);
   };
 
   let key = 0;
@@ -248,98 +278,100 @@ export const PatternCreationModalNew: React.FC<Props> = (props: Props) => {
               </tr>
             </thead>
             <tbody>
-              {Object.keys(newPatternParameterData).map((data) => {
-                return (
-                  <tr key={key++}>
-                    <td>
-                      <Form.Control
-                        size={"sm"}
-                        type={"text"}
-                        placeholder={"Parameter name"}
-                        value={newPatternParameterData[data].name}
-                        onChange={(event) =>
-                          modifyPatternData(data, {
-                            ...newPatternParameterData[data],
-                            name: event.currentTarget.value,
-                          })
-                        }
-                      />
-                      {!newPatternParameterData[data].name && (
-                        <p className={"red"}>Please choose a name.</p>
-                      )}
-                    </td>
-                    <td>
-                      <Form.Control
-                        onChange={(event) =>
-                          modifyPatternData(data, {
-                            ...newPatternParameterData[data],
-                            types: [event.currentTarget.value],
-                          })
-                        }
-                        value={newPatternParameterData[data].types[0]}
-                        size="sm"
-                        as="select"
-                      >
-                        <option key={""} value={""}>
-                          No type
-                        </option>
-                        {Object.keys(Stereotypes)
-                          .filter(
-                            (s) =>
-                              ![
-                                "https://slovník.gov.cz/základní/pojem/typ-vztahu",
-                                "https://slovník.gov.cz/základní/pojem/typ-vlastnosti",
-                              ].includes(s)
-                          )
-                          .map((s) => (
-                            <option key={s} value={s}>
-                              {getName(s, AppSettings.canvasLanguage)}
-                            </option>
-                          ))}
-                      </Form.Control>
-                    </td>
-                    <td>
-                      <Form.Check
-                        type="checkbox"
-                        onChange={(event) =>
-                          modifyPatternData(data, {
-                            ...newPatternParameterData[data],
-                            optional: event.currentTarget.checked,
-                          })
-                        }
-                        checked={newPatternParameterData[data].optional}
-                      />
-                    </td>
-                    <td>
-                      <Form.Check
-                        type="checkbox"
-                        onChange={(event) =>
-                          modifyPatternData(data, {
-                            ...newPatternParameterData[data],
-                            multiple: event.currentTarget.checked,
-                          })
-                        }
-                        checked={newPatternParameterData[data].multiple}
-                      />
-                    </td>
-                    <td>
-                      <Button
-                        size={"sm"}
-                        key={key++}
-                        onClick={() =>
-                          modifyPatternData(data, {
-                            ...newPatternParameterData[data],
-                            active: false,
-                          })
-                        }
-                        variant={"danger"}
-                      >
-                        {"Remove"}
-                      </Button>
-                    </td>
-                  </tr>
-                );
-              })}
+              {Object.keys(newPatternParameterData)
+                .filter((d) => newPatternParameterData[d].active)
+                .map((data) => {
+                  return (
+                    <tr key={key++}>
+                      <td>
+                        <Form.Control
+                          size={"sm"}
+                          type={"text"}
+                          placeholder={"Parameter name"}
+                          value={newPatternParameterData[data].name}
+                          onChange={(event) =>
+                            modifyPatternData(data, {
+                              ...newPatternParameterData[data],
+                              name: event.currentTarget.value,
+                            })
+                          }
+                        />
+                        {!newPatternParameterData[data].name && (
+                          <p className={"red"}>Please choose a name.</p>
+                        )}
+                      </td>
+                      <td>
+                        <Form.Control
+                          onChange={(event) =>
+                            modifyPatternData(data, {
+                              ...newPatternParameterData[data],
+                              types: [event.currentTarget.value],
+                            })
+                          }
+                          value={newPatternParameterData[data].types[0]}
+                          size="sm"
+                          as="select"
+                        >
+                          <option key={""} value={""}>
+                            No type
+                          </option>
+                          {Object.keys(Stereotypes)
+                            .filter(
+                              (s) =>
+                                ![
+                                  "https://slovník.gov.cz/základní/pojem/typ-vztahu",
+                                  "https://slovník.gov.cz/základní/pojem/typ-vlastnosti",
+                                ].includes(s)
+                            )
+                            .map((s) => (
+                              <option key={s} value={s}>
+                                {getName(s, AppSettings.canvasLanguage)}
+                              </option>
+                            ))}
+                        </Form.Control>
+                      </td>
+                      <td>
+                        <Form.Check
+                          type="checkbox"
+                          onChange={(event) =>
+                            modifyPatternData(data, {
+                              ...newPatternParameterData[data],
+                              optional: event.currentTarget.checked,
+                            })
+                          }
+                          checked={newPatternParameterData[data].optional}
+                        />
+                      </td>
+                      <td>
+                        <Form.Check
+                          type="checkbox"
+                          onChange={(event) =>
+                            modifyPatternData(data, {
+                              ...newPatternParameterData[data],
+                              multiple: event.currentTarget.checked,
+                            })
+                          }
+                          checked={newPatternParameterData[data].multiple}
+                        />
+                      </td>
+                      <td>
+                        <Button
+                          size={"sm"}
+                          key={key++}
+                          onClick={() =>
+                            modifyPatternData(data, {
+                              ...newPatternParameterData[data],
+                              active: false,
+                            })
+                          }
+                          variant={"danger"}
+                        >
+                          {"Remove"}
+                        </Button>
+                      </td>
+                    </tr>
+                  );
+                })}
               <tr>
                 <td colSpan={5}>
                   <Button
@@ -583,12 +615,17 @@ export const PatternCreationModalNew: React.FC<Props> = (props: Props) => {
             <Form.Label>Title*</Form.Label>
             <Form.Control
               value={newPatternData.name}
-              onChange={(event) =>
+              onChange={(event) => {
                 setNewPatternData({
                   ...newPatternData,
                   name: event.currentTarget.value,
-                })
-              }
+                });
+                validateForm(
+                  event.currentTarget.value,
+                  newPatternParameterData,
+                  newPatternRelationshipData
+                );
+              }}
               type="text"
             />
             {!newPatternData.name && (

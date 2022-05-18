@@ -45,6 +45,8 @@ import {
 import { DetailPanelMode, ElemCreationStrategy } from "../config/Enum";
 import { Locale } from "../config/Locale";
 import { initTouchEvents } from "../function/FunctionTouch";
+import { Shapes } from "../config/visual/Shapes";
+import { Instances } from "../pattern/function/PatternTypes";
 
 interface Props {
   projectLanguage: string;
@@ -192,12 +194,24 @@ export default class DiagramCanvas extends React.Component<Props, State> {
               );
             } else {
               resetDiagramSelection();
-              highlightElement(cellView.model.id);
-              this.props.updateElementPanel(cellView.model.id);
-              this.props.updateDetailPanel(
-                DetailPanelMode.TERM,
-                cellView.model.id
-              );
+              if (cellView.model.id in WorkspaceTerms) {
+                highlightElement(cellView.model.id);
+                this.props.updateElementPanel(cellView.model.id);
+                this.props.updateDetailPanel(
+                  DetailPanelMode.TERM,
+                  cellView.model.id
+                );
+              } else {
+                cellView.model.attr({
+                  [Shapes["default"].body]: {
+                    stroke: ElementColors.detail,
+                  },
+                });
+                this.props.updateDetailPanel(
+                  DetailPanelMode.PATTERN,
+                  cellView.model.id
+                );
+              }
             }
           } else if (evt.ctrlKey) {
             this.props.updateDetailPanel(DetailPanelMode.HIDDEN);
@@ -216,11 +230,6 @@ export default class DiagramCanvas extends React.Component<Props, State> {
             this.newLink = false;
             unHighlightAll();
           }
-        } else {
-          this.props.updateDetailPanel(
-            DetailPanelMode.PATTERN,
-            cellView.model.id
-          );
         }
       },
       /**
@@ -429,6 +438,12 @@ export default class DiagramCanvas extends React.Component<Props, State> {
        */
       "blank:pointerup": (evt) => {
         updateDiagramPosition(AppSettings.selectedDiagram);
+        for (const elem of graph
+          .getElements()
+          .filter((elem) => elem.id in Instances))
+          elem.attr({
+            [Shapes["default"].body]: { stroke: ElementColors.default },
+          });
         this.drag = undefined;
         if (evt.button === 0 || evt.type === "touchend") {
           this.props.updateDetailPanel(DetailPanelMode.HIDDEN);

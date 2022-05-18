@@ -1,13 +1,13 @@
 import React, { useState } from "react";
-import { Dropdown } from "react-bootstrap";
+import { Nav } from "react-bootstrap";
 import { PatternStatisticsModal } from "../modals/PatternStatisticsModal";
 import { StorePattern } from "../function/StorePattern";
-import { PatternAlgorithmModal } from "../modals/PatternAlgorithmModal";
+import { Locale } from "../../config/Locale";
+import { AppSettings } from "../../config/Variables";
 
 type Props = {};
 
 export const MenuPanelPatterns: React.FC<Props> = (props: Props) => {
-  const [algorithmModal, setAlgorithmModal] = useState<boolean>(false);
   const [statisticsModal, setStatisticsModal] = useState<boolean>(false);
   const [statisticsID, setStatisticsID] = useState<string>("");
 
@@ -21,21 +21,9 @@ export const MenuPanelPatterns: React.FC<Props> = (props: Props) => {
 
   return (
     <span className={"inert"}>
-      <Dropdown>
-        <Dropdown.Toggle>Pattern functions</Dropdown.Toggle>
-        <Dropdown.Menu>
-          <Dropdown.Item onClick={() => setAlgorithmModal(true)}>
-            Pattern algorithms
-          </Dropdown.Item>
-          <Dropdown.Item onClick={() => setStatisticsModal(true)}>
-            Pattern usage statistics
-          </Dropdown.Item>
-        </Dropdown.Menu>
-      </Dropdown>
-      <PatternAlgorithmModal
-        open={algorithmModal}
-        close={() => setAlgorithmModal(false)}
-      />
+      <Nav.Link onClick={() => setStatisticsModal(true)}>
+        {Locale[AppSettings.interfaceLanguage].logout}
+      </Nav.Link>
       <PatternStatisticsModal
         open={statisticsModal}
         id={statisticsID}

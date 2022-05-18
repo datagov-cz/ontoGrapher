@@ -1,73 +1,60 @@
 import React, { useState } from "react";
-import {
-  Accordion,
-  Button,
-  Card,
-  Col,
-  Container,
-  Modal,
-  Row,
-  Table,
-} from "react-bootstrap";
-import {
-  AppSettings,
-  WorkspaceTerms,
-  WorkspaceVocabularies,
-} from "../../config/Variables";
+import { Button, Col, Container, Modal, Row, Table } from "react-bootstrap";
+import { AppSettings, WorkspaceTerms } from "../../config/Variables";
 import { Locale } from "../../config/Locale";
-import {
-  getLabelOrBlank,
-  getVocabularyFromScheme,
-} from "../../function/FunctionGetVars";
-import EditingPatternInternalView from "../structures/EditingPatternInternalView";
-import { Patterns, PatternUsage } from "../function/PatternTypes";
-import InstanceInternalView from "../structures/InstanceInternalView";
+import { getLabelOrBlank } from "../../function/FunctionGetVars";
+import { Instances, Patterns } from "../function/PatternTypes";
+import NewPatternInternalView from "../structures/NewPatternInternalView";
+import * as _ from "lodash";
 
 type Props = { open: boolean; close: Function; id: string };
 
 export const PatternStatisticsModal: React.FC<Props> = (props: Props) => {
-  const [loading, setLoading] = useState<boolean>(false);
-  const [statistics, setStatistics] = useState<typeof PatternUsage>({});
   const [selectPattern, setSelectPattern] = useState<string>("");
-  const refresh = () => {
-    setLoading(true);
-    setLoading(false);
-  };
-
-  const select = (pattern: string) => {
-    setSelectPattern(pattern);
-  };
 
   return (
     <Modal
       centered
+      scrollable
+      show={props.open}
       size={"xl"}
       dialogClassName={"patternModal"}
       onEntering={() => {
-        refresh();
-        if (props.id) select(props.id);
+        if (props.id) setSelectPattern(props.id);
       }}
     >
       <Modal.Header>
         <Modal.Title>Pattern usage statistics</Modal.Title>
       </Modal.Header>
       <Modal.Body>
-        <Container>
+        <Container style={{ minWidth: "95%" }}>
           <Row>
             <Col>
-              <Table size={"sm"} bordered striped>
-                {Object.keys(statistics).map((r) => (
+              <Table size={"sm"} borderless striped>
+                <thead>
                   <tr>
-                    <td>
-                      <Button
-                        className={"buttonlink"}
-                        onClick={() => select(r)}
-                      >
-                        {Patterns[r].title}
-                      </Button>
-                    </td>
+                    <th>Pattern list</th>
                   </tr>
-                ))}
+                </thead>
+                <tbody>
+                  {Object.keys(Patterns).map((r) => (
+                    <tr key={r}>
+                      <td>
+                        <Button
+                          className={"buttonlink"}
+                          onClick={() => setSelectPattern(r)}
+                        >
+                          {Patterns[r].title}
+                        </Button>
+                      </td>
+                    </tr>
+                  ))}
+                  {Object.keys(Patterns).length === 0 && (
+                    <tr>
+                      <td>No patterns found</td>
+                    </tr>
+                  )}
+                </tbody>
               </Table>
             </Col>
             <Col>
@@ -83,63 +70,40 @@ export const PatternStatisticsModal: React.FC<Props> = (props: Props) => {
                   <p>{Patterns[selectPattern].description}</p>
 
                   <h6>
-                    Number of instances of this pattern in all vocabularies
-                  </h6>
-                  {statistics[selectPattern].length}
-                  <h6>
                     Number of instances of this pattern in current vocabularies
                   </h6>
                   {
-                    statistics[selectPattern].filter(
-                      (u) => u.model === AppSettings.contextIRI
+                    Object.keys(Instances).filter(
+                      (instance) => Instances[instance].iri === selectPattern
                     ).length
                   }
                   <h6>List of instances in current vocabularies</h6>
-                  <Accordion>
-                    {statistics[selectPattern].map((instance, i) => (
-                      <Card>
-                        <Card.Header>
-                          <Accordion.Toggle
-                            as={Button}
-                            variant={"link"}
-                            eventKey={i.toString(10)}
-                          >
-                            {Object.values(instance.instance.terms)
-                              .map((t) => (
-                                <span
-                                  style={{
-                                    backgroundColor:
-                                      WorkspaceVocabularies[
-                                        getVocabularyFromScheme(
-                                          WorkspaceTerms[t].inScheme
-                                        )
-                                      ].color,
-                                  }}
-                                >
-                                  {getLabelOrBlank(
+                  <Table striped borderless>
+                    <thead></thead>
+                    <tbody>
+                      {Object.entries(Instances)
+                        .filter(
+                          ([iri, _]) => Instances[iri].iri === selectPattern
+                        )
+                        .map(([iri, instance]) => (
+                          <tr>
+                            <td>
+                              {_.flatten(Object.values(instance.terms))
+                                .flatMap((arr) => arr)
+                                .map((t) =>
+                                  getLabelOrBlank(
                                     WorkspaceTerms[t].labels,
                                     AppSettings.canvasLanguage
-                                  )}
-                                </span>
-                              ))
-                              .join(", ")}
-                          </Accordion.Toggle>
-                        </Card.Header>
-                        <Accordion.Collapse eventKey={i.toString(10)}>
-                          <Card.Body>
-                            <InstanceInternalView
-                              width={"100%"}
-                              height={"100%"}
-                              fitContent={true}
-                              terms={Object.values(instance.instance.terms)}
-                              conns={Object.values(instance.instance.conns)}
-                            />
-                          </Card.Body>
-                        </Accordion.Collapse>
-                      </Card>
-                    ))}
-                  </Accordion>
-                  <EditingPatternInternalView
+                                  )
+                                )
+                                .join(", ")}
+                            </td>
+                          </tr>
+                        ))}
+                    </tbody>
+                  </Table>
+                  <h5>Pattern internal structure</h5>
+                  <NewPatternInternalView
                     width={"100%"}
                     height={"500px"}
                     fitContent={true}
@@ -153,9 +117,6 @@ export const PatternStatisticsModal: React.FC<Props> = (props: Props) => {
         </Container>
       </Modal.Body>
       <Modal.Footer>
-        <Button onClick={() => refresh()} disabled={loading} variant="primary">
-          {Locale[AppSettings.interfaceLanguage].validationReload}
-        </Button>
         <Button
           onClick={() => {
             props.close();

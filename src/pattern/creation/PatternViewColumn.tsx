@@ -26,7 +26,7 @@ export type formElementData = {
   name: string;
   iri: string;
   types: string[];
-  parameter?: boolean;
+  parameter: string;
   create: boolean;
   value: { label: string; value: string };
   optional?: boolean;
@@ -57,6 +57,7 @@ type Props = {
     elements: { [key: string]: formElementData },
     connections: { [key: string]: formRelationshipData }
   ) => void;
+  validate: (val: boolean) => void;
 };
 
 export const PatternViewColumn: React.FC<Props> = (props: Props) => {
@@ -71,6 +72,60 @@ export const PatternViewColumn: React.FC<Props> = (props: Props) => {
     const copy = _.clone(patternElementFormData);
     copy[index] = data;
     setPatternElementFormData(copy);
+    validateForm(copy, patternRelationshipFormData);
+  };
+
+  const validateForm = (
+    elements: typeof patternElementFormData,
+    conns: typeof patternRelationshipFormData
+  ) => {
+    let ret = true;
+    for (const [t, term] of Object.entries(elements)) {
+      if (!elements[t].create && !elements[t].iri) {
+        ret = false;
+      }
+      if (
+        !elements[t].create &&
+        Object.keys(elements).find(
+          (elem) => elements[elem].iri === term.iri && t !== elem
+        )
+      ) {
+        ret = false;
+      }
+      if (!elements[t].name) {
+        ret = false;
+      }
+      if (
+        elements[t].create &&
+        checkExists(
+          WorkspaceVocabularies[elements[t].scheme].glossary,
+          elements[t].name
+        )
+      ) {
+        ret = false;
+      }
+    }
+    for (const [d, data] of Object.entries(conns)) {
+      if (
+        Object.keys(conns).find(
+          (rel) => conns[rel].name === data.name && rel !== d
+        )
+      ) {
+        ret = false;
+      }
+      if (!conns[d].name) {
+        ret = false;
+      }
+      if (
+        checkExists(
+          WorkspaceVocabularies[conns[d].scheme].glossary,
+          conns[d].name
+        )
+      ) {
+        ret = false;
+      }
+    }
+    props.validate(ret);
   };
 
   useEffect(() => {
@@ -80,84 +135,97 @@ export const PatternViewColumn: React.FC<Props> = (props: Props) => {
         patternElementFormData,
         patternRelationshipFormData
       );
-  }, [props.initSubmit]);
+  }, [
+    props,
+    detailPattern,
+    patternElementFormData,
+    patternRelationshipFormData,
+  ]);
 
   useEffect(() => {
     if (props.pattern) {
-      selectPattern(props.pattern);
+      const elementFormData: { [key: string]: formElementData } = {};
+      const internalConns = props.configuration
+        ? props.configuration.elements
+            .flatMap((e) => getActiveToConnections(e))
+            .filter((link) =>
+              props.configuration?.elements.includes(
+                WorkspaceLinks[link].target
+              )
+            )
+        : [];
+      for (const term in Patterns[props.pattern].terms) {
+        elementFormData[term] = {
+          ...Patterns[props.pattern].terms[term],
+          iri: props.configuration
+            ? term
+            : createNewElemIRI(
+                WorkspaceVocabularies[
+                  Object.keys(WorkspaceVocabularies).find(
+                    (vocab) => !WorkspaceVocabularies[vocab].readOnly
+                  )!
+                ].glossary,
+                Patterns[props.pattern].terms[term].name
+              ),
+          create: props.configuration ? !(term in WorkspaceTerms) : true,
+          parameter: term,
+          types: props.configuration
+            ? !(term in WorkspaceTerms)
+              ? Patterns[props.pattern].terms[term].types
+              : WorkspaceTerms[term].types
+            : Patterns[props.pattern].terms[term].types,
+          value:
+            term in WorkspaceTerms && props.configuration
+              ? {
+                  value: term,
+                  label: `🏷 ${getLabelOrBlank(
+                    WorkspaceTerms[term].labels,
+                    AppSettings.canvasLanguage
+                  )}`,
+                }
+              : { value: "", label: "" },
+          scheme: Object.keys(WorkspaceVocabularies).find(
+            (vocab) => !WorkspaceVocabularies[vocab].readOnly
+          )!,
+          optional: Patterns[props.pattern].terms[term].optional
+            ? Patterns[props.pattern].terms[term].optional
+            : undefined,
+          use: true,
+        };
+      }
+      setPatternElementFormData(elementFormData);
+      const relationshipFormData: { [key: string]: formRelationshipData } = {};
+      for (const conn in Patterns[props.pattern].conns) {
+        const existingConn = internalConns.find(
+          (c) =>
+            WorkspaceLinks[c].source ===
+              elementFormData[Patterns[props.pattern].conns[conn].from].iri &&
+            WorkspaceLinks[c].target ===
+              elementFormData[Patterns[props.pattern].conns[conn].to].iri
+        );
+        relationshipFormData[conn] = {
+          ...Patterns[props.pattern].conns[conn],
+          create: !existingConn,
+          scheme: Object.keys(WorkspaceVocabularies).find(
+            (vocab) => !WorkspaceVocabularies[vocab].readOnly
+          )!,
+          iri: existingConn
+            ? WorkspaceLinks[existingConn].iri
+            : createNewElemIRI(
+                WorkspaceVocabularies[
+                  Object.keys(WorkspaceVocabularies).find(
+                    (vocab) => !WorkspaceVocabularies[vocab].readOnly
+                  )!
+                ].glossary,
+                Patterns[props.pattern].conns[conn].name
+              ),
+          id: existingConn,
+        };
+      }
+      setPatternRelationshipFormData(relationshipFormData);
+      setDetailPattern(props.pattern);
     }
-  }, [props.pattern]);
-
-  const selectPattern = (pattern: string) => {
-    const elementFormData: { [key: string]: formElementData } = {};
-    const internalConns = getAvailableConnsFromSelection();
-    for (const term in Patterns[pattern].terms) {
-      elementFormData[term] = {
-        ...Patterns[pattern].terms[term],
-        iri: props.configuration
-          ? term
-          : createNewElemIRI(
-              WorkspaceVocabularies[
-                Object.keys(WorkspaceVocabularies).find(
-                  (vocab) => !WorkspaceVocabularies[vocab].readOnly
-                )!
-              ].glossary,
-              Patterns[pattern].terms[term].name
-            ),
-        create: props.configuration ? !(term in WorkspaceTerms) : true,
-        types: props.configuration
-          ? !(term in WorkspaceTerms)
-            ? Patterns[pattern].terms[term].types
-            : WorkspaceTerms[term].types
-          : Patterns[pattern].terms[term].types,
-        value:
-          term in WorkspaceTerms && props.configuration
-            ? {
-                value: term,
-                label: `🏷 ${getLabelOrBlank(
-                  WorkspaceTerms[term].labels,
-                  AppSettings.canvasLanguage
-                )}`,
-              }
-            : { value: "", label: "" },
-        scheme: Object.keys(WorkspaceVocabularies).find(
-          (vocab) => !WorkspaceVocabularies[vocab].readOnly
-        )!,
-        optional: Patterns[pattern].terms[term].optional
-          ? Patterns[pattern].terms[term].optional
-          : undefined,
-        use: true,
-      };
-    }
-    setPatternElementFormData(elementFormData);
-    const relationshipFormData: { [key: string]: formRelationshipData } = {};
-    for (const conn in Patterns[pattern].conns) {
-      const existingConn = internalConns.find(
-        (conn) =>
-          WorkspaceLinks[conn].source === Patterns[pattern].conns[conn].from &&
-          WorkspaceLinks[conn].target === Patterns[pattern].conns[conn].to
-      );
-      relationshipFormData[conn] = {
-        ...Patterns[pattern].conns[conn],
-        create: !existingConn,
-        scheme: Object.keys(WorkspaceVocabularies).find(
-          (vocab) => !WorkspaceVocabularies[vocab].readOnly
-        )!,
-        iri: createNewElemIRI(
-          WorkspaceVocabularies[
-            Object.keys(WorkspaceVocabularies).find(
-              (vocab) => !WorkspaceVocabularies[vocab].readOnly
-            )!
-          ].glossary,
-          Patterns[pattern].conns[conn].name
-        ),
-        id: existingConn,
-      };
-    }
-    setPatternRelationshipFormData(relationshipFormData);
-    setDetailPattern(pattern);
-    console.log(elementFormData, relationshipFormData);
-  };
+  }, [props.pattern, props.configuration]);
 
   const modifyRelationshipData: (
     index: string,
@@ -166,6 +234,7 @@ export const PatternViewColumn: React.FC<Props> = (props: Props) => {
     const copy = _.clone(patternRelationshipFormData);
     copy[index] = data;
     setPatternRelationshipFormData(copy);
+    validateForm(patternElementFormData, copy);
   };
 
   const addMultipleTermAndRelationships = (index: string) => {
@@ -216,22 +285,12 @@ export const PatternViewColumn: React.FC<Props> = (props: Props) => {
     }));
   };
 
-  const getAvailableConnsFromSelection = () => {
-    return props.configuration
-      ? props.configuration.elements
-          .flatMap((e) => getActiveToConnections(e))
-          .filter((link) =>
-            props.configuration?.elements.includes(WorkspaceLinks[link].target)
-          )
-      : [];
-  };
-
   const getTermsForView = () => {
     const t: {
       [key: string]: {
         name: string;
         types: string[];
-        parameter?: boolean;
+        parameter: string;
         optional?: boolean;
         multiple?: boolean;
       };
