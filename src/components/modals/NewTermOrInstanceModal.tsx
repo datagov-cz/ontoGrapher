@@ -25,7 +25,7 @@ import {
   createInstance,
   putInstanceOnCanvas,
 } from "../../pattern/function/FunctionPattern";
-import { Patterns } from "../../pattern/function/PatternTypes";
+import { Instances, Patterns } from "../../pattern/function/PatternTypes";
 
 interface Props {
   modal: boolean;
@@ -79,6 +79,7 @@ export const NewTermOrInstanceModal: React.FC<Props> = (props: Props) => {
       elements,
       connections
     );
+    console.log(Instances[instance], instance);
     if (AppSettings.patternView) putInstanceOnCanvas(instance);
     props.closeInstance(queries, instance);
   };
@@ -161,7 +162,7 @@ export const NewTermOrInstanceModal: React.FC<Props> = (props: Props) => {
             )}
           </Tab>
           {props.configuration.connections.length === 0 && (
-            <Tab eventKey={"1"} title={"Create instance"}>
+            <Tab eventKey={"1"} title={"Vytvořit instanci"}>
               <Container style={{ minWidth: "95%" }}>
                 <Row>
                   <Col>
@@ -169,7 +170,7 @@ export const NewTermOrInstanceModal: React.FC<Props> = (props: Props) => {
                       <Form.Control
                         size={"sm"}
                         type={"text"}
-                        placeholder={"Pattern title"}
+                        placeholder={"Název"}
                         value={filterName}
                         onChange={(event) =>
                           setFilterName(event.currentTarget.value)
@@ -178,7 +179,7 @@ export const NewTermOrInstanceModal: React.FC<Props> = (props: Props) => {
                       <Form.Control
                         size={"sm"}
                         type={"text"}
-                        placeholder={"Pattern author"}
+                        placeholder={"Autor"}
                         value={filterAuthor}
                         onChange={(event) =>
                           setFilterAuthor(event.currentTarget.value)
@@ -206,7 +207,7 @@ export const NewTermOrInstanceModal: React.FC<Props> = (props: Props) => {
                         ))}
                         {searchResults.length === 0 && (
                           <tr>
-                            <td>No patterns found</td>
+                            <td>Nenalezeny žádné šablony</td>
                           </tr>
                         )}
                       </tbody>

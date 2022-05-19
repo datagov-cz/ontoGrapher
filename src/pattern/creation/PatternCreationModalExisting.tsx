@@ -103,19 +103,19 @@ export const PatternCreationModalExisting: React.FC<Props> = (props: Props) => {
             <Form.Control
               size={"sm"}
               type={"text"}
-              placeholder={"Pattern title"}
+              placeholder={"Název"}
               value={filterName}
               onChange={(event) => setFilterName(event.currentTarget.value)}
             />
             <Form.Control
               size={"sm"}
               type={"text"}
-              placeholder={"Pattern author"}
+              placeholder={"Autor"}
               value={filterAuthor}
               onChange={(event) => setFilterAuthor(event.currentTarget.value)}
             />
             <Form.Check
-              label="Suggest only patterns that conform to selection"
+              label="Omezit na šablony, kterými lze vyplnit vybrané pojmy"
               checked={filterSuggest}
               onChange={(event) =>
                 setFilterSuggest(event.currentTarget.checked)
@@ -125,7 +125,7 @@ export const PatternCreationModalExisting: React.FC<Props> = (props: Props) => {
           <Table size={"sm"} borderless striped>
             <thead>
               <tr>
-                <th>Pattern list</th>
+                <th>Seznam šablon</th>
               </tr>
             </thead>
             <tbody>
@@ -154,7 +154,9 @@ export const PatternCreationModalExisting: React.FC<Props> = (props: Props) => {
             configuration={props.configuration}
             pattern={detailPattern}
             initSubmit={props.initSubmit}
-            submit={props.submit}
+            submit={(pattern, elements, connections) =>
+              props.submit(pattern, elements, connections)
+            }
             validate={props.validate}
           />
         </Col>

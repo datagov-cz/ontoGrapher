@@ -106,8 +106,10 @@ export const CreationModals: React.FC<Props> = (props) => {
         modal={modalAddElem}
         configuration={props.elemConfiguration}
         closeInstance={(queries, iri) => {
+          setModalAddElem(false);
           props.performTransaction(...queries);
           props.performInstanceTransaction(iri);
+          props.update();
         }}
         closeElem={(
           conceptName?: { [key: string]: string },

@@ -7,7 +7,7 @@ import { v4 } from "uuid";
 import { formElementData, formRelationshipData } from "./PatternViewColumn";
 import { PatternCreationConfiguration } from "../../components/modals/CreationModals";
 import { Locale } from "../../config/Locale";
-import { Pattern, Patterns } from "../function/PatternTypes";
+import { Instances, Pattern, Patterns } from "../function/PatternTypes";
 import {
   createInstance,
   putInstanceOnCanvas,
@@ -25,7 +25,7 @@ type Props = {
 
 export const PatternCreationModal: React.FC<Props> = (props: Props) => {
   const [disabled, setDisabled] = useState<boolean>(true);
-  const [submitLabel, setSubmitLabel] = useState<string>("Create pattern");
+  const [submitLabel, setSubmitLabel] = useState<string>("Vytvořit šablonu");
   const [tab, setTab] = useState<string>("instance");
   const [existingPattern, setExistingPattern] = useState<string>("");
   const [createInstanceFromNewPattern, setCreateInstanceFromNewPattern] =
@@ -35,10 +35,8 @@ export const PatternCreationModal: React.FC<Props> = (props: Props) => {
 
   const submitNew = (pattern: Pattern) => {
     setInitSubmitNew(false);
-    if (!pattern.title) return;
-    if (!Object.values(pattern.conns).every((c) => c.name)) return;
-    if (!Object.values(pattern.terms).every((c) => c.name)) return;
     const id = `${AppSettings.ontographerContext}/pattern/${v4()}`;
+    debugger;
     Patterns[id] = pattern;
     props.performPatternTransaction(id);
     if (createInstanceFromNewPattern) {
@@ -60,6 +58,7 @@ export const PatternCreationModal: React.FC<Props> = (props: Props) => {
       elements,
       connections
     );
+    console.log(Instances[instance], instance);
     if (AppSettings.patternView) putInstanceOnCanvas(instance);
     props.performTransaction(...queries);
     props.performInstanceTransaction(instance);
@@ -81,7 +80,7 @@ export const PatternCreationModal: React.FC<Props> = (props: Props) => {
       dialogClassName="patternModal"
     >
       <Modal.Header>
-        <Modal.Title>Create or apply pattern</Modal.Title>
+        <Modal.Title>Vytvořit šablonu nebo instanci</Modal.Title>
       </Modal.Header>
       <Modal.Body>
         <Tabs
@@ -90,13 +89,11 @@ export const PatternCreationModal: React.FC<Props> = (props: Props) => {
           onSelect={(eventKey) => {
             setTab(eventKey!);
             setSubmitLabel(
-              eventKey === "instance"
-                ? "Apply existing pattern"
-                : "Create new pattern"
+              eventKey === "instance" ? "Vytvořit instanci" : "Vytvořit šablonu"
             );
           }}
         >
-          <Tab eventKey={"pattern"} title={"Create new pattern"}>
+          <Tab eventKey={"pattern"} title={"Vytvořit šablonu"}>
             <PatternCreationModalNew
               configuration={props.configuration}
               submit={(pattern) => submitNew(pattern)}
@@ -104,12 +101,14 @@ export const PatternCreationModal: React.FC<Props> = (props: Props) => {
               validate={(val) => setDisabled(!val)}
             />
           </Tab>
-          <Tab eventKey={"instance"} title={"Apply existing pattern"}>
+          <Tab eventKey={"instance"} title={"Vytvořit instanci"}>
             <PatternCreationModalExisting
               configuration={props.configuration}
               pattern={existingPattern}
               initSubmit={initSubmitEx}
-              submit={submitExisting}
+              submit={(pattern, elements, connections) =>
+                submitExisting(pattern, elements, connections)
+              }
               validate={(val) => setDisabled(!val)}
             />
           </Tab>
@@ -124,7 +123,7 @@ export const PatternCreationModal: React.FC<Props> = (props: Props) => {
               onChange={(event) =>
                 setCreateInstanceFromNewPattern(event.currentTarget.checked)
               }
-              label={"Create an instance from this pattern"}
+              label={"Vytvořit instanci z této šablony"}
             />
             <Button
               type={"submit"}

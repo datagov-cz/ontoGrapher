@@ -24,7 +24,7 @@ export const PatternStatisticsModal: React.FC<Props> = (props: Props) => {
       }}
     >
       <Modal.Header>
-        <Modal.Title>Pattern usage statistics</Modal.Title>
+        <Modal.Title>Statistiky užití šablon</Modal.Title>
       </Modal.Header>
       <Modal.Body>
         <Container style={{ minWidth: "95%" }}>
@@ -33,7 +33,7 @@ export const PatternStatisticsModal: React.FC<Props> = (props: Props) => {
               <Table size={"sm"} borderless striped>
                 <thead>
                   <tr>
-                    <th>Pattern list</th>
+                    <th>Seznam šablon</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -51,7 +51,7 @@ export const PatternStatisticsModal: React.FC<Props> = (props: Props) => {
                   ))}
                   {Object.keys(Patterns).length === 0 && (
                     <tr>
-                      <td>No patterns found</td>
+                      <td>Nenalezeny žádné šablony</td>
                     </tr>
                   )}
                 </tbody>
@@ -60,24 +60,22 @@ export const PatternStatisticsModal: React.FC<Props> = (props: Props) => {
             <Col>
               {selectPattern && (
                 <div>
-                  <h6>Title</h6>
+                  <h6>Název</h6>
                   {Patterns[selectPattern].title}
-                  <h6>Author</h6>
+                  <h6>Autor</h6>
                   {Patterns[selectPattern].author}
-                  <h6>Creation date</h6>
+                  <h6>Datum vytvoření</h6>
                   {new Date(Patterns[selectPattern].date).toLocaleString()}
-                  <h6>Description</h6>
+                  <h6>Popis</h6>
                   <p>{Patterns[selectPattern].description}</p>
 
-                  <h6>
-                    Number of instances of this pattern in current vocabularies
-                  </h6>
+                  <h6>Počet instancí v tomto pracovním prostoru</h6>
                   {
                     Object.keys(Instances).filter(
                       (instance) => Instances[instance].iri === selectPattern
                     ).length
                   }
-                  <h6>List of instances in current vocabularies</h6>
+                  <h6>Seznam instancí v tomto pracovním prostoru</h6>
                   <Table striped borderless>
                     <thead></thead>
                     <tbody>
@@ -102,7 +100,7 @@ export const PatternStatisticsModal: React.FC<Props> = (props: Props) => {
                         ))}
                     </tbody>
                   </Table>
-                  <h5>Pattern internal structure</h5>
+                  <h5>Vnitřní struktura šablony</h5>
                   <NewPatternInternalView
                     width={"100%"}
                     height={"500px"}

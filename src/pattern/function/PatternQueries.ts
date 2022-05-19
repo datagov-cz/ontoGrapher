@@ -3,18 +3,10 @@ import { processQuery } from "../../interface/TransactionInterface";
 import { Environment } from "../../config/Environment";
 import { parsePrefix } from "../../function/FunctionEditVars";
 import { LinkType } from "../../config/Enum";
-import { AppSettings, WorkspaceTerms } from "../../config/Variables";
+import { AppSettings } from "../../config/Variables";
 import { INSERT } from "@tpluscode/sparql-builder";
 import { produceOttrInstance, produceOttrPattern } from "./FunctionPattern";
 import { qb } from "../../queries/QueryBuilder";
-
-export async function callSuggestionAlgorithm(
-  terms: string[]
-): Promise<string[]> {
-  const patterns: string[] = [];
-
-  return patterns;
-}
 
 export async function sendPattern(iri: string): Promise<boolean> {
   return await fetch(`${Environment.pattern}/update`, {
@@ -37,6 +29,7 @@ export async function retrievePatternAndInstanceData(): Promise<boolean> {
   Object.assign(Patterns, patterns);
   const instances = await retrieveInstances();
   Object.assign(Instances, instances);
+  console.log(patterns, instances);
   return true;
 }
 
@@ -71,9 +64,12 @@ export async function retrievePatterns(
     "?parameterList rdf:rest*/rdf:first ?parameter.",
     "optional {",
     "?parameter ottr:type ?type",
+    "filter(!isBlank(?type))",
     "}",
     "optional {",
-    "?parameter ottr:type ( ?multiple ?type)",
+    "?parameter ottr:type ?multipleList.",
+    "?multipleList rdf:rest*/rdf:first ?multipleType.",
+    "filter(?multipleType not in (ottr:NEList))",
     "}",
     "?parameter ottr:variable ?variable.",
     "optional {?parameter ottr:modifier ?optional}",
@@ -106,10 +102,13 @@ export async function retrievePatterns(
         patterns[iri].author = result.creator.value;
         patterns[iri].date = result.creationDate.value;
         if (!(iri in parameters)) parameters[iri] = {};
+        const type = result.type
+          ? result.type.value
+          : result.multipleType.value;
         parameters[iri][result.variable.value] = {
-          type: result.type.value,
+          type: type === parsePrefix("ottr", "IRI") ? "" : type,
           optional: !!result.optional,
-          multiple: !!result.multiple,
+          multiple: !!result.multipleList,
         };
         if (!(iri in internalPatterns)) internalPatterns[iri] = [];
         internalPatterns[iri].push({
@@ -182,7 +181,7 @@ export async function retrievePatterns(
       if (triple.p === parsePrefix("og", "tc")) {
         conns[pattern][triple.s].targetCardinality = triple.o;
       }
-      if (triple.p === parsePrefix("og", "type")) {
+      if (triple.p === parsePrefix("og", "linkType")) {
         conns[pattern][triple.s].linkType = parseInt(triple.o, 10);
       }
       if (triple.p === parsePrefix("og", "to")) {
@@ -203,9 +202,10 @@ export async function retrievePatterns(
 export async function retrieveInstances(
   iris?: string[]
 ): Promise<typeof Instances> {
+  debugger;
   const instances: typeof Instances = {};
   const query1 = [
-    "select distinct ?instance ?pattern ?context ?x ?y ?name where {",
+    "select ?instance ?pattern ?context ?x ?y ?name where {",
     "?instance ottr:of ?pattern.",
     "?instance og:context ?context.",
     "?instance og:position-x ?x.",
@@ -246,12 +246,12 @@ export async function retrieveInstances(
             !(result.name.value in instances[result.instance.value].conns) &&
             result.name.value in Patterns[result.pattern.value].conns
           )
-            instances[result.instance.value].conns[result.name.value] = "";
+            instances[result.instance.value].conns[result.name.value] = [];
         }
       }
     });
   const query2 = [
-    "select distinct ?instance ?pattern ?context ?x ?y ?valueMember where {",
+    "select distinct ?instance ?valueMember where {",
     "?instance ottr:values ?value.",
     "optional {?value rdf:rest*/rdf:first ?valueMember}",
     "values ?instance {<" + Object.keys(instances).join("> <") + ">}",
@@ -262,7 +262,7 @@ export async function retrieveInstances(
     .then((r) => r.json())
     .then((data) => {
       for (const result of data.results.bindings) {
-        if (result.valueMember && result.valueMember.value in WorkspaceTerms) {
+        if (result.valueMember) {
           things[result.instance.value].push(result.valueMember.value);
         }
       }
@@ -281,7 +281,7 @@ export async function retrieveInstances(
       if (name in Patterns[instances[instance].iri].terms)
         instances[instance].terms[name].push(thing);
       if (name in Patterns[instances[instance].iri].conns)
-        instances[instance].conns[name] = thing;
+        instances[instance].conns[name].push(thing);
     }
   }
   return instances;

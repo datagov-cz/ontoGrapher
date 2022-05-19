@@ -8,24 +8,192 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
           integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
           crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="tutorial.css" />
 </head>
 <body>
 <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
   <symbol id="check-circle-fill" fill="currentColor" viewBox="0 0 16 16">
-    <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
+    <path
+      d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z" />
   </symbol>
   <symbol id="info-fill" fill="currentColor" viewBox="0 0 16 16">
-    <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"/>
+    <path
+      d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2z" />
   </symbol>
   <symbol id="exclamation-triangle-fill" fill="currentColor" viewBox="0 0 16 16">
-    <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>
+    <path
+      d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z" />
   </symbol>
 </svg>
 <h1>Testování verze Ontographeru se šablonami</h1>
-<p>Vítejte na stránce popisující testování verze Ontographeru implementující šablony. Tento dokument Vás informuje o
-  podstatě implementace, poté Vás provede základním testovacím scénářem, a na konci Vás poprosíme o vyplnění formuláře,
+<p>Vítejte na stránce popisující testování verze Ontographeru implementující šablony! Mockrát děkuji, že jste si na
+  testování udělali čas.</p>
+<p>Tento dokument Vás informuje o
+  podstatě testování, poté Vás provede základním scénářem a na konci Vás poprosíme o vyplnění formuláře,
   který se Vás zeptá na vaše dojmy.</p>
 
-<a href="https://forms.gle/EefCq7BA6DxwY73p9">Odkaz na formulář</a>
+Měli byste mít odkaz, který Vás dostane do Ontographeru s Vaším přiděleným pracovním prostorem. V tomto pracovním
+prostoru si můžete dělat co chcete, aniž byste ovlivnili prostředí ostatních dobrovolníků.
+
+<h3>Šablony</h3>
+V této verzi Ontographer pracuje s novým konceptem: šablony. Implementace definuje šablonu jako "formičku" pro soubor
+pojmů a vztahů mezi nimi. Vyplnění této formy se vytvoří <i>instance</i> šablony - soubor již realizované pojmy a vztahy
+podle dané šablony. Příkladem může být šablona pro Auto a instance šablony auta je pak nějaké konkrétní auto s
+konkrétním VIN kódem (vztah je tedy podobný, jako mezi třídami a objekty). Podrobnosti tvoření a organizace šablon a
+instancí si vyzkoušíte přes scénář.
+<h3>Scénář</h3>
+<div class="alert alert-warning" role="alert">
+  Tato implementace je zaměřena pouze na práci se šablonami a instancemi. Dosavadní funkce Ontographeru mohou být
+  nestabilní. Pokud narazíte na problém, který Vám zabrání v pokračování ve scénáři, založte problém <a
+  href="https://github.com/opendata-mvcr/ontoGrapher/issues/new?assignees=bindeali&labels=pattern&template=bug-report-pro-verzi-se--ablonami.md&title=">na
+  stránce projektu
+  Ontographer se štítkem "pattern"</a>.
+</div>
+<div class="alert alert-warning" role="alert">
+  Vaše testovací prostředí <i>není</i> propojeno s databázemi SSP. Hledání mimo pracovní prostor je tak nefunkční.
+</div>
+Po otevření pracovního prostoru se pustíme do vytvoření první šablony. Pro tento krok je třeba nejdříve multiselekcí
+vybrat ty pojmy (respektive typy pojmů), které chcete, aby se v nové šabloně objevily.
+<div class="alert alert-info" role="alert">
+  Výběr více pojmů najednou se provádí buď:
+  <ul>
+    <li>Podržením klávesy Shift a přetažením levým tlačítkem myši přes pojmy, které chcete vybrat.</li>
+    <li>Podržením klávesy Ctrl a kliknutím levým tlačítkem myši na jednotlivé pojmy, které chcete vybrat.</li>
+  </ul>
+  Vybraným pojmům se zabarví okraje namodro.
+</div>
+V našem případě vybereme pojmy <b>Opravář</b>, <b>Vozidlo</b> a <b>Objekt práva</b>. Nyní na prázdné místo na plátně
+klikneme pravým tlačítkem myši, jako bychom chtěli vytvořit nový pojem. Výsledný dialog je ale jiný:
+<!--pic-->
+Tento dialog nabízí dvě možnosti: buď vytvoření instance, nebo šablony. Protentokrát chceme vytvořit šablonu, tak
+klikneme na kartu Vytvořit novou šablonu.
+<!--pic-->
+V této sekci uvidíte dva sloupce: Vlevo se upravuje detail šablony, zatímco napravo vidíte vizualizaci vnitřní struktury
+šablony a formulář pro základní údaje pro šablonu. Všimneme si, že námi vybrané pojmy a jejich interní vztahy jsou již
+automaticky vyplněny.
+<div class="alert alert-info" role="alert">
+  V každé takové vizualizaci se dá posouvat plátnem levým tlačítkem myši a přibližovat/oddalovat kolečkem myši.
+</div>
+<!--pic-->
+Vlevo se detaily dělí na parametry (pojmy) a vztahy. Parametry mají následující pole:
+<ul>
+  <li><b>Název:</b> název parametru. Nyní se zde objevil název vybraného pojmu, ale názvem se zde myslí krátký slovní
+    popis toho, jaká má být povaha pojmu, která by k tomuto parametru měla patřit. <b>Názvem se tedy nemyslí název
+      konkrétního pojmu.</b> Například parametr, který by měl být zaplněn konkrétními pojmy jako třeba Snoubenec,
+    Družička, Fotograf by se mohl jmenovat "Účastník svatby".
+  </li>
+  <li><b>Typ:</b> Stereotyp, který by měl daný pojem mít. Můžete si vybrat jeden nebo žádný. V praxi to znamená, že by
+    daný pojem měl být <i>alespoň</i> tento typ, nebo v případě žádného typu není žádný stereotyp vynucován.
+  </li>
+  <li><b>Volitelný?:</b> Je povinné tento parametr vyplnit?</li>
+  <li><b>Multiplicita?:</b> Může být tento parametr vyplněn více pojmy? Užitečné pro např. specializace, kde nechceme
+    omezit jejich počet.
+  </li>
+  <li><b>Akce:</b> Dostupné akce pro tento parametr. V tomto poli se nachází tlačítko Odstranit.</li>
+</ul>
+Vztahy mají následující pole:
+<ul>
+  <li><b>Název:</b> název vztahu. I tady se názvem nemyslí konkrétní vztah; stejně jako u parametrů toto pole slouží pro
+    popisek indikující, co takovýto vztah reprezentuje.
+  </li>
+  <li><b>Detail vztahu:</b> Reprezentace vztahu ve dvou řádcích. Prvky jsou zleva zezhora:
+    <ul>
+      <li>zdroj vztahu, tj. od kterého pojmu vztah míří,</li>
+      <li>kardinalita u zdroje,</li>
+      <li>"Konec šipky" - trojúhelník, kde se po kliknutí vztah změní na klasický pojem nebo generalizaci,</li>
+      <li>kardinalita u cíle,</li>
+      <li>cíl.</li>
+    </ul>
+  </li>
+  <li><b>Akce:</b> Dostupné akce pro tento vztah. V tomto poli se nachází tlačítko Odstranit.</li>
+</ul>
+Ve vztazích i parametrech se na konci tabulky nachází tlačítko, kterým je možné přidat další.
+
+<p>My chceme vytvořit šablonu pro obecný vztah, kdy Někdo má nějakou interakci s Něčím, což je specializací Něčeho. V
+  tomto příkladě máme Opraváře, který opravuje Vozidlo, což je jeden z Objektů práva. Pro zobecnění šablony můžeme tak
+  pojmenovat parametry a vztahy jako Agent, Objekt, Typ objektu a "interaguje s".
+  <!--pic-->
+
+<p>Je možné, že Agent bude interagovat s více věcmi, proto pro Objekt zapneme multiplicitu.
+
+<p>Tuto šablonu je pak nutné pojmenovat, ale případně můžeme přidat i autora a nějaký popis šablony (zde můžeme napsat
+  např. příklady užití, vysvětlivky, apod.).
+  <!--pic-->
+
+<p>Šablonu máme popsanou, ale my navíc k vytvoření této šablony chceme, aby se naše vybrané pojmy staly rovnou instancí
+  této šablony. Pro to slouží zaškrtávací pole dole v dialogu "Vytvořit instanci pro tuto šablonu". Tím se, pokud
+  klikneme na tlačítko Vytvořit šablonu, dostaneme rovnou zpátky do druhé karty, kterou jsme na začátku viděli jako
+  první, ale teď s předvyplněnou šablonou a detaily.
+  <!--pic-->
+
+<p>Zde jsou dva sloupce trochu jiné: vlevo je vyhledávání známých šablon, zatímco vlevo se po vybrání dané šablony ukáže
+  formulář (i s vizuální reprezentací) pro vytvoření instance. Šablony se mohou hledat podle názvu či autora, ale také
+  můžete omezit výsledky na pouze ty šablony, do kterých se "vejdou" Vámi vybrané pojmy.
+
+<p>Položka s parametrem vypadá následovně:
+<ul>
+  <li>Název parametru</li>
+  <li>Buď:
+    <ul>
+      <li>Výběr již existujícího pojmu. Značka 🏷 znamená, že tento pojem je ve Vašem výběru.</li>
+      <li>Dvě pole pro 1) název a 2) slovník pojmu, který se s instancí vytvoří jako nový. Platí tu stejná pravidla,
+        jako
+        při běžném vytváření pojmů v Ontographeru: název nesmí být prázdný a nemůže být stejný, jako název jiného pojmu
+        ve
+        stejném slovníku.
+      </li>
+    </ul>
+  </li>
+  <li>Vytvořit nový?: Určuje podobu výše zmíněné části formuláře - tj. Má být pojem pro tento parametr vybrán z již
+    existujících pojmů, nebo se má vytvořit úplně nový?
+  </li>
+  <li>Akce: Pokud je parametr volitelný nebo multiplicitní, v této kolonce se objeví příslušná tlačítka:
+    <ul>
+      <li>Vyloučit/zahrnout: Má se tento volitelný pojem vyloučit nebo zahrnout do instance?</li>
+      <li>Klonovat: Vytvořit kopii konfigurace tohoto parametru, aby do jednoho parametru patřilo více pojmů.</li>
+      <li>Odstranit: Odstranit kopii pro parametr.</li>
+    </ul>
+  </li>
+</ul>
+<p>Položka se vztahem pak takto:
+<ul>
+  <li>Vztah: název vztahového parametru</li>
+  <li>Pole pro určení vztahu. V případě, že se najde vhodný již existující vztah ve vašem výběru, se toto pole zašedí s
+    ikonou 🏷. Na tuto ikonu se dá kliknout, kde se změní na ✏ a poté můžete vložit název a slovník pro daný vztah.
+    Takový vztah se pak vytvoří pro šablonu.
+  </li>
+  <li>Detail vztahu: Znázornění vztahu s kardinalitami, zdrojem a cílem.</li>
+</ul>
+Při kliknutí na tlačítko "Vytvořit instanci" se instance vytvoří a dialog zmizí.
+<div class="alert alert-primary" role="alert">
+  Zkuste si teď vytvořit další instanci Vámi vytvořené šablony, která vyjádří, že Řidič řídí Motorové vozidlo nebo
+  Nemotorové vozidlo, což jsou příklady Vozidla.
+</div>
+<!--pic-->
+Určitě jste si všimli, že přestože se na plátně vytvořily nové pojmy a vztahy, tak nejsou tolik "vidět" samotné
+instance, které jsme právě tvořili. Na to si ukážeme dvě přídavné funkce.
+
+První způsob se objeví, když na hlavním panelu kliknete na "Statistiky užití šablon". Zde byste znova měli vidět podobný
+dialog, jako předtím, ale při kliknutí na šablonu se místo formulářů objeví 1) základní detaily o šabloně, 2) seznam
+instancí, a 3) vizuální reprezentace šablony (stejná jako při samotné tvorbě).
+
+<p>Druhý, a více vizuální, způsob se skrývá v tlačítku "Zapnout reprezentace instancí". Tímto tlačítkem se na plátně
+  pojmy v instancích nahradí samotnými instancemi. Na místě, kde se v kompaktním pohledu typicky ukazují vlastnosti, se
+  nyní ukazují názvy parametrů a jejich pojmy. Název samotné "krabičky" koresponduje s názvem šablony, jež je touto
+  instancí instanciována.
+  <!--pic-->
+<p>Pokud jsou některé pojmy sdíleny mezi instancemi (v našem případě je to Objekt práva), tak se mezi těmito instancemi
+  vytvoří spojení podle daného pojmu.
+  <!--pic-->
+<p>Při kliknutí na instanci se zobrazí panel detailu šablony, v němž můžete zjistit základní informace, vnitřní
+  strukturu, či statistiky užití.
+<h3>Závěr</h3>
+<p>Tato implementace se jenom lehce dotýká potenciálu, který by její rozšíření mohlo naplnit. Ráda bych se tak dozvěděla
+  nejen vaše přímé dojmy ze scénáře, ale také cestu, kterou byste rádi viděli Ontographer se šablonami následovat.
+
+<div class="centerButton"><a style="margin-top: 10px" type="button" class="btn btn-primary"
+                             href="https://forms.gle/EefCq7BA6DxwY73p9">Odkaz na
+  formulář</a></div>
+Děkuji mockrát za Vaši spolupráci.
 </body>
 </html>

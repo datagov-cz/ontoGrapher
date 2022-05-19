@@ -79,7 +79,6 @@ export const PatternAlgorithmModal: React.FC<Props> = (props: Props) => {
   };
 
   const callAlgo2: () => Algo2Results[] = () => {
-    debugger;
     const ret: Algo2Results[] = [];
     console.log("Creating graph");
     const graph: joint.dia.Graph = new joint.dia.Graph();

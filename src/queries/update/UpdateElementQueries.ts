@@ -12,6 +12,7 @@ import {
   getWorkspaceContextIRI,
 } from "../../function/FunctionGetVars";
 import { initLanguageObject } from "../../function/FunctionEditVars";
+import _ from "lodash";
 
 export function updateProjectElement(del: boolean, ...iris: string[]): string {
   const data: { [key: string]: string[] } = { [getWorkspaceContextIRI()]: [] };
@@ -75,7 +76,7 @@ export function updateProjectElement(del: boolean, ...iris: string[]): string {
 
     if (del)
       data[vocab].push(
-        qb.s(qb.i(iri), "rdf:type", qb.a(types), types.length > 0),
+        qb.s(qb.i(iri), "rdf:type", qb.a(_.compact(types)), types.length > 0),
         qb.s(qb.i(iri), "skos:prefLabel", qb.a(labels), labels.length > 0),
         qb.s(qb.i(iri), "skos:altLabel", qb.a(altLabels), altLabels.length > 0),
         qb.s(qb.i(iri), "dc:title", qb.a(names), names.length > 0),

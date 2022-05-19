@@ -55,6 +55,7 @@ import {
   sendInstance,
   sendPattern,
 } from "../pattern/function/PatternQueries";
+import { callCriticalAlert } from "../config/CriticalAlertData";
 
 interface DiagramAppProps {}
 
@@ -189,33 +190,33 @@ export default class App extends React.Component<
       Locale[AppSettings.interfaceLanguage].workspaceReady,
       false
     );
-    // callCriticalAlert({
-    //   acceptFunction: () => {},
-    //   waitForFunctionBeforeModalClose: false,
-    //   acceptLabel: "",
-    //   modalSize: undefined,
-    //   innerContent: (
-    //     <div>
-    //       <p>
-    //         Vítejte ve verzi OntoGrapheru vytvořené pro testování implementace
-    //         šablon (Ontology Design Pattern)! Mockrát děkuji, že jste si pro
-    //         test udělali čas - mělo by vám to zabrat kolem patnácti minut. Pro
-    //         návod, testovací scénář a formulář pro záznam zpětné vazby prosím
-    //         navštivte <a href={"./testing.html"}>stránku pro testování</a>.
-    //       </p>
-    //       <p>
-    //         Ráda bych poprosila, abyste zpětnou vazbu odeslali do 20. května
-    //         (pátek) ve 20:00. Pokud při vašem testování naleznete fatální chybu, která vám
-    //         zabraňuje pokračovat, nahlaste ji prosím přes žluté tlačítko vpravo
-    //         nahoře (Report an issue/Nahlásit chybu). V této verzi vás toto
-    //         tlačítko přesměruje na speciální issue šablonu sepsanou pro tuto
-    //         verzi - jakoukoliv komunikaci kolem issue budu provádět na stránce
-    //         issue.
-    //       </p>
-    //       <span className={"right"}>- Alice B.</span>
-    //     </div>
-    //   ),
-    // });
+    callCriticalAlert({
+      acceptFunction: () => {},
+      waitForFunctionBeforeModalClose: false,
+      acceptLabel: "",
+      modalSize: undefined,
+      innerContent: (
+        <div>
+          <p>
+            Vítejte ve verzi OntoGrapheru vytvořené pro testování implementace
+            šablon (Ontology Design Pattern)! Mockrát děkuji, že jste si pro
+            test udělali čas - mělo by vám to zabrat kolem patnácti minut. Pro
+            návod, testovací scénář a formulář pro záznam zpětné vazby prosím
+            navštivte <a href={"./testing.html"}>stránku pro testování</a>.
+          </p>
+          <p>
+            Ráda bych poprosila, abyste zpětnou vazbu odeslali do 20. května
+            (pátek) ve 20:00. Pokud při vašem testování naleznete fatální chybu,
+            která vám zabraňuje pokračovat, nahlaste ji prosím přes žluté
+            tlačítko vpravo nahoře (Report an issue/Nahlásit chybu). V této
+            verzi vás toto tlačítko přesměruje na speciální issue šablonu
+            sepsanou pro tuto verzi - jakoukoliv komunikaci kolem issue budu
+            provádět na stránce issue.
+          </p>
+          <span className={"right"}>- Alice B.</span>
+        </div>
+      ),
+    });
     return true;
   }
 

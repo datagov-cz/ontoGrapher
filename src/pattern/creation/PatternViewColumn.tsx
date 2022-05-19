@@ -8,10 +8,7 @@ import {
   WorkspaceTerms,
   WorkspaceVocabularies,
 } from "../../config/Variables";
-import {
-  getActiveToConnections,
-  getLabelOrBlank,
-} from "../../function/FunctionGetVars";
+import { getLabelOrBlank } from "../../function/FunctionGetVars";
 import { Badge, Button, Form, Table } from "react-bootstrap";
 import { getName } from "../../function/FunctionEditVars";
 import EditingPatternInternalView from "../structures/EditingPatternInternalView";
@@ -47,6 +44,7 @@ export type formRelationshipData = {
   create: boolean;
   id?: string;
   multipleSource?: string;
+  parameter: string;
 };
 type Props = {
   configuration?: PatternCreationConfiguration;
@@ -107,6 +105,7 @@ export const PatternViewColumn: React.FC<Props> = (props: Props) => {
     }
     for (const [d, data] of Object.entries(conns)) {
       if (
+        data.linkType !== LinkType.GENERALIZATION &&
         Object.keys(conns).find(
           (rel) => conns[rel].name === data.name && rel !== d
         )
@@ -117,6 +116,7 @@ export const PatternViewColumn: React.FC<Props> = (props: Props) => {
         ret = false;
       }
       if (
+        data.linkType !== LinkType.GENERALIZATION &&
         checkExists(
           WorkspaceVocabularies[conns[d].scheme].glossary,
           conns[d].name
@@ -129,12 +129,16 @@ export const PatternViewColumn: React.FC<Props> = (props: Props) => {
   };
 
   useEffect(() => {
-    if (props.initSubmit)
+    if (props.initSubmit) {
       props.submit(
         detailPattern,
         patternElementFormData,
         patternRelationshipFormData
       );
+      setDetailPattern("");
+      setPatternElementFormData({});
+      setPatternRelationshipFormData({});
+    }
   }, [
     props,
     detailPattern,
@@ -145,28 +149,21 @@ export const PatternViewColumn: React.FC<Props> = (props: Props) => {
   useEffect(() => {
     if (props.pattern) {
       const elementFormData: { [key: string]: formElementData } = {};
-      const internalConns = props.configuration
-        ? props.configuration.elements
-            .flatMap((e) => getActiveToConnections(e))
-            .filter((link) =>
-              props.configuration?.elements.includes(
-                WorkspaceLinks[link].target
-              )
-            )
-        : [];
       for (const term in Patterns[props.pattern].terms) {
+        const iri = createNewElemIRI(
+          WorkspaceVocabularies[
+            Object.keys(WorkspaceVocabularies).find(
+              (vocab) => !WorkspaceVocabularies[vocab].readOnly
+            )!
+          ].glossary,
+          Patterns[props.pattern].terms[term].name
+        );
         elementFormData[term] = {
           ...Patterns[props.pattern].terms[term],
-          iri: props.configuration
-            ? term
-            : createNewElemIRI(
-                WorkspaceVocabularies[
-                  Object.keys(WorkspaceVocabularies).find(
-                    (vocab) => !WorkspaceVocabularies[vocab].readOnly
-                  )!
-                ].glossary,
-                Patterns[props.pattern].terms[term].name
-              ),
+          iri:
+            props.configuration && Patterns[props.pattern].terms[term].iri
+              ? Patterns[props.pattern].terms[term].iri!
+              : iri,
           create: props.configuration ? !(term in WorkspaceTerms) : true,
           parameter: term,
           types: props.configuration
@@ -196,30 +193,29 @@ export const PatternViewColumn: React.FC<Props> = (props: Props) => {
       setPatternElementFormData(elementFormData);
       const relationshipFormData: { [key: string]: formRelationshipData } = {};
       for (const conn in Patterns[props.pattern].conns) {
-        const existingConn = internalConns.find(
-          (c) =>
-            WorkspaceLinks[c].source ===
-              elementFormData[Patterns[props.pattern].conns[conn].from].iri &&
-            WorkspaceLinks[c].target ===
-              elementFormData[Patterns[props.pattern].conns[conn].to].iri
-        );
         relationshipFormData[conn] = {
           ...Patterns[props.pattern].conns[conn],
-          create: !existingConn,
+          parameter: conn,
+          create:
+            !Patterns[props.pattern].conns[conn].id ||
+            Patterns[props.pattern].conns[conn].linkType ===
+              LinkType.GENERALIZATION,
           scheme: Object.keys(WorkspaceVocabularies).find(
             (vocab) => !WorkspaceVocabularies[vocab].readOnly
           )!,
-          iri: existingConn
-            ? WorkspaceLinks[existingConn].iri
-            : createNewElemIRI(
-                WorkspaceVocabularies[
-                  Object.keys(WorkspaceVocabularies).find(
-                    (vocab) => !WorkspaceVocabularies[vocab].readOnly
-                  )!
-                ].glossary,
-                Patterns[props.pattern].conns[conn].name
-              ),
-          id: existingConn,
+          iri:
+            Patterns[props.pattern].conns[conn].id &&
+            Patterns[props.pattern].conns[conn].linkType === LinkType.DEFAULT
+              ? WorkspaceLinks[Patterns[props.pattern].conns[conn].id!].iri
+              : createNewElemIRI(
+                  WorkspaceVocabularies[
+                    Object.keys(WorkspaceVocabularies).find(
+                      (vocab) => !WorkspaceVocabularies[vocab].readOnly
+                    )!
+                  ].glossary,
+                  Patterns[props.pattern].conns[conn].name
+                ),
+          id: Patterns[props.pattern].conns[conn].id,
         };
       }
       setPatternRelationshipFormData(relationshipFormData);
@@ -262,6 +258,7 @@ export const PatternViewColumn: React.FC<Props> = (props: Props) => {
         newID += "+";
       }
       relObject[newID] = {
+        parameter: patternRelationshipFormData[r].parameter,
         name: patternRelationshipFormData[r].name,
         from: relDirectionObject[r]
           ? newIDparam
@@ -346,14 +343,14 @@ export const PatternViewColumn: React.FC<Props> = (props: Props) => {
             conns={patternRelationshipFormData}
           />
           <br />
-          <h5>Set parameters</h5>
+          <h5>Parametry</h5>
           <Table size="sm" borderless striped>
             <thead>
               <tr>
-                <th colSpan={2}>Parameter</th>
-                <th>Create new?</th>
-                <th>Type</th>
-                <th style={{ minWidth: "80px" }}>Actions</th>
+                <th colSpan={2}>Parametr</th>
+                <th>Vytvořit nový?</th>
+                <th>Typ</th>
+                <th style={{ minWidth: "80px" }}>Akce</th>
               </tr>
             </thead>
             <tbody>
@@ -459,7 +456,7 @@ export const PatternViewColumn: React.FC<Props> = (props: Props) => {
                       )}
                       {!patternElementFormData[t].create &&
                         !patternElementFormData[t].iri && (
-                          <p className={"red"}>Please input a term.</p>
+                          <p className={"red"}>Prosíme, vložte pojem.</p>
                         )}
                       {!patternElementFormData[t].create &&
                         Object.keys(patternElementFormData).find(
@@ -468,11 +465,12 @@ export const PatternViewColumn: React.FC<Props> = (props: Props) => {
                             t !== elem
                         ) && (
                           <p className={"red"}>
-                            This term is already taken by another parameter.
+                            Tento název musí být unikátní vzhledem k ostatním
+                            parametrům.
                           </p>
                         )}
                       {!patternElementFormData[t].name && (
-                        <p className={"red"}>Please input a name.</p>
+                        <p className={"red"}>Parametr musí mít název.</p>
                       )}
                       {patternElementFormData[t].create &&
                         checkExists(
@@ -482,7 +480,7 @@ export const PatternViewColumn: React.FC<Props> = (props: Props) => {
                           patternElementFormData[t].name
                         ) && (
                           <p className={"red"}>
-                            This name is already taken for this vocabulary.
+                            Tento název již v tomto slovníku existuje.
                           </p>
                         )}
                     </td>
@@ -561,10 +559,10 @@ export const PatternViewColumn: React.FC<Props> = (props: Props) => {
                           }
                           variant={"info"}
                         >
-                          {`Optional - ${
+                          {`Volitelné - ${
                             patternElementFormData[t].optional
-                              ? "Exclude"
-                              : "Include"
+                              ? "Vyloučit"
+                              : "Zahrnout"
                           }`}
                         </Button>
                       )}
@@ -578,7 +576,7 @@ export const PatternViewColumn: React.FC<Props> = (props: Props) => {
                             onClick={() => addMultipleTermAndRelationships(t)}
                             variant={"secondary"}
                           >
-                            Cloneable - Clone
+                            Kopírovatelné - Vytvořit kopii
                           </Button>
                         )}
                       {!!patternElementFormData[t].multipleSource && (
@@ -589,7 +587,7 @@ export const PatternViewColumn: React.FC<Props> = (props: Props) => {
                           }
                           variant={"danger"}
                         >
-                          Clone - Remove
+                          Kopie - Odstranit
                         </Button>
                       )}
                     </td>
@@ -597,12 +595,12 @@ export const PatternViewColumn: React.FC<Props> = (props: Props) => {
                 ))}
             </tbody>
           </Table>
-          <h5>Set relationships</h5>
+          <h5>Vztahy</h5>
           <Table size={"sm"} striped borderless>
             <thead>
               <tr>
-                <th colSpan={2}>Relationship</th>
-                <th colSpan={5}>Relationship detail</th>
+                <th colSpan={2}>Vztah</th>
+                <th colSpan={5}>Detail</th>
               </tr>
             </thead>
             <tbody>
@@ -647,8 +645,8 @@ export const PatternViewColumn: React.FC<Props> = (props: Props) => {
                           rel !== d
                       ) && (
                         <p className={"red"}>
-                          This relationship name is already taken by another
-                          parameter.
+                          Tento název musí být unikátní vzhledem k ostatním
+                          vztahům.
                         </p>
                       )}
                       {patternRelationshipFormData[d].create &&
@@ -712,7 +710,9 @@ export const PatternViewColumn: React.FC<Props> = (props: Props) => {
                                 ))}
                             </Form.Control>
                             {!patternRelationshipFormData[d].name && (
-                              <p className={"red"}>Please input a name.</p>
+                              <p className={"red"}>
+                                Tento vztah musí mít název.
+                              </p>
                             )}
                             {checkExists(
                               WorkspaceVocabularies[
@@ -721,7 +721,7 @@ export const PatternViewColumn: React.FC<Props> = (props: Props) => {
                               patternRelationshipFormData[d].name
                             ) && (
                               <p className={"red"}>
-                                This name is already taken for this vocabulary.
+                                Tento název již v tomto slovníku existuje.
                               </p>
                             )}
                           </div>
@@ -795,7 +795,7 @@ export const PatternViewColumn: React.FC<Props> = (props: Props) => {
           </Table>
         </div>
       )}
-      {!(detailPattern in Patterns) && <h3>No pattern selected</h3>}
+      {!(detailPattern in Patterns) && <h3>Nevybrána žádná šablona</h3>}
     </div>
   );
 };

@@ -339,7 +339,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
        */
       "blank:pointermove": function (evt, x, y) {
         const { ox, oy, rect } = evt.data;
-        if (evt.button === 0 && evt.shiftKey) {
+        if (evt.button === 0 && evt.shiftKey && ox && oy && rect) {
           const bbox = new joint.g.Rect(
             ox,
             oy,

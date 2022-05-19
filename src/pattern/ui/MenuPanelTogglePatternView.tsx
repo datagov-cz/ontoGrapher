@@ -1,9 +1,21 @@
 import React from "react";
 import { Nav } from "react-bootstrap";
-import { AppSettings } from "../../config/Variables";
+import {
+  AppSettings,
+  Diagrams,
+  WorkspaceElements,
+} from "../../config/Variables";
 import { Instances } from "../function/PatternTypes";
-import { putInstanceOnCanvas } from "../function/FunctionPattern";
+import { togglePatternView } from "../function/FunctionPattern";
 import { graph } from "../../graph/Graph";
+import { isElementHidden } from "../../function/FunctionElem";
+import { graphElement } from "../../graph/GraphElement";
+import { drawGraphElement } from "../../function/FunctionDraw";
+import { Representation } from "../../config/Enum";
+import {
+  restoreHiddenElem,
+  setRepresentation,
+} from "../../function/FunctionGraph";
 
 interface Props {
   update: Function;
@@ -32,9 +44,33 @@ export default class MenuPanelTogglePatternView extends React.Component<
       graph.removeCells(
         graph.getCells().filter((cell) => cell.id in Instances)
       );
+      for (const id in WorkspaceElements) {
+        if (
+          !isElementHidden(id, AppSettings.selectedDiagram) &&
+          WorkspaceElements[id].position[AppSettings.selectedDiagram] &&
+          WorkspaceElements[id].active &&
+          !graph.getElements().find((elem) => elem.id === id)
+        ) {
+          const cls = new graphElement({ id: id });
+          cls.position(
+            WorkspaceElements[id].position[AppSettings.selectedDiagram].x,
+            WorkspaceElements[id].position[AppSettings.selectedDiagram].y
+          );
+          cls.addTo(graph);
+          drawGraphElement(
+            cls,
+            AppSettings.canvasLanguage,
+            Representation.FULL
+          );
+          restoreHiddenElem(id, cls, true, false, false);
+        }
+      }
+      setRepresentation(
+        Diagrams[AppSettings.selectedDiagram].representation,
+        false
+      );
     } else {
-      for (const instance of Object.keys(Instances))
-        putInstanceOnCanvas(instance);
+      togglePatternView();
     }
     this.props.close();
     this.props.update();
@@ -45,7 +81,9 @@ export default class MenuPanelTogglePatternView extends React.Component<
     return (
       <div className={"inert"}>
         <Nav.Link onClick={() => this.switch()}>
-          {AppSettings.patternView ? "Turn off" : "Turn on"}
+          {AppSettings.patternView
+            ? "Vypnout reprezentace instancí"
+            : "Zapnout reprezentace instancí"}
         </Nav.Link>
       </div>
     );

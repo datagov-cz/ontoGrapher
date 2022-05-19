@@ -21,10 +21,6 @@ import { Locale } from "../config/Locale";
 import { en } from "../locale/en";
 import { LocalStorageVars } from "../config/LocalStorageVars";
 
-export function getVocabElementByElementID(id: string): { [key: string]: any } {
-  return WorkspaceTerms[id];
-}
-
 export function getLinkOrVocabElem(iri: string): { [key: string]: any } {
   return iri in Links ? Links[iri] : WorkspaceTerms[iri];
 }
@@ -40,10 +36,6 @@ export function getLabelOrBlank(
   return labels[language] && labels[language].length > 0
     ? labels[language]
     : "<blank>";
-}
-
-export function getNameOrBlank(name: string) {
-  return name ? name : "<blank>";
 }
 
 export function checkLabels() {
@@ -82,29 +74,6 @@ export function getExpressionByRepresentation(
   return Locale[language][expressions[representation]];
 }
 
-export function isConnectionWithTrope(link: string, id: string): boolean {
-  if (
-    WorkspaceLinks[link].iri === parsePrefix("z-sgov-pojem", "má-vlastnost") &&
-    WorkspaceLinks[link].source === id &&
-    WorkspaceLinks[link].active &&
-    !WorkspaceElements[WorkspaceLinks[link].target].hidden[
-      AppSettings.selectedDiagram
-    ]
-  ) {
-    return true;
-  } else if (
-    WorkspaceLinks[link].iri === parsePrefix("z-sgov-pojem", "je-vlastností") &&
-    WorkspaceLinks[link].target === id &&
-    WorkspaceLinks[link].active &&
-    !WorkspaceElements[WorkspaceLinks[link].source].hidden[
-      AppSettings.selectedDiagram
-    ]
-  ) {
-    return true;
-  }
-  return false;
-}
-
 export function getNewLink(type?: number, id?: string): joint.dia.Link {
   let link = new joint.shapes.standard.Link({ id: id });
   if (type && type in LinkConfig) {
@@ -138,9 +107,11 @@ export function loadDefaultCardinality() {
 }
 
 export function getElementShape(id: string | number): string {
-  const types = WorkspaceTerms[id].types;
-  for (const type in Shapes) {
-    if (types.includes(type)) return Shapes[type].body;
+  if (id in WorkspaceTerms) {
+    const types = WorkspaceTerms[id].types;
+    for (const type in Shapes) {
+      if (types.includes(type)) return Shapes[type].body;
+    }
   }
   return Shapes["default"].body;
 }

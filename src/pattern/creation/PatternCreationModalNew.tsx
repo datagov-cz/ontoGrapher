@@ -42,6 +42,7 @@ export type newPatternRelationship = {
     targetCardinality: string;
     linkType: LinkType;
     active: boolean;
+    id?: string;
   };
 };
 
@@ -76,6 +77,15 @@ export const PatternCreationModalNew: React.FC<Props> = (props: Props) => {
     return t;
   };
 
+  const getConnsForGraph = () => {
+    const c: typeof newPatternRelationshipData = {};
+    for (const param in newPatternRelationshipData) {
+      if (!newPatternRelationshipData[param].active) continue;
+      c[param] = newPatternRelationshipData[param];
+    }
+    return c;
+  };
+
   const validateForm = (
     title: string,
     params: newPatternParameter,
@@ -86,7 +96,15 @@ export const PatternCreationModalNew: React.FC<Props> = (props: Props) => {
       if (!params[t].name) {
         ret = false;
       }
+      if (
+        Object.keys(params).find(
+          (param) => params[param].name === params[t].name && param !== t
+        )
+      ) {
+        ret = false;
+      }
     }
+
     for (const d of Object.keys(conns)) {
       if (!conns[d].name) {
         ret = false;
@@ -105,6 +123,7 @@ export const PatternCreationModalNew: React.FC<Props> = (props: Props) => {
           parameter?: boolean;
           optional?: boolean;
           multiple?: boolean;
+          iri?: string;
         };
       } = {};
       const c: {
@@ -115,6 +134,7 @@ export const PatternCreationModalNew: React.FC<Props> = (props: Props) => {
           sourceCardinality: string;
           targetCardinality: string;
           linkType: LinkType;
+          id?: string;
         };
       } = {};
       props.configuration.elements.forEach((e) => {
@@ -134,6 +154,7 @@ export const PatternCreationModalNew: React.FC<Props> = (props: Props) => {
           parameter: true,
           optional: newPatternParameterData[param].optional,
           multiple: newPatternParameterData[param].multiple,
+          iri: newPatternParameterData[param].iri,
         };
       }
       for (const param in newPatternRelationshipData) {
@@ -146,6 +167,7 @@ export const PatternCreationModalNew: React.FC<Props> = (props: Props) => {
           targetCardinality:
             newPatternRelationshipData[param].targetCardinality,
           linkType: newPatternRelationshipData[param].linkType,
+          id: newPatternRelationshipData[param].id,
         };
       }
       props.submit({
@@ -164,8 +186,10 @@ export const PatternCreationModalNew: React.FC<Props> = (props: Props) => {
     const rels = Object.keys(WorkspaceLinks).filter(
       (l) =>
         props.configuration.elements.includes(WorkspaceLinks[l].source) &&
+        props.configuration.elements.includes(WorkspaceLinks[l].target) &&
         WorkspaceLinks[l].active &&
-        WorkspaceLinks[l].iri in WorkspaceTerms
+        (WorkspaceLinks[l].iri in WorkspaceTerms ||
+          WorkspaceLinks[l].type === LinkType.GENERALIZATION)
     );
     // create parameters
     const parameters: newPatternParameter = {};
@@ -183,26 +207,26 @@ export const PatternCreationModalNew: React.FC<Props> = (props: Props) => {
         iri: elem,
       };
     });
-    rels
-      .filter(
-        (l) => !props.configuration.elements.includes(WorkspaceLinks[l].target)
-      )
-      .forEach((l) => {
-        if (!(WorkspaceLinks[l].target in parameters)) {
-          const term = WorkspaceTerms[WorkspaceLinks[l].target];
-          parameters[WorkspaceLinks[l].target] = {
-            name: getLabelOrBlank(term.labels, AppSettings.canvasLanguage),
-            types: [
-              WorkspaceTerms[WorkspaceLinks[l].target].types.find(
-                (t) => t in Stereotypes
-              )!,
-            ],
-            optional: true,
-            multiple: false,
-            active: true,
-          };
-        }
-      });
+    // rels
+    //   .filter(
+    //     (l) => !props.configuration.elements.includes(WorkspaceLinks[l].target)
+    //   )
+    //   .forEach((l) => {
+    //     if (!(WorkspaceLinks[l].target in parameters)) {
+    //       const term = WorkspaceTerms[WorkspaceLinks[l].target];
+    //       parameters[WorkspaceLinks[l].target] = {
+    //         name: getLabelOrBlank(term.labels, AppSettings.canvasLanguage),
+    //         types: [
+    //           WorkspaceTerms[WorkspaceLinks[l].target].types.find(
+    //             (t) => t in Stereotypes
+    //           )!,
+    //         ],
+    //         optional: true,
+    //         multiple: false,
+    //         active: true,
+    //       };
+    //     }
+    //   });
     // create relationships
     rels.forEach((r) => {
       const sc = CardinalityPool.findIndex(
@@ -212,16 +236,20 @@ export const PatternCreationModalNew: React.FC<Props> = (props: Props) => {
         (c) => c.getString() === WorkspaceLinks[r].targetCardinality.getString()
       ).toString(10);
       relationships[r] = {
-        name: getLabelOrBlank(
-          WorkspaceTerms[WorkspaceLinks[r].iri].labels,
-          AppSettings.canvasLanguage
-        ),
+        name:
+          WorkspaceLinks[r].type === LinkType.DEFAULT
+            ? getLabelOrBlank(
+                WorkspaceTerms[WorkspaceLinks[r].iri].labels,
+                AppSettings.canvasLanguage
+              )
+            : "generalizace",
         from: WorkspaceLinks[r].source,
         to: WorkspaceLinks[r].target,
         sourceCardinality: sc === "-1" ? "0" : sc,
         targetCardinality: tc === "-1" ? "0" : tc,
         linkType: WorkspaceLinks[r].type,
         active: true,
+        id: r,
       };
     });
     // init info
@@ -270,11 +298,11 @@ export const PatternCreationModalNew: React.FC<Props> = (props: Props) => {
           <Table size={"sm"} borderless={true} striped={true}>
             <thead>
               <tr>
-                <th>Name</th>
-                <th>Type</th>
-                <th style={{ wordBreak: "keep-all" }}>Optional</th>
-                <th style={{ wordBreak: "keep-all" }}>Multiple</th>
-                <th style={{ minWidth: "80px" }}>Actions</th>
+                <th>Název</th>
+                <th>Typ</th>
+                <th style={{ wordBreak: "keep-all" }}>Volitelný?</th>
+                <th style={{ wordBreak: "keep-all" }}>Multiplicita?</th>
+                <th style={{ minWidth: "80px" }}>Akce</th>
               </tr>
             </thead>
             <tbody>
@@ -287,7 +315,7 @@ export const PatternCreationModalNew: React.FC<Props> = (props: Props) => {
                         <Form.Control
                           size={"sm"}
                           type={"text"}
-                          placeholder={"Parameter name"}
+                          placeholder={"Název parametru"}
                           value={newPatternParameterData[data].name}
                           onChange={(event) =>
                             modifyPatternData(data, {
@@ -297,7 +325,17 @@ export const PatternCreationModalNew: React.FC<Props> = (props: Props) => {
                           }
                         />
                         {!newPatternParameterData[data].name && (
-                          <p className={"red"}>Please choose a name.</p>
+                          <p className={"red"}>Parametr musí mít název.</p>
+                        )}
+                        {Object.keys(newPatternParameterData).find(
+                          (param) =>
+                            newPatternParameterData[param].name ===
+                              newPatternParameterData[data].name &&
+                            param !== data
+                        ) && (
+                          <p className={"red"}>
+                            Názvy parametrů musí být unikátní.
+                          </p>
                         )}
                       </td>
                       <td>
@@ -313,7 +351,7 @@ export const PatternCreationModalNew: React.FC<Props> = (props: Props) => {
                           as="select"
                         >
                           <option key={""} value={""}>
-                            No type
+                            Žádný typ
                           </option>
                           {Object.keys(Stereotypes)
                             .filter(
@@ -366,7 +404,7 @@ export const PatternCreationModalNew: React.FC<Props> = (props: Props) => {
                           }
                           variant={"danger"}
                         >
-                          {"Remove"}
+                          Odstranit
                         </Button>
                       </td>
                     </tr>
@@ -386,19 +424,19 @@ export const PatternCreationModalNew: React.FC<Props> = (props: Props) => {
                       })
                     }
                   >
-                    Add parameter
+                    Přidat parametr
                   </Button>
                 </td>
               </tr>
             </tbody>
           </Table>
-          <h5>Relationships</h5>
+          <h5>Vztahy</h5>
           <Table size={"sm"} borderless={true} striped={true}>
             <thead>
               <tr>
-                <th>Name</th>
-                <th>Relationship detail</th>
-                <th>Actions</th>
+                <th>Název</th>
+                <th>Detail vztahu</th>
+                <th>Akce</th>
               </tr>
             </thead>
             <tbody>
@@ -420,7 +458,7 @@ export const PatternCreationModalNew: React.FC<Props> = (props: Props) => {
                         value={newPatternRelationshipData[data].name}
                       />
                       {!newPatternRelationshipData[data].name && (
-                        <p className={"red"}>Please choose a name.</p>
+                        <p className={"red"}>Šablona musí mít název.</p>
                       )}
                     </td>
                     <td key={key++}>
@@ -571,7 +609,7 @@ export const PatternCreationModalNew: React.FC<Props> = (props: Props) => {
                         }
                         variant={"danger"}
                       >
-                        Remove
+                        Odstranit
                       </Button>
                     </td>
                   </tr>
@@ -594,7 +632,7 @@ export const PatternCreationModalNew: React.FC<Props> = (props: Props) => {
                       setNewPatternRelationshipData(copy);
                     }}
                   >
-                    Add relationship
+                    Přidat vztah
                   </Button>
                 </td>
               </tr>
@@ -608,11 +646,11 @@ export const PatternCreationModalNew: React.FC<Props> = (props: Props) => {
             height={"500px"}
             fitContent={true}
             terms={getTermsForGraph()}
-            conns={newPatternRelationshipData}
+            conns={getConnsForGraph()}
           />
-          <h5 style={{ paddingTop: "5px" }}>Pattern information</h5>
+          <h5 style={{ paddingTop: "5px" }}>Informace o šabloně</h5>
           <Form.Group controlId="formTitle">
-            <Form.Label>Title*</Form.Label>
+            <Form.Label>Název*</Form.Label>
             <Form.Control
               value={newPatternData.name}
               onChange={(event) => {
@@ -629,11 +667,11 @@ export const PatternCreationModalNew: React.FC<Props> = (props: Props) => {
               type="text"
             />
             {!newPatternData.name && (
-              <p className={"red"}>Please choose a title.</p>
+              <p className={"red"}>Šablona musí mít název.</p>
             )}
           </Form.Group>
           <Form.Group controlId="formAuthor">
-            <Form.Label>Author</Form.Label>
+            <Form.Label>Autor</Form.Label>
             <Form.Control
               value={newPatternData.author}
               onChange={(event) =>
@@ -646,7 +684,7 @@ export const PatternCreationModalNew: React.FC<Props> = (props: Props) => {
             />
           </Form.Group>
           <Form.Group controlId="formDescription">
-            <Form.Label>Description</Form.Label>
+            <Form.Label>Popis</Form.Label>
             <Form.Control
               value={newPatternData.description}
               onChange={(event) =>

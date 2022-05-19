@@ -118,6 +118,7 @@ export function createNewConcept(
     WorkspaceVocabularies[vocabulary].glossary,
     name[language]
   );
+  console.log(iri);
   const p = paper.clientToLocalPoint(point);
   addVocabularyElement(iri, WorkspaceVocabularies[vocabulary].glossary, [
     parsePrefix("skos", "Concept"),

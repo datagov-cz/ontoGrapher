@@ -4,7 +4,6 @@ import { Locale } from "../../../config/Locale";
 import { AppSettings } from "../../../config/Variables";
 import MenuPanelSwitchColors from "../settings/MenuPanelSwitchColors";
 import MenuPanelSwitchStereotypes from "../settings/MenuPanelSwitchStereotypes";
-import { MenuPanelChangeLanguage } from "../settings/MenuPanelChangeLanguage";
 import { MenuPanelChangeDefaultCardinality } from "../settings/MenuPanelChangeDefaultCardinality";
 
 interface Props {
@@ -30,16 +29,16 @@ export default class MenuPanelSettings extends React.Component<Props, State> {
             update={() => this.props.update()}
             performTransaction={this.props.performTransaction}
           />
-          <MenuPanelChangeLanguage
-            handleChangeLanguage={this.props.handleChangeLanguage}
-            title={"setCanvasLanguage"}
-            languageType={"canvasLanguage"}
-          />
-          <MenuPanelChangeLanguage
-            handleChangeLanguage={this.props.handleChangeInterfaceLanguage}
-            title={"setInterfaceLanguage"}
-            languageType={"interfaceLanguage"}
-          />
+          {/*<MenuPanelChangeLanguage*/}
+          {/*  handleChangeLanguage={this.props.handleChangeLanguage}*/}
+          {/*  title={"setCanvasLanguage"}*/}
+          {/*  languageType={"canvasLanguage"}*/}
+          {/*/>*/}
+          {/*<MenuPanelChangeLanguage*/}
+          {/*  handleChangeLanguage={this.props.handleChangeInterfaceLanguage}*/}
+          {/*  title={"setInterfaceLanguage"}*/}
+          {/*  languageType={"interfaceLanguage"}*/}
+          {/*/>*/}
           <MenuPanelChangeDefaultCardinality
             cardinality={"defaultCardinalitySource"}
           />
