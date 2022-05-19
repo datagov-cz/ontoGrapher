@@ -64,17 +64,16 @@ vybrat ty pojmy (respektive typy pojmů), které chcete, aby se v nové šablon�
 </div>
 V našem případě vybereme pojmy <b>Opravář</b>, <b>Vozidlo</b> a <b>Objekt práva</b>. Nyní na prázdné místo na plátně
 klikneme pravým tlačítkem myši, jako bychom chtěli vytvořit nový pojem. Výsledný dialog je ale jiný:
-<!--pic-->
+<img src="2022-05-19%2023-28-21.mkv_snapshot_00.03.419.png" />
 Tento dialog nabízí dvě možnosti: buď vytvoření instance, nebo šablony. Protentokrát chceme vytvořit šablonu, tak
-klikneme na kartu Vytvořit novou šablonu.
-<!--pic-->
+klikneme na kartu Vytvořit šablonu.
+<img src="2022-05-19%2023-28-21.mkv_snapshot_00.04.466.png" />
 V této sekci uvidíte dva sloupce: Vlevo se upravuje detail šablony, zatímco napravo vidíte vizualizaci vnitřní struktury
 šablony a formulář pro základní údaje pro šablonu. Všimneme si, že námi vybrané pojmy a jejich interní vztahy jsou již
 automaticky vyplněny.
 <div class="alert alert-info" role="alert">
   V každé takové vizualizaci se dá posouvat plátnem levým tlačítkem myši a přibližovat/oddalovat kolečkem myši.
 </div>
-<!--pic-->
 Vlevo se detaily dělí na parametry (pojmy) a vztahy. Parametry mají následující pole:
 <ul>
   <li><b>Název:</b> název parametru. Nyní se zde objevil název vybraného pojmu, ale názvem se zde myslí krátký slovní
@@ -112,19 +111,20 @@ Ve vztazích i parametrech se na konci tabulky nachází tlačítko, kterým je 
 <p>My chceme vytvořit šablonu pro obecný vztah, kdy Někdo má nějakou interakci s Něčím, což je specializací Něčeho. V
   tomto příkladě máme Opraváře, který opravuje Vozidlo, což je jeden z Objektů práva. Pro zobecnění šablony můžeme tak
   pojmenovat parametry a vztahy jako Agent, Objekt, Typ objektu a "interaguje s".
-  <!--pic-->
+
+  <img src="2022-05-19%2023-28-21.mkv_snapshot_00.26.223.png" />
 
 <p>Je možné, že Agent bude interagovat s více věcmi, proto pro Objekt zapneme multiplicitu.
 
 <p>Tuto šablonu je pak nutné pojmenovat, ale případně můžeme přidat i autora a nějaký popis šablony (zde můžeme napsat
   např. příklady užití, vysvětlivky, apod.).
-  <!--pic-->
+  <img src="2022-05-19%2023-28-21.mkv_snapshot_00.28.430.png" />
 
 <p>Šablonu máme popsanou, ale my navíc k vytvoření této šablony chceme, aby se naše vybrané pojmy staly rovnou instancí
   této šablony. Pro to slouží zaškrtávací pole dole v dialogu "Vytvořit instanci pro tuto šablonu". Tím se, pokud
   klikneme na tlačítko Vytvořit šablonu, dostaneme rovnou zpátky do druhé karty, kterou jsme na začátku viděli jako
   první, ale teď s předvyplněnou šablonou a detaily.
-  <!--pic-->
+
 
 <p>Zde jsou dva sloupce trochu jiné: vlevo je vyhledávání známých šablon, zatímco vlevo se po vybrání dané šablony ukáže
   formulář (i s vizuální reprezentací) pro vytvoření instance. Šablony se mohou hledat podle názvu či autora, ale také
@@ -167,9 +167,10 @@ Ve vztazích i parametrech se na konci tabulky nachází tlačítko, kterým je 
 Při kliknutí na tlačítko "Vytvořit instanci" se instance vytvoří a dialog zmizí.
 <div class="alert alert-primary" role="alert">
   Zkuste si teď vytvořit další instanci Vámi vytvořené šablony, která vyjádří, že Řidič řídí Motorové vozidlo nebo
-  Nemotorové vozidlo, což jsou příklady Vozidla.
+  Tramvaj, což jsou příklady Vozidla.
 </div>
-<!--pic-->
+<img src="2022-05-19%2023-28-21.mkv_snapshot_01.28.734.png"/>
+<img src="2022-05-19%2023-28-21.mkv_snapshot_01.31.540.png"/>
 Určitě jste si všimli, že přestože se na plátně vytvořily nové pojmy a vztahy, tak nejsou tolik "vidět" samotné
 instance, které jsme právě tvořili. Na to si ukážeme dvě přídavné funkce.
 
@@ -181,12 +182,14 @@ instancí, a 3) vizuální reprezentace šablony (stejná jako při samotné tvo
   pojmy v instancích nahradí samotnými instancemi. Na místě, kde se v kompaktním pohledu typicky ukazují vlastnosti, se
   nyní ukazují názvy parametrů a jejich pojmy. Název samotné "krabičky" koresponduje s názvem šablony, jež je touto
   instancí instanciována.
-  <!--pic-->
+<img src="2022-05-19%2023-28-21.mkv_snapshot_01.44.031.png"/>
 <p>Pokud jsou některé pojmy sdíleny mezi instancemi (v našem případě je to Objekt práva), tak se mezi těmito instancemi
-  vytvoří spojení podle daného pojmu.
-  <!--pic-->
-<p>Při kliknutí na instanci se zobrazí panel detailu šablony, v němž můžete zjistit základní informace, vnitřní
+  vytvoří spojení podle daného pojmu. Při kliknutí na instanci se zobrazí panel detailu šablony, v němž můžete zjistit
+  základní informace, vnitřní
   strukturu, či statistiky užití.
+<div class="alert alert-info" role="alert">
+  Pokud se chcete podívat na průchod scénáře ve video formě, <a href="https://youtu.be/aoDCmZ0oV_g">zde</a> je nahrávka.
+</div>
 <h3>Závěr</h3>
 <p>Tato implementace se jenom lehce dotýká potenciálu, který by její rozšíření mohlo naplnit. Ráda bych se tak dozvěděla
   nejen vaše přímé dojmy ze scénáře, ale také cestu, kterou byste rádi viděli Ontographer se šablonami následovat.
