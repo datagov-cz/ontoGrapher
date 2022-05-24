@@ -1,13 +1,14 @@
 import { AppSettings } from "../../config/Variables";
 import { qb } from "../QueryBuilder";
 import { initElements, parsePrefix } from "../../function/FunctionEditVars";
-import { getWorkspaceContextIRI } from "../../function/FunctionGetVars";
 import { processQuery } from "../../interface/TransactionInterface";
 import { updateWorkspaceContext } from "./UpdateMiscQueries";
 import { updateProjectElement } from "./UpdateElementQueries";
 
 export async function reconstructApplicationContextWithDiagrams(): Promise<string> {
   const linkPredicates = [
+    parsePrefix("a-popis-dat-pojem", "odkazuje-na-assetový-kontext"),
+    parsePrefix("a-popis-dat-pojem", "odkazuje-na-přílohový-kontext"),
     parsePrefix(
       "d-sgov-pracovní-prostor-pojem",
       "odkazuje-na-assetový-kontext"
@@ -51,7 +52,7 @@ export async function reconstructApplicationContextWithDiagrams(): Promise<strin
     });
   if (diagramIRIs) {
     const transferQuery = diagramIRIs.map(
-      (iri) => `add <${iri}> to <${getWorkspaceContextIRI()}>`
+      (iri) => `add <${iri}> to <${AppSettings.applicationContext}>`
     ).join(`;
     `);
     return qb.combineQueries(

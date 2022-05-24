@@ -8,7 +8,6 @@ import {
   WorkspaceVocabularies,
 } from "../../config/Variables";
 import { processQuery } from "../../interface/TransactionInterface";
-import { getWorkspaceContextIRI } from "../../function/FunctionGetVars";
 import { ContextLoadingStrategy, LinkType } from "../../config/Enum";
 import { Cardinality } from "../../datatypes/Cardinality";
 import {
@@ -36,7 +35,7 @@ export async function getElementsConfig(
     "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
     "PREFIX skos: <http://www.w3.org/2004/02/skos/core#> ",
     "select ?elem ?scheme ?active ?name ?vocabulary where {",
-    "graph <" + getWorkspaceContextIRI() + "> {",
+    "graph <" + AppSettings.applicationContext + "> {",
     "?elem a og:element .",
     "?elem og:active ?active .",
     "optional {?elem og:name ?name.}",
@@ -89,12 +88,16 @@ export async function getElementsConfig(
       "?diagram og:id ?diagramID.",
       "?diagram og:representation ?representation .",
       "}",
-      `${qb.i(AppSettings.contextIRI)} ${qb.i(
+      `${qb.i(
+        AppSettings.contextIRI
+      )} ?linksToAttachmentContextPredicate ?graph .`,
+      `VALUES ?linksToAttachmentContextPredicate {<${[
+        parsePrefix("a-popis-dat-pojem", "odkazuje-na-přílohový-kontext"),
         parsePrefix(
           "d-sgov-pracovní-prostor-pojem",
-          `odkazuje-na-přílohový-kontext`
-        )
-      )} ?graph.`,
+          "odkazuje-na-přílohový-kontext"
+        ),
+      ].join("> <")}>}`,
       "}",
     ].join(`
     `);
@@ -167,35 +170,38 @@ export async function getSettings(
 ): Promise<ContextLoadingStrategy | undefined> {
   const query = [
     "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
-    "select ?graph ?diagram ?index ?name ?color ?id ?representation ?context ?legacyContext where {",
+    "select distinct ?ogContext ?graph ?diagram ?index ?name ?color ?id ?representation ?context ?legacyContext where {",
     "BIND(<" + AppSettings.contextIRI + "> as ?metaContext).",
-    "BIND(<" + getWorkspaceContextIRI() + "> as ?ogContext).",
     "OPTIONAL {",
     "graph ?metaContext {",
-    `?metaContext ${qb.i(
+    `?metaContext ?linksToAttachmentContextPredicate ?graph .`,
+    `VALUES ?linksToAttachmentContextPredicate {<${[
+      parsePrefix("a-popis-dat-pojem", "odkazuje-na-přílohový-kontext"),
       parsePrefix(
         "d-sgov-pracovní-prostor-pojem",
-        `odkazuje-na-přílohový-kontext`
-      )
-    )} ?graph .`,
-    "}",
+        "odkazuje-na-přílohový-kontext"
+      ),
+    ].join("> <")}>}`,
+    `optional { ?metaContext ?hasApplicationContextPredicate ?ogContext .`,
+    `VALUES ?hasApplicationContextPredicate {<${[
+      parsePrefix("a-popis-dat-pojem", "odkazuje-na-kontext"),
+      parsePrefix("d-sgov-pracovní-prostor-pojem", "odkazuje-na-kontext"),
+    ].join("> <")}>}}}`,
     "graph ?graph {",
     "?diagram og:index ?index .",
     "?diagram og:name ?name .",
     "?diagram og:id ?id .",
     "?diagram og:representation ?representation .",
     "}",
-    "}",
-    "OPTIONAL {",
+    "OPTIONAL { GRAPH ?ogContext {",
     "?ogContext og:viewColor ?color .",
     "?ogContext og:contextVersion ?context .",
-    "}",
     "OPTIONAL {",
     `<${
       AppSettings.ontographerContext +
       AppSettings.contextIRI.substring(AppSettings.contextIRI.lastIndexOf("/"))
     }> og:contextVersion ?legacyContext.`,
-    "}} order by asc(?index)",
+    "}}}}} order by asc(?index)",
   ].join(`
   `);
   return await processQuery(contextEndpoint, query)
@@ -225,6 +231,7 @@ export async function getSettings(
           if (result.context) {
             AppSettings.viewColorPool = result.color.value;
             AppSettings.contextVersion = parseInt(result.context.value, 10);
+            AppSettings.applicationContext = result.ogContext.value;
           } else {
             reconstructWorkspace = true;
           }
@@ -252,7 +259,7 @@ export async function getLinksConfig(
   const query = [
     "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
     "select ?id ?iri ?sourceID ?targetID ?active ?sourceCard1 ?sourceCard2 ?targetCard1 ?targetCard2 ?type ?link where {",
-    "graph <" + getWorkspaceContextIRI() + "> {",
+    "graph <" + AppSettings.applicationContext + "> {",
     "?link a og:link .",
     "?link og:id ?id .",
     "?link og:iri ?iri .",
@@ -334,11 +341,13 @@ export async function getLinksConfig(
         "d-sgov-pracovní-prostor-pojem",
         "odkazuje-na-přílohový-kontext"
       ),
+      parsePrefix("a-popis-dat-pojem", "odkazuje-na-assetový-kontext"),
+      parsePrefix("a-popis-dat-pojem", "odkazuje-na-přílohový-kontext"),
     ];
     const diagramContextQuery = [
       "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
       "select ?graph ?vertex ?diagram ?diagramID ?index ?posX ?posY ?id ?iri where {",
-      "graph <" + getWorkspaceContextIRI() + "> {",
+      "graph <" + AppSettings.applicationContext + "> {",
       "?link a og:link.",
       "?link og:iri ?iri.",
       "}",

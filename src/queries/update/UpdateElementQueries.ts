@@ -1,4 +1,5 @@
 import {
+  AppSettings,
   Diagrams,
   Languages,
   WorkspaceElements,
@@ -7,14 +8,13 @@ import {
 } from "../../config/Variables";
 import { qb } from "../QueryBuilder";
 import { DELETE, INSERT } from "@tpluscode/sparql-builder";
-import {
-  getVocabularyFromScheme,
-  getWorkspaceContextIRI,
-} from "../../function/FunctionGetVars";
+import { getVocabularyFromScheme } from "../../function/FunctionGetVars";
 import { initLanguageObject } from "../../function/FunctionEditVars";
 
 export function updateProjectElement(del: boolean, ...iris: string[]): string {
-  const data: { [key: string]: string[] } = { [getWorkspaceContextIRI()]: [] };
+  const data: { [key: string]: string[] } = {
+    [AppSettings.applicationContext]: [],
+  };
   const deletes: string[] = [];
   const inserts: string[] = [];
   if (iris.length === 0) return "";
@@ -54,7 +54,7 @@ export function updateProjectElement(del: boolean, ...iris: string[]): string {
       qb.s(qb.i(iri), "og:active", qb.ll(WorkspaceElements[iri].active)),
     ];
 
-    data[getWorkspaceContextIRI()].push(...ogStatements);
+    data[AppSettings.applicationContext].push(...ogStatements);
     const deleteStatements = [
       qb.s(qb.i(iri), "og:name", "?name"),
       qb.s(qb.i(iri), "og:active", "?active"),
@@ -63,8 +63,8 @@ export function updateProjectElement(del: boolean, ...iris: string[]): string {
     if (del)
       deletes.push(
         ...deleteStatements.map((stmt) =>
-          DELETE`${qb.g(getWorkspaceContextIRI(), [stmt])}`.WHERE`${qb.g(
-            getWorkspaceContextIRI(),
+          DELETE`${qb.g(AppSettings.applicationContext, [stmt])}`.WHERE`${qb.g(
+            AppSettings.applicationContext,
             [stmt]
           )}`.build()
         )
@@ -97,8 +97,8 @@ export function updateProjectElement(del: boolean, ...iris: string[]): string {
     if (del) {
       deletes.push(
         ...deleteStatements.map((stmt) =>
-          DELETE`${qb.g(getWorkspaceContextIRI(), [stmt])}`.WHERE`${qb.g(
-            getWorkspaceContextIRI(),
+          DELETE`${qb.g(AppSettings.applicationContext, [stmt])}`.WHERE`${qb.g(
+            AppSettings.applicationContext,
             [stmt]
           )}`.build()
         ),
@@ -125,8 +125,8 @@ export function updateProjectElement(del: boolean, ...iris: string[]): string {
   }
   inserts.push(
     INSERT.DATA`${qb.g(
-      getWorkspaceContextIRI(),
-      data[getWorkspaceContextIRI()]
+      AppSettings.applicationContext,
+      data[AppSettings.applicationContext]
     )}`.build()
   );
   return qb.combineQueries(...deletes, ...inserts);

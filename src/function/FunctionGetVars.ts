@@ -208,22 +208,12 @@ export function getLastChangeDay() {
   return `${day}. ${month}. ${year}`;
 }
 
-export function getWorkspaceContextIRI() {
-  const projectID = AppSettings.contextIRI.substring(
-    AppSettings.contextIRI.lastIndexOf("/")
-  );
-  return parsePrefix(
-    "d-sgov-pracovní-prostor-pojem",
-    `aplikační-kontext${projectID}/ontographer`
-  );
-}
-
 export function getLinkIRI(linkID: string) {
   return `${AppSettings.ontographerContext}/link/instance-${linkID}`;
 }
 
 export function getNewDiagramContextIRI(id: string) {
-  return parsePrefix("d-sgov-pracovní-prostor-pojem", `příloha/instance-${id}`);
+  return parsePrefix("a-popis-dat-pojem", `příloha/instance-${id}`);
 }
 
 export function isLabelBlank(label: string) {
