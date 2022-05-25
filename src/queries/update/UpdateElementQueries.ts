@@ -55,6 +55,11 @@ export function updateProjectElement(del: boolean, ...iris: string[]): string {
     ];
 
     data[getWorkspaceContextIRI()].push(...ogStatements);
+    Object.values(Diagrams)
+      .filter((diag) => diag.active)
+      .map((diag) => diag.graph)
+      .forEach((graph) => data[graph].push(...ogStatements));
+
     const deleteStatements = [
       qb.s(qb.i(iri), "og:name", "?name"),
       qb.s(qb.i(iri), "og:active", "?active"),
