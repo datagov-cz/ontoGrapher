@@ -4,7 +4,6 @@ import {
   Links,
   WorkspaceElements,
   WorkspaceLinks,
-  WorkspaceTerms,
   WorkspaceVocabularies,
 } from "../../config/Variables";
 import { processQuery } from "../../interface/TransactionInterface";
@@ -286,8 +285,6 @@ export async function getLinksConfig(
     })
     .then((data) => {
       for (const result of data.results.bindings) {
-        if (!(result.iri.value in WorkspaceTerms && result.iri.values in Links))
-          continue;
         if (
           !Object.values(links).find(
             (link) =>
