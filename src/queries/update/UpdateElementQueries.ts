@@ -14,7 +14,11 @@ import {
 import { initLanguageObject } from "../../function/FunctionEditVars";
 
 export function updateProjectElement(del: boolean, ...iris: string[]): string {
+  const diagramGraphs = Object.values(Diagrams)
+    .filter((diag) => diag.active)
+    .map((diag) => diag.graph);
   const data: { [key: string]: string[] } = { [getWorkspaceContextIRI()]: [] };
+  diagramGraphs.forEach((diag) => (data[diag] = []));
   const deletes: string[] = [];
   const inserts: string[] = [];
   if (iris.length === 0) return "";
@@ -60,21 +64,6 @@ export function updateProjectElement(del: boolean, ...iris: string[]): string {
       .map((diag) => diag.graph)
       .forEach((graph) => data[graph].push(...ogStatements));
 
-    const deleteStatements = [
-      qb.s(qb.i(iri), "og:name", "?name"),
-      qb.s(qb.i(iri), "og:active", "?active"),
-    ];
-
-    if (del)
-      deletes.push(
-        ...deleteStatements.map((stmt) =>
-          DELETE`${qb.g(getWorkspaceContextIRI(), [stmt])}`.WHERE`${qb.g(
-            getWorkspaceContextIRI(),
-            [stmt]
-          )}`.build()
-        )
-      );
-
     if (WorkspaceVocabularies[vocab].readOnly) continue;
     if (!(vocab in data)) data[vocab] = [];
 
@@ -100,11 +89,15 @@ export function updateProjectElement(del: boolean, ...iris: string[]): string {
       );
 
     if (del) {
+      const deleteStatements = [
+        qb.s(qb.i(iri), "og:name", "?name"),
+        qb.s(qb.i(iri), "og:active", "?active"),
+      ];
       deletes.push(
-        ...deleteStatements.map((stmt) =>
-          DELETE`${qb.g(getWorkspaceContextIRI(), [stmt])}`.WHERE`${qb.g(
-            getWorkspaceContextIRI(),
-            [stmt]
+        ...[getWorkspaceContextIRI(), ...diagramGraphs].map((graph) =>
+          DELETE`${qb.g(graph, deleteStatements)}`.WHERE`${qb.g(
+            graph,
+            deleteStatements
           )}`.build()
         ),
         ...[
@@ -129,10 +122,9 @@ export function updateProjectElement(del: boolean, ...iris: string[]): string {
     }
   }
   inserts.push(
-    INSERT.DATA`${qb.g(
-      getWorkspaceContextIRI(),
-      data[getWorkspaceContextIRI()]
-    )}`.build()
+    ...[getWorkspaceContextIRI(), ...diagramGraphs].map((graph) =>
+      INSERT.DATA`${qb.g(graph, data[graph])}`.build()
+    )
   );
   return qb.combineQueries(...deletes, ...inserts);
 }
