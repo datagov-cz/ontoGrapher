@@ -68,7 +68,7 @@ export async function updateContexts(): Promise<boolean> {
   const strategy = await getSettings(AppSettings.contextEndpoint);
   if (!AppSettings.applicationContext)
     AppSettings.applicationContext = `${parsePrefix(
-      "a-popis-dat-pojem",
+      "d-sgov-pracovní-prostor-pojem",
       "aplikační-kontext"
     )}/${uuidv4()}/ontographer`;
   switch (strategy) {
@@ -146,11 +146,7 @@ export async function retrieveVocabularyData(): Promise<boolean> {
     "OPTIONAL {?contextIRI rdfs:label ?label. }",
     "OPTIONAL {?contextIRI dcterms:title ?title. }",
     "graph ?contextIRI {",
-    "?vocab a ?vocabType.",
-    `values ?vocabType {<${[
-      parsePrefix("d-sgov-pracovní-prostor-pojem", "slovníkový-kontext"),
-      parsePrefix("a-popis-dat-pojem", "slovníkový-kontext"),
-    ].join("> <")}>}`,
+    "?vocab a <https://slovník.gov.cz/datový/pracovní-prostor/pojem/slovníkový-kontext> ",
     "}",
     "graph ?vocab {",
     "?vocabIRI a a-popis-dat-pojem:slovník .",

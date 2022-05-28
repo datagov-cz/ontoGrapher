@@ -24,7 +24,7 @@ export function updateWorkspaceContext(): string {
   const insertMetadataContext = INSERT.DATA`${qb.g(AppSettings.contextIRI, [
     qb.s(
       qb.i(AppSettings.contextIRI),
-      qb.i(parsePrefix("a-popis-dat-pojem", "odkazuje-na-kontext")),
+      qb.i(parsePrefix("d-sgov-pracovní-prostor-pojem", "odkazuje-na-kontext")),
       qb.i(projIRI)
     ),
   ])}`.build();

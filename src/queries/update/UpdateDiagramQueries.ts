@@ -33,7 +33,12 @@ export function updateCreateDiagram(diagram: string): string {
   const insertMetadataContext = INSERT.DATA`${qb.g(AppSettings.contextIRI, [
     qb.s(
       qb.i(AppSettings.contextIRI),
-      qb.i(parsePrefix("a-popis-dat-pojem", `odkazuje-na-přílohový-kontext`)),
+      qb.i(
+        parsePrefix(
+          "d-sgov-pracovní-prostor-pojem",
+          `odkazuje-na-přílohový-kontext`
+        )
+      ),
       diagramIRI
     ),
     qb.s(

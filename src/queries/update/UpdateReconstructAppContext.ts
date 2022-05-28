@@ -6,25 +6,15 @@ import { updateWorkspaceContext } from "./UpdateMiscQueries";
 import { updateProjectElement } from "./UpdateElementQueries";
 
 export async function reconstructApplicationContextWithDiagrams(): Promise<string> {
-  const linkPredicates = [
-    parsePrefix("a-popis-dat-pojem", "odkazuje-na-assetový-kontext"),
-    parsePrefix("a-popis-dat-pojem", "odkazuje-na-přílohový-kontext"),
-    parsePrefix(
-      "d-sgov-pracovní-prostor-pojem",
-      "odkazuje-na-assetový-kontext"
-    ),
-    parsePrefix(
-      "d-sgov-pracovní-prostor-pojem",
-      "odkazuje-na-přílohový-kontext"
-    ),
-  ];
   const diagramRetrievalQuery = [
     "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
     "select ?diagram ?graph where {",
     "BIND(<" + AppSettings.contextIRI + "> as ?metaContext).",
     "graph ?metaContext {",
-    `?metaContext ?linkPredicate ?graph .`,
-    `values ?linkPredicate { <${linkPredicates.join("> <")}> }`,
+    `?metaContext <${parsePrefix(
+      "d-sgov-pracovní-prostor-pojem",
+      "odkazuje-na-přílohový-kontext"
+    )}> ?graph .`,
     "}",
     "graph ?graph {",
     "?diagram a og:diagram.",

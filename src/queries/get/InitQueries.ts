@@ -86,16 +86,12 @@ export async function getElementsConfig(
       "?diagram og:id ?diagramID.",
       "?diagram og:representation ?representation .",
       "}",
-      `${qb.i(
-        AppSettings.contextIRI
-      )} ?linksToAttachmentContextPredicate ?graph .`,
-      `VALUES ?linksToAttachmentContextPredicate {<${[
-        parsePrefix("a-popis-dat-pojem", "odkazuje-na-přílohový-kontext"),
+      `${qb.i(AppSettings.contextIRI)} ${qb.i(
         parsePrefix(
           "d-sgov-pracovní-prostor-pojem",
-          "odkazuje-na-přílohový-kontext"
-        ),
-      ].join("> <")}>}`,
+          `odkazuje-na-přílohový-kontext`
+        )
+      )} ?graph.`,
       "}",
     ].join(`
     `);
@@ -171,19 +167,15 @@ export async function getSettings(
     "BIND(<" + AppSettings.contextIRI + "> as ?metaContext).",
     "OPTIONAL {",
     "graph ?metaContext {",
-    `?metaContext ?linksToAttachmentContextPredicate ?graph .`,
-    `VALUES ?linksToAttachmentContextPredicate {<${[
-      parsePrefix("a-popis-dat-pojem", "odkazuje-na-přílohový-kontext"),
-      parsePrefix(
-        "d-sgov-pracovní-prostor-pojem",
-        "odkazuje-na-přílohový-kontext"
-      ),
-    ].join("> <")}>}`,
-    `optional { ?metaContext ?hasApplicationContextPredicate ?ogContext .`,
-    `VALUES ?hasApplicationContextPredicate {<${[
-      parsePrefix("a-popis-dat-pojem", "odkazuje-na-kontext"),
-      parsePrefix("d-sgov-pracovní-prostor-pojem", "odkazuje-na-kontext"),
-    ].join("> <")}>}}}`,
+    `?metaContext <${parsePrefix(
+      "d-sgov-pracovní-prostor-pojem",
+      "odkazuje-na-přílohový-kontext"
+    )}> ?graph .`,
+    `optional { ?metaContext <${parsePrefix(
+      "d-sgov-pracovní-prostor-pojem",
+      "odkazuje-na-kontext"
+    )}> ?ogContext .`,
+    `}}`,
     "graph ?graph {",
     "?diagram og:index ?index .",
     "?diagram og:name ?name .",
@@ -327,18 +319,6 @@ export async function getLinksConfig(
     });
   if (!appContextLinkRetrieval) return false;
   else {
-    const linkPredicates = [
-      parsePrefix(
-        "d-sgov-pracovní-prostor-pojem",
-        "odkazuje-na-assetový-kontext"
-      ),
-      parsePrefix(
-        "d-sgov-pracovní-prostor-pojem",
-        "odkazuje-na-přílohový-kontext"
-      ),
-      parsePrefix("a-popis-dat-pojem", "odkazuje-na-assetový-kontext"),
-      parsePrefix("a-popis-dat-pojem", "odkazuje-na-přílohový-kontext"),
-    ];
     const diagramContextQuery = [
       "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
       "select ?graph ?vertex ?diagram ?diagramID ?index ?posX ?posY ?id ?iri where {",
@@ -355,8 +335,10 @@ export async function getLinksConfig(
       "?diagram og:id ?diagramID.",
       "?diagram og:representation ?representation.",
       "}",
-      `${qb.i(AppSettings.contextIRI)} ?linkPredicate ?graph.`,
-      `values ?linkPredicate { <${linkPredicates.join("> <")}> }`,
+      `${qb.i(AppSettings.contextIRI)} <${parsePrefix(
+        "d-sgov-pracovní-prostor-pojem",
+        "odkazuje-na-přílohový-kontext"
+      )}> ?graph.`,
       "}",
     ].join(`
     `);
