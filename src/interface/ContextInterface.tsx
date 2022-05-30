@@ -1,6 +1,7 @@
 import {
   AppSettings,
   Diagrams,
+  Links,
   WorkspaceElements,
   WorkspaceLinks,
   WorkspaceTerms,
@@ -214,12 +215,27 @@ export async function retrieveContextData(): Promise<boolean> {
     await fetchReadOnlyTerms(AppSettings.contextEndpoint, missingTerms)
   );
   checkForObsoleteDiagrams();
+  Object.keys(WorkspaceLinks)
+    .filter((id) => {
+      const iri = WorkspaceLinks[id].iri;
+      return !(iri in WorkspaceTerms) && !(iri in Links);
+    })
+    .forEach((id) => {
+      const iri = WorkspaceLinks[id].iri;
+      // In all probability, the workspace has been modified outside of OG
+      // *OR* OG deletes its terms (i.e. relationship types) incorrectly.
+      console.warn(
+        `Link ID ${id}'s type (${iri}) not found in vocabulary contexts nor cache contexts.`
+      );
+      WorkspaceLinks[id].active = false;
+      if (iri in WorkspaceTerms) deleteConcept(iri);
+    });
   Object.keys(WorkspaceElements)
     .filter((id) => !(id in WorkspaceTerms))
     .forEach((id) => {
       // In all probability, the workspace has been modified outside of OG
       // *OR* OG deletes its terms incorrectly.
-      console.error(
+      console.warn(
         `Term ${id} not found in vocabulary contexts nor cache contexts.`
       );
       deleteConcept(id);
