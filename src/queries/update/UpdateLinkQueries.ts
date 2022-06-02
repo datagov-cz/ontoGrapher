@@ -2,7 +2,6 @@ import { AppSettings, Diagrams, WorkspaceLinks } from "../../config/Variables";
 import { qb } from "../QueryBuilder";
 import { LinkConfig } from "../../config/logic/LinkConfig";
 import { DELETE, INSERT } from "@tpluscode/sparql-builder";
-import { getWorkspaceContextIRI } from "../../function/FunctionGetVars";
 
 export function updateProjectLinkVertex(
   id: string,
@@ -102,7 +101,7 @@ export function updateDeleteProjectLink(
   const diagrams = Object.values(Diagrams)
     .filter((diag) => diag.active)
     .map((diagram) => diagram.graph);
-  diagrams.push(getWorkspaceContextIRI());
+  diagrams.push(AppSettings.applicationContext);
   for (const id of ids) {
     const delStatement = qb.s(qb.i(WorkspaceLinks[id].linkIRI), `?p`, `?o`);
     const filter = deleteVertexTriples ? "" : `filter(?p not in (og:vertex))`;
@@ -162,7 +161,7 @@ export function updateProjectLink(del: boolean, ...ids: string[]): string {
     ...diagrams.map((diagram) =>
       INSERT.DATA`${qb.g(diagram, insertBody)}`.build()
     ),
-    INSERT.DATA`${qb.g(getWorkspaceContextIRI(), insertBody)}`.build()
+    INSERT.DATA`${qb.g(AppSettings.applicationContext, insertBody)}`.build()
   );
 
   return qb.combineQueries(...(del ? [deletes, ...insert] : [...insert]));

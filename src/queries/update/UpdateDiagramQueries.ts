@@ -2,13 +2,11 @@ import { DELETE, INSERT } from "@tpluscode/sparql-builder";
 import { qb } from "../QueryBuilder";
 import { AppSettings, Diagrams } from "../../config/Variables";
 import { parsePrefix } from "../../function/FunctionEditVars";
-import { getWorkspaceContextIRI } from "../../function/FunctionGetVars";
 
 function getDiagramTriples(diagram: string): string {
   const diagramIRI = qb.i(Diagrams[diagram].iri);
   const diagramGraph = Diagrams[diagram].graph;
   const diagramAttachmentTypes = [
-    qb.i(parsePrefix("d-sgov-pracovní-prostor-pojem", "příloha")),
     qb.i(parsePrefix("a-popis-dat-pojem", "příloha")),
     qb.i(parsePrefix("og", "diagram")),
   ];
@@ -28,8 +26,8 @@ function getDiagramTriples(diagram: string): string {
 export function updateCreateDiagram(diagram: string): string {
   const diagramIRI = qb.i(Diagrams[diagram].iri);
   const diagramGraph = qb.i(Diagrams[diagram].graph);
-  const insertAppContext = INSERT.DATA`${qb.g(getWorkspaceContextIRI(), [
-    qb.s(qb.i(getWorkspaceContextIRI()), "og:diagram", qb.ll(diagram)),
+  const insertAppContext = INSERT.DATA`${qb.g(AppSettings.applicationContext, [
+    qb.s(qb.i(AppSettings.applicationContext), "og:diagram", qb.ll(diagram)),
   ])}`.build();
   const insertDiagramContext = getDiagramTriples(diagram);
   const insertMetadataContext = INSERT.DATA`${qb.g(AppSettings.contextIRI, [
@@ -46,16 +44,16 @@ export function updateCreateDiagram(diagram: string): string {
     qb.s(
       diagramGraph,
       "rdf:type",
-      qb.i(parsePrefix("d-sgov-pracovní-prostor-pojem", "přílohový-kontext"))
+      qb.i(parsePrefix("a-popis-dat-pojem", "přílohový-kontext"))
     ),
     qb.s(
       diagramGraph,
-      qb.i(parsePrefix("d-sgov-pracovní-prostor-pojem", "má-typ-přílohy")),
+      qb.i(parsePrefix("a-popis-dat-pojem", "má-typ-přílohy")),
       "og:diagram"
     ),
     qb.s(
       diagramGraph,
-      qb.i(parsePrefix("d-sgov-pracovní-prostor-pojem", "vychází-z-verze")),
+      qb.i(parsePrefix("a-popis-dat-pojem", "vychází-z-verze")),
       diagramIRI
     ),
   ])}`.build();

@@ -3,7 +3,6 @@ import { qb } from "../../QueryBuilder";
 import {
   getLinkIRI,
   getNewDiagramContextIRI,
-  getWorkspaceContextIRI,
 } from "../../../function/FunctionGetVars";
 import {
   AppSettings,
@@ -172,8 +171,12 @@ export async function updateLegacyWorkspaceToVersion4(
       });
     })
   );
-  triples.push(qb.g(getWorkspaceContextIRI(), linkStatements));
-  triples.push(qb.g(getWorkspaceContextIRI(), elemStatements));
+  const workspaceContextIRI = `${parsePrefix(
+    "d-sgov-pracovní-prostor-pojem",
+    "aplikační-kontext"
+  )}/${uuidv4()}/ontographer`;
+  triples.push(qb.g(workspaceContextIRI, linkStatements));
+  triples.push(qb.g(workspaceContextIRI, elemStatements));
   Object.keys(elements).forEach((element) =>
     Object.keys(elements[element].hidden).forEach((diagram) => {
       if (!diagrams[diagram]) return;

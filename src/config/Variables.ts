@@ -136,6 +136,7 @@ export var AppSettings: {
   canvasLanguage: string;
   contextIRI: string;
   contextEndpoint: string;
+  applicationContext: string;
   ontographerContext: string;
   cacheContext: string;
   luceneConnector: string;
@@ -162,6 +163,7 @@ export var AppSettings: {
   selectedDiagram: "",
   canvasLanguage: Object.keys(Languages)[0],
   contextIRI: "",
+  applicationContext: "",
   initWorkspace: false,
   contextEndpoint: Environment.components["al-db-server"].url,
   ontographerContext:

@@ -8,7 +8,6 @@ import {
 } from "../../config/Variables";
 import { Locale } from "../../config/Locale";
 import { updateDeleteTriples } from "../../queries/update/UpdateMiscQueries";
-import { getWorkspaceContextIRI } from "../../function/FunctionGetVars";
 import { getCacheConnections } from "../../function/FunctionCache";
 import { CacheConnection } from "../../types/CacheConnection";
 import ConnectionCache from "../detail/components/connections/ConnectionCache";
@@ -47,7 +46,7 @@ export default class ModalRemoveConcept extends React.Component<Props, State> {
       updateDeleteTriples(
         this.props.id,
         [
-          getWorkspaceContextIRI(),
+          AppSettings.applicationContext,
           ...Object.values(Diagrams).map((diag) => diag.graph),
         ],
         true,

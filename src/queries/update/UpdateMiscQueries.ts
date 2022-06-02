@@ -1,12 +1,11 @@
 import { AppSettings } from "../../config/Variables";
 import { qb } from "../QueryBuilder";
 import { DELETE, INSERT } from "@tpluscode/sparql-builder";
-import { getWorkspaceContextIRI } from "../../function/FunctionGetVars";
 import { parsePrefix } from "../../function/FunctionEditVars";
 import { Environment } from "../../config/Environment";
 
 export function updateWorkspaceContext(): string {
-  const projIRI = getWorkspaceContextIRI();
+  const projIRI = AppSettings.applicationContext;
 
   const insertAppContext = INSERT.DATA`${qb.g(projIRI, [
     qb.s(qb.i(projIRI), "og:viewColor", qb.ll(AppSettings.viewColorPool)),
@@ -17,7 +16,7 @@ export function updateWorkspaceContext(): string {
     ),
     qb.s(
       qb.i(projIRI),
-      qb.i(parsePrefix("d-sgov-pracovní-prostor-pojem", "má-id-aplikace")),
+      qb.i(parsePrefix("a-popis-dat-pojem", "má-id-aplikace")),
       qb.ll(Environment.id)
     ),
   ])}`.build();

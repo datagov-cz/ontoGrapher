@@ -1,4 +1,5 @@
 import {
+  AppSettings,
   Diagrams,
   Languages,
   WorkspaceElements,
@@ -7,17 +8,16 @@ import {
 } from "../../config/Variables";
 import { qb } from "../QueryBuilder";
 import { DELETE, INSERT } from "@tpluscode/sparql-builder";
-import {
-  getVocabularyFromScheme,
-  getWorkspaceContextIRI,
-} from "../../function/FunctionGetVars";
+import { getVocabularyFromScheme } from "../../function/FunctionGetVars";
 import { initLanguageObject } from "../../function/FunctionEditVars";
 
 export function updateProjectElement(del: boolean, ...iris: string[]): string {
   const diagramGraphs = Object.values(Diagrams)
     .filter((diag) => diag.active)
     .map((diag) => diag.graph);
-  const data: { [key: string]: string[] } = { [getWorkspaceContextIRI()]: [] };
+  const data: { [key: string]: string[] } = {
+    [AppSettings.applicationContext]: [],
+  };
   diagramGraphs.forEach((diag) => (data[diag] = []));
   const deletes: string[] = [];
   const inserts: string[] = [];
@@ -58,7 +58,7 @@ export function updateProjectElement(del: boolean, ...iris: string[]): string {
       qb.s(qb.i(iri), "og:active", qb.ll(WorkspaceElements[iri].active)),
     ];
 
-    data[getWorkspaceContextIRI()].push(...ogStatements);
+    data[AppSettings.applicationContext].push(...ogStatements);
     Object.values(Diagrams)
       .filter((diag) => diag.active)
       .map((diag) => diag.graph)
@@ -94,7 +94,7 @@ export function updateProjectElement(del: boolean, ...iris: string[]): string {
         qb.s(qb.i(iri), "og:active", "?active"),
       ];
       deletes.push(
-        ...[getWorkspaceContextIRI(), ...diagramGraphs].map((graph) =>
+        ...[AppSettings.applicationContext, ...diagramGraphs].map((graph) =>
           DELETE`${qb.g(graph, deleteStatements)}`.WHERE`${qb.g(
             graph,
             deleteStatements
@@ -122,7 +122,7 @@ export function updateProjectElement(del: boolean, ...iris: string[]): string {
     }
   }
   inserts.push(
-    ...[getWorkspaceContextIRI(), ...diagramGraphs].map((graph) =>
+    ...[AppSettings.applicationContext, ...diagramGraphs].map((graph) =>
       INSERT.DATA`${qb.g(graph, data[graph])}`.build()
     )
   );

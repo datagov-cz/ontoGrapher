@@ -20,7 +20,11 @@ import {
 } from "../queries/get/CacheQueries";
 import { qb } from "../queries/QueryBuilder";
 import { updateProjectElement } from "../queries/update/UpdateElementQueries";
-import { deleteConcept, initElements } from "../function/FunctionEditVars";
+import {
+  deleteConcept,
+  initElements,
+  parsePrefix,
+} from "../function/FunctionEditVars";
 import {
   updateDeleteProjectLink,
   updateProjectLink,
@@ -46,6 +50,7 @@ import {
   isElementHidden,
   removeReadOnlyElement,
 } from "../function/FunctionElem";
+import { v4 as uuidv4 } from "uuid";
 
 export function retrieveInfoFromURLParameters(): boolean {
   const isURL = require("is-url");
@@ -62,6 +67,11 @@ export function retrieveInfoFromURLParameters(): boolean {
 
 export async function updateContexts(): Promise<boolean> {
   const strategy = await getSettings(AppSettings.contextEndpoint);
+  if (!AppSettings.applicationContext)
+    AppSettings.applicationContext = `${parsePrefix(
+      "d-sgov-pracovní-prostor-pojem",
+      "aplikační-kontext"
+    )}/${uuidv4()}/ontographer`;
   switch (strategy) {
     case ContextLoadingStrategy.UPDATE_LEGACY_WORKSPACE:
       const queries = await updateLegacyWorkspace(
@@ -138,7 +148,6 @@ export async function retrieveVocabularyData(): Promise<boolean> {
     "OPTIONAL {?contextIRI dcterms:title ?title. }",
     "graph ?contextIRI {",
     "?vocab a <https://slovník.gov.cz/datový/pracovní-prostor/pojem/slovníkový-kontext> ",
-    "filter not exists {?vocab a <https://slovník.gov.cz/datový/pracovní-prostor/pojem/slovníkový-kontext-pouze-pro-čtení>.}",
     "}",
     "graph ?vocab {",
     "?vocabIRI a a-popis-dat-pojem:slovník .",

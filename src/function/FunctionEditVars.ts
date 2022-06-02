@@ -21,7 +21,6 @@ import {
   getActiveToConnections,
   getLocalStorageKey,
   getVocabularyFromScheme,
-  getWorkspaceContextIRI,
   loadDefaultCardinality,
 } from "./FunctionGetVars";
 import { isElementVisible } from "./FunctionElem";
@@ -136,7 +135,7 @@ export function deleteConcept(id: string): string[] {
       updateDeleteTriples(
         WorkspaceLinks[connection].linkIRI,
         [
-          getWorkspaceContextIRI(),
+          AppSettings.applicationContext,
           ...Object.values(Diagrams).map((diag) => diag.graph),
         ],
         true,
@@ -154,7 +153,7 @@ export function deleteConcept(id: string): string[] {
       updateDeleteTriples(
         WorkspaceLinks[connection].linkIRI,
         [
-          getWorkspaceContextIRI(),
+          AppSettings.applicationContext,
           ...Object.values(Diagrams).map((diag) => diag.graph),
         ],
         true,
