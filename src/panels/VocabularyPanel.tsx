@@ -194,7 +194,8 @@ export default class VocabularyPanel extends React.Component<Props, State> {
       Object.keys(WorkspaceTerms)
         .filter(
           (iri) =>
-            getVocabularyFromScheme(WorkspaceTerms[iri].inScheme) === vocab
+            getVocabularyFromScheme(WorkspaceTerms[iri].inScheme) === vocab &&
+            WorkspaceElements[iri].active
         )
         .sort((a, b) => this.sort(a, b))
         .filter(
