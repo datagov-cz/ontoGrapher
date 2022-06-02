@@ -44,7 +44,7 @@ export function updateCreateDiagram(diagram: string): string {
     qb.s(
       diagramGraph,
       "rdf:type",
-      qb.i(parsePrefix("a-popis-dat-pojem", "přílohový-kontext"))
+      qb.i(parsePrefix("d-sgov-pracovní-prostor-pojem", "přílohový-kontext"))
     ),
     qb.s(
       diagramGraph,
