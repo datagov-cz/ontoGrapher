@@ -15,6 +15,7 @@ import { Locale } from "../config/Locale";
 import {
   getLinkIRI,
   getNewDiagramContextIRI,
+  getNewDiagramIRI,
   getVocabularyFromScheme,
 } from "./FunctionGetVars";
 import { v4 as uuidv4 } from "uuid";
@@ -138,7 +139,7 @@ export function addDiagram(
     scale: 1,
     index: index,
     representation: representation,
-    iri: iri ? iri : getNewDiagramContextIRI(diagramID),
+    iri: iri ? iri : getNewDiagramIRI(diagramID),
     graph: graph ? graph : getNewDiagramContextIRI(diagramID),
     saved: false,
   };

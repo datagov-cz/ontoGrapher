@@ -213,6 +213,13 @@ export function getLinkIRI(linkID: string) {
 }
 
 export function getNewDiagramContextIRI(id: string) {
+  return parsePrefix(
+    "d-sgov-pracovní-prostor-pojem",
+    `přílohový-kontext/instance-${id}`
+  );
+}
+
+export function getNewDiagramIRI(id: string): string {
   return parsePrefix("a-popis-dat-pojem", `příloha/instance-${id}`);
 }
 
