@@ -165,32 +165,26 @@ export async function getSettings(
     "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
     "select distinct ?ogContext ?graph ?diagram ?index ?name ?color ?id ?representation ?context ?legacyContext where {",
     "BIND(<" + AppSettings.contextIRI + "> as ?metaContext).",
-    "OPTIONAL {",
-    "graph ?metaContext {",
-    `?metaContext <${parsePrefix(
-      "d-sgov-pracovní-prostor-pojem",
-      "odkazuje-na-přílohový-kontext"
-    )}> ?graph .`,
-    `optional { ?metaContext <${parsePrefix(
-      "d-sgov-pracovní-prostor-pojem",
-      "odkazuje-na-kontext"
-    )}> ?ogContext .`,
-    `}}`,
+    "optional {?metaContext <https://slovník.gov.cz/datový/pracovní-prostor/pojem/odkazuje-na-přílohový-kontext> ?graph .",
     "graph ?graph {",
-    "?diagram og:index ?index .",
-    "?diagram og:name ?name .",
-    "?diagram og:id ?id .",
-    "?diagram og:representation ?representation .",
+    " ?diagram og:index ?index .",
+    " ?diagram og:name ?name .",
+    " ?diagram og:id ?id .",
+    " ?diagram og:representation ?representation .",
     "}",
-    "OPTIONAL { GRAPH ?ogContext {",
-    "?ogContext og:viewColor ?color .",
-    "?ogContext og:contextVersion ?context .",
-    "OPTIONAL {",
+    "}",
+    "optional {?metaContext <https://slovník.gov.cz/datový/pracovní-prostor/pojem/odkazuje-na-kontext> ?ogContext .",
+    " graph ?ogContext {",
+    "   ?ogContext og:viewColor ?color .",
+    "   ?ogContext og:contextVersion ?context .",
+    "   optional {",
     `<${
       AppSettings.ontographerContext +
       AppSettings.contextIRI.substring(AppSettings.contextIRI.lastIndexOf("/"))
     }> og:contextVersion ?legacyContext.`,
-    "}}}}} order by asc(?index)",
+    "  }}",
+    "}",
+    "} order by asc(?index)",
   ].join(`
   `);
   return await processQuery(contextEndpoint, query)
