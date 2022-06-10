@@ -39,7 +39,7 @@ export function updateCreateDiagram(diagram: string): string {
           `odkazuje-na-přílohový-kontext`
         )
       ),
-      diagramIRI
+      diagramGraph
     ),
     qb.s(
       diagramGraph,
