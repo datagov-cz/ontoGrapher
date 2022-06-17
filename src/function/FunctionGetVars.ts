@@ -220,7 +220,7 @@ export function getNewDiagramContextIRI(id: string) {
 }
 
 export function getNewDiagramIRI(id: string): string {
-  return parsePrefix("a-popis-dat-pojem", `příloha/instance-${id}`);
+  return parsePrefix("slovník-gov", `příloha/instance-${id}`);
 }
 
 export function isLabelBlank(label: string) {
