@@ -83,12 +83,12 @@ export function updateDeleteDiagram(diagram: string) {
   const deleteGraph = `DROP GRAPH <${diagramGraph}>`;
   const deleteMetadataContext1 = DELETE`${qb.g(AppSettings.contextIRI, [
     qb.s(qb.i(diagramGraph), "?p1", "?o1"),
-  ])}`.WHERE`${qb.g(diagramIRI, [
+  ])}`.WHERE`${qb.g(AppSettings.contextIRI, [
     qb.s(qb.i(diagramGraph), "?p1", "?o1"),
   ])}`.build();
   const deleteMetadataContext2 = DELETE`${qb.g(AppSettings.contextIRI, [
     qb.s("?s1", "?p1", qb.i(diagramGraph)),
-  ])}`.WHERE`${qb.g(diagramIRI, [
+  ])}`.WHERE`${qb.g(AppSettings.contextIRI, [
     qb.s("?s1", "?p1", qb.i(diagramGraph)),
   ])}`.build();
   return qb.combineQueries(
