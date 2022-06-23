@@ -92,10 +92,7 @@ export function resizeElem(id: string, highlight: boolean = true) {
 }
 
 export function getElementPosition(id: string): joint.dia.Point {
-  const point = graph
-    .getElements()
-    .find((elem) => (elem.id as string) === id)
-    ?.position();
+  const point = WorkspaceElements[id].position[AppSettings.selectedDiagram];
   if (point) return { x: point.x + 200, y: point.y + 200 };
   else
     return {
@@ -109,13 +106,14 @@ export function createNewConcept(
   name: { [key: string]: string },
   language: string,
   vocabulary: string,
-  types: string[] = []
+  types: string[] = [],
+  elementPoint: boolean = false
 ): string {
   const iri = createNewElemIRI(
     WorkspaceVocabularies[vocabulary].glossary,
     name[language]
   );
-  const p = paper.clientToLocalPoint(point);
+  const p = elementPoint ? point : paper.clientToLocalPoint(point);
   addVocabularyElement(iri, WorkspaceVocabularies[vocabulary].glossary, [
     parsePrefix("skos", "Concept"),
     ...types,
@@ -126,11 +124,8 @@ export function createNewConcept(
   WorkspaceElements[iri].hidden[AppSettings.selectedDiagram] = false;
   const cls = new graphElement({ id: iri });
   if (p) {
-    cls.set("position", { x: p.x, y: p.y });
-    WorkspaceElements[iri].position[AppSettings.selectedDiagram] = {
-      x: p.x,
-      y: p.y,
-    };
+    cls.position(p);
+    WorkspaceElements[iri].position[AppSettings.selectedDiagram] = p;
   }
   if (isElementVisible(iri, AppSettings.representation)) {
     cls.addTo(graph);

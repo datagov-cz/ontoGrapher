@@ -1,6 +1,10 @@
 import React from "react";
 import Select from "react-select";
-import { AppSettings, WorkspaceTerms } from "../../../config/Variables";
+import {
+  AppSettings,
+  WorkspaceLinks,
+  WorkspaceTerms,
+} from "../../../config/Variables";
 import { Locale } from "../../../config/Locale";
 import { parsePrefix } from "../../../function/FunctionEditVars";
 import { getLabelOrBlank } from "../../../function/FunctionGetVars";
@@ -15,16 +19,18 @@ type Props = {
 export const IntrinsicTropeTableSelect: React.FC<Props> = (props) => {
   const buildOptions: () => { label: string; value: string }[] = () => {
     return Object.keys(WorkspaceTerms)
-      .filter((iri) =>
-        WorkspaceTerms[iri].types.includes(
-          parsePrefix("z-sgov-pojem", "typ-vlastnosti")
-        )
-      )
       .filter(
         (iri) =>
-          WorkspaceTerms[iri].inScheme === WorkspaceTerms[props.iri].inScheme
+          WorkspaceTerms[iri].types.includes(
+            parsePrefix("z-sgov-pojem", "typ-vlastnosti")
+          ) &&
+          WorkspaceTerms[iri].inScheme === WorkspaceTerms[props.iri].inScheme &&
+          !props.tropes.includes(iri) &&
+          !Object.keys(WorkspaceLinks).find(
+            (link) =>
+              WorkspaceLinks[link].active && WorkspaceLinks[link].iri === iri
+          )
       )
-      .filter((iri) => !props.tropes.includes(iri))
       .map((iri) => {
         return {
           label: getLabelOrBlank(

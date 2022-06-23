@@ -78,7 +78,6 @@ export function updateDiagram(diagram: string): string {
 }
 
 export function updateDeleteDiagram(diagram: string) {
-  const diagramIRI = Diagrams[diagram].iri;
   const diagramGraph = Diagrams[diagram].graph;
   const deleteGraph = `DROP GRAPH <${diagramGraph}>`;
   const deleteMetadataContext1 = DELETE`${qb.g(AppSettings.contextIRI, [
