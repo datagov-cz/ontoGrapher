@@ -62,7 +62,11 @@ export async function getElementsConfig(
             scheme: result.scheme.value,
           };
         }
-        if (result.name && !elements[iri].selectedName[result.name["xml:lang"]])
+        if (
+          result.name &&
+          result.name.value &&
+          !elements[iri].selectedName[result.name["xml:lang"]]
+        )
           elements[iri].selectedName[result.name["xml:lang"]] =
             result.name.value;
         if (result.vocabulary)
