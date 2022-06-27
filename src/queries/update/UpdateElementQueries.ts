@@ -9,23 +9,28 @@ import {
 import { qb } from "../QueryBuilder";
 import { DELETE, INSERT } from "@tpluscode/sparql-builder";
 import { getVocabularyFromScheme } from "../../function/FunctionGetVars";
+import { parsePrefix } from "../../function/FunctionEditVars";
 
-export function updateProjectElementNames(...iris: string[]): string {
-  if (iris.length === 0) return "";
-  const diagramGraphs = Object.values(Diagrams)
-    .filter((diag) => diag.active)
-    .map((diag) => diag.graph);
-  const query = [
+export function updateProjectElementNames(): string {
+  return [
+    "delete {",
     "graph ?graph {",
     "?iri og:name ?name.",
-    "?iri og:active ?active",
+    "}",
+    "} where {",
+    `<${AppSettings.contextIRI}> <${parsePrefix(
+      "d-sgov-pracovní-prostor",
+      "odkazuje-na-přílohový-kontext"
+    )}> ?graph.`,
+    "graph ?graph {",
+    "?diagram a og:diagram.",
+    "?iri a og:element.",
+    "?iri og:name ?name.",
+    'filter(str(?name) = "")',
+    "}",
     "}",
   ].join(`
     `);
-  return `delete {${query}} where {${query} values ?graph {<${[
-    AppSettings.applicationContext,
-    ...diagramGraphs,
-  ].join("> <")}>} filter(str(?name) = "") }`;
 }
 
 export function updateProjectElement(del: boolean, ...iris: string[]): string {
