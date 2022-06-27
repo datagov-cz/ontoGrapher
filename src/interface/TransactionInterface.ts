@@ -8,7 +8,7 @@ export async function processTransaction(
 ): Promise<boolean> {
   if (!transaction) return true;
   AppSettings.lastTransaction = transaction;
-  const timeoutDeadline = 15000;
+  const timeoutDeadline = 30000;
   const controller = new AbortController();
   const signal = controller.signal;
   let timeout = window.setTimeout(() => controller.abort(), timeoutDeadline);
