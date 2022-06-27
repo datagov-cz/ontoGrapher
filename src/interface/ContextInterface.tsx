@@ -257,7 +257,7 @@ export async function retrieveContextData(): Promise<boolean> {
     !(await processTransaction(
       AppSettings.contextEndpoint,
       qb.constructQuery(
-        updateProjectElementNames(...elements),
+        updateProjectElementNames(),
         updateProjectElement(false, ...elements)
       )
     ))
