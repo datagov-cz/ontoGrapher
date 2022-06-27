@@ -9,7 +9,6 @@ import {
 import { qb } from "../QueryBuilder";
 import { DELETE, INSERT } from "@tpluscode/sparql-builder";
 import { getVocabularyFromScheme } from "../../function/FunctionGetVars";
-import { initLanguageObject } from "../../function/FunctionEditVars";
 
 export function updateProjectElement(del: boolean, ...iris: string[]): string {
   const diagramGraphs = Object.values(Diagrams)
@@ -35,11 +34,6 @@ export function updateProjectElement(del: boolean, ...iris: string[]): string {
     const altLabels = vocabElem.altLabels.map((alt) =>
       qb.ll(alt.label, alt.language)
     );
-    const selectedLabels = Object.entries(
-      Object.keys(WorkspaceElements[iri].selectedLabel).length > 0
-        ? WorkspaceElements[iri].selectedLabel
-        : initLanguageObject("")
-    ).map(([key, value]) => qb.ll(value, key));
     const names = Object.entries(WorkspaceElements[iri].selectedLabel)
       .filter(
         ([key, value]) =>
@@ -54,7 +48,7 @@ export function updateProjectElement(del: boolean, ...iris: string[]): string {
       qb.s(qb.i(iri), "rdf:type", "og:element"),
       qb.s(qb.i(iri), "og:scheme", qb.i(scheme)),
       qb.s(qb.i(iri), "og:vocabulary", qb.i(getVocabularyFromScheme(scheme))),
-      qb.s(qb.i(iri), "og:name", qb.a(selectedLabels)),
+      qb.s(qb.i(iri), "og:name", qb.a(names), names.length > 0),
       qb.s(qb.i(iri), "og:active", qb.ll(WorkspaceElements[iri].active)),
     ];
 

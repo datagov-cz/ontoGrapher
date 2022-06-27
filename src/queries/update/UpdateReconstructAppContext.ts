@@ -48,7 +48,7 @@ export async function reconstructApplicationContextWithDiagrams(): Promise<strin
     return qb.combineQueries(
       updateWorkspaceContext(),
       transferQuery,
-      updateProjectElement(false, ...initElements())
+      updateProjectElement(true, ...initElements())
     );
   } else return "";
 }
