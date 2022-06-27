@@ -11,27 +11,22 @@ import { DELETE, INSERT } from "@tpluscode/sparql-builder";
 import { getVocabularyFromScheme } from "../../function/FunctionGetVars";
 
 export function updateProjectElementNames(...iris: string[]): string {
+  if (iris.length === 0) return "";
   const diagramGraphs = Object.values(Diagrams)
     .filter((diag) => diag.active)
     .map((diag) => diag.graph);
-  const deletes: string[] = [];
-  if (iris.length === 0) return "";
-  for (const iri of iris) {
-    checkElem(iri);
-    const deleteStatements = [
-      qb.s(qb.i(iri), "og:name", "?name"),
-      qb.s(qb.i(iri), "og:active", "?active"),
-    ];
-    deletes.push(
-      ...[AppSettings.applicationContext, ...diagramGraphs].map((graph) =>
-        DELETE`${qb.g(graph, deleteStatements)}`.WHERE`${qb.g(
-          graph,
-          deleteStatements
-        )}`.build()
-      )
-    );
-  }
-  return qb.combineQueries(...deletes);
+  const query = [
+    "graph ?graph {",
+    "?iri og:name ?name.",
+    "?iri og:active ?active",
+    "}",
+    "values ?graph {<" +
+      [AppSettings.applicationContext, ...diagramGraphs].join("> <") +
+      ">}",
+    "values ?iri {<" + iris.join("> <") + ">}",
+  ].join(`
+    `);
+  return `delete {${query}} where {${query}}`;
 }
 
 export function updateProjectElement(del: boolean, ...iris: string[]): string {
