@@ -3,7 +3,10 @@ import { qb } from "../QueryBuilder";
 import { initElements, parsePrefix } from "../../function/FunctionEditVars";
 import { processQuery } from "../../interface/TransactionInterface";
 import { updateWorkspaceContext } from "./UpdateMiscQueries";
-import { updateProjectElement } from "./UpdateElementQueries";
+import {
+  updateProjectElement,
+  updateProjectElementNames,
+} from "./UpdateElementQueries";
 
 export async function reconstructApplicationContextWithDiagrams(): Promise<string> {
   const diagramRetrievalQuery = [
@@ -45,10 +48,12 @@ export async function reconstructApplicationContextWithDiagrams(): Promise<strin
       (iri) => `add <${iri}> to <${AppSettings.applicationContext}>`
     ).join(`;
     `);
+    const elements = initElements();
     return qb.combineQueries(
       updateWorkspaceContext(),
       transferQuery,
-      updateProjectElement(true, ...initElements())
+      updateProjectElementNames(...elements),
+      updateProjectElement(false, ...elements)
     );
   } else return "";
 }

@@ -10,6 +10,57 @@ import { qb } from "../QueryBuilder";
 import { DELETE, INSERT } from "@tpluscode/sparql-builder";
 import { getVocabularyFromScheme } from "../../function/FunctionGetVars";
 
+export function updateProjectElementNames(...iris: string[]): string {
+  const diagramGraphs = Object.values(Diagrams)
+    .filter((diag) => diag.active)
+    .map((diag) => diag.graph);
+  const data: { [key: string]: string[] } = {
+    [AppSettings.applicationContext]: [],
+  };
+  const deletes: string[] = [];
+  const inserts: string[] = [];
+  diagramGraphs.forEach((diag) => (data[diag] = []));
+  if (iris.length === 0) return "";
+  for (const iri of iris) {
+    checkElem(iri);
+    const names = Object.entries(WorkspaceElements[iri].selectedLabel)
+      .filter(
+        ([key, value]) =>
+          key in Languages && value && WorkspaceTerms[iri].labels[key] !== value
+      )
+      .map(([key, value]) => qb.ll(value, key));
+    const ogStatement: string = qb.s(
+      qb.i(iri),
+      "og:name",
+      qb.a(names),
+      names.length > 0
+    );
+    data[AppSettings.applicationContext].push(ogStatement);
+    Object.values(Diagrams)
+      .filter((diag) => diag.active)
+      .map((diag) => diag.graph)
+      .forEach((graph) => data[graph].push(ogStatement));
+    const deleteStatements = [
+      qb.s(qb.i(iri), "og:name", "?name"),
+      qb.s(qb.i(iri), "og:active", "?active"),
+    ];
+    deletes.push(
+      ...[AppSettings.applicationContext, ...diagramGraphs].map((graph) =>
+        DELETE`${qb.g(graph, deleteStatements)}`.WHERE`${qb.g(
+          graph,
+          deleteStatements
+        )}`.build()
+      )
+    );
+  }
+  inserts.push(
+    ...[AppSettings.applicationContext, ...diagramGraphs].map((graph) =>
+      INSERT.DATA`${qb.g(graph, data[graph])}`.build()
+    )
+  );
+  return qb.combineQueries(...deletes, ...inserts);
+}
+
 export function updateProjectElement(del: boolean, ...iris: string[]): string {
   const diagramGraphs = Object.values(Diagrams)
     .filter((diag) => diag.active)

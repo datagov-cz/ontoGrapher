@@ -19,7 +19,10 @@ import {
   fetchVocabularies,
 } from "../queries/get/CacheQueries";
 import { qb } from "../queries/QueryBuilder";
-import { updateProjectElement } from "../queries/update/UpdateElementQueries";
+import {
+  updateProjectElement,
+  updateProjectElementNames,
+} from "../queries/update/UpdateElementQueries";
 import {
   deleteConcept,
   initElements,
@@ -249,10 +252,14 @@ export async function retrieveContextData(): Promise<boolean> {
       );
       deleteConcept(id);
     });
+  const elements = initElements();
   if (
     !(await processTransaction(
       AppSettings.contextEndpoint,
-      qb.constructQuery(updateProjectElement(true, ...initElements()))
+      qb.constructQuery(
+        updateProjectElementNames(...elements),
+        updateProjectElement(false, ...elements)
+      )
     ))
   )
     return false;
