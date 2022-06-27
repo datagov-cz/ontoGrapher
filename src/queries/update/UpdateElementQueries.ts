@@ -25,7 +25,7 @@ export function updateProjectElementNames(...iris: string[]): string {
   return `delete {${query}} where {${query} values ?graph {<${[
     AppSettings.applicationContext,
     ...diagramGraphs,
-  ].join("> <")}>} values ?iri {<${iris.join("> <")}>} }`;
+  ].join("> <")}>} filter(str(?name) = "") }`;
 }
 
 export function updateProjectElement(del: boolean, ...iris: string[]): string {
