@@ -20,13 +20,13 @@ export function updateProjectElementNames(...iris: string[]): string {
     "?iri og:name ?name.",
     "?iri og:active ?active",
     "}",
-    "values ?graph {<" +
-      [AppSettings.applicationContext, ...diagramGraphs].join("> <") +
-      ">}",
-    "values ?iri {<" + iris.join("> <") + ">}",
+    `values ?graph {<${[AppSettings.applicationContext, ...diagramGraphs].join(
+      "> <"
+    )}>}`,
+    `values ?iri {<${iris.join("> <")}>}`,
   ].join(`
     `);
-  return `delete {${query}} where {${query}}`;
+  return `delete {${query}} where {${query}  }`;
 }
 
 export function updateProjectElement(del: boolean, ...iris: string[]): string {
