@@ -19,7 +19,7 @@ export function updateProjectElementNames(): string {
     "}",
     "} where {",
     `<${AppSettings.contextIRI}> <${parsePrefix(
-      "d-sgov-pracovní-prostor",
+      "d-sgov-pracovní-prostor-pojem",
       "odkazuje-na-přílohový-kontext"
     )}> ?graph.`,
     "graph ?graph {",
