@@ -72,6 +72,7 @@ export var Prefixes: { [key: string]: string } = {
   "v-sgov-pojem": "https://slovník.gov.cz/veřejný-sektor/pojem/",
   "a-popis-dat-pojem":
     "http://onto.fel.cvut.cz/ontologies/slovník/agendový/popis-dat/pojem/",
+  "slovník-gov": "https://slovník.gov.cz/",
 };
 
 export var WorkspaceTerms: {
@@ -125,6 +126,7 @@ export var Diagrams: {
     index: number;
     iri: string;
     graph: string;
+    saved: boolean;
   };
 } = {};
 

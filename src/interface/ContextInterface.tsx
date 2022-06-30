@@ -1,6 +1,7 @@
 import {
   AppSettings,
   Diagrams,
+  Links,
   WorkspaceElements,
   WorkspaceLinks,
   WorkspaceTerms,
@@ -18,7 +19,10 @@ import {
   fetchVocabularies,
 } from "../queries/get/CacheQueries";
 import { qb } from "../queries/QueryBuilder";
-import { updateProjectElement } from "../queries/update/UpdateElementQueries";
+import {
+  updateProjectElement,
+  updateProjectElementNames,
+} from "../queries/update/UpdateElementQueries";
 import {
   deleteConcept,
   initElements,
@@ -35,10 +39,7 @@ import { ContextLoadingStrategy, Representation } from "../config/Enum";
 import { Locale } from "../config/Locale";
 import { reconstructApplicationContextWithDiagrams } from "../queries/update/UpdateReconstructAppContext";
 import { updateApplicationContext } from "../queries/update/UpdateMiscQueries";
-import {
-  updateCreateDiagram,
-  updateDeleteDiagram,
-} from "../queries/update/UpdateDiagramQueries";
+import { updateDeleteDiagram } from "../queries/update/UpdateDiagramQueries";
 import { CacheSearchVocabularies } from "../datatypes/CacheSearchResults";
 import * as _ from "lodash";
 import { callCriticalAlert } from "../config/CriticalAlertData";
@@ -91,13 +92,12 @@ export async function updateContexts(): Promise<boolean> {
   if (AppSettings.initWorkspace) {
     const queries = [updateApplicationContext()];
     if (Object.keys(Diagrams).length === 0) {
-      const id = addDiagram(
+      addDiagram(
         Locale[AppSettings.interfaceLanguage].untitled,
         true,
         Representation.COMPACT,
         0
       );
-      queries.push(updateCreateDiagram(id));
     }
     const ret = await processTransaction(
       AppSettings.contextEndpoint,
@@ -211,7 +211,8 @@ export async function retrieveVocabularyData(): Promise<boolean> {
       vocabularies[vocab].glossary,
       vocabularies[vocab].terms,
       vocab,
-      vocabularies[vocab].graph
+      vocabularies[vocab].graph,
+      true
     );
     WorkspaceVocabularies[vocab].readOnly = false;
     WorkspaceVocabularies[vocab].graph = vocabularies[vocab].graph;
@@ -244,20 +245,39 @@ export async function retrieveContextData(): Promise<boolean> {
     await fetchReadOnlyTerms(AppSettings.contextEndpoint, missingTerms)
   );
   checkForObsoleteDiagrams();
+  Object.keys(WorkspaceLinks)
+    .filter((id) => {
+      const iri = WorkspaceLinks[id].iri;
+      return !(iri in WorkspaceTerms) && !(iri in Links);
+    })
+    .forEach((id) => {
+      const iri = WorkspaceLinks[id].iri;
+      // In all probability, the workspace has been modified outside of OG
+      // *OR* OG deletes its terms (i.e. relationship types) incorrectly.
+      console.warn(
+        `Link ID ${id}'s type (${iri}) not found in vocabulary contexts nor cache contexts.`
+      );
+      WorkspaceLinks[id].active = false;
+      if (iri in WorkspaceTerms) deleteConcept(iri);
+    });
   Object.keys(WorkspaceElements)
     .filter((id) => !(id in WorkspaceTerms))
     .forEach((id) => {
       // In all probability, the workspace has been modified outside of OG
       // *OR* OG deletes its terms incorrectly.
-      console.error(
+      console.warn(
         `Term ${id} not found in vocabulary contexts nor cache contexts.`
       );
       deleteConcept(id);
     });
+  const elements = initElements();
   if (
     !(await processTransaction(
       AppSettings.contextEndpoint,
-      qb.constructQuery(updateProjectElement(false, ...initElements()))
+      qb.constructQuery(
+        updateProjectElementNames(),
+        updateProjectElement(false, ...elements)
+      )
     ))
   )
     return false;
@@ -323,8 +343,7 @@ function checkForObsoleteDiagrams() {
           queries.push(updateDeleteDiagram(diag));
         }
         if (diagramsToDelete.length === workspaceDiagrams.length) {
-          const id = addDiagram(Locale[AppSettings.interfaceLanguage].untitled);
-          queries.push(updateCreateDiagram(id));
+          addDiagram(Locale[AppSettings.interfaceLanguage].untitled);
         }
         changeDiagrams();
         await processTransaction(

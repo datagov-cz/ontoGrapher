@@ -300,7 +300,8 @@ export function setRepresentation(
       ) {
         const cell = graph.getCell(id);
         if (cell) {
-          storeElement(cell);
+          WorkspaceElements[id].hidden[AppSettings.selectedDiagram] = true;
+          cell.remove();
           del = true;
         }
       }
@@ -327,7 +328,13 @@ export function setRepresentation(
     }
     return { result: del, transaction: queries };
   } else {
-    for (const elem of AppSettings.switchElements) {
+    for (const elem of AppSettings.switchElements.concat(
+      Object.keys(WorkspaceTerms).filter((id) =>
+        WorkspaceTerms[id].types.includes(
+          parsePrefix("z-sgov-pojem", "typ-vlastnosti")
+        )
+      )
+    )) {
       if (WorkspaceElements[elem].position[AppSettings.selectedDiagram]) {
         const find = graph
           .getElements()
@@ -337,7 +344,7 @@ export function setRepresentation(
               WorkspaceElements[elem].active &&
               WorkspaceElements[elem].hidden[AppSettings.selectedDiagram]
           );
-        let cell = find || new graphElement({ id: elem });
+        const cell = find || new graphElement({ id: elem });
         cell.addTo(graph);
         cell.position(
           WorkspaceElements[elem].position[AppSettings.selectedDiagram].x,
@@ -464,7 +471,7 @@ export function restoreHiddenElem(
               AppSettings.ontographerContext
             )))
     ) {
-      let oldPos = setupLink(link, restoreSimpleConnectionPosition);
+      const oldPos = setupLink(link, restoreSimpleConnectionPosition);
       if (oldPos)
         queries.push(
           updateDeleteProjectLinkVertex(

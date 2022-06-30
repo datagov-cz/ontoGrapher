@@ -62,7 +62,11 @@ export async function getElementsConfig(
             scheme: result.scheme.value,
           };
         }
-        if (result.name && !elements[iri].selectedName[result.name["xml:lang"]])
+        if (
+          result.name &&
+          result.name.value &&
+          !elements[iri].selectedName[result.name["xml:lang"]]
+        )
           elements[iri].selectedName[result.name["xml:lang"]] =
             result.name.value;
         if (result.vocabulary)
@@ -172,32 +176,27 @@ export async function getSettings(contextEndpoint: string): Promise<{
   };
   const query = [
     "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
-    "PREFIX a-popis-dat-pojem: <http://onto.fel.cvut.cz/ontologies/slovník/agendový/popis-dat/pojem/>",
-    "select ?vocabIRI ?diagramGraph ?diagram ?index ?name ?color ?id ?representation ?context ?legacyContext where {",
-    "OPTIONAL {",
-    "graph ?vocabContext {",
-    "?vocabIRI a a-popis-dat-pojem:slovník .",
-    `?vocabContext ${qb.i(
-      parsePrefix("a-popis-dat-pojem", `má-přílohu`)
-    )} ?diagramGraph .`,
-    "OPTIONAL {",
-    `?vocabContext ${qb.i(
-      parsePrefix("a-popis-dat-pojem", `má-aplikační-kontext`)
-    )} ?ogContext .`,
+    "select distinct ?ogContext ?graph ?diagram ?index ?name ?color ?id ?representation ?context ?legacyContext where {",
+    "optional {?vocabContext <https://slovník.gov.cz/datový/pracovní-prostor/pojem/odkazuje-na-přílohový-kontext> ?graph .",
+    "graph ?graph {",
+    " ?diagram og:index ?index .",
+    " ?diagram og:name ?name .",
+    " ?diagram og:id ?id .",
+    " ?diagram og:representation ?representation .",
     "}",
     "}",
-    "optional { graph ?ogContext {",
-    "?ogContext og:viewColor ?color .",
-    "?ogContext og:contextVersion ?context .",
-    "}}",
+    "optional {?vocabContext <https://slovník.gov.cz/datový/pracovní-prostor/pojem/odkazuje-na-kontext> ?ogContext .",
+    " graph ?ogContext {",
+    "   ?ogContext og:viewColor ?color .",
+    "   ?ogContext og:contextVersion ?context .",
+    "   optional {",
+    `<${
+      AppSettings.ontographerContext +
+      AppSettings.contextIRI.substring(AppSettings.contextIRI.lastIndexOf("/"))
+    }> og:contextVersion ?legacyContext.`,
+    "  }}",
+    "}",
     `values ?vocabContext {<${AppSettings.contextIRIs.join("> <")}>}`,
-    "graph ?diagramGraph {",
-    "?diagram og:index ?index .",
-    "?diagram og:name ?name .",
-    "?diagram og:id ?id .",
-    "?diagram og:representation ?representation .",
-    "}",
-    "}",
     "} order by asc(?index)",
   ].join(`
   `);
@@ -239,6 +238,7 @@ export async function getSettings(contextEndpoint: string): Promise<{
             result.id.value,
             result.diagramGraph.value
           );
+          Diagrams[result.id.value].saved = true;
           indices.push(index);
           AppSettings.initWorkspace = false;
           if (result.context) {
@@ -365,9 +365,10 @@ export async function getLinksConfig(
       "?diagram og:id ?diagramID.",
       "?diagram og:representation ?representation.",
       "}",
-      `?contextIRI ${qb.i(
-        parsePrefix("a-popis-dat-pojem", `má-přílohu`)
-      )} ?graph.`,
+      `?contextIRI <${parsePrefix(
+        "d-sgov-pracovní-prostor-pojem",
+        "odkazuje-na-přílohový-kontext"
+      )}> ?graph.`,
       `values ?contextIRI {<${AppSettings.contextIRIs.join("> <")}>}`,
       "}",
     ].join(`

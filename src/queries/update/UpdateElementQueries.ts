@@ -9,12 +9,38 @@ import {
 import { qb } from "../QueryBuilder";
 import { DELETE, INSERT } from "@tpluscode/sparql-builder";
 import { getVocabularyFromScheme } from "../../function/FunctionGetVars";
-import { initLanguageObject } from "../../function/FunctionEditVars";
+import { parsePrefix } from "../../function/FunctionEditVars";
+
+export function updateProjectElementNames(): string {
+  return [
+    "delete {",
+    "graph ?graph {",
+    "?iri og:name ?name.",
+    "}",
+    "} where {",
+    `<${AppSettings.contextIRI}> <${parsePrefix(
+      "d-sgov-pracovní-prostor-pojem",
+      "odkazuje-na-přílohový-kontext"
+    )}> ?graph.`,
+    "graph ?graph {",
+    "?diagram a og:diagram.",
+    "?iri a og:element.",
+    "?iri og:name ?name.",
+    'filter(str(?name) = "")',
+    "}",
+    "}",
+  ].join(`
+    `);
+}
 
 export function updateProjectElement(del: boolean, ...iris: string[]): string {
+  const diagramGraphs = Object.values(Diagrams)
+    .filter((diag) => diag.active)
+    .map((diag) => diag.graph);
   const data: { [key: string]: string[] } = {
     [AppSettings.applicationContext]: [],
   };
+  diagramGraphs.forEach((diag) => (data[diag] = []));
   const deletes: string[] = [];
   const inserts: string[] = [];
   if (iris.length === 0) return "";
@@ -31,11 +57,6 @@ export function updateProjectElement(del: boolean, ...iris: string[]): string {
     const altLabels = vocabElem.altLabels.map((alt) =>
       qb.ll(alt.label, alt.language)
     );
-    const selectedLabels = Object.entries(
-      Object.keys(WorkspaceElements[iri].selectedLabel).length > 0
-        ? WorkspaceElements[iri].selectedLabel
-        : initLanguageObject("")
-    ).map(([key, value]) => qb.ll(value, key));
     const names = Object.entries(WorkspaceElements[iri].selectedLabel)
       .filter(
         ([key, value]) =>
@@ -50,25 +71,15 @@ export function updateProjectElement(del: boolean, ...iris: string[]): string {
       qb.s(qb.i(iri), "rdf:type", "og:element"),
       qb.s(qb.i(iri), "og:scheme", qb.i(scheme)),
       qb.s(qb.i(iri), "og:vocabulary", qb.i(getVocabularyFromScheme(scheme))),
-      qb.s(qb.i(iri), "og:name", qb.a(selectedLabels)),
+      qb.s(qb.i(iri), "og:name", qb.a(names), names.length > 0),
       qb.s(qb.i(iri), "og:active", qb.ll(WorkspaceElements[iri].active)),
     ];
 
     data[AppSettings.applicationContext].push(...ogStatements);
-    const deleteStatements = [
-      qb.s(qb.i(iri), "og:name", "?name"),
-      qb.s(qb.i(iri), "og:active", "?active"),
-    ];
-
-    if (del)
-      deletes.push(
-        ...deleteStatements.map((stmt) =>
-          DELETE`${qb.g(AppSettings.applicationContext, [stmt])}`.WHERE`${qb.g(
-            AppSettings.applicationContext,
-            [stmt]
-          )}`.build()
-        )
-      );
+    Object.values(Diagrams)
+      .filter((diag) => diag.active)
+      .map((diag) => diag.graph)
+      .forEach((graph) => data[graph].push(...ogStatements));
 
     if (WorkspaceVocabularies[vocab].readOnly) continue;
     if (!(vocab in data)) data[vocab] = [];
@@ -95,11 +106,15 @@ export function updateProjectElement(del: boolean, ...iris: string[]): string {
       );
 
     if (del) {
+      const deleteStatements = [
+        qb.s(qb.i(iri), "og:name", "?name"),
+        qb.s(qb.i(iri), "og:active", "?active"),
+      ];
       deletes.push(
-        ...deleteStatements.map((stmt) =>
-          DELETE`${qb.g(AppSettings.applicationContext, [stmt])}`.WHERE`${qb.g(
-            AppSettings.applicationContext,
-            [stmt]
+        ...[AppSettings.applicationContext, ...diagramGraphs].map((graph) =>
+          DELETE`${qb.g(graph, deleteStatements)}`.WHERE`${qb.g(
+            graph,
+            deleteStatements
           )}`.build()
         ),
         ...[
@@ -124,10 +139,9 @@ export function updateProjectElement(del: boolean, ...iris: string[]): string {
     }
   }
   inserts.push(
-    INSERT.DATA`${qb.g(
-      AppSettings.applicationContext,
-      data[AppSettings.applicationContext]
-    )}`.build()
+    ...[AppSettings.applicationContext, ...diagramGraphs].map((graph) =>
+      INSERT.DATA`${qb.g(graph, data[graph])}`.build()
+    )
   );
   return qb.combineQueries(...deletes, ...inserts);
 }

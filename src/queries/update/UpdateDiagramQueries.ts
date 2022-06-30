@@ -7,7 +7,6 @@ function getDiagramTriples(diagram: string): string {
   const diagramIRI = qb.i(Diagrams[diagram].iri);
   const diagramGraph = Diagrams[diagram].graph;
   const diagramAttachmentTypes = [
-    qb.i(parsePrefix("d-sgov-pracovní-prostor-pojem", "příloha")),
     qb.i(parsePrefix("a-popis-dat-pojem", "příloha")),
     qb.i(parsePrefix("og", "diagram")),
   ];
@@ -35,8 +34,13 @@ export function updateCreateDiagram(diagram: string): string {
     INSERT.DATA`${qb.g(contextIRI, [
       qb.s(
         qb.i(contextIRI),
-        qb.i(parsePrefix("a-popis-dat-pojem", `má-přílohu`)),
-        diagramIRI
+        qb.i(
+          parsePrefix(
+            "d-sgov-pracovní-prostor-pojem",
+            `odkazuje-na-přílohový-kontext`
+          )
+        ),
+        diagramGraph
       ),
       qb.s(
         diagramGraph,
@@ -45,12 +49,12 @@ export function updateCreateDiagram(diagram: string): string {
       ),
       qb.s(
         diagramGraph,
-        qb.i(parsePrefix("d-sgov-pracovní-prostor-pojem", "má-typ-přílohy")),
+        qb.i(parsePrefix("a-popis-dat-pojem", "má-typ-přílohy")),
         "og:diagram"
       ),
       qb.s(
         diagramGraph,
-        qb.i(parsePrefix("d-sgov-pracovní-prostor-pojem", "vychází-z-verze")),
+        qb.i(parsePrefix("a-popis-dat-pojem", "vychází-z-verze")),
         diagramIRI
       ),
     ])}`.build()
@@ -76,7 +80,6 @@ export function updateDiagram(diagram: string): string {
 }
 
 export function updateDeleteDiagram(diagram: string) {
-  const diagramIRI = Diagrams[diagram].iri;
   const diagramGraph = Diagrams[diagram].graph;
   const deleteGraph = `DROP GRAPH <${diagramGraph}>`;
   const deleteVocabularyContext1 = AppSettings.contextIRIs.map((contextIRI) =>
@@ -88,7 +91,7 @@ export function updateDeleteDiagram(diagram: string) {
   const deleteVocabularyContext2 = AppSettings.contextIRIs.map((contextIRI) =>
     DELETE`${qb.g(contextIRI, [qb.s("?s1", "?p1", qb.i(diagramGraph))])}`
       .WHERE`${qb.g(contextIRI, [
-      qb.s("?s1", "?p1", qb.i(diagramIRI)),
+      qb.s("?s1", "?p1", qb.i(diagramGraph)),
     ])}`.build()
   );
   return qb.combineQueries(

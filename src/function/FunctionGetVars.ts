@@ -213,7 +213,14 @@ export function getLinkIRI(linkID: string) {
 }
 
 export function getNewDiagramContextIRI(id: string) {
-  return parsePrefix("d-sgov-pracovní-prostor-pojem", `příloha/instance-${id}`);
+  return parsePrefix(
+    "d-sgov-pracovní-prostor-pojem",
+    `přílohový-kontext/instance-${id}`
+  );
+}
+
+export function getNewDiagramIRI(id: string): string {
+  return parsePrefix("slovník-gov", `příloha/instance-${id}`);
 }
 
 export function isLabelBlank(label: string) {

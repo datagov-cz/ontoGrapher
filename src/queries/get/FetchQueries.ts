@@ -128,7 +128,7 @@ export async function fetchConcepts(
     requiredType ? "?term a ?termType." : "OPTIONAL {?term a ?termType.}",
     requiredTypes && "VALUES ?termType {<" + requiredTypes.join("> <") + ">}",
     requiredValues && "VALUES ?term {<" + requiredValues.join("> <") + ">}",
-    "OPTIONAL {?term skos:prefLabel ?termLabel.}",
+    "?term skos:prefLabel ?termLabel.",
     "OPTIONAL {?term skos:altLabel ?termAltLabel.}",
     "OPTIONAL {?term skos:definition ?termDefinition.}",
     "OPTIONAL {?term z-sgov-pojem:charakterizuje ?character.}",
@@ -144,9 +144,9 @@ export async function fetchConcepts(
     "OPTIONAL {?restriction owl:onProperty [owl:inverseOf ?inverseOnProperty].}",
     "OPTIONAL {?restriction owl:onClass ?onClass.}",
     "?restriction ?restrictionPred ?target.",
-    "filter (?restrictionPred in (<" +
-      Object.keys(RestrictionConfig).join(">, <") +
-      ">))}",
+    "values ?restrictionPred {<" +
+      Object.keys(RestrictionConfig).join("> <") +
+      ">}}",
     "}",
     graph && "}",
   ].join(" ");

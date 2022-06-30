@@ -50,6 +50,7 @@ import { insertNewCacheTerms, insertNewRestrictions } from "./FunctionCache";
 import _ from "lodash";
 import { RepresentationConfig } from "../config/logic/RepresentationConfig";
 import { updateDeleteTriples } from "../queries/update/UpdateMiscQueries";
+import { updateCreateDiagram } from "../queries/update/UpdateDiagramQueries";
 
 export function resizeElem(id: string, highlight: boolean = true) {
   let view = paper.findViewByModel(id);
@@ -91,10 +92,7 @@ export function resizeElem(id: string, highlight: boolean = true) {
 }
 
 export function getElementPosition(id: string): joint.dia.Point {
-  const point = graph
-    .getElements()
-    .find((elem) => (elem.id as string) === id)
-    ?.position();
+  const point = WorkspaceElements[id].position[AppSettings.selectedDiagram];
   if (point) return { x: point.x + 200, y: point.y + 200 };
   else
     return {
@@ -108,13 +106,14 @@ export function createNewConcept(
   name: { [key: string]: string },
   language: string,
   vocabulary: string,
-  types: string[] = []
+  types: string[] = [],
+  elementPoint: boolean = false
 ): string {
   const iri = createNewElemIRI(
     WorkspaceVocabularies[vocabulary].glossary,
     name[language]
   );
-  const p = paper.clientToLocalPoint(point);
+  const p = elementPoint ? point : paper.clientToLocalPoint(point);
   addVocabularyElement(iri, WorkspaceVocabularies[vocabulary].glossary, [
     parsePrefix("skos", "Concept"),
     ...types,
@@ -125,11 +124,8 @@ export function createNewConcept(
   WorkspaceElements[iri].hidden[AppSettings.selectedDiagram] = false;
   const cls = new graphElement({ id: iri });
   if (p) {
-    cls.set("position", { x: p.x, y: p.y });
-    WorkspaceElements[iri].position[AppSettings.selectedDiagram] = {
-      x: p.x,
-      y: p.y,
-    };
+    cls.position(p);
+    WorkspaceElements[iri].position[AppSettings.selectedDiagram] = p;
   }
   if (isElementVisible(iri, AppSettings.representation)) {
     cls.addTo(graph);
@@ -274,7 +270,14 @@ export async function putElementsOnCanvas(
     const iris = data.iri.filter((iri: string) => {
       return !(iri in WorkspaceTerms && WorkspaceElements[iri].active);
     });
-    const ids = data.id;
+    const ids = data.id.filter((id: string) => !graph.getCell(id));
+    if (
+      (iris.length > 0 || ids.length > 0) &&
+      !Diagrams[AppSettings.selectedDiagram].saved
+    ) {
+      Diagrams[AppSettings.selectedDiagram].saved = true;
+      queries.push(updateCreateDiagram(AppSettings.selectedDiagram));
+    }
     if (iris.length > 0) {
       handleStatus(
         true,
@@ -282,55 +285,62 @@ export async function putElementsOnCanvas(
         true,
         false
       );
-      insertNewCacheTerms(
-        await fetchReadOnlyTerms(AppSettings.contextEndpoint, iris)
+      const relationships = await fetchRelationships(
+        AppSettings.contextEndpoint,
+        iris
       );
-      insertNewRestrictions(
-        await fetchRelationships(AppSettings.contextEndpoint, iris)
+      const readOnlyTerms = await fetchReadOnlyTerms(
+        AppSettings.contextEndpoint,
+        iris.concat(
+          Representation.COMPACT === AppSettings.representation
+            ? Object.keys(relationships)
+            : []
+        )
       );
-      const newIDs = initElements(true);
-      queries.push(updateProjectElement(false, ...newIDs));
-      queries.push(updateProjectLink(false, ...initConnections().add));
-      ids.push(...newIDs);
+      insertNewCacheTerms(readOnlyTerms);
+      insertNewRestrictions(relationships);
+      const newElements = initElements(true);
+      const newConnections = initConnections().add;
+      queries.push(updateProjectElement(false, ...newElements));
+      queries.push(updateProjectLink(false, ...newConnections));
+      ids.push(...newElements);
       addToFlexSearch(...ids);
     }
     const matrixLength = Math.max(ids.length, iris.length);
     const matrixDimension = Math.ceil(Math.sqrt(matrixLength));
-    ids
-      .filter((id: string) => !graph.getCell(id))
-      .forEach((id: string, i: number) => {
-        const cls = new graphElement({ id: id });
-        const point = paper.clientToLocalPoint({
-          x: event.clientX,
-          y: event.clientY,
-        });
-        if (matrixLength > 1) {
-          const x = i % matrixDimension;
-          const y = Math.floor(i / matrixDimension);
-          cls.set("position", { x: point.x + x * 200, y: point.y + y * 200 });
-          WorkspaceElements[id].position[AppSettings.selectedDiagram] = {
-            x: point.x + x * 200,
-            y: point.y + y * 200,
-          };
-        } else {
-          cls.set("position", { x: point.x, y: point.y });
-          WorkspaceElements[id].position[AppSettings.selectedDiagram] = {
-            x: point.x,
-            y: point.y,
-          };
-        }
-        WorkspaceElements[id].hidden[AppSettings.selectedDiagram] = false;
-        cls.addTo(graph);
-        drawGraphElement(
-          cls,
-          AppSettings.canvasLanguage,
-          AppSettings.representation
-        );
-        queries.push(
-          ...restoreHiddenElem(id, cls, true, true, true),
-          updateProjectElementDiagram(AppSettings.selectedDiagram, id)
-        );
+    ids.forEach((id: string, i: number) => {
+      const cls = new graphElement({ id: id });
+      const point = paper.clientToLocalPoint({
+        x: event.clientX,
+        y: event.clientY,
       });
+      if (matrixLength > 1) {
+        const x = i % matrixDimension;
+        const y = Math.floor(i / matrixDimension);
+        cls.set("position", { x: point.x + x * 200, y: point.y + y * 200 });
+        WorkspaceElements[id].position[AppSettings.selectedDiagram] = {
+          x: point.x + x * 200,
+          y: point.y + y * 200,
+        };
+      } else {
+        cls.set("position", { x: point.x, y: point.y });
+        WorkspaceElements[id].position[AppSettings.selectedDiagram] = {
+          x: point.x,
+          y: point.y,
+        };
+      }
+      WorkspaceElements[id].hidden[AppSettings.selectedDiagram] = false;
+      cls.addTo(graph);
+      drawGraphElement(
+        cls,
+        AppSettings.canvasLanguage,
+        AppSettings.representation
+      );
+      queries.push(
+        ...restoreHiddenElem(id, cls, true, true, true),
+        updateProjectElementDiagram(AppSettings.selectedDiagram, id)
+      );
+    });
     if (AppSettings.representation === Representation.COMPACT)
       queries.push(
         ...setRepresentation(AppSettings.representation).transaction

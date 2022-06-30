@@ -16,7 +16,7 @@ export function updateApplicationContext(): string {
     ),
     qb.s(
       qb.i(projIRI),
-      qb.i(parsePrefix("d-sgov-pracovní-prostor-pojem", "má-id-aplikace")),
+      qb.i(parsePrefix("a-popis-dat-pojem", "má-id-aplikace")),
       qb.ll(Environment.id)
     ),
   ])}`.build();

@@ -68,7 +68,8 @@ const CreateElemStrategy: {
       conceptName,
       AppSettings.defaultLanguage,
       vocabulary,
-      [parsePrefix("z-sgov-pojem", "typ-vlastnosti")]
+      [parsePrefix("z-sgov-pojem", "typ-vlastnosti")],
+      true
     );
     return [
       updateProjectElement(true, id),

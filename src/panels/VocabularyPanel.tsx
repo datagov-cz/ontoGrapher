@@ -194,12 +194,13 @@ export default class VocabularyPanel extends React.Component<Props, State> {
       Object.keys(WorkspaceTerms)
         .filter(
           (iri) =>
-            getVocabularyFromScheme(WorkspaceTerms[iri].inScheme) === vocab
+            getVocabularyFromScheme(WorkspaceTerms[iri].inScheme) === vocab &&
+            WorkspaceElements[iri].active
         )
         .sort((a, b) => this.sort(a, b))
         .filter(
           (id) =>
-            flexSearchResults.includes(id) &&
+            (!this.state.search || flexSearchResults.includes(id)) &&
             (AppSettings.representation === Representation.FULL ||
               (AppSettings.representation === Representation.COMPACT &&
                 isElementVisible(id, Representation.COMPACT)))

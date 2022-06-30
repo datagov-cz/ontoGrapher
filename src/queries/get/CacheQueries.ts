@@ -29,7 +29,11 @@ export async function fetchVocabularies(
       "> <https://slovník.gov.cz/datový/pracovní-prostor/pojem/odkazuje-na-kontext> ?vocabulary.}",
     "graph ?vocabulary {",
     "OPTIONAL {?vocabulary <http://purl.org/vocab/vann/preferredNamespaceUri> ?namespace.}",
-    "OPTIONAL {?vocabulary <https://slovník.gov.cz/datový/pracovní-prostor/pojem/má-přílohu> ?diagram.}",
+    "OPTIONAL {?vocabulary ?hasAttachmentPredicate ?diagram.",
+    `VALUES ?hasAttachmentPredicate {<${[
+      parsePrefix("a-popis-dat-pojem", "má-přílohu"),
+      parsePrefix("d-sgov-pracovní-prostor-pojem", "má-přílohu"),
+    ].join("> <")}>}}`,
     "?vocabulary <http://onto.fel.cvut.cz/ontologies/slovník/agendový/popis-dat/pojem/má-glosář> ?scheme.",
     "?vocabulary <http://purl.org/dc/terms/title> ?title.",
     "?term skos:inScheme ?scheme.",

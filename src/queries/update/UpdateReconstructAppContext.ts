@@ -3,16 +3,20 @@ import { qb } from "../QueryBuilder";
 import { initElements, parsePrefix } from "../../function/FunctionEditVars";
 import { processQuery } from "../../interface/TransactionInterface";
 import { updateApplicationContext } from "./UpdateMiscQueries";
-import { updateProjectElement } from "./UpdateElementQueries";
+import {
+  updateProjectElement,
+  updateProjectElementNames,
+} from "./UpdateElementQueries";
 
 export async function reconstructApplicationContextWithDiagrams(): Promise<string> {
   const diagramRetrievalQuery = [
     "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
     "select ?diagram ?graph where {",
     "graph ?contextIRI {",
-    `?contextIRI ${qb.i(
-      parsePrefix("a-popis-dat-pojem", `má-přílohu`)
-    )} ?graph.`,
+    `?contextIRI <${parsePrefix(
+      "d-sgov-pracovní-prostor-pojem",
+      "odkazuje-na-přílohový-kontext"
+    )}> ?graph.`,
     "}",
     `values ?contextIRI {<${AppSettings.contextIRIs.join("> <")}>}`,
     "graph ?graph {",
@@ -44,10 +48,12 @@ export async function reconstructApplicationContextWithDiagrams(): Promise<strin
       (iri) => `add <${iri}> to <${AppSettings.applicationContext}>`
     ).join(`;
     `);
+    const elements = initElements();
     return qb.combineQueries(
       updateApplicationContext(),
       transferQuery,
-      updateProjectElement(false, ...initElements())
+      updateProjectElementNames(),
+      updateProjectElement(false, ...elements)
     );
   } else return "";
 }
