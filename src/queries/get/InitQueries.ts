@@ -176,7 +176,7 @@ export async function getSettings(contextEndpoint: string): Promise<{
   };
   const query = [
     "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
-    "select distinct ?ogContext ?graph ?diagram ?index ?name ?color ?id ?representation ?context ?legacyContext where {",
+    "select distinct ?ogContext ?graph ?diagram ?index ?name ?color ?id ?representation ?context where {",
     "optional {?vocabContext <https://slovník.gov.cz/datový/pracovní-prostor/pojem/odkazuje-na-přílohový-kontext> ?graph .",
     "graph ?graph {",
     " ?diagram og:index ?index .",
@@ -189,12 +189,7 @@ export async function getSettings(contextEndpoint: string): Promise<{
     " graph ?ogContext {",
     "   ?ogContext og:viewColor ?color .",
     "   ?ogContext og:contextVersion ?context .",
-    "   optional {",
-    `<${
-      AppSettings.ontographerContext +
-      AppSettings.contextIRI.substring(AppSettings.contextIRI.lastIndexOf("/"))
-    }> og:contextVersion ?legacyContext.`,
-    "  }}",
+    "  }",
     "}",
     `values ?vocabContext {<${AppSettings.contextIRIs.join("> <")}>}`,
     "} order by asc(?index)",
