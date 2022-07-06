@@ -1,9 +1,9 @@
 import { Environment } from "../config/Environment";
 
-export async function validateWorkspace(context: string, language: string) {
-  const namespace = context.substring(0, context.lastIndexOf("/") + 1);
-  const fragment = context.substring(context.lastIndexOf("/") + 1);
-  const url = `${Environment.components["al-sgov-server"].url}/workspaces/${fragment}/validate?namespace=${namespace}`;
+export async function validateWorkspace(contexts: string[], language: string) {
+  const url = `${
+    Environment.components["al-sgov-server"].url
+  }/validate?vocabularyContextIri=${contexts.join("&vocabularyContextIri=")}`;
   return await fetch(url, {
     headers: { "Accept-language": language },
     method: "GET",

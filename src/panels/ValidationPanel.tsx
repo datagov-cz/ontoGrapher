@@ -12,6 +12,7 @@ import { graph } from "../graph/Graph";
 import IRILabel from "../components/IRILabel";
 import { Locale } from "../config/Locale";
 import { highlightCell } from "../function/FunctionDraw";
+import { validateWorkspace } from "../interface/ValidationInterface";
 
 interface Props {
   close: Function;
@@ -55,24 +56,23 @@ export default class ValidationPanel extends React.Component<Props, State> {
 
   async validate() {
     this.setState({ loading: true, error: false });
-    // TODO: validation
-    // const results = await validateWorkspace(
-    //   AppSettings.contextIRI,
-    //   AppSettings.canvasLanguage
-    // ).catch(() => {
-    //   return false;
-    // });
-    // if (results) {
-    //   this.setState(
-    //     {
-    //       conforms: results.conforms,
-    //       results: results.results,
-    //     },
-    //     () => this.highlight()
-    //   );
-    // } else {
-    //   this.setState({ error: true });
-    // }
+    const results = await validateWorkspace(
+      AppSettings.contextIRIs,
+      AppSettings.canvasLanguage
+    ).catch(() => {
+      return false;
+    });
+    if (results) {
+      this.setState(
+        {
+          conforms: results.conforms,
+          results: results.results,
+        },
+        () => this.highlight()
+      );
+    } else {
+      this.setState({ error: true });
+    }
     this.setState({ loading: false });
   }
 
