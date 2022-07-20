@@ -12,7 +12,7 @@ import {
 import { Locale } from "../config/Locale";
 import { checkDefaultCardinality } from "../function/FunctionLink";
 import {
-  fetchConcepts,
+  fetchBaseOntology,
   fetchSubClassesAndCardinalities,
   fetchVocabulary,
 } from "../queries/get/FetchQueries";
@@ -38,13 +38,10 @@ export async function getVocabulariesFromRemoteJSON(
               getVocabularyFromScheme(data.sourceIRI)
             ].labels = initLanguageObject(key);
             results.push(
-              await fetchConcepts(
+              await fetchBaseOntology(
                 data.endpoint,
                 data.sourceIRI,
                 Stereotypes,
-                undefined,
-                undefined,
-                true,
                 [data.classIRI],
                 data.values
                   ? createValues(data.values, data.prefixes)
@@ -52,13 +49,10 @@ export async function getVocabulariesFromRemoteJSON(
               )
             );
             results.push(
-              await fetchConcepts(
+              await fetchBaseOntology(
                 data.endpoint,
                 data.sourceIRI,
                 Links,
-                undefined,
-                undefined,
-                true,
                 [data.relationshipIRI],
                 data.values
                   ? createValues(data.values, data.prefixes)

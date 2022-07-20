@@ -27,7 +27,7 @@ export default class InterfaceNotification extends React.Component<Props> {
             <button
               className={"buttonlink"}
               onClick={() => {
-                this.props.performTransaction(AppSettings.lastTransaction);
+                this.props.performTransaction(...AppSettings.lastTransactions);
               }}
             >
               {Locale[AppSettings.interfaceLanguage].retry}

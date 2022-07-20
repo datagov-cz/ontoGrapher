@@ -11,7 +11,7 @@ import { addLink } from "./FunctionCreateVars";
 import { parsePrefix } from "./FunctionEditVars";
 import { setCompactLinkCardinalitiesFromFullComponents } from "./FunctionLink";
 import { mvp1IRI, mvp2IRI } from "./FunctionGraph";
-import _ from "lodash";
+import * as _ from "lodash";
 
 export function createRestriction(
   restriction: Restriction,
@@ -24,20 +24,23 @@ export function createRestriction(
 export function initConnections(): { add: string[]; del: string[] } {
   const linksToPush = [];
   const linksToDelete: string[] = Object.keys(WorkspaceLinks);
-  const restrictions = _.flatten(
-    Object.keys(WorkspaceTerms).map((term) => WorkspaceTerms[term].restrictions)
-  ).sort((a, b) => a.restriction.localeCompare(b.restriction));
+  const restrictions = Object.keys(WorkspaceTerms).flatMap(
+    (term) => WorkspaceTerms[term].restrictions
+  );
   for (const restriction of restrictions) {
-    const find = getActiveToConnections(restriction.source).find(
-      (conn) =>
-        WorkspaceLinks[conn].iri === restriction.onProperty &&
-        WorkspaceLinks[conn].target === restriction.target
-    );
-    if (find && restriction.target in WorkspaceTerms)
-      linksToDelete.splice(linksToDelete.indexOf(find), 1);
+    if (restriction.onClass) restriction.initRestriction(restriction.source);
     else {
-      const newLink = restriction.initRestriction(restriction.source);
-      if (newLink) linksToPush.push(newLink);
+      const find = getActiveToConnections(restriction.source).find(
+        (conn) =>
+          WorkspaceLinks[conn].iri === restriction.onProperty &&
+          WorkspaceLinks[conn].target === restriction.target
+      );
+      if (find && restriction.target in WorkspaceTerms)
+        _.pull(linksToDelete, find);
+      else {
+        const newLink = restriction.initRestriction(restriction.source);
+        if (newLink) linksToPush.push(newLink);
+      }
     }
   }
   for (const iri in WorkspaceTerms) {
@@ -49,7 +52,7 @@ export function initConnections(): { add: string[]; del: string[] } {
         const find = getActiveToConnections(iri).find(
           (conn) => WorkspaceLinks[conn].target === subClassOf
         );
-        if (find) linksToDelete.splice(linksToDelete.indexOf(find), 1);
+        if (find) _.pull(linksToDelete, find);
         if (rangeID && !find) {
           const linkGeneralization = getNewLink(LinkType.GENERALIZATION);
           const id = linkGeneralization.id as string;
@@ -87,7 +90,7 @@ export function initConnections(): { add: string[]; del: string[] } {
               WorkspaceLinks[link].source === source &&
               WorkspaceLinks[link].target === target
           );
-          if (find) linksToDelete.splice(linksToDelete.indexOf(find), 1);
+          if (find) _.pull(linksToDelete, find);
           if (!find) {
             const newLink = getNewLink();
             const newLinkID = newLink.id as string;
