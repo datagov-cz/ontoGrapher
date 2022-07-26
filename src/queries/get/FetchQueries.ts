@@ -6,6 +6,7 @@ import {
 import {
   Links,
   Stereotypes,
+  WorkspaceTerms,
   WorkspaceVocabularies,
 } from "../../config/Variables";
 import { RestrictionConfig } from "../../config/logic/RestrictionConfig";
@@ -82,13 +83,10 @@ export async function fetchVocabulary(
     });
 }
 
-export async function fetchConcepts(
+export async function fetchBaseOntology(
   endpoint: string,
   scheme: string,
   sendTo: { [key: string]: any },
-  vocabulary?: string,
-  graph?: string,
-  requiredType?: boolean,
   requiredTypes?: string[],
   requiredValues?: string[]
 ): Promise<boolean> {
@@ -109,23 +107,13 @@ export async function fetchConcepts(
       inverseOf?: string;
     };
   } = {};
-
   const query = [
     "PREFIX skos: <http://www.w3.org/2004/02/skos/core#>",
     "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>",
     "PREFIX z-sgov-pojem: <https://slovník.gov.cz/základní/pojem/>",
-    "SELECT DISTINCT ?term ?termLabel ?termAltLabel ?termType ?termDefinition ?termDomain ?termRange ?topConcept ?inverseOf ?inverseOnProperty ?character ?restriction ?restrictionPred ?onProperty ?onClass ?target ?subClassOf",
+    "SELECT ?term ?termLabel ?termAltLabel ?termType ?termDefinition ?termDomain ?termRange ?inverseOf ?character ?subClassOf",
     "WHERE {",
-    graph && "GRAPH <" + graph + "> {",
-    vocabulary
-      ? [
-          "?term skos:inScheme ?scheme.",
-          "<" +
-            vocabulary +
-            "> <http://onto.fel.cvut.cz/ontologies/slovník/agendový/popis-dat/pojem/má-glosář> ?scheme.",
-        ].join(" ")
-      : "?term skos:inScheme <" + scheme + ">.",
-    requiredType ? "?term a ?termType." : "OPTIONAL {?term a ?termType.}",
+    "?term skos:inScheme <" + scheme + ">.",
     requiredTypes && "VALUES ?termType {<" + requiredTypes.join("> <") + ">}",
     requiredValues && "VALUES ?term {<" + requiredValues.join("> <") + ">}",
     "?term skos:prefLabel ?termLabel.",
@@ -137,24 +125,12 @@ export async function fetchConcepts(
     "OPTIONAL {?term rdfs:subClassOf ?subClassOf. ",
     "filter (!isBlank(?subClassOf)) }",
     "OPTIONAL {?term owl:inverseOf ?inverseOf. }",
-    "OPTIONAL {?topConcept skos:hasTopConcept ?term. }",
-    "OPTIONAL {?term rdfs:subClassOf ?restriction. ",
-    "?restriction a owl:Restriction .",
-    "OPTIONAL {?restriction owl:onProperty ?onProperty.}",
-    "OPTIONAL {?restriction owl:onProperty [owl:inverseOf ?inverseOnProperty].}",
-    "OPTIONAL {?restriction owl:onClass ?onClass.}",
-    "?restriction ?restrictionPred ?target.",
-    "values ?restrictionPred {<" +
-      Object.keys(RestrictionConfig).join("> <") +
-      ">}}",
     "}",
-    graph && "}",
   ].join(" ");
   return await processQuery(endpoint, query)
     .then((response) => response.json())
     .then((data) => {
       if (data.results.bindings.length === 0) return false;
-      const restrictions: Restriction[] = [];
       for (const row of data.results.bindings) {
         if (!(row.term.value in result)) {
           result[row.term.value] = {
@@ -209,6 +185,195 @@ export async function fetchConcepts(
         if (row.termRange) result[row.term.value].range = row.termRange.value;
         if (row.character)
           result[row.term.value].character = row.character.value;
+        if (
+          row.subClassOf &&
+          row.subClassOf.type !== "bnode" &&
+          !result[row.term.value].subClassOf.includes(row.subClassOf.value)
+        )
+          result[row.term.value].subClassOf.push(row.subClassOf.value);
+        if (row.inverseOf)
+          result[row.term.value].inverseOf = row.inverseOf.value;
+      }
+      Object.assign(sendTo, result);
+      return true;
+    })
+    .catch((e) => {
+      console.error(e);
+      return false;
+    });
+}
+
+export async function fetchRestrictions(
+  endpoint: string,
+  terms: { [key: string]: any },
+  scheme?: string,
+  vocabulary?: string,
+  graph?: string,
+  targets?: string[]
+): Promise<{ [key: string]: { restrictions: Restriction[] } }> {
+  const result: {
+    [key: string]: {
+      restrictions: Restriction[];
+    };
+  } = Object.fromEntries(
+    Object.keys(terms).map((k) => [k, { restrictions: [] }])
+  );
+
+  const query = [
+    "PREFIX skos: <http://www.w3.org/2004/02/skos/core#>",
+    "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>",
+    "PREFIX z-sgov-pojem: <https://slovník.gov.cz/základní/pojem/>",
+    "SELECT ?term ?inverseOnProperty ?restrictionPred ?onProperty ?onClass ?target",
+    "WHERE {",
+    graph && "GRAPH <" + graph + "> {",
+    vocabulary
+      ? [
+          "?term skos:inScheme ?scheme.",
+          "<" +
+            vocabulary +
+            "> <http://onto.fel.cvut.cz/ontologies/slovník/agendový/popis-dat/pojem/má-glosář> ?scheme.",
+        ].join(" ")
+      : "?term skos:inScheme <" + scheme + ">.",
+    "?term rdfs:subClassOf ?restriction. ",
+    "?restriction a owl:Restriction .",
+    "OPTIONAL {?restriction owl:onProperty ?onProperty.",
+    "FILTER (!isBlank(?onProperty))}",
+    "OPTIONAL {?restriction owl:onProperty [owl:inverseOf ?inverseOnProperty].}",
+    "OPTIONAL {?restriction owl:onClass ?onClass.}",
+    "FILTER(bound(?onProperty) || bound(?inverseOnProperty))",
+    "?restriction ?restrictionPred ?target.",
+    targets ? "values ?target {<" + targets.join("> <") + ">}" : "",
+    "FILTER (!isBlank(?target))",
+    "values ?restrictionPred {<" +
+      Object.keys(RestrictionConfig).join("> <") +
+      ">}",
+    "}",
+    graph && "}",
+  ].join(" ");
+  return await processQuery(endpoint, query)
+    .then((response) => response.json())
+    .then((data) => {
+      const restrictions: Restriction[] = [];
+      for (const row of data.results.bindings) {
+        if (!(row.term.value in result)) continue;
+        restrictions.push(
+          new Restriction(
+            row.term.value,
+            row.restrictionPred.value,
+            !!row.onProperty
+              ? row.onProperty.value
+              : row.inverseOnProperty.value,
+            row.target.value,
+            row.onClass ? row.onClass.value : undefined,
+            !row.onProperty
+          )
+        );
+      }
+      for (const restriction of restrictions.filter(
+        (r) => Object.keys(Links).includes(r.onProperty) && r.source in result
+      )) {
+        createRestriction(restriction, result[restriction.source].restrictions);
+      }
+      console.log(
+        restrictions.filter(
+          (r) => Object.keys(Links).includes(r.onProperty) && r.source in result
+        )
+      );
+      return result;
+    })
+    .catch((e) => {
+      console.error(e);
+      return {};
+    });
+}
+
+export async function fetchTerms(
+  endpoint: string,
+  scheme?: string,
+  vocabulary?: string,
+  graph?: string,
+  terms?: string[]
+): Promise<typeof WorkspaceTerms> {
+  const result: typeof WorkspaceTerms = {};
+  const query = [
+    "PREFIX skos: <http://www.w3.org/2004/02/skos/core#>",
+    "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>",
+    "PREFIX z-sgov-pojem: <https://slovník.gov.cz/základní/pojem/>",
+    "SELECT ?term ?termLabel ?termAltLabel ?termType ?termDefinition ?topConcept ?subClassOf",
+    "WHERE {",
+    graph && "GRAPH <" + graph + "> {",
+    vocabulary
+      ? [
+          "?term skos:inScheme ?scheme.",
+          "<" +
+            vocabulary +
+            "> <http://onto.fel.cvut.cz/ontologies/slovník/agendový/popis-dat/pojem/má-glosář> ?scheme.",
+        ].join(" ")
+      : "?term skos:inScheme <" + scheme + ">.",
+    "?term a ?termType.",
+    terms ? "values ?term {<" + terms.join("> <") + ">}" : "",
+    "?term skos:prefLabel ?termLabel.",
+    scheme && "?term skos:inScheme ?scheme",
+    "OPTIONAL {?term skos:altLabel ?termAltLabel.}",
+    "OPTIONAL {?term skos:definition ?termDefinition.}",
+    "OPTIONAL {?term rdfs:subClassOf ?subClassOf. ",
+    "filter (!isBlank(?subClassOf)) }",
+    "OPTIONAL {?topConcept skos:hasTopConcept ?term. }",
+    "}",
+    graph && "}",
+  ].join(" ");
+  return await processQuery(endpoint, query)
+    .then((response) => response.json())
+    .then((data) => {
+      for (const row of data.results.bindings) {
+        if (!(row.term.value in result)) {
+          result[row.term.value] = {
+            topConcept: undefined,
+            labels: initLanguageObject(""),
+            definitions: initLanguageObject(""),
+            altLabels: [],
+            types: [],
+            inScheme: scheme ? scheme : row.scheme.value,
+            subClassOf: [],
+            restrictions: [],
+          };
+        }
+        if (
+          row.termType &&
+          !result[row.term.value].types.includes(row.termType.value)
+        )
+          result[row.term.value].types.push(row.termType.value);
+        if (row.termLabel) {
+          if (!(row.termLabel["xml:lang"] in result[row.term.value].labels))
+            result[row.term.value].labels[row.termLabel["xml:lang"]] = "";
+          result[row.term.value].labels[row.termLabel["xml:lang"]] =
+            row.termLabel.value;
+        }
+        if (row.termAltLabel) {
+          if (
+            !result[row.term.value].altLabels.find(
+              (alt: { label: string; language: string }) =>
+                alt.label === row.termAltLabel.value &&
+                alt.language === row.termAltLabel["xml:lang"]
+            )
+          )
+            result[row.term.value].altLabels.push({
+              label: row.termAltLabel.value,
+              language: row.termAltLabel["xml:lang"],
+            });
+        }
+        if (row.termDefinition) {
+          if (
+            !(
+              row.termDefinition["xml:lang"] in
+              result[row.term.value].definitions
+            )
+          )
+            result[row.term.value].definitions[row.termDefinition["xml:lang"]] =
+              "";
+          result[row.term.value].definitions[row.termDefinition["xml:lang"]] =
+            row.termDefinition.value;
+        }
         if (row.topConcept)
           result[row.term.value].topConcept = row.topConcept.value;
         if (
@@ -217,33 +382,12 @@ export async function fetchConcepts(
           !result[row.term.value].subClassOf.includes(row.subClassOf.value)
         )
           result[row.term.value].subClassOf.push(row.subClassOf.value);
-        if (row.restriction && row.target.type !== "bnode")
-          restrictions.push(
-            new Restriction(
-              row.term.value,
-              row.restrictionPred.value,
-              !!row.inverseOnProperty
-                ? row.inverseOnProperty.value
-                : row.onProperty.value,
-              row.target.value,
-              row.onClass ? row.onClass.value : undefined,
-              !!row.inverseOnProperty
-            )
-          );
-        if (row.inverseOf)
-          result[row.term.value].inverseOf = row.inverseOf.value;
       }
-      for (const restriction of restrictions.filter(
-        (r) => Object.keys(Links).includes(r.onProperty) && r.source in result
-      )) {
-        createRestriction(restriction, result[restriction.source].restrictions);
-      }
-      Object.assign(sendTo, result);
-      return true;
+      return result;
     })
     .catch((e) => {
       console.error(e);
-      return false;
+      return {};
     });
 }
 

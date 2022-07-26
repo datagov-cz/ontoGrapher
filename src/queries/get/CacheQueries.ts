@@ -8,13 +8,13 @@ import {
   parsePrefix,
 } from "../../function/FunctionEditVars";
 import { AppSettings, Links, WorkspaceTerms } from "../../config/Variables";
-import { RestrictionConfig } from "../../config/logic/RestrictionConfig";
-import { createRestriction } from "../../function/FunctionRestriction";
-import { Restriction } from "../../datatypes/Restriction";
 import { Representation } from "../../config/Enum";
 import _ from "lodash";
 import { createCount } from "../../function/FunctionCreateVars";
 import { RepresentationConfig } from "../../config/logic/RepresentationConfig";
+import { Restriction } from "../../datatypes/Restriction";
+import { createRestriction } from "../../function/FunctionRestriction";
+import { RestrictionConfig } from "../../config/logic/RestrictionConfig";
 
 export async function fetchVocabularies(
   endpoint: string,
@@ -285,7 +285,6 @@ export async function fetchReadOnlyTerms(
         for (const row of data.results.bindings) {
           if (!(row.term.value in result)) {
             result[row.term.value] = {
-              active: true,
               topConcept: undefined,
               labels: initLanguageObject(""),
               definitions: initLanguageObject(""),

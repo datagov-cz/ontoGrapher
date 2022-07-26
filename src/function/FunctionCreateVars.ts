@@ -98,7 +98,6 @@ export function addVocabularyElement(
     types: types ? types : [],
     subClassOf: [],
     restrictions: [],
-    active: true,
     topConcept: scheme,
   };
 }

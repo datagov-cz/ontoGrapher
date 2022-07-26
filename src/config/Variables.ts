@@ -84,7 +84,6 @@ export var WorkspaceTerms: {
     types: string[];
     subClassOf: string[];
     restrictions: Restriction[];
-    active: boolean;
     topConcept: string | undefined;
   };
 } = {};
@@ -147,7 +146,7 @@ export var AppSettings: {
   defaultCardinalityTarget: Cardinality;
   contextVersion: number;
   latestContextVersion: number;
-  lastTransaction: string;
+  lastTransactions: string[];
   lastTransactionID: string;
   switchElements: string[];
   defaultLanguage: string;
@@ -176,7 +175,7 @@ export var AppSettings: {
   defaultCardinalityTarget: new Cardinality("0", "*"),
   contextVersion: 4,
   latestContextVersion: 4,
-  lastTransaction: "",
+  lastTransactions: [],
   lastTransactionID: "",
   switchElements: [],
   defaultLanguage: "cs",

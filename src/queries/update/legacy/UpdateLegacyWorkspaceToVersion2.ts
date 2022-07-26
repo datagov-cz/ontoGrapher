@@ -9,7 +9,7 @@ import {
 } from "../../../config/Variables";
 import { Cardinality } from "../../../datatypes/Cardinality";
 import { LinkType, Representation } from "../../../config/Enum";
-import { fetchConcepts } from "../../get/FetchQueries";
+import { fetchRestrictions, fetchTerms } from "../../get/FetchQueries";
 import { qb } from "../../QueryBuilder";
 import { LinkConfig } from "../../../config/logic/LinkConfig";
 import {
@@ -17,7 +17,7 @@ import {
   getNewDiagramContextIRI,
 } from "../../../function/FunctionGetVars";
 import { v4 as uuidv4 } from "uuid";
-import { parseInt } from "lodash";
+import * as _ from "lodash";
 
 function getLegacyWorkspaceContext(): string {
   return (
@@ -375,13 +375,28 @@ async function getLegacyTerms(
     () => false
   );
   for (const vocab in vocabularies) {
-    await fetchConcepts(
-      contextEndpoint,
-      vocab,
+    Object.assign(
       vocabularies[vocab].terms,
-      undefined,
-      vocabularies[vocab].graph
-    ).catch(() => false);
+      await fetchTerms(
+        contextEndpoint,
+        vocab,
+        undefined,
+        vocabularies[vocab].graph
+      ).catch(() => false)
+    );
+    Object.assign(
+      vocabularies[vocab].terms,
+      _.merge(
+        vocabularies[vocab].terms,
+        await fetchRestrictions(
+          contextEndpoint,
+          vocabularies[vocab].terms,
+          vocab,
+          undefined,
+          vocabularies[vocab].graph
+        ).catch(() => false)
+      )
+    );
     Schemes[vocab].readOnly = vocabularies[vocab].readOnly;
     Schemes[vocab].graph = vocabularies[vocab].graph;
     Object.assign(terms, vocabularies[vocab].terms);
