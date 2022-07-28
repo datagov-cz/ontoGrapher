@@ -4,7 +4,7 @@ import { DELETE, INSERT } from "@tpluscode/sparql-builder";
 import { parsePrefix } from "../../function/FunctionEditVars";
 import { Environment } from "../../config/Environment";
 
-export function updateWorkspaceContext(): string {
+export function updateApplicationContext(): string {
   const projIRI = AppSettings.applicationContext;
 
   const insertAppContext = INSERT.DATA`${qb.g(projIRI, [
@@ -21,18 +21,20 @@ export function updateWorkspaceContext(): string {
     ),
   ])}`.build();
 
-  const insertMetadataContext = INSERT.DATA`${qb.g(AppSettings.contextIRI, [
-    qb.s(
-      qb.i(AppSettings.contextIRI),
-      qb.i(parsePrefix("d-sgov-pracovní-prostor-pojem", "odkazuje-na-kontext")),
-      qb.i(projIRI)
-    ),
-  ])}`.build();
+  const insertVocabularyContext = AppSettings.contextIRIs.map((contextIRI) =>
+    INSERT.DATA`${qb.g(contextIRI, [
+      qb.s(
+        qb.i(contextIRI),
+        qb.i(parsePrefix("a-popis-dat-pojem", "má-aplikační-kontext")),
+        qb.i(projIRI)
+      ),
+    ])}`.build()
+  );
 
   const del = DELETE`${qb.g(projIRI, [qb.s(qb.i(projIRI), "?p", "?o")])}`
     .WHERE`${qb.g(projIRI, [qb.s(qb.i(projIRI), "?p", "?o")])}`.build();
 
-  return qb.combineQueries(del, insertAppContext, insertMetadataContext);
+  return qb.combineQueries(del, insertAppContext, ...insertVocabularyContext);
 }
 
 export function updateDeleteTriples(

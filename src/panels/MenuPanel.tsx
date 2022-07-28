@@ -16,6 +16,7 @@ import MenuPanelValidate from "./menu/left/MenuPanelValidate";
 import FitContentWidget from "./menu/widget/FitContentWidget";
 import InterfaceStatus from "../components/InterfaceStatus";
 import MenuPanelSwitchRepresentation from "./menu/left/MenuPanelSwitchRepresentation";
+import { getLabelOrBlank } from "../function/FunctionGetVars";
 
 interface MenuPanelProps {
   readOnly?: boolean;
@@ -62,10 +63,8 @@ export default class MenuPanel extends React.Component<
     return (
       <nav className={"menuPanel"}>
         <div className={"upper"}>
-          <h5>
-            {AppSettings.name[this.props.projectLanguage] === ""
-              ? "<untitled>"
-              : AppSettings.name[this.props.projectLanguage]}
+          <h5 className={"title"}>
+            {getLabelOrBlank(AppSettings.name, AppSettings.interfaceLanguage)}
           </h5>
           <InterfaceNotification
             active={this.props.loading}

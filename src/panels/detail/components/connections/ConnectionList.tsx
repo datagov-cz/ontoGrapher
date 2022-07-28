@@ -360,7 +360,7 @@ export default class ConnectionList extends React.Component<Props, State> {
             className="buttonlink"
           >
             {(this.state.showLucene ? "ᐯ " : "ᐱ ") +
-              Locale[AppSettings.interfaceLanguage].termsFromOtherLanguages}
+              Locale[AppSettings.interfaceLanguage].termsFromOtherVocabularies}
           </button>
         </div>
         {this.state.showLucene && (

@@ -18,7 +18,7 @@ export function updateProjectElementNames(): string {
     "?iri og:name ?name.",
     "}",
     "} where {",
-    `<${AppSettings.contextIRI}> <${parsePrefix(
+    `?vocabContext <${parsePrefix(
       "d-sgov-pracovní-prostor-pojem",
       "odkazuje-na-přílohový-kontext"
     )}> ?graph.`,
@@ -28,6 +28,7 @@ export function updateProjectElementNames(): string {
     "?iri og:name ?name.",
     'filter(str(?name) = "")',
     "}",
+    `values ?vocabContext {<${AppSettings.contextIRIs.join("> <")}>}`,
     "}",
   ].join(`
     `);

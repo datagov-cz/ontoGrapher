@@ -458,7 +458,7 @@ export default class VocabularyPanel extends React.Component<Props, State> {
                   >
                     {(this.state.showLucene ? "ᐯ " : "ᐱ ") +
                       Locale[AppSettings.interfaceLanguage]
-                        .termsFromOtherLanguages}
+                        .termsFromOtherVocabularies}
                   </button>
                 </div>
               )}

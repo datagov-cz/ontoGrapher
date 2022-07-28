@@ -90,12 +90,10 @@ export async function getElementsConfig(
       "?diagram og:id ?diagramID.",
       "?diagram og:representation ?representation .",
       "}",
-      `${qb.i(AppSettings.contextIRI)} ${qb.i(
-        parsePrefix(
-          "d-sgov-pracovní-prostor-pojem",
-          `odkazuje-na-přílohový-kontext`
-        )
+      `?contextIRI ${qb.i(
+        parsePrefix("a-popis-dat-pojem", `má-přílohu`)
       )} ?graph.`,
+      `values ?contextIRI {<${AppSettings.contextIRIs.join("> <")}>}`,
       "}",
     ].join(`
     `);
@@ -162,14 +160,24 @@ export async function getElementsConfig(
   }
 }
 
-export async function getSettings(
-  contextEndpoint: string
-): Promise<ContextLoadingStrategy | undefined> {
+export async function getSettings(contextEndpoint: string): Promise<{
+  strategy: ContextLoadingStrategy | undefined;
+  contextsMissingAppContexts: string[];
+  contextsMissingAttachments: string[];
+}> {
+  const ret: {
+    strategy: ContextLoadingStrategy | undefined;
+    contextsMissingAppContexts: string[];
+    contextsMissingAttachments: string[];
+  } = {
+    strategy: undefined,
+    contextsMissingAppContexts: [],
+    contextsMissingAttachments: [],
+  };
   const query = [
     "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
-    "select distinct ?ogContext ?graph ?diagram ?index ?name ?color ?id ?representation ?context ?legacyContext where {",
-    "BIND(<" + AppSettings.contextIRI + "> as ?metaContext).",
-    "optional {?metaContext <https://slovník.gov.cz/datový/pracovní-prostor/pojem/odkazuje-na-přílohový-kontext> ?graph .",
+    "select distinct ?ogContext ?graph ?diagram ?index ?name ?color ?id ?representation ?context where {",
+    "optional {?vocabContext <https://slovník.gov.cz/datový/pracovní-prostor/pojem/odkazuje-na-přílohový-kontext> ?graph .",
     "graph ?graph {",
     " ?diagram og:index ?index .",
     " ?diagram og:name ?name .",
@@ -177,30 +185,43 @@ export async function getSettings(
     " ?diagram og:representation ?representation .",
     "}",
     "}",
-    "optional {?metaContext <https://slovník.gov.cz/datový/pracovní-prostor/pojem/odkazuje-na-kontext> ?ogContext .",
+    "optional {?vocabContext <https://slovník.gov.cz/datový/pracovní-prostor/pojem/odkazuje-na-kontext> ?ogContext .",
     " graph ?ogContext {",
     "   ?ogContext og:viewColor ?color .",
     "   ?ogContext og:contextVersion ?context .",
-    "   optional {",
-    `<${
-      AppSettings.ontographerContext +
-      AppSettings.contextIRI.substring(AppSettings.contextIRI.lastIndexOf("/"))
-    }> og:contextVersion ?legacyContext.`,
-    "  }}",
+    "  }",
     "}",
+    `values ?vocabContext {<${AppSettings.contextIRIs.join("> <")}>}`,
     "} order by asc(?index)",
   ].join(`
   `);
-  return await processQuery(contextEndpoint, query)
+  await processQuery(contextEndpoint, query)
     .then((response) => {
       return response.json();
     })
     .then((data) => {
       const indices: number[] = [];
+      const contextInfo: {
+        [key: string]: { appContext: boolean; diagrams: string[] };
+      } = {};
+      AppSettings.contextIRIs.forEach(
+        (contextIRI) =>
+          (contextInfo[contextIRI] = { appContext: false, diagrams: [] })
+      );
       AppSettings.initWorkspace = true;
       let reconstructWorkspace = false;
       for (const result of data.results.bindings) {
-        if (result.id) {
+        if (
+          result.diagramGraph &&
+          result.vocabContext &&
+          !contextInfo[result.vocabContext.value].diagrams.includes(
+            result.diagramGraph.value
+          )
+        )
+          contextInfo[result.vocabContext.value].diagrams.push(
+            result.diagramGraph.value
+          );
+        if (result.id && !(result.id.value in Diagrams)) {
           let index = parseInt(result.index.value);
           while (indices.includes(index)) index++;
           addDiagram(
@@ -210,7 +231,7 @@ export async function getSettings(
             index,
             result.diagram.value,
             result.id.value,
-            result.graph.value
+            result.diagramGraph.value
           );
           Diagrams[result.id.value].saved = true;
           indices.push(index);
@@ -219,25 +240,31 @@ export async function getSettings(
             AppSettings.viewColorPool = result.color.value;
             AppSettings.contextVersion = parseInt(result.context.value, 10);
             AppSettings.applicationContext = result.ogContext.value;
+            contextInfo[result.vocabContext.value].appContext = true;
           } else {
             reconstructWorkspace = true;
           }
-        } else if (result.legacyContext) {
-          AppSettings.contextVersion = parseInt(result.legacyContext.value, 10);
-          return ContextLoadingStrategy.UPDATE_LEGACY_WORKSPACE;
         }
       }
+      ret.contextsMissingAppContexts = Object.keys(contextInfo).filter(
+        (context) => !contextInfo[context].appContext
+      );
+      ret.contextsMissingAttachments = Object.keys(contextInfo).filter(
+        (context) =>
+          contextInfo[context].diagrams.length !==
+          Object.values(Diagrams).length
+      );
       Object.entries(Diagrams).forEach(([key, value]) => {
         if (!indices.includes(value.index)) Diagrams[key].active = false;
       });
-      return reconstructWorkspace
+      ret.strategy = reconstructWorkspace
         ? ContextLoadingStrategy.RECONSTRUCT_WORKSPACE
         : ContextLoadingStrategy.DEFAULT;
     })
     .catch((e) => {
       console.error(e);
-      return undefined;
     });
+  return ret;
 }
 
 export async function getLinksConfig(
@@ -333,10 +360,11 @@ export async function getLinksConfig(
       "?diagram og:id ?diagramID.",
       "?diagram og:representation ?representation.",
       "}",
-      `${qb.i(AppSettings.contextIRI)} <${parsePrefix(
+      `?contextIRI <${parsePrefix(
         "d-sgov-pracovní-prostor-pojem",
         "odkazuje-na-přílohový-kontext"
       )}> ?graph.`,
+      `values ?contextIRI {<${AppSettings.contextIRIs.join("> <")}>}`,
       "}",
     ].join(`
     `);
