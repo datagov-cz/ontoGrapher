@@ -8,7 +8,11 @@ import {
   WorkspaceVocabularies,
 } from "../config/Variables";
 import { processQuery, processTransaction } from "./TransactionInterface";
-import { fetchConcepts, fetchVocabulary } from "../queries/get/FetchQueries";
+import {
+  fetchRestrictions,
+  fetchTerms,
+  fetchVocabulary,
+} from "../queries/get/FetchQueries";
 import {
   getElementsConfig,
   getLinksConfig,
@@ -30,7 +34,7 @@ import {
 } from "../function/FunctionEditVars";
 import {
   updateDeleteProjectLink,
-  updateProjectLink,
+  updateProjectLinkParallel,
 } from "../queries/update/UpdateLinkQueries";
 import { initConnections } from "../function/FunctionRestriction";
 import { insertNewCacheTerms } from "../function/FunctionCache";
@@ -206,13 +210,27 @@ export async function retrieveVocabularyData(): Promise<boolean> {
     AppSettings.contextEndpoint
   ).catch(() => false);
   for (const vocab in vocabularies) {
-    await fetchConcepts(
-      AppSettings.contextEndpoint,
-      vocabularies[vocab].glossary,
-      vocabularies[vocab].terms,
-      vocab,
-      vocabularies[vocab].graph,
-      true
+    Object.assign(
+      WorkspaceTerms,
+      await fetchTerms(
+        AppSettings.contextEndpoint,
+        vocabularies[vocab].glossary,
+        vocab,
+        vocabularies[vocab].graph
+      )
+    );
+    Object.assign(
+      WorkspaceTerms,
+      _.merge(
+        WorkspaceTerms,
+        await fetchRestrictions(
+          AppSettings.contextEndpoint,
+          WorkspaceTerms,
+          vocabularies[vocab].glossary,
+          vocab,
+          vocabularies[vocab].graph
+        )
+      )
     );
     WorkspaceVocabularies[vocab].readOnly = false;
     WorkspaceVocabularies[vocab].graph = vocabularies[vocab].graph;
@@ -293,9 +311,9 @@ export async function retrieveContextData(): Promise<boolean> {
   }
   return await processTransaction(
     AppSettings.contextEndpoint,
-    qb.constructQuery(
-      updateProjectLink(false, ...connections.add),
-      updateDeleteProjectLink(true, ...connections.del)
+    qb.constructQuery(updateDeleteProjectLink(true, ...connections.del)),
+    ...updateProjectLinkParallel(...connections.add).map((t) =>
+      qb.constructQuery(t)
     )
   );
 }
