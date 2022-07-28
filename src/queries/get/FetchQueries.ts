@@ -4,6 +4,7 @@ import {
   parsePrefix,
 } from "../../function/FunctionEditVars";
 import {
+  AppSettings,
   Links,
   Stereotypes,
   WorkspaceTerms,
@@ -205,35 +206,30 @@ export async function fetchBaseOntology(
 
 export async function fetchRestrictions(
   endpoint: string,
-  terms: { [key: string]: any },
+  terms?: { [key: string]: any },
   scheme?: string,
-  vocabulary?: string,
   graph?: string,
-  targets?: string[]
+  targets?: string[],
+  cache: boolean = false
 ): Promise<{ [key: string]: { restrictions: Restriction[] } }> {
   const result: {
     [key: string]: {
       restrictions: Restriction[];
     };
-  } = Object.fromEntries(
-    Object.keys(terms).map((k) => [k, { restrictions: [] }])
-  );
-
+  } = terms
+    ? Object.fromEntries(
+        Object.keys(terms).map((k) => [k, { restrictions: [] }])
+      )
+    : {};
   const query = [
     "PREFIX skos: <http://www.w3.org/2004/02/skos/core#>",
     "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>",
     "PREFIX z-sgov-pojem: <https://slovník.gov.cz/základní/pojem/>",
     "SELECT ?term ?inverseOnProperty ?restrictionPred ?onProperty ?onClass ?target",
     "WHERE {",
-    graph && "GRAPH <" + graph + "> {",
-    vocabulary
-      ? [
-          "?term skos:inScheme ?scheme.",
-          "<" +
-            vocabulary +
-            "> <http://onto.fel.cvut.cz/ontologies/slovník/agendový/popis-dat/pojem/má-glosář> ?scheme.",
-        ].join(" ")
-      : "?term skos:inScheme <" + scheme + ">.",
+    graph ? "GRAPH <" + graph + "> {" : "GRAPH ?graph {",
+    scheme ? "?term skos:inScheme <" + scheme + ">." : "",
+    terms && !graph ? `values ?term {<${Object.keys(terms).join("> <")}>}` : "",
     "?term rdfs:subClassOf ?restriction. ",
     "?restriction a owl:Restriction .",
     "OPTIONAL {?restriction owl:onProperty ?onProperty.",
@@ -242,20 +238,25 @@ export async function fetchRestrictions(
     "OPTIONAL {?restriction owl:onClass ?onClass.}",
     "FILTER(bound(?onProperty) || bound(?inverseOnProperty))",
     "?restriction ?restrictionPred ?target.",
-    targets ? "values ?target {<" + targets.join("> <") + ">}" : "",
+    targets && targets.length > 0
+      ? "values ?target {<" + targets.join("> <") + ">}"
+      : "",
     "FILTER (!isBlank(?target))",
     "values ?restrictionPred {<" +
       Object.keys(RestrictionConfig).join("> <") +
       ">}",
     "}",
-    graph && "}",
+    cache
+      ? `<${AppSettings.cacheContext}> <https://slovník.gov.cz/datový/pracovní-prostor/pojem/odkazuje-na-kontext> ?graph.`
+      : "",
+    "}",
   ].join(" ");
   return await processQuery(endpoint, query)
     .then((response) => response.json())
     .then((data) => {
       const restrictions: Restriction[] = [];
       for (const row of data.results.bindings) {
-        if (!(row.term.value in result)) continue;
+        if (terms && !(row.term.value in result)) continue;
         restrictions.push(
           new Restriction(
             row.term.value,
@@ -274,11 +275,6 @@ export async function fetchRestrictions(
       )) {
         createRestriction(restriction, result[restriction.source].restrictions);
       }
-      console.log(
-        restrictions.filter(
-          (r) => Object.keys(Links).includes(r.onProperty) && r.source in result
-        )
-      );
       return result;
     })
     .catch((e) => {
@@ -290,37 +286,36 @@ export async function fetchRestrictions(
 export async function fetchTerms(
   endpoint: string,
   scheme?: string,
-  vocabulary?: string,
   graph?: string,
-  terms?: string[]
+  terms?: string[],
+  cache: boolean = false
 ): Promise<typeof WorkspaceTerms> {
   const result: typeof WorkspaceTerms = {};
   const query = [
     "PREFIX skos: <http://www.w3.org/2004/02/skos/core#>",
     "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>",
     "PREFIX z-sgov-pojem: <https://slovník.gov.cz/základní/pojem/>",
-    "SELECT ?term ?termLabel ?termAltLabel ?termType ?termDefinition ?topConcept ?subClassOf",
+    "SELECT ?term ?termLabel ?termAltLabel ?termType ?termDefinition ?topConcept ?subClassOf ?scheme",
     "WHERE {",
-    graph && "GRAPH <" + graph + "> {",
-    vocabulary
-      ? [
-          "?term skos:inScheme ?scheme.",
-          "<" +
-            vocabulary +
-            "> <http://onto.fel.cvut.cz/ontologies/slovník/agendový/popis-dat/pojem/má-glosář> ?scheme.",
-        ].join(" ")
-      : "?term skos:inScheme <" + scheme + ">.",
+    graph ? "GRAPH <" + graph + "> {" : "GRAPH ?graph {",
+    scheme
+      ? "?term skos:inScheme <" + scheme + ">."
+      : "?term skos:inScheme ?scheme.",
     "?term a ?termType.",
-    terms ? "values ?term {<" + terms.join("> <") + ">}" : "",
+    terms && terms?.length > 0
+      ? "values ?term {<" + terms.join("> <") + ">}"
+      : "",
     "?term skos:prefLabel ?termLabel.",
-    scheme && "?term skos:inScheme ?scheme",
     "OPTIONAL {?term skos:altLabel ?termAltLabel.}",
     "OPTIONAL {?term skos:definition ?termDefinition.}",
     "OPTIONAL {?term rdfs:subClassOf ?subClassOf. ",
     "filter (!isBlank(?subClassOf)) }",
     "OPTIONAL {?topConcept skos:hasTopConcept ?term. }",
     "}",
-    graph && "}",
+    cache
+      ? `<${AppSettings.cacheContext}> <https://slovník.gov.cz/datový/pracovní-prostor/pojem/odkazuje-na-kontext> ?graph.`
+      : "",
+    "}",
   ].join(" ");
   return await processQuery(endpoint, query)
     .then((response) => response.json())

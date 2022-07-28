@@ -39,10 +39,6 @@ import {
 } from "../queries/update/UpdateLinkQueries";
 import { Representation } from "../config/Enum";
 import { Locale } from "../config/Locale";
-import {
-  fetchReadOnlyTerms,
-  fetchRelationships,
-} from "../queries/get/CacheQueries";
 import { initConnections } from "./FunctionRestriction";
 import { restoreHiddenElem, setRepresentation } from "./FunctionGraph";
 import React from "react";
@@ -51,6 +47,7 @@ import _ from "lodash";
 import { RepresentationConfig } from "../config/logic/RepresentationConfig";
 import { updateDeleteTriples } from "../queries/update/UpdateMiscQueries";
 import { updateCreateDiagram } from "../queries/update/UpdateDiagramQueries";
+import { fetchRestrictions, fetchTerms } from "../queries/get/FetchQueries";
 
 export function resizeElem(id: string, highlight: boolean = true) {
   let view = paper.findViewByModel(id);
@@ -285,19 +282,37 @@ export async function putElementsOnCanvas(
         true,
         false
       );
-      const relationships = await fetchRelationships(
+      const relationships = await fetchRestrictions(
         AppSettings.contextEndpoint,
-        iris
+        [],
+        undefined,
+        undefined,
+        iris,
+        true
       );
-      const readOnlyTerms = await fetchReadOnlyTerms(
+      const readOnlyTerms = await fetchTerms(
         AppSettings.contextEndpoint,
+        undefined,
+        undefined,
         iris.concat(
           Representation.COMPACT === AppSettings.representation
             ? Object.keys(relationships)
             : []
+        ),
+        true
+      );
+      const terms = _.merge(
+        readOnlyTerms,
+        fetchRestrictions(
+          AppSettings.contextEndpoint,
+          readOnlyTerms,
+          undefined,
+          undefined,
+          [],
+          true
         )
       );
-      insertNewCacheTerms(readOnlyTerms);
+      insertNewCacheTerms(terms);
       insertNewRestrictions(relationships);
       const newElements = initElements(true);
       const newConnections = initConnections().add;

@@ -18,10 +18,7 @@ import {
   getLinksConfig,
   getSettings,
 } from "../queries/get/InitQueries";
-import {
-  fetchReadOnlyTerms,
-  fetchVocabularies,
-} from "../queries/get/CacheQueries";
+import { fetchVocabularies } from "../queries/get/CacheQueries";
 import { qb } from "../queries/QueryBuilder";
 import {
   updateProjectElement,
@@ -211,7 +208,6 @@ export async function retrieveVocabularyData(): Promise<boolean> {
       await fetchTerms(
         AppSettings.contextEndpoint,
         vocabularies[vocab].glossary,
-        vocab,
         vocabularies[vocab].graph
       )
     );
@@ -223,7 +219,6 @@ export async function retrieveVocabularyData(): Promise<boolean> {
           AppSettings.contextEndpoint,
           WorkspaceTerms,
           vocabularies[vocab].glossary,
-          vocab,
           vocabularies[vocab].graph
         )
       )
@@ -241,9 +236,32 @@ export async function retrieveContextData(): Promise<boolean> {
   const missingTerms: string[] = Object.keys(WorkspaceElements).filter(
     (id) => !(id in WorkspaceTerms)
   );
-  insertNewCacheTerms(
-    await fetchReadOnlyTerms(AppSettings.contextEndpoint, missingTerms)
-  );
+  if (missingTerms.length > 0) {
+    const terms = await fetchTerms(
+      AppSettings.contextEndpoint,
+      undefined,
+      undefined,
+      missingTerms,
+      true
+    );
+    const restrictions = {};
+    console.log(missingTerms, WorkspaceTerms, WorkspaceElements);
+    debugger;
+    await Promise.all(
+      _.chunk(Object.keys(terms), 50).map((chunk) => {
+        return fetchRestrictions(
+          AppSettings.contextEndpoint,
+          chunk,
+          undefined,
+          undefined,
+          [],
+          false
+        );
+      })
+    );
+    debugger;
+    insertNewCacheTerms(_.merge(terms, restrictions));
+  }
   checkForObsoleteDiagrams();
   Object.keys(WorkspaceLinks)
     .filter((id) => {

@@ -31,10 +31,6 @@ import {
   updateProjectElement,
   updateProjectElementDiagram,
 } from "../queries/update/UpdateElementQueries";
-import {
-  fetchReadOnlyTerms,
-  fetchRelationships,
-} from "../queries/get/CacheQueries";
 import { initConnections } from "./FunctionRestriction";
 import isUrl from "is-url";
 import {
@@ -46,6 +42,7 @@ import {
 import { insertNewCacheTerms, insertNewRestrictions } from "./FunctionCache";
 import { updateDiagram } from "../queries/update/UpdateDiagramQueries";
 import { addLink } from "./FunctionCreateVars";
+import { fetchRestrictions, fetchTerms } from "../queries/get/FetchQueries";
 
 export const mvp1IRI =
   "https://slovník.gov.cz/základní/pojem/má-vztažený-prvek-1";
@@ -91,11 +88,36 @@ export async function spreadConnections(
   const iris = elements.filter((iri) => isUrl(iri));
   let queries: string[] = [];
   if (iris.length > 0) {
+    const readOnlyTerms = await fetchTerms(
+      AppSettings.contextEndpoint,
+      undefined,
+      undefined,
+      iris,
+      true
+    );
+    const terms = _.merge(
+      readOnlyTerms,
+      await fetchRestrictions(
+        AppSettings.contextEndpoint,
+        iris,
+        undefined,
+        undefined,
+        [],
+        true
+      )
+    );
     insertNewCacheTerms(
-      await fetchReadOnlyTerms(AppSettings.contextEndpoint, iris)
+      _.merge(terms, await fetchRestrictions(AppSettings.contextEndpoint))
     );
     insertNewRestrictions(
-      await fetchRelationships(AppSettings.contextEndpoint, iris)
+      await fetchRestrictions(
+        AppSettings.contextEndpoint,
+        [],
+        undefined,
+        undefined,
+        iris,
+        true
+      )
     );
     const newIDs = initElements();
     queries.push(updateProjectElement(false, ...newIDs));

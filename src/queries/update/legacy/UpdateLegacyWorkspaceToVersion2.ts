@@ -377,12 +377,9 @@ async function getLegacyTerms(
   for (const vocab in vocabularies) {
     Object.assign(
       vocabularies[vocab].terms,
-      await fetchTerms(
-        contextEndpoint,
-        vocab,
-        undefined,
-        vocabularies[vocab].graph
-      ).catch(() => false)
+      await fetchTerms(contextEndpoint, vocab, vocabularies[vocab].graph).catch(
+        () => false
+      )
     );
     Object.assign(
       vocabularies[vocab].terms,
@@ -392,7 +389,6 @@ async function getLegacyTerms(
           contextEndpoint,
           vocabularies[vocab].terms,
           vocab,
-          undefined,
           vocabularies[vocab].graph
         ).catch(() => false)
       )

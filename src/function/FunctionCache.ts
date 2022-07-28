@@ -1,8 +1,6 @@
 import { CacheConnection } from "../types/CacheConnection";
 import {
   fetchFullRelationships,
-  fetchReadOnlyTerms,
-  fetchRelationships,
   fetchSubClasses,
 } from "../queries/get/CacheQueries";
 import {
@@ -20,6 +18,7 @@ import { CacheSearchVocabularies } from "../datatypes/CacheSearchResults";
 import { Restriction } from "../datatypes/Restriction";
 import { createCount } from "./FunctionCreateVars";
 import { changeVocabularyCount } from "./FunctionEditVars";
+import { fetchRestrictions, fetchTerms } from "../queries/get/FetchQueries";
 
 export async function getCacheConnections(
   iri: string,
@@ -67,18 +66,37 @@ async function getFullConnections(
   subClasses: string[]
 ): Promise<CacheConnection[]> {
   const connections: CacheConnection[] = [];
-  const restrictions = await fetchRelationships(AppSettings.contextEndpoint, [
-    iri,
-  ]);
-  const terms = await fetchReadOnlyTerms(
+  const restrictions = await fetchRestrictions(
     AppSettings.contextEndpoint,
+    [],
+    undefined,
+    undefined,
+    [iri],
+    true
+  );
+  const readOnlyTerms = await fetchTerms(
+    AppSettings.contextEndpoint,
+    undefined,
+    undefined,
     Object.keys(restrictions)
       .concat(
         WorkspaceTerms[iri].restrictions
           .filter((r) => isUrl(r.target))
           .map((r) => r.target)
       )
-      .concat(subClasses)
+      .concat(subClasses),
+    true
+  );
+  const terms = _.merge(
+    readOnlyTerms,
+    await fetchRestrictions(
+      AppSettings.contextEndpoint,
+      readOnlyTerms,
+      undefined,
+      undefined,
+      [],
+      true
+    )
   );
   connections.push(
     ...WorkspaceTerms[iri].restrictions
@@ -96,7 +114,7 @@ async function getFullConnections(
     .filter((restriction) => restriction in terms)
     .forEach((restriction) => {
       connections.push(
-        ...restrictions[restriction].map((r) =>
+        ...restrictions[restriction].restrictions.map((r) =>
           mapResultToConnection(terms, restriction, r.onProperty, "target")
         )
       );
@@ -113,9 +131,23 @@ async function getCompactConnections(
     AppSettings.contextEndpoint,
     iri
   );
-  const terms = await fetchReadOnlyTerms(
+  const readOnlyTerms = await fetchTerms(
     AppSettings.contextEndpoint,
-    relationships.map((rel) => rel.target).concat(subClasses)
+    undefined,
+    undefined,
+    relationships.map((rel) => rel.target).concat(subClasses),
+    true
+  );
+  const terms = _.merge(
+    readOnlyTerms,
+    await fetchRestrictions(
+      AppSettings.contextEndpoint,
+      readOnlyTerms,
+      undefined,
+      undefined,
+      [],
+      true
+    )
   );
   connections.push(
     ...relationships
@@ -196,11 +228,11 @@ export function insertNewCacheTerms(newTerms: typeof WorkspaceTerms) {
 }
 
 export function insertNewRestrictions(values: {
-  [key: string]: Restriction[];
+  [key: string]: { restrictions: Restriction[] };
 }) {
   for (const term of Object.keys(values).filter(
     (term) => term in WorkspaceTerms
   )) {
-    WorkspaceTerms[term].restrictions.push(...values[term]);
+    WorkspaceTerms[term].restrictions.push(...values[term].restrictions);
   }
 }
