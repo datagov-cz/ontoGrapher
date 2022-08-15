@@ -215,11 +215,11 @@ export async function getSettings(contextEndpoint: string): Promise<{
           result.diagramGraph &&
           result.vocabContext &&
           !contextInfo[result.vocabContext.value].diagrams.includes(
-            result.diagramGraph.value
+            result.graph.value
           )
         )
           contextInfo[result.vocabContext.value].diagrams.push(
-            result.diagramGraph.value
+            result.graph.value
           );
         if (result.id && !(result.id.value in Diagrams)) {
           let index = parseInt(result.index.value);
@@ -231,7 +231,7 @@ export async function getSettings(contextEndpoint: string): Promise<{
             index,
             result.diagram.value,
             result.id.value,
-            result.diagramGraph.value
+            result.graph.value
           );
           Diagrams[result.id.value].saved = true;
           indices.push(index);
