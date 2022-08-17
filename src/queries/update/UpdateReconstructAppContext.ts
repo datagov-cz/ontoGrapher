@@ -2,7 +2,7 @@ import { AppSettings } from "../../config/Variables";
 import { qb } from "../QueryBuilder";
 import { initElements, parsePrefix } from "../../function/FunctionEditVars";
 import { processQuery } from "../../interface/TransactionInterface";
-import { updateWorkspaceContext } from "./UpdateMiscQueries";
+import { updateApplicationContext } from "./UpdateMiscQueries";
 import {
   updateProjectElement,
   updateProjectElementNames,
@@ -12,13 +12,13 @@ export async function reconstructApplicationContextWithDiagrams(): Promise<strin
   const diagramRetrievalQuery = [
     "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
     "select ?diagram ?graph where {",
-    "BIND(<" + AppSettings.contextIRI + "> as ?metaContext).",
-    "graph ?metaContext {",
-    `?metaContext <${parsePrefix(
+    "graph ?contextIRI {",
+    `?contextIRI <${parsePrefix(
       "d-sgov-pracovní-prostor-pojem",
       "odkazuje-na-přílohový-kontext"
-    )}> ?graph .`,
+    )}> ?graph.`,
     "}",
+    `values ?contextIRI {<${AppSettings.contextIRIs.join("> <")}>}`,
     "graph ?graph {",
     "?diagram a og:diagram.",
     "}",
@@ -50,7 +50,7 @@ export async function reconstructApplicationContextWithDiagrams(): Promise<strin
     `);
     const elements = initElements();
     return qb.combineQueries(
-      updateWorkspaceContext(),
+      updateApplicationContext(),
       transferQuery,
       updateProjectElementNames(),
       updateProjectElement(false, ...elements)

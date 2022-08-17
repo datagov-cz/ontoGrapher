@@ -163,10 +163,6 @@ export default class App extends React.Component<
     const process4 = await retrieveContextData();
     if (!process4) return false;
     this.handleChangeLanguage(AppSettings.canvasLanguage);
-    document.title =
-      AppSettings.name[this.state.projectLanguage] +
-      " | " +
-      Locale[AppSettings.interfaceLanguage].ontoGrapher;
     setSchemeColors(AppSettings.viewColorPool);
     changeDiagrams();
     this.itemPanel.current?.update();
