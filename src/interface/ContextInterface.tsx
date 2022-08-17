@@ -263,21 +263,24 @@ export async function retrieveContextData(): Promise<boolean> {
       true
     );
     const restrictions = {};
-    console.log(missingTerms, WorkspaceTerms, WorkspaceElements);
-    debugger;
-    await Promise.all(
-      _.chunk(Object.keys(terms), 50).map((chunk) => {
-        return fetchRestrictions(
-          AppSettings.contextEndpoint,
-          chunk,
-          undefined,
-          undefined,
-          [],
-          false
-        );
-      })
+    const functions = _.chunk(Object.keys(terms), 50).map(
+      (chunk) =>
+        function () {
+          fetchRestrictions(
+            AppSettings.contextEndpoint,
+            _.pick(terms, chunk),
+            undefined,
+            undefined,
+            [],
+            false
+          );
+        }
     );
-    debugger;
+    while (functions.length > 0) {
+      // This is not a pool by any means, but the workload is similar enough that the individual promises within each
+      // "batch" finish at around the same time.
+      await Promise.all(functions.splice(0, 3).map((f) => f()));
+    }
     insertNewCacheTerms(_.merge(terms, restrictions));
   }
   checkForObsoleteDiagrams();

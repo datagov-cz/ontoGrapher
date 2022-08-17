@@ -8,7 +8,6 @@ export async function processTransaction(
 ): Promise<boolean> {
   AppSettings.lastTransactions = transactions;
   for (const transaction of transactions) {
-    console.trace(transaction);
     if (!transaction) continue;
     const timeoutDeadline = 15000;
     const controller = new AbortController();
@@ -109,7 +108,6 @@ export function processQuery(
   query: string,
   auth: boolean = Environment.auth && endpoint === AppSettings.contextEndpoint
 ): Promise<Response> {
-  console.trace(query);
   return fetch(endpoint, {
     method: "POST",
     body: "query=" + encodeURIComponent(query),
