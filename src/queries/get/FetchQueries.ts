@@ -117,6 +117,7 @@ export async function fetchBaseOntology(
     requiredTypes && "VALUES ?termType {<" + requiredTypes.join("> <") + ">}",
     requiredValues && "VALUES ?term {<" + requiredValues.join("> <") + ">}",
     "?term skos:prefLabel ?termLabel.",
+    "?term a ?termType.",
     "OPTIONAL {?term skos:altLabel ?termAltLabel.}",
     "OPTIONAL {?term skos:definition ?termDefinition.}",
     "OPTIONAL {?term z-sgov-pojem:charakterizuje ?character.}",
@@ -124,7 +125,8 @@ export async function fetchBaseOntology(
     "OPTIONAL {?term rdfs:range ?termRange.}",
     "OPTIONAL {?term rdfs:subClassOf ?subClassOf. ",
     "filter (!isBlank(?subClassOf)) }",
-    "OPTIONAL {?term owl:inverseOf ?inverseOf. }",
+    "OPTIONAL {?term owl:inverseOf ?inverseOf. ",
+    "filter (!isBlank(?inverseOf)) }",
     "}",
   ].join(" ");
   return await processQuery(endpoint, query)

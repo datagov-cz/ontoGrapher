@@ -26,20 +26,24 @@ export async function getVocabulariesFromRemoteJSON(
     await fetch(pathToJSON)
       .then((response) => response.json())
       .then(async (json) => {
-        let results: boolean[] = [];
+        const results: boolean[] = [];
         if (Object.keys(json).length === 0) return false;
         for (const key of Object.keys(json)) {
           const data = json[key];
           if (data.type === "stereotype") {
             results.push(
-              await fetchVocabulary([data.sourceIRI], true, data.endpoint)
+              await fetchVocabulary(
+                [data.sourceIRI],
+                true,
+                AppSettings.contextEndpoint
+              )
             );
             WorkspaceVocabularies[
               getVocabularyFromScheme(data.sourceIRI)
             ].labels = initLanguageObject(key);
             results.push(
               await fetchBaseOntology(
-                data.endpoint,
+                AppSettings.contextEndpoint,
                 data.sourceIRI,
                 Stereotypes,
                 [data.classIRI],
@@ -50,7 +54,7 @@ export async function getVocabulariesFromRemoteJSON(
             );
             results.push(
               await fetchBaseOntology(
-                data.endpoint,
+                AppSettings.contextEndpoint,
                 data.sourceIRI,
                 Links,
                 [data.relationshipIRI],
@@ -62,7 +66,7 @@ export async function getVocabulariesFromRemoteJSON(
             checkLabels();
             results.push(
               await fetchSubClassesAndCardinalities(
-                data.endpoint,
+                AppSettings.contextEndpoint,
                 data.sourceIRI,
                 Object.keys(Stereotypes),
                 Object.keys(Links)
