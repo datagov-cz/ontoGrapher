@@ -10,7 +10,7 @@ import { updateApplicationContext } from "../../../queries/update/UpdateMiscQuer
 
 interface Props {
   update: Function;
-  performTransaction: (...queries: string[]) => void;
+  performTransaction: (parallelize: boolean, ...queries: string[]) => void;
 }
 
 interface State {}
@@ -31,7 +31,7 @@ export default class MenuPanelSwitchColors extends React.Component<
           AppSettings.representation
         )
       );
-    this.props.performTransaction(updateApplicationContext());
+    this.props.performTransaction(false, updateApplicationContext());
     this.props.update();
     this.forceUpdate();
   }

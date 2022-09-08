@@ -8,7 +8,7 @@ import { Representation } from "../../../config/Enum";
 interface Props {
   update: Function;
   close: Function;
-  performTransaction: (...queries: string[]) => void;
+  performTransaction: (parallelize: boolean, ...queries: string[]) => void;
 }
 
 interface State {
@@ -38,7 +38,7 @@ export default class MenuPanelSwitchRepresentation extends React.Component<
         this.setState({ alert: false });
       }, 3000);
     }
-    this.props.performTransaction(...result.transaction);
+    this.props.performTransaction(false, ...result.transaction);
     this.props.close();
     this.props.update();
     this.forceUpdate();

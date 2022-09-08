@@ -12,7 +12,7 @@ interface Props {
   diagram: string;
   update: Function;
   deleteDiagram: Function;
-  performTransaction: (...queries: string[]) => void;
+  performTransaction: (parallelize: boolean, ...queries: string[]) => void;
 }
 
 interface State {}
@@ -33,7 +33,7 @@ export default class DiagramTab extends React.Component<Props, State> {
         queries.push(updateCreateDiagram(this.props.diagram));
       }
       queries.push(updateDiagram(this.props.diagram));
-      this.props.performTransaction(...queries);
+      this.props.performTransaction(true, ...queries);
       this.forceUpdate();
       this.props.update();
     }

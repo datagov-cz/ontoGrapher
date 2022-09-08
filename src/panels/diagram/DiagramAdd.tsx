@@ -10,7 +10,7 @@ import { Representation } from "../../config/Enum";
 
 interface Props {
   update: Function;
-  performTransaction: (...queries: string[]) => void;
+  performTransaction: (parallelize: boolean, ...queries: string[]) => void;
 }
 
 interface State {}

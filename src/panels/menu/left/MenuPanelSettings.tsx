@@ -9,7 +9,7 @@ import { MenuPanelChangeDefaultCardinality } from "../settings/MenuPanelChangeDe
 
 interface Props {
   update: Function;
-  performTransaction: (...queries: string[]) => void;
+  performTransaction: (parallelize: boolean, ...queries: string[]) => void;
   handleChangeLanguage: (language: string) => void;
   handleChangeInterfaceLanguage: (language: string) => void;
 }

@@ -48,6 +48,7 @@ import { RepresentationConfig } from "../config/logic/RepresentationConfig";
 import { updateDeleteTriples } from "../queries/update/UpdateMiscQueries";
 import { updateCreateDiagram } from "../queries/update/UpdateDiagramQueries";
 import { fetchRestrictions, fetchTerms } from "../queries/get/FetchQueries";
+import { fetchVocabularyTermCount } from "../queries/get/CacheQueries";
 
 export function resizeElem(id: string, highlight: boolean = true) {
   let view = paper.findViewByModel(id);
@@ -303,7 +304,7 @@ export async function putElementsOnCanvas(
       );
       const terms = _.merge(
         readOnlyTerms,
-        fetchRestrictions(
+        await fetchRestrictions(
           AppSettings.contextEndpoint,
           readOnlyTerms,
           undefined,
@@ -312,7 +313,13 @@ export async function putElementsOnCanvas(
           true
         )
       );
-      insertNewCacheTerms(terms);
+      // This fetch fires only when the added read-only terms are from vocabularies
+      // not considered as part of the "project".
+      await fetchVocabularyTermCount(
+        AppSettings.contextEndpoint,
+        AppSettings.cacheContext,
+        ...insertNewCacheTerms(terms)
+      );
       insertNewRestrictions(relationships);
       const newElements = initElements(true);
       const newConnections = initConnections().add;

@@ -10,7 +10,7 @@ interface Props {
   diagram: string;
   close: Function;
   update: Function;
-  performTransaction: (...queries: string[]) => void;
+  performTransaction: (parallelize: boolean, ...queries: string[]) => void;
 }
 
 export default class ModalRemoveDiagram extends React.Component<Props> {
@@ -20,7 +20,10 @@ export default class ModalRemoveDiagram extends React.Component<Props> {
       changeDiagrams();
     }
     this.props.update();
-    this.props.performTransaction(updateDeleteDiagram(this.props.diagram));
+    this.props.performTransaction(
+      false,
+      updateDeleteDiagram(this.props.diagram)
+    );
   }
 
   render() {

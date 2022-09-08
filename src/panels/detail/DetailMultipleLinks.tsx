@@ -29,7 +29,7 @@ type Props = {
   updateDetailPanel: (mode: DetailPanelMode, id?: string) => void;
   projectLanguage: string;
   save: (...ids: string[]) => void;
-  performTransaction: (...queries: string[]) => void;
+  performTransaction: (parallelize: boolean, ...queries: string[]) => void;
 };
 
 type State = {
@@ -183,7 +183,7 @@ export default class DetailMultipleLinks extends React.Component<Props, State> {
       queries.push(updateProjectLink(true, ...AppSettings.selectedLinks));
       this.setState({ changes: false });
       this.props.save(...AppSettings.selectedLinks);
-      this.props.performTransaction(...queries);
+      this.props.performTransaction(true, ...queries);
     }
   }
 

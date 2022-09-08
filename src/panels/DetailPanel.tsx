@@ -20,7 +20,7 @@ import { ResizableBox } from "react-resizable";
 interface Props {
   projectLanguage: string;
   update: Function;
-  performTransaction: (...queries: string[]) => void;
+  performTransaction: (parallelize: boolean, ...queries: string[]) => void;
   freeze: boolean;
   handleCreation: Function;
   updateDiagramCanvas: Function;

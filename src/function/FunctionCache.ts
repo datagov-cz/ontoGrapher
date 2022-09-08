@@ -194,7 +194,8 @@ function getSubclassConnections(
     );
 }
 
-export function insertNewCacheTerms(newTerms: typeof WorkspaceTerms) {
+export function insertNewCacheTerms(newTerms: typeof WorkspaceTerms): string[] {
+  const newVocabularies: string[] = [];
   Object.assign(WorkspaceTerms, newTerms);
   for (const term in newTerms) {
     const vocab = Object.keys(CacheSearchVocabularies).find(
@@ -208,6 +209,7 @@ export function insertNewCacheTerms(newTerms: typeof WorkspaceTerms) {
             WorkspaceVocabularies[vocab].glossary === newTerms[term].inScheme
         )
       ) {
+        newVocabularies.push(vocab);
         WorkspaceVocabularies[vocab] = {
           labels: CacheSearchVocabularies[vocab].labels,
           readOnly: true,
@@ -225,6 +227,7 @@ export function insertNewCacheTerms(newTerms: typeof WorkspaceTerms) {
         `Vocabulary with glossary ${newTerms[term].inScheme} has not been found in the database; term ${term} will not be added.`
       );
   }
+  return newVocabularies;
 }
 
 export function insertNewRestrictions(values: {

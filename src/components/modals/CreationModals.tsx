@@ -29,7 +29,7 @@ export type LinkCreationConfiguration = { sourceID: string; targetID: string };
 interface Props {
   update: () => void;
   projectLanguage: string;
-  performTransaction: (...queries: string[]) => void;
+  performTransaction: (parallelize: boolean, ...queries: string[]) => void;
   elemConfiguration: ElemCreationConfiguration;
   linkConfiguration: LinkCreationConfiguration;
 }
@@ -55,6 +55,7 @@ export const CreationModals: React.FC<Props> = (props) => {
           setModalAddLink(false);
           if (selectedLink) {
             props.performTransaction(
+              true,
               ...saveNewLink(
                 selectedLink,
                 props.linkConfiguration.sourceID,
@@ -72,6 +73,7 @@ export const CreationModals: React.FC<Props> = (props) => {
           setModalAddLink(false);
           if (conceptName && vocabulary) {
             props.performTransaction(
+              true,
               ...createTerm(
                 conceptName,
                 vocabulary,
@@ -101,6 +103,7 @@ export const CreationModals: React.FC<Props> = (props) => {
           setModalAddElem(false);
           if (conceptName && vocabulary) {
             props.performTransaction(
+              true,
               ...createTerm(
                 conceptName,
                 vocabulary,

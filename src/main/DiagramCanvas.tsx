@@ -49,7 +49,7 @@ interface Props {
   updateElementPanel: (id?: string, redoCacheSearch?: boolean) => void;
   updateDetailPanel: (mode: DetailPanelMode, id?: string) => void;
   freeze: boolean;
-  performTransaction: (...queries: string[]) => void;
+  performTransaction: (parallelize: boolean, ...queries: string[]) => void;
   handleCreation: (
     configuration: LinkCreationConfiguration | ElemCreationConfiguration
   ) => void;
@@ -99,6 +99,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
     _.pull(AppSettings.selectedElements, ...ids);
     this.props.updateElementPanel();
     this.props.performTransaction(
+      false,
       updateProjectElementDiagram(AppSettings.selectedDiagram, ...ids)
     );
   }
@@ -175,7 +176,8 @@ export default class DiagramCanvas extends React.Component<Props, State> {
         if (rect) rect.remove();
         if (!this.newLink && !evt.ctrlKey) {
           if (isElementPositionOutdated(cellView.model)) {
-            this.props.performTransaction(...moveElements(cellView.model, evt));
+            const queries = moveElements(cellView.model, evt);
+            this.props.performTransaction(queries.length < 5, ...queries);
           } else {
             resetDiagramSelection();
             highlightElement(cellView.model.id);
@@ -471,7 +473,8 @@ export default class DiagramCanvas extends React.Component<Props, State> {
         const id = cellView.model.id;
         const link = cellView.model;
         link.findView(paper).removeRedundantLinearVertices();
-        this.props.performTransaction(...updateVertices(id, link.vertices()));
+        const queries = updateVertices(id, link.vertices());
+        this.props.performTransaction(queries.length < 5, ...queries);
       },
       /**
        * Pointer double-click on link:
@@ -481,7 +484,8 @@ export default class DiagramCanvas extends React.Component<Props, State> {
         const id = cellView.model.id;
         const link = cellView.model;
         link.findView(paper).removeRedundantLinearVertices();
-        this.props.performTransaction(...updateVertices(id, link.vertices()));
+        const queries = updateVertices(id, link.vertices());
+        this.props.performTransaction(queries.length < 5, ...queries);
       },
     });
 
@@ -543,7 +547,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
           onDrop={(event) => {
             putElementsOnCanvas(event, this.props.handleStatus).then(
               (queries) => {
-                this.props.performTransaction(...queries);
+                this.props.performTransaction(false, ...queries);
                 this.props.updateElementPanel(undefined, true);
               }
             );

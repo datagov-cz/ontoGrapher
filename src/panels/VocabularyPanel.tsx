@@ -37,7 +37,7 @@ import { isElementVisible } from "../function/FunctionElem";
 
 interface Props {
   projectLanguage: string;
-  performTransaction: (...queries: string[]) => void;
+  performTransaction: (parallelize: boolean, ...queries: string[]) => void;
   updateDetailPanel: Function;
   freeze: boolean;
   update: Function;

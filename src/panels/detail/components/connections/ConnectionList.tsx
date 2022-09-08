@@ -26,7 +26,7 @@ interface Props {
   //Element ID from DetailElement
   id: string;
   projectLanguage: string;
-  performTransaction: (...queries: string[]) => void;
+  performTransaction: (parallelize: boolean, ...queries: string[]) => void;
 }
 
 interface State {
@@ -212,7 +212,10 @@ export default class ConnectionList extends React.Component<Props, State> {
               onClick={() => {
                 spreadConnections(this.props.id, this.state.selected).then(
                   (queries) => {
-                    this.props.performTransaction(...queries);
+                    this.props.performTransaction(
+                      queries.length < 8,
+                      ...queries
+                    );
                     this.getConnectionsFromOtherVocabularies();
                     this.setState({ selected: [] });
                   }

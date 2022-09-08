@@ -207,7 +207,7 @@ export default class App extends React.Component<
     });
   }
 
-  performTransaction(...queries: string[]) {
+  performTransaction(parallelize: boolean, ...queries: string[]) {
     const queriesTrimmed = queries.filter((q) => q);
     if (queriesTrimmed.length === 0) {
       this.handleWorkspaceReady();
@@ -220,20 +220,22 @@ export default class App extends React.Component<
       false,
       false
     );
-    processTransaction(AppSettings.contextEndpoint, transaction).then(
-      (result) => {
-        if (result) {
-          this.handleWorkspaceReady();
-        } else {
-          this.handleStatus(
-            false,
-            Locale[AppSettings.interfaceLanguage].errorUpdating,
-            true,
-            true
-          );
-        }
+    processTransaction(
+      AppSettings.contextEndpoint,
+      parallelize,
+      transaction
+    ).then((result) => {
+      if (result) {
+        this.handleWorkspaceReady();
+      } else {
+        this.handleStatus(
+          false,
+          Locale[AppSettings.interfaceLanguage].errorUpdating,
+          true,
+          true
+        );
       }
-    );
+    });
   }
 
   handleStatus(

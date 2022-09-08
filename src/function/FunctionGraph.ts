@@ -43,6 +43,7 @@ import { insertNewCacheTerms, insertNewRestrictions } from "./FunctionCache";
 import { updateDiagram } from "../queries/update/UpdateDiagramQueries";
 import { addLink } from "./FunctionCreateVars";
 import { fetchRestrictions, fetchTerms } from "../queries/get/FetchQueries";
+import { fetchVocabularyTermCount } from "../queries/get/CacheQueries";
 
 export const mvp1IRI =
   "https://slovník.gov.cz/základní/pojem/má-vztažený-prvek-1";
@@ -86,7 +87,7 @@ export async function spreadConnections(
     .filter((link) => !isUrl(link))
     .map((link) => getOtherConnectionElementID(link, id));
   const iris = elements.filter((iri) => isUrl(iri));
-  let queries: string[] = [];
+  const queries: string[] = [];
   if (iris.length > 0) {
     const readOnlyTerms = await fetchTerms(
       AppSettings.contextEndpoint,
@@ -106,8 +107,12 @@ export async function spreadConnections(
         true
       )
     );
-    insertNewCacheTerms(
-      _.merge(terms, await fetchRestrictions(AppSettings.contextEndpoint))
+    await fetchVocabularyTermCount(
+      AppSettings.contextEndpoint,
+      AppSettings.cacheContext,
+      ...insertNewCacheTerms(
+        _.merge(terms, await fetchRestrictions(AppSettings.contextEndpoint))
+      )
     );
     insertNewRestrictions(
       await fetchRestrictions(
@@ -133,7 +138,7 @@ export async function spreadConnections(
     ids.forEach((id, i) => {
       const x = centerX + radius * Math.cos((i * 2 * Math.PI) / length);
       const y = centerY + radius * Math.sin((i * 2 * Math.PI) / length);
-      let newElem = new graphElement({ id: id });
+      const newElem = new graphElement({ id: id });
       newElem.position(x, y);
       WorkspaceElements[id].position[AppSettings.selectedDiagram] = {
         x: x,

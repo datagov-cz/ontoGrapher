@@ -8,7 +8,7 @@ import { DetailElementLinksCard } from "./components/element/DetailElementLinksC
 interface Props {
   projectLanguage: string;
   save: (id: string) => void;
-  performTransaction: (...queries: string[]) => void;
+  performTransaction: (parallelize: boolean, ...queries: string[]) => void;
   error: boolean;
   handleCreation: Function;
   updateDetailPanel: (mode: DetailPanelMode, id?: string) => void;

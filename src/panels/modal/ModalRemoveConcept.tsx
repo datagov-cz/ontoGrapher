@@ -20,7 +20,7 @@ interface Props {
   id: string;
   close: Function;
   update: Function;
-  performTransaction: (...queries: string[]) => void;
+  performTransaction: (parallelize: boolean, ...queries: string[]) => void;
   projectLanguage: string;
 }
 
@@ -42,6 +42,7 @@ export default class ModalRemoveConcept extends React.Component<Props, State> {
       .filter((vocab) => !WorkspaceVocabularies[vocab].readOnly)
       .map((vocab) => WorkspaceVocabularies[vocab].graph);
     this.props.performTransaction(
+      true,
       ...deleteConcept(this.props.id),
       updateDeleteTriples(
         this.props.id,

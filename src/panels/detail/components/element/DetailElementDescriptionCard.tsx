@@ -44,7 +44,7 @@ import { updateProjectElement } from "../../../../queries/update/UpdateElementQu
 
 type Props = {
   id: string;
-  performTransaction: (...queries: string[]) => void;
+  performTransaction: (parallelize: boolean, ...queries: string[]) => void;
   updateDetailPanel: (mode: DetailPanelMode, id?: string) => void;
   projectLanguage: string;
   handleCreation: Function;
@@ -179,7 +179,10 @@ export class DetailElementDescriptionCard extends React.Component<
       if (elem) resizeElem(this.props.id);
       this.props.save(this.props.id);
       this.setState({ changes: false });
-      this.props.performTransaction(updateProjectElement(true, this.props.id));
+      this.props.performTransaction(
+        false,
+        updateProjectElement(true, this.props.id)
+      );
     }
   }
 
@@ -336,13 +339,17 @@ export class DetailElementDescriptionCard extends React.Component<
                         WorkspaceLinks[link].target === id ||
                         WorkspaceLinks[link].source === id
                     )) {
-                      this.props.performTransaction(...deleteConnections(conn));
+                      this.props.performTransaction(
+                        true,
+                        ...deleteConnections(conn)
+                      );
                     }
                     redrawElement(this.props.id, this.props.projectLanguage);
                   }}
                   onAdd={(id: string) => {
                     const link = getNewLink(LinkType.DEFAULT);
                     this.props.performTransaction(
+                      true,
                       ...updateConnection(
                         this.props.id,
                         id,

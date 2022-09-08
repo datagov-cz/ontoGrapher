@@ -159,63 +159,11 @@ export function updateProjectLink(del: boolean, ...ids: string[]): string {
     );
   }
   insert.push(
-    ...diagrams.map((diagram) =>
-      INSERT.DATA`${qb.g(diagram, insertBody)}`.build()
-    ),
+    INSERT.DATA`${qb.gs(diagrams, insertBody)}`.build(),
     INSERT.DATA`${qb.g(AppSettings.applicationContext, insertBody)}`.build()
   );
 
   return qb.combineQueries(...(del ? [deletes, ...insert] : [...insert]));
-}
-
-export function updateProjectLinkParallel(...ids: string[]): string[] {
-  const insertBody: string[] = [];
-  const insert: string[] = [];
-  const diagrams = Object.values(Diagrams)
-    .filter((diag) => diag.active)
-    .map((diagram) => diagram.graph);
-  if (ids.length === 0) return [];
-  for (const id of ids) {
-    checkLink(id);
-    const linkIRI = qb.i(WorkspaceLinks[id].linkIRI);
-
-    insertBody.push(
-      qb.s(linkIRI, "rdf:type", "og:link"),
-      qb.s(linkIRI, "og:id", qb.ll(id)),
-      qb.s(linkIRI, "og:iri", qb.i(WorkspaceLinks[id].iri)),
-      qb.s(linkIRI, "og:active", qb.ll(WorkspaceLinks[id].active)),
-      qb.s(linkIRI, "og:source", qb.i(WorkspaceLinks[id].source)),
-      qb.s(linkIRI, "og:target", qb.i(WorkspaceLinks[id].target)),
-      qb.s(linkIRI, "og:type", qb.ll(LinkConfig[WorkspaceLinks[id].type].id)),
-      qb.s(
-        linkIRI,
-        "og:sourceCardinality1",
-        qb.ll(WorkspaceLinks[id].sourceCardinality.getFirstCardinality())
-      ),
-      qb.s(
-        linkIRI,
-        "og:sourceCardinality2",
-        qb.ll(WorkspaceLinks[id].sourceCardinality.getSecondCardinality())
-      ),
-      qb.s(
-        linkIRI,
-        "og:targetCardinality1",
-        qb.ll(WorkspaceLinks[id].targetCardinality.getFirstCardinality())
-      ),
-      qb.s(
-        linkIRI,
-        "og:targetCardinality2",
-        qb.ll(WorkspaceLinks[id].targetCardinality.getSecondCardinality())
-      )
-    );
-  }
-  insert.push(
-    ...diagrams.map((diagram) =>
-      INSERT.DATA`${qb.g(diagram, insertBody)}`.build()
-    ),
-    INSERT.DATA`${qb.g(AppSettings.applicationContext, insertBody)}`.build()
-  );
-  return insert;
 }
 
 function checkLink(id: string) {

@@ -9,7 +9,7 @@ interface Props {
   id: string;
   close: Function;
   update: Function;
-  performTransaction: (...queries: string[]) => void;
+  performTransaction: (parallelize: boolean, ...queries: string[]) => void;
 }
 
 interface State {}
@@ -48,6 +48,7 @@ export default class ModalRemoveReadOnlyConcept extends React.Component<
             onSubmit={(event) => {
               event.preventDefault();
               this.props.performTransaction(
+                true,
                 ...removeReadOnlyElement(this.props.id)
               );
               this.props.close();

@@ -7,32 +7,34 @@ import {
   initLanguageObject,
   parsePrefix,
 } from "../../function/FunctionEditVars";
-import { AppSettings } from "../../config/Variables";
-import { Representation } from "../../config/Enum";
+import { AppSettings, WorkspaceVocabularies } from "../../config/Variables";
 import _ from "lodash";
 import { createCount } from "../../function/FunctionCreateVars";
+import { Representation } from "../../config/Enum";
 import { RepresentationConfig } from "../../config/logic/RepresentationConfig";
 
-export async function fetchVocabularies(
+export async function fetchVocabularyTermCount(
   endpoint: string,
-  context: string
+  context: string,
+  ...vocabularies: string[]
 ): Promise<boolean> {
+  const vocabs = _.intersection(
+    _.uniq(
+      Object.keys(CacheSearchVocabularies).concat(
+        Object.keys(WorkspaceVocabularies)
+      )
+    ),
+    vocabularies
+  );
+  if (!vocabs) return true;
   const query = [
     "PREFIX skos: <http://www.w3.org/2004/02/skos/core#> ",
-    "SELECT ?vocabulary ?scheme ?title ?namespace ?term ?type ?diagram where {",
+    "SELECT ?vocabulary ?scheme ?title ?namespace ?term ?type where {",
     "graph <" + context + "> {",
     "<" +
       context +
       "> <https://slovník.gov.cz/datový/pracovní-prostor/pojem/odkazuje-na-kontext> ?vocabulary.}",
     "graph ?vocabulary {",
-    "OPTIONAL {?vocabulary <http://purl.org/vocab/vann/preferredNamespaceUri> ?namespace.}",
-    "OPTIONAL {?vocabulary ?hasAttachmentPredicate ?diagram.",
-    `VALUES ?hasAttachmentPredicate {<${[
-      parsePrefix("a-popis-dat-pojem", "má-přílohu"),
-      parsePrefix("d-sgov-pracovní-prostor-pojem", "má-přílohu"),
-    ].join("> <")}>}}`,
-    "?vocabulary <http://onto.fel.cvut.cz/ontologies/slovník/agendový/popis-dat/pojem/má-glosář> ?scheme.",
-    "?vocabulary <http://purl.org/dc/terms/title> ?title.",
     "?term skos:inScheme ?scheme.",
     "?term a ?type.",
     "}}",
@@ -43,28 +45,9 @@ export async function fetchVocabularies(
     .then((data) => {
       if (data.results.bindings.length === 0) return false;
       for (const row of data.results.bindings) {
-        if (!(row.vocabulary.value in CacheSearchVocabularies)) {
-          CacheSearchVocabularies[row.vocabulary.value] = {
-            labels: initLanguageObject(""),
-            namespace: row.namespace ? row.namespace.value : "",
-            glossary: row.scheme.value,
-            count: createCount(),
-            diagrams: [],
-          };
+        if (!(row.vocabulary.value in count)) {
           count[row.vocabulary.value] = {};
         }
-        if (
-          row.diagram &&
-          !CacheSearchVocabularies[row.vocabulary.value].diagrams.includes(
-            row.diagram.value
-          )
-        )
-          CacheSearchVocabularies[row.vocabulary.value].diagrams.push(
-            row.diagram.value
-          );
-        CacheSearchVocabularies[row.vocabulary.value].labels[
-          row.title["xml:lang"]
-        ] = row.title.value;
         if (!(row.term.value in count[row.vocabulary.value])) {
           count[row.vocabulary.value][row.term.value] = [];
           CacheSearchVocabularies[row.vocabulary.value].count[
@@ -79,11 +62,68 @@ export async function fetchVocabularies(
           count[row.vocabulary.value][row.term.value].push(row.type.value);
       }
       Object.keys(count).forEach((vocab) => {
-        CacheSearchVocabularies[vocab].count[Representation.COMPACT] =
+        CacheSearchVocabularies[vocab].count[Representation.COMPACT] +=
           Object.keys(count[vocab]).filter(
             (term) => _.uniq(count[vocab][term]).length > 0
           ).length;
       });
+      return true;
+    })
+    .catch((e) => {
+      console.error(e);
+      return false;
+    });
+}
+
+export async function fetchVocabularies(
+  endpoint: string,
+  context: string
+): Promise<boolean> {
+  const query = [
+    "PREFIX skos: <http://www.w3.org/2004/02/skos/core#> ",
+    "SELECT ?vocabulary ?scheme ?title ?namespace ?term ?type ?diagram where {",
+    "graph <" + context + "> {",
+    "<" +
+      context +
+      "> <https://slovník.gov.cz/datový/pracovní-prostor/pojem/odkazuje-na-kontext> ?vocabulary.}",
+    "graph ?vocabulary {",
+    "?vocabulary <http://purl.org/vocab/vann/preferredNamespaceUri> ?namespace.",
+    "OPTIONAL {?vocabulary ?hasAttachmentPredicate ?diagram.",
+    `VALUES ?hasAttachmentPredicate {<${[
+      parsePrefix("a-popis-dat-pojem", "má-přílohu"),
+      parsePrefix("d-sgov-pracovní-prostor-pojem", "má-přílohu"),
+    ].join("> <")}>}}`,
+    "?vocabulary <http://onto.fel.cvut.cz/ontologies/slovník/agendový/popis-dat/pojem/má-glosář> ?scheme.",
+    "?vocabulary <http://purl.org/dc/terms/title> ?title.",
+    "}}",
+  ].join(" ");
+  return await processQuery(endpoint, query)
+    .then((response) => response.json())
+    .then((data) => {
+      if (data.results.bindings.length === 0) return false;
+      for (const row of data.results.bindings) {
+        if (!(row.vocabulary.value in CacheSearchVocabularies)) {
+          CacheSearchVocabularies[row.vocabulary.value] = {
+            labels: initLanguageObject(""),
+            namespace: row.namespace ? row.namespace.value : "",
+            glossary: row.scheme.value,
+            count: createCount(),
+            diagrams: [],
+          };
+        }
+        if (
+          row.diagram &&
+          !CacheSearchVocabularies[row.vocabulary.value].diagrams.includes(
+            row.diagram.value
+          )
+        )
+          CacheSearchVocabularies[row.vocabulary.value].diagrams.push(
+            row.diagram.value
+          );
+        CacheSearchVocabularies[row.vocabulary.value].labels[
+          row.title["xml:lang"]
+        ] = row.title.value;
+      }
       return true;
     })
     .catch((e) => {

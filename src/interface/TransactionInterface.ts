@@ -4,11 +4,14 @@ import { Environment } from "../config/Environment";
 
 export async function processTransaction(
   contextEndpoint: string,
+  parallelize: boolean,
   ...transactions: string[]
 ): Promise<boolean> {
   AppSettings.lastTransactions = transactions;
-  for (const transaction of transactions) {
-    if (!transaction) continue;
+  const connect: (transaction: string) => Promise<boolean> = async (
+    transaction: string
+  ) => {
+    if (!transaction) return true;
     const timeoutDeadline = 15000;
     const controller = new AbortController();
     const signal = controller.signal;
@@ -27,7 +30,12 @@ export async function processTransaction(
       .then((headers) => {
         let location = headers.get("location");
         if (location) return location;
-        else return undefined;
+        else {
+          console.error(
+            "Unable to fetch location header for SPARQL UPDATE query."
+          );
+          return undefined;
+        }
       })
       .catch((e) => {
         console.error(e);
@@ -76,13 +84,23 @@ export async function processTransaction(
       window.clearTimeout(timeout);
       if (resultCommit) {
         AppSettings.lastTransactionID = "";
+        return true;
       } else {
         await abortTransaction(transactionID);
         return false;
       }
     } else return false;
+  };
+  if (!parallelize) {
+    for (const t of transactions) {
+      if (!(await connect(t))) return false;
+    }
+    return true;
+  } else {
+    return await Promise.all(transactions.map((t) => connect(t))).then(
+      (booleans) => booleans.every((b) => b)
+    );
   }
-  return true;
 }
 
 export async function abortTransaction(transaction: string): Promise<boolean> {

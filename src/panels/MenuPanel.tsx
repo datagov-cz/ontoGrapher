@@ -30,7 +30,7 @@ interface MenuPanelProps {
   validate: Function;
   closeDetailPanel: Function;
   handleStatus: Function;
-  performTransaction: (...queries: string[]) => void;
+  performTransaction: (parallelize: boolean, ...queries: string[]) => void;
   retry: boolean;
   tooltip: boolean;
 }

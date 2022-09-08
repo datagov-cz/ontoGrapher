@@ -6,7 +6,7 @@ import { Representation } from "../../../../config/Enum";
 
 type Props = {
   id: string;
-  performTransaction: (...queries: string[]) => void;
+  performTransaction: (parallelize: boolean, ...queries: string[]) => void;
   projectLanguage: string;
 };
 

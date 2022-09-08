@@ -18,7 +18,10 @@ import {
   getLinksConfig,
   getSettings,
 } from "../queries/get/InitQueries";
-import { fetchVocabularies } from "../queries/get/CacheQueries";
+import {
+  fetchVocabularies,
+  fetchVocabularyTermCount,
+} from "../queries/get/CacheQueries";
 import { qb } from "../queries/QueryBuilder";
 import {
   updateProjectElement,
@@ -31,7 +34,7 @@ import {
 } from "../function/FunctionEditVars";
 import {
   updateDeleteProjectLink,
-  updateProjectLinkParallel,
+  updateProjectLink,
 } from "../queries/update/UpdateLinkQueries";
 import { initConnections } from "../function/FunctionRestriction";
 import { insertNewCacheTerms } from "../function/FunctionCache";
@@ -81,6 +84,7 @@ export async function updateContexts(): Promise<boolean> {
     case ContextLoadingStrategy.RECONSTRUCT_WORKSPACE:
       const ret2 = await processTransaction(
         AppSettings.contextEndpoint,
+        false,
         qb.constructQuery(await reconstructApplicationContextWithDiagrams())
       );
       if (!ret2) return false;
@@ -102,6 +106,7 @@ export async function updateContexts(): Promise<boolean> {
     }
     const ret = await processTransaction(
       AppSettings.contextEndpoint,
+      false,
       qb.constructQuery(...queries)
     );
     if (!ret) return false;
@@ -112,6 +117,7 @@ export async function updateContexts(): Promise<boolean> {
   if (contextsMissingAppContexts.length > 1) {
     const ret = await processTransaction(
       AppSettings.contextEndpoint,
+      false,
       qb.constructQuery(
         ...contextsMissingAppContexts.map((context) =>
           INSERT.DATA`
@@ -129,6 +135,7 @@ export async function updateContexts(): Promise<boolean> {
   if (contextsMissingAttachments.length > 1) {
     const ret = await processTransaction(
       AppSettings.contextEndpoint,
+      false,
       qb.constructQuery(
         ...contextsMissingAttachments.map((context) =>
           INSERT.DATA`
@@ -249,11 +256,15 @@ export async function retrieveVocabularyData(): Promise<boolean> {
 }
 
 export async function retrieveContextData(): Promise<boolean> {
-  if (!(await getElementsConfig(AppSettings.contextEndpoint))) return false;
-  if (!(await getLinksConfig(AppSettings.contextEndpoint))) return false;
+  const booleans = await Promise.all([
+    getElementsConfig(AppSettings.contextEndpoint),
+    getLinksConfig(AppSettings.contextEndpoint),
+  ]);
+  if (booleans.some((b) => !b)) return false;
   const missingTerms: string[] = Object.keys(WorkspaceElements).filter(
     (id) => !(id in WorkspaceTerms)
   );
+  let newVocabularies: string[] = [];
   if (missingTerms.length > 0) {
     const terms = await fetchTerms(
       AppSettings.contextEndpoint,
@@ -281,7 +292,7 @@ export async function retrieveContextData(): Promise<boolean> {
       // "batch" finish at around the same time.
       await Promise.all(functions.splice(0, 3).map((f) => f()));
     }
-    insertNewCacheTerms(_.merge(terms, restrictions));
+    newVocabularies = insertNewCacheTerms(_.merge(terms, restrictions));
   }
   checkForObsoleteDiagrams();
   Object.keys(WorkspaceLinks)
@@ -310,16 +321,6 @@ export async function retrieveContextData(): Promise<boolean> {
       deleteConcept(id);
     });
   const elements = initElements();
-  if (
-    !(await processTransaction(
-      AppSettings.contextEndpoint,
-      qb.constructQuery(
-        updateProjectElementNames(),
-        updateProjectElement(false, ...elements)
-      )
-    ))
-  )
-    return false;
   addToFlexSearch(...Object.keys(WorkspaceElements));
   const connections = initConnections();
   for (const id of connections.del) {
@@ -330,11 +331,36 @@ export async function retrieveContextData(): Promise<boolean> {
     );
     WorkspaceLinks[id].active = false;
   }
+  const updates = await Promise.all([
+    processTransaction(
+      AppSettings.contextEndpoint,
+      false,
+      qb.constructQuery(updateProjectElementNames())
+    ),
+    processTransaction(
+      AppSettings.contextEndpoint,
+      false,
+      qb.constructQuery(updateProjectElement(false, ...elements))
+    ),
+    processTransaction(
+      AppSettings.contextEndpoint,
+      false,
+      qb.constructQuery(updateDeleteProjectLink(true, ...connections.del))
+    ),
+    fetchVocabularyTermCount(
+      AppSettings.contextEndpoint,
+      AppSettings.cacheContext,
+      ...newVocabularies
+    ),
+  ]);
+  if (updates.some((u) => !u)) return false;
+  // These updates, if run in parallel, have the ability to DoS the DB - it has to run sequentially, unfortunately.
+  // Such a large load is usually generated only on opening vocabularies for the first time, or a saving/loading error.
   return await processTransaction(
     AppSettings.contextEndpoint,
-    qb.constructQuery(updateDeleteProjectLink(true, ...connections.del)),
-    ...updateProjectLinkParallel(...connections.add).map((t) =>
-      qb.constructQuery(t)
+    false,
+    ..._.chunk(connections.add, 25).map((chunk) =>
+      qb.constructQuery(updateProjectLink(false, ...chunk))
     )
   );
 }
@@ -387,6 +413,7 @@ function checkForObsoleteDiagrams() {
         changeDiagrams();
         await processTransaction(
           AppSettings.contextEndpoint,
+          false,
           qb.constructQuery(...queries)
         );
       },
