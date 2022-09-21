@@ -91,7 +91,10 @@ export async function getElementsConfig(
       "?diagram og:representation ?representation .",
       "}",
       `?contextIRI ${qb.i(
-        parsePrefix("a-popis-dat-pojem", `má-přílohu`)
+        parsePrefix(
+          "d-sgov-pracovní-prostor-pojem",
+          `odkazuje-na-přílohový-kontext`
+        )
       )} ?graph.`,
       `values ?contextIRI {<${AppSettings.contextIRIs.join("> <")}>}`,
       "}",
