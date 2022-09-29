@@ -101,19 +101,33 @@ export function getElementPosition(id: string): joint.dia.Point {
     };
 }
 
-export function createNewConcept(
+/**
+ * Submits data about a new term into OG's internal data objects and places it onto the canvas, if applicable.
+ * @param point Where on the canvas to put this new term, if applicable.
+ * @param name Language object with names of the term.
+ * @param language With which language to create the IRI and draw the term on the canvas with.
+ * @param vocabulary The vocabulary that the term is supposed to belong to.
+ * @param localPoint Whether the point is a local point (i.e. with an origin in the canvas).
+ * @param types The types that the term is supposed to have.
+ * @returns IRI (= ID) of the new term.
+ */
+export function createNewTerm(
   point: { x: number; y: number },
   name: { [key: string]: string },
   language: string,
   vocabulary: string,
-  types: string[] = [],
-  elementPoint: boolean = false
+  localPoint: boolean,
+  types: string[] = []
 ): string {
+  if (!(vocabulary in WorkspaceVocabularies))
+    throw new Error(
+      "Attempted to create a term for a vocabulary that is not recognized."
+    );
   const iri = createNewElemIRI(
     WorkspaceVocabularies[vocabulary].glossary,
     name[language]
   );
-  const p = elementPoint ? point : paper.clientToLocalPoint(point);
+  const p = localPoint ? point : paper.clientToLocalPoint(point);
   addVocabularyElement(iri, WorkspaceVocabularies[vocabulary].glossary, [
     parsePrefix("skos", "Concept"),
     ...types,
@@ -122,12 +136,15 @@ export function createNewConcept(
   addToFlexSearch(iri);
   WorkspaceTerms[iri].labels = name;
   WorkspaceElements[iri].hidden[AppSettings.selectedDiagram] = false;
-  const cls = new graphElement({ id: iri });
-  if (p) {
-    cls.position(p);
-    WorkspaceElements[iri].position[AppSettings.selectedDiagram] = p;
-  }
   if (isElementVisible(iri, AppSettings.representation)) {
+    const cls = new graphElement({ id: iri });
+    if (p) {
+      cls.position(p.x, p.y);
+      WorkspaceElements[iri].position[AppSettings.selectedDiagram] = p;
+    } else
+      console.warn(
+        "Unable to determine new element location; placing in canvas origin."
+      );
     cls.addTo(graph);
     drawGraphElement(cls, language, AppSettings.representation);
   }
@@ -345,7 +362,7 @@ export async function putElementsOnCanvas(
       queries.push(
         ...setRepresentation(AppSettings.representation).transaction
       );
-  }
+  } else console.error("Did not receive element creation data from the event.");
   return queries;
 }
 

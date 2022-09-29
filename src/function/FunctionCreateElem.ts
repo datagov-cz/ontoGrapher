@@ -1,5 +1,5 @@
 import { ElemCreationStrategy, Representation } from "../config/Enum";
-import { createNewConcept } from "./FunctionElem";
+import { createNewTerm } from "./FunctionElem";
 import { AppSettings } from "../config/Variables";
 import {
   updateProjectElement,
@@ -44,11 +44,12 @@ const CreateElemStrategy: {
     vocabulary: string,
     position: { x: number; y: number }
   ) => {
-    const id = createNewConcept(
+    const id = createNewTerm(
       position,
       conceptName,
       AppSettings.defaultLanguage,
-      vocabulary
+      vocabulary,
+      false
     );
     return [
       updateProjectElement(true, id),
@@ -63,13 +64,13 @@ const CreateElemStrategy: {
   ) => {
     if (connections.length !== 1)
       throw new Error("Incorrect amount of supplied connections; expected 1");
-    const id = createNewConcept(
+    const id = createNewTerm(
       position,
       conceptName,
       AppSettings.defaultLanguage,
       vocabulary,
-      [parsePrefix("z-sgov-pojem", "typ-vlastnosti")],
-      true
+      true,
+      [parsePrefix("z-sgov-pojem", "typ-vlastnosti")]
     );
     return [
       updateProjectElement(true, id),
@@ -90,11 +91,12 @@ const CreateElemStrategy: {
   ) => {
     if (connections.length !== 2)
       throw new Error("Incorrect amount of supplied connections; expected 2");
-    const id = createNewConcept(
+    const id = createNewTerm(
       position,
       conceptName,
       AppSettings.defaultLanguage,
       vocabulary,
+      false,
       [parsePrefix("z-sgov-pojem", "typ-vztahu")]
     );
     return [

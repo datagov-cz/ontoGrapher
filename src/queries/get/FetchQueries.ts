@@ -276,11 +276,6 @@ export async function fetchRestrictions(
       )) {
         createRestriction(restriction, result[restriction.source].restrictions);
       }
-      console.log(
-        restrictions.filter(
-          (r) => Object.keys(Links).includes(r.onProperty) && r.source in result
-        )
-      );
       return result;
     })
     .catch((e) => {
