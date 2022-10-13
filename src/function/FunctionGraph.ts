@@ -39,6 +39,7 @@ import { initConnections } from "./FunctionRestriction";
 import isUrl from "is-url";
 import {
   getOtherConnectionElementID,
+  isLinkVertexArrayEmpty,
   setCompactLinkCardinalitiesFromFullComponents,
   setLinkVertices,
   setSelfLoopConnectionPoints,
@@ -263,19 +264,19 @@ export function setRepresentation(
             if (sourceBox && targetBox) {
               setLinkBoundary(newLink, source, target);
               newLink.addTo(graph);
-              if (WorkspaceLinks[linkID].vertices[AppSettings.selectedDiagram])
+              if (isLinkVertexArrayEmpty(linkID)) {
+                if (source === target) {
+                  setSelfLoopConnectionPoints(newLink, sourceBox.getBBox());
+                }
+                WorkspaceLinks[newLink.id].vertices[
+                  AppSettings.selectedDiagram
+                ] = newLink.vertices();
+              } else {
                 setLinkVertices(
                   newLink,
                   WorkspaceLinks[linkID].vertices[AppSettings.selectedDiagram]
                 );
-              if (
-                source === target &&
-                WorkspaceLinks[linkID].vertices[AppSettings.selectedDiagram]
-                  .length < 3
-              )
-                setSelfLoopConnectionPoints(newLink, sourceBox.getBBox());
-              WorkspaceLinks[newLink.id].vertices[AppSettings.selectedDiagram] =
-                newLink.vertices();
+              }
               setCompactLinkCardinalitiesFromFullComponents(
                 linkID,
                 sourceLink,

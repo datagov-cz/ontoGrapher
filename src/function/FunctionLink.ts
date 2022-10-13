@@ -54,6 +54,16 @@ export function setSelfLoopConnectionPoints(
   ]);
 }
 
+export function isLinkVertexArrayEmpty(
+  linkID: string,
+  diagramID: string = AppSettings.selectedDiagram
+): boolean {
+  return (
+    !(diagramID in WorkspaceLinks[linkID].vertices) ||
+    WorkspaceLinks[linkID].vertices[diagramID].length === 0
+  );
+}
+
 export function getConnectionElementID(linkID: string, elemID: string): string {
   return WorkspaceLinks[linkID].target === elemID
     ? WorkspaceLinks[linkID].target
