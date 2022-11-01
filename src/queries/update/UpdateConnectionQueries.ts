@@ -211,7 +211,8 @@ export function updateDefaultLink(id: string): string {
         WorkspaceLinks[linkID].sourceCardinality.getFirstCardinality();
       const sourceCardMax =
         WorkspaceLinks[linkID].sourceCardinality.getSecondCardinality();
-      insertConnections.push({
+      insertConnections.push();
+      const minCardinalityConnection: Connection = {
         iri: iri,
         restriction: parsePrefix("owl", "minQualifiedCardinality"),
         onProperty: WorkspaceLinks[linkID].iri,
@@ -220,7 +221,7 @@ export function updateDefaultLink(id: string): string {
         inverseTarget: qb.lt(sourceCardMin, "xsd:nonNegativeInteger"),
         onClass: WorkspaceLinks[linkID].target,
         targetType: TargetType.CARDINALITY,
-      });
+      };
       const maxCardinalityConnection: Connection = {
         iri: iri,
         restriction: parsePrefix("owl", "maxQualifiedCardinality"),
@@ -231,6 +232,13 @@ export function updateDefaultLink(id: string): string {
         onClass: WorkspaceLinks[linkID].target,
         targetType: TargetType.CARDINALITY,
       };
+      if (
+        (minCardinalityConnection.buildInverse &&
+          minCardinalityConnection.inverseTarget) ||
+        (!minCardinalityConnection.buildInverse &&
+          minCardinalityConnection.target)
+      )
+        insertConnections.push(minCardinalityConnection);
       if (
         (maxCardinalityConnection.buildInverse &&
           maxCardinalityConnection.inverseTarget) ||
