@@ -16,16 +16,28 @@ import {
 } from "../../function/FunctionGetVars";
 import _ from "lodash";
 import { RestrictionConfig } from "../../config/logic/RestrictionConfig";
+import isUrl from "is-url";
 
 type Connection = {
   iri: string;
   onProperty: string;
   restriction: string;
-  target: string;
   buildInverse: boolean;
-  inverseTarget?: string;
+  targetType: TargetType;
   onClass?: string;
+  // DO NOT use qb.i(); on these
+  inverseTarget?: string;
+  target: string;
 };
+
+enum TargetType {
+  CARDINALITY,
+  IRI,
+}
+
+function convertTargetIfIRI(target: string, type: TargetType) {
+  return type === TargetType.IRI ? qb.i(target) : target;
+}
 
 // This function helps construct the owl:Restrictions. The result for origin restrictions is:
 // IRI rdfs:subClassOf [rdf:type owl:Restriction;
@@ -41,44 +53,53 @@ function constructDefaultLinkRestrictions(
   ...connections: Connection[]
 ): string[] {
   const restrictions: string[] = [];
-  for (const conn of connections) {
-    const buildFunction = (inverse: boolean) =>
-      qb.s(
-        inverse && conn.inverseTarget
-          ? conn.onClass
-            ? qb.i(conn.onClass)
-            : conn.target
-          : qb.i(conn.iri),
-        "rdfs:subClassOf",
-        qb.b([
-          qb.po("rdf:type", "owl:Restriction"),
-          qb.po(
-            "owl:onProperty",
-            inverse
-              ? qb.b([
-                  qb.po(
-                    qb.i(parsePrefix("owl", "inverseOf")),
-                    qb.i(conn.onProperty)
-                  ),
-                ])
-              : qb.i(conn.onProperty)
-          ),
-          ...(conn.onClass
-            ? [
+  const buildFunction = (conn: Connection, inverse: boolean) =>
+    qb.s(
+      inverse && conn.inverseTarget
+        ? conn.onClass
+          ? qb.i(conn.onClass)
+          : qb.i(conn.target)
+        : qb.i(conn.iri),
+      "rdfs:subClassOf",
+      qb.b([
+        qb.po("rdf:type", "owl:Restriction"),
+        qb.po(
+          "owl:onProperty",
+          inverse
+            ? qb.b([
                 qb.po(
-                  "owl:onClass",
-                  inverse ? qb.i(conn.iri) : qb.i(conn.onClass)
+                  qb.i(parsePrefix("owl", "inverseOf")),
+                  qb.i(conn.onProperty)
                 ),
-              ]
-            : []),
-          qb.po(
-            conn.restriction,
-            inverse && conn.inverseTarget ? conn.inverseTarget : conn.target
-          ),
-        ])
-      );
-    if (conn.target) restrictions.push(buildFunction(false));
-    if (conn.buildInverse) restrictions.push(buildFunction(true));
+              ])
+            : qb.i(conn.onProperty)
+        ),
+        ...(conn.onClass
+          ? [
+              qb.po(
+                "owl:onClass",
+                inverse ? qb.i(conn.iri) : qb.i(conn.onClass)
+              ),
+            ]
+          : []),
+        qb.po(
+          qb.i(conn.restriction),
+          convertTargetIfIRI(
+            inverse && conn.inverseTarget ? conn.inverseTarget : conn.target,
+            conn.targetType
+          )
+        ),
+      ])
+    );
+  for (const conn of connections) {
+    if (![conn.iri, conn.onProperty, conn.restriction].every((p) => isUrl(p))) {
+      console.error(`Skipping invalid connection, which would have resulted in erroneus data:
+      ${buildFunction(conn, false)}`);
+      continue;
+    }
+    if (conn.target) restrictions.push(buildFunction(conn, false));
+    if (conn.buildInverse && conn.inverseTarget)
+      restrictions.push(buildFunction(conn, true));
   }
   return restrictions;
 }
@@ -124,6 +145,37 @@ export function updateDefaultLink(id: string): string {
         WorkspaceLinks[linkID].type === LinkType.DEFAULT
     )
     .forEach((linkID) => {
+      insertConnections.push(
+        {
+          iri: iri,
+          restriction: parsePrefix("owl", "someValuesFrom"),
+          onProperty: WorkspaceLinks[linkID].iri,
+          target: WorkspaceLinks[linkID].target,
+          buildInverse: true,
+          inverseTarget: iri,
+          targetType: TargetType.IRI,
+        },
+        {
+          iri: iri,
+          restriction: parsePrefix("owl", "allValuesFrom"),
+          onProperty: WorkspaceLinks[linkID].iri,
+          target: WorkspaceLinks[linkID].target,
+          buildInverse: true,
+          inverseTarget: iri,
+          targetType: TargetType.IRI,
+        }
+      );
+      if (
+        ![
+          WorkspaceLinks[linkID].targetCardinality,
+          WorkspaceLinks[linkID].sourceCardinality,
+        ].every((c) => c.checkCardinalities())
+      ) {
+        console.error(
+          `Cannot save connection ${linkID}'s cardinalities because of invalid data.`
+        );
+        return;
+      }
       const targetCardMin =
         WorkspaceLinks[linkID].targetCardinality.getFirstCardinality();
       const targetCardMax =
@@ -132,42 +184,31 @@ export function updateDefaultLink(id: string): string {
         WorkspaceLinks[linkID].sourceCardinality.getFirstCardinality();
       const sourceCardMax =
         WorkspaceLinks[linkID].sourceCardinality.getSecondCardinality();
-      insertConnections.push(
-        {
-          iri: iri,
-          restriction: "owl:someValuesFrom",
-          onProperty: WorkspaceLinks[linkID].iri,
-          target: qb.i(WorkspaceLinks[linkID].target),
-          buildInverse: true,
-          inverseTarget: qb.i(iri),
-        },
-        {
-          iri: iri,
-          restriction: "owl:allValuesFrom",
-          onProperty: WorkspaceLinks[linkID].iri,
-          target: qb.i(WorkspaceLinks[linkID].target),
-          buildInverse: true,
-          inverseTarget: qb.i(iri),
-        },
-        {
-          iri: iri,
-          restriction: "owl:minQualifiedCardinality",
-          onProperty: WorkspaceLinks[linkID].iri,
-          target: qb.lt(getNumber(targetCardMin), "xsd:nonNegativeInteger"),
-          buildInverse: isNumber(sourceCardMin),
-          inverseTarget: qb.lt(sourceCardMin, "xsd:nonNegativeInteger"),
-          onClass: WorkspaceLinks[linkID].target,
-        },
-        {
-          iri: iri,
-          restriction: "owl:maxQualifiedCardinality",
-          onProperty: WorkspaceLinks[linkID].iri,
-          target: qb.lt(getNumber(targetCardMax), "xsd:nonNegativeInteger"),
-          buildInverse: isNumber(sourceCardMax),
-          inverseTarget: qb.lt(sourceCardMax, "xsd:nonNegativeInteger"),
-          onClass: WorkspaceLinks[linkID].target,
-        }
-      );
+      insertConnections.push();
+      const minCardinalityConnection: Connection = {
+        iri: iri,
+        restriction: parsePrefix("owl", "minQualifiedCardinality"),
+        onProperty: WorkspaceLinks[linkID].iri,
+        target: qb.lt(getNumber(targetCardMin), "xsd:nonNegativeInteger"),
+        buildInverse: isNumber(sourceCardMin),
+        inverseTarget: qb.lt(sourceCardMin, "xsd:nonNegativeInteger"),
+        onClass: WorkspaceLinks[linkID].target,
+        targetType: TargetType.CARDINALITY,
+      };
+      const maxCardinalityConnection: Connection = {
+        iri: iri,
+        restriction: parsePrefix("owl", "maxQualifiedCardinality"),
+        onProperty: WorkspaceLinks[linkID].iri,
+        target: qb.lt(getNumber(targetCardMax), "xsd:nonNegativeInteger"),
+        buildInverse: isNumber(sourceCardMax),
+        inverseTarget: qb.lt(sourceCardMax, "xsd:nonNegativeInteger"),
+        onClass: WorkspaceLinks[linkID].target,
+        targetType: TargetType.CARDINALITY,
+      };
+
+      insertConnections.push(minCardinalityConnection);
+
+      insertConnections.push(maxCardinalityConnection);
     });
   WorkspaceTerms[iri].restrictions
     .filter(
@@ -181,13 +222,16 @@ export function updateDefaultLink(id: string): string {
     .forEach((rest) =>
       insertConnections.push({
         iri: iri,
-        restriction: qb.i(rest.restriction),
+        restriction: rest.restriction,
         onProperty: rest.onProperty,
         target: isNumber(rest.target)
           ? qb.lt(rest.target, "xsd:nonNegativeInteger")
-          : qb.i(rest.target),
+          : rest.target,
         buildInverse: false,
         onClass: rest.onClass,
+        targetType: isNumber(rest.target)
+          ? TargetType.CARDINALITY
+          : TargetType.IRI,
       })
     );
   const insert = INSERT.DATA`${qb.g(
@@ -204,10 +248,10 @@ export function updateGeneralizationLink(id: string): string {
   const contextIRI = WorkspaceVocabularies[vocabulary].graph;
   const subClassOf: string[] = getActiveToConnections(WorkspaceLinks[id].source)
     .filter((conn) => WorkspaceLinks[conn].type === LinkType.GENERALIZATION)
-    .map((conn) => qb.i(WorkspaceLinks[conn].target));
+    .map((conn) => WorkspaceLinks[conn].target);
   const list = WorkspaceTerms[iri].subClassOf
     .filter((superClass) => superClass && !(superClass in WorkspaceTerms))
-    .map((superClass) => qb.i(superClass));
+    .map((superClass) => superClass);
 
   const del = DELETE`${qb.g(contextIRI, [
     qb.s(qb.i(iri), "rdfs:subClassOf", "?b"),
@@ -216,7 +260,19 @@ export function updateGeneralizationLink(id: string): string {
     "filter(!isBlank(?b)).",
   ])}`.build();
 
-  const subClasses = subClassOf.concat(list);
+  const subClasses = _.compact(
+    subClassOf
+      .concat(list)
+      .filter((sc) => {
+        const check = isUrl(sc);
+        if (!check)
+          console.error(
+            `Skipping the claim that term ${iri} is a sub-class of ${sc}, which is invalid.`
+          );
+        return check;
+      })
+      .map((sc) => qb.i(sc))
+  );
 
   const insert = INSERT.DATA`${qb.g(contextIRI, [
     qb.s(qb.i(iri), "rdfs:subClassOf", qb.a(subClasses), subClasses.length > 0),
