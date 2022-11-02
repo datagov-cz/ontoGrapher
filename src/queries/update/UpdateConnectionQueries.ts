@@ -101,7 +101,6 @@ function constructDefaultLinkRestrictions(
     if (conn.buildInverse && conn.inverseTarget)
       restrictions.push(buildFunction(conn, true));
   }
-  console.log(connections);
   return restrictions;
 }
 
@@ -239,7 +238,6 @@ export function updateDefaultLink(id: string): string {
     contextIRI,
     _.uniq(constructDefaultLinkRestrictions(...insertConnections))
   )}`.build();
-  console.log(insert);
   return qb.combineQueries(del, insert);
 }
 
