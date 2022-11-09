@@ -274,7 +274,7 @@ export function changeVocabularyCount(
       changeFunction(
         WorkspaceVocabularies[vocabulary].count[Representation.FULL]
       );
-    if (isElementVisible(term, Representation.COMPACT))
+    if (isElementVisible(WorkspaceTerms[term].types, Representation.COMPACT))
       WorkspaceVocabularies[vocabulary].count[Representation.COMPACT] =
         changeFunction(
           WorkspaceVocabularies[vocabulary].count[Representation.COMPACT]
