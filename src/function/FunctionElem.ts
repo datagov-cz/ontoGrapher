@@ -286,21 +286,24 @@ export async function putElementsOnCanvas(
   debugger;
   const queries: string[] = [];
   if (event.dataTransfer) {
-    const data = JSON.parse(event.dataTransfer.getData("newClass"));
+    const dataToParse = event.dataTransfer.getData("newClass");
+    const data = JSON.parse(dataToParse);
     const iris = data.iri.filter((iri: string) => {
       return !(iri in WorkspaceTerms);
     });
     const ids = data.id.filter((id: string) => !graph.getCell(id));
-    console.log(data, iris, ids);
-    if (!(data || iris.length > 0 || ids.length > 0)) {
+    if (!data) {
       console.error(`Unable to parse element information from data:
-      ${event.dataTransfer.getData("newClass")}`);
+      ${dataToParse}`);
       return [];
     }
-    if (
-      (iris.length > 0 || ids.length > 0) &&
-      !Diagrams[AppSettings.selectedDiagram].saved
-    ) {
+    if (iris.length === 0 && ids.length === 0) {
+      console.warn(`Expected to receive valid IRI data, got
+      ${dataToParse}
+      instead.`);
+      return [];
+    }
+    if (!Diagrams[AppSettings.selectedDiagram].saved) {
       Diagrams[AppSettings.selectedDiagram].saved = true;
       queries.push(updateCreateDiagram(AppSettings.selectedDiagram));
     }
