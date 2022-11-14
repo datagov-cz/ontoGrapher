@@ -1,7 +1,6 @@
 import React from "react";
 import TableList from "../../../components/TableList";
 import { AppSettings, Languages } from "../../../config/Variables";
-import InlineEdit, { InputType } from "riec";
 import { Form, OverlayTrigger, Tooltip } from "react-bootstrap";
 import { Locale } from "../../../config/Locale";
 import { removeNewlines } from "../../../function/FunctionEditVars";
@@ -43,7 +42,8 @@ export default class AltLabelTable extends React.Component<Props, State> {
             }}
           >
             <td colSpan={this.props.readOnly ? 2 : 1} className={"stretch"}>
-              {this.props.readOnly ? (
+              {/* TODO: Replace RIEC */}
+              {/* {this.props.readOnly ? (
                 this.props.labels[i].label
               ) : (
                 <InlineEdit
@@ -58,7 +58,7 @@ export default class AltLabelTable extends React.Component<Props, State> {
                   }}
                   type={InputType.TextArea}
                 />
-              )}
+              )} */}
               <span className={"right"}>
                 {this.props.labels[i].label !== this.props.default &&
                   AppSettings.canvasLanguage ===
@@ -98,7 +98,8 @@ export default class AltLabelTable extends React.Component<Props, State> {
               </span>
             </td>
             <td className={"short"}>
-              {this.props.readOnly &&
+              {/* TODO: Replace RIEC */}
+              {/* {this.props.readOnly &&
               this.props.labels[i].language in Languages ? (
                 Languages[this.props.labels[i].language]
               ) : (
@@ -119,7 +120,7 @@ export default class AltLabelTable extends React.Component<Props, State> {
                   labelKey="name"
                   viewClass={"rieinput"}
                 />
-              )}
+              )} */}
             </td>
             {!this.props.readOnly && (
               <td className={"short"}>

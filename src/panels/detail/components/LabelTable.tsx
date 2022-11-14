@@ -7,7 +7,6 @@ import {
   isTermReadOnly,
 } from "../../../function/FunctionGetVars";
 import { AppSettings, Languages } from "../../../config/Variables";
-import InlineEdit, { InputType } from "riec";
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
 import { Locale } from "../../../config/Locale";
 import { removeNewlines } from "../../../function/FunctionEditVars";
@@ -52,7 +51,9 @@ export default class LabelTable extends React.Component<Props, State> {
             }}
           >
             <td className={"stretch"}>
-              {isLabelBlank(getLabelOrBlank(this.props.labels, lang)) &&
+              
+              {/* TODO: Replace RIEC */}
+              {/* {isLabelBlank(getLabelOrBlank(this.props.labels, lang)) &&
               !isTermReadOnly(this.props.iri) ? (
                 <InlineEdit
                   type={InputType.Text}
@@ -118,8 +119,8 @@ export default class LabelTable extends React.Component<Props, State> {
                     )}
                   </span>
                 </span>
-              )}
-            </td>
+              )}*/}
+            </td> 
             <td className={"short"}>{Languages[lang]}</td>
           </tr>
         ))}

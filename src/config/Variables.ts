@@ -126,6 +126,8 @@ export var Diagrams: {
     iri: string;
     graph: string;
     saved: boolean;
+    // TODO: refactor for all implementations of Diagrams
+    vocabularies: string[];
   };
 } = {};
 

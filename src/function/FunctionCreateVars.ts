@@ -141,6 +141,8 @@ export function addDiagram(
     iri: iri ? iri : getNewDiagramIRI(diagramID),
     graph: graph ? graph : getNewDiagramContextIRI(diagramID),
     saved: false,
+    //TODO
+    vocabularies: [],
   };
   return diagramID;
 }

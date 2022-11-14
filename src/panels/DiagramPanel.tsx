@@ -3,6 +3,8 @@ import DiagramAdd from "./diagram/DiagramAdd";
 import { Diagrams } from "../config/Variables";
 import DiagramTab from "./diagram/DiagramTab";
 import ModalRemoveDiagram from "./modal/ModalRemoveDiagram";
+import { ModalRenameDiagram } from "./diagram/ModalRenameDiagram";
+import { updateCreateDiagram } from "../queries/update/UpdateDiagramQueries";
 
 interface Props {
   performTransaction: (...queries: string[]) => void;
@@ -12,6 +14,7 @@ interface Props {
 
 interface State {
   modalRemoveDiagram: boolean;
+  modalRenameDiagram: boolean;
   selectedDiagram: string;
 }
 
@@ -19,9 +22,20 @@ export default class DiagramPanel extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = {
+      modalRenameDiagram: false,
       modalRemoveDiagram: false,
       selectedDiagram: "",
     };
+  }
+
+  closeDiagram(diag: string) {
+    Diagrams[diag].active = false;
+    if (Diagrams[diag].saved) {
+      const queries = [];
+      queries.push(updateCreateDiagram(diag));
+      this.props.performTransaction(...queries);
+    }
+    this.props.update();
   }
 
   render() {
@@ -45,8 +59,18 @@ export default class DiagramPanel extends React.Component<Props, State> {
                   modalRemoveDiagram: true,
                 });
               }}
+              closeDiagram={(diag: string) => {
+                this.closeDiagram(diag);
+              }}
+              renameDiagram={(diag: string) => {
+                this.setState({
+                  selectedDiagram: diag,
+                  modalRenameDiagram: true,
+                });
+              }}
             />
           ))}
+        {/* TODO: Change DiagramAdd to DiagramHome when the diagram manager is ready */}
         <DiagramAdd
           update={() => {
             this.forceUpdate();
@@ -59,6 +83,18 @@ export default class DiagramPanel extends React.Component<Props, State> {
           diagram={this.state.selectedDiagram}
           close={() => {
             this.setState({ modalRemoveDiagram: false });
+          }}
+          update={() => {
+            this.forceUpdate();
+            this.props.update();
+          }}
+          performTransaction={this.props.performTransaction}
+        />
+        <ModalRenameDiagram
+          modal={this.state.modalRenameDiagram}
+          diagram={this.state.selectedDiagram}
+          close={() => {
+            this.setState({ modalRenameDiagram: false });
           }}
           update={() => {
             this.forceUpdate();

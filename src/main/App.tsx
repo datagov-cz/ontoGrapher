@@ -298,7 +298,7 @@ export default class App extends React.Component<
     this.detailPanel.current?.prepareDetails(mode, id);
     this.validationPanel.current?.forceUpdate();
   }
-
+  // TODO: change all emojis to material ui icons
   render() {
     return (
       <div className={"app"}>
