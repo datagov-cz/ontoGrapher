@@ -4,9 +4,14 @@ import VocabularyPanel from "../panels/VocabularyPanel";
 import DiagramCanvas from "./DiagramCanvas";
 import {
   AppSettings,
+  Diagrams,
+  Languages,
+  Links,
+  Stereotypes,
   WorkspaceElements,
   WorkspaceLinks,
   WorkspaceTerms,
+  WorkspaceVocabularies,
 } from "../config/Variables";
 import DetailPanel from "../panels/DetailPanel";
 import { getVocabulariesFromRemoteJSON } from "../interface/JSONInterface";
@@ -44,11 +49,19 @@ import {
   ElemCreationConfiguration,
   LinkCreationConfiguration,
 } from "../components/modals/CreationModals";
-import { DetailPanelMode, ElemCreationStrategy } from "../config/Enum";
+import {
+  DetailPanelMode,
+  ElemCreationStrategy,
+  Representation,
+} from "../config/Enum";
 import { getElementPosition } from "../function/FunctionElem";
 import { en } from "../locale/en";
 import { StoreAlerts } from "../config/Store";
 import { CriticalAlertModal } from "../components/modals/CriticalAlertModal";
+import { Environment } from "../config/Environment";
+import { Cardinality } from "../datatypes/Cardinality";
+import hotkeys from "hotkeys-js";
+import { dumpDebugData, loadDebugData } from "../function/FunctionDebug";
 
 interface DiagramAppProps {}
 
@@ -138,15 +151,23 @@ export default class App extends React.Component<
   }
 
   componentDidMount(): void {
-    this.loadAndPrepareData().then((r) => {
-      if (r)
-        this.handleStatus(
-          false,
-          Locale[AppSettings.interfaceLanguage].workspaceReady,
-          false
-        );
-      else this.handleLoadingError();
-    });
+    const finishUp = () => {
+      this.handleChangeLanguage(AppSettings.canvasLanguage);
+      setSchemeColors(AppSettings.viewColorPool);
+      changeDiagrams();
+      this.itemPanel.current?.update();
+      this.checkLastViewedVersion();
+      this.handleWorkspaceReady("workspaceReady");
+    };
+    if (Environment.debug) {
+      hotkeys("ctrl+alt+d", () => dumpDebugData());
+      loadDebugData();
+      finishUp();
+    } else
+      this.loadAndPrepareData().then((r) => {
+        if (r) finishUp();
+        else this.handleLoadingError();
+      });
   }
 
   async loadAndPrepareData(): Promise<boolean> {
@@ -162,16 +183,6 @@ export default class App extends React.Component<
     if (!process3) return false;
     const process4 = await retrieveContextData();
     if (!process4) return false;
-    this.handleChangeLanguage(AppSettings.canvasLanguage);
-    setSchemeColors(AppSettings.viewColorPool);
-    changeDiagrams();
-    this.itemPanel.current?.update();
-    this.checkLastViewedVersion();
-    this.handleStatus(
-      false,
-      Locale[AppSettings.interfaceLanguage].workspaceReady,
-      false
-    );
     return true;
   }
 

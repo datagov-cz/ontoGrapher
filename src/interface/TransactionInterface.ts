@@ -6,6 +6,7 @@ export async function processTransaction(
   contextEndpoint: string,
   ...transactions: string[]
 ): Promise<boolean> {
+  if (Environment.debug) return true;
   AppSettings.lastTransactions = transactions;
   for (const transaction of transactions) {
     if (!transaction) continue;

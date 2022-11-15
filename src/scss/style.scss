@@ -51,12 +51,17 @@ body {
   width: 100%;
 }
 
-.buttonlink {
+.displayInline {
+  display: inline;
+}
+
+//TODO: remove references to buttonlink
+.plainButton {
   border: none;
   background: none;
   margin: 0;
   padding: 0;
-  color: #007bff;
+  color: #000000;
 
   &.vocab {
     border-radius: 4px;
@@ -64,13 +69,8 @@ body {
   }
 
   &:hover {
-    color: blue;
-    text-decoration: underline;
-    background: none;
-
-    &.nounderline {
-      text-decoration: none;
-    }
+    color: black;
+    background: lightslategray;
   }
 }
 
@@ -121,15 +121,13 @@ body {
   }
 
   br {
-   display: none;
+    display: none;
   }
 }
 
-.qualityTableSelect{
+.qualityTableSelect {
   max-height: 20px;
 }
 
 // TODO
-.iconButton{
-
-}
+.iconButton {}

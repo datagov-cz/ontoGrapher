@@ -24,7 +24,8 @@ export default class InterfaceStatus extends React.Component<Props, State> {
   }
 
   componentDidMount() {
-    if (Environment.auth) window.setInterval(this.setStatus, 10000);
+    if (Environment.auth && !Environment.debug)
+      window.setInterval(this.setStatus, 10000);
   }
 
   setStatus() {

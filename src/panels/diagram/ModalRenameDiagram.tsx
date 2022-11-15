@@ -54,7 +54,8 @@ export const ModalRenameDiagram: React.FC<Props> = (props: Props) => {
       {/* TODO: i18n */}
       <Modal.Header>
         <Modal.Title>
-          Přejmenovat diagram {Diagrams[props.diagram].name}
+          Přejmenovat diagram{" "}
+          {props.diagram in Diagrams && Diagrams[props.diagram].name}
         </Modal.Title>
       </Modal.Header>
       <Form>

@@ -3,7 +3,7 @@ import MoreVertIcon from "@mui/icons-material/MoreVert";
 import React from "react";
 import { Dropdown } from "react-bootstrap";
 import { IconText } from "../../components/IconText";
-import { AppSettings } from "../../config/Variables";
+import { AppSettings, Diagrams } from "../../config/Variables";
 import { changeDiagrams } from "../../function/FunctionDiagram";
 
 interface Props {
@@ -33,10 +33,10 @@ export default class DiagramTab extends React.Component<Props> {
         }
         onClick={() => this.changeDiagram()}
       >
-        Diagrams[this.props.diagram].name
+        {Diagrams[this.props.diagram].name}
         {/* TODO: i18n */}
-        <Dropdown>
-          <Dropdown.Toggle id="diagram-dropdown">
+        <Dropdown bsPrefix="displayInline">
+          <Dropdown.Toggle bsPrefix="plainButton" id="diagram-dropdown">
             <MoreVertIcon />
           </Dropdown.Toggle>
           <Dropdown.Menu>
