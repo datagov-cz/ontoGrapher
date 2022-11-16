@@ -159,9 +159,9 @@ export default class VocabularyPanel extends React.Component<Props, State> {
       this.setState({
         shownLucene: _.omit(
           results,
-          Object.keys(results).filter((iri) => {
-            return iri in WorkspaceTerms && WorkspaceElements[iri].active;
-          })
+          Object.keys(results).filter((iri) => 
+             iri in WorkspaceTerms && WorkspaceElements[iri].active && isElementVisible(results[iri].types, AppSettings.representation)
+          )
         ),
       });
     });
@@ -203,7 +203,7 @@ export default class VocabularyPanel extends React.Component<Props, State> {
             (!this.state.search || flexSearchResults.includes(id)) &&
             (AppSettings.representation === Representation.FULL ||
               (AppSettings.representation === Representation.COMPACT &&
-                isElementVisible(id, Representation.COMPACT)))
+                isElementVisible(WorkspaceTerms[id].types, Representation.COMPACT)))
         )
         .forEach((elem) => {
           const types = WorkspaceTerms[elem].types;

@@ -3,6 +3,7 @@ import { Representation } from "../config/Enum";
 export type CacheSearchResults = {
   [key: string]: {
     labels: { [key: string]: string };
+    types: string[];
     altLabels: { label: string; language: string }[];
     definitions: { [key: string]: string };
     vocabulary: string;

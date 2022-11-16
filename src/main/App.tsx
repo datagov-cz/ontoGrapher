@@ -29,6 +29,7 @@ import { Locale } from "../config/Locale";
 import { drawGraphElement, unHighlightAll } from "../function/FunctionDraw";
 import {
   changeDiagrams,
+  highlightElement,
   resetDiagramSelection,
 } from "../function/FunctionDiagram";
 import { qb } from "../queries/QueryBuilder";
@@ -333,6 +334,7 @@ export default class App extends React.Component<
           }}
           performTransaction={this.performTransaction}
           updateDetailPanel={(id: string) => {
+            highlightElement(id);
             this.handleUpdateDetailPanel(DetailPanelMode.TERM, id);
           }}
         />

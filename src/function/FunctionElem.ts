@@ -136,7 +136,7 @@ export function createNewTerm(
   addToFlexSearch(iri);
   WorkspaceTerms[iri].labels = name;
   WorkspaceElements[iri].hidden[AppSettings.selectedDiagram] = false;
-  if (isElementVisible(iri, AppSettings.representation)) {
+  if (isElementVisible(WorkspaceTerms[iri].types, AppSettings.representation)) {
     const cls = new graphElement({ id: iri });
     if (p) {
       cls.position(p.x, p.y);
@@ -151,13 +151,15 @@ export function createNewTerm(
   return iri;
 }
 
-export function isElementVisible(iri: string, representation: Representation) {
+export function isElementVisible(
+  types: string[],
+  representation: Representation
+) {
   return (
-    _.difference(
-      RepresentationConfig[representation].visibleStereotypes,
-      WorkspaceTerms[iri].types
-    ).length < RepresentationConfig[representation].visibleStereotypes.length ||
-    !WorkspaceTerms[iri].types.find((type) =>
+    _.difference(RepresentationConfig[representation].visibleStereotypes, types)
+      .length <
+      RepresentationConfig[representation].visibleStereotypes.length ||
+    !types.find((type) =>
       RepresentationConfig[Representation.FULL].visibleStereotypes.includes(
         type
       )
@@ -283,15 +285,24 @@ export async function putElementsOnCanvas(
 ): Promise<string[]> {
   const queries: string[] = [];
   if (event.dataTransfer) {
-    const data = JSON.parse(event.dataTransfer.getData("newClass"));
+    const dataToParse = event.dataTransfer.getData("newClass");
+    const data = JSON.parse(dataToParse);
     const iris = data.iri.filter((iri: string) => {
-      return !(iri in WorkspaceTerms && WorkspaceElements[iri].active);
+      return !(iri in WorkspaceTerms);
     });
     const ids = data.id.filter((id: string) => !graph.getCell(id));
-    if (
-      (iris.length > 0 || ids.length > 0) &&
-      !Diagrams[AppSettings.selectedDiagram].saved
-    ) {
+    if (!data) {
+      console.error(`Unable to parse element information from data:
+      ${dataToParse}`);
+      return [];
+    }
+    if (iris.length === 0 && ids.length === 0) {
+      console.warn(`Expected to receive valid IRI data, got
+      ${dataToParse}
+      instead.`);
+      return [];
+    }
+    if (!Diagrams[AppSettings.selectedDiagram].saved) {
       Diagrams[AppSettings.selectedDiagram].saved = true;
       queries.push(updateCreateDiagram(AppSettings.selectedDiagram));
     }
