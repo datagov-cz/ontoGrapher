@@ -231,8 +231,8 @@ export async function searchCache(
         }
         result[row.entity.value].labels[row.label["xml:lang"]] =
           row.label.value;
-        if (!result[row.entity.value].types.includes(row.types.value))
-          result[row.entity.value].types.push(row.types.value);
+        if (!result[row.entity.value].types.includes(row.type.value))
+          result[row.entity.value].types.push(row.type.value);
         if (row.definition)
           result[row.entity.value].definitions[row.definition["xml:lang"]] =
             row.definition.value;
