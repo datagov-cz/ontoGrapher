@@ -1,4 +1,6 @@
-import { Close, Delete, Edit } from "@mui/icons-material";
+import CloseIcon from "@mui/icons-material/Close";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import React from "react";
 import { Dropdown } from "react-bootstrap";
@@ -17,9 +19,11 @@ interface Props {
 
 export default class DiagramTab extends React.Component<Props> {
   changeDiagram() {
-    changeDiagrams(this.props.diagram);
-    this.props.update();
-    AppSettings.selectedLinks = [];
+    if (this.props.diagram !== AppSettings.selectedDiagram) {
+      changeDiagrams(this.props.diagram);
+      this.props.update();
+      AppSettings.selectedLinks = [];
+    }
   }
 
   render() {
@@ -33,29 +37,29 @@ export default class DiagramTab extends React.Component<Props> {
         }
         onClick={() => this.changeDiagram()}
       >
-        {Diagrams[this.props.diagram].name}
+        <span className="diagramText">
+          {Diagrams[this.props.diagram].name}&nbsp;
+        </span>
         {/* TODO: i18n */}
-        <Dropdown bsPrefix="displayInline">
-          <Dropdown.Toggle bsPrefix="plainButton" id="diagram-dropdown">
+        <Dropdown className="displayInline">
+          <Dropdown.Toggle className="plainButton" variant="secondary">
             <MoreVertIcon />
           </Dropdown.Toggle>
           <Dropdown.Menu>
-            //TODO: i18n this
             <Dropdown.Item
               onClick={() => this.props.closeDiagram(this.props.diagram)}
             >
-              <IconText text="Zavřít" icon={Close} />
+              <IconText text="Zavřít" icon={CloseIcon} />
             </Dropdown.Item>
-            //TODO: add rename dialogue
             <Dropdown.Item
               onClick={() => this.props.renameDiagram(this.props.diagram)}
             >
-              <IconText text="Přejmenovat" icon={Edit} />
+              <IconText text="Přejmenovat" icon={EditIcon} />
             </Dropdown.Item>
             <Dropdown.Item
               onClick={() => this.props.deleteDiagram(this.props.diagram)}
             >
-              <IconText text="Smazat" icon={Delete} />
+              <IconText text="Smazat" icon={DeleteIcon} />
             </Dropdown.Item>
           </Dropdown.Menu>
         </Dropdown>

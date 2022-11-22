@@ -9,7 +9,8 @@ type Props = {
 export const IconText: React.FC<Props> = (props: Props) => {
   return (
     <span className="iconButton">
-      {props.icon}&nbsp;{props.text}
+      <props.icon />
+      &nbsp;{props.text}
     </span>
   );
 };

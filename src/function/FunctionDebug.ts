@@ -25,9 +25,9 @@ export function dumpDebugData() {
   );
 }
 
-export function loadDebugData() {
+export function loadDebugData(): boolean {
   const json = require("../debug-data.json");
-  if (!json) return;
+  if (!json) return false;
   for (const setting in json) {
     if (setting === "WorkspaceElements") {
       for (const element in json["WorkspaceElements"]) {
@@ -108,4 +108,5 @@ export function loadDebugData() {
       AppSettings.selectedLinks = json[setting]["selectedLinks"];
     }
   }
+  return true;
 }

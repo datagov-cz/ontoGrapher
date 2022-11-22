@@ -4,14 +4,9 @@ import VocabularyPanel from "../panels/VocabularyPanel";
 import DiagramCanvas from "./DiagramCanvas";
 import {
   AppSettings,
-  Diagrams,
-  Languages,
-  Links,
-  Stereotypes,
   WorkspaceElements,
   WorkspaceLinks,
   WorkspaceTerms,
-  WorkspaceVocabularies,
 } from "../config/Variables";
 import DetailPanel from "../panels/DetailPanel";
 import { getVocabulariesFromRemoteJSON } from "../interface/JSONInterface";
@@ -49,17 +44,12 @@ import {
   ElemCreationConfiguration,
   LinkCreationConfiguration,
 } from "../components/modals/CreationModals";
-import {
-  DetailPanelMode,
-  ElemCreationStrategy,
-  Representation,
-} from "../config/Enum";
+import { DetailPanelMode, ElemCreationStrategy } from "../config/Enum";
 import { getElementPosition } from "../function/FunctionElem";
 import { en } from "../locale/en";
 import { StoreAlerts } from "../config/Store";
 import { CriticalAlertModal } from "../components/modals/CriticalAlertModal";
 import { Environment } from "../config/Environment";
-import { Cardinality } from "../datatypes/Cardinality";
 import hotkeys from "hotkeys-js";
 import { dumpDebugData, loadDebugData } from "../function/FunctionDebug";
 
@@ -152,6 +142,7 @@ export default class App extends React.Component<
 
   componentDidMount(): void {
     const finishUp = () => {
+      hotkeys("ctrl+alt+d", () => dumpDebugData());
       this.handleChangeLanguage(AppSettings.canvasLanguage);
       setSchemeColors(AppSettings.viewColorPool);
       changeDiagrams();
@@ -159,11 +150,8 @@ export default class App extends React.Component<
       this.checkLastViewedVersion();
       this.handleWorkspaceReady("workspaceReady");
     };
-    if (Environment.debug) {
-      hotkeys("ctrl+alt+d", () => dumpDebugData());
-      loadDebugData();
-      finishUp();
-    } else
+    if (Environment.debug && loadDebugData()) finishUp();
+    else
       this.loadAndPrepareData().then((r) => {
         if (r) finishUp();
         else this.handleLoadingError();
