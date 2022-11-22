@@ -98,12 +98,10 @@ export const NewElemForm: React.FC<Props> = (props) => {
       {Object.keys(Languages).map((lang) => (
         <div key={lang}>
           <InputGroup>
-            <InputGroup.Prepend>
-              <InputGroup.Text id={"inputGroupPrepend" + lang}>
-                {Languages[lang] +
-                  (lang === AppSettings.canvasLanguage ? "*" : "")}
-              </InputGroup.Text>
-            </InputGroup.Prepend>
+            <InputGroup.Text id={"inputGroupPrepend" + lang}>
+              {Languages[lang] +
+                (lang === AppSettings.canvasLanguage ? "*" : "")}
+            </InputGroup.Text>
             <Form.Control
               id={"newElemLabelInput" + lang}
               type="text"

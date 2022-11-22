@@ -3,7 +3,7 @@
   padding-left: 5px;
 
   .upper {
-    display: inline-flex;
+    // display: inline-flex;
     padding-left: 5px;
     margin-bottom: 4px;
 
@@ -12,6 +12,7 @@
     }
 
     .title {
+      display: inline;
       overflow: hidden;
       text-overflow: ellipsis;
       max-height: 30px;
@@ -35,7 +36,8 @@
     margin-right: 4px;
     margin-bottom: 4px;
 
-    a, button {
+    a,
+    button {
       font-size: 14px;
       box-shadow: none;
       transition: none;
@@ -43,7 +45,8 @@
       padding: 0 5px;
       background-color: #ffc107;
 
-      &:hover, &:active {
+      &:hover,
+      &:active {
         cursor: default;
         color: black;
         background-color: #d39e00;
@@ -59,7 +62,8 @@
   .lower {
     font-size: 14px;
 
-    a, button {
+    a,
+    button {
       font-size: 14px;
       background: none !important;
       border: none;

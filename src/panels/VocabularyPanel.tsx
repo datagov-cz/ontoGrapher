@@ -126,13 +126,13 @@ export default class VocabularyPanel extends React.Component<Props, State> {
     if (redoCacheSearch) this.getSearchResults(this.state.search);
   }
 
-  handleChangeSearch(event: React.ChangeEvent<HTMLSelectElement>) {
+  handleChangeSearch(search: string) {
     this.setState({
-      search: event.currentTarget.value,
+      search: search,
       open: Object.fromEntries(
         Object.keys(WorkspaceVocabularies).map((vocab) => [
           vocab,
-          !(event.currentTarget.value === ""),
+          !(search === ""),
         ])
       ),
     });
@@ -141,7 +141,7 @@ export default class VocabularyPanel extends React.Component<Props, State> {
       this.setState({
         shownElements: this.updateShownElements(),
       });
-      this.getSearchResults(event.target.value);
+      this.getSearchResults(search);
     }, 200);
   }
 
@@ -383,18 +383,16 @@ export default class VocabularyPanel extends React.Component<Props, State> {
       >
         <div>
           <InputGroup>
-            <InputGroup.Prepend>
-              <InputGroup.Text id="inputGroupPrepend">
-                <span
-                  role="img"
-                  aria-label={
-                    Locale[AppSettings.interfaceLanguage].searchStereotypes
-                  }
-                >
-                  🔎
-                </span>
-              </InputGroup.Text>
-            </InputGroup.Prepend>
+            <InputGroup.Text id="inputGroupPrepend">
+              <span
+                role="img"
+                aria-label={
+                  Locale[AppSettings.interfaceLanguage].searchStereotypes
+                }
+              >
+                🔎
+              </span>
+            </InputGroup.Text>
             <Form.Control
               type="search"
               id={"searchInput"}
@@ -403,7 +401,9 @@ export default class VocabularyPanel extends React.Component<Props, State> {
               }
               aria-describedby="inputGroupPrepend"
               value={this.state.search}
-              onChange={this.handleChangeSearch}
+              onChange={(evt) =>
+                this.handleChangeSearch(evt.currentTarget.value)
+              }
             />
           </InputGroup>
           <div style={{ display: "inline-flex" }}>

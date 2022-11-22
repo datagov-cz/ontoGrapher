@@ -354,7 +354,7 @@ export async function putElementsOnCanvas(
         AppSettings.representation
       );
       queries.push(
-        ...restoreHiddenElem(id, cls, true, true, true),
+        ...restoreHiddenElem(id, true, true, true),
         updateProjectElementDiagram(AppSettings.selectedDiagram, id)
       );
     });

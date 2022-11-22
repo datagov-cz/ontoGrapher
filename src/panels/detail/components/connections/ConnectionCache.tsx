@@ -60,25 +60,25 @@ export default class ConnectionCache extends React.Component<Props, State> {
         placement={"left"}
         overlay={
           <Popover id={"termDetailPopover"}>
-            <Popover.Title as="h3">
+            <Popover.Header as="h3">
               {getLabelOrBlank(
                 this.props.connection.target.labels,
                 this.props.projectLanguage
               )}
               &nbsp;
-              <Badge className={"wrap"} variant={"secondary"}>
+              <Badge className={"wrap"} bg={"secondary"}>
                 {this.getVocabularyLabel(
                   this.props.connection.target.vocabulary
                 )}
               </Badge>
-            </Popover.Title>
-            <Popover.Content>
+            </Popover.Header>
+            <Popover.Body>
               {
                 this.props.connection.target.definitions[
                   this.props.projectLanguage
                 ]
               }
-            </Popover.Content>
+            </Popover.Body>
           </Popover>
         }
       >
@@ -117,7 +117,7 @@ export default class ConnectionCache extends React.Component<Props, State> {
                 this.props.projectLanguage
               )}
               &nbsp;
-              <Badge variant={"secondary"}>
+              <Badge bg={"secondary"}>
                 {getVocabularyShortLabel(
                   this.props.connection.target.vocabulary
                 )}

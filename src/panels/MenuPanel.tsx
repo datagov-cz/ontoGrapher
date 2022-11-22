@@ -1,5 +1,5 @@
 import React from "react";
-import { Form, OverlayTrigger, Tooltip } from "react-bootstrap";
+import { Col, Container, OverlayTrigger, Row, Tooltip } from "react-bootstrap";
 import { AppSettings } from "../config/Variables";
 import { Locale } from "../config/Locale";
 import { Environment } from "../config/Environment";
@@ -62,28 +62,39 @@ export default class MenuPanel extends React.Component<
   render() {
     return (
       <nav className={"menuPanel"}>
-        <div className={"upper"}>
-          <h5 className={"title"}>
-            {getLabelOrBlank(AppSettings.name, AppSettings.interfaceLanguage)}
-          </h5>
-          <InterfaceNotification
-            active={this.props.loading}
-            message={this.props.status}
-            error={this.props.freeze}
-            performTransaction={this.props.performTransaction}
-            retry={this.props.retry}
-          />
-          <div className={"right" + (this.props.freeze ? " nointeract" : "")}>
-            <Form inline>
-              <MenuPanelReport />
-              <InterfaceStatus
-                handleStatus={this.props.handleStatus}
-                error={this.props.freeze}
-                status={this.props.status}
-              />
-            </Form>
-          </div>
-        </div>
+        <Container fluid className="upper">
+          <Row>
+            <Col>
+              <span>
+                <h5 className={"title"}>
+                  {getLabelOrBlank(
+                    AppSettings.name,
+                    AppSettings.interfaceLanguage
+                  )}
+                </h5>
+                <InterfaceNotification
+                  active={this.props.loading}
+                  message={this.props.status}
+                  error={this.props.freeze}
+                  performTransaction={this.props.performTransaction}
+                  retry={this.props.retry}
+                />
+              </span>
+            </Col>
+            <Col>
+              <span
+                className={"right" + (this.props.freeze ? " nointeract" : "")}
+              >
+                <MenuPanelReport />
+                <InterfaceStatus
+                  handleStatus={this.props.handleStatus}
+                  error={this.props.freeze}
+                  status={this.props.status}
+                />
+              </span>
+            </Col>
+          </Row>
+        </Container>
         <div className={"lower" + (this.props.freeze ? " nointeract" : "")}>
           <MenuPanelSettings
             update={() => this.props.update()}

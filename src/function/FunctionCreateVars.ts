@@ -122,7 +122,9 @@ export function addDiagram(
   index?: number,
   iri?: string,
   id?: string,
-  graph?: string
+  graph?: string,
+  description?: string,
+  vocabularies?: string[]
 ): string {
   const diagramID = id ? id : uuidv4();
   if (!index)
@@ -141,8 +143,12 @@ export function addDiagram(
     iri: iri ? iri : getNewDiagramIRI(diagramID),
     graph: graph ? graph : getNewDiagramContextIRI(diagramID),
     saved: false,
-    //TODO
-    vocabularies: [],
+    description: description ? description : "",
+    vocabularies: vocabularies ? vocabularies : [],
+    modifiedDate: new Date(),
+    creationDate: new Date(),
+    //TODO collaborators:
+    collaborators: [],
   };
   return diagramID;
 }

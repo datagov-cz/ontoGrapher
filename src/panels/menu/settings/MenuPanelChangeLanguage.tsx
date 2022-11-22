@@ -13,7 +13,7 @@ interface Props {
 
 export const MenuPanelChangeLanguage: React.FC<Props> = (props: Props) => {
   return (
-    <Dropdown drop={"right"}>
+    <Dropdown drop={"end"}>
       <Dropdown.Toggle>
         {Locale[AppSettings.interfaceLanguage][props.title]}
       </Dropdown.Toggle>

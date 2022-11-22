@@ -14,12 +14,12 @@ export const DetailElementLinksCard: React.FC<Props> = (props) => {
   return (
     <Card>
       <Card.Header>
-        <Accordion.Toggle as={Button} variant={"link"} eventKey={"1"}>
+        <Accordion.Header as={Button} variant={"link"} eventKey={"1"}>
           {getExpressionByRepresentation({
             [Representation.FULL]: "links",
             [Representation.COMPACT]: "relationships",
           })}
-        </Accordion.Toggle>
+        </Accordion.Header>
       </Card.Header>
       <Accordion.Collapse eventKey={"1"}>
         <Card.Body>

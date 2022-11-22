@@ -18,13 +18,16 @@ export default class MenuPanelReport extends React.Component<Props, State> {
           title={Locale[AppSettings.interfaceLanguage].reportIssue}
           variant={"warning"}
           href={Environment.components["al-issue-tracker"].meta["new-bug"]}
-          menuAlign={{ sm: "left" }}
+          align={{ sm: "start" }}
           target={"_blank"}
+          // TODO i18n
+          toggleLabel=""
         >
           <Dropdown.Item
             href={
               Environment.components["al-issue-tracker"].meta["new-feature"]
             }
+            eventKey="1"
             target={"_blank"}
           >
             {Locale[AppSettings.interfaceLanguage].reportEnhancement}

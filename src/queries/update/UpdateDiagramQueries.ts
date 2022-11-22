@@ -3,7 +3,7 @@ import { qb } from "../QueryBuilder";
 import { AppSettings, Diagrams } from "../../config/Variables";
 import { parsePrefix } from "../../function/FunctionEditVars";
 
-//TODO: add vocabularies and active attributes
+//TODO: add date and collaborator attributes
 function getDiagramTriples(diagram: string): string {
   const diagramIRI = qb.i(Diagrams[diagram].iri);
   const diagramGraph = Diagrams[diagram].graph;
@@ -21,6 +21,12 @@ function getDiagramTriples(diagram: string): string {
       "og:representation",
       qb.ll(Diagrams[diagram].representation)
     ),
+    // qb.s(
+    //   diagramIRI,
+    //   "og:vocabulary",
+    //   qb.a(Diagrams[diagram].vocabularies),
+    //   Diagrams[diagram].vocabularies.length > 0
+    // ),
   ])}`.build();
 }
 

@@ -245,9 +245,9 @@ export default class DetailLink extends React.Component<Props, State> {
         <Accordion defaultActiveKey={"0"}>
           <Card>
             <Card.Header>
-              <Accordion.Toggle as={Button} variant={"link"} eventKey={"0"}>
+              <Accordion.Header as={Button} variant={"link"} eventKey={"0"}>
                 {Locale[AppSettings.interfaceLanguage].description}
-              </Accordion.Toggle>
+              </Accordion.Header>
             </Card.Header>
             <Accordion.Collapse eventKey={"0"}>
               <Card.Body>
@@ -267,9 +267,7 @@ export default class DetailLink extends React.Component<Props, State> {
                           <Form.Control
                             as="select"
                             value={this.state.sourceCardinality}
-                            onChange={(
-                              event: React.ChangeEvent<HTMLSelectElement>
-                            ) => {
+                            onChange={(event) => {
                               this.setState({
                                 sourceCardinality: event.currentTarget.value,
                                 changes: true,
@@ -304,9 +302,7 @@ export default class DetailLink extends React.Component<Props, State> {
                           <Form.Control
                             as="select"
                             value={this.state.targetCardinality}
-                            onChange={(
-                              event: React.ChangeEvent<HTMLSelectElement>
-                            ) => {
+                            onChange={(event) => {
                               this.setState({
                                 targetCardinality: event.currentTarget.value,
                                 changes: true,
@@ -390,89 +386,93 @@ export default class DetailLink extends React.Component<Props, State> {
                     }))
                   }
                 />
-                {(AppSettings.representation === Representation.COMPACT
-                  && this.props.id in WorkspaceLinks
-                  && WorkspaceLinks[this.props.id].type === LinkType.DEFAULT) && (
-                  <div>
-                    <h5>
-                      {
-                        <IRILink
-                          label={
-                            Locale[AppSettings.interfaceLanguage]
-                              .detailPanelAltLabel
-                          }
-                          iri={"http://www.w3.org/2004/02/skos/core#altLabel"}
-                        />
-                      }
-                    </h5>
-                    <AltLabelTable
-                      labels={this.state.inputAltLabels}
-                      readOnly={this.state.readOnly}
-                      onEdit={(textarea: string, lang: string, i: number) => {
-                        let res = this.state.inputAltLabels;
-                        let resL = this.state.selectedLabel;
-                        if (textarea === "") {
-                          if (
-                            res[i].label ===
-                            this.state.selectedLabel[this.props.projectLanguage]
-                          ) {
-                            resL[this.props.projectLanguage] =
-                              WorkspaceTerms[
-                                WorkspaceLinks[this.props.id].iri
-                              ].labels[this.props.projectLanguage];
-                          }
-                          res.splice(i, 1);
-                        } else {
-                          if (
-                            res[i].label ===
-                            this.state.selectedLabel[this.props.projectLanguage]
-                          ) {
-                            resL[this.props.projectLanguage] =
-                              lang === this.props.projectLanguage
-                                ? textarea
-                                : "";
-                          }
-                          res[i] = { label: textarea, language: lang };
+                {AppSettings.representation === Representation.COMPACT &&
+                  this.props.id in WorkspaceLinks &&
+                  WorkspaceLinks[this.props.id].type === LinkType.DEFAULT && (
+                    <div>
+                      <h5>
+                        {
+                          <IRILink
+                            label={
+                              Locale[AppSettings.interfaceLanguage]
+                                .detailPanelAltLabel
+                            }
+                            iri={"http://www.w3.org/2004/02/skos/core#altLabel"}
+                          />
                         }
-                        this.setState({
-                          inputAltLabels: res,
-                          selectedLabel: resL,
-                          changes: true,
-                        });
-                      }}
-                      default={
-                        this.state.selectedLabel[this.props.projectLanguage]
-                      }
-                      selectAsDefault={(lang: string, i: number) => {
-                        let res = this.state.selectedLabel;
-                        res[this.props.projectLanguage] =
-                          this.state.inputAltLabels[i].label;
-                        this.setState({
-                          selectedLabel: res,
-                          changes: true,
-                        });
-                      }}
-                      addAltLabel={(label: string) => {
-                        if (
-                          label !== "" ||
-                          this.state.inputAltLabels.find(
-                            (alt) => alt.label === label
-                          )
-                        ) {
+                      </h5>
+                      <AltLabelTable
+                        labels={this.state.inputAltLabels}
+                        readOnly={this.state.readOnly}
+                        onEdit={(textarea: string, lang: string, i: number) => {
                           let res = this.state.inputAltLabels;
-                          res.push({
-                            label: label,
-                            language: this.props.projectLanguage,
-                          });
+                          let resL = this.state.selectedLabel;
+                          if (textarea === "") {
+                            if (
+                              res[i].label ===
+                              this.state.selectedLabel[
+                                this.props.projectLanguage
+                              ]
+                            ) {
+                              resL[this.props.projectLanguage] =
+                                WorkspaceTerms[
+                                  WorkspaceLinks[this.props.id].iri
+                                ].labels[this.props.projectLanguage];
+                            }
+                            res.splice(i, 1);
+                          } else {
+                            if (
+                              res[i].label ===
+                              this.state.selectedLabel[
+                                this.props.projectLanguage
+                              ]
+                            ) {
+                              resL[this.props.projectLanguage] =
+                                lang === this.props.projectLanguage
+                                  ? textarea
+                                  : "";
+                            }
+                            res[i] = { label: textarea, language: lang };
+                          }
                           this.setState({
                             inputAltLabels: res,
+                            selectedLabel: resL,
                             changes: true,
                           });
+                        }}
+                        default={
+                          this.state.selectedLabel[this.props.projectLanguage]
                         }
-                      }}
-                    />
-                  </div>
-                )}
+                        selectAsDefault={(lang: string, i: number) => {
+                          let res = this.state.selectedLabel;
+                          res[this.props.projectLanguage] =
+                            this.state.inputAltLabels[i].label;
+                          this.setState({
+                            selectedLabel: res,
+                            changes: true,
+                          });
+                        }}
+                        addAltLabel={(label: string) => {
+                          if (
+                            label !== "" ||
+                            this.state.inputAltLabels.find(
+                              (alt) => alt.label === label
+                            )
+                          ) {
+                            let res = this.state.inputAltLabels;
+                            res.push({
+                              label: label,
+                              language: this.props.projectLanguage,
+                            });
+                            this.setState({
+                              inputAltLabels: res,
+                              changes: true,
+                            });
+                          }
+                        }}
+                      />
+                    </div>
+                  )}
                 <h5>
                   {
                     <IRILink

@@ -88,6 +88,7 @@ export function loadLanguages() {
   for (const code in json) {
     if (json.hasOwnProperty(code)) Languages[code] = json[code];
   }
+  // TODO: redo in i18n
   const navigatorLanguage = navigator.language.slice(0, 2);
   const interfaceLanguage =
     localStorage.getItem(getLocalStorageKey("interfaceLanguage")) ||

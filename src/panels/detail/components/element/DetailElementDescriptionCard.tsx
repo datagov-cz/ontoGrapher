@@ -187,9 +187,9 @@ export class DetailElementDescriptionCard extends React.Component<
     return (
       <Card>
         <Card.Header>
-          <Accordion.Toggle as={Button} variant={"link"} eventKey={"0"}>
+          <Accordion.Header as={Button} variant={"link"} eventKey={"0"}>
             {Locale[AppSettings.interfaceLanguage].description}
-          </Accordion.Toggle>
+          </Accordion.Header>
         </Card.Header>
         <Accordion.Collapse eventKey={"0"}>
           <Card.Body>

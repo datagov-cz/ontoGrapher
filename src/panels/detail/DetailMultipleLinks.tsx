@@ -197,9 +197,9 @@ export default class DetailMultipleLinks extends React.Component<Props, State> {
         <Accordion defaultActiveKey={"0"}>
           <Card>
             <Card.Header>
-              <Accordion.Toggle as={Button} variant={"link"} eventKey={"0"}>
+              <Accordion.Header as={Button} variant={"link"} eventKey={"0"}>
                 {Locale[AppSettings.interfaceLanguage].description}
-              </Accordion.Toggle>
+              </Accordion.Header>
             </Card.Header>
             <Accordion.Collapse eventKey={"0"}>
               <Card.Body>
@@ -219,9 +219,7 @@ export default class DetailMultipleLinks extends React.Component<Props, State> {
                           as="select"
                           disabled={this.state.readOnly}
                           value={this.state.sourceCardinality}
-                          onChange={(
-                            event: React.ChangeEvent<HTMLSelectElement>
-                          ) => {
+                          onChange={(event) => {
                             this.setState({
                               sourceCardinality: event.currentTarget.value,
                               changes: true,
@@ -252,9 +250,7 @@ export default class DetailMultipleLinks extends React.Component<Props, State> {
                           disabled={this.state.readOnly}
                           as="select"
                           value={this.state.targetCardinality}
-                          onChange={(
-                            event: React.ChangeEvent<HTMLSelectElement>
-                          ) => {
+                          onChange={(event) => {
                             this.setState({
                               targetCardinality: event.currentTarget.value,
                               changes: true,

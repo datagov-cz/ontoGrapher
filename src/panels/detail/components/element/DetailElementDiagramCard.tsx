@@ -17,9 +17,9 @@ export const DetailElementDiagramCard: React.FC<Props> = (props) => {
   return (
     <Card>
       <Card.Header>
-        <Accordion.Toggle as={Button} variant={"link"} eventKey={"2"}>
+        <Accordion.Header as={Button} variant={"link"} eventKey={"2"}>
           {Locale[AppSettings.interfaceLanguage].diagramTab}
-        </Accordion.Toggle>
+        </Accordion.Header>
       </Card.Header>
       <Accordion.Collapse eventKey={"2"}>
         <Card.Body>

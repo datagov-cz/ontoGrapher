@@ -112,7 +112,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
     paper = new joint.dia.Paper({
       el: node,
       model: graph,
-      width: "auto",
+      width: "100%",
       height: "100vh",
       gridSize: 1,
       linkPinning: false,
@@ -517,39 +517,31 @@ export default class DiagramCanvas extends React.Component<Props, State> {
   render() {
     return (
       <div
+        id={"canvas"}
+        ref={this.canvasRef}
         style={{
-          cursor: this.props.freeze ? "not-allowed" : "inherit",
-          opacity: this.props.freeze ? "0.5" : "1",
+          pointerEvents: this.props.freeze ? "none" : "auto",
         }}
-      >
-        <div
-          className={"canvas"}
-          id={"canvas"}
-          ref={this.canvasRef}
-          style={{
-            pointerEvents: this.props.freeze ? "none" : "auto",
-          }}
-          onDragOver={(event) => {
-            if (!this.props.freeze) event.preventDefault();
-          }}
-          onMouseMove={(event) => {
-            if (this.drag && !this.props.freeze) {
-              paper.translate(
-                event.nativeEvent.offsetX - this.drag.x,
-                event.nativeEvent.offsetY - this.drag.y
-              );
-            }
-          }}
-          onDrop={(event) => {
-            putElementsOnCanvas(event, this.props.handleStatus).then(
-              (queries) => {
-                this.props.performTransaction(...queries);
-                this.props.updateElementPanel(undefined, true);
-              }
+        onDragOver={(event) => {
+          if (!this.props.freeze) event.preventDefault();
+        }}
+        onMouseMove={(event) => {
+          if (this.drag && !this.props.freeze) {
+            paper.translate(
+              event.nativeEvent.offsetX - this.drag.x,
+              event.nativeEvent.offsetY - this.drag.y
             );
-          }}
-        />
-      </div>
+          }
+        }}
+        onDrop={(event) => {
+          putElementsOnCanvas(event, this.props.handleStatus).then(
+            (queries) => {
+              this.props.performTransaction(...queries);
+              this.props.updateElementPanel(undefined, true);
+            }
+          );
+        }}
+      />
     );
   }
 }

@@ -126,7 +126,7 @@ export async function spreadConnections(
         AppSettings.representation
       );
       queries.push(
-        ...restoreHiddenElem(id, newElem, false, true, false),
+        ...restoreHiddenElem(id, false, true, false),
         updateProjectElement(true, id),
         updateProjectElementDiagram(AppSettings.selectedDiagram, id)
       );
@@ -354,7 +354,7 @@ export function setRepresentation(
         WorkspaceElements[elem].hidden[AppSettings.selectedDiagram] = false;
         drawGraphElement(cell, AppSettings.canvasLanguage, representation);
         queries.push(
-          ...restoreHiddenElem(elem, cell, false, false, false, representation)
+          ...restoreHiddenElem(elem, false, false, false, representation)
         );
       }
     }
@@ -364,7 +364,6 @@ export function setRepresentation(
         queries.push(
           ...restoreHiddenElem(
             elem.id,
-            elem,
             true,
             restoreFull,
             false,
@@ -449,21 +448,21 @@ export function setupLink(
 
 export function restoreHiddenElem(
   id: string,
-  cls: joint.dia.Element,
   restoreSimpleConnectionPosition: boolean,
   restoreFull: boolean,
   restoreFullConnectionPosition: boolean,
-  representation: Representation = AppSettings.representation
+  representation: Representation = AppSettings.representation,
+  g: joint.dia.Graph = graph
 ): string[] {
-  let queries: string[] = [];
-  for (let link of Object.keys(WorkspaceLinks).filter(
+  const queries: string[] = [];
+  for (const link of Object.keys(WorkspaceLinks).filter(
     (link) => WorkspaceLinks[link].active
   )) {
     if (
       (WorkspaceLinks[link].source === id ||
         WorkspaceLinks[link].target === id) &&
-      graph.getCell(WorkspaceLinks[link].source) &&
-      graph.getCell(WorkspaceLinks[link].target) &&
+      g.getCell(WorkspaceLinks[link].source) &&
+      g.getCell(WorkspaceLinks[link].target) &&
       (representation === Representation.FULL
         ? WorkspaceLinks[link].iri in Links
         : !(WorkspaceLinks[link].iri in Links) ||
@@ -487,7 +486,7 @@ export function restoreHiddenElem(
       representation === Representation.FULL &&
       WorkspaceLinks[link].target === id &&
       WorkspaceLinks[link].iri in Links &&
-      graph.getCell(WorkspaceLinks[link].target)
+      g.getCell(WorkspaceLinks[link].target)
     ) {
       let relID = WorkspaceLinks[link].source;
       for (let targetLink in WorkspaceLinks) {
@@ -495,16 +494,14 @@ export function restoreHiddenElem(
           WorkspaceLinks[targetLink].active &&
           WorkspaceLinks[targetLink].source === relID &&
           WorkspaceLinks[targetLink].target !== id &&
-          graph.getCell(WorkspaceLinks[targetLink].target)
+          g.getCell(WorkspaceLinks[targetLink].target)
         ) {
           let domainLink = getNewLink(WorkspaceLinks[link].type, link);
           let rangeLink = getNewLink(
             WorkspaceLinks[targetLink].type,
             targetLink
           );
-          let existingRel = graph
-            .getElements()
-            .find((elem) => elem.id === relID);
+          let existingRel = g.getElements().find((elem) => elem.id === relID);
           let relationship = existingRel
             ? existingRel
             : new graphElement({ id: relID });
@@ -521,10 +518,10 @@ export function restoreHiddenElem(
               WorkspaceElements[relID].position[AppSettings.selectedDiagram].y
             );
           } else {
-            const sourcepos = graph
+            const sourcepos = g
               .getCell(WorkspaceLinks[link].target)
               .get("position");
-            const targetpos = graph
+            const targetpos = g
               .getCell(WorkspaceLinks[targetLink].target)
               .get("position");
             const posx = (sourcepos.x + targetpos.x) / 2;
@@ -553,7 +550,7 @@ export function restoreHiddenElem(
               AppSettings.canvasLanguage
             ]
           );
-          relationship.addTo(graph);
+          relationship.addTo(g);
           queries.push(
             updateProjectElementDiagram(AppSettings.selectedDiagram, relID)
           );
@@ -595,8 +592,8 @@ export function restoreHiddenElem(
             WorkspaceLinks[targetLink].vertices[AppSettings.selectedDiagram] =
               [];
           }
-          domainLink.addTo(graph);
-          rangeLink.addTo(graph);
+          domainLink.addTo(g);
+          rangeLink.addTo(g);
           break;
         }
       }

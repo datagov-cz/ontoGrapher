@@ -102,7 +102,7 @@ export default class InterfaceStatus extends React.Component<Props, State> {
           {!this.state.connection ? (
             <Spinner animation="grow" size="sm" variant={"danger"} />
           ) : (
-            <div className={"noresponse"}>🟢</div>
+            <span className={"noresponse"}>🟢</span>
           )}
         </OverlayTrigger>
       </span>

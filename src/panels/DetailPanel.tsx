@@ -23,7 +23,6 @@ interface Props {
   performTransaction: (...queries: string[]) => void;
   freeze: boolean;
   handleCreation: Function;
-  updateDiagramCanvas: Function;
 }
 
 interface State {
@@ -119,7 +118,6 @@ export default class DetailPanel extends React.Component<Props, State> {
                   performTransaction={this.props.performTransaction}
                   error={this.props.freeze}
                   updateDetailPanel={this.prepareDetails}
-                  updateDiagramCanvas={this.props.updateDiagramCanvas}
                   handleCreation={this.props.handleCreation}
                 />
               )}

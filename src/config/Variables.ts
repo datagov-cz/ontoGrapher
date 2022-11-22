@@ -128,6 +128,10 @@ export var Diagrams: {
     saved: boolean;
     // TODO: refactor for all implementations of Diagrams
     vocabularies: string[];
+    description: string;
+    modifiedDate: Date;
+    creationDate: Date;
+    collaborators: string[];
   };
 } = {};
 
@@ -189,6 +193,7 @@ export var AppSettings: {
   selectedElements: [],
   selectedLinks: [],
 };
+// TODO: implement way more tooltips than before
 
 export var CardinalityPool: Cardinality[] = [
   new Cardinality("", ""),

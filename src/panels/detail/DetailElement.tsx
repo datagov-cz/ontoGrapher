@@ -12,7 +12,6 @@ interface Props {
   error: boolean;
   handleCreation: Function;
   updateDetailPanel: (mode: DetailPanelMode, id?: string) => void;
-  updateDiagramCanvas: Function;
   id: string;
 }
 

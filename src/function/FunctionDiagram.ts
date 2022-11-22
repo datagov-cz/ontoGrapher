@@ -36,7 +36,7 @@ export function changeDiagrams(diagram?: string) {
         );
         cls.addTo(graph);
         drawGraphElement(cls, AppSettings.canvasLanguage, Representation.FULL);
-        restoreHiddenElem(id, cls, true, false, false);
+        restoreHiddenElem(id, true, false, false);
       }
     }
     setRepresentation(Diagrams[diagram].representation, false);
@@ -49,34 +49,40 @@ export function changeDiagrams(diagram?: string) {
   }
 }
 
-export function centerDiagram() {
-  paper.translate(0, 0);
+export function centerDiagram(
+  p: joint.dia.Paper = paper,
+  g: joint.dia.Graph = graph
+) {
+  p.translate(0, 0);
   let x = 0;
   let y = 0;
-  const scale = paper.scale().sx;
-  for (const elem of graph.getElements()) {
+  const scale = p.scale().sx;
+  for (const elem of g.getElements()) {
     x += elem.getBBox().x;
     y += elem.getBBox().y;
   }
-  paper.translate(
-    -((x / graph.getElements().length) * scale) +
-      paper.getComputedSize().width / 2,
-    -((y / graph.getElements().length) * scale) +
-      paper.getComputedSize().height / 2
+  p.translate(
+    -((x / g.getElements().length) * scale) + paper.getComputedSize().width / 2,
+    -((y / g.getElements().length) * scale) + paper.getComputedSize().height / 2
   );
   updateDiagramPosition(AppSettings.selectedDiagram);
 }
 
-export function zoomDiagram(x: number, y: number, delta: number) {
-  const oldTranslate = paper.translate();
-  const oldScale = paper.scale().sx;
+export function zoomDiagram(
+  x: number,
+  y: number,
+  delta: number,
+  p: joint.dia.Paper = paper
+) {
+  const oldTranslate = p.translate();
+  const oldScale = p.scale().sx;
   const nextScale = delta === 0 ? 1 : _.round(delta * 0.1 + oldScale, 1);
   if (nextScale >= 0.1 && nextScale <= 2.1) {
-    paper.translate(
+    p.translate(
       oldTranslate.tx + x * (oldScale - nextScale),
       oldTranslate.ty + y * (oldScale - nextScale)
     );
-    paper.scale(nextScale, nextScale);
+    p.scale(nextScale, nextScale);
     updateDiagramPosition(AppSettings.selectedDiagram);
   }
 }

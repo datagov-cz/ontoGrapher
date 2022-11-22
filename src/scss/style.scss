@@ -1,4 +1,5 @@
 @import "diagram/DiagramApp";
+@import "diagram/DiagramManager";
 @import "panels/ItemPanel";
 @import "components/TableList";
 @import "components/ConnectionList";
@@ -56,6 +57,29 @@ body {
 }
 
 //TODO: remove references to buttonlink
+.buttonlink {
+  border: none;
+  background: none;
+  margin: 0;
+  padding: 0;
+  color: #007bff;
+
+  &.vocab {
+    border-radius: 4px;
+    background-color: lightgray;
+  }
+
+  &:hover {
+    color: blue;
+    text-decoration: underline;
+    background: none;
+
+    &.nounderline {
+      text-decoration: none;
+    }
+  }
+}
+
 .plainButton {
   border: none;
   background: none;
@@ -70,7 +94,13 @@ body {
 
   &:hover {
     color: black;
-    background: lightslategray;
+    background: rgba(0, 0, 0, 0.25);
+  }
+
+  &.noBackground {
+    &:hover {
+      background: none;
+    }
   }
 }
 

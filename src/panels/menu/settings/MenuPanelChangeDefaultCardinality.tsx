@@ -38,7 +38,7 @@ export const MenuPanelChangeDefaultCardinality: React.FC<Props> = (props) => {
   };
 
   return (
-    <Dropdown drop={"right"}>
+    <Dropdown drop={"end"}>
       <Dropdown.Toggle>{getCardinalityLabel()}</Dropdown.Toggle>
       <Dropdown.Menu>
         {CardinalityPool.filter((c) => !c.isCardinalityNone())

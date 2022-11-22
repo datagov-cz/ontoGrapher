@@ -4,14 +4,9 @@ import VocabularyPanel from "../panels/VocabularyPanel";
 import DiagramCanvas from "./DiagramCanvas";
 import {
   AppSettings,
-  Diagrams,
-  Languages,
-  Links,
-  Stereotypes,
   WorkspaceElements,
   WorkspaceLinks,
   WorkspaceTerms,
-  WorkspaceVocabularies,
 } from "../config/Variables";
 import DetailPanel from "../panels/DetailPanel";
 import { getVocabulariesFromRemoteJSON } from "../interface/JSONInterface";
@@ -49,19 +44,15 @@ import {
   ElemCreationConfiguration,
   LinkCreationConfiguration,
 } from "../components/modals/CreationModals";
-import {
-  DetailPanelMode,
-  ElemCreationStrategy,
-  Representation,
-} from "../config/Enum";
+import { DetailPanelMode, ElemCreationStrategy } from "../config/Enum";
 import { getElementPosition } from "../function/FunctionElem";
 import { en } from "../locale/en";
 import { StoreAlerts } from "../config/Store";
 import { CriticalAlertModal } from "../components/modals/CriticalAlertModal";
 import { Environment } from "../config/Environment";
-import { Cardinality } from "../datatypes/Cardinality";
 import hotkeys from "hotkeys-js";
 import { dumpDebugData, loadDebugData } from "../function/FunctionDebug";
+import { MainView } from "./MainView";
 
 interface DiagramAppProps {}
 
@@ -85,7 +76,6 @@ export default class App extends React.Component<
   DiagramAppProps,
   DiagramAppState
 > {
-  private readonly canvas: React.RefObject<DiagramCanvas>;
   private readonly itemPanel: React.RefObject<VocabularyPanel>;
   private readonly detailPanel: React.RefObject<DetailPanel>;
   private readonly menuPanel: React.RefObject<MenuPanel>;
@@ -94,7 +84,6 @@ export default class App extends React.Component<
   constructor(props: DiagramAppProps) {
     super(props);
 
-    this.canvas = React.createRef();
     this.itemPanel = React.createRef();
     this.detailPanel = React.createRef();
     this.menuPanel = React.createRef();
@@ -152,6 +141,7 @@ export default class App extends React.Component<
 
   componentDidMount(): void {
     const finishUp = () => {
+      hotkeys("ctrl+alt+d", () => dumpDebugData());
       this.handleChangeLanguage(AppSettings.canvasLanguage);
       setSchemeColors(AppSettings.viewColorPool);
       changeDiagrams();
@@ -159,11 +149,8 @@ export default class App extends React.Component<
       this.checkLastViewedVersion();
       this.handleWorkspaceReady("workspaceReady");
     };
-    if (Environment.debug) {
-      hotkeys("ctrl+alt+d", () => dumpDebugData());
-      loadDebugData();
-      finishUp();
-    } else
+    if (Environment.debug && loadDebugData()) finishUp();
+    else
       this.loadAndPrepareData().then((r) => {
         if (r) finishUp();
         else this.handleLoadingError();
@@ -365,10 +352,7 @@ export default class App extends React.Component<
             this.detailPanel.current?.forceUpdate();
           }}
           performTransaction={this.performTransaction}
-          updateDiagramCanvas={() => {
-            this.canvas.current?.setState({ modalAddElem: true });
-          }}
-          handleCreation={(source: string) => {
+          handleCreation={(source: string) =>
             this.handleCreation({
               strategy: ElemCreationStrategy.INTRINSIC_TROPE_TYPE,
               connections: [source],
@@ -379,8 +363,8 @@ export default class App extends React.Component<
               header:
                 Locale[AppSettings.interfaceLanguage]
                   .modalNewIntrinsicTropeTitle,
-            });
-          }}
+            })
+          }
         />
         {this.state.validation && (
           <ValidationPanel
@@ -392,8 +376,7 @@ export default class App extends React.Component<
             projectLanguage={this.state.projectLanguage}
           />
         )}
-        <DiagramCanvas
-          ref={this.canvas}
+        <MainView
           projectLanguage={this.state.projectLanguage}
           updateElementPanel={(id?: string, redoCacheSearch?: boolean) => {
             this.itemPanel.current?.update(id, redoCacheSearch);
@@ -406,6 +389,10 @@ export default class App extends React.Component<
           handleStatus={this.handleStatus}
           handleCreation={(configuration) => {
             this.handleCreation(configuration);
+          }}
+          update={(id?: string) => {
+            this.itemPanel.current?.update(id);
+            this.detailPanel.current?.forceUpdate();
           }}
         />
         <CreationModals

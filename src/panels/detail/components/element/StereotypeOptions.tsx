@@ -21,7 +21,8 @@ export default class StereotypeOptions extends React.Component<Props, State> {
     return (
       <tr>
         <td>
-          <Form inline>
+          {/* FIXME: inline */}
+          <Form>
             <Form.Control
               size="sm"
               as="select"

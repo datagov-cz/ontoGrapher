@@ -78,7 +78,7 @@ export default class VocabularyFolder extends React.Component<Props, State> {
               onClick={() => this.props.filter([vocabulary])}
             >
               <h6>
-                <Badge variant={"secondary"}>
+                <Badge bg={"secondary"}>
                   {`${workspaceCount}/${totalCount} ${
                     Locale[AppSettings.interfaceLanguage].termsCase
                   }`}

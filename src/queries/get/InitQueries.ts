@@ -177,15 +177,22 @@ export async function getSettings(contextEndpoint: string): Promise<{
     contextsMissingAppContexts: [],
     contextsMissingAttachments: [],
   };
+  //TODO parse new diagram data
   const query = [
     "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
-    "select distinct ?ogContext ?graph ?diagram ?index ?name ?color ?id ?representation ?context where {",
+    "select distinct ?ogContext ?graph ?diagram ?index ?name ?color ?id ?representation ?context ?vocabulary ?description ?collaborator ?creationDate ?modifyDate where {",
     "optional {?vocabContext <https://slovník.gov.cz/datový/pracovní-prostor/pojem/odkazuje-na-přílohový-kontext> ?graph .",
     "graph ?graph {",
     " ?diagram og:index ?index .",
     " ?diagram og:name ?name .",
     " ?diagram og:id ?id .",
     " ?diagram og:representation ?representation .",
+    " optional {?diagram og:description ?description. ",
+    "           ?diagram og:vocabulary ?vocabulary. ",
+    "           ?diagram og:collaborator ?collaborator. ",
+    "           ?diagram og:creation-date ?creationDate. ",
+    "           ?diagram og:modify-date ?modifyDate. ",
+    " }",
     "}",
     "}",
     "optional {?vocabContext <https://slovník.gov.cz/datový/pracovní-prostor/pojem/odkazuje-na-kontext> ?ogContext .",

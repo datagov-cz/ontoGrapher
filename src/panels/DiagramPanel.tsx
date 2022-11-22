@@ -1,10 +1,11 @@
 import React from "react";
 import DiagramAdd from "./diagram/DiagramAdd";
 import { Diagrams } from "../config/Variables";
-import DiagramTab from "./diagram/DiagramTab";
 import ModalRemoveDiagram from "./modal/ModalRemoveDiagram";
 import { ModalRenameDiagram } from "./diagram/ModalRenameDiagram";
 import { updateCreateDiagram } from "../queries/update/UpdateDiagramQueries";
+import DiagramHome from "./diagram/DiagramHome";
+import { DiagramTab } from "./diagram/DiagramTab";
 
 interface Props {
   performTransaction: (...queries: string[]) => void;
@@ -41,10 +42,17 @@ export default class DiagramPanel extends React.Component<Props, State> {
   render() {
     return (
       <div className={"diagramPanel" + (this.props.freeze ? " disabled" : "")}>
+        <DiagramHome
+          update={() => {
+            this.forceUpdate();
+            this.props.update();
+          }}
+        />
         {Object.keys(Diagrams)
           .filter((diag) => Diagrams[diag].active)
           .sort((a, b) => Diagrams[a].index - Diagrams[b].index)
           .map((diag, i) => (
+            // TODO: replace with RB's <Nav>?
             <DiagramTab
               key={i}
               diagram={diag}
@@ -70,14 +78,6 @@ export default class DiagramPanel extends React.Component<Props, State> {
               }}
             />
           ))}
-        {/* TODO: Change DiagramAdd to DiagramHome when the diagram manager is ready */}
-        <DiagramAdd
-          update={() => {
-            this.forceUpdate();
-            this.props.update();
-          }}
-          performTransaction={this.props.performTransaction}
-        />
         <ModalRemoveDiagram
           modal={this.state.modalRemoveDiagram}
           diagram={this.state.selectedDiagram}
