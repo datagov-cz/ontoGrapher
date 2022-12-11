@@ -1,10 +1,13 @@
 .diagramManager {
-    margin-left: 10px;
-    margin-top: 20px;
+    background-color: #e3e3e3;
 
     .diagramList {
         border: 2px black solid;
         border-radius: 5px;
+    }
+
+    .col {
+        margin: 15px 0;
     }
 }
 
@@ -12,6 +15,7 @@
     cursor: pointer;
     padding: 5px;
     border: solid 1px black;
+    background-color: white;
 
     &.selected {
         background-color: rgba(0, 0, 255, 0.5);

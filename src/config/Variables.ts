@@ -163,6 +163,12 @@ export var AppSettings: {
   interfaceLanguage: string;
   selectedElements: string[];
   selectedLinks: string[];
+  currentUser?: {
+    email: string;
+    given_name: string;
+    family_name: string;
+    id: string;
+  };
 } = {
   name: {},
   description: {},

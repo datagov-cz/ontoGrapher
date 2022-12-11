@@ -24,6 +24,7 @@ type Props = {
 
 export const DiagramManager: React.FC<Props> = (props: Props) => {
   const [diagrams, setDiagrams] = useState<string[]>([]);
+  const [modalRemoveDiagram, setModalRemoveDiagram] = useState<boolean>(false);
   const [search, setSearch] = useState<string>("");
   const [availableVocabs, setAvailableVocabs] = useState<string[]>([]);
   const [searchVocabs, setSearchVocabs] = useState<
@@ -39,8 +40,10 @@ export const DiagramManager: React.FC<Props> = (props: Props) => {
     }>
   >([]);
 
-  const [modalRemoveDiagram, setModalRemoveDiagram] = useState<boolean>(false);
   const [selectedDiagram, setSelectedDiagram] = useState<string>("");
+  const [selectedDiagramName, setSelectedDiagramName] = useState<string>("");
+  const [selectedDiagramDescription, setSelectedDiagramDescription] =
+    useState<string>("");
   const [hoveredDiagram, setHoveredDiagram] = useState<string>("");
   const [preview, setPreview] = useState<boolean>(false);
   useEffect(() => {
@@ -54,8 +57,14 @@ export const DiagramManager: React.FC<Props> = (props: Props) => {
     );
   }, []);
 
+  // useEffect(() => {
+  //   const diags = Object.keys(Diagrams).filter((d) => Diagrams.d);
+  // }, [search, searchVocabs]);
+
   const selectDiagram = (diag: string) => {
     setSelectedDiagram(diag);
+    setSelectedDiagramName(Diagrams[diag].name);
+    setSelectedDiagramDescription(Diagrams[diag].description);
   };
 
   return (
@@ -187,6 +196,10 @@ export const DiagramManager: React.FC<Props> = (props: Props) => {
                 <Form.Control
                   type="text"
                   placeholder="Zde vpište název diagramu"
+                  value={selectedDiagramName}
+                  onChange={(event) =>
+                    setSelectedDiagramName(event.currentTarget.value)
+                  }
                 />
                 <Form.Text className="text-muted red">
                   We'll never share your email with anyone else.
@@ -198,6 +211,10 @@ export const DiagramManager: React.FC<Props> = (props: Props) => {
                   as={"textarea"}
                   rows={5}
                   placeholder="Zde vpište popis diagramu"
+                  value={selectedDiagramDescription}
+                  onChange={(event) =>
+                    setSelectedDiagramDescription(event.currentTarget.value)
+                  }
                 />
               </Form.Group>
               <Form.Group>
