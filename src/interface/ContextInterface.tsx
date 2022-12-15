@@ -242,8 +242,9 @@ export async function retrieveVocabularyData(): Promise<boolean> {
     );
     WorkspaceVocabularies[vocab].readOnly = false;
     WorkspaceVocabularies[vocab].graph = vocabularies[vocab].graph;
-    WorkspaceVocabularies[vocab].changeContext =
-      vocabularies[vocab].changeContext;
+    if (vocabularies[vocab].changeContext)
+      WorkspaceVocabularies[vocab].changeContext =
+        vocabularies[vocab].changeContext;
     Object.assign(WorkspaceTerms, vocabularies[vocab].terms);
   }
   const numberOfVocabularies = Object.keys(vocabularies).length;
