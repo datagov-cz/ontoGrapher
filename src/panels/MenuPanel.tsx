@@ -9,7 +9,7 @@ import MenuPanelHelp from "./menu/right/MenuPanelHelp";
 import { MenuPanelSaveDiagrams } from "./menu/left/MenuPanelSaveDiagrams";
 import ZoomWidget from "./menu/widget/ZoomWidget";
 import InterfaceNotification from "../components/InterfaceNotification";
-import MenuPanelLogout from "./menu/right/MenuPanelLogout";
+import { MenuPanelLogout } from "./menu/right/MenuPanelLogout";
 import ViewWidget from "./menu/widget/ViewWidget";
 import MenuPanelAbout from "./menu/right/MenuPanelAbout";
 import MenuPanelValidate from "./menu/left/MenuPanelValidate";
