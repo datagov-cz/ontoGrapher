@@ -6,7 +6,7 @@ import { Environment } from "../config/Environment";
 import MenuPanelReport from "./menu/right/MenuPanelReport";
 import MenuPanelSettings from "./menu/left/MenuPanelSettings";
 import MenuPanelHelp from "./menu/right/MenuPanelHelp";
-import { MenuPanelSaveDiagrams } from "./menu/left/MenuPanelSaveDiagrams";
+import { MenuPanelExport } from "./menu/left/MenuPanelExport";
 import ZoomWidget from "./menu/widget/ZoomWidget";
 import InterfaceNotification from "../components/InterfaceNotification";
 import MenuPanelLogout from "./menu/right/MenuPanelLogout";
@@ -101,7 +101,7 @@ export default class MenuPanel extends React.Component<
           {Environment.auth && (
             <MenuPanelValidate validate={() => this.props.validate()} />
           )}
-          <MenuPanelSaveDiagrams />
+          <MenuPanelExport />
           <ZoomWidget />
           <ViewWidget />
           <FitContentWidget />
