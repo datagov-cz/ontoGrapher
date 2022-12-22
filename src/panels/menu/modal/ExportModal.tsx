@@ -3,7 +3,7 @@ import { Modal, Tab, Tabs } from "react-bootstrap";
 import { Locale } from "../../../config/Locale";
 import { AppSettings, Diagrams } from "../../../config/Variables";
 import { ExportModalImage } from "./export/ExportModalImage";
-import { ExportModalText } from "./export/ExportModalText";
+import { ExportModalTerms } from "./export/ExportModalTerms";
 
 interface Props {
   modal: boolean;
@@ -44,9 +44,9 @@ export const ExportModal: React.FC<Props> = (props) => {
         </Tab>
         <Tab
           eventKey="1"
-          title={Locale[AppSettings.interfaceLanguage].generateDiagramText}
+          title={Locale[AppSettings.interfaceLanguage].generateDiagramList}
         >
-          <ExportModalText close={props.close} />
+          <ExportModalTerms close={props.close} />
         </Tab>
       </Tabs>
     </Modal>
