@@ -1,37 +1,29 @@
+import hotkeys from "hotkeys-js";
 import React from "react";
-import MenuPanel from "../panels/MenuPanel";
-import VocabularyPanel from "../panels/VocabularyPanel";
-import DiagramCanvas from "./DiagramCanvas";
+import {
+  CreationModals,
+  ElemCreationConfiguration,
+  LinkCreationConfiguration,
+} from "../components/modals/CreationModals";
+import { CriticalAlertModal } from "../components/modals/CriticalAlertModal";
+import { DetailPanelMode, ElemCreationStrategy } from "../config/Enum";
+import { Environment } from "../config/Environment";
+import { Locale } from "../config/Locale";
+import { StoreAlerts } from "../config/Store";
 import {
   AppSettings,
   WorkspaceElements,
   WorkspaceLinks,
   WorkspaceTerms,
 } from "../config/Variables";
-import DetailPanel from "../panels/DetailPanel";
-import { getVocabulariesFromRemoteJSON } from "../interface/JSONInterface";
-import { initVars } from "../function/FunctionEditVars";
-import {
-  retrieveContextData,
-  retrieveInfoFromURLParameters,
-  retrieveVocabularyData,
-  updateContexts,
-} from "../interface/ContextInterface";
-import { graph } from "../graph/Graph";
-import { nameGraphLink } from "../function/FunctionGraph";
-import {
-  abortTransaction,
-  processTransaction,
-} from "../interface/TransactionInterface";
-import ValidationPanel from "../panels/ValidationPanel";
-import DiagramPanel from "../panels/DiagramPanel";
-import { Locale } from "../config/Locale";
-import { drawGraphElement, unHighlightAll } from "../function/FunctionDraw";
+import { dumpDebugData, loadDebugData } from "../function/FunctionDebug";
 import {
   changeDiagrams,
   resetDiagramSelection,
 } from "../function/FunctionDiagram";
-import { qb } from "../queries/QueryBuilder";
+import { drawGraphElement, unHighlightAll } from "../function/FunctionDraw";
+import { initVars } from "../function/FunctionEditVars";
+import { getElementPosition } from "../function/FunctionElem";
 import {
   getLastChangeDay,
   getLinkOrVocabElem,
@@ -39,19 +31,26 @@ import {
   getVocabularyFromScheme,
   setSchemeColors,
 } from "../function/FunctionGetVars";
+import { nameGraphLink } from "../function/FunctionGraph";
+import { graph } from "../graph/Graph";
 import {
-  CreationModals,
-  ElemCreationConfiguration,
-  LinkCreationConfiguration,
-} from "../components/modals/CreationModals";
-import { DetailPanelMode, ElemCreationStrategy } from "../config/Enum";
-import { getElementPosition } from "../function/FunctionElem";
+  retrieveContextData,
+  retrieveInfoFromURLParameters,
+  retrieveVocabularyData,
+  updateContexts,
+} from "../interface/ContextInterface";
+import { getVocabulariesFromRemoteJSON } from "../interface/JSONInterface";
+import {
+  abortTransaction,
+  processTransaction,
+} from "../interface/TransactionInterface";
 import { en } from "../locale/en";
-import { StoreAlerts } from "../config/Store";
-import { CriticalAlertModal } from "../components/modals/CriticalAlertModal";
-import { Environment } from "../config/Environment";
-import hotkeys from "hotkeys-js";
-import { dumpDebugData, loadDebugData } from "../function/FunctionDebug";
+import DetailPanel from "../panels/DetailPanel";
+import DiagramPanel from "../panels/DiagramPanel";
+import MenuPanel from "../panels/MenuPanel";
+import ValidationPanel from "../panels/ValidationPanel";
+import VocabularyPanel from "../panels/VocabularyPanel";
+import { qb } from "../queries/QueryBuilder";
 import { MainView } from "./MainView";
 
 interface DiagramAppProps {}
@@ -80,6 +79,7 @@ export default class App extends React.Component<
   private readonly detailPanel: React.RefObject<DetailPanel>;
   private readonly menuPanel: React.RefObject<MenuPanel>;
   private readonly validationPanel: React.RefObject<ValidationPanel>;
+  private readonly diagramPanel: React.RefObject<DiagramPanel>;
 
   constructor(props: DiagramAppProps) {
     super(props);
@@ -88,6 +88,7 @@ export default class App extends React.Component<
     this.detailPanel = React.createRef();
     this.menuPanel = React.createRef();
     this.validationPanel = React.createRef();
+    this.diagramPanel = React.createRef();
 
     initVars();
 
@@ -342,6 +343,7 @@ export default class App extends React.Component<
             this.menuPanel.current?.update();
           }}
           performTransaction={this.performTransaction}
+          ref={this.diagramPanel}
         />
         <DetailPanel
           freeze={this.state.freeze}
@@ -393,6 +395,7 @@ export default class App extends React.Component<
           update={(id?: string) => {
             this.itemPanel.current?.update(id);
             this.detailPanel.current?.forceUpdate();
+            this.diagramPanel.current?.forceUpdate();
           }}
         />
         <CreationModals

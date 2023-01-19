@@ -48,7 +48,10 @@ export const DiagramTab: React.FC<Props> = (props: Props) => {
       <span className="diagramText">{Diagrams[props.diagram].name}&nbsp;</span>
       {/* TODO: i18n */}
       {(hover || props.diagram === AppSettings.selectedDiagram) && (
-        <Dropdown className="displayInline">
+        <Dropdown
+          className="displayInline"
+          onClick={(evt) => evt.stopPropagation()}
+        >
           <Dropdown.Toggle className="plainButton" variant="secondary">
             <MoreVertIcon />
           </Dropdown.Toggle>

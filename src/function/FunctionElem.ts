@@ -360,7 +360,10 @@ export async function putElementsOnCanvas(
     });
     if (AppSettings.representation === Representation.COMPACT)
       queries.push(
-        ...setRepresentation(AppSettings.representation).transaction
+        ...setRepresentation(
+          AppSettings.representation,
+          AppSettings.selectedDiagram
+        ).transaction
       );
   } else console.error("Did not receive element creation data from the event.");
   return queries;

@@ -132,7 +132,10 @@ export async function spreadConnections(
       );
     });
     if (AppSettings.representation === Representation.COMPACT)
-      setRepresentation(AppSettings.representation);
+      setRepresentation(
+        AppSettings.representation,
+        AppSettings.selectedDiagram
+      );
   }
   return queries;
 }
@@ -200,8 +203,10 @@ export function setLinkBoundary(
 
 export function setRepresentation(
   representation: number,
+  diag: string,
   restoreFull: boolean = true,
-  changeSettings: boolean = true
+  changeSettings: boolean = true,
+  g: joint.dia.Graph = graph
 ): {
   result: boolean;
   transaction: string[];
@@ -209,9 +214,9 @@ export function setRepresentation(
   const queries: string[] = [];
   if (changeSettings) {
     AppSettings.representation = representation;
-    Diagrams[AppSettings.selectedDiagram].representation = representation;
+    Diagrams[diag].representation = representation;
   }
-  queries.push(updateDiagram(AppSettings.selectedDiagram));
+  queries.push(updateDiagram(diag));
   AppSettings.selectedLinks = [];
   AppSettings.selectedElements = [];
   let del = false;
@@ -235,10 +240,10 @@ export function setRepresentation(
           if (sourceLink && targetLink) {
             const source = WorkspaceLinks[sourceLink].target;
             const target = WorkspaceLinks[targetLink].target;
-            const sourceBox = graph
+            const sourceBox = g
               .getElements()
               .find((elem) => elem.id === source);
-            const targetBox = graph
+            const targetBox = g
               .getElements()
               .find((elem) => elem.id === target);
             let linkID = Object.keys(WorkspaceLinks).find(
@@ -263,19 +268,14 @@ export function setRepresentation(
             const newLink = getNewLink(LinkType.DEFAULT, linkID);
             if (sourceBox && targetBox) {
               setLinkBoundary(newLink, source, target);
-              newLink.addTo(graph);
-              if (isLinkVertexArrayEmpty(linkID)) {
+              newLink.addTo(g);
+              if (isLinkVertexArrayEmpty(linkID, diag)) {
                 if (source === target) {
                   setSelfLoopConnectionPoints(newLink, sourceBox.getBBox());
                 }
-                WorkspaceLinks[newLink.id].vertices[
-                  AppSettings.selectedDiagram
-                ] = newLink.vertices();
+                WorkspaceLinks[newLink.id].vertices[diag] = newLink.vertices();
               } else {
-                setLinkVertices(
-                  newLink,
-                  WorkspaceLinks[linkID].vertices[AppSettings.selectedDiagram]
-                );
+                setLinkVertices(newLink, WorkspaceLinks[linkID].vertices[diag]);
               }
               setCompactLinkCardinalitiesFromFullComponents(
                 linkID,
@@ -289,7 +289,7 @@ export function setRepresentation(
             }
           }
         }
-        const cell = graph.getCell(id);
+        const cell = g.getCell(id);
         if (cell) {
           storeElement(cell);
           del = true;
@@ -299,15 +299,15 @@ export function setRepresentation(
           parsePrefix("z-sgov-pojem", "typ-vlastnosti")
         )
       ) {
-        const cell = graph.getCell(id);
+        const cell = g.getCell(id);
         if (cell) {
-          WorkspaceElements[id].hidden[AppSettings.selectedDiagram] = true;
+          WorkspaceElements[id].hidden[diag] = true;
           cell.remove();
           del = true;
         }
       }
     }
-    for (const link of graph.getLinks()) {
+    for (const link of g.getLinks()) {
       if (
         WorkspaceLinks[link.id].iri in Links &&
         Links[WorkspaceLinks[link.id].iri].type === LinkType.DEFAULT
@@ -320,7 +320,7 @@ export function setRepresentation(
         setLabels(link, getDisplayLabel(elem, AppSettings.canvasLanguage));
       }
     }
-    for (const elem of graph.getElements()) {
+    for (const elem of g.getElements()) {
       drawGraphElement(
         elem,
         AppSettings.canvasLanguage,
@@ -336,29 +336,29 @@ export function setRepresentation(
         )
       )
     )) {
-      if (WorkspaceElements[elem].position[AppSettings.selectedDiagram]) {
-        const find = graph
+      if (WorkspaceElements[elem].position[diag]) {
+        const find = g
           .getElements()
           .find(
             (cell) =>
               cell.id === elem &&
               WorkspaceElements[elem].active &&
-              WorkspaceElements[elem].hidden[AppSettings.selectedDiagram]
+              WorkspaceElements[elem].hidden[diag]
           );
         const cell = find || new graphElement({ id: elem });
-        cell.addTo(graph);
+        cell.addTo(g);
         cell.position(
-          WorkspaceElements[elem].position[AppSettings.selectedDiagram].x,
-          WorkspaceElements[elem].position[AppSettings.selectedDiagram].y
+          WorkspaceElements[elem].position[diag].x,
+          WorkspaceElements[elem].position[diag].y
         );
-        WorkspaceElements[elem].hidden[AppSettings.selectedDiagram] = false;
+        WorkspaceElements[elem].hidden[diag] = false;
         drawGraphElement(cell, AppSettings.canvasLanguage, representation);
         queries.push(
           ...restoreHiddenElem(elem, false, false, false, representation)
         );
       }
     }
-    for (const elem of graph.getElements()) {
+    for (const elem of g.getElements()) {
       drawGraphElement(elem, AppSettings.canvasLanguage, representation);
       if (typeof elem.id === "string") {
         queries.push(
@@ -372,7 +372,7 @@ export function setRepresentation(
         );
       }
     }
-    for (let link of graph.getLinks()) {
+    for (let link of g.getLinks()) {
       if (
         !(WorkspaceLinks[link.id].iri in Links) ||
         !WorkspaceLinks[link.id].active

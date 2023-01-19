@@ -3,7 +3,6 @@ import { qb } from "../QueryBuilder";
 import { AppSettings, Diagrams } from "../../config/Variables";
 import { parsePrefix } from "../../function/FunctionEditVars";
 
-//TODO: add date and collaborator attributes
 function getDiagramTriples(diagram: string): string {
   const diagramIRI = qb.i(Diagrams[diagram].iri);
   const diagramGraph = Diagrams[diagram].graph;
@@ -11,6 +10,45 @@ function getDiagramTriples(diagram: string): string {
     qb.i(parsePrefix("a-popis-dat-pojem", "příloha")),
     qb.i(parsePrefix("og", "diagram")),
   ];
+  const conditionals: string[] = [];
+  if (Diagrams[diagram].vocabularies)
+    conditionals.push(
+      qb.s(
+        diagramIRI,
+        "og:vocabulary",
+        qb.a(Diagrams[diagram].vocabularies),
+        Diagrams[diagram].vocabularies.length > 0
+      )
+    );
+  if (Diagrams[diagram].collaborators)
+    conditionals.push(
+      qb.s(
+        diagramIRI,
+        "og:collaborator",
+        qb.a(Diagrams[diagram].collaborators),
+        Diagrams[diagram].collaborators.length > 0
+      )
+    );
+  if (Diagrams[diagram].creationDate)
+    conditionals.push(
+      qb.s(
+        diagramIRI,
+        "og:creationDate",
+        qb.lt(Diagrams[diagram].creationDate.toISOString(), "xsd:dateTime")
+      )
+    );
+  if (Diagrams[diagram].modifiedDate)
+    conditionals.push(
+      qb.s(
+        diagramIRI,
+        "og:modifiedDate",
+        qb.lt(Diagrams[diagram].modifiedDate.toISOString(), "xsd:dateTime")
+      )
+    );
+  if (Diagrams[diagram].description)
+    conditionals.push(
+      qb.s(diagramIRI, "og:description", Diagrams[diagram].description)
+    );
   return INSERT.DATA`${qb.g(diagramGraph, [
     qb.s(diagramIRI, "rdf:type", qb.a(diagramAttachmentTypes)),
     qb.s(diagramIRI, "og:index", qb.ll(Diagrams[diagram].index)),
@@ -21,12 +59,7 @@ function getDiagramTriples(diagram: string): string {
       "og:representation",
       qb.ll(Diagrams[diagram].representation)
     ),
-    // qb.s(
-    //   diagramIRI,
-    //   "og:vocabulary",
-    //   qb.a(Diagrams[diagram].vocabularies),
-    //   Diagrams[diagram].vocabularies.length > 0
-    // ),
+    ...conditionals,
   ])}`.build();
 }
 

@@ -17,6 +17,13 @@ body {
   height: 100%;
 }
 
+.chip {
+  border-radius: 10px;
+  padding-left: 5px;
+  padding-right: 5px;
+  font-size: 1rem;
+  font-weight: 500;
+}
 
 .wrap {
   display: inline-block;

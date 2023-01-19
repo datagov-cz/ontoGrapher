@@ -108,7 +108,12 @@ export const SaveDiagramsModal: React.FC<Props> = (props) => {
       changeLanguage(language);
     }
     if (diagramRepresentation !== AppSettings.representation) {
-      setRepresentation(diagramRepresentation, true, false);
+      setRepresentation(
+        diagramRepresentation,
+        AppSettings.selectedDiagram,
+        true,
+        false
+      );
     }
     // The paper is resized to the area of the content within.
     const area = paper.getContentArea({ useModelGeometry: false });
@@ -181,7 +186,12 @@ export const SaveDiagramsModal: React.FC<Props> = (props) => {
         changeLanguage(AppSettings.canvasLanguage);
       }
       if (diagramRepresentation !== AppSettings.representation) {
-        setRepresentation(AppSettings.representation, true, false);
+        setRepresentation(
+          AppSettings.representation,
+          AppSettings.selectedDiagram,
+          true,
+          false
+        );
       }
     };
     image.src = url;

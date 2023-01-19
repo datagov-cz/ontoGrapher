@@ -1,11 +1,10 @@
 import React from "react";
-import DiagramAdd from "./diagram/DiagramAdd";
 import { Diagrams } from "../config/Variables";
-import ModalRemoveDiagram from "./modal/ModalRemoveDiagram";
-import { ModalRenameDiagram } from "./diagram/ModalRenameDiagram";
 import { updateCreateDiagram } from "../queries/update/UpdateDiagramQueries";
 import DiagramHome from "./diagram/DiagramHome";
 import { DiagramTab } from "./diagram/DiagramTab";
+import { ModalRenameDiagram } from "./diagram/ModalRenameDiagram";
+import ModalRemoveDiagram from "./modal/ModalRemoveDiagram";
 
 interface Props {
   performTransaction: (...queries: string[]) => void;
@@ -52,7 +51,6 @@ export default class DiagramPanel extends React.Component<Props, State> {
           .filter((diag) => Diagrams[diag].active)
           .sort((a, b) => Diagrams[a].index - Diagrams[b].index)
           .map((diag, i) => (
-            // TODO: replace with RB's <Nav>?
             <DiagramTab
               key={i}
               diagram={diag}

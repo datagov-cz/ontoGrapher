@@ -7,7 +7,7 @@ type Props = {
   color: string;
 };
 
-export const Chip: React.FC<Props> = (props: Props) => {
+export const VocabularyBadge: React.FC<Props> = (props: Props) => {
   return (
     <span className="chip" style={{ backgroundColor: props.color }}>
       {props.text}

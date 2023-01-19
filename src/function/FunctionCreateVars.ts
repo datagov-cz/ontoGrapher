@@ -76,10 +76,10 @@ export function addToFlexSearch(...ids: string[]) {
 }
 
 export function removeFromFlexSearch(...ids: string[]) {
-  const entries = Object.entries(FlexDocumentIDTable).filter(([key, value]) =>
+  const entries = Object.entries(FlexDocumentIDTable).filter(([_, value]) =>
     ids.includes(value)
   );
-  entries.forEach(([key, value]) => {
+  entries.forEach(([key, _]) => {
     const num = parseInt(key, 10);
     FlexDocumentSearch.remove(num);
   });
@@ -147,7 +147,6 @@ export function addDiagram(
     vocabularies: vocabularies ? vocabularies : [],
     modifiedDate: new Date(),
     creationDate: new Date(),
-    //TODO collaborators:
     collaborators: [],
   };
   return diagramID;

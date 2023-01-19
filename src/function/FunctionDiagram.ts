@@ -39,7 +39,7 @@ export function changeDiagrams(diagram?: string) {
         restoreHiddenElem(id, true, false, false);
       }
     }
-    setRepresentation(Diagrams[diagram].representation, false);
+    setRepresentation(Diagrams[diagram].representation, diagram, false);
     if (Diagrams[diagram].origin.x === 0 && Diagrams[diagram].origin.y === 0) {
       centerDiagram();
     } else {
@@ -62,17 +62,18 @@ export function centerDiagram(
     y += elem.getBBox().y;
   }
   p.translate(
-    -((x / g.getElements().length) * scale) + paper.getComputedSize().width / 2,
-    -((y / g.getElements().length) * scale) + paper.getComputedSize().height / 2
+    -((x / g.getElements().length) * scale) + p.getComputedSize().width / 2,
+    -((y / g.getElements().length) * scale) + p.getComputedSize().height / 2
   );
-  updateDiagramPosition(AppSettings.selectedDiagram);
+  if (g === graph) updateDiagramPosition(AppSettings.selectedDiagram);
 }
 
 export function zoomDiagram(
   x: number,
   y: number,
   delta: number,
-  p: joint.dia.Paper = paper
+  p: joint.dia.Paper = paper,
+  updatePosition: boolean = true
 ) {
   const oldTranslate = p.translate();
   const oldScale = p.scale().sx;
@@ -83,7 +84,7 @@ export function zoomDiagram(
       oldTranslate.ty + y * (oldScale - nextScale)
     );
     p.scale(nextScale, nextScale);
-    updateDiagramPosition(AppSettings.selectedDiagram);
+    if (updatePosition) updateDiagramPosition(AppSettings.selectedDiagram);
   }
 }
 
