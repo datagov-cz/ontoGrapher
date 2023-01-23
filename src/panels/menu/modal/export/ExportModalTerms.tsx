@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Button, Col, Form, Modal, Row } from "react-bootstrap";
+import { Alert, Button, Col, Form, Modal, Row, Spinner } from "react-bootstrap";
 import { Locale } from "../../../../config/Locale";
 import { AppSettings, Diagrams, Languages } from "../../../../config/Variables";
 import { exportTermsCSV } from "./ExportTermsCSV";
@@ -14,7 +14,15 @@ enum ExportType {
   TEXT,
 }
 
-var ExportFunction = {
+enum Status {
+  IDLE,
+  LOADING,
+  ERROR,
+}
+
+var ExportFunction: {
+  [key: number]: (language: string) => Promise<[source: string, error: string]>;
+} = {
   [ExportType.CSV]: exportTermsCSV,
   [ExportType.TEXT]: exportTermsText,
 };
@@ -23,18 +31,26 @@ export const ExportModalTerms: React.FC<Props> = (props: Props) => {
   const [exportLanguage, setExportLanguage] = useState<string>(
     AppSettings.canvasLanguage
   );
-
   const [exportType, setExportType] = useState<ExportType>(ExportType.CSV);
+  const [status, setStatus] = useState<Status>(Status.IDLE);
+  const [error, setError] = useState<string>("");
 
-  const saveDiagram = () => {
-    const source = ExportFunction[exportType](exportLanguage);
-    // console.log(source);
+  const saveDiagram = async () => {
+    setStatus(Status.LOADING);
+    setError("");
+    const [source, err] = await ExportFunction[exportType](exportLanguage);
+    if (err) {
+      setStatus(Status.ERROR);
+      setError(err);
+      return;
+    }
     const linkElement = document.createElement("a");
     linkElement.href = source;
     linkElement.download = Diagrams[AppSettings.selectedDiagram].name;
     document.body.appendChild(linkElement);
     linkElement.click();
     document.body.removeChild(linkElement);
+    setStatus(Status.IDLE);
   };
 
   return (
@@ -85,10 +101,31 @@ export const ExportModalTerms: React.FC<Props> = (props: Props) => {
             </Col>
           </Form.Group>
         </Form>
+        {exportType === ExportType.CSV && (
+          <Alert variant="warning">
+            Tento typ exportu vynechává pojmy, které nemají typový stereotyp.
+          </Alert>
+        )}
+        {error && <Alert variant="danger">{error}</Alert>}
       </Modal.Body>
       <Modal.Footer>
-        <Button onClick={() => saveDiagram()}>
-          {Locale[AppSettings.interfaceLanguage].downloadDiagramList}
+        <Button
+          disabled={status === Status.LOADING}
+          onClick={() => saveDiagram()}
+        >
+          {status !== Status.LOADING &&
+            Locale[AppSettings.interfaceLanguage].downloadDiagramList}
+          {status === Status.LOADING && (
+            <span>
+              <Spinner
+                as="span"
+                size="sm"
+                variant="light"
+                animation={"border"}
+              />{" "}
+              {Locale[AppSettings.interfaceLanguage].loading}
+            </span>
+          )}
         </Button>
         <Button
           variant={"secondary"}

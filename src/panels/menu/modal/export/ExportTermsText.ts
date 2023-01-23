@@ -12,7 +12,9 @@ import {
   getLabelOrBlank,
 } from "../../../../function/FunctionGetVars";
 
-export function exportTermsText(exportLanguage: string): string {
+export async function exportTermsText(
+  exportLanguage: string
+): Promise<[source: string, error: string]> {
   const fileID = "data:text/plain;charset=utf-8,";
   const carriageReturn = "\r\n";
   const diagramTerms = Object.keys(WorkspaceElements)
@@ -58,5 +60,5 @@ export function exportTermsText(exportLanguage: string): string {
         );
       })
       .join(carriageReturn);
-  return source;
+  return [source, ""];
 }

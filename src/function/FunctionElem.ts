@@ -1,3 +1,4 @@
+import { RepresentationConfig } from "./../config/logic/RepresentationConfig";
 import { graph } from "../graph/Graph";
 import {
   drawGraphElement,
@@ -48,7 +49,6 @@ import { restoreHiddenElem, setRepresentation } from "./FunctionGraph";
 import React from "react";
 import { insertNewCacheTerms, insertNewRestrictions } from "./FunctionCache";
 import _ from "lodash";
-import { RepresentationConfig } from "../config/logic/RepresentationConfig";
 import { updateDeleteTriples } from "../queries/update/UpdateMiscQueries";
 import { updateCreateDiagram } from "../queries/update/UpdateDiagramQueries";
 
@@ -151,19 +151,36 @@ export function createNewTerm(
   return iri;
 }
 
+/**
+ * Returns whether the element (based on its types) should be visible given a representation.
+ * By default, true is returned even if the types contain none of the requested types.
+ * This behaviour can be
+ * @param types Types of the element.
+ * @param representation Requested representation.
+ * @param strict Enforce that the types must contain a requested representation type.
+ * @returns if the element should be visible given the types and representation.
+ */
 export function isElementVisible(
   types: string[],
-  representation: Representation
+  representation: Representation,
+  strict: boolean = false
 ) {
   return (
-    _.difference(RepresentationConfig[representation].visibleStereotypes, types)
-      .length <
-      RepresentationConfig[representation].visibleStereotypes.length ||
-    !types.find((type) =>
-      RepresentationConfig[Representation.FULL].visibleStereotypes.includes(
-        type
-      )
-    )
+    (_.difference(
+      RepresentationConfig[representation].visibleStereotypes,
+      types
+    ).length < RepresentationConfig[representation].visibleStereotypes.length ||
+      !types.find((type) =>
+        RepresentationConfig[Representation.FULL].visibleStereotypes.includes(
+          type
+        )
+      )) &&
+    (strict
+      ? _.intersection(
+          RepresentationConfig[representation].visibleStereotypes,
+          types
+        ).length > 0
+      : true)
   );
 }
 
