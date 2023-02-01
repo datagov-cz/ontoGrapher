@@ -12,8 +12,8 @@ export var ChangeAttribute = {
     definition: "http://www.w3.org/2004/02/skos/core#definition",
     type: "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
     title: "http://purl.org/dc/terms/title",
-    scheme: "http://www.w3.org/2004/02/skos/core#",
-    topConcept: "http://www.w3.org/2004/02/skos/core#",
+    inScheme: "http://www.w3.org/2004/02/skos/core#inScheme",
+    topConcept: "http://www.w3.org/2004/02/skos/core#topConceptOf",
   },
   // TODO: implement change tracking for relationships
 };
