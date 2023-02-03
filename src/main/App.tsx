@@ -50,6 +50,8 @@ import { getElementPosition } from "../function/FunctionElem";
 import { en } from "../locale/en";
 import { StoreAlerts } from "../config/Store";
 import { CriticalAlertModal } from "../components/modals/CriticalAlertModal";
+import * as _ from "lodash";
+import { updateVocabularyAnnotations } from "../queries/update/UpdateChangeQueries";
 
 interface DiagramAppProps {}
 
@@ -214,7 +216,13 @@ export default class App extends React.Component<
       this.handleWorkspaceReady();
       return;
     }
-    const transaction = qb.constructQuery(...queriesTrimmed);
+    const transaction = qb.constructQuery(
+      ...queriesTrimmed,
+      ..._.uniq(AppSettings.changedVocabularies).map((v) =>
+        updateVocabularyAnnotations(v)
+      )
+    );
+    AppSettings.changedVocabularies = [];
     this.handleStatus(
       true,
       Locale[AppSettings.interfaceLanguage].updating,

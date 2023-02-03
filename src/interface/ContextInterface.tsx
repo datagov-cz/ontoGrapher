@@ -161,9 +161,13 @@ export async function retrieveVocabularyData(): Promise<boolean> {
     "PREFIX termit: <http://onto.fel.cvut.cz/ontologies/application/termit/>",
     "PREFIX a-popis-dat-pojem: <http://onto.fel.cvut.cz/ontologies/slovník/agendový/popis-dat/pojem/>",
     "PREFIX dcterms: <http://purl.org/dc/terms/>",
-    "select ?contextIRI ?scheme ?vocabLabel ?vocabIRI",
+    "select ?contextIRI ?scheme ?vocabLabel ?vocabIRI ?changeContext",
     "where {",
     "graph ?contextIRI {",
+    `OPTIONAL { ?vocabulary <${parsePrefix(
+      "d-sgov-pracovní-prostor-pojem",
+      "má-kontext-sledování-změn"
+    )}> ?changeContext. }`,
     "?vocabIRI a a-popis-dat-pojem:slovník .",
     "?vocabIRI a-popis-dat-pojem:má-glosář ?scheme.",
     "?vocabIRI dcterms:title ?vocabLabel .",
@@ -178,6 +182,7 @@ export async function retrieveVocabularyData(): Promise<boolean> {
       terms: typeof WorkspaceTerms;
       graph: string;
       glossary: string;
+      changeContext?: string;
     };
   } = {};
   const responseInit: boolean = await processQuery(
@@ -196,6 +201,9 @@ export async function retrieveVocabularyData(): Promise<boolean> {
             glossary: result.scheme.value,
           };
         }
+        if (result.changeContext)
+          vocabularies[result.vocabIRI.value].changeContext =
+            result.changeContext.value;
         vocabularies[result.vocabIRI.value].names[
           result.vocabLabel["xml:lang"]
         ] = result.vocabLabel.value;
@@ -234,6 +242,9 @@ export async function retrieveVocabularyData(): Promise<boolean> {
     );
     WorkspaceVocabularies[vocab].readOnly = false;
     WorkspaceVocabularies[vocab].graph = vocabularies[vocab].graph;
+    if (vocabularies[vocab].changeContext)
+      WorkspaceVocabularies[vocab].changeContext =
+        vocabularies[vocab].changeContext;
     Object.assign(WorkspaceTerms, vocabularies[vocab].terms);
   }
   const numberOfVocabularies = Object.keys(vocabularies).length;

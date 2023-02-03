@@ -129,6 +129,9 @@ export function updateProjectElement(del: boolean, ...iris: string[]): string {
         )
       );
     }
+    AppSettings.changedVocabularies.push(
+      getVocabularyFromScheme(WorkspaceTerms[iri].inScheme)
+    );
   }
 
   for (const vocab in data) {
