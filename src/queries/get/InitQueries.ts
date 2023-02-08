@@ -239,14 +239,14 @@ export async function getSettings(contextEndpoint: string): Promise<{
           Diagrams[result.id.value].saved = true;
           indices.push(index);
           AppSettings.initWorkspace = false;
-          if (result.context) {
-            AppSettings.viewColorPool = result.color.value;
-            AppSettings.contextVersion = parseInt(result.context.value, 10);
-            AppSettings.applicationContext = result.ogContext.value;
-            contextInfo[result.vocabContext.value].appContext = true;
-          } else {
-            reconstructWorkspace = true;
-          }
+        }
+        if (result.context) {
+          AppSettings.viewColorPool = result.color.value;
+          AppSettings.contextVersion = parseInt(result.context.value, 10);
+          AppSettings.applicationContext = result.ogContext.value;
+          contextInfo[result.vocabContext.value].appContext = true;
+        } else {
+          reconstructWorkspace = true;
         }
       }
       ret.contextsMissingAppContexts = Object.keys(contextInfo).filter(
