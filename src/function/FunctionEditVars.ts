@@ -1,7 +1,11 @@
+import { LanguageObject } from "./../config/Languages";
+import { LinkType } from "../config/Enum";
+import { Languages } from "../config/Languages";
+import { Locale } from "../config/Locale";
+import { LinkConfig } from "../config/logic/LinkConfig";
 import {
   AppSettings,
   Diagrams,
-  Languages,
   Links,
   Prefixes,
   Stereotypes,
@@ -10,20 +14,21 @@ import {
   WorkspaceTerms,
   WorkspaceVocabularies,
 } from "../config/Variables";
-import { graph } from "../graph/Graph";
-import { addClass, createCount } from "./FunctionCreateVars";
-import { LinkConfig } from "../config/logic/LinkConfig";
-import { LinkType, Representation } from "../config/Enum";
-import { Locale } from "../config/Locale";
-import { updateDeleteTriples } from "../queries/update/UpdateMiscQueries";
 import { Cardinality } from "../datatypes/Cardinality";
+import { graph } from "../graph/Graph";
+import { updateDeleteTriples } from "../queries/update/UpdateMiscQueries";
+import { addClass } from "./FunctionCreateVars";
 import {
   getActiveToConnections,
   getLocalStorageKey,
   getVocabularyFromScheme,
   loadDefaultCardinality,
 } from "./FunctionGetVars";
-import { isElementVisible } from "./FunctionElem";
+import * as _ from "lodash";
+
+export function trimLanguageObjectInput(input: LanguageObject): LanguageObject {
+  return _.mapValues(input, (i) => i.trim());
+}
 
 export function getName(element: string, language: string): string {
   if (element in Stereotypes) {
@@ -59,7 +64,6 @@ export function loadUML() {
     namespace: "",
     graph: AppSettings.ontographerContext,
     color: "#FFF",
-    count: createCount(),
     glossary: scheme,
   };
 
@@ -84,10 +88,6 @@ export function loadUML() {
 }
 
 export function loadLanguages() {
-  const json = require("../config/Languages.json");
-  for (const code in json) {
-    if (json.hasOwnProperty(code)) Languages[code] = json[code];
-  }
   // TODO: redo in i18n
   const navigatorLanguage = navigator.language.slice(0, 2);
   const interfaceLanguage =
@@ -263,22 +263,4 @@ export function initElements(replaceInactive: boolean = false) {
     }
   }
   return ids;
-}
-
-export function changeVocabularyCount(
-  vocabulary: string,
-  changeFunction: (count: number) => number,
-  ...terms: string[]
-) {
-  for (const term of terms) {
-    WorkspaceVocabularies[vocabulary].count[Representation.FULL] =
-      changeFunction(
-        WorkspaceVocabularies[vocabulary].count[Representation.FULL]
-      );
-    if (isElementVisible(term, Representation.COMPACT))
-      WorkspaceVocabularies[vocabulary].count[Representation.COMPACT] =
-        changeFunction(
-          WorkspaceVocabularies[vocabulary].count[Representation.COMPACT]
-        );
-  }
 }

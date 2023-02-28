@@ -1,19 +1,25 @@
 import React from "react";
+import { Accordion, Button, Card, Form } from "react-bootstrap";
+import IRILabel from "../../components/IRILabel";
+import IRILink from "../../components/IRILink";
+import TableList from "../../components/TableList";
+import { DetailPanelMode, LinkType, Representation } from "../../config/Enum";
+import { Languages } from "../../config/Languages";
+import { Locale } from "../../config/Locale";
 import {
   AppSettings,
   CardinalityPool,
-  Languages,
   Links,
   WorkspaceElements,
   WorkspaceLinks,
   WorkspaceTerms,
   WorkspaceVocabularies,
 } from "../../config/Variables";
-import { Accordion, Button, Card, Form } from "react-bootstrap";
-import TableList from "../../components/TableList";
-import IRILink from "../../components/IRILink";
-import { graph } from "../../graph/Graph";
-import DescriptionTabs from "./components/DescriptionTabs";
+import { Cardinality } from "../../datatypes/Cardinality";
+import {
+  initLanguageObject,
+  parsePrefix,
+} from "../../function/FunctionEditVars";
 import {
   getLabelOrBlank,
   getLinkOrVocabElem,
@@ -21,21 +27,11 @@ import {
   getVocabularyFromScheme,
 } from "../../function/FunctionGetVars";
 import { setLabels } from "../../function/FunctionGraph";
-import {
-  initLanguageObject,
-  parsePrefix,
-} from "../../function/FunctionEditVars";
-import { Cardinality } from "../../datatypes/Cardinality";
-import { DetailPanelMode, LinkType, Representation } from "../../config/Enum";
-import { Locale } from "../../config/Locale";
-import { updateProjectLink } from "../../queries/update/UpdateLinkQueries";
-import { updateConnections } from "../../queries/update/UpdateConnectionQueries";
-import AltLabelTable from "./components/AltLabelTable";
-import { updateProjectElement } from "../../queries/update/UpdateElementQueries";
-import LabelTable from "./components/LabelTable";
-import IRILabel from "../../components/IRILabel";
 import { setFullLinksCardinalitiesFromCompactLink } from "../../function/FunctionLink";
-
+import { graph } from "../../graph/Graph";
+import { updateConnections } from "../../queries/update/UpdateConnectionQueries";
+import { updateProjectElement } from "../../queries/update/UpdateElementQueries";
+import { updateProjectLink } from "../../queries/update/UpdateLinkQueries";
 interface Props {
   projectLanguage: string;
   save: (id: string) => void;
@@ -361,123 +357,6 @@ export default class DetailLink extends React.Component<Props, State> {
                     <IRILink
                       label={
                         Locale[AppSettings.interfaceLanguage]
-                          .detailPanelPrefLabel
-                      }
-                      iri={"http://www.w3.org/2004/02/skos/core#prefLabel"}
-                    />
-                  }
-                </h5>
-                <LabelTable
-                  iri={this.state.iri}
-                  labels={this.state.inputLabels}
-                  default={this.state.selectedLabel[this.props.projectLanguage]}
-                  selectAsDefault={(label: string) => {
-                    let res = this.state.selectedLabel;
-                    res[this.props.projectLanguage] = label;
-                    this.setState({ selectedLabel: res, changes: true });
-                  }}
-                  onEdit={(label: string, lang: string) =>
-                    this.setState((prevState) => ({
-                      inputLabels: {
-                        ...prevState.inputLabels,
-                        [lang]: label,
-                      },
-                      changes: true,
-                    }))
-                  }
-                />
-                {AppSettings.representation === Representation.COMPACT &&
-                  this.props.id in WorkspaceLinks &&
-                  WorkspaceLinks[this.props.id].type === LinkType.DEFAULT && (
-                    <div>
-                      <h5>
-                        {
-                          <IRILink
-                            label={
-                              Locale[AppSettings.interfaceLanguage]
-                                .detailPanelAltLabel
-                            }
-                            iri={"http://www.w3.org/2004/02/skos/core#altLabel"}
-                          />
-                        }
-                      </h5>
-                      <AltLabelTable
-                        labels={this.state.inputAltLabels}
-                        readOnly={this.state.readOnly}
-                        onEdit={(textarea: string, lang: string, i: number) => {
-                          let res = this.state.inputAltLabels;
-                          let resL = this.state.selectedLabel;
-                          if (textarea === "") {
-                            if (
-                              res[i].label ===
-                              this.state.selectedLabel[
-                                this.props.projectLanguage
-                              ]
-                            ) {
-                              resL[this.props.projectLanguage] =
-                                WorkspaceTerms[
-                                  WorkspaceLinks[this.props.id].iri
-                                ].labels[this.props.projectLanguage];
-                            }
-                            res.splice(i, 1);
-                          } else {
-                            if (
-                              res[i].label ===
-                              this.state.selectedLabel[
-                                this.props.projectLanguage
-                              ]
-                            ) {
-                              resL[this.props.projectLanguage] =
-                                lang === this.props.projectLanguage
-                                  ? textarea
-                                  : "";
-                            }
-                            res[i] = { label: textarea, language: lang };
-                          }
-                          this.setState({
-                            inputAltLabels: res,
-                            selectedLabel: resL,
-                            changes: true,
-                          });
-                        }}
-                        default={
-                          this.state.selectedLabel[this.props.projectLanguage]
-                        }
-                        selectAsDefault={(lang: string, i: number) => {
-                          let res = this.state.selectedLabel;
-                          res[this.props.projectLanguage] =
-                            this.state.inputAltLabels[i].label;
-                          this.setState({
-                            selectedLabel: res,
-                            changes: true,
-                          });
-                        }}
-                        addAltLabel={(label: string) => {
-                          if (
-                            label !== "" ||
-                            this.state.inputAltLabels.find(
-                              (alt) => alt.label === label
-                            )
-                          ) {
-                            let res = this.state.inputAltLabels;
-                            res.push({
-                              label: label,
-                              language: this.props.projectLanguage,
-                            });
-                            this.setState({
-                              inputAltLabels: res,
-                              changes: true,
-                            });
-                          }
-                        }}
-                      />
-                    </div>
-                  )}
-                <h5>
-                  {
-                    <IRILink
-                      label={
-                        Locale[AppSettings.interfaceLanguage]
                           .detailPanelInScheme
                       }
                       iri={"http://www.w3.org/2004/02/skos/core#inScheme"}
@@ -509,29 +388,6 @@ export default class DetailLink extends React.Component<Props, State> {
                     </tr>
                   ))}
                 </TableList>
-
-                {Object.keys(getLinkOrVocabElem(this.state.iri).definitions)
-                  .length > 0 && (
-                  <div>
-                    <h5>
-                      {
-                        <IRILink
-                          label={
-                            Locale[AppSettings.interfaceLanguage]
-                              .detailPanelDefinition
-                          }
-                          iri={"http://www.w3.org/2004/02/skos/core#definition"}
-                        />
-                      }
-                    </h5>
-                    <DescriptionTabs
-                      descriptions={
-                        getLinkOrVocabElem(this.state.iri).definitions
-                      }
-                      readOnly={true}
-                    />
-                  </div>
-                )}
               </Card.Body>
             </Accordion.Collapse>
           </Card>

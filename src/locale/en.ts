@@ -5,8 +5,8 @@ export const en = {
   newVersion:
     "OntoGrapher has been updated with new functions since you were gone! Click here to see a detailed changelog.",
   retry: "Retry?",
-  errorUpdating: "❌ Error: update unsuccessful.",
-  workspaceReady: "✔ Ready for work.",
+  errorUpdating: "Error: update unsuccessful.",
+  workspaceReady: "Ready for work. Your changes are saved as they happen.",
   filterVocabulariesPlaceholder: "Pick vocabularies...",
   termsFromOtherVocabularies: "Terms from other vocabularies",
   modalNewElemLengthError: "The name must have between 2 and 150 characters.",
@@ -37,7 +37,7 @@ export const en = {
   detailPanelStereotype: "Stereotype",
   setCanvasLanguage: "Displayed vocabulary language",
   setInterfaceLanguage: "User interface language",
-  ontoGrapher: "ontoGrapher",
+  ontoGrapher: "OntoGrapher",
   errorMissingRestriction: "Restriction not found",
   validationNumber: "#",
   hiddenTermsAndLinks:

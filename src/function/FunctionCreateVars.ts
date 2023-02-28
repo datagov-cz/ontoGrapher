@@ -2,7 +2,6 @@ import {
   AppSettings,
   CardinalityPool,
   Diagrams,
-  Languages,
   Links,
   WorkspaceElements,
   WorkspaceLinks,
@@ -23,6 +22,7 @@ import {
   FlexDocumentIDTable,
   FlexDocumentSearch,
 } from "../config/FlexDocumentSearch";
+import { Languages } from "../config/Languages";
 
 export function createValues(
   values: { [key: string]: string[] },
@@ -100,10 +100,6 @@ export function addVocabularyElement(
     restrictions: [],
     topConcept: scheme,
   };
-}
-
-export function createCount(): { [key in Representation]: number } {
-  return { [Representation.COMPACT]: 0, [Representation.FULL]: 0 };
 }
 
 export function addClass(id: string, active: boolean = true) {

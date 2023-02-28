@@ -15,6 +15,14 @@ import {
 import { ElementColors } from "../config/visual/ElementColors";
 import _ from "underscore";
 
+export function getListClassNamesObject(arr: any[], i: number) {
+  return {
+    "top-item": i === 0 && arr.length > 1,
+    "middle-item": i > 0 && i < arr.length - 1,
+    "bottom-item": i > 0 && i === arr.length - 1,
+  };
+}
+
 export function setDisplayLabel(id: string, languageCode: string) {
   if (WorkspaceElements[id].selectedLabel[languageCode] === "") {
     const altLabel = WorkspaceTerms[id].altLabels.find(

@@ -1,6 +1,13 @@
-import React from "react";
+import React, { useState } from "react";
 import { Accordion } from "react-bootstrap";
+import IRILink from "../../components/IRILink";
+import { LanguageSelector } from "../../components/LanguageSelector";
 import { DetailPanelMode } from "../../config/Enum";
+import { AppSettings } from "../../config/Variables";
+import {
+  getLabelOrBlank,
+  getLinkOrVocabElem,
+} from "../../function/FunctionGetVars";
 import { DetailElementDescriptionCard } from "./components/element/DetailElementDescriptionCard";
 import { DetailElementDiagramCard } from "./components/element/DetailElementDiagramCard";
 import { DetailElementLinksCard } from "./components/element/DetailElementLinksCard";
@@ -15,27 +22,49 @@ interface Props {
   id: string;
 }
 
-export default class DetailElement extends React.Component<Props> {
-  render() {
-    return (
-      <div className={"accordions"}>
-        <Accordion defaultActiveKey={"0"}>
-          <DetailElementDescriptionCard
-            id={this.props.id}
-            projectLanguage={this.props.projectLanguage}
-            performTransaction={this.props.performTransaction}
-            handleCreation={this.props.handleCreation}
-            save={this.props.save}
-            updateDetailPanel={this.props.updateDetailPanel}
-          />
-          <DetailElementLinksCard
-            id={this.props.id}
-            projectLanguage={this.props.projectLanguage}
-            performTransaction={this.props.performTransaction}
-          />
-          <DetailElementDiagramCard id={this.props.id} />
-        </Accordion>
+export const DetailElement: React.FC<Props> = (props: Props) => {
+  const [selectedLanguage, setSelectedLanguage] = useState<string>(
+    AppSettings.canvasLanguage
+  );
+
+  return (
+    <div className={"accordions"}>
+      <div className={"detailTitle"}>
+        <div className="top">
+          <span className="languageSelect">
+            <LanguageSelector
+              language={selectedLanguage}
+              setLanguage={setSelectedLanguage}
+            />
+          </span>
+          <span className="title">
+            <IRILink
+              label={getLabelOrBlank(
+                getLinkOrVocabElem(props.id).labels,
+                selectedLanguage
+              )}
+              iri={props.id}
+            />
+          </span>
+        </div>
+        <p>{getLinkOrVocabElem(props.id).definitions[selectedLanguage]}</p>
       </div>
-    );
-  }
-}
+      <Accordion defaultActiveKey={"0"}>
+        <DetailElementDescriptionCard
+          id={props.id}
+          projectLanguage={selectedLanguage}
+          performTransaction={props.performTransaction}
+          handleCreation={props.handleCreation}
+          save={props.save}
+          updateDetailPanel={props.updateDetailPanel}
+        />
+        <DetailElementLinksCard
+          id={props.id}
+          projectLanguage={props.projectLanguage}
+          performTransaction={props.performTransaction}
+        />
+        <DetailElementDiagramCard id={props.id} />
+      </Accordion>
+    </div>
+  );
+};

@@ -1,20 +1,19 @@
-import { processQuery } from "../../interface/TransactionInterface";
+import _ from "lodash";
+import { Representation } from "../../config/Enum";
+import { RepresentationConfig } from "../../config/logic/RepresentationConfig";
+import { RestrictionConfig } from "../../config/logic/RestrictionConfig";
+import { AppSettings, Links, WorkspaceTerms } from "../../config/Variables";
 import {
   CacheSearchResults,
   CacheSearchVocabularies,
 } from "../../datatypes/CacheSearchResults";
+import { Restriction } from "../../datatypes/Restriction";
 import {
   initLanguageObject,
   parsePrefix,
 } from "../../function/FunctionEditVars";
-import { AppSettings, Links, WorkspaceTerms } from "../../config/Variables";
-import { Representation } from "../../config/Enum";
-import _ from "lodash";
-import { createCount } from "../../function/FunctionCreateVars";
-import { RepresentationConfig } from "../../config/logic/RepresentationConfig";
-import { Restriction } from "../../datatypes/Restriction";
 import { createRestriction } from "../../function/FunctionRestriction";
-import { RestrictionConfig } from "../../config/logic/RestrictionConfig";
+import { processQuery } from "../../interface/TransactionInterface";
 
 export async function fetchVocabularies(
   endpoint: string,
@@ -40,7 +39,6 @@ export async function fetchVocabularies(
     "?term a ?type.",
     "}}",
   ].join(" ");
-  const count: { [key: string]: { [key: string]: string[] } } = {};
   return await processQuery(endpoint, query)
     .then((response) => response.json())
     .then((data) => {
@@ -51,10 +49,8 @@ export async function fetchVocabularies(
             labels: initLanguageObject(""),
             namespace: row.namespace ? row.namespace.value : "",
             glossary: row.scheme.value,
-            count: createCount(),
             diagrams: [],
           };
-          count[row.vocabulary.value] = {};
         }
         if (
           row.diagram &&
@@ -68,25 +64,7 @@ export async function fetchVocabularies(
         CacheSearchVocabularies[row.vocabulary.value].labels[
           row.title["xml:lang"]
         ] = row.title.value;
-        if (!(row.term.value in count[row.vocabulary.value])) {
-          count[row.vocabulary.value][row.term.value] = [];
-          CacheSearchVocabularies[row.vocabulary.value].count[
-            Representation.FULL
-          ]++;
-        }
-        if (
-          RepresentationConfig[
-            Representation.COMPACT
-          ].visibleStereotypes.includes(row.type.value)
-        )
-          count[row.vocabulary.value][row.term.value].push(row.type.value);
       }
-      Object.keys(count).forEach((vocab) => {
-        CacheSearchVocabularies[vocab].count[Representation.COMPACT] =
-          Object.keys(count[vocab]).filter(
-            (term) => _.uniq(count[vocab][term]).length > 0
-          ).length;
-      });
       return true;
     })
     .catch((e) => {

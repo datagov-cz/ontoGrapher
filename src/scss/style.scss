@@ -1,6 +1,6 @@
 @import "diagram/DiagramApp";
 @import "diagram/DiagramManager";
-@import "panels/ItemPanel";
+@import "panels/VocabularyPanel";
 @import "components/TableList";
 @import "components/ConnectionList";
 @import "components/ModalRemoveItem";
@@ -93,6 +93,10 @@ body {
   margin: 0;
   padding: 0;
   color: #000000;
+
+  &::after {
+    display: none;
+  }
 
   &.vocab {
     border-radius: 4px;

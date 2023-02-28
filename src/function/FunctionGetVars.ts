@@ -1,6 +1,5 @@
 import {
   AppSettings,
-  Languages,
   Links,
   WorkspaceElements,
   WorkspaceLinks,
@@ -20,6 +19,7 @@ import { Representation } from "../config/Enum";
 import { Locale } from "../config/Locale";
 import { en } from "../locale/en";
 import { LocalStorageVars } from "../config/LocalStorageVars";
+import { Languages } from "../config/Languages";
 
 export function getVocabElementByElementID(id: string): { [key: string]: any } {
   return WorkspaceTerms[id];

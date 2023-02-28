@@ -4,9 +4,6 @@ import { enHelp } from "../locale/enhelp";
 import { csHelp } from "../locale/cshelp";
 import { enChangelog } from "../locale/enchangelog";
 import { csChangelog } from "../locale/cschangelog";
-import i18next from "i18next";
-import { initReactI18next } from "react-i18next";
-import LanguageDetector from "i18next-browser-languagedetector";
 
 export const Locale: {
   [key: string]: { [Property in keyof typeof en]: string };
@@ -28,8 +25,3 @@ export const LocaleChangelog: {
   en: enChangelog,
   cs: csChangelog,
 };
-
-i18next
-  .use(LanguageDetector)
-  .use(initReactI18next)
-  .init({ lng: "cs", resources: { en, cs } });

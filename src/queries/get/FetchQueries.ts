@@ -1,19 +1,18 @@
-import { processQuery } from "../../interface/TransactionInterface";
-import {
-  initLanguageObject,
-  parsePrefix,
-} from "../../function/FunctionEditVars";
+import { LinkType } from "../../config/Enum";
+import { RestrictionConfig } from "../../config/logic/RestrictionConfig";
 import {
   Links,
   Stereotypes,
   WorkspaceTerms,
   WorkspaceVocabularies,
 } from "../../config/Variables";
-import { RestrictionConfig } from "../../config/logic/RestrictionConfig";
-import { LinkType } from "../../config/Enum";
-import { createRestriction } from "../../function/FunctionRestriction";
 import { Restriction } from "../../datatypes/Restriction";
-import { createCount } from "../../function/FunctionCreateVars";
+import {
+  initLanguageObject,
+  parsePrefix,
+} from "../../function/FunctionEditVars";
+import { createRestriction } from "../../function/FunctionRestriction";
+import { processQuery } from "../../interface/TransactionInterface";
 
 /**
  * Gets vocabulary info.
@@ -62,7 +61,6 @@ export async function fetchVocabulary(
               namespace: "",
               graph: "",
               glossary: result.scheme.value,
-              count: createCount(),
               color: "#FFF",
             };
           if (result.vocabTitle)

@@ -16,6 +16,8 @@ import { paper } from "../../main/DiagramCanvas";
 import { ReactComponent as HiddenElementSVG } from "../../svg/hiddenElement.svg";
 import { isElementHidden } from "../../function/FunctionElem";
 import classNames from "classnames";
+import DeleteIcon from "@mui/icons-material/Delete";
+import InfoIcon from "@mui/icons-material/Info";
 
 interface Props {
   id: string;
@@ -136,7 +138,17 @@ export default class VocabularyConcept extends React.Component<Props, State> {
         {isElementHidden(this.props.id, AppSettings.selectedDiagram) && (
           <HiddenElementSVG />
         )}
-        {this.state.hover && !this.props.readOnly && (
+        {this.state.hover && (
+          <span className={"conceptOptions right"}>
+            <button className="plainButton">
+              <InfoIcon />
+            </button>
+            <button className="plainButton">
+              <DeleteIcon />
+            </button>
+          </span>
+        )}
+        {/* {this.state.hover && !this.props.readOnly && (
           <span className={"conceptOptions right"}>
             <button
               className={"buttonlink"}
@@ -165,7 +177,7 @@ export default class VocabularyConcept extends React.Component<Props, State> {
               </span>
             </button>
           </span>
-        )}
+        )} */}
       </div>
     );
   }

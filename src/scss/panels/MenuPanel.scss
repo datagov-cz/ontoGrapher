@@ -3,32 +3,47 @@
   padding-left: 5px;
 
   .upper {
-    // display: inline-flex;
     padding-left: 5px;
     margin-bottom: 4px;
+    font-size: larger;
+
+    .left {
+      display: flex;
+      align-items: center;
+    }
+
+    .right {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 10px;
+
+      .dropdown-item {
+        padding: 4px !important;
+      }
+
+      .plainButton::after {
+        display: none;
+      }
+
+      .plainButton:hover {
+        background: none !important;
+      }
+    }
 
     .interfaceNotification {
       margin-left: 5px;
+      display: flex;
     }
 
     .title {
       display: inline;
       overflow: hidden;
       text-overflow: ellipsis;
-      max-height: 30px;
-      padding-bottom: 2px;
     }
 
-    form {
-      position: absolute;
-      right: 5px;
-      top: 8px;
-
-      select {
-        font-size: 14px;
-        padding: 0;
-        height: 25px;
-      }
+    .text {
+      margin-left: 5px;
     }
   }
 
@@ -38,7 +53,7 @@
 
     a,
     button {
-      font-size: 14px;
+      font-size: larger;
       box-shadow: none;
       transition: none;
       border: none;
@@ -64,7 +79,7 @@
 
     a,
     button {
-      font-size: 14px;
+      font-size: medium;
       background: none !important;
       border: none;
       color: black !important;

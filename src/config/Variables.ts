@@ -3,9 +3,7 @@ import { Restriction } from "../datatypes/Restriction";
 import { Representation } from "./Enum";
 import * as joint from "jointjs";
 import { Environment } from "./Environment";
-
-// language code : language label
-export var Languages: { [key: string]: string } = {};
+import { Languages } from "./Languages";
 
 export var WorkspaceElements: {
   [key: string]: {
@@ -51,7 +49,6 @@ export var WorkspaceVocabularies: {
     labels: { [key: string]: string };
     readOnly: boolean;
     glossary: string;
-    count: { [key in Representation]: number };
     namespace: string;
     graph: string;
     color: string;
@@ -190,7 +187,7 @@ export var AppSettings: {
   lastTransactions: [],
   lastTransactionID: "",
   switchElements: [],
-  defaultLanguage: "cs",
+  defaultLanguage: "cz",
   viewStereotypes: true,
   viewZoom: 1,
   viewColorPool: "pastelLow",

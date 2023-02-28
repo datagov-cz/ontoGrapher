@@ -148,7 +148,7 @@ export default class App extends React.Component<
       changeDiagrams();
       this.itemPanel.current?.update();
       this.checkLastViewedVersion();
-      this.handleWorkspaceReady("workspaceReady");
+      this.handleWorkspaceReady();
     };
     if (Environment.debug && loadDebugData()) finishUp();
     else
@@ -271,12 +271,8 @@ export default class App extends React.Component<
     );
   }
 
-  handleWorkspaceReady(message: keyof typeof en = "savedChanges") {
-    this.handleStatus(
-      false,
-      Locale[AppSettings.interfaceLanguage][message],
-      false
-    );
+  handleWorkspaceReady() {
+    this.handleStatus(false, "", false);
   }
 
   validate() {
@@ -297,7 +293,7 @@ export default class App extends React.Component<
     this.detailPanel.current?.prepareDetails(mode, id);
     this.validationPanel.current?.forceUpdate();
   }
-  // TODO: change all emojis to material ui icons
+
   render() {
     return (
       <div className={"app"}>

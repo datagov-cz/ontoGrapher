@@ -1,39 +1,40 @@
+import SearchIcon from "@mui/icons-material/Search";
+import { Id } from "flexsearch";
+import _ from "lodash";
 import React from "react";
+import { Form, InputGroup } from "react-bootstrap";
 import { ResizableBox } from "react-resizable";
+import { Representation } from "../config/Enum";
+import {
+  FlexDocumentIDTable,
+  FlexDocumentSearch,
+} from "../config/FlexDocumentSearch";
+import { Locale } from "../config/Locale";
 import {
   AppSettings,
   WorkspaceElements,
   WorkspaceTerms,
   WorkspaceVocabularies,
 } from "../config/Variables";
-import VocabularyFolder from "./element/VocabularyFolder";
-import VocabularyConcept from "./element/VocabularyConcept";
-import {
-  getLabelOrBlank,
-  getVocabularyFromScheme,
-} from "../function/FunctionGetVars";
-import ModalRemoveConcept from "./modal/ModalRemoveConcept";
-import { Form, InputGroup, OverlayTrigger, Tooltip } from "react-bootstrap";
-import { Representation } from "../config/Enum";
-import ConceptDivider from "./element/ConceptDivider";
-import { Locale } from "../config/Locale";
 import { Shapes } from "../config/visual/Shapes";
-import { SearchTerm } from "./element/SearchTerm";
-import SearchFolder from "./element/SearchFolder";
-import { VocabularySelector } from "./element/VocabularySelector";
 import {
   CacheSearchResults,
   CacheSearchVocabularies,
 } from "../datatypes/CacheSearchResults";
-import { searchCache } from "../queries/get/CacheQueries";
-import ModalRemoveReadOnlyConcept from "./modal/ModalRemoveReadOnlyConcept";
-import {
-  FlexDocumentIDTable,
-  FlexDocumentSearch,
-} from "../config/FlexDocumentSearch";
-import { Id } from "flexsearch";
-import _ from "lodash";
 import { isElementVisible } from "../function/FunctionElem";
+import {
+  getLabelOrBlank,
+  getVocabularyFromScheme,
+} from "../function/FunctionGetVars";
+import { searchCache } from "../queries/get/CacheQueries";
+import ConceptDivider from "./element/ConceptDivider";
+import SearchFolder from "./element/SearchFolder";
+import { SearchTerm } from "./element/SearchTerm";
+import VocabularyConcept from "./element/VocabularyConcept";
+import VocabularyFolder from "./element/VocabularyFolder";
+import { VocabularySelector } from "./element/VocabularySelector";
+import ModalRemoveConcept from "./modal/ModalRemoveConcept";
+import ModalRemoveReadOnlyConcept from "./modal/ModalRemoveReadOnlyConcept";
 
 interface Props {
   projectLanguage: string;
@@ -75,7 +76,7 @@ export default class VocabularyPanel extends React.Component<Props, State> {
       selectedID: "",
       showLucene: true,
       shownLucene: {},
-      groupLucene: false,
+      groupLucene: true,
     };
     this.handleChangeSearch = this.handleChangeSearch.bind(this);
     this.handleOpenRemoveItemModal = this.handleOpenRemoveItemModal.bind(this);
@@ -235,7 +236,7 @@ export default class VocabularyPanel extends React.Component<Props, State> {
   }
 
   getFolders(): JSX.Element[] {
-    let result: JSX.Element[] = [];
+    const result: JSX.Element[] = [];
     for (const vocabulary in WorkspaceVocabularies) {
       const vocabularyConcepts: JSX.Element[] = [];
       for (const iri in this.state.shownElements[vocabulary]) {
@@ -384,14 +385,7 @@ export default class VocabularyPanel extends React.Component<Props, State> {
         <div>
           <InputGroup>
             <InputGroup.Text id="inputGroupPrepend">
-              <span
-                role="img"
-                aria-label={
-                  Locale[AppSettings.interfaceLanguage].searchStereotypes
-                }
-              >
-                🔎
-              </span>
+              <SearchIcon />
             </InputGroup.Text>
             <Form.Control
               type="search"
@@ -406,33 +400,15 @@ export default class VocabularyPanel extends React.Component<Props, State> {
               }
             />
           </InputGroup>
-          <div style={{ display: "inline-flex" }}>
-            <OverlayTrigger
-              placement={"right"}
-              overlay={
-                <Tooltip id={`tooltipGroupSearchTerms`}>
-                  {Locale[AppSettings.interfaceLanguage].groupSearchTerms}
-                </Tooltip>
-              }
-            >
-              <button
-                style={{ fontSize: "22px", margin: "2px" }}
-                onClick={() =>
-                  this.setState({ groupLucene: !this.state.groupLucene })
-                }
-                className={
-                  "buttonlink" + (this.state.groupLucene ? " vocab" : "")
-                }
-              >
-                📚
-              </button>
-            </OverlayTrigger>
+          <InputGroup>
             <VocabularySelector
               filter={this.filter}
               projectLanguage={this.props.projectLanguage}
               values={this.state.vocabs}
             />
-          </div>
+          </InputGroup>
+          {/* FIXME: some diagrams dont show all vocabularies in the left panel */}
+          {/* TODO: test that home is shown when no diagrams */}
           <div
             id={"elementList"}
             className={"elementLinkList"}

@@ -1,3 +1,4 @@
+import { ContextLoadingStrategy, LinkType } from "../../config/Enum";
 import {
   AppSettings,
   Diagrams,
@@ -6,16 +7,15 @@ import {
   WorkspaceLinks,
   WorkspaceVocabularies,
 } from "../../config/Variables";
-import { processQuery } from "../../interface/TransactionInterface";
-import { ContextLoadingStrategy, LinkType } from "../../config/Enum";
+import { CacheSearchVocabularies } from "../../datatypes/CacheSearchResults";
 import { Cardinality } from "../../datatypes/Cardinality";
+import { addDiagram } from "../../function/FunctionCreateVars";
 import {
   initLanguageObject,
   parsePrefix,
 } from "../../function/FunctionEditVars";
-import { addDiagram, createCount } from "../../function/FunctionCreateVars";
+import { processQuery } from "../../interface/TransactionInterface";
 import { qb } from "../QueryBuilder";
-import { CacheSearchVocabularies } from "../../datatypes/CacheSearchResults";
 
 export async function getElementsConfig(
   contextEndpoint: string
@@ -146,7 +146,6 @@ export async function getElementsConfig(
               namespace: CacheSearchVocabularies[vocab].namespace,
               graph: vocab,
               color: "#FFF",
-              count: createCount(),
               glossary: CacheSearchVocabularies[vocab].glossary,
             };
           }

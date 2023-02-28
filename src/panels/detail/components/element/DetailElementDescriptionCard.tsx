@@ -1,46 +1,38 @@
+import LabelIcon from "@mui/icons-material/Label";
+import LabelOffIcon from "@mui/icons-material/LabelOff";
+import classNames from "classnames";
+import * as _ from "lodash";
 import React from "react";
-import { Accordion, Button, Card } from "react-bootstrap";
+import { Accordion, Button, Form } from "react-bootstrap";
+import { DetailPanelMode } from "../../../../config/Enum";
 import { Locale } from "../../../../config/Locale";
+import { RepresentationConfig } from "../../../../config/logic/RepresentationConfig";
 import {
   AppSettings,
-  Languages,
   Stereotypes,
   WorkspaceElements,
   WorkspaceLinks,
   WorkspaceTerms,
   WorkspaceVocabularies,
 } from "../../../../config/Variables";
-import IRILink from "../../../../components/IRILink";
-import LabelTable from "../LabelTable";
-import AltLabelTable from "../AltLabelTable";
-import TableList from "../../../../components/TableList";
-import StereotypeOptions from "./StereotypeOptions";
+import { Shapes } from "../../../../config/visual/Shapes";
 import {
-  DetailPanelMode,
-  LinkType,
-  Representation,
-} from "../../../../config/Enum";
-import { IntrinsicTropeTable } from "../IntrinsicTropeTable";
+  drawGraphElement,
+  getListClassNamesObject,
+} from "../../../../function/FunctionDraw";
+import { getName, parsePrefix } from "../../../../function/FunctionEditVars";
+import { resizeElem } from "../../../../function/FunctionElem";
 import {
   getIntrinsicTropeTypeIDs,
-  getNewLink,
+  getLabelOrBlank,
   getParentOfIntrinsicTropeType,
   getVocabularyFromScheme,
 } from "../../../../function/FunctionGetVars";
-import {
-  deleteConnections,
-  updateConnection,
-} from "../../../../function/FunctionLink";
-import {
-  drawGraphElement,
-  redrawElement,
-} from "../../../../function/FunctionDraw";
-import { parsePrefix } from "../../../../function/FunctionEditVars";
-import DescriptionTabs from "../DescriptionTabs";
-import { Shapes } from "../../../../config/visual/Shapes";
+import { deleteConnections } from "../../../../function/FunctionLink";
 import { graph } from "../../../../graph/Graph";
-import { resizeElem } from "../../../../function/FunctionElem";
 import { updateProjectElement } from "../../../../queries/update/UpdateElementQueries";
+import { ListItemControls } from "../ListItemControls";
+import { ModalAddTrope } from "./ModalAddTrope";
 
 type Props = {
   id: string;
@@ -55,12 +47,12 @@ type State = {
   inputTypeType: string;
   inputTypeData: string;
   inputLabels: { [key: string]: string };
-  inputAltLabels: { label: string; language: string }[];
+  inputAltLabels: typeof WorkspaceTerms[keyof typeof WorkspaceTerms]["altLabels"];
   inputDefinitions: { [key: string]: string };
   selectedLabel: { [key: string]: string };
-  newAltInput: string;
   readOnly: boolean;
   changes: boolean;
+  modalTropes: boolean;
 };
 
 export class DetailElementDescriptionCard extends React.Component<
@@ -76,9 +68,9 @@ export class DetailElementDescriptionCard extends React.Component<
       inputAltLabels: [],
       inputDefinitions: {},
       selectedLabel: {},
-      newAltInput: "",
       readOnly: true,
       changes: false,
+      modalTropes: false,
     };
   }
 
@@ -101,7 +93,6 @@ export class DetailElementDescriptionCard extends React.Component<
         inputLabels: WorkspaceTerms[id].labels,
         inputAltLabels: WorkspaceTerms[id].altLabels,
         inputDefinitions: WorkspaceTerms[id].definitions,
-        newAltInput: "",
         changes: false,
         readOnly:
           WorkspaceVocabularies[
@@ -114,11 +105,7 @@ export class DetailElementDescriptionCard extends React.Component<
     this.save();
   }
 
-  componentDidUpdate(
-    prevProps: Readonly<Props>,
-    prevState: Readonly<State>,
-    snapshot?: any
-  ) {
+  componentDidUpdate(prevProps: Readonly<Props>, prevState: Readonly<State>) {
     if (prevState.changes !== this.state.changes && this.state.changes) {
       this.save();
     }
@@ -183,241 +170,212 @@ export class DetailElementDescriptionCard extends React.Component<
     }
   }
 
-  render() {
+  isAltLabelSelectedLabel(alt: { label: string; language: string }): boolean {
     return (
-      <Card>
-        <Card.Header>
-          <Accordion.Header as={Button} variant={"link"} eventKey={"0"}>
-            {Locale[AppSettings.interfaceLanguage].description}
-          </Accordion.Header>
-        </Card.Header>
-        <Accordion.Collapse eventKey={"0"}>
-          <Card.Body>
-            <h5>
-              {
-                <IRILink
-                  label={
-                    Locale[AppSettings.interfaceLanguage].detailPanelPrefLabel
-                  }
-                  iri={"http://www.w3.org/2004/02/skos/core#prefLabel"}
-                />
+      this.state.selectedLabel[this.props.projectLanguage] === alt.label &&
+      this.props.projectLanguage === alt.language
+    );
+  }
+
+  render() {
+    const altLabels = this.state.inputAltLabels.filter(
+      (alt) => alt.language === this.props.projectLanguage
+    );
+
+    const tropes = getIntrinsicTropeTypeIDs(this.props.id);
+
+    return (
+      <Accordion.Item eventKey="0">
+        <Accordion.Header>
+          {Locale[AppSettings.interfaceLanguage].description}
+        </Accordion.Header>
+        <Accordion.Body>
+          <h5>Synonyma</h5>
+          {altLabels.map((alt, i) => (
+            <div
+              className={classNames(
+                "detailInput",
+                "form-control",
+                "form-control-sm",
+                getListClassNamesObject(altLabels, i)
+              )}
+            >
+              <span
+                className={classNames({
+                  bold: this.isAltLabelSelectedLabel(alt),
+                })}
+              >
+                {alt.label}
+              </span>
+              <span className="right">
+                <Button variant="light" className={classNames("plainButton")}>
+                  {this.isAltLabelSelectedLabel(alt) ? (
+                    <LabelOffIcon />
+                  ) : (
+                    false && <LabelIcon />
+                  )}
+                </Button>
+              </span>
+            </div>
+          ))}
+          {altLabels.length === 0 && (
+            <Form.Control
+              className="detailInput noInput"
+              disabled
+              value=""
+              size="sm"
+            />
+          )}
+          <ListItemControls
+            addAction={(label: string) => {
+              if (
+                label !== "" ||
+                this.state.inputAltLabels.find((alt) => alt.label === label)
+              ) {
+                this.setState((prev) => ({
+                  ...prev,
+                  inputAltLabels: [
+                    ...prev.inputAltLabels,
+                    { label: label, language: this.props.projectLanguage },
+                  ],
+                  changes: true,
+                }));
               }
-            </h5>
-            <LabelTable
-              iri={this.props.id}
-              labels={WorkspaceTerms[this.props.id].labels}
-              default={this.state.selectedLabel[this.props.projectLanguage]}
-              selectAsDefault={(label: string) => {
-                let res = this.state.selectedLabel;
-                res[this.props.projectLanguage] = label;
-                this.setState({ selectedLabel: res, changes: true });
-              }}
-              onEdit={(label: string, lang: string) =>
-                this.setState((prevState) => ({
-                  inputLabels: {
-                    ...prevState.inputLabels,
-                    [lang]: label,
+            }}
+            removeAction={() =>
+              this.setState((prev) => ({
+                ...prev,
+                inputAltLabels: _.dropRight(prev.inputAltLabels, 1),
+              }))
+            }
+            popover={true}
+            tooltipText={""}
+          />
+          <h5>Typy</h5>
+          <Form.Select
+            size="sm"
+            as="select"
+            className="top-item detailInput"
+            value={this.state.inputTypeType}
+            disabled={this.state.readOnly}
+            onChange={(event) =>
+              this.updateStereotype(event.currentTarget.value, true)
+            }
+          >
+            <option key={""} value={""}>
+              {this.state.readOnly
+                ? Locale[AppSettings.interfaceLanguage].noStereotypeUML
+                : Locale[AppSettings.interfaceLanguage].setStereotypeUML}
+            </option>
+            {Object.keys(Stereotypes)
+              .filter((stereotype) =>
+                RepresentationConfig[
+                  AppSettings.representation
+                ].visibleStereotypes.includes(stereotype)
+              )
+              .map((stereotype) => (
+                <option key={stereotype} value={stereotype}>
+                  {getName(stereotype, this.props.projectLanguage)}
+                </option>
+              ))}
+          </Form.Select>
+          <Form.Select
+            size="sm"
+            className="bottom-item detailInput"
+            value={this.state.inputTypeType}
+            disabled={this.state.readOnly}
+            onChange={(event) =>
+              this.updateStereotype(event.currentTarget.value, false)
+            }
+          >
+            <option key={""} value={""}>
+              {this.state.readOnly
+                ? Locale[AppSettings.interfaceLanguage].noStereotypeData
+                : Locale[AppSettings.interfaceLanguage].setStereotypeData}
+            </option>
+            {Object.keys(Stereotypes)
+              .filter((stereotype) => !(stereotype in Shapes))
+              .map((stereotype) => (
+                <option key={stereotype} value={stereotype}>
+                  {getName(stereotype, this.props.projectLanguage)}
+                </option>
+              ))}
+          </Form.Select>
+          <h5>Definice</h5>
+          <Form.Control
+            as={"textarea"}
+            rows={3}
+            size="sm"
+            className="detailInput"
+            disabled={this.state.readOnly}
+            value={this.state.inputDefinitions[this.props.projectLanguage]}
+            onChange={(event) => {
+              if (!this.state.readOnly)
+                this.setState((prev) => ({
+                  ...prev,
+                  inputDefinitions: {
+                    ...prev.inputDefinitions,
+                    [this.props.projectLanguage]: event.currentTarget.value,
                   },
                   changes: true,
-                }))
-              }
-            />
-            <h5>
-              {
-                <IRILink
-                  label={
-                    Locale[AppSettings.interfaceLanguage].detailPanelAltLabel
-                  }
-                  iri={"http://www.w3.org/2004/02/skos/core#altLabel"}
-                />
-              }
-            </h5>
-            <AltLabelTable
-              labels={this.state.inputAltLabels}
-              readOnly={this.state.readOnly}
-              onEdit={(textarea: string, lang: string, i: number) => {
-                let res = this.state.inputAltLabels;
-                let resL = this.state.selectedLabel;
-                if (textarea === "") {
-                  if (
-                    res[i].label ===
-                    this.state.selectedLabel[this.props.projectLanguage]
-                  ) {
-                    resL[this.props.projectLanguage] =
-                      WorkspaceTerms[this.props.id].labels[
-                        this.props.projectLanguage
-                      ];
-                  }
-                  res.splice(i, 1);
-                } else {
-                  if (
-                    res[i].label ===
-                    this.state.selectedLabel[this.props.projectLanguage]
-                  ) {
-                    resL[this.props.projectLanguage] =
-                      lang === this.props.projectLanguage ? textarea : "";
-                  }
-                  res[i] = { label: textarea, language: lang };
-                }
-                this.setState({
-                  inputAltLabels: res,
-                  selectedLabel: resL,
-                  changes: true,
-                });
-              }}
-              default={this.state.selectedLabel[this.props.projectLanguage]}
-              selectAsDefault={(lang: string, i: number) => {
-                let res = this.state.selectedLabel;
-                res[this.props.projectLanguage] =
-                  this.state.inputAltLabels[i].label;
-                this.setState({ selectedLabel: res, changes: true });
-              }}
-              addAltLabel={(label: string) => {
-                if (
-                  label !== "" ||
-                  this.state.inputAltLabels.find((alt) => alt.label === label)
-                ) {
-                  let res = this.state.inputAltLabels;
-                  res.push({
-                    label: label,
-                    language: this.props.projectLanguage,
-                  });
-                  this.setState({
-                    inputAltLabels: res,
-                    changes: true,
-                  });
-                }
-              }}
-            />
-            <h5>
-              {
-                <IRILink
-                  label={
-                    Locale[AppSettings.interfaceLanguage].detailPanelStereotype
-                  }
-                  iri={"http://www.w3.org/2000/01/rdf-schema#type"}
-                />
-              }
-            </h5>
-            <TableList>
-              <StereotypeOptions
-                readonly={this.state.readOnly}
-                content={true}
-                projectLanguage={this.props.projectLanguage}
-                onChange={(value: string) => this.updateStereotype(value, true)}
-                value={this.state.inputTypeType}
-              />
-              <StereotypeOptions
-                readonly={this.state.readOnly}
-                content={false}
-                projectLanguage={this.props.projectLanguage}
-                onChange={(value: string) =>
-                  this.updateStereotype(value, false)
-                }
-                value={this.state.inputTypeData}
-              />
-            </TableList>
-            {AppSettings.representation === Representation.COMPACT && (
-              <div>
-                <h5>{Locale[AppSettings.interfaceLanguage].intrinsicTropes}</h5>
-                <IntrinsicTropeTable
-                  iri={this.props.id}
-                  tropes={getIntrinsicTropeTypeIDs(this.props.id)}
-                  onEdit={(id: string) =>
-                    this.props.updateDetailPanel(DetailPanelMode.TERM, id)
-                  }
-                  onRemove={(id: string) => {
-                    const connections = getIntrinsicTropeTypeIDs(
-                      this.props.id,
-                      true
-                    );
-                    for (const conn of connections.filter(
-                      (link) =>
-                        WorkspaceLinks[link].target === id ||
-                        WorkspaceLinks[link].source === id
-                    )) {
-                      this.props.performTransaction(...deleteConnections(conn));
-                    }
-                    redrawElement(this.props.id, this.props.projectLanguage);
-                  }}
-                  onAdd={(id: string) => {
-                    const link = getNewLink(LinkType.DEFAULT);
-                    this.props.performTransaction(
-                      ...updateConnection(
-                        this.props.id,
-                        id,
-                        link.id as string,
-                        LinkType.DEFAULT,
-                        parsePrefix("z-sgov-pojem", "má-vlastnost"),
-                        true
-                      )
-                    );
-                    redrawElement(this.props.id, this.props.projectLanguage);
-                  }}
-                  onCreate={() => {
-                    this.props.handleCreation(this.props.id);
-                  }}
-                  readOnly={this.state.readOnly}
-                  projectLanguage={this.props.projectLanguage}
-                />
-              </div>
-            )}
-            <h5>
-              {
-                <IRILink
-                  label={
-                    Locale[AppSettings.interfaceLanguage].detailPanelInScheme
-                  }
-                  iri={"http://www.w3.org/2004/02/skos/core#inScheme"}
-                />
-              }
-            </h5>
-            <LabelTable
-              showCopyIRI={true}
-              labels={
-                WorkspaceVocabularies[
-                  getVocabularyFromScheme(
-                    WorkspaceTerms[this.props.id].inScheme
-                  )
-                ].labels
-              }
-              iri={getVocabularyFromScheme(
-                WorkspaceTerms[this.props.id].inScheme
+                }));
+            }}
+            onBlur={() => {
+              if (!this.state.readOnly) this.setState({ changes: true });
+            }}
+          />
+          <h5>Vlastnosti</h5>
+          {tropes.map((iri, i) => (
+            <div
+              className={classNames(
+                "detailInput",
+                "form-control",
+                "form-control-sm",
+                getListClassNamesObject(tropes, i)
               )}
+            >
+              {getLabelOrBlank(
+                WorkspaceTerms[iri].labels,
+                this.props.projectLanguage
+              )}
+            </div>
+          ))}
+          {tropes.length === 0 && (
+            <Form.Control
+              className="detailInput noInput"
+              disabled
+              value=""
+              size="sm"
             />
-            {Object.keys(Languages).length > 0 ? (
-              <h5>
-                {
-                  <IRILink
-                    label={
-                      Locale[AppSettings.interfaceLanguage]
-                        .detailPanelDefinition
-                    }
-                    iri={"http://www.w3.org/2004/02/skos/core#definition"}
-                  />
-                }
-              </h5>
-            ) : (
-              ""
-            )}
-            <DescriptionTabs
-              descriptions={this.state.inputDefinitions}
-              readOnly={this.state.readOnly}
-              onEdit={(
-                event: React.ChangeEvent<HTMLSelectElement>,
-                language: string
-              ) => {
-                let res = this.state.inputDefinitions;
-                res[language] = event.currentTarget.value;
-                this.setState({ inputDefinitions: res });
-              }}
-              onFocusOut={() => {
-                this.setState({ changes: true });
-              }}
-            />
-          </Card.Body>
-        </Accordion.Collapse>
-      </Card>
+          )}
+          <ListItemControls
+            addAction={() => this.setState({ modalTropes: true })}
+            removeAction={() => {
+              const queries = [];
+              const id = _.last(tropes);
+              const connections = getIntrinsicTropeTypeIDs(this.props.id, true);
+              for (const conn of connections.filter(
+                (link) =>
+                  WorkspaceLinks[link].target === id ||
+                  WorkspaceLinks[link].source === id
+              )) {
+                queries.push(...deleteConnections(conn));
+              }
+              this.props.performTransaction(...queries);
+            }}
+            popover={false}
+            tooltipText={""}
+          />
+        </Accordion.Body>
+        <ModalAddTrope
+          modalTropes={this.state.modalTropes}
+          hideModal={() => this.setState({ modalTropes: false })}
+          selectedLanguage={this.props.projectLanguage}
+          performTransaction={this.props.performTransaction}
+          update={this.props.save}
+          id={this.props.id}
+        />
+      </Accordion.Item>
     );
   }
 }

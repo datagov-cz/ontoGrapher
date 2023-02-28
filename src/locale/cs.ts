@@ -7,8 +7,8 @@ export const cs: { [Property in keyof typeof en]: string } = {
   newVersion:
     "Od vašeho posledního používání OntoGrapher získal nové funkce! Klikněte sem pro detailní popis změn.",
   retry: "Zopakovat akci?",
-  errorUpdating: "❌ Chyba: ukládání se nezdařilo.",
-  workspaceReady: "✔ Připraveno k práci.",
+  errorUpdating: "Chyba: ukládání se nezdařilo.",
+  workspaceReady: "Připraveno k práci. Vaše změny se průběžně ukládají.",
   filterVocabulariesPlaceholder: "Vybrat slovník(y)...",
   termsFromOtherVocabularies: "Pojmy z ostatních slovníků",
   modalNewElemLengthError: "Jméno musí mít mezi 2 a 150 znaky.",
@@ -44,7 +44,7 @@ export const cs: { [Property in keyof typeof en]: string } = {
   detailPanelStereotype: "Stereotyp",
   setCanvasLanguage: "Zobrazovaný jazyk slovníků",
   setInterfaceLanguage: "Jazyk uživatelského rozhraní",
-  ontoGrapher: "ontoGrapher",
+  ontoGrapher: "OntoGrapher",
   errorMissingRestriction: "Restrikce nebyla nalezena",
   validationNumber: "#",
   hiddenTermsAndLinks:

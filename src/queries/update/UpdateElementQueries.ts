@@ -1,7 +1,6 @@
 import {
   AppSettings,
   Diagrams,
-  Languages,
   WorkspaceElements,
   WorkspaceTerms,
   WorkspaceVocabularies,
@@ -10,6 +9,7 @@ import { qb } from "../QueryBuilder";
 import { DELETE, INSERT } from "@tpluscode/sparql-builder";
 import { getVocabularyFromScheme } from "../../function/FunctionGetVars";
 import { parsePrefix } from "../../function/FunctionEditVars";
+import { Languages } from "../../config/Languages";
 
 export function updateProjectElementNames(): string {
   return [

@@ -1,7 +1,6 @@
 import { Locale } from "../../config/Locale";
 import {
   AppSettings,
-  Languages,
   WorkspaceElements,
   WorkspaceTerms,
   WorkspaceVocabularies,
@@ -14,6 +13,7 @@ import {
 import { createNewElemIRI } from "../../function/FunctionCreateVars";
 import React from "react";
 import { initLanguageObject } from "../../function/FunctionEditVars";
+import { Languages } from "../../config/Languages";
 
 interface Props {
   projectLanguage: string;

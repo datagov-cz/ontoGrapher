@@ -4,7 +4,6 @@ import { Locale } from "../../../config/Locale";
 import {
   AppSettings,
   Diagrams,
-  Languages,
   WorkspaceElements,
   WorkspaceLinks,
 } from "../../../config/Variables";
@@ -21,6 +20,7 @@ import {
   setRepresentation,
 } from "../../../function/FunctionGraph";
 import { Representation } from "../../../config/Enum";
+import { Languages } from "../../../config/Languages";
 
 interface Props {
   modal: boolean;

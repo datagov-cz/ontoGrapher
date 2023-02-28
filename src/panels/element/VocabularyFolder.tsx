@@ -1,13 +1,16 @@
+import DescriptionIcon from "@mui/icons-material/Description";
+import EditIcon from "@mui/icons-material/Edit";
 import React from "react";
+import { OverlayTrigger, Tooltip } from "react-bootstrap";
+import { Locale } from "../../config/Locale";
 import { AppSettings, WorkspaceVocabularies } from "../../config/Variables";
-import { getLabelOrBlank } from "../../function/FunctionGetVars";
 import {
   highlightElement,
   unhighlightElement,
 } from "../../function/FunctionDiagram";
-import { Badge, OverlayTrigger, Tooltip } from "react-bootstrap";
-import { CacheSearchVocabularies } from "../../datatypes/CacheSearchResults";
-import { Locale } from "../../config/Locale";
+import { getLabelOrBlank } from "../../function/FunctionGetVars";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 
 interface Props {
   open: boolean;
@@ -50,47 +53,6 @@ export default class VocabularyFolder extends React.Component<Props, State> {
     this.props.update();
   }
 
-  getTermCounter() {
-    const vocabulary = this.props.vocabulary;
-    if (!(vocabulary in CacheSearchVocabularies) || !this.props.readOnly)
-      return;
-    const workspaceCount =
-      WorkspaceVocabularies[vocabulary].count[AppSettings.representation];
-    const totalCount: number =
-      CacheSearchVocabularies[vocabulary].count[AppSettings.representation];
-    if (!(workspaceCount === totalCount)) {
-      return (
-        <span>
-          &nbsp;
-          <OverlayTrigger
-            placement="right"
-            overlay={
-              <Tooltip id="button-tooltip">
-                {
-                  Locale[AppSettings.interfaceLanguage]
-                    .vocabularyNotFullyRepresented
-                }
-              </Tooltip>
-            }
-          >
-            <button
-              className={"buttonlink"}
-              onClick={() => this.props.filter([vocabulary])}
-            >
-              <h6>
-                <Badge bg={"secondary"}>
-                  {`${workspaceCount}/${totalCount} ${
-                    Locale[AppSettings.interfaceLanguage].termsCase
-                  }`}
-                </Badge>
-              </h6>
-            </button>
-          </OverlayTrigger>
-        </span>
-      );
-    }
-  }
-
   render() {
     return (
       <div
@@ -103,25 +65,37 @@ export default class VocabularyFolder extends React.Component<Props, State> {
         onClick={(event) => this.handleClick(event)}
         className={
           "vocabularyFolder" +
-          (this.props.open ? " open" : "") +
           (this.props.elements.every((elem) =>
             AppSettings.selectedElements.includes(elem)
           )
             ? " selected"
             : "")
         }
-        style={{
-          backgroundColor: WorkspaceVocabularies[this.props.vocabulary].color,
-        }}
       >
-        <span className={"vocabularyLabel"}>
-          {(this.props.readOnly ? "📑" : "✏") +
-            getLabelOrBlank(
-              WorkspaceVocabularies[this.props.vocabulary].labels,
-              this.props.projectLanguage
-            )}
+        <span
+          className={"vocabularyLabel"}
+          style={{
+            backgroundColor: WorkspaceVocabularies[this.props.vocabulary].color,
+          }}
+        >
+          <OverlayTrigger
+            placement="bottom"
+            overlay={
+              <Tooltip>
+                {Locale[AppSettings.interfaceLanguage].workspaceReady}
+              </Tooltip>
+            }
+          >
+            {this.props.readOnly ? <DescriptionIcon /> : <EditIcon />}
+          </OverlayTrigger>
+          {getLabelOrBlank(
+            WorkspaceVocabularies[this.props.vocabulary].labels,
+            this.props.projectLanguage
+          )}
+          <span className="chevron">
+            {this.props.open ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+          </span>
         </span>
-        {this.getTermCounter()}
         {this.props.children}
       </div>
     );

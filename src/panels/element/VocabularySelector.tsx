@@ -59,7 +59,6 @@ export class VocabularySelector extends React.Component<Props, State> {
         }
         value={this.props.values}
         onChange={(value) =>
-          // @ts-ignore
           this.props.filter(value.map((value) => value.value))
         }
       />

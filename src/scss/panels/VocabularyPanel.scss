@@ -5,6 +5,7 @@
   float: left;
   width: 100%;
   max-width: 600px;
+  height: calc(100vh - 112px) !important;
   border-radius: 0;
 
   svg {
@@ -28,8 +29,13 @@
     width: 50%;
   }
 
-  .luceneSelect {
-    width: 268px;
+  .input-group {
+    flex-wrap: nowrap;
+
+    .luceneSelect {
+      width: 100%;
+      display: inline-block;
+    }
   }
 
   .hiddenLucene {
@@ -55,7 +61,7 @@
     border-bottom: solid 1px black;
     user-select: none;
     font-size: 14px;
-    margin: 1px 1px 1px 12px;
+    margin: 1px 1px 1px 4px;
 
     &:hover {
       background-color: #e9eaeb;
@@ -68,7 +74,7 @@
 
   .stereotypeElementItem {
     font-size: 14px;
-    margin: 1px 1px 1px 15px;
+    margin: 1px 1px 1px 8px;
     padding: 2px 4px;
     border-radius: 1px;
     border-style: none;
@@ -141,30 +147,22 @@
     display: inline-block;
     font-size: 14px;
     user-select: none;
-    margin: 1px 1px 1px 1px;
-    padding: 5px 10px;
-    border-style: solid;
-    border-width: 2px;
-    border-color: rgba(0, 0, 0, 0.30);
-    min-width: 100%;
-    border-left-width: 4px;
-    transition: border-left-width ease-out 0.3s;
+    width: 100%;
 
     .vocabularyLabel {
+      border: 1px solid rgba(0, 0, 0, 0.7);
+      padding: 5px;
+      display: inline-block;
       font-size: 16px;
+      font-weight: 500;
+      font-style: italic;
+      width: 100%;
+      cursor: pointer;
+
+      .chevron {
+        float: right;
+      }
     }
-
-    &.open {
-      border-left-width: 10px;
-    }
-  }
-
-  .open {
-    border-left-width: 10px;
-  }
-
-  .flash {
-    background-color: rgb(198, 250, 207) !important;
   }
 }
 

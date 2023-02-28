@@ -1,25 +1,9 @@
-import { graph } from "../graph/Graph";
-import {
-  drawGraphElement,
-  highlightCell,
-  unHighlightCell,
-} from "./FunctionDraw";
-import { getElementShape, getElementVocabulary } from "./FunctionGetVars";
-import { paper } from "../main/DiagramCanvas";
-import { graphElement } from "../graph/GraphElement";
-import {
-  addClass,
-  addToFlexSearch,
-  addVocabularyElement,
-  createNewElemIRI,
-  removeFromFlexSearch,
-} from "./FunctionCreateVars";
-import {
-  changeVocabularyCount,
-  deleteConcept,
-  initElements,
-  parsePrefix,
-} from "./FunctionEditVars";
+import * as joint from "jointjs";
+import _ from "lodash";
+import React from "react";
+import { Representation } from "../config/Enum";
+import { Locale } from "../config/Locale";
+import { RepresentationConfig } from "../config/logic/RepresentationConfig";
 import {
   AppSettings,
   Diagrams,
@@ -28,7 +12,14 @@ import {
   WorkspaceTerms,
   WorkspaceVocabularies,
 } from "../config/Variables";
-import * as joint from "jointjs";
+import { graph } from "../graph/Graph";
+import { graphElement } from "../graph/GraphElement";
+import { paper } from "../main/DiagramCanvas";
+import {
+  fetchReadOnlyTerms,
+  fetchRelationships,
+} from "../queries/get/CacheQueries";
+import { updateCreateDiagram } from "../queries/update/UpdateDiagramQueries";
 import {
   updateProjectElement,
   updateProjectElementDiagram,
@@ -37,20 +28,24 @@ import {
   updateProjectLink,
   updateProjectLinkVertex,
 } from "../queries/update/UpdateLinkQueries";
-import { Representation } from "../config/Enum";
-import { Locale } from "../config/Locale";
-import {
-  fetchReadOnlyTerms,
-  fetchRelationships,
-} from "../queries/get/CacheQueries";
-import { initConnections } from "./FunctionRestriction";
-import { restoreHiddenElem, setRepresentation } from "./FunctionGraph";
-import React from "react";
-import { insertNewCacheTerms, insertNewRestrictions } from "./FunctionCache";
-import _ from "lodash";
-import { RepresentationConfig } from "../config/logic/RepresentationConfig";
 import { updateDeleteTriples } from "../queries/update/UpdateMiscQueries";
-import { updateCreateDiagram } from "../queries/update/UpdateDiagramQueries";
+import { insertNewCacheTerms, insertNewRestrictions } from "./FunctionCache";
+import {
+  addClass,
+  addToFlexSearch,
+  addVocabularyElement,
+  createNewElemIRI,
+  removeFromFlexSearch,
+} from "./FunctionCreateVars";
+import {
+  drawGraphElement,
+  highlightCell,
+  unHighlightCell,
+} from "./FunctionDraw";
+import { deleteConcept, initElements, parsePrefix } from "./FunctionEditVars";
+import { getElementShape } from "./FunctionGetVars";
+import { restoreHiddenElem, setRepresentation } from "./FunctionGraph";
+import { initConnections } from "./FunctionRestriction";
 
 export function resizeElem(id: string, highlight: boolean = true) {
   let view = paper.findViewByModel(id);
@@ -371,7 +366,6 @@ export async function putElementsOnCanvas(
 
 export function removeReadOnlyElement(elem: string): string[] {
   removeFromFlexSearch(elem);
-  changeVocabularyCount(getElementVocabulary(elem), (count) => count - 1, elem);
   return [
     ...deleteConcept(elem),
     updateDeleteTriples(

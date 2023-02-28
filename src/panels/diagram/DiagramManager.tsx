@@ -67,7 +67,7 @@ const addToSearch = (...ids: string[]) => {
   for (const id of ids) {
     FlexDiagramSearch.add({
       id: id,
-      language: "cs",
+      language: "a",
       label: Diagrams[id].name,
     });
   }
@@ -118,7 +118,7 @@ export const DiagramManager: React.FC<Props> = (props: Props) => {
   useEffect(() => {
     const searchResults: Id[] = _.flatten(
       FlexDiagramSearch.search(search, {
-        tag: "cs",
+        tag: "a",
       }).map((result) => result.result)
     );
     setDiagrams(
