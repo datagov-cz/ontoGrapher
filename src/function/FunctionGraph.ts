@@ -47,6 +47,8 @@ import {
 import { insertNewCacheTerms, insertNewRestrictions } from "./FunctionCache";
 import { updateDiagram } from "../queries/update/UpdateDiagramQueries";
 import { addLink } from "./FunctionCreateVars";
+import { updateDiagramPosition } from "./FunctionDiagram";
+import { paper } from "../main/DiagramCanvas";
 
 export const mvp1IRI =
   "https://slovník.gov.cz/základní/pojem/má-vztažený-prvek-1";
@@ -79,6 +81,23 @@ export function nameGraphLink(
         }
       });
     }
+  }
+}
+
+export function centerElementInView(id: string) {
+  const elem = graph.getElements().find((elem) => elem.id === id);
+  if (elem) {
+    const scale = paper.scale().sx;
+    paper.translate(0, 0);
+    paper.translate(
+      -elem.position().x * scale +
+        paper.getComputedSize().width / 2 -
+        elem.getBBox().width,
+      -elem.position().y * scale +
+        paper.getComputedSize().height / 2 -
+        elem.getBBox().height
+    );
+    updateDiagramPosition(AppSettings.selectedDiagram);
   }
 }
 

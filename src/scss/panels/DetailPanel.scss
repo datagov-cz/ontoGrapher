@@ -1,12 +1,78 @@
+.tropeList {
+  min-height: 10vh;
+  max-height: 33vh;
+  overflow-y: auto;
+}
+
 .listItemControlInput {
   display: flex !important;
 }
 
+.linkCardinalities {
+  position: relative;
+  display: flex;
+  justify-content: space-around;
+
+  select {
+    width: 24px;
+    height: 18px;
+    transition: background 0.25s;
+    transition: border 0.25s;
+
+    &:disabled {
+      opacity: 1;
+    }
+
+    option {
+      background-color: white;
+    }
+
+
+    &:hover {
+      background-color: rgb(190, 190, 190);
+      border: 2px solid black;
+      transition: background 0.25s;
+      transition: border 0.25s;
+    }
+
+    &::after {
+      display: none;
+    }
+
+  }
+
+  .plainButton {
+    text-align: center;
+    z-index: 1;
+    display: inline-block;
+    font-size: 14px;
+    background-color: #ffffff;
+    padding: 0 4px;
+    border: 1px solid black;
+    border-radius: 4px;
+
+    &::after {
+      display: inline-block;
+    }
+
+    &:hover {
+      opacity: 1;
+      background-color: white !important;
+    }
+  }
+
+  svg {
+    position: absolute;
+    z-index: -9;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+  }
+}
 
 .flag {
   width: auto;
   height: 18px;
-
 }
 
 .top-item {
@@ -32,8 +98,7 @@
   border-bottom-left-radius: 5px;
   border-bottom-right-radius: 5px;
   border-top: 0;
-  height: 30px;
-  width: 54px;
+  width: fit-content;
   margin-left: auto;
   margin-right: 10px;
   display: flex;
@@ -51,12 +116,46 @@
   height: calc(100vh - 112px) !important;
   max-width: 600px;
 
+  .diagramEntry {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px;
+  }
+
   &.disabled {
     cursor: not-allowed;
   }
 
   .bold {
     font-weight: 500;
+  }
+
+
+  .overlay {
+    min-height: 33%;
+    overflow: hidden;
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    border: 1px solid rgba(190, 190, 190, 0.75);
+    background-color: white;
+    border-top-right-radius: 25px;
+    border-top-left-radius: 25px;
+    padding-top: 15px;
+    width: inherit;
+    z-index: 999;
+    transform: translateY(101%);
+    transition: transform 0.25s ease;
+
+    &.visible {
+      transform: translateY(0%);
+      transition: transform 0.25s ease;
+    }
+
+    h6 {
+      margin-top: 8px;
+    }
   }
 
   h5 {
@@ -78,6 +177,14 @@
     &:focus {
       box-shadow: 0 0 0 0.25rem rgba(190, 190, 190, 0.5);
       border-color: rgba(190, 190, 190, 0.25);
+    }
+
+    .controls {
+      visibility: hidden;
+
+      &.hovered {
+        visibility: visible;
+      }
     }
   }
 
@@ -111,12 +218,22 @@
       line-height: 1.2;
       font-size: 1.75rem;
       float: inline-start;
+
+      &.link {
+        font-size: 1.4rem;
+      }
     }
 
-
+    .closeButton {
+      float: right;
+      margin-top: 8px;
+      margin-left: 4px;
+      margin-right: 2px;
+    }
 
     .languageSelect {
       float: right;
+      margin-right: 2px;
     }
 
 
@@ -138,11 +255,32 @@
     }
   }
 
-  .accordions {
-    flex-grow: 1;
-    overflow: auto;
+  .detailElement {
     width: 100%;
+    height: 100%;
+
+    .accordions {
+      width: 100%;
+      height: 100%;
+      opacity: 1;
+      transition: opacity 0.25s;
+      display: flex;
+      flex-direction: column;
+
+      .accordion {
+        flex: 1;
+        height: 100%;
+        overflow: auto;
+      }
+
+      &.blur {
+        opacity: 0.5;
+        pointer-events: none;
+        transition: opacity 0.25s;
+      }
+    }
   }
+
 
   .lucene {
     font-size: 14px;
@@ -187,34 +325,40 @@
   .form-inline {
     display: inline-block;
   }
+}
 
-  .accordion-item {
+.accordion-item {
 
-    border-radius: 0;
+  border-radius: 0;
+}
+
+.accordion-button {
+  font-size: large;
+  border-radius: 0 !important;
+  padding: 8px;
+
+  &:focus {
+    box-shadow: 0 0 0 0.25rem rgba(190, 190, 190, 0.5);
+    border-color: rgba(190, 190, 190, 0.25);
   }
 
-  .accordion-button {
-    font-size: large;
-    border-radius: 0 !important;
-    padding: 8px;
+  background-color: rgba(190, 190, 190, 0.25);
 
-    &:focus {
-      box-shadow: 0 0 0 0.25rem rgba(190, 190, 190, 0.5);
-      border-color: rgba(190, 190, 190, 0.25);
+  &:not(.collapsed) {
+    color: black;
+    background-color: inherit;
+    opacity: 0.75;
+
+    &::after {
+      background-image: var(--bs-accordion-btn-icon);
     }
-
-    background-color: rgba(190, 190, 190, 0.25);
-
-    &:not(.collapsed) {
-      color: black;
-
-      &::after {
-        background-image: var(--bs-accordion-btn-icon);
-      }
-    }
   }
 
-  .accordion-body {
-    padding: 4px;
+  &::after {
+    background-image: var(--bs-accordion-btn-icon);
   }
+}
+
+.accordion-body {
+  padding: 4px;
 }

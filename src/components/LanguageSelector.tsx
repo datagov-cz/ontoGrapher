@@ -28,8 +28,9 @@ export const LanguageSelector: React.FC<Props> = (props: Props) => {
       </Dropdown.Toggle>
       <Dropdown.Menu>
         {Object.keys(Languages).map((lang) => (
-          <Dropdown.Item onClick={() => props.setLanguage(lang)}>
+          <Dropdown.Item key={lang} onClick={() => props.setLanguage(lang)}>
             <img
+              className="flag"
               src={`http://purecatamphetamine.github.io/country-flag-icons/3x2/${Flags[lang]}.svg`}
               alt={Languages[lang]}
             />

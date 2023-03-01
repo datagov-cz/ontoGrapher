@@ -25,7 +25,11 @@ function getDiagramTriples(diagram: string): string {
       qb.s(
         diagramIRI,
         "og:collaborator",
-        qb.a(Diagrams[diagram].collaborators),
+        qb.a(
+          Diagrams[diagram].collaborators.map((c) =>
+            qb.i("https://slovník.gov.cz/uživatel/" + c)
+          )
+        ),
         Diagrams[diagram].collaborators.length > 0
       )
     );
@@ -139,4 +143,27 @@ export function updateDeleteDiagram(diagram: string) {
     ...deleteVocabularyContext1,
     ...deleteVocabularyContext2
   );
+}
+
+export function updateDiagramMetadata(diagram: string): string {
+  const diagramGraph = Diagrams[diagram].graph;
+  const diagramIRI = Diagrams[diagram].iri;
+  const del = DELETE`${qb.g(diagramGraph, [
+    qb.s(diagramIRI, "og:modifiedDate", "?v1"),
+    qb.s(diagramIRI, "og:collaborator", "?v2"),
+  ])}`.build();
+  const ins = INSERT.DATA`${qb.g(diagramGraph, [
+    qb.s(
+      diagramIRI,
+      "og:modifiedDate",
+      qb.lt(Diagrams[diagram].modifiedDate.toISOString(), "xsd:dateTime")
+    ),
+    qb.s(
+      diagramIRI,
+      "og:collaborator",
+      qb.a(Diagrams[diagram].collaborators),
+      Diagrams[diagram].collaborators.length > 0
+    ),
+  ])}`.build();
+  return qb.combineQueries(del, ins);
 }

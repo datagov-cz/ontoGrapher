@@ -56,33 +56,34 @@ export default class ConnectionCache extends React.Component<Props, State> {
 
   render() {
     return (
-      <OverlayTrigger
-        placement={"left"}
-        overlay={
-          <Popover id={"termDetailPopover"}>
-            <Popover.Header as="h3">
-              {getLabelOrBlank(
-                this.props.connection.target.labels,
-                this.props.projectLanguage
-              )}
-              &nbsp;
-              <Badge className={"wrap"} bg={"secondary"}>
-                {this.getVocabularyLabel(
-                  this.props.connection.target.vocabulary
-                )}
-              </Badge>
-            </Popover.Header>
-            <Popover.Body>
-              {
-                this.props.connection.target.definitions[
-                  this.props.projectLanguage
-                ]
-              }
-            </Popover.Body>
-          </Popover>
-        }
-      >
-        <Connection
+      // <OverlayTrigger
+      //   placement={"left"}
+      //   overlay={
+      //     <Popover id={"termDetailPopover"}>
+      //       <Popover.Header as="h3">
+      //         {getLabelOrBlank(
+      //           this.props.connection.target.labels,
+      //           this.props.projectLanguage
+      //         )}
+      //         &nbsp;
+      //         <Badge className={"wrap"} bg={"secondary"}>
+      //           {this.getVocabularyLabel(
+      //             this.props.connection.target.vocabulary
+      //           )}
+      //         </Badge>
+      //       </Popover.Header>
+      //       <Popover.Body>
+      //         {
+      //           this.props.connection.target.definitions[
+      //             this.props.projectLanguage
+      //           ]
+      //         }
+      //       </Popover.Body>
+      //     </Popover>
+      //   }
+      // >
+      {
+        /* <Connection
           onDragStart={(event: DragEvent) => {
             if (this.props.update) this.transferConnectionToEvent(event);
           }}
@@ -124,8 +125,9 @@ export default class ConnectionCache extends React.Component<Props, State> {
               </Badge>
             </span>
           }
-        />
-      </OverlayTrigger>
+        /> */
+      }
+      // </OverlayTrigger>
     );
   }
 }

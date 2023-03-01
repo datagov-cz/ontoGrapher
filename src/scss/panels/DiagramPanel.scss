@@ -18,8 +18,8 @@
     border-left: gray 1px solid;
     border-right: gray 1px solid;
     border-bottom: #e3e3e3 1px solid;
-    border-top-left-radius: 5px;
-    border-top-right-radius: 5px;
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
     cursor: pointer;
 
     .dropdown-item {
@@ -44,15 +44,15 @@
       border-top: black 2px solid;
       border-left: black 2px solid;
       border-right: black 2px solid;
-      border-top-left-radius: 5px;
-      border-top-right-radius: 5px;
+      border-top-left-radius: 6px;
+      border-top-right-radius: 6px;
 
       cursor: default;
 
       &:hover {
         background-color: #e3e3e3;
-        border-top-left-radius: 5px;
-        border-top-right-radius: 5px;
+        border-top-left-radius: 6px;
+        border-top-right-radius: 6px;
         border-top: black 2px solid;
         border-left: black 2px solid;
         border-right: black 2px solid;
@@ -60,11 +60,17 @@
     }
 
     &:hover {
-      border-top-left-radius: 5px;
-      border-top-right-radius: 5px;
+      border-top-left-radius: 6px;
+      border-top-right-radius: 6px;
       border-top: black 1px solid;
       border-left: black 1px solid;
       border-right: black 1px solid;
+      background-color: #e3e3e3;
+      transition: border 0.25s;
+      transition: background 0.25s;
     }
+
+    transition: border 0.25s;
+    transition: background 0.25s;
   }
 }

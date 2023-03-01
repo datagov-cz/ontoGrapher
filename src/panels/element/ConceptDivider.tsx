@@ -10,7 +10,6 @@ interface Props {
   iri: string;
   projectLanguage: string;
   items: string[];
-  visible: boolean;
   update: () => void;
 }
 
@@ -47,7 +46,6 @@ export default class ConceptDivider extends React.Component<Props, State> {
       <div
         className={
           "conceptDivider" +
-          (this.props.visible ? "" : " closed") +
           (this.props.items.every((elem) =>
             AppSettings.selectedElements.includes(elem)
           )

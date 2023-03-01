@@ -1,6 +1,36 @@
 import { en } from "./en";
 
 export const cs: { [Property in keyof typeof en]: string } = {
+  unknown: "Není známo",
+  vocabularySelectInfo:
+    "Určuje slovníky, ke kterým je diagram přiřazen. Při přidávání slovníků do projektu Kontrolního panelu se přidají pouze ty diagramy, které jsou k těmto slovníkům přiřazené.",
+  addLanguage: "Přidat vstup pro další jazyk",
+  modalNewTropeDescription:
+    "Jméno pro novou vlastnost (nelze později změnit!):",
+  createTrope: "Vytvořit novou vlastnost",
+  assignExistingTrope: "Přiřadit existující vlastnost",
+  noExistingTropes:
+    "Žádné volné vlastnosti v modelu nejsou. Prosíme o odebrání vlastnosti jinému pojmu nebo o vytvoření nové vlastnosti.",
+  assignTropeHeader: "Přiřadit vlastnost pojmu ",
+  assignTropeConfirm: "Přiřadit vlastnost",
+  mustAssignTropeConfirm: "Vyberte vlastnost na přiřazení.",
+  deleteLink: "Smazat vztah",
+  openDiagram: "Otevřít diagram",
+  closeDiagram: "Zavřít diagram",
+  deleteDiagram: "Smazat diagram",
+  createDiagram: "Vytvořit nový diagram",
+  showPreview: "Ukázat náhled",
+  collaborators: "Spolupracovali:",
+  name: "Název",
+  vocabularies: "Slovníky",
+  lastModifiedDate: "Datum poslední modifikace:",
+  creationDate: "Datum vytvoření:",
+  linkInfo: "Ukázat detail vztahu",
+  addAltLabelPlaceholder: "Přidat nový synonym",
+  addAltLabel: "Nový synonym",
+  addAltLabelNoName: "Pole nesmí být prázdné.",
+  removeTrope: "Odebrat pojmu vlastnost",
+  assignTrope: "Přiřadit další vlastnost k pojmu",
   untitledProject: "OntoGrapher",
   unsorted: "Bez typu",
   updating: "Ukládání...",
@@ -55,7 +85,6 @@ export const cs: { [Property in keyof typeof en]: string } = {
   diagramTab: "Diagramy",
   modalNewElemExistsError:
     "Pojem s tímto jménem již ve vybraném slovníku existuje.",
-  addAltLabelPlaceholder: "Nové synonymum...",
   setAsDisplayName: "Nastavit jako zobrazované jméno",
   conforms: "Všechny pojmy a vztahy jsou validní",
   validationError: "Zpráva",
@@ -128,8 +157,6 @@ export const cs: { [Property in keyof typeof en]: string } = {
   createNewRelationship: "Vytvořit nový vztah",
   showUsedRelationships: "Ukázat již použité vztahy",
   connectionVia: "typ vztahu",
-  connectionTo: "ke",
-  connectionFrom: "od",
   diagram: "v diagramu",
   modalRemoveConceptDescription: "Opravdu chcete smazat pojem?",
   definitions: "Popisy",

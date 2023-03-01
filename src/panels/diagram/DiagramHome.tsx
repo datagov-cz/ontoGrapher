@@ -23,6 +23,7 @@ export default class DiagramHome extends React.Component<Props> {
             AppSettings.selectedDiagram = "";
             StoreSettings.update((s) => {
               s.mainViewMode = MainViewMode.MANAGER;
+              s.selectedDiagram = "";
             });
             this.forceUpdate();
             this.props.update();

@@ -11,6 +11,7 @@ import { processQuery, processTransaction } from "./TransactionInterface";
 import {
   fetchRestrictions,
   fetchTerms,
+  fetchUsers,
   fetchVocabulary,
 } from "../queries/get/FetchQueries";
 import {
@@ -57,6 +58,7 @@ import {
 } from "../function/FunctionElem";
 import { v4 as uuidv4 } from "uuid";
 import { INSERT } from "@tpluscode/sparql-builder";
+import { StoreSettings } from "../config/Store";
 
 export function retrieveInfoFromURLParameters(): boolean {
   const isURL = require("is-url");
@@ -75,6 +77,7 @@ export function retrieveInfoFromURLParameters(): boolean {
 export async function updateContexts(): Promise<boolean> {
   const { strategy, contextsMissingAppContexts, contextsMissingAttachments } =
     await getSettings(AppSettings.contextEndpoint);
+  await fetchUsers(...Object.values(Diagrams).flatMap((d) => d.collaborators));
   if (!AppSettings.applicationContext)
     AppSettings.applicationContext = `${parsePrefix(
       "d-sgov-pracovní-prostor-pojem",
@@ -112,6 +115,9 @@ export async function updateContexts(): Promise<boolean> {
   AppSettings.selectedDiagram = Object.keys(Diagrams).reduce((a, b) =>
     Diagrams[a].index < Diagrams[b].index ? a : b
   );
+  StoreSettings.update((s) => {
+    s.selectedDiagram = AppSettings.selectedDiagram;
+  });
   if (contextsMissingAppContexts.length > 1) {
     const ret = await processTransaction(
       AppSettings.contextEndpoint,
@@ -240,7 +246,6 @@ export async function retrieveVocabularyData(): Promise<boolean> {
   if (numberOfVocabularies === 1)
     AppSettings.name = Object.values(vocabularies)[0].names;
   else {
-    //TODO: refactor to i18n instead
     for (const lang in AppSettings.name)
       AppSettings.name[lang] = `${Object.keys(vocabularies).length} ${
         Locale[AppSettings.interfaceLanguage][
@@ -357,7 +362,7 @@ function checkForObsoleteDiagrams() {
             .flatMap((elem) => removeReadOnlyElement(elem))
         );
         for (const diag of diagramsToDelete) {
-          Diagrams[diag].active = false;
+          Diagrams[diag].toBeDeleted = false;
           queries.push(updateDeleteDiagram(diag));
         }
         if (diagramsToDelete.length === workspaceDiagrams.length) {

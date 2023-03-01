@@ -16,6 +16,7 @@ import {
 } from "../../function/FunctionEditVars";
 import { processQuery } from "../../interface/TransactionInterface";
 import { qb } from "../QueryBuilder";
+import * as _ from "lodash";
 
 export async function getElementsConfig(
   contextEndpoint: string
@@ -176,7 +177,6 @@ export async function getSettings(contextEndpoint: string): Promise<{
     contextsMissingAppContexts: [],
     contextsMissingAttachments: [],
   };
-  //TODO parse new diagram data
   const query = [
     "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
     "select distinct ?ogContext ?graph ?diagram ?index ?name ?color ?id ?representation ?context ?vocabulary ?description ?collaborator ?creationDate ?modifyDate where {",
@@ -189,8 +189,8 @@ export async function getSettings(contextEndpoint: string): Promise<{
     " optional {?diagram og:description ?description. ",
     "           ?diagram og:vocabulary ?vocabulary. ",
     "           ?diagram og:collaborator ?collaborator. ",
-    "           ?diagram og:creation-date ?creationDate. ",
-    "           ?diagram og:modify-date ?modifyDate. ",
+    "           ?diagram og:creationDate ?creationDate. ",
+    "           ?diagram og:modifiedDate ?modifyDate. ",
     " }",
     "}",
     "}",
@@ -242,6 +242,7 @@ export async function getSettings(contextEndpoint: string): Promise<{
             result.id.value,
             result.graph.value
           );
+          Diagrams[result.id.value].collaborators = [];
           Diagrams[result.id.value].saved = true;
           indices.push(index);
           AppSettings.initWorkspace = false;
@@ -254,6 +255,31 @@ export async function getSettings(contextEndpoint: string): Promise<{
             reconstructWorkspace = true;
           }
         }
+        if (result.description) {
+          Diagrams[result.id.value].description = result.description.value;
+        }
+        if (result.vocabulary) {
+          Diagrams[result.id.value].vocabularies = _.uniq([
+            ...Diagrams[result.id.value].vocabularies,
+            result.vocabulary.value,
+          ]);
+        }
+        if (result.collaborator) {
+          Diagrams[result.id.value].collaborators = _.uniq([
+            ...Diagrams[result.id.value].collaborators,
+            result.collaborator.value,
+          ]);
+        }
+        if (result.creationDate) {
+          Diagrams[result.id.value].creationDate = new Date(
+            result.creationDate.value
+          );
+        }
+        if (result.modifyDate) {
+          Diagrams[result.id.value].modifiedDate = new Date(
+            result.modifyDate.value
+          );
+        }
       }
       ret.contextsMissingAppContexts = Object.keys(contextInfo).filter(
         (context) => !contextInfo[context].appContext
@@ -264,7 +290,7 @@ export async function getSettings(contextEndpoint: string): Promise<{
           Object.values(Diagrams).length
       );
       Object.entries(Diagrams).forEach(([key, value]) => {
-        if (!indices.includes(value.index)) Diagrams[key].active = false;
+        if (!indices.includes(value.index)) Diagrams[key].toBeDeleted = false;
       });
       ret.strategy = reconstructWorkspace
         ? ContextLoadingStrategy.RECONSTRUCT_WORKSPACE

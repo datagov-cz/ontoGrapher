@@ -1,5 +1,5 @@
 import React from "react";
-import { ReactComponent as HiddenElementSVG } from "../../../../svg/hiddenElement.svg";
+import _ from "underscore";
 import {
   AppSettings,
   WorkspaceLinks,
@@ -7,14 +7,10 @@ import {
   WorkspaceVocabularies,
 } from "../../../../config/Variables";
 import { getDisplayLabel } from "../../../../function/FunctionDraw";
-import _ from "underscore";
-import { getOtherConnectionElementID } from "../../../../function/FunctionLink";
 import { isElementHidden } from "../../../../function/FunctionElem";
-import {
-  getLabelOrBlank,
-  getLinkOrVocabElem,
-  getVocabularyFromScheme,
-} from "../../../../function/FunctionGetVars";
+import { getVocabularyFromScheme } from "../../../../function/FunctionGetVars";
+import { getOtherConnectionElementID } from "../../../../function/FunctionLink";
+import { ReactComponent as HiddenElementSVG } from "../../../../svg/hiddenElement.svg";
 import Connection from "./Connection";
 
 interface Props {
@@ -24,11 +20,11 @@ interface Props {
   selected: boolean;
   selection: string[];
   updateSelection: (ids: string[]) => void;
+  infoFunction: (link: string) => void;
+  performTransaction: (...queries: string[]) => void;
 }
 
-interface State {}
-
-export default class ConnectionWorkspace extends React.Component<Props, State> {
+export default class ConnectionWorkspace extends React.Component<Props> {
   getConnectionDirection(id: string): boolean {
     return WorkspaceLinks[this.props.linkID].source === id;
   }
@@ -63,12 +59,9 @@ export default class ConnectionWorkspace extends React.Component<Props, State> {
         }}
         onClick={() => this.props.updateSelection([this.props.linkID])}
         selected={this.props.selected}
-        linkLabel={getLabelOrBlank(
-          getLinkOrVocabElem(WorkspaceLinks[this.props.linkID].iri).labels,
-          this.props.projectLanguage
-        )}
+        link={this.props.linkID}
+        selectedLanguage={this.props.projectLanguage}
         direction={this.getConnectionDirection(elemID)}
-        markerID={this.props.linkID}
         elementLabel={
           <span>
             {getDisplayLabel(elemID, this.props.projectLanguage)}
@@ -84,6 +77,13 @@ export default class ConnectionWorkspace extends React.Component<Props, State> {
           WorkspaceVocabularies[
             getVocabularyFromScheme(WorkspaceTerms[elemID].inScheme)
           ].color
+        }
+        infoFunction={(link: string) => this.props.infoFunction(link)}
+        performTransaction={this.props.performTransaction}
+        readOnly={
+          WorkspaceVocabularies[
+            getVocabularyFromScheme(WorkspaceTerms[this.props.elemID].inScheme)
+          ].readOnly
         }
       />
     );

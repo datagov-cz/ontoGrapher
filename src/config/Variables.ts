@@ -5,6 +5,8 @@ import * as joint from "jointjs";
 import { Environment } from "./Environment";
 import { Languages } from "./Languages";
 
+export type AlternativeLabel = { label: string; language: string };
+
 export var WorkspaceElements: {
   [key: string]: {
     //if hidden in diagram ID
@@ -123,13 +125,19 @@ export var Diagrams: {
     iri: string;
     graph: string;
     saved: boolean;
+    toBeDeleted: boolean;
     // TODO: refactor for all implementations of Diagrams
     vocabularies: string[];
     description: string;
     modifiedDate: Date;
     creationDate: Date;
+    // collaborators = ID!!!
     collaborators: string[];
   };
+} = {};
+
+export var Users: {
+  [key: string]: { given_name: string; family_name: string };
 } = {};
 
 export var AppSettings: {
@@ -160,12 +168,7 @@ export var AppSettings: {
   interfaceLanguage: string;
   selectedElements: string[];
   selectedLinks: string[];
-  currentUser?: {
-    email: string;
-    given_name: string;
-    family_name: string;
-    id: string;
-  };
+  currentUser?: string;
 } = {
   name: {},
   description: {},
@@ -196,7 +199,6 @@ export var AppSettings: {
   selectedElements: [],
   selectedLinks: [],
 };
-// TODO: implement way more tooltips than before
 
 export var CardinalityPool: Cardinality[] = [
   new Cardinality("", ""),

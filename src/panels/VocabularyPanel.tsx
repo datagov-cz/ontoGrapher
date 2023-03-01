@@ -2,7 +2,7 @@ import SearchIcon from "@mui/icons-material/Search";
 import { Id } from "flexsearch";
 import _ from "lodash";
 import React from "react";
-import { Form, InputGroup } from "react-bootstrap";
+import { Accordion, Form, InputGroup } from "react-bootstrap";
 import { ResizableBox } from "react-resizable";
 import { Representation } from "../config/Enum";
 import {
@@ -88,27 +88,28 @@ export default class VocabularyPanel extends React.Component<Props, State> {
   }
 
   showItem(id: string) {
+    const vocabulary = getVocabularyFromScheme(WorkspaceTerms[id].inScheme);
+    const isOpen = this.state.open[vocabulary];
     this.setState(
       (prevState) => ({
         ...prevState,
         shownElements: this.updateShownElements(),
         selectedID: id,
-        open: Object.fromEntries(
-          Object.keys(WorkspaceVocabularies).map((vocab) => [
-            vocab,
-            vocab === getVocabularyFromScheme(WorkspaceTerms[id].inScheme),
-          ])
-        ),
+        open: { ...prevState.open, [vocabulary]: true },
       }),
       () => {
         const itemElement = document.getElementById(this.state.selectedID);
         const parent = document.getElementById("elementList");
         if (itemElement && parent) {
-          parent.scrollTo({
-            top: itemElement.offsetTop - parent.offsetHeight / 2,
-            left: 0,
-            behavior: "smooth",
-          });
+          window.setTimeout(
+            () =>
+              parent.scrollTo({
+                top: itemElement.offsetTop - parent.offsetHeight / 2,
+                left: 0,
+                behavior: "smooth",
+              }),
+            isOpen ? 0 : 400
+          );
         }
       }
     );
@@ -246,7 +247,6 @@ export default class VocabularyPanel extends React.Component<Props, State> {
             key={iri}
             iri={iri}
             items={this.state.shownElements[vocabulary][iri]}
-            visible={this.state.open[vocabulary]}
             projectLanguage={this.props.projectLanguage}
             update={this.updateElements}
           />
@@ -256,7 +256,6 @@ export default class VocabularyPanel extends React.Component<Props, State> {
             <VocabularyConcept
               key={id}
               id={id}
-              visible={this.state.open[vocabulary]}
               projectLanguage={this.props.projectLanguage}
               readOnly={WorkspaceVocabularies[vocabulary].readOnly}
               update={this.updateElements}
@@ -302,7 +301,7 @@ export default class VocabularyPanel extends React.Component<Props, State> {
               }))
             }
           >
-            {this.state.open[vocabulary] && vocabularyConcepts}
+            {vocabularyConcepts}
           </VocabularyFolder>
         );
     }
@@ -364,15 +363,6 @@ export default class VocabularyPanel extends React.Component<Props, State> {
     });
   }
 
-  getHeight(el: string): number {
-    const elem = document.getElementById(el);
-    if (elem) {
-      const rect = elem.getBoundingClientRect();
-      return window.innerHeight - rect.y;
-    }
-    return 0;
-  }
-
   render() {
     return (
       <ResizableBox
@@ -382,14 +372,15 @@ export default class VocabularyPanel extends React.Component<Props, State> {
         axis={"x"}
         handleSize={[8, 8]}
       >
-        <div>
+        <div className="vocabPanel">
           <InputGroup>
-            <InputGroup.Text id="inputGroupPrepend">
+            <InputGroup.Text className="top-item" id="inputGroupPrepend">
               <SearchIcon />
             </InputGroup.Text>
             <Form.Control
               type="search"
               id={"searchInput"}
+              className="top-item"
               placeholder={
                 Locale[AppSettings.interfaceLanguage].searchStereotypes
               }
@@ -405,11 +396,27 @@ export default class VocabularyPanel extends React.Component<Props, State> {
               filter={this.filter}
               projectLanguage={this.props.projectLanguage}
               values={this.state.vocabs}
+              availableVocabularies={Object.keys(
+                this.state.shownElements
+              ).filter(
+                (v) =>
+                  _.flatMap(Object.values(this.state.shownElements[v])).length >
+                  0
+              )}
             />
           </InputGroup>
           {/* FIXME: some diagrams dont show all vocabularies in the left panel */}
           {/* TODO: test that home is shown when no diagrams */}
-          <div
+          <Accordion
+            id="elementList"
+            alwaysOpen
+            activeKey={Object.keys(this.state.open).filter(
+              (o) => this.state.open[o]
+            )}
+          >
+            {this.getFolders()}
+          </Accordion>
+          {/* <div
             id={"elementList"}
             className={"elementLinkList"}
             style={{
@@ -456,7 +463,7 @@ export default class VocabularyPanel extends React.Component<Props, State> {
                       )))}
               </div>
             </div>
-          </div>
+          </div> */}
           <ModalRemoveConcept
             modal={this.state.modalRemoveItem}
             id={this.state.selectedID}

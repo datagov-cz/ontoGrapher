@@ -1,3 +1,4 @@
+import InfoIcon from "@mui/icons-material/Info";
 import AddIcon from "@mui/icons-material/Add";
 import CloseIcon from "@mui/icons-material/Close";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -9,6 +10,7 @@ import { getVocabularyShortLabel } from "@opendata-mvcr/assembly-line-shared";
 import classNames from "classnames";
 import { Document, Id } from "flexsearch";
 import * as _ from "lodash";
+import { useStoreState } from "pullstate";
 import React, { useEffect, useState } from "react";
 import {
   Card,
@@ -26,6 +28,7 @@ import Select, { MultiValue } from "react-select";
 import { VocabularyBadge } from "../../components/VocabularyBadge";
 import { Representation } from "../../config/Enum";
 import { Locale } from "../../config/Locale";
+import { StoreSettings } from "../../config/Store";
 import {
   AppSettings,
   Diagrams,
@@ -80,6 +83,8 @@ const removeFromSearch = (...ids: string[]) => {
 };
 
 export const DiagramManager: React.FC<Props> = (props: Props) => {
+  const state = useStoreState(StoreSettings);
+
   const [diagrams, setDiagrams] = useState<string[]>([]);
   const [modalRemoveDiagram, setModalRemoveDiagram] = useState<boolean>(false);
   const [search, setSearch] = useState<string>("");
@@ -97,6 +102,7 @@ export const DiagramManager: React.FC<Props> = (props: Props) => {
     }>
   >([]);
 
+  const [changes, setChanges] = useState<boolean>(false);
   const [selectedDiagram, setSelectedDiagram] = useState<string>("");
   const [selectedDiagramName, setSelectedDiagramName] = useState<string>("");
   const [selectedDiagramDescription, setSelectedDiagramDescription] =
@@ -135,6 +141,11 @@ export const DiagramManager: React.FC<Props> = (props: Props) => {
     );
   }, [search, searchVocabs]);
 
+  useEffect(
+    () => setSelectedDiagram(state.selectedDiagram),
+    [state.selectedDiagram]
+  );
+
   const selectDiagram = (diag: string) => {
     setPreview(false);
     setSelectedDiagram(diag);
@@ -157,6 +168,21 @@ export const DiagramManager: React.FC<Props> = (props: Props) => {
     );
   };
 
+  const save = () => {
+    const prevVocabularies = _.clone(Diagrams[selectedDiagram].vocabularies);
+    Diagrams[selectedDiagram].name = selectedDiagramName;
+    Diagrams[selectedDiagram].description = selectedDiagramDescription;
+    Diagrams[selectedDiagram].modifiedDate = new Date();
+    Diagrams[selectedDiagram].vocabularies = inputVocabs.map((i) => i.value);
+    if (AppSettings.currentUser)
+      Diagrams[selectedDiagram].collaborators = _.uniq([
+        ...Diagrams[selectedDiagram].collaborators,
+        AppSettings.currentUser,
+      ]);
+
+    // TODO: save collaborators, lastmodified
+  };
+
   return (
     <Container fluid className="diagramManager">
       <Row>
@@ -164,10 +190,11 @@ export const DiagramManager: React.FC<Props> = (props: Props) => {
           <Stack direction="vertical">
             <div>
               <InputGroup>
-                <InputGroup.Text id="inputGroupPrepend">
+                <InputGroup.Text className="top-item" id="inputGroupPrepend">
                   <SearchIcon />
                 </InputGroup.Text>
                 <Form.Control
+                  className="top-item"
                   type="search"
                   id={"searchInput"}
                   placeholder={
@@ -182,6 +209,11 @@ export const DiagramManager: React.FC<Props> = (props: Props) => {
                 isMulti
                 isSearchable
                 styles={{
+                  control: (baseStyles) => ({
+                    ...baseStyles,
+                    borderTopLeftRadius: "0",
+                    borderTopRightRadius: "0",
+                  }),
                   multiValue: (baseStyles, state) => ({
                     ...baseStyles,
                     backgroundColor:
@@ -241,11 +273,17 @@ export const DiagramManager: React.FC<Props> = (props: Props) => {
                           <OverlayTrigger
                             placement={"bottom"}
                             overlay={
-                              <Tooltip id={`tooltip`}>Otevřít diagram</Tooltip>
+                              <Tooltip id={`tooltip`}>
+                                {
+                                  Locale[AppSettings.interfaceLanguage]
+                                    .openDiagram
+                                }
+                              </Tooltip>
                             }
                           >
                             <Button
-                              onClick={() => {
+                              onClick={(e) => {
+                                e.stopPropagation();
                                 Diagrams[diag].active = true;
                                 props.update();
                               }}
@@ -260,11 +298,17 @@ export const DiagramManager: React.FC<Props> = (props: Props) => {
                           <OverlayTrigger
                             placement={"bottom"}
                             overlay={
-                              <Tooltip id={`tooltip`}>Zavřít diagram</Tooltip>
+                              <Tooltip id={`tooltip`}>
+                                {
+                                  Locale[AppSettings.interfaceLanguage]
+                                    .closeDiagram
+                                }
+                              </Tooltip>
                             }
                           >
                             <Button
-                              onClick={() => {
+                              onClick={(e) => {
+                                e.stopPropagation();
                                 Diagrams[diag].active = false;
                                 props.update();
                               }}
@@ -278,11 +322,17 @@ export const DiagramManager: React.FC<Props> = (props: Props) => {
                         <OverlayTrigger
                           placement={"bottom"}
                           overlay={
-                            <Tooltip id={`tooltip`}>Smazat diagram</Tooltip>
+                            <Tooltip id={`tooltip`}>
+                              {
+                                Locale[AppSettings.interfaceLanguage]
+                                  .deleteDiagram
+                              }
+                            </Tooltip>
                           }
                         >
                           <Button
-                            onClick={() => {
+                            onClick={(e) => {
+                              e.stopPropagation();
                               setSelectedDiagram(diag);
                               setModalRemoveDiagram(true);
                             }}
@@ -324,7 +374,9 @@ export const DiagramManager: React.FC<Props> = (props: Props) => {
                 <div className="top">
                   <span className="left">
                     <span className="name">
-                      <i>Vytvořit nový diagram</i>
+                      <i>
+                        {Locale[AppSettings.interfaceLanguage].createDiagram}
+                      </i>
                     </span>
                   </span>
                   <span className="options">
@@ -348,37 +400,42 @@ export const DiagramManager: React.FC<Props> = (props: Props) => {
                       })}
                     >
                       {preview && <DiagramPreview diagram={selectedDiagram} />}
-                      {/* TODO: i18n */}
                       {!preview && (
                         <Button
                           className="setPreview"
                           onClick={() => setPreview(true)}
                         >
                           <PreviewIcon />
-                          &nbsp;Zobrazit náhled
+                          &nbsp;
+                          {Locale[AppSettings.interfaceLanguage].showPreview}
                         </Button>
                       )}
                     </div>
                   </Card>
                   <Row>
                     <Col className="infoRow">
-                      <span className="left">Spolupracovali:</span>
+                      <span className="left">
+                        {Locale[AppSettings.interfaceLanguage].collaborators}
+                      </span>
                       <span className="right">
                         {Diagrams[selectedDiagram].collaborators
                           ? Diagrams[selectedDiagram].collaborators.map((c) => (
                               <Avatar
-                                src={`https://www.gravatar.com/avatar/${md5(
-                                  c
-                                )}?d=identicon&s=200`}
-                              />
+                                className="avatar"
+                                // alt={`${Users[c].given_name} ${Users[c].family_name}`}
+                              >
+                                {/* Users[c].given_name[0] + Users[c].family_name[0] */}
+                              </Avatar>
                             ))
-                          : "Není známo"}
+                          : Locale[AppSettings.interfaceLanguage].unknown}
                       </span>
                     </Col>
                   </Row>
                   <Row>
                     <Col className="infoRow">
-                      <span className="left">Datum vytvoření:</span>
+                      <span className="left">
+                        {Locale[AppSettings.interfaceLanguage].creationDate}
+                      </span>
                       <span className="right">
                         {Diagrams[selectedDiagram].creationDate
                           ? Diagrams[
@@ -386,13 +443,15 @@ export const DiagramManager: React.FC<Props> = (props: Props) => {
                             ].creationDate.toLocaleDateString(
                               AppSettings.interfaceLanguage
                             )
-                          : "Není známo"}
+                          : Locale[AppSettings.interfaceLanguage].unknown}
                       </span>
                     </Col>
                   </Row>
                   <Row>
                     <Col className="infoRow">
-                      <span className="left">Datum poslední změny:</span>
+                      <span className="left">
+                        {Locale[AppSettings.interfaceLanguage].lastModifiedDate}
+                      </span>
                       <span className="right">
                         {Diagrams[selectedDiagram].modifiedDate
                           ? Diagrams[
@@ -400,45 +459,64 @@ export const DiagramManager: React.FC<Props> = (props: Props) => {
                             ].modifiedDate.toLocaleDateString(
                               AppSettings.interfaceLanguage
                             )
-                          : "Není známo"}
+                          : Locale[AppSettings.interfaceLanguage].unknown}
                       </span>
                     </Col>
                   </Row>
                   <Row>
                     <Col>
                       <Form.Group className="mb-3">
-                        <Form.Label>Název</Form.Label>
+                        <Form.Label>
+                          {Locale[AppSettings.interfaceLanguage].name}
+                        </Form.Label>
                         <Form.Control
                           type="text"
-                          placeholder="Zde vpište název diagramu"
                           value={selectedDiagramName}
                           onChange={(event) =>
                             setSelectedDiagramName(event.currentTarget.value)
                           }
+                          onBlur={() => setChanges(true)}
                         />
-                        {/* <Form.Text className="text-muted red">
-                  We'll never share your email with anyone else.
-                </Form.Text> */}
                       </Form.Group>
                       <Form.Group className="mb-3">
-                        <Form.Label>Popis</Form.Label>
+                        <Form.Label>
+                          {Locale[AppSettings.interfaceLanguage].description}
+                        </Form.Label>
                         <Form.Control
                           as={"textarea"}
                           rows={2}
-                          placeholder="Zde vpište popis diagramu"
                           value={selectedDiagramDescription}
                           onChange={(event) =>
                             setSelectedDiagramDescription(
                               event.currentTarget.value
                             )
                           }
+                          onBlur={() => setChanges(true)}
                         />
                       </Form.Group>
                       <Form.Group className="mb-3">
-                        <Form.Label>Slovníky</Form.Label>
+                        <Form.Label>
+                          {Locale[AppSettings.interfaceLanguage].vocabularies}
+                          &nbsp;
+                          <OverlayTrigger
+                            overlay={
+                              <Tooltip>
+                                {
+                                  Locale[AppSettings.interfaceLanguage]
+                                    .vocabularySelectInfo
+                                }
+                              </Tooltip>
+                            }
+                          >
+                            <InfoIcon />
+                          </OverlayTrigger>
+                        </Form.Label>
                         <Select
                           isMulti
                           isSearchable
+                          backspaceRemovesValue={false}
+                          hideSelectedOptions={true}
+                          isClearable={false}
                           value={inputVocabs}
                           styles={{
                             multiValue: (baseStyles, state) => ({
@@ -452,23 +530,22 @@ export const DiagramManager: React.FC<Props> = (props: Props) => {
                             Locale[AppSettings.interfaceLanguage]
                               .filterVocabulariesPlaceholder
                           }
-                          options={availableVocabs.map((vocab) => {
-                            return {
-                              value: vocab,
-                              label: getLabelOrBlank(
-                                WorkspaceVocabularies[vocab].labels,
-                                props.projectLanguage
-                              ),
-                            };
-                          })}
+                          options={availableVocabs.map((vocab) => ({
+                            value: vocab,
+                            label: getLabelOrBlank(
+                              WorkspaceVocabularies[vocab].labels,
+                              props.projectLanguage
+                            ),
+                          }))}
                           onChange={(option) => {
+                            if (option.length === 0) return;
                             setInputVocabs(_.clone(option));
                             Diagrams[selectedDiagram].vocabularies = option.map(
                               (o) => o.value
                             );
+                            setChanges(true);
                           }}
                         />
-                        {/* TODO */}
                       </Form.Group>
                     </Col>
                   </Row>

@@ -8,6 +8,7 @@ type Props = {
   id: string;
   performTransaction: (...queries: string[]) => void;
   projectLanguage: string;
+  infoFunction: (link: string) => void;
 };
 
 export const DetailElementLinksCard: React.FC<Props> = (props) => {
@@ -24,6 +25,7 @@ export const DetailElementLinksCard: React.FC<Props> = (props) => {
           id={props.id}
           projectLanguage={props.projectLanguage}
           performTransaction={props.performTransaction}
+          infoFunction={(link: string) => props.infoFunction(link)}
         />
       </Accordion.Body>
     </Accordion.Item>

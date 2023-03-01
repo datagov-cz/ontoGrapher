@@ -51,7 +51,6 @@ export const ModalRenameDiagram: React.FC<Props> = (props: Props) => {
         if (elem) elem.focus();
       }}
     >
-      {/* TODO: i18n */}
       <Modal.Header>
         <Modal.Title>
           Přejmenovat diagram{" "}

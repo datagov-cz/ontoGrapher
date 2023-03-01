@@ -88,7 +88,6 @@ export function loadUML() {
 }
 
 export function loadLanguages() {
-  // TODO: redo in i18n
   const navigatorLanguage = navigator.language.slice(0, 2);
   const interfaceLanguage =
     localStorage.getItem(getLocalStorageKey("interfaceLanguage")) ||

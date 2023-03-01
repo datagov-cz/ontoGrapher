@@ -1,3 +1,11 @@
+import { v4 as uuidv4 } from "uuid";
+import { LinkType, Representation } from "../config/Enum";
+import {
+  FlexDocumentIDTable,
+  FlexDocumentSearch,
+} from "../config/FlexDocumentSearch";
+import { Languages } from "../config/Languages";
+import { Locale } from "../config/Locale";
 import {
   AppSettings,
   CardinalityPool,
@@ -9,20 +17,12 @@ import {
   WorkspaceVocabularies,
 } from "../config/Variables";
 import { initLanguageObject } from "./FunctionEditVars";
-import { LinkType, Representation } from "../config/Enum";
-import { Locale } from "../config/Locale";
 import {
   getLinkIRI,
   getNewDiagramContextIRI,
   getNewDiagramIRI,
   getVocabularyFromScheme,
 } from "./FunctionGetVars";
-import { v4 as uuidv4 } from "uuid";
-import {
-  FlexDocumentIDTable,
-  FlexDocumentSearch,
-} from "../config/FlexDocumentSearch";
-import { Languages } from "../config/Languages";
 
 export function createValues(
   values: { [key: string]: string[] },
@@ -119,10 +119,13 @@ export function addDiagram(
   iri?: string,
   id?: string,
   graph?: string,
-  description?: string,
-  vocabularies?: string[]
+  description?: string
 ): string {
   const diagramID = id ? id : uuidv4();
+  const collaborators = [];
+  if (AppSettings.currentUser) {
+    collaborators.push(AppSettings.currentUser);
+  }
   if (!index)
     index =
       Object.keys(Diagrams).length > 0
@@ -140,10 +143,13 @@ export function addDiagram(
     graph: graph ? graph : getNewDiagramContextIRI(diagramID),
     saved: false,
     description: description ? description : "",
-    vocabularies: vocabularies ? vocabularies : [],
+    vocabularies: Object.keys(WorkspaceVocabularies).filter(
+      (v) => !WorkspaceVocabularies[v].readOnly
+    ),
     modifiedDate: new Date(),
     creationDate: new Date(),
-    collaborators: [],
+    collaborators: collaborators,
+    toBeDeleted: false,
   };
   return diagramID;
 }

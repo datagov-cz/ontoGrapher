@@ -89,7 +89,6 @@ export default class DiagramPreview extends React.Component<Props, State> {
         restoreHiddenElem(id, true, false, false);
       }
     }
-    //TODO: change to diagrams' representation
     setRepresentation(
       Diagrams[this.props.diagram].representation,
       this.props.diagram,

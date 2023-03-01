@@ -11,7 +11,7 @@ export const VocabularyBadge: React.FC<Props> = (props: Props) => {
   return (
     <span className="chip" style={{ backgroundColor: props.color }}>
       {props.text}
-      {/* TODO */}
+      &nbsp;
       {props.cancellable && props.onCancel && (
         <span className="cancel" onClick={() => props.onCancel!()}>
           &nbsp;

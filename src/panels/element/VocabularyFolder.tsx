@@ -1,7 +1,7 @@
 import DescriptionIcon from "@mui/icons-material/Description";
 import EditIcon from "@mui/icons-material/Edit";
 import React from "react";
-import { OverlayTrigger, Tooltip } from "react-bootstrap";
+import { Accordion, OverlayTrigger, Tooltip } from "react-bootstrap";
 import { Locale } from "../../config/Locale";
 import { AppSettings, WorkspaceVocabularies } from "../../config/Variables";
 import {
@@ -9,8 +9,6 @@ import {
   unhighlightElement,
 } from "../../function/FunctionDiagram";
 import { getLabelOrBlank } from "../../function/FunctionGetVars";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 
 interface Props {
   open: boolean;
@@ -23,19 +21,8 @@ interface Props {
   setOpen: (vocabulary: string) => void;
 }
 
-interface State {
-  hover: boolean;
-}
-
-export default class VocabularyFolder extends React.Component<Props, State> {
-  constructor(props: Props) {
-    super(props);
-    this.state = {
-      hover: false,
-    };
-  }
-
-  handleClick(event: React.MouseEvent<HTMLDivElement, MouseEvent>) {
+export default class VocabularyFolder extends React.Component<Props> {
+  handleClick(event: React.MouseEvent<HTMLElement, MouseEvent>) {
     event.stopPropagation();
     if (event.ctrlKey) {
       if (
@@ -55,13 +42,8 @@ export default class VocabularyFolder extends React.Component<Props, State> {
 
   render() {
     return (
-      <div
-        onMouseEnter={() => {
-          this.setState({ hover: true });
-        }}
-        onMouseLeave={() => {
-          this.setState({ hover: false });
-        }}
+      <Accordion.Item
+        eventKey={this.props.vocabulary}
         onClick={(event) => this.handleClick(event)}
         className={
           "vocabularyFolder" +
@@ -72,8 +54,7 @@ export default class VocabularyFolder extends React.Component<Props, State> {
             : "")
         }
       >
-        <span
-          className={"vocabularyLabel"}
+        <Accordion.Header
           style={{
             backgroundColor: WorkspaceVocabularies[this.props.vocabulary].color,
           }}
@@ -92,12 +73,9 @@ export default class VocabularyFolder extends React.Component<Props, State> {
             WorkspaceVocabularies[this.props.vocabulary].labels,
             this.props.projectLanguage
           )}
-          <span className="chevron">
-            {this.props.open ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-          </span>
-        </span>
-        {this.props.children}
-      </div>
+        </Accordion.Header>
+        <Accordion.Body>{this.props.children}</Accordion.Body>
+      </Accordion.Item>
     );
   }
 }

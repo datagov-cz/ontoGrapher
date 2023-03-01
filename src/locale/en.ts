@@ -1,4 +1,30 @@
 export const en = {
+  unknown: "Not available",
+  vocabularySelectInfo:
+    "Controls the vocabularies to which this diagram is attached. When a vocabulary is added into a Control Panel projects, only those diagrams assigned to that vocabulary are available.",
+  addLanguage: "Add language input",
+  modalNewTropeDescription:
+    "Enter a label for the new trope (these cannot be changed later!):",
+  createTrope: "Create new trope",
+  assignExistingTrope: "Assign existing trope",
+  noExistingTropes:
+    "There are no existing tropes to be assigned. Please unassign a trope from another term or create a new trope.",
+  assignTropeHeader: "Assign trope to ",
+  assignTropeConfirm: "Assign trope",
+  mustAssignTropeConfirm:
+    "You have to select a trope from the list to continue.",
+  deleteLink: "Delete relationship",
+  openDiagram: "Open diagram",
+  closeDiagram: "Close diagram",
+  deleteDiagram: "Delete diagram",
+  createDiagram: "Create new diagram",
+  showPreview: "Show preview",
+  collaborators: "Collaborators:",
+  linkInfo: "Show connection details",
+  name: "Name",
+  vocabularies: "Vocabularies",
+  lastModifiedDate: "Last modified on:",
+  creationDate: "Created on:",
   untitledProject: "OntoGrapher",
   unsorted: "No type",
   updating: "Saving...",
@@ -48,7 +74,9 @@ export const en = {
   diagramTab: "Diagrams",
   modalNewElemExistsError:
     "A term with this label already exists in the vocabulary.",
-  addAltLabelPlaceholder: "Add new synonym...",
+  addAltLabelPlaceholder: "Add new synonym",
+  addAltLabel: "New synonym",
+  addAltLabelNoName: "Please input a synonym.",
   setAsDisplayName: "Set as display label",
   conforms: "All terms and relationships conform to validation rules",
   validationError: "Message",
@@ -101,6 +129,8 @@ export const en = {
   modalRemoveConceptConnectionsDescription:
     "Warning: the term you are about to delete is connected to terms from outside the listed vocabularies with relations that cannot be deleted here. As such, these relations will remain in the database:",
   menuPanelHelp: "Help",
+  removeTrope: "Unassign trope from term",
+  assignTrope: "Assign another trope to term",
   zoomIn: "Zoom in",
   zoomOut: "Zoom out",
   default: "Default",
@@ -121,8 +151,6 @@ export const en = {
   modalRemoveDiagramDescription:
     "Are you sure you want to remove the diagram? The layout of the diagram will be lost!",
   connectionVia: "using link",
-  connectionTo: "to",
-  connectionFrom: "from",
   diagram: "in diagram",
   modalRemoveConceptDescription: "Are you sure you want to remove the term?",
   definitions: "Definitions",

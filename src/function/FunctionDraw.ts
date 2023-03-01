@@ -1,3 +1,4 @@
+import { LanguageObject } from "./../config/Languages";
 import { graph } from "../graph/Graph";
 import * as joint from "jointjs";
 import {
@@ -38,6 +39,15 @@ export function getDisplayLabel(id: string, languageCode: string): string {
   if (!WorkspaceElements[id].selectedLabel[languageCode])
     setDisplayLabel(id, languageCode);
   return getLabelOrBlank(WorkspaceElements[id].selectedLabel, languageCode);
+}
+
+export function getSelectedLabels(
+  id: string,
+  languageCode: string
+): LanguageObject {
+  if (!WorkspaceElements[id].selectedLabel[languageCode])
+    setDisplayLabel(id, languageCode);
+  return WorkspaceElements[id].selectedLabel;
 }
 
 export function drawGraphElement(
@@ -101,9 +111,33 @@ export function highlightCell(
   const cell = graph.getCell(id);
   if (!cell) return;
   if (cell.isLink()) {
-    cell.attr({ line: { stroke: color } });
+    cell.attr({
+      line: {
+        filter: {
+          name: "dropShadow",
+          args: {
+            dx: 2,
+            dy: 2,
+            blur: 3,
+            color: color,
+          },
+        },
+      },
+    });
   } else if (cell.id) {
-    cell.attr({ [getElementShape(cell.id)]: { stroke: color } });
+    cell.attr({
+      [getElementShape(cell.id)]: {
+        filter: {
+          name: "highlight",
+          args: {
+            color: color,
+            width: 2,
+            opacity: 0.5,
+            blur: 5,
+          },
+        },
+      },
+    });
   }
 }
 
@@ -114,23 +148,23 @@ export function unHighlightCell(
   const cell = graph.getCell(id);
   if (!cell) return;
   if (cell.isLink()) {
-    cell.attr({ line: { stroke: color } });
+    cell.attr({ line: { filter: "none" } });
   } else if (cell.id) {
-    drawGraphElement(
-      cell as joint.dia.Element,
-      AppSettings.canvasLanguage,
-      AppSettings.representation
-    );
+    cell.attr({
+      [getElementShape(cell.id)]: {
+        filter: "none",
+      },
+    });
   }
 }
 
 export function unHighlightAll() {
-  for (let cell of graph.getElements()) {
+  for (const cell of graph.getElements()) {
     cell.attr({
       [getElementShape(cell.id)]: { stroke: ElementColors.default },
     });
   }
-  for (let cell of graph.getLinks()) {
+  for (const cell of graph.getLinks()) {
     cell.attr({ line: { stroke: ElementColors.default } });
   }
 }

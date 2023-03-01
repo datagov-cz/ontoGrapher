@@ -1,15 +1,14 @@
 import CloseIcon from "@mui/icons-material/Close";
-import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
+import EditIcon from "@mui/icons-material/Edit";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
-import React, { useState } from "react";
+import React from "react";
 import { Dropdown } from "react-bootstrap";
 import { IconText } from "../../components/IconText";
+import { MainViewMode } from "../../config/Enum";
+import { StoreSettings } from "../../config/Store";
 import { AppSettings, Diagrams } from "../../config/Variables";
 import { changeDiagrams } from "../../function/FunctionDiagram";
-import { StoreSettings } from "../../config/Store";
-import { MainViewMode } from "../../config/Enum";
-import { useTranslation } from "react-i18next";
 
 interface Props {
   diagram: string;
@@ -21,8 +20,6 @@ interface Props {
 }
 
 export const DiagramTab: React.FC<Props> = (props: Props) => {
-  // const t = useTranslation();
-
   const changeDiagram = () => {
     if (props.diagram !== AppSettings.selectedDiagram) {
       StoreSettings.update((s) => {
@@ -43,7 +40,6 @@ export const DiagramTab: React.FC<Props> = (props: Props) => {
       onClick={() => changeDiagram()}
     >
       <span className="diagramText">{Diagrams[props.diagram].name}&nbsp;</span>
-      {/* TODO: i18n */}
       <Dropdown
         className="displayInline"
         onClick={(evt) => evt.stopPropagation()}

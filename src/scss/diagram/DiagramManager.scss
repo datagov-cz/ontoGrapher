@@ -62,11 +62,10 @@
         margin-top: 15px;
 
         .left {
-            flex-grow: 5;
+            flex: 1;
         }
 
         .right {
-            flex-grow: 1;
             text-align: right;
         }
     }
@@ -114,10 +113,13 @@
     }
 
     &.selected {
-        background-color: rgba(0, 0, 255, 0.5);
+        background-color: rgba(0, 0, 255, 0.3);
     }
 
     &.hovered {
         background-color: lightgray;
+        transition: background 0.25s;
     }
+
+    transition: background 0.25s;
 }

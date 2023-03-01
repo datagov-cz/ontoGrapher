@@ -340,6 +340,41 @@ export function deleteConnections(id: string): string[] {
   ];
 }
 
+export function deleteLink(id: string): string[] {
+  const queries: string[] = [];
+  if (AppSettings.representation === Representation.FULL) {
+    queries.push(...deleteConnections(id));
+    const compactConn = Object.keys(WorkspaceLinks).find(
+      (link) =>
+        WorkspaceLinks[link].active &&
+        WorkspaceLinks[link].iri === WorkspaceLinks[id].source &&
+        WorkspaceLinks[link].target === WorkspaceLinks[id].target
+    );
+    if (compactConn) {
+      queries.push(...deleteConnections(compactConn));
+    }
+    return queries;
+  } else {
+    const deleteLinks = getUnderlyingFullConnections(id as string);
+    if (
+      deleteLinks &&
+      WorkspaceLinks[deleteLinks.src] &&
+      WorkspaceLinks[deleteLinks.tgt]
+    ) {
+      WorkspaceLinks[deleteLinks.src].active = false;
+      WorkspaceLinks[deleteLinks.tgt].active = false;
+      queries.push(
+        ...deleteConnections(deleteLinks.src),
+        ...deleteConnections(deleteLinks.tgt)
+      );
+    }
+    queries.push(...deleteConnections(id));
+    WorkspaceLinks[id].active = false;
+    AppSettings.selectedLinks = [];
+  }
+  return queries;
+}
+
 export function addLinkTools(
   linkView: joint.dia.LinkView,
   transaction: Function,
@@ -350,43 +385,10 @@ export function addLinkTools(
   const segmentsTool = new joint.linkTools.Segments({ stopPropagation: false });
   const removeButton = new joint.linkTools.Remove({
     distance: 5,
-    action: (evt, view) => {
-      if (AppSettings.representation === Representation.FULL) {
-        let queries: string[] = [...deleteConnections(id)];
-        const compactConn = Object.keys(WorkspaceLinks).find(
-          (link) =>
-            WorkspaceLinks[link].active &&
-            WorkspaceLinks[link].iri === WorkspaceLinks[id].source &&
-            WorkspaceLinks[link].target === WorkspaceLinks[id].target
-        );
-        if (compactConn) {
-          queries.push(...deleteConnections(compactConn));
-        }
-        transaction(...queries);
-      } else {
-        const deleteLinks = getUnderlyingFullConnections(
-          view.model.id as string
-        );
-        const queries: string[] = [];
-        if (
-          deleteLinks &&
-          WorkspaceLinks[deleteLinks.src] &&
-          WorkspaceLinks[deleteLinks.tgt]
-        ) {
-          WorkspaceLinks[deleteLinks.src].active = false;
-          WorkspaceLinks[deleteLinks.tgt].active = false;
-          queries.push(
-            ...deleteConnections(deleteLinks.src),
-            ...deleteConnections(deleteLinks.tgt)
-          );
-        }
-        queries.push(...deleteConnections(id));
-        view.model.remove();
-        WorkspaceLinks[view.model.id].active = false;
-        update();
-        AppSettings.selectedLinks = [];
-        transaction(...queries);
-      }
+    action: (_, view) => {
+      view.model.remove();
+      transaction(deleteLink(id));
+      update();
     },
   });
   const readOnly =

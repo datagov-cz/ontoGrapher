@@ -9,6 +9,7 @@ interface Props {
   filter: (schemes: string[]) => void;
   values: { label: string; value: string }[];
   projectLanguage: string;
+  availableVocabularies: string[];
 }
 
 interface State {}
@@ -18,7 +19,7 @@ export class VocabularySelector extends React.Component<Props, State> {
     label: string;
     options: { value: string; label: string }[];
   }[] {
-    const existingOptions = Object.keys(WorkspaceVocabularies).map((scheme) => {
+    const existingOptions = this.props.availableVocabularies.map((scheme) => {
       return {
         label: getLabelOrBlank(
           WorkspaceVocabularies[scheme].labels,
@@ -53,6 +54,13 @@ export class VocabularySelector extends React.Component<Props, State> {
         isMulti={true}
         isSearchable={true}
         className={"luceneSelect"}
+        styles={{
+          control: (baseStyles) => ({
+            ...baseStyles,
+            borderTopLeftRadius: "0",
+            borderTopRightRadius: "0",
+          }),
+        }}
         options={this.buildOptions()}
         placeholder={
           Locale[AppSettings.interfaceLanguage].filterVocabulariesPlaceholder

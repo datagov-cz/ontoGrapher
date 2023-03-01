@@ -15667,8 +15667,8 @@
             "subClassOfDomain": [],
             "subClassOfRange": [],
             "labels": {
-                "cs": "generalizace",
-                "en": "generalization"
+                "cs": "je podtřídou",
+                "en": "is sub-class of"
             },
             "definitions": {
                 "cs": "",
@@ -16411,7 +16411,10 @@
             "description": "exampleeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
             "iri": "https://slovník.gov.cz/příloha/instance-4efcfe73-95f7-44af-9b8d-e42df4238642",
             "graph": "https://slovník.gov.cz/příloha/instance-4efcfe73-95f7-44af-9b8d-e42df4238642/verze/a886e263-1c1e-4379-98c0-211850849001",
-            "saved": true
+            "saved": true,
+            "collaborators": [
+                "https://slovník.gov.cz/datový/sbírka"
+            ]
         },
         "86a1cd7a-894a-425b-9453-ba884bc47606": {
             "name": "právní akty",

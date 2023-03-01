@@ -1,167 +1,253 @@
+.connection {
 
-  .connection {
-    &.selected {
-      background-color: skyblue !important;
+  @keyframes select {
+    from {
+      outline: 3px solid transparent;
     }
 
-    .link {
-      position: relative;
-      vertical-align: middle;
-      width: 50%;
-
-      svg {
-        position: absolute;
-        left: 0;
-        bottom: calc(50% - (25px / 2));
-        z-index: 0;
-      }
-
-      .text {
-        position: relative;
-        z-index: 1;
-        display: inline-block;
-        max-width: 80%;
-        left: 10%;
-        font-size: 14px;
-        background-color: #ffffff;
-        padding: 0 4px;
-        border-radius: 4px;
-      }
-    }
-
-    .element {
-      border: solid 2px black;
-      text-align: center;
-      font-size: 14px;
-      width: 100%;
-      height: 100%;
-      vertical-align: middle;
-
-      span.badge {
-        white-space: normal;
-      }
-
-      svg {
-        transform: scale(0.8);
-      }
+    to {
+      outline: 3px solid #5a5dff;
     }
   }
 
-  .filter {
-    border: 1px black solid;
-    border-radius: 4px;
-    padding: 5px 0;
-    margin-top: 4px;
-    margin-bottom: 4px;
-    position: relative;
+  &.selected {
+    outline: 3px solid #5a5dff;
+    animation: select 0.25s forwards;
+  }
+
+  &:nth-of-type(odd) {
+    background-color: rgba(190, 190, 190, 0.5);
+  }
+
+  &:first-of-type {
+    border-top: none !important;
+  }
+
+  &:last-of-type {
+    border-bottom: none !important;
+  }
+
+  &:hover {
+    background-color: rgba(190, 190, 190, 0.75);
+    transition: background 0.25s;
+  }
+
+  border: 1px black;
+  border-style: dashed none;
+  transition: background 0.25s;
+  outline: 4px solid transparent;
+
+  .link {
+    padding: 1px;
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 20px;
+    width: 100%;
+
+    .cardLeft {
+      margin-left: 30px;
+    }
+
+    .cardRight {
+      margin-right: 30px;
+
+    }
+
+    .texts {
+      position: relative;
+      flex: 1;
+      display: flex;
+      flex-wrap: nowrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      width: 100%;
+      background-position: center;
+      background-size: contain;
+      min-height: 44px;
+    }
+
+    .arrow {
+      position: absolute;
+      z-index: 0;
+      top: 0;
+      left: 0;
+    }
+
+    .plainButton {
+      margin-left: auto;
+    }
+
+    .name {
+      text-align: center;
+      z-index: 1;
+      display: inline-block;
+      font-size: 14px;
+      background-color: #ffffff;
+      padding: 0 4px;
+      border: 1px solid black;
+      border-radius: 4px;
+    }
+  }
+
+  .info {
+    width: 100%;
+    display: flex;
+    flex-wrap: nowrap;
+    align-content: center;
+    justify-content: center;
+
+    .plainButton {
+      margin-left: auto;
+    }
+  }
+
+  .element {
+    flex: 1;
+    border: solid 2px black;
+    text-align: center;
     font-size: 14px;
 
-    .hidden {
+    height: 100%;
+    vertical-align: middle;
+
+    span.badge {
+      white-space: normal;
+    }
+
+
+    svg {
+      transform: scale(0.8);
+    }
+  }
+}
+
+.filter {
+  margin: 4px;
+  background-color: rgba(190, 190, 190, 0.25);
+  border-radius: 5px;
+  border: rgba(190, 190, 190, 0.5) 1px solid;
+  padding: 5px 0;
+  position: relative;
+  font-size: 14px;
+
+  .hidden {
+    button {
+      &.selected {
+        background: rgba(190, 190, 190, 0.9);
+      }
+    }
+  }
+
+  .filterLink {
+    display: flex;
+    justify-content: space-between;
+
+    .plainButton {
+      padding: 2px;
+
+      &.selected {
+        background: rgba(190, 190, 190, 0.9);
+
+      }
+    }
+
+    .line {
+      position: absolute;
+      z-index: 9;
+      pointer-events: none;
+    }
+  }
+
+  .element {
+    border: 2px solid black;
+    width: 100%;
+    text-align: center;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 5px;
+
+    span.badge {
+      white-space: normal;
+    }
+
+    .schemeSelect {
+      border: 1px solid rgba(190, 190, 190, 0.75);
+      ;
+      max-width: 30px;
+      height: 100%;
+      font-size: 0;
+      padding-top: 28px;
+
+      .plainButton::after {
+        display: inline-block;
+      }
+
+    }
+
+    .library {
       position: absolute;
       right: 5px;
+      pointer-events: none;
+    }
+
+    option {
+      font-size: 16px;
+    }
+  }
+
+  .connection {
+    width: 100%;
+    margin-top: 6px;
+    position: relative;
+
+    .line {
+      width: 100%;
+      position: absolute;
+      bottom: 20%;
+      z-index: 0;
+    }
+
+    span {
+      display: flex;
+      justify-content: space-evenly;
+      position: relative;
+      z-index: 1;
 
       button {
-        padding: 0;
+        padding: 0 2px;
         border: none;
-        border-radius: 4px;
 
-        &:hover {
-          background: lightgrey;
-        }
-
+        &:hover,
         &.selected {
           background: lightgrey;
+          border-radius: 4px;
         }
       }
 
-      svg {
-        transform: scale(0.8);
-      }
-    }
-
-    .element {
-      border: 2px solid black;
-      width: fit-content;
-      max-width: 87%;
-      text-align: center;
-      padding: 8px 24px;
-      margin: 2px 2px 0;
-      overflow-wrap: anywhere;
-      line-height: 1 !important;
-      position: relative;
-
-      span.badge {
-        white-space: normal;
-      }
-
-      select, input {
-        position: relative;
-        z-index: 1;
-      }
-
-      option {
-        font-size: 14px;
-      }
-
-      .schemeSelect select {
-        background: transparent;
-        border: none;
-        width: 20px;
-        position: absolute;
-        right: 0;
-        top: 0;
-        z-index: 0;
-      }
-    }
-
-    .connection {
-      width: 100%;
-      margin-top: 6px;
-      position: relative;
-
-      .line {
-        width: 100%;
-        position: absolute;
-        bottom: 20%;
-        z-index: 0;
-      }
-
-      span {
-        display: flex;
-        justify-content: space-evenly;
-        position: relative;
-        z-index: 1;
-
-        button {
-          padding: 0 2px;
-          border: none;
-
-          &:hover, &.selected {
-            background: lightgrey;
-            border-radius: 4px;
-          }
-        }
-
-        select {
-          display: inline;
-          width: fit-content;
-        }
+      select {
+        display: inline;
+        width: fit-content;
       }
     }
   }
+}
 
-  .buttons {
-    margin: 4px;
-    background-color: lightgrey;
-    display: flex;
-    justify-content: space-around;
-    border-radius: 5px;
-    border: 1px solid black;
+.buttons {
+  margin: 4px;
+  background-color: rgba(190, 190, 190, 0.25);
+  display: flex;
+  justify-content: space-around;
+  border-radius: 5px;
+  border: rgba(190, 190, 190, 0.5) 1px solid;
 
-    button {
-      font-size: 18px;
-      vertical-align: middle;
-      line-height: 2;
-      color: black;
-    }
+  button {
+    font-size: 18px;
+    vertical-align: middle;
+    line-height: 2;
+    color: black;
   }
+}

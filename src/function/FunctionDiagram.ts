@@ -1,3 +1,4 @@
+import { StoreSettings } from "./../config/Store";
 import { AppSettings, Diagrams, WorkspaceElements } from "../config/Variables";
 import { graphElement } from "../graph/GraphElement";
 import { graph } from "../graph/Graph";
@@ -46,7 +47,13 @@ export function changeDiagrams(diagram?: string) {
       paper.scale(Diagrams[diagram].scale, Diagrams[diagram].scale);
       paper.translate(Diagrams[diagram].origin.x, Diagrams[diagram].origin.y);
     }
-  }
+    StoreSettings.update((s) => {
+      s.selectedDiagram = diagram!;
+    });
+  } else
+    throw new Error(
+      "Attempted change to a diagram ID " + diagram + " that doesn't exist."
+    );
 }
 
 export function centerDiagram(

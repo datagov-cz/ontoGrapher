@@ -1,11 +1,10 @@
+import LabelIcon from "@mui/icons-material/Label";
+import LabelOffIcon from "@mui/icons-material/LabelOff";
+import classNames from "classnames";
 import React from "react";
-import { Accordion, Button, Card, Form } from "react-bootstrap";
-import IRILabel from "../../components/IRILabel";
-import IRILink from "../../components/IRILink";
-import TableList from "../../components/TableList";
-import { DetailPanelMode, LinkType, Representation } from "../../config/Enum";
-import { Languages } from "../../config/Languages";
-import { Locale } from "../../config/Locale";
+import { Button, Dropdown, Form } from "react-bootstrap";
+import { LanguageSelector } from "../../components/LanguageSelector";
+import { LinkType, Representation } from "../../config/Enum";
 import {
   AppSettings,
   CardinalityPool,
@@ -16,6 +15,10 @@ import {
   WorkspaceVocabularies,
 } from "../../config/Variables";
 import { Cardinality } from "../../datatypes/Cardinality";
+import {
+  getDisplayLabel,
+  getListClassNamesObject,
+} from "../../function/FunctionDraw";
 import {
   initLanguageObject,
   parsePrefix,
@@ -32,12 +35,13 @@ import { graph } from "../../graph/Graph";
 import { updateConnections } from "../../queries/update/UpdateConnectionQueries";
 import { updateProjectElement } from "../../queries/update/UpdateElementQueries";
 import { updateProjectLink } from "../../queries/update/UpdateLinkQueries";
+import { ListItemControls } from "./components/items/ListItemControls";
+
 interface Props {
   projectLanguage: string;
   save: (id: string) => void;
   performTransaction: (...queries: string[]) => void;
   error: boolean;
-  updateDetailPanel: (mode: DetailPanelMode, id?: string) => void;
   id: string;
 }
 
@@ -51,6 +55,7 @@ interface State {
   newAltInput: string;
   changes: boolean;
   readOnly: boolean;
+  selectedLanguage: string;
 }
 
 export default class DetailLink extends React.Component<Props, State> {
@@ -66,6 +71,7 @@ export default class DetailLink extends React.Component<Props, State> {
       newAltInput: "",
       changes: false,
       readOnly: false,
+      selectedLanguage: AppSettings.canvasLanguage,
     };
   }
 
@@ -235,163 +241,197 @@ export default class DetailLink extends React.Component<Props, State> {
     }
   }
 
-  render() {
+  isAltLabelSelectedLabel(alt: { label: string; language: string }): boolean {
     return (
-      <div className={"accordions"}>
-        <Accordion defaultActiveKey={"0"}>
-          <Card>
-            <Card.Header>
-              <Accordion.Header as={Button} variant={"link"} eventKey={"0"}>
-                {Locale[AppSettings.interfaceLanguage].description}
-              </Accordion.Header>
-            </Card.Header>
-            <Accordion.Collapse eventKey={"0"}>
-              <Card.Body>
-                {WorkspaceLinks[this.props.id].type === LinkType.DEFAULT && (
-                  <TableList>
-                    <tr>
-                      <td className={"first"}>
-                        <span>
-                          {
-                            Locale[AppSettings.interfaceLanguage]
-                              .sourceCardinality
-                          }
-                        </span>
-                      </td>
-                      <td className={"last"}>
-                        {!this.state.readOnly ? (
-                          <Form.Control
-                            as="select"
-                            value={this.state.sourceCardinality}
-                            onChange={(event) => {
-                              this.setState({
-                                sourceCardinality: event.currentTarget.value,
-                                changes: true,
-                              });
-                            }}
-                          >
-                            {CardinalityPool.map((card, i) => (
-                              <option key={i} value={i.toString(10)}>
-                                {card.getString()}
-                              </option>
-                            ))}
-                          </Form.Control>
-                        ) : (
-                          CardinalityPool[
-                            parseInt(this.state.sourceCardinality, 10)
-                          ].getString()
-                        )}
-                      </td>
-                    </tr>
+      this.state.selectedLabel[this.props.projectLanguage] === alt.label &&
+      this.props.projectLanguage === alt.language
+    );
+  }
 
-                    <tr>
-                      <td className={"first"}>
-                        <span>
-                          {
-                            Locale[AppSettings.interfaceLanguage]
-                              .targetCardinality
-                          }
-                        </span>
-                      </td>
-                      <td className={"last"}>
-                        {!this.state.readOnly ? (
-                          <Form.Control
-                            as="select"
-                            value={this.state.targetCardinality}
-                            onChange={(event) => {
-                              this.setState({
-                                targetCardinality: event.currentTarget.value,
-                                changes: true,
-                              });
-                            }}
-                          >
-                            {CardinalityPool.map((card, i) => (
-                              <option key={i} value={i.toString(10)}>
-                                {card.getString()}
-                              </option>
-                            ))}
-                          </Form.Control>
-                        ) : (
-                          CardinalityPool[
-                            parseInt(this.state.targetCardinality, 10)
-                          ].getString()
-                        )}
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className={"first"}>
-                        <span>
-                          {Locale[AppSettings.interfaceLanguage].linkType}
-                        </span>
-                      </td>
-                      {AppSettings.representation === Representation.FULL &&
-                      !this.state.readOnly ? (
-                        <td className={"last"}>
-                          <Form.Control
-                            as="select"
-                            value={this.state.iri}
-                            onChange={(event) => {
-                              this.setState({
-                                iri: event.currentTarget.value,
-                                changes: true,
-                              });
-                            }}
-                          >
-                            {this.prepareLinkOptions()}
-                          </Form.Control>
-                        </td>
-                      ) : (
-                        <IRILabel
-                          label={getLabelOrBlank(
-                            getLinkOrVocabElem(this.state.iri).labels,
-                            this.props.projectLanguage
-                          )}
-                          iri={this.state.iri}
-                        />
-                      )}
-                    </tr>
-                  </TableList>
-                )}
-                <h5>
-                  {
-                    <IRILink
-                      label={
-                        Locale[AppSettings.interfaceLanguage]
-                          .detailPanelInScheme
-                      }
-                      iri={"http://www.w3.org/2004/02/skos/core#inScheme"}
-                    />
+  render() {
+    const altLabels = this.state.inputAltLabels.filter(
+      (alt) => alt.language === this.props.projectLanguage
+    );
+    return (
+      <div className="detailElement">
+        <div className={"accordions"}>
+          <div className={"detailTitle"}>
+            <div className="top">
+              <span className="languageSelect">
+                <LanguageSelector
+                  language={this.state.selectedLanguage}
+                  setLanguage={(lang: string) =>
+                    this.setState({ selectedLanguage: lang })
                   }
-                </h5>
-                <TableList>
-                  {Object.keys(
-                    WorkspaceVocabularies[
-                      getVocabularyFromScheme(
-                        getLinkOrVocabElem(this.state.iri).inScheme
-                      )
-                    ].labels
-                  ).map((lang) => (
-                    <tr key={lang}>
-                      <IRILabel
-                        label={
-                          WorkspaceVocabularies[
-                            getVocabularyFromScheme(
-                              getLinkOrVocabElem(this.state.iri).inScheme
-                            )
-                          ].labels[lang]
-                        }
-                        iri={getVocabularyFromScheme(
-                          getLinkOrVocabElem(this.state.iri).inScheme
-                        )}
-                      />
-                      <td>{Languages[lang]}</td>
-                    </tr>
-                  ))}
-                </TableList>
-              </Card.Body>
-            </Accordion.Collapse>
-          </Card>
-        </Accordion>
+                />
+              </span>
+              <span className="title link">
+                <i>
+                  {getDisplayLabel(
+                    WorkspaceLinks[this.props.id].source,
+                    this.state.selectedLanguage
+                  )}
+                </i>
+                &nbsp;
+                <b>
+                  {getLabelOrBlank(
+                    getLinkOrVocabElem(WorkspaceLinks[this.props.id].iri)
+                      .labels,
+                    this.state.selectedLanguage
+                  )}
+                </b>
+                &nbsp;
+                <i>
+                  {getDisplayLabel(
+                    WorkspaceLinks[this.props.id].target,
+                    this.state.selectedLanguage
+                  )}
+                </i>
+              </span>
+            </div>
+          </div>
+
+          <h5>Kardinality</h5>
+          <div className="linkCardinalities">
+            <svg
+              width="100%"
+              height="24px"
+              preserveAspectRatio="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <defs>
+                <marker
+                  id={"link"}
+                  viewBox="0 0 10 10"
+                  refX="9"
+                  refY="5"
+                  markerUnits="strokeWidth"
+                  markerWidth="7"
+                  markerHeight="7"
+                  orient="auto-start-reverse"
+                >
+                  <path d="M 0 0 L 10 5 L 0 10 z" fill="#000" />
+                </marker>
+              </defs>
+              <line
+                x1="2%"
+                y1="50%"
+                x2="100%"
+                y2="50%"
+                strokeWidth="2"
+                stroke="#000"
+                markerEnd={"url(#link)"}
+              />
+            </svg>
+            <Dropdown>
+              <Dropdown.Toggle
+                className="plainButton"
+                variant="light"
+                disabled={this.state.readOnly}
+              >
+                {CardinalityPool[
+                  parseInt(this.state.sourceCardinality, 10)
+                ].getString()}
+              </Dropdown.Toggle>
+              <Dropdown.Menu>
+                {CardinalityPool.map((card, i) => (
+                  <Dropdown.Item
+                    disabled={i.toString(10) === this.state.sourceCardinality}
+                  >
+                    {card.getString()}
+                  </Dropdown.Item>
+                ))}
+              </Dropdown.Menu>
+            </Dropdown>
+            {this.props.id in WorkspaceLinks && (
+              <span className="plainButton">
+                {getLabelOrBlank(
+                  getLinkOrVocabElem(WorkspaceLinks[this.props.id].iri).labels,
+                  this.state.selectedLanguage
+                )}
+              </span>
+            )}
+            <Dropdown>
+              <Dropdown.Toggle
+                disabled={this.state.readOnly}
+                className="plainButton"
+                variant="light"
+              >
+                {CardinalityPool[
+                  parseInt(this.state.targetCardinality, 10)
+                ].getString()}
+              </Dropdown.Toggle>
+              <Dropdown.Menu>
+                {CardinalityPool.map((card, i) => (
+                  <Dropdown.Item
+                    disabled={i.toString(10) === this.state.targetCardinality}
+                  >
+                    {card.getString()}
+                  </Dropdown.Item>
+                ))}
+              </Dropdown.Menu>
+            </Dropdown>
+          </div>
+          <h5>Synonyma</h5>
+          {altLabels.map((alt, i) => (
+            <div
+              className={classNames(
+                "detailInput",
+                "form-control",
+                "form-control-sm",
+                getListClassNamesObject(altLabels, i)
+              )}
+            >
+              <span
+                className={classNames({
+                  bold: this.isAltLabelSelectedLabel(alt),
+                })}
+              >
+                {alt.label}
+              </span>
+              <span className="right">
+                <Button variant="light" className={classNames("plainButton")}>
+                  {this.isAltLabelSelectedLabel(alt) ? (
+                    <LabelOffIcon />
+                  ) : (
+                    false && <LabelIcon />
+                  )}
+                </Button>
+              </span>
+            </div>
+          ))}
+          {altLabels.length === 0 && (
+            <Form.Control
+              className="detailInput noInput"
+              disabled
+              value=""
+              size="sm"
+            />
+          )}
+          <ListItemControls
+            addAction={(label: string) => {
+              if (
+                label !== "" ||
+                this.state.inputAltLabels.find((alt) => alt.label === label)
+              ) {
+                this.setState((prev) => ({
+                  ...prev,
+                  inputAltLabels: [
+                    ...prev.inputAltLabels,
+                    {
+                      label: label,
+                      language: this.props.projectLanguage,
+                    },
+                  ],
+                  changes: true,
+                }));
+              }
+            }}
+            popover={true}
+            tooltipText={"Vytvořit nový synonym"}
+            disableAddControl={this.state.readOnly}
+          />
+        </div>
       </div>
     );
   }

@@ -9,7 +9,7 @@ import { CriticalAlertModal } from "../components/modals/CriticalAlertModal";
 import { DetailPanelMode, ElemCreationStrategy } from "../config/Enum";
 import { Environment } from "../config/Environment";
 import { Locale } from "../config/Locale";
-import { StoreAlerts } from "../config/Store";
+import { StoreAlerts, StoreSettings } from "../config/Store";
 import {
   AppSettings,
   WorkspaceElements,
@@ -290,7 +290,10 @@ export default class App extends React.Component<
   }
 
   handleUpdateDetailPanel(mode: DetailPanelMode, id?: string) {
-    this.detailPanel.current?.prepareDetails(mode, id);
+    StoreSettings.update((s) => {
+      s.detailPanelMode = mode;
+      s.detailPanelSelectedID = id ? id : "";
+    });
     this.validationPanel.current?.forceUpdate();
   }
 
