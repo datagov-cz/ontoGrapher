@@ -1,3 +1,4 @@
+import { AppSettings } from "./../../config/Variables";
 import {
   Links,
   WorkspaceElements,
@@ -238,6 +239,10 @@ export function updateDefaultLink(id: string): string {
     contextIRI,
     _.uniq(constructDefaultLinkRestrictions(...insertConnections))
   )}`.build();
+  if (del && insert)
+    AppSettings.changedVocabularies.push(
+      getVocabularyFromScheme(WorkspaceTerms[iri].inScheme)
+    );
   return qb.combineQueries(del, insert);
 }
 
@@ -277,6 +282,10 @@ export function updateGeneralizationLink(id: string): string {
   const insert = INSERT.DATA`${qb.g(contextIRI, [
     qb.s(qb.i(iri), "rdfs:subClassOf", qb.a(subClasses), subClasses.length > 0),
   ])}`.build();
+  if (del && insert)
+    AppSettings.changedVocabularies.push(
+      getVocabularyFromScheme(WorkspaceTerms[iri].inScheme)
+    );
   return qb.combineQueries(del, insert);
 }
 

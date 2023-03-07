@@ -1,13 +1,5 @@
-import Avatar from "@mui/material/Avatar";
 import React from "react";
-import {
-  Col,
-  Container,
-  Dropdown,
-  OverlayTrigger,
-  Row,
-  Tooltip,
-} from "react-bootstrap";
+import { Col, Container, OverlayTrigger, Row, Tooltip } from "react-bootstrap";
 import InterfaceNotification from "../components/InterfaceNotification";
 import { Environment } from "../config/Environment";
 import { Locale } from "../config/Locale";
@@ -15,15 +7,14 @@ import { AppSettings } from "../config/Variables";
 import { MenuPanelSaveDiagrams } from "./menu/left/MenuPanelSaveDiagrams";
 import MenuPanelSettings from "./menu/left/MenuPanelSettings";
 import MenuPanelSwitchRepresentation from "./menu/left/MenuPanelSwitchRepresentation";
-import MenuPanelValidate from "./menu/left/MenuPanelValidate";
+import ZoomWidget from "./menu/widget/ZoomWidget";
+import ViewWidget from "./menu/widget/ViewWidget";
 import MenuPanelAbout from "./menu/right/MenuPanelAbout";
+import MenuPanelValidate from "./menu/left/MenuPanelValidate";
 import MenuPanelAvatar from "./menu/right/MenuPanelAvatar";
 import MenuPanelHelp from "./menu/right/MenuPanelHelp";
 import MenuPanelReport from "./menu/right/MenuPanelReport";
 import FitContentWidget from "./menu/widget/FitContentWidget";
-import ViewWidget from "./menu/widget/ViewWidget";
-import ZoomWidget from "./menu/widget/ZoomWidget";
-var md5 = require("md5");
 
 interface MenuPanelProps {
   readOnly?: boolean;

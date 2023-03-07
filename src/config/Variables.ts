@@ -54,6 +54,7 @@ export var WorkspaceVocabularies: {
     namespace: string;
     graph: string;
     color: string;
+    changeContext?: string;
   };
 } = {};
 
@@ -169,6 +170,7 @@ export var AppSettings: {
   selectedElements: string[];
   selectedLinks: string[];
   currentUser?: string;
+  changedVocabularies: string[];
 } = {
   name: {},
   description: {},
@@ -198,6 +200,7 @@ export var AppSettings: {
   interfaceLanguage: "en",
   selectedElements: [],
   selectedLinks: [],
+  changedVocabularies: [],
 };
 
 export var CardinalityPool: Cardinality[] = [

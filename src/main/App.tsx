@@ -19,6 +19,7 @@ import {
 import { dumpDebugData, loadDebugData } from "../function/FunctionDebug";
 import {
   changeDiagrams,
+  highlightElement,
   resetDiagramSelection,
 } from "../function/FunctionDiagram";
 import { drawGraphElement, unHighlightAll } from "../function/FunctionDraw";
@@ -52,6 +53,8 @@ import ValidationPanel from "../panels/ValidationPanel";
 import VocabularyPanel from "../panels/VocabularyPanel";
 import { qb } from "../queries/QueryBuilder";
 import { MainView } from "./MainView";
+import * as _ from "lodash";
+import { updateVocabularyAnnotations } from "../queries/update/UpdateChangeQueries";
 
 interface DiagramAppProps {}
 
@@ -212,7 +215,13 @@ export default class App extends React.Component<
       this.handleWorkspaceReady();
       return;
     }
-    const transaction = qb.constructQuery(...queriesTrimmed);
+    const transaction = qb.constructQuery(
+      ...queriesTrimmed,
+      ..._.uniq(AppSettings.changedVocabularies).map((v) =>
+        updateVocabularyAnnotations(v)
+      )
+    );
+    AppSettings.changedVocabularies = [];
     this.handleStatus(
       true,
       Locale[AppSettings.interfaceLanguage].updating,
@@ -331,6 +340,7 @@ export default class App extends React.Component<
           }}
           performTransaction={this.performTransaction}
           updateDetailPanel={(id: string) => {
+            highlightElement(id);
             this.handleUpdateDetailPanel(DetailPanelMode.TERM, id);
           }}
         />

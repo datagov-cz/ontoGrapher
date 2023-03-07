@@ -174,13 +174,14 @@ export async function searchCache(
     "PREFIX con-inst: <http://www.ontotext.com/connectors/lucene/instance#>",
     "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>",
     "PREFIX skos: <http://www.w3.org/2004/02/skos/core#> ",
-    "SELECT ?entity ?label ?definition ?vocabulary {",
+    "SELECT ?entity ?label ?definition ?vocabulary ?type {",
     "[] a con-inst:" + lucene + " ;",
     'con:query "' + term + '" ;',
     "con:entities ?entity .",
     "graph ?vocabulary {",
     "?entity skos:prefLabel ?label.",
     "optional {?entity skos:definition ?definition.}",
+    "?entity a ?type.",
     "?entity skos:inScheme ?scheme.",
     "}",
     "?vocabulary <http://onto.fel.cvut.cz/ontologies/slovník/agendový/popis-dat/pojem/má-glosář> ?scheme.",
@@ -203,10 +204,13 @@ export async function searchCache(
             altLabels: [],
             definitions: initLanguageObject(""),
             vocabulary: row.vocabulary.value,
+            types: [],
           };
         }
         result[row.entity.value].labels[row.label["xml:lang"]] =
           row.label.value;
+        if (!result[row.entity.value].types.includes(row.type.value))
+          result[row.entity.value].types.push(row.type.value);
         if (row.definition)
           result[row.entity.value].definitions[row.definition["xml:lang"]] =
             row.definition.value;

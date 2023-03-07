@@ -179,7 +179,7 @@ export async function getSettings(contextEndpoint: string): Promise<{
   };
   const query = [
     "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
-    "select distinct ?ogContext ?graph ?diagram ?index ?name ?color ?id ?representation ?context ?vocabulary ?description ?collaborator ?creationDate ?modifyDate where {",
+    "select distinct ?vocabContext ?ogContext ?graph ?diagram ?index ?name ?color ?id ?representation ?context ?vocabulary ?description ?collaborator ?creationDate ?modifyDate where {",
     "optional {?vocabContext <https://slovník.gov.cz/datový/pracovní-prostor/pojem/odkazuje-na-přílohový-kontext> ?graph .",
     "graph ?graph {",
     " ?diagram og:index ?index .",
@@ -194,7 +194,7 @@ export async function getSettings(contextEndpoint: string): Promise<{
     " }",
     "}",
     "}",
-    "optional {?vocabContext <https://slovník.gov.cz/datový/pracovní-prostor/pojem/odkazuje-na-kontext> ?ogContext .",
+    "optional {?vocabContext <http://onto.fel.cvut.cz/ontologies/slovník/agendový/popis-dat/pojem/má-aplikační-kontext> ?ogContext .",
     " graph ?ogContext {",
     "   ?ogContext og:viewColor ?color .",
     "   ?ogContext og:contextVersion ?context .",
@@ -246,14 +246,14 @@ export async function getSettings(contextEndpoint: string): Promise<{
           Diagrams[result.id.value].saved = true;
           indices.push(index);
           AppSettings.initWorkspace = false;
-          if (result.context) {
-            AppSettings.viewColorPool = result.color.value;
-            AppSettings.contextVersion = parseInt(result.context.value, 10);
-            AppSettings.applicationContext = result.ogContext.value;
-            contextInfo[result.vocabContext.value].appContext = true;
-          } else {
-            reconstructWorkspace = true;
-          }
+        }
+        if (result.context) {
+          AppSettings.viewColorPool = result.color.value;
+          AppSettings.contextVersion = parseInt(result.context.value, 10);
+          AppSettings.applicationContext = result.ogContext.value;
+          contextInfo[result.vocabContext.value].appContext = true;
+        } else {
+          reconstructWorkspace = true;
         }
         if (result.description) {
           Diagrams[result.id.value].description = result.description.value;
