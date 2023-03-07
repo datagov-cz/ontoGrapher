@@ -5,44 +5,44 @@ import { Representation } from "../config/Enum";
 import { Locale } from "../config/Locale";
 import { RepresentationConfig } from "../config/logic/RepresentationConfig";
 import {
+  WorkspaceElements,
   AppSettings,
   Diagrams,
-  WorkspaceElements,
-  WorkspaceLinks,
-  WorkspaceTerms,
   WorkspaceVocabularies,
+  WorkspaceTerms,
+  WorkspaceLinks,
 } from "../config/Variables";
 import { graph } from "../graph/Graph";
 import { graphElement } from "../graph/GraphElement";
 import { paper } from "../main/DiagramCanvas";
 import {
-  fetchReadOnlyTerms,
   fetchRelationships,
+  fetchReadOnlyTerms,
 } from "../queries/get/CacheQueries";
 import { updateCreateDiagram } from "../queries/update/UpdateDiagramQueries";
 import {
-  updateProjectElement,
   updateProjectElementDiagram,
+  updateProjectElement,
 } from "../queries/update/UpdateElementQueries";
 import {
-  updateProjectLink,
   updateProjectLinkVertex,
+  updateProjectLink,
 } from "../queries/update/UpdateLinkQueries";
 import { updateDeleteTriples } from "../queries/update/UpdateMiscQueries";
 import { insertNewCacheTerms, insertNewRestrictions } from "./FunctionCache";
 import {
+  createNewElemIRI,
+  addVocabularyElement,
   addClass,
   addToFlexSearch,
-  addVocabularyElement,
-  createNewElemIRI,
   removeFromFlexSearch,
 } from "./FunctionCreateVars";
 import {
-  drawGraphElement,
-  highlightCell,
   unHighlightCell,
+  highlightCell,
+  drawGraphElement,
 } from "./FunctionDraw";
-import { deleteConcept, initElements, parsePrefix } from "./FunctionEditVars";
+import { parsePrefix, initElements, deleteConcept } from "./FunctionEditVars";
 import { getElementShape } from "./FunctionGetVars";
 import { restoreHiddenElem, setRepresentation } from "./FunctionGraph";
 import { initConnections } from "./FunctionRestriction";
@@ -146,19 +146,36 @@ export function createNewTerm(
   return iri;
 }
 
+/**
+ * Returns whether the element (based on its types) should be visible given a representation.
+ * By default, true is returned even if the types contain none of the requested types.
+ * This behaviour can be
+ * @param types Types of the element.
+ * @param representation Requested representation.
+ * @param strict Enforce that the types must contain a requested representation type.
+ * @returns if the element should be visible given the types and representation.
+ */
 export function isElementVisible(
   types: string[],
-  representation: Representation
+  representation: Representation,
+  strict: boolean = false
 ) {
   return (
-    _.difference(RepresentationConfig[representation].visibleStereotypes, types)
-      .length <
-      RepresentationConfig[representation].visibleStereotypes.length ||
-    !types.find((type) =>
-      RepresentationConfig[Representation.FULL].visibleStereotypes.includes(
-        type
-      )
-    )
+    (_.difference(
+      RepresentationConfig[representation].visibleStereotypes,
+      types
+    ).length < RepresentationConfig[representation].visibleStereotypes.length ||
+      !types.find((type) =>
+        RepresentationConfig[Representation.FULL].visibleStereotypes.includes(
+          type
+        )
+      )) &&
+    (strict
+      ? _.intersection(
+          RepresentationConfig[representation].visibleStereotypes,
+          types
+        ).length > 0
+      : true)
   );
 }
 

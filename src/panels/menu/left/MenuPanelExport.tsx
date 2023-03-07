@@ -2,19 +2,17 @@ import React, { useState } from "react";
 import { Locale } from "../../../config/Locale";
 import { AppSettings } from "../../../config/Variables";
 import { Nav } from "react-bootstrap";
-import { SaveDiagramsModal } from "../modal/SaveDiagramsModal";
+import { ExportModal } from "../modal/ExportModal";
 
-interface Props {}
-
-export const MenuPanelSaveDiagrams: React.FC<Props> = (props) => {
+export const MenuPanelExport: React.FC = () => {
   const [modal, setModal] = useState(false);
 
   return (
     <div className={"inert"}>
       <Nav.Link onClick={() => setModal(true)}>
-        {Locale[AppSettings.interfaceLanguage].generateDiagramImage}
+        {Locale[AppSettings.interfaceLanguage].exportDiagram}
       </Nav.Link>
-      <SaveDiagramsModal modal={modal} close={() => setModal(false)} />
+      <ExportModal modal={modal} close={() => setModal(false)} />
     </div>
   );
 };
