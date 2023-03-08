@@ -1,6 +1,11 @@
 export const enChangelog: {
   [key: string]: { [key: string]: { [key: string]: string[] } };
 } = {
+  "2023": {
+    "3": {
+      "8": ["New user interface"],
+    },
+  },
   "2022": {
     "3": {
       "22": [

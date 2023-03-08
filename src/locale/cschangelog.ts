@@ -1,6 +1,11 @@
 export const csChangelog: {
   [key: string]: { [key: string]: { [key: string]: string[] } };
 } = {
+  "2023": {
+    "3": {
+      "8": ["Nové uživatelské prostředí"],
+    },
+  },
   "2022": {
     "3": {
       "22": [
