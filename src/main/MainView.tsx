@@ -53,6 +53,7 @@ export const MainView: React.FC<Props> = (props: Props) => {
           projectLanguage={props.projectLanguage}
           performTransaction={props.performTransaction}
           update={props.update}
+          freeze={props.freeze}
         />
       )}
     </div>

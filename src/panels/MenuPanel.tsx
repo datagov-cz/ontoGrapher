@@ -4,17 +4,16 @@ import InterfaceNotification from "../components/InterfaceNotification";
 import { Environment } from "../config/Environment";
 import { Locale } from "../config/Locale";
 import { AppSettings } from "../config/Variables";
-import { MenuPanelExport } from "./menu/left/MenuPanelExport";
 import MenuPanelSettings from "./menu/left/MenuPanelSettings";
 import MenuPanelSwitchRepresentation from "./menu/left/MenuPanelSwitchRepresentation";
-import ZoomWidget from "./menu/widget/ZoomWidget";
-import ViewWidget from "./menu/widget/ViewWidget";
-import MenuPanelAbout from "./menu/right/MenuPanelAbout";
 import MenuPanelValidate from "./menu/left/MenuPanelValidate";
-import MenuPanelAvatar from "./menu/right/MenuPanelAvatar";
+import MenuPanelAbout from "./menu/right/MenuPanelAbout";
+import { MenuPanelAvatar } from "./menu/right/MenuPanelAvatar";
 import MenuPanelHelp from "./menu/right/MenuPanelHelp";
 import MenuPanelReport from "./menu/right/MenuPanelReport";
 import FitContentWidget from "./menu/widget/FitContentWidget";
+import ViewWidget from "./menu/widget/ViewWidget";
+import ZoomWidget from "./menu/widget/ZoomWidget";
 
 interface MenuPanelProps {
   readOnly?: boolean;
@@ -99,7 +98,7 @@ export default class MenuPanel extends React.Component<
           {Environment.auth && (
             <MenuPanelValidate validate={() => this.props.validate()} />
           )}
-          <MenuPanelExport />
+          {/* <MenuPanelExport /> */}
           <ZoomWidget />
           <ViewWidget />
           <FitContentWidget />

@@ -1,41 +1,50 @@
-import React, { useEffect } from "react";
-import { Dropdown, Nav } from "react-bootstrap";
+import LogoutIcon from "@mui/icons-material/Logout";
+import { Avatar } from "@mui/material";
 import { useAuth } from "@opendata-mvcr/assembly-line-shared";
+import React, { useEffect } from "react";
+import { Dropdown } from "react-bootstrap";
+import { IconText } from "../../../components/IconText";
 import { Locale } from "../../../config/Locale";
 import { AppSettings, Users } from "../../../config/Variables";
-import { Avatar } from "@mui/material";
-import { IconText } from "../../../components/IconText";
-import LogoutIcon from "@mui/icons-material/Logout";
 
-export default function MenuPanelAvatar() {
-  // const { logout, user } = useAuth();
+export const MenuPanelAvatar: React.FC = () => {
+  const { logout, user } = useAuth();
 
-  // useEffect(() => {
-  //   AppSettings.currentUser = user.profile.sub;
-  //   Users[user.profile.sub] = {
-  //   given_name: user.profile.given_name,
-  //   family_name: user.profile.family_name,
-  // }
-  // }, [user]);
+  useEffect(() => {
+    AppSettings.currentUser = user.profile.sub;
+    Users[user.profile.sub] = {
+      given_name: user.profile.given_name,
+      family_name: user.profile.family_name,
+    };
+  }, [user]);
 
   return (
     <Dropdown className="displayInline">
       <Dropdown.Toggle className="plainButton noBackground">
         <Avatar
           className="avatar"
-          // alt={`${Users[user.profile.sub].given_name} ${Users[user.profile.sub].family_name}`}
+          alt={
+            user.profile.sub in Users
+              ? `${Users[user.profile.sub].given_name} ${
+                  Users[user.profile.sub].family_name
+                }`
+              : ""
+          }
         >
-          {/* TODO: Activate before PR */}
-          {/* user.profile.given_name[0] + user.profile.family_name[0] */}
+          {user.profile.sub in Users
+            ? user.profile.given_name.toUpperCase()[0] +
+              user.profile.family_name.toUpperCase()[0]
+            : ""}
         </Avatar>
       </Dropdown.Toggle>
       <Dropdown.Menu>
-        <Dropdown.Item
-        // onClick={logout}
-        >
-          <IconText text="Odhlásit" icon={LogoutIcon} />
+        <Dropdown.Item onClick={logout}>
+          <IconText
+            text={Locale[AppSettings.interfaceLanguage].logout}
+            icon={LogoutIcon}
+          />
         </Dropdown.Item>
       </Dropdown.Menu>
     </Dropdown>
   );
-}
+};

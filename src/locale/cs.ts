@@ -1,6 +1,9 @@
 import { en } from "./en";
 
 export const cs: { [Property in keyof typeof en]: string } = {
+  cardinalities: "Kardinality",
+  removeLanguage: "Odebrat naposledy přidaný vstup pro další jazyk",
+  noOptions: "Žádné dostupné volby",
   unknown: "Není známo",
   vocabularySelectInfo:
     "Určuje slovníky, ke kterým je diagram přiřazen. Při přidávání slovníků do projektu Kontrolního panelu se přidají pouze ty diagramy, které jsou k těmto slovníkům přiřazené.",

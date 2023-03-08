@@ -22,6 +22,7 @@ interface Props {
   updateSelection: (ids: string[]) => void;
   infoFunction: (link: string) => void;
   performTransaction: (...queries: string[]) => void;
+  update: Function;
 }
 
 export default class ConnectionWorkspace extends React.Component<Props> {
@@ -85,6 +86,7 @@ export default class ConnectionWorkspace extends React.Component<Props> {
             getVocabularyFromScheme(WorkspaceTerms[this.props.elemID].inScheme)
           ].readOnly
         }
+        update={() => this.props.update()}
       />
     );
   }

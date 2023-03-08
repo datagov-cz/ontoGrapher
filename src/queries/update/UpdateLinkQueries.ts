@@ -99,7 +99,7 @@ export function updateDeleteProjectLink(
   if (ids.length === 0) return "";
   const queries = [];
   const diagrams = Object.values(Diagrams)
-    .filter((diag) => diag.toBeDeleted)
+    .filter((diag) => !diag.toBeDeleted)
     .map((diagram) => diagram.graph);
   diagrams.push(AppSettings.applicationContext);
   const delStatement = qb.s("?link", `?p`, `?o`);
@@ -121,7 +121,7 @@ export function updateProjectLink(del: boolean, ...ids: string[]): string {
   const deletes: string = updateDeleteProjectLink(false, ...ids);
   const insert: string[] = [];
   const diagrams = Object.values(Diagrams)
-    .filter((diag) => diag.active)
+    .filter((diag) => !diag.toBeDeleted)
     .map((diagram) => diagram.graph);
   if (ids.length === 0) return "";
   for (const id of ids) {
@@ -172,7 +172,7 @@ export function updateProjectLinkParallel(...ids: string[]): string[] {
   const insertBody: string[] = [];
   const insert: string[] = [];
   const diagrams = Object.values(Diagrams)
-    .filter((diag) => diag.toBeDeleted)
+    .filter((diag) => !diag.toBeDeleted)
     .map((diagram) => diagram.graph);
   if (ids.length === 0) return [];
   for (const id of ids) {

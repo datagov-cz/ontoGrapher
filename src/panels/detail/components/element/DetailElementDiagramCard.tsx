@@ -1,6 +1,7 @@
 import FullscreenExitIcon from "@mui/icons-material/FullscreenExit";
 import InfoIcon from "@mui/icons-material/Info";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
+import { useStoreState } from "pullstate";
 import React from "react";
 import { Accordion, Button, ListGroup } from "react-bootstrap";
 import { DetailPanelMode, MainViewMode } from "../../../../config/Enum";
@@ -23,13 +24,15 @@ type Props = {
 };
 
 export const DetailElementDiagramCard: React.FC<Props> = (props) => {
+  const d = useStoreState(StoreSettings);
+
   return (
     <Accordion.Item eventKey="2">
       <Accordion.Header>
         {Locale[AppSettings.interfaceLanguage].diagramTab}
       </Accordion.Header>
       <Accordion.Body>
-        <ListGroup>
+        <ListGroup className={d.diagramPanelSelectedDiagram}>
           {Object.keys(WorkspaceElements[props.id].hidden)
             .filter(
               (diag) => Diagrams[diag] && !isElementHidden(props.id, diag)
@@ -50,6 +53,9 @@ export const DetailElementDiagramCard: React.FC<Props> = (props) => {
                         changeDiagrams(diag);
                         AppSettings.selectedLinks = [];
                         centerElementInView(props.id);
+                        StoreSettings.update((s) => {
+                          s.diagramPanelSelectedDiagram = diag;
+                        });
                       }}
                     >
                       <OpenInNewIcon />
@@ -63,6 +69,9 @@ export const DetailElementDiagramCard: React.FC<Props> = (props) => {
                           changeDiagrams(diag);
                           AppSettings.selectedLinks = [];
                           highlightElement(props.id);
+                          StoreSettings.update((s) => {
+                            s.diagramPanelSelectedDiagram = diag;
+                          });
                         }
                         centerElementInView(props.id);
                       }}

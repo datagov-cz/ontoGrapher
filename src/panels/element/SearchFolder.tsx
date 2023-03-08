@@ -3,12 +3,14 @@ import { getLabelOrBlank } from "../../function/FunctionGetVars";
 import { CacheSearchVocabularies } from "../../datatypes/CacheSearchResults";
 import classNames from "classnames";
 import { AppSettings } from "../../config/Variables";
+import { Accordion } from "react-bootstrap";
 
 interface Props {
   scheme: string;
   projectLanguage: string;
   terms: string[];
   update: Function;
+  setOpen: (vocabulary: string) => void;
 }
 
 interface State {
@@ -23,7 +25,7 @@ export default class SearchFolder extends React.Component<Props, State> {
     };
   }
 
-  handleClick(event: React.MouseEvent<HTMLDivElement, MouseEvent>) {
+  handleClick(event: React.MouseEvent<HTMLElement, MouseEvent>) {
     event.stopPropagation();
     if (event.ctrlKey) {
       if (
@@ -39,25 +41,25 @@ export default class SearchFolder extends React.Component<Props, State> {
           });
       else AppSettings.selectedElements.push(...this.props.terms);
     } else {
-      this.setState({ open: !this.state.open });
+      this.props.setOpen(this.props.scheme);
     }
     this.props.update();
   }
 
   render() {
     return (
-      <div
-        onClick={(event) => this.handleClick(event)}
+      <Accordion.Item
+        eventKey={this.props.scheme}
         className={classNames("vocabularyFolder", { open: this.state.open })}
       >
-        <span className={"vocabularyLabel"}>
+        <Accordion.Header onClick={(event) => this.handleClick(event)}>
           {getLabelOrBlank(
             CacheSearchVocabularies[this.props.scheme].labels,
             this.props.projectLanguage
           )}
-        </span>
-        {this.props.children}
-      </div>
+        </Accordion.Header>
+        <Accordion.Body>{this.props.children}</Accordion.Body>
+      </Accordion.Item>
     );
   }
 }

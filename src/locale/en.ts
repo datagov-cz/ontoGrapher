@@ -1,8 +1,11 @@
 export const en = {
+  cardinalities: "Cardinalities",
+  noOptions: "No options available",
   unknown: "Not available",
   vocabularySelectInfo:
     "Controls the vocabularies to which this diagram is attached. When a vocabulary is added into a Control Panel projects, only those diagrams assigned to that vocabulary are available.",
   addLanguage: "Add language input",
+  removeLanguage: "Remove last added language input",
   modalNewTropeDescription:
     "Enter a label for the new trope (these cannot be changed later!):",
   createTrope: "Create new trope",

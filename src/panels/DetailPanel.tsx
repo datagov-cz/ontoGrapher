@@ -1,6 +1,6 @@
 import React from "react";
 import { ResizableBox } from "react-resizable";
-import { DetailPanelMode } from "../config/Enum";
+import { DetailPanelMode, MainViewMode } from "../config/Enum";
 import { StoreSettings } from "../config/Store";
 import { WorkspaceElements } from "../config/Variables";
 import { DetailElement } from "./detail/DetailElement";
@@ -29,8 +29,18 @@ export default class DetailPanel extends React.Component<Props, State> {
     };
     this.save = this.save.bind(this);
     StoreSettings.subscribe(
-      (s) => ({ mode: s.detailPanelMode, id: s.detailPanelSelectedID }),
-      (s) => this.setState({ mode: s.mode, id: s.id ? s.id : "" })
+      (s) => ({
+        mode: s.detailPanelMode,
+        id: s.detailPanelSelectedID,
+        view: s.mainViewMode,
+      }),
+      (s) => {
+        if (s.view === MainViewMode.CANVAS)
+          this.setState({ mode: s.mode, id: s.id ? s.id : "" });
+        else if (s.view === MainViewMode.MANAGER) {
+          this.setState({ mode: DetailPanelMode.HIDDEN, id: "" });
+        }
+      }
     );
   }
 

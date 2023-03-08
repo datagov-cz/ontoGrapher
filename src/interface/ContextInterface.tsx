@@ -1,3 +1,12 @@
+import { INSERT } from "@tpluscode/sparql-builder";
+import * as _ from "lodash";
+import { Alert } from "react-bootstrap";
+import { v4 as uuidv4 } from "uuid";
+import TableList from "../components/TableList";
+import { callCriticalAlert } from "../config/CriticalAlertData";
+import { ContextLoadingStrategy } from "../config/Enum";
+import { Locale } from "../config/Locale";
+import { StoreSettings } from "../config/Store";
 import {
   AppSettings,
   Diagrams,
@@ -7,7 +16,25 @@ import {
   WorkspaceTerms,
   WorkspaceVocabularies,
 } from "../config/Variables";
-import { processQuery, processTransaction } from "./TransactionInterface";
+import { CacheSearchVocabularies } from "../datatypes/CacheSearchResults";
+import { insertNewCacheTerms } from "../function/FunctionCache";
+import { addDiagram, addToFlexSearch } from "../function/FunctionCreateVars";
+import { changeDiagrams } from "../function/FunctionDiagram";
+import {
+  deleteConcept,
+  initElements,
+  parsePrefix,
+} from "../function/FunctionEditVars";
+import {
+  isElementHidden,
+  removeReadOnlyElement,
+} from "../function/FunctionElem";
+import { isTermReadOnly } from "../function/FunctionGetVars";
+import { initConnections } from "../function/FunctionRestriction";
+import {
+  fetchReadOnlyTerms,
+  fetchVocabularies,
+} from "../queries/get/CacheQueries";
 import {
   fetchRestrictions,
   fetchTerms,
@@ -19,46 +46,19 @@ import {
   getLinksConfig,
   getSettings,
 } from "../queries/get/InitQueries";
-import {
-  fetchReadOnlyTerms,
-  fetchVocabularies,
-} from "../queries/get/CacheQueries";
 import { qb } from "../queries/QueryBuilder";
+import { updateDeleteDiagram } from "../queries/update/UpdateDiagramQueries";
 import {
   updateProjectElement,
   updateProjectElementNames,
 } from "../queries/update/UpdateElementQueries";
 import {
-  deleteConcept,
-  initElements,
-  parsePrefix,
-} from "../function/FunctionEditVars";
-import {
   updateDeleteProjectLink,
   updateProjectLinkParallel,
 } from "../queries/update/UpdateLinkQueries";
-import { initConnections } from "../function/FunctionRestriction";
-import { insertNewCacheTerms } from "../function/FunctionCache";
-import { addDiagram, addToFlexSearch } from "../function/FunctionCreateVars";
-import { ContextLoadingStrategy, Representation } from "../config/Enum";
-import { Locale } from "../config/Locale";
-import { reconstructApplicationContextWithDiagrams } from "../queries/update/UpdateReconstructAppContext";
 import { updateApplicationContext } from "../queries/update/UpdateMiscQueries";
-import { updateDeleteDiagram } from "../queries/update/UpdateDiagramQueries";
-import { CacheSearchVocabularies } from "../datatypes/CacheSearchResults";
-import * as _ from "lodash";
-import { callCriticalAlert } from "../config/CriticalAlertData";
-import TableList from "../components/TableList";
-import { Alert } from "react-bootstrap";
-import { changeDiagrams } from "../function/FunctionDiagram";
-import { isTermReadOnly } from "../function/FunctionGetVars";
-import {
-  isElementHidden,
-  removeReadOnlyElement,
-} from "../function/FunctionElem";
-import { v4 as uuidv4 } from "uuid";
-import { INSERT } from "@tpluscode/sparql-builder";
-import { StoreSettings } from "../config/Store";
+import { reconstructApplicationContextWithDiagrams } from "../queries/update/UpdateReconstructAppContext";
+import { processQuery, processTransaction } from "./TransactionInterface";
 
 export function retrieveInfoFromURLParameters(): boolean {
   const isURL = require("is-url");
@@ -77,7 +77,15 @@ export function retrieveInfoFromURLParameters(): boolean {
 export async function updateContexts(): Promise<boolean> {
   const { strategy, contextsMissingAppContexts, contextsMissingAttachments } =
     await getSettings(AppSettings.contextEndpoint);
-  await fetchUsers(...Object.values(Diagrams).flatMap((d) => d.collaborators));
+  await fetchUsers(
+    ...Object.values(Diagrams)
+      .flatMap((d) => d.collaborators)
+      .map(
+        (d) =>
+          "https://slovník.gov.cz/uživatel/" +
+          d.replaceAll("https://slovník.gov.cz/uživatel/", "")
+      )
+  );
   if (!AppSettings.applicationContext)
     AppSettings.applicationContext = `${parsePrefix(
       "d-sgov-pracovní-prostor-pojem",
@@ -98,23 +106,13 @@ export async function updateContexts(): Promise<boolean> {
   }
   if (AppSettings.initWorkspace) {
     const queries = [updateApplicationContext()];
-    if (Object.keys(Diagrams).length === 0) {
-      addDiagram(
-        Locale[AppSettings.interfaceLanguage].untitled,
-        true,
-        Representation.COMPACT,
-        0
-      );
-    }
     const ret = await processTransaction(
       AppSettings.contextEndpoint,
       qb.constructQuery(...queries)
     );
     if (!ret) return false;
   }
-  AppSettings.selectedDiagram = Object.keys(Diagrams).reduce((a, b) =>
-    Diagrams[a].index < Diagrams[b].index ? a : b
-  );
+  AppSettings.selectedDiagram = "";
   StoreSettings.update((s) => {
     s.selectedDiagram = AppSettings.selectedDiagram;
   });
@@ -373,7 +371,7 @@ function checkForObsoleteDiagrams() {
             .flatMap((elem) => removeReadOnlyElement(elem))
         );
         for (const diag of diagramsToDelete) {
-          Diagrams[diag].toBeDeleted = false;
+          Diagrams[diag].toBeDeleted = true;
           queries.push(updateDeleteDiagram(diag));
         }
         if (diagramsToDelete.length === workspaceDiagrams.length) {

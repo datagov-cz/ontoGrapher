@@ -2,6 +2,11 @@
   width: 100%;
   display: flex;
   flex-direction: column;
+
+  .spinner-border {
+    margin: 10px;
+    align-self: center;
+  }
 }
 
 .elements {
@@ -17,7 +22,7 @@
 
   .accordion {
     overflow: auto;
-    height: 100%;
+    // height: 100%;
   }
 
   .lucene {

@@ -20,7 +20,6 @@ export default class MenuPanelReport extends React.Component<Props, State> {
           href={Environment.components["al-issue-tracker"].meta["new-bug"]}
           align={{ sm: "start" }}
           target={"_blank"}
-          // TODO i18n
           toggleLabel=""
         >
           <Dropdown.Item

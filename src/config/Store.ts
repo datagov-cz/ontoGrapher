@@ -10,6 +10,7 @@ export const StoreAlerts = new Store<StateAlerts>({
 });
 
 interface StateSettings {
+  diagramPanelSelectedDiagram: string;
   // For diagram manager
   mainViewMode: MainViewMode;
   selectedDiagram: string;
@@ -23,4 +24,5 @@ export const StoreSettings = new Store<StateSettings>({
   detailPanelMode: DetailPanelMode.HIDDEN,
   detailPanelSelectedID: "",
   selectedDiagram: "",
+  diagramPanelSelectedDiagram: "",
 });

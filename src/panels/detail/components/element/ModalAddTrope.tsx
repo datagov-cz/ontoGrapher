@@ -114,17 +114,20 @@ export const ModalAddTrope: React.FC<Props> = (props: Props) => {
 
   const getUnusedTropes: () => string[] = () => {
     return Object.keys(WorkspaceTerms)
-      .filter((term) =>
-        WorkspaceTerms[term].types.includes(
-          parsePrefix("z-sgov-pojem", "typ-vlastnosti")
-        )
+      .filter(
+        (term) =>
+          WorkspaceTerms[term].types.includes(
+            parsePrefix("z-sgov-pojem", "typ-vlastnosti")
+          ) && WorkspaceElements[term].active
       )
       .filter((t) => !isTermReadOnly(t))
       .filter(
         (t) =>
           !Object.keys(WorkspaceLinks).find(
             (l) =>
-              WorkspaceLinks[l].source === t || WorkspaceLinks[l].target === t
+              (WorkspaceLinks[l].source === t ||
+                WorkspaceLinks[l].target === t) &&
+              WorkspaceLinks[l].active
           )
       );
   };
@@ -151,7 +154,7 @@ export const ModalAddTrope: React.FC<Props> = (props: Props) => {
       }
       props.update();
     }
-    if (activeKey === "existing") {
+    if (activeKey === "exist") {
       const link = getNewLink(LinkType.DEFAULT);
       props.performTransaction(
         ...updateConnection(
@@ -220,7 +223,7 @@ export const ModalAddTrope: React.FC<Props> = (props: Props) => {
               {Locale[AppSettings.interfaceLanguage].modalNewTropeDescription}
             </p>
             {activatedInputs.map((lang, i) => (
-              <InputGroup>
+              <InputGroup key={i}>
                 <InputGroup.Text>
                   <img
                     className="flag"
@@ -293,6 +296,7 @@ export const ModalAddTrope: React.FC<Props> = (props: Props) => {
                   <ListGroup.Item
                     action
                     variant="light"
+                    key={t}
                     active={t === selectedTrope}
                     onClick={() => {
                       setSelectedTrope(t);

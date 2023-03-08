@@ -1,5 +1,7 @@
 import React from "react";
-import { Diagrams } from "../config/Variables";
+import { StoreSettings } from "../config/Store";
+import { AppSettings, Diagrams } from "../config/Variables";
+import { changeDiagrams } from "../function/FunctionDiagram";
 import { updateCreateDiagram } from "../queries/update/UpdateDiagramQueries";
 import DiagramHome from "./diagram/DiagramHome";
 import { DiagramTab } from "./diagram/DiagramTab";
@@ -27,6 +29,10 @@ export default class DiagramPanel extends React.Component<Props, State> {
       modalRemoveDiagram: false,
       selectedDiagram: "",
     };
+    StoreSettings.subscribe(
+      (s) => s.diagramPanelSelectedDiagram,
+      () => this.forceUpdate()
+    );
   }
 
   closeDiagram(diag: string) {
@@ -35,6 +41,9 @@ export default class DiagramPanel extends React.Component<Props, State> {
       const queries = [];
       queries.push(updateCreateDiagram(diag));
       this.props.performTransaction(...queries);
+    }
+    if (AppSettings.selectedDiagram === diag) {
+      changeDiagrams();
     }
     this.props.update();
   }

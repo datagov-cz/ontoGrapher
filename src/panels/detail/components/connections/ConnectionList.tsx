@@ -1,8 +1,12 @@
+import AddIcon from "@mui/icons-material/Add";
+import DeselectIcon from "@mui/icons-material/Deselect";
+import FilterAltIcon from "@mui/icons-material/FilterAlt";
+import FilterAltOffIcon from "@mui/icons-material/FilterAltOff";
+import SelectAllIcon from "@mui/icons-material/SelectAll";
 import classNames from "classnames";
 import React from "react";
-import { OverlayTrigger, Tooltip, Button } from "react-bootstrap";
+import { Button, OverlayTrigger, Spinner, Tooltip } from "react-bootstrap";
 import _ from "underscore";
-import TableList from "../../../../components/TableList";
 import { Representation } from "../../../../config/Enum";
 import { Locale } from "../../../../config/Locale";
 import {
@@ -24,11 +28,6 @@ import { CacheConnection } from "../../../../types/CacheConnection";
 import ConnectionCache from "./ConnectionCache";
 import ConnectionFilter from "./ConnectionFilter";
 import ConnectionWorkspace from "./ConnectionWorkspace";
-import AddIcon from "@mui/icons-material/Add";
-import DeselectIcon from "@mui/icons-material/Deselect";
-import SelectAllIcon from "@mui/icons-material/SelectAll";
-import FilterAltIcon from "@mui/icons-material/FilterAlt";
-import FilterAltOffIcon from "@mui/icons-material/FilterAltOff";
 
 interface Props {
   //Element ID from DetailElement
@@ -45,6 +44,7 @@ interface State {
   showFilter: boolean;
   showLucene: boolean;
   shownLucene: CacheConnection[];
+  loadingLucene: boolean;
 }
 
 export default class ConnectionList extends React.Component<Props, State> {
@@ -61,8 +61,9 @@ export default class ConnectionList extends React.Component<Props, State> {
       selected: [],
       shownConnections: [],
       showFilter: false,
-      showLucene: false,
+      showLucene: true,
       shownLucene: [],
+      loadingLucene: false,
     };
     this.updateFilter = this.updateFilter.bind(this);
     this.updateSelection = this.updateSelection.bind(this);
@@ -110,10 +111,12 @@ export default class ConnectionList extends React.Component<Props, State> {
     ).sort();
   }
   getConnectionsFromOtherVocabularies() {
+    this.setState({ loadingLucene: true });
     getCacheConnections(this.props.id).then((connections) =>
       this.setState(
         {
           shownLucene: connections,
+          loadingLucene: false,
         },
         () => this.setState({ shownConnections: this.filter() })
       )
@@ -189,9 +192,10 @@ export default class ConnectionList extends React.Component<Props, State> {
 
   componentDidMount() {
     this.setState({ shownConnections: this.filter() });
+    this.getConnectionsFromOtherVocabularies();
   }
 
-  componentDidUpdate(prevProps: Readonly<Props>, prevState: Readonly<State>) {
+  componentDidUpdate(prevProps: Readonly<Props>) {
     if (prevProps.id !== this.props.id && this.props.id) {
       this.setState({ shownConnections: this.filter() });
     }
@@ -381,53 +385,39 @@ export default class ConnectionList extends React.Component<Props, State> {
               selection={this.state.selected}
               infoFunction={(link: string) => this.props.infoFunction(link)}
               performTransaction={this.props.performTransaction}
+              update={() => this.setState({ shownConnections: this.filter() })}
             />
           ))}
-          <div className={"lucene"}>
-            <button
-              onClick={() => {
-                this.setState({ showLucene: !this.state.showLucene }, () => {
-                  if (this.state.showLucene)
-                    this.getConnectionsFromOtherVocabularies();
-                });
-              }}
-              className="buttonlink"
-            >
-              {(this.state.showLucene ? "ᐯ " : "ᐱ ") +
-                Locale[AppSettings.interfaceLanguage]
-                  .termsFromOtherVocabularies}
-            </button>
-          </div>
-          {this.state.showLucene && (
-            <TableList>
-              {this.state.shownLucene
-                .filter((connection) =>
-                  getLabelOrBlank(
-                    connection.target.labels,
-                    this.props.projectLanguage
-                  )
-                    .toLowerCase()
-                    .trim()
-                    .includes(this.state.filter.search)
-                )
-                .map((connection) => (
-                  <ConnectionCache
-                    key={`${connection.link}->${connection.target.iri}`}
-                    connection={connection}
-                    projectLanguage={this.props.projectLanguage}
-                    update={() => {
-                      this.getConnectionsFromOtherVocabularies();
-                      this.setState({ selected: [] });
-                    }}
-                    elemID={this.props.id}
-                    selected={this.state.selected.includes(
-                      connection.target.iri
-                    )}
-                    selection={this.state.selected}
-                    updateSelection={this.updateSelection}
-                  />
-                ))}
-            </TableList>
+          {this.state.shownLucene
+            .filter((connection) =>
+              getLabelOrBlank(
+                connection.target.labels,
+                this.props.projectLanguage
+              )
+                .toLowerCase()
+                .trim()
+                .includes(this.state.filter.search)
+            )
+            .map((connection) => (
+              <ConnectionCache
+                key={`${connection.link}->${connection.target.iri}`}
+                connection={connection}
+                projectLanguage={this.props.projectLanguage}
+                update={() => {
+                  this.getConnectionsFromOtherVocabularies();
+                  this.setState({ selected: [] });
+                }}
+                elemID={this.props.id}
+                selected={this.state.selected.includes(connection.target.iri)}
+                selection={this.state.selected}
+                updateSelection={this.updateSelection}
+                performTransaction={this.props.performTransaction}
+              />
+            ))}
+          {this.state.loadingLucene && (
+            <div className="spinnerFlex">
+              <Spinner animation="border" variant="dark" />
+            </div>
           )}
         </div>
       </div>

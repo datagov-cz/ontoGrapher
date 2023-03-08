@@ -32,6 +32,7 @@ import { StoreSettings } from "../../config/Store";
 import {
   AppSettings,
   Diagrams,
+  Users,
   WorkspaceElements,
   WorkspaceLinks,
   WorkspaceVocabularies,
@@ -40,13 +41,17 @@ import { addDiagram } from "../../function/FunctionCreateVars";
 import { getLabelOrBlank } from "../../function/FunctionGetVars";
 import ModalRemoveDiagram from "../modal/ModalRemoveDiagram";
 import DiagramPreview from "./DiagramPreview";
-
-var md5 = require("md5");
+import {
+  updateCreateDiagram,
+  updateDiagram,
+  updateDiagramAssignments,
+} from "../../queries/update/UpdateDiagramQueries";
 
 type Props = {
   projectLanguage: string;
   performTransaction: (...queries: string[]) => void;
   update: Function;
+  freeze: boolean;
 };
 
 type FlexDiagrams = {
@@ -101,16 +106,14 @@ export const DiagramManager: React.FC<Props> = (props: Props) => {
       value: string;
     }>
   >([]);
-
-  const [changes, setChanges] = useState<boolean>(false);
   const [selectedDiagram, setSelectedDiagram] = useState<string>("");
   const [selectedDiagramName, setSelectedDiagramName] = useState<string>("");
   const [selectedDiagramDescription, setSelectedDiagramDescription] =
     useState<string>("");
   const [hoveredDiagram, setHoveredDiagram] = useState<string>("");
   const [preview, setPreview] = useState<boolean>(false);
-  useEffect(() => {
-    setDiagrams(Object.keys(Diagrams));
+  const initialize = () => {
+    setDiagrams(Object.keys(Diagrams).filter((d) => !Diagrams[d].toBeDeleted));
     setAvailableVocabs(
       _.compact(
         _.uniq(
@@ -118,8 +121,13 @@ export const DiagramManager: React.FC<Props> = (props: Props) => {
         )
       )
     );
-    addToSearch(...Object.keys(Diagrams));
-  }, []);
+    addToSearch(
+      ...Object.keys(Diagrams).filter((d) => !Diagrams[d].toBeDeleted)
+    );
+  };
+
+  useEffect(initialize, []);
+  useEffect(initialize, [props.freeze]);
 
   useEffect(() => {
     const searchResults: Id[] = _.flatten(
@@ -146,8 +154,8 @@ export const DiagramManager: React.FC<Props> = (props: Props) => {
     [state.selectedDiagram]
   );
 
-  const selectDiagram = (diag: string) => {
-    setPreview(false);
+  const selectDiagram = (diag: string, preview: boolean) => {
+    setPreview(preview);
     setSelectedDiagram(diag);
     setSelectedDiagramName(Diagrams[diag].name);
     setSelectedDiagramDescription(
@@ -169,7 +177,6 @@ export const DiagramManager: React.FC<Props> = (props: Props) => {
   };
 
   const save = () => {
-    const prevVocabularies = _.clone(Diagrams[selectedDiagram].vocabularies);
     Diagrams[selectedDiagram].name = selectedDiagramName;
     Diagrams[selectedDiagram].description = selectedDiagramDescription;
     Diagrams[selectedDiagram].modifiedDate = new Date();
@@ -179,8 +186,15 @@ export const DiagramManager: React.FC<Props> = (props: Props) => {
         ...Diagrams[selectedDiagram].collaborators,
         AppSettings.currentUser,
       ]);
+    props.performTransaction(
+      updateDiagram(selectedDiagram),
+      updateDiagramAssignments(selectedDiagram)
+    );
+    selectDiagram(selectedDiagram, preview);
+  };
 
-    // TODO: save collaborators, lastmodified
+  const saveActive = (id: string) => {
+    props.performTransaction(updateDiagram(id), updateDiagramAssignments(id));
   };
 
   return (
@@ -241,9 +255,10 @@ export const DiagramManager: React.FC<Props> = (props: Props) => {
             <div className="diagramList">
               {diagrams.map((diag, i) => (
                 <div
+                  key={diag}
                   onMouseEnter={() => setHoveredDiagram(diag)}
                   onMouseLeave={() => setHoveredDiagram("")}
-                  onClick={() => selectDiagram(diag)}
+                  onClick={() => selectDiagram(diag, false)}
                   className={classNames("diagramListItem", {
                     selected: diag === selectedDiagram,
                     hovered:
@@ -259,6 +274,7 @@ export const DiagramManager: React.FC<Props> = (props: Props) => {
                       <span className="vocabularies">
                         {Diagrams[diag].vocabularies?.map((v) => (
                           <VocabularyBadge
+                            key={v}
                             text={getVocabularyShortLabel(v).toLowerCase()}
                             color={WorkspaceVocabularies[v].color}
                             cancellable={false}
@@ -285,6 +301,7 @@ export const DiagramManager: React.FC<Props> = (props: Props) => {
                               onClick={(e) => {
                                 e.stopPropagation();
                                 Diagrams[diag].active = true;
+                                saveActive(diag);
                                 props.update();
                               }}
                               className="plainButton"
@@ -310,6 +327,7 @@ export const DiagramManager: React.FC<Props> = (props: Props) => {
                               onClick={(e) => {
                                 e.stopPropagation();
                                 Diagrams[diag].active = false;
+                                saveActive(diag);
                                 props.update();
                               }}
                               className="plainButton"
@@ -359,13 +377,16 @@ export const DiagramManager: React.FC<Props> = (props: Props) => {
                     true,
                     Representation.COMPACT
                   );
+                  Diagrams[id].saved = true;
                   Object.keys(WorkspaceElements).forEach(
                     (elem) => (WorkspaceElements[elem].hidden[id] = true)
                   );
                   Object.keys(WorkspaceLinks).forEach(
                     (link) => (WorkspaceLinks[link].vertices[id] = [])
                   );
+                  props.performTransaction(updateCreateDiagram(id));
                   props.update();
+                  initialize();
                 }}
                 className={classNames("diagramListItem", "bottom", {
                   hovered: "newDiagram" === hoveredDiagram,
@@ -421,10 +442,18 @@ export const DiagramManager: React.FC<Props> = (props: Props) => {
                         {Diagrams[selectedDiagram].collaborators
                           ? Diagrams[selectedDiagram].collaborators.map((c) => (
                               <Avatar
+                                key={c}
                                 className="avatar"
-                                // alt={`${Users[c].given_name} ${Users[c].family_name}`}
+                                alt={
+                                  c in Users
+                                    ? `${Users[c].given_name} ${Users[c].family_name}`
+                                    : ""
+                                }
                               >
-                                {/* Users[c].given_name[0] + Users[c].family_name[0] */}
+                                {c in Users
+                                  ? Users[c].given_name.toUpperCase()[0] +
+                                    Users[c].family_name.toUpperCase()[0]
+                                  : ""}
                               </Avatar>
                             ))
                           : Locale[AppSettings.interfaceLanguage].unknown}
@@ -475,7 +504,7 @@ export const DiagramManager: React.FC<Props> = (props: Props) => {
                           onChange={(event) =>
                             setSelectedDiagramName(event.currentTarget.value)
                           }
-                          onBlur={() => setChanges(true)}
+                          onBlur={() => save()}
                         />
                       </Form.Group>
                       <Form.Group className="mb-3">
@@ -491,7 +520,7 @@ export const DiagramManager: React.FC<Props> = (props: Props) => {
                               event.currentTarget.value
                             )
                           }
-                          onBlur={() => setChanges(true)}
+                          onBlur={() => save()}
                         />
                       </Form.Group>
                       <Form.Group className="mb-3">
@@ -543,7 +572,7 @@ export const DiagramManager: React.FC<Props> = (props: Props) => {
                             Diagrams[selectedDiagram].vocabularies = option.map(
                               (o) => o.value
                             );
-                            setChanges(true);
+                            save();
                           }}
                         />
                       </Form.Group>
@@ -561,8 +590,9 @@ export const DiagramManager: React.FC<Props> = (props: Props) => {
         close={() => setModalRemoveDiagram(false)}
         update={() => {
           removeFromSearch(selectedDiagram);
-          props.update();
           setSelectedDiagram("");
+          props.update();
+          initialize();
         }}
         performTransaction={props.performTransaction}
       />

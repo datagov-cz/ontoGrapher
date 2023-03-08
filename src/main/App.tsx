@@ -1,4 +1,5 @@
 import hotkeys from "hotkeys-js";
+import * as _ from "lodash";
 import React from "react";
 import {
   CreationModals,
@@ -6,7 +7,11 @@ import {
   LinkCreationConfiguration,
 } from "../components/modals/CreationModals";
 import { CriticalAlertModal } from "../components/modals/CriticalAlertModal";
-import { DetailPanelMode, ElemCreationStrategy } from "../config/Enum";
+import {
+  DetailPanelMode,
+  ElemCreationStrategy,
+  MainViewMode,
+} from "../config/Enum";
 import { Environment } from "../config/Environment";
 import { Locale } from "../config/Locale";
 import { StoreAlerts, StoreSettings } from "../config/Store";
@@ -18,7 +23,6 @@ import {
 } from "../config/Variables";
 import { dumpDebugData, loadDebugData } from "../function/FunctionDebug";
 import {
-  changeDiagrams,
   highlightElement,
   resetDiagramSelection,
 } from "../function/FunctionDiagram";
@@ -52,9 +56,9 @@ import MenuPanel from "../panels/MenuPanel";
 import ValidationPanel from "../panels/ValidationPanel";
 import VocabularyPanel from "../panels/VocabularyPanel";
 import { qb } from "../queries/QueryBuilder";
-import { MainView } from "./MainView";
-import * as _ from "lodash";
 import { updateVocabularyAnnotations } from "../queries/update/UpdateChangeQueries";
+import { updateDiagramMetadata } from "../queries/update/UpdateDiagramQueries";
+import { MainView } from "./MainView";
 
 interface DiagramAppProps {}
 
@@ -148,9 +152,11 @@ export default class App extends React.Component<
       hotkeys("ctrl+alt+d", () => dumpDebugData());
       this.handleChangeLanguage(AppSettings.canvasLanguage);
       setSchemeColors(AppSettings.viewColorPool);
-      changeDiagrams();
       this.itemPanel.current?.update();
       this.checkLastViewedVersion();
+      StoreSettings.update((s) => {
+        s.mainViewMode = MainViewMode.MANAGER;
+      });
       this.handleWorkspaceReady();
     };
     if (Environment.debug && loadDebugData()) finishUp();
@@ -219,7 +225,10 @@ export default class App extends React.Component<
       ...queriesTrimmed,
       ..._.uniq(AppSettings.changedVocabularies).map((v) =>
         updateVocabularyAnnotations(v)
-      )
+      ),
+      ...(AppSettings.selectedDiagram
+        ? [updateDiagramMetadata(AppSettings.selectedDiagram)]
+        : [])
     );
     AppSettings.changedVocabularies = [];
     this.handleStatus(

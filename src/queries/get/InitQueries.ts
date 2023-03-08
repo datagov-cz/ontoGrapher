@@ -179,15 +179,16 @@ export async function getSettings(contextEndpoint: string): Promise<{
   };
   const query = [
     "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
-    "select distinct ?vocabContext ?ogContext ?graph ?diagram ?index ?name ?color ?id ?representation ?context ?vocabulary ?description ?collaborator ?creationDate ?modifyDate where {",
+    "select distinct ?active ?vocabContext ?ogContext ?graph ?diagram ?index ?name ?color ?id ?representation ?context ?vocabulary ?description ?collaborator ?creationDate ?modifyDate where {",
     "optional {?vocabContext <https://slovník.gov.cz/datový/pracovní-prostor/pojem/odkazuje-na-přílohový-kontext> ?graph .",
     "graph ?graph {",
     " ?diagram og:index ?index .",
     " ?diagram og:name ?name .",
     " ?diagram og:id ?id .",
     " ?diagram og:representation ?representation .",
-    " optional {?diagram og:description ?description. ",
-    "           ?diagram og:vocabulary ?vocabulary. ",
+    " optional {?diagram og:active ?active.}",
+    " optional {?diagram og:description ?description.}",
+    " optional {?diagram og:vocabulary ?vocabulary. ",
     "           ?diagram og:collaborator ?collaborator. ",
     "           ?diagram og:creationDate ?creationDate. ",
     "           ?diagram og:modifiedDate ?modifyDate. ",
@@ -255,6 +256,9 @@ export async function getSettings(contextEndpoint: string): Promise<{
         } else {
           reconstructWorkspace = true;
         }
+        if (result.active) {
+          Diagrams[result.id.value].active = result.active.value === "true";
+        }
         if (result.description) {
           Diagrams[result.id.value].description = result.description.value;
         }
@@ -267,7 +271,10 @@ export async function getSettings(contextEndpoint: string): Promise<{
         if (result.collaborator) {
           Diagrams[result.id.value].collaborators = _.uniq([
             ...Diagrams[result.id.value].collaborators,
-            result.collaborator.value,
+            result.collaborator.value.replace(
+              "https://slovník.gov.cz/uživatel/",
+              ""
+            ),
           ]);
         }
         if (result.creationDate) {
@@ -290,7 +297,11 @@ export async function getSettings(contextEndpoint: string): Promise<{
           Object.values(Diagrams).length
       );
       Object.entries(Diagrams).forEach(([key, value]) => {
-        if (!indices.includes(value.index)) Diagrams[key].toBeDeleted = false;
+        if (!indices.includes(value.index)) Diagrams[key].toBeDeleted = true;
+        if (value.vocabularies.length === 0)
+          Diagrams[key].vocabularies = Object.keys(
+            WorkspaceVocabularies
+          ).filter((v) => !WorkspaceVocabularies[v].readOnly);
       });
       ret.strategy = reconstructWorkspace
         ? ContextLoadingStrategy.RECONSTRUCT_WORKSPACE

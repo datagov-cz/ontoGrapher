@@ -127,7 +127,6 @@ export var Diagrams: {
     graph: string;
     saved: boolean;
     toBeDeleted: boolean;
-    // TODO: refactor for all implementations of Diagrams
     vocabularies: string[];
     description: string;
     modifiedDate: Date;
@@ -192,7 +191,7 @@ export var AppSettings: {
   lastTransactions: [],
   lastTransactionID: "",
   switchElements: [],
-  defaultLanguage: "cz",
+  defaultLanguage: "cs",
   viewStereotypes: true,
   viewZoom: 1,
   viewColorPool: "pastelLow",
@@ -216,3 +215,4 @@ export var CardinalityPool: Cardinality[] = [
   new Cardinality("2", "2"),
   new Cardinality("2", "*"),
 ];
+export { Languages };

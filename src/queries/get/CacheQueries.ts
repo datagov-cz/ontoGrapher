@@ -1,6 +1,3 @@
-import _ from "lodash";
-import { Representation } from "../../config/Enum";
-import { RepresentationConfig } from "../../config/logic/RepresentationConfig";
 import { RestrictionConfig } from "../../config/logic/RestrictionConfig";
 import { AppSettings, Links, WorkspaceTerms } from "../../config/Variables";
 import {

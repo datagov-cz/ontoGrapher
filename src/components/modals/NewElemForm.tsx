@@ -107,7 +107,7 @@ export const NewElemForm: React.FC<Props> = (props) => {
     <div>
       <p>{Locale[AppSettings.interfaceLanguage].modalNewElemDescription}</p>
       {activatedInputs.map((lang, i) => (
-        <InputGroup>
+        <InputGroup key={i}>
           <InputGroup.Text>
             <img
               className="flag"
@@ -138,7 +138,7 @@ export const NewElemForm: React.FC<Props> = (props) => {
           props.setTermName("", removeLang!);
           setActivatedInputs((prev) => _.dropRight(prev, 1));
         }}
-        tooltipText={""}
+        tooltipText={Locale[AppSettings.interfaceLanguage].addLanguage}
         unfilledLanguages={Object.keys(Languages).filter(
           (l) => !activatedInputs.includes(l)
         )}
@@ -184,7 +184,7 @@ export const NewElemForm: React.FC<Props> = (props) => {
         }
 					${createNewElemIRI(
             WorkspaceVocabularies[props.selectedVocabulary].glossary,
-            props.termName[AppSettings.defaultLanguage]
+            props.termName[AppSettings.interfaceLanguage]
           )}`}</Alert>
       )}
       {props.errorText && <Alert variant="danger">{props.errorText}</Alert>}

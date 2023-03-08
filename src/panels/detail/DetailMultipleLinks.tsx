@@ -2,6 +2,7 @@ import React from "react";
 import { Alert, Dropdown, ListGroup } from "react-bootstrap";
 import { LanguageSelector } from "../../components/LanguageSelector";
 import { LinkType, Representation } from "../../config/Enum";
+import { Locale } from "../../config/Locale";
 import {
   AppSettings,
   CardinalityPool,
@@ -212,8 +213,7 @@ export default class DetailMultipleLinks extends React.Component<Props, State> {
               </span>
             </div>
           </div>
-
-          <h5>Kardinality</h5>
+          <h5>{Locale[AppSettings.interfaceLanguage].cardinalities}</h5>
           <div className="linkCardinalities">
             <svg
               width="100%"

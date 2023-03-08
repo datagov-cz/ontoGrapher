@@ -32,7 +32,10 @@ export const ListLanguageControls: React.FC<Props> = (props: Props) => {
           </Dropdown.Toggle>
           <Dropdown.Menu>
             {props.unfilledLanguages.map((lang) => (
-              <Dropdown.Item onClick={() => props.addLanguageInput(lang)}>
+              <Dropdown.Item
+                key={lang}
+                onClick={() => props.addLanguageInput(lang)}
+              >
                 <img
                   src={`http://purecatamphetamine.github.io/country-flag-icons/3x2/${Flags[lang]}.svg`}
                   alt={Languages[lang]}
@@ -48,7 +51,7 @@ export const ListLanguageControls: React.FC<Props> = (props: Props) => {
         placement="bottom"
         overlay={
           <Tooltip>
-            {Locale[AppSettings.interfaceLanguage].workspaceReady}
+            {Locale[AppSettings.interfaceLanguage].removeLanguage}
           </Tooltip>
         }
       >

@@ -14,7 +14,7 @@ import {
   getLabelOrBlank,
 } from "./FunctionGetVars";
 import { ElementColors } from "../config/visual/ElementColors";
-import _ from "underscore";
+import _ from "lodash";
 
 export function getListClassNamesObject(arr: any[], i: number) {
   return {
@@ -161,11 +161,13 @@ export function unHighlightCell(
 export function unHighlightAll() {
   for (const cell of graph.getElements()) {
     cell.attr({
-      [getElementShape(cell.id)]: { stroke: ElementColors.default },
+      [getElementShape(cell.id)]: {
+        filter: "none",
+      },
     });
   }
   for (const cell of graph.getLinks()) {
-    cell.attr({ line: { stroke: ElementColors.default } });
+    cell.attr({ line: { filter: "none" } });
   }
 }
 

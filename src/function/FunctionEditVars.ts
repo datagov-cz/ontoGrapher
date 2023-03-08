@@ -70,7 +70,7 @@ export function loadUML() {
   for (const type in LinkConfig) {
     const intType = parseInt(type, 10);
     if (intType !== LinkType.DEFAULT) {
-      Links[scheme + "/" + LinkConfig[type].labels["en"]] = {
+      Links[scheme + "/generalization"] = {
         subClassOfDomain: [],
         subClassOfRange: [],
         labels: LinkConfig[type].labels,

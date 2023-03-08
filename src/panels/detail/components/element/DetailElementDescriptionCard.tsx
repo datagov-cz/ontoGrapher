@@ -15,6 +15,7 @@ import {
   AppSettings,
   Stereotypes,
   WorkspaceElements,
+  WorkspaceLinks,
   WorkspaceTerms,
   WorkspaceVocabularies,
 } from "../../../../config/Variables";
@@ -23,6 +24,7 @@ import {
   drawGraphElement,
   getListClassNamesObject,
   getSelectedLabels,
+  redrawElement,
 } from "../../../../function/FunctionDraw";
 import { getName, parsePrefix } from "../../../../function/FunctionEditVars";
 import { resizeElem } from "../../../../function/FunctionElem";
@@ -32,6 +34,7 @@ import {
   getParentOfIntrinsicTropeType,
   getVocabularyFromScheme,
 } from "../../../../function/FunctionGetVars";
+import { deleteConnections } from "../../../../function/FunctionLink";
 import { graph } from "../../../../graph/Graph";
 import { updateProjectElement } from "../../../../queries/update/UpdateElementQueries";
 import { DetailPanelAltLabels } from "../description/DetailPanelAltLabels";
@@ -181,7 +184,7 @@ export class DetailElementDescriptionCard extends React.Component<
       this.setState({ changes: false });
       this.props.performTransaction(updateProjectElement(true, this.props.id));
     } else {
-      throw new Error("Attemted write to a read-only term.");
+      throw new Error("Attempted write to a read-only term.");
     }
   }
 
@@ -280,9 +283,8 @@ export class DetailElementDescriptionCard extends React.Component<
                   ...prev,
                   inputDefinitions: {
                     ...prev.inputDefinitions,
-                    [this.props.selectedLanguage]: event.currentTarget.value,
+                    [this.props.selectedLanguage]: event.target.value,
                   },
-                  changes: true,
                 }));
             }}
             onBlur={() => {
@@ -292,6 +294,7 @@ export class DetailElementDescriptionCard extends React.Component<
           <h5>{Locale[AppSettings.interfaceLanguage].intrinsicTropes}</h5>
           {tropes.map((iri, i) => (
             <div
+              key={iri}
               onMouseEnter={() => this.setState({ hoveredTrope: i })}
               onMouseLeave={() => this.setState({ hoveredTrope: -1 })}
               className={classNames(
@@ -321,7 +324,23 @@ export class DetailElementDescriptionCard extends React.Component<
                     </Tooltip>
                   }
                 >
-                  <Button className="plainButton" variant="light">
+                  <Button
+                    className="plainButton"
+                    variant="light"
+                    onClick={() => {
+                      for (const l of Object.keys(WorkspaceLinks)) {
+                        if (
+                          (WorkspaceLinks[l].source === iri ||
+                            WorkspaceLinks[l].target === iri) &&
+                          WorkspaceLinks[l].active
+                        )
+                          this.props.performTransaction(
+                            ...deleteConnections(l)
+                          );
+                      }
+                      redrawElement(this.props.id, AppSettings.canvasLanguage);
+                    }}
+                  >
                     <RemoveIcon />
                   </Button>
                 </OverlayTrigger>

@@ -7,7 +7,7 @@ import { v4 as uuidv4 } from "uuid";
 import { ChangeType, Change } from "../../config/ChangeTypes";
 
 function getUserIRI(): string {
-  return `${AppSettings.cacheContext}/uživatel/${AppSettings.currentUser!.id}`;
+  return `${AppSettings.cacheContext}/uživatel/${AppSettings.currentUser!}`;
 }
 
 export function updateVocabularyAnnotations(vocabulary: string): string {

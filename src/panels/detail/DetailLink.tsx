@@ -1,11 +1,9 @@
-import LabelIcon from "@mui/icons-material/Label";
-import LabelOffIcon from "@mui/icons-material/LabelOff";
-import classNames from "classnames";
 import React from "react";
-import { Button, Dropdown, Form } from "react-bootstrap";
 import { LanguageSelector } from "../../components/LanguageSelector";
-import { LinkType, Representation } from "../../config/Enum";
+import { Representation } from "../../config/Enum";
+import { Locale } from "../../config/Locale";
 import {
+  AlternativeLabel,
   AppSettings,
   CardinalityPool,
   Links,
@@ -15,14 +13,8 @@ import {
   WorkspaceVocabularies,
 } from "../../config/Variables";
 import { Cardinality } from "../../datatypes/Cardinality";
-import {
-  getDisplayLabel,
-  getListClassNamesObject,
-} from "../../function/FunctionDraw";
-import {
-  initLanguageObject,
-  parsePrefix,
-} from "../../function/FunctionEditVars";
+import { getDisplayLabel } from "../../function/FunctionDraw";
+import { initLanguageObject } from "../../function/FunctionEditVars";
 import {
   getLabelOrBlank,
   getLinkOrVocabElem,
@@ -35,7 +27,8 @@ import { graph } from "../../graph/Graph";
 import { updateConnections } from "../../queries/update/UpdateConnectionQueries";
 import { updateProjectElement } from "../../queries/update/UpdateElementQueries";
 import { updateProjectLink } from "../../queries/update/UpdateLinkQueries";
-import { ListItemControls } from "./components/items/ListItemControls";
+import { DetailPanelAltLabels } from "./components/description/DetailPanelAltLabels";
+import { DetailPanelCardinalities } from "./components/description/DetailPanelCardinalities";
 
 interface Props {
   projectLanguage: string;
@@ -100,34 +93,6 @@ export default class DetailLink extends React.Component<Props, State> {
     return WorkspaceVocabularies[
       getVocabularyFromScheme(WorkspaceTerms[iri].inScheme)
     ].readOnly;
-  }
-
-  prepareLinkOptions() {
-    const result: JSX.Element[] = [];
-    if (AppSettings.representation === Representation.FULL) {
-      for (const iri in Links) {
-        if (Links[iri].type === LinkType.DEFAULT)
-          result.push(
-            <option key={iri} value={iri}>
-              {getLabelOrBlank(Links[iri].labels, this.props.projectLanguage)}
-            </option>
-          );
-      }
-    } else if (AppSettings.representation === Representation.COMPACT) {
-      for (const iri in WorkspaceTerms) {
-        if (
-          WorkspaceTerms[iri].types.includes(
-            parsePrefix("z-sgov-pojem", "typ-vztahu")
-          )
-        )
-          result.push(
-            <option value={iri}>
-              {getLabelOrBlank(Links[iri].labels, this.props.projectLanguage)}
-            </option>
-          );
-      }
-    }
-    return result;
   }
 
   prepareCardinality(cardinality: string): Cardinality {
@@ -241,17 +206,7 @@ export default class DetailLink extends React.Component<Props, State> {
     }
   }
 
-  isAltLabelSelectedLabel(alt: { label: string; language: string }): boolean {
-    return (
-      this.state.selectedLabel[this.props.projectLanguage] === alt.label &&
-      this.props.projectLanguage === alt.language
-    );
-  }
-
   render() {
-    const altLabels = this.state.inputAltLabels.filter(
-      (alt) => alt.language === this.props.projectLanguage
-    );
     return (
       <div className="detailElement">
         <div className={"accordions"}>
@@ -290,146 +245,46 @@ export default class DetailLink extends React.Component<Props, State> {
               </span>
             </div>
           </div>
-
-          <h5>Kardinality</h5>
-          <div className="linkCardinalities">
-            <svg
-              width="100%"
-              height="24px"
-              preserveAspectRatio="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <defs>
-                <marker
-                  id={"link"}
-                  viewBox="0 0 10 10"
-                  refX="9"
-                  refY="5"
-                  markerUnits="strokeWidth"
-                  markerWidth="7"
-                  markerHeight="7"
-                  orient="auto-start-reverse"
-                >
-                  <path d="M 0 0 L 10 5 L 0 10 z" fill="#000" />
-                </marker>
-              </defs>
-              <line
-                x1="2%"
-                y1="50%"
-                x2="100%"
-                y2="50%"
-                strokeWidth="2"
-                stroke="#000"
-                markerEnd={"url(#link)"}
-              />
-            </svg>
-            <Dropdown>
-              <Dropdown.Toggle
-                className="plainButton"
-                variant="light"
-                disabled={this.state.readOnly}
-              >
-                {CardinalityPool[
-                  parseInt(this.state.sourceCardinality, 10)
-                ].getString()}
-              </Dropdown.Toggle>
-              <Dropdown.Menu>
-                {CardinalityPool.map((card, i) => (
-                  <Dropdown.Item
-                    disabled={i.toString(10) === this.state.sourceCardinality}
-                  >
-                    {card.getString()}
-                  </Dropdown.Item>
-                ))}
-              </Dropdown.Menu>
-            </Dropdown>
-            {this.props.id in WorkspaceLinks && (
-              <span className="plainButton">
-                {getLabelOrBlank(
-                  getLinkOrVocabElem(WorkspaceLinks[this.props.id].iri).labels,
-                  this.state.selectedLanguage
-                )}
-              </span>
-            )}
-            <Dropdown>
-              <Dropdown.Toggle
-                disabled={this.state.readOnly}
-                className="plainButton"
-                variant="light"
-              >
-                {CardinalityPool[
-                  parseInt(this.state.targetCardinality, 10)
-                ].getString()}
-              </Dropdown.Toggle>
-              <Dropdown.Menu>
-                {CardinalityPool.map((card, i) => (
-                  <Dropdown.Item
-                    disabled={i.toString(10) === this.state.targetCardinality}
-                  >
-                    {card.getString()}
-                  </Dropdown.Item>
-                ))}
-              </Dropdown.Menu>
-            </Dropdown>
-          </div>
-          <h5>Synonyma</h5>
-          {altLabels.map((alt, i) => (
-            <div
-              className={classNames(
-                "detailInput",
-                "form-control",
-                "form-control-sm",
-                getListClassNamesObject(altLabels, i)
-              )}
-            >
-              <span
-                className={classNames({
-                  bold: this.isAltLabelSelectedLabel(alt),
-                })}
-              >
-                {alt.label}
-              </span>
-              <span className="right">
-                <Button variant="light" className={classNames("plainButton")}>
-                  {this.isAltLabelSelectedLabel(alt) ? (
-                    <LabelOffIcon />
-                  ) : (
-                    false && <LabelIcon />
-                  )}
-                </Button>
-              </span>
-            </div>
-          ))}
-          {altLabels.length === 0 && (
-            <Form.Control
-              className="detailInput noInput"
-              disabled
-              value=""
-              size="sm"
-            />
-          )}
-          <ListItemControls
-            addAction={(label: string) => {
-              if (
-                label !== "" ||
-                this.state.inputAltLabels.find((alt) => alt.label === label)
-              ) {
-                this.setState((prev) => ({
-                  ...prev,
-                  inputAltLabels: [
-                    ...prev.inputAltLabels,
-                    {
-                      label: label,
-                      language: this.props.projectLanguage,
-                    },
-                  ],
-                  changes: true,
-                }));
-              }
+          <h5>{Locale[AppSettings.interfaceLanguage].cardinalities}</h5>
+          <DetailPanelCardinalities
+            linkID={this.props.id}
+            selectedLanguage={this.state.selectedLanguage}
+            readOnly={this.state.readOnly}
+            sourceCardinality={this.state.sourceCardinality}
+            targetCardinality={this.state.targetCardinality}
+            setSourceCardinality={(c) => {
+              this.setState({
+                sourceCardinality: c,
+                changes: true,
+              });
             }}
-            popover={true}
-            tooltipText={"Vytvořit nový synonym"}
-            disableAddControl={this.state.readOnly}
+            setTargetCardinality={(c) => {
+              this.setState({
+                targetCardinality: c,
+                changes: true,
+              });
+            }}
+          />
+          <h5>Synonyma</h5>
+          <DetailPanelAltLabels
+            altLabels={this.state.inputAltLabels}
+            selectedLabel={this.state.selectedLabel}
+            language={this.state.selectedLanguage}
+            readOnly={this.state.readOnly}
+            addAltLabel={(alt: AlternativeLabel) =>
+              this.setState((prev) => ({
+                ...prev,
+                inputAltLabels: [...prev.inputAltLabels, alt],
+                changes: true,
+              }))
+            }
+            id={this.props.id}
+            selectDisplayLabel={(name, language) =>
+              this.setState((prev) => ({
+                changes: true,
+                selectedLabel: { ...prev.selectedLabel, [language]: name },
+              }))
+            }
           />
         </div>
       </div>

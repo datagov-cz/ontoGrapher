@@ -8,7 +8,7 @@ import {
   getLabelOrBlank,
   getLinkOrVocabElem,
 } from "../../function/FunctionGetVars";
-import { ConnectionOverlay } from "./components/element/ConnectionOverlay";
+import ConnectionOverlay from "./components/element/ConnectionOverlay";
 import { DetailElementDescriptionCard } from "./components/element/DetailElementDescriptionCard";
 import { DetailElementDiagramCard } from "./components/element/DetailElementDiagramCard";
 import { DetailElementLinksCard } from "./components/element/DetailElementLinksCard";
@@ -74,8 +74,8 @@ export const DetailElement: React.FC<Props> = (props: Props) => {
         </Accordion>
       </div>
       <ConnectionOverlay
-        selectedLanguage={selectedLanguage}
-        linkID={linkID}
+        projectLanguage={selectedLanguage}
+        id={linkID}
         performTransaction={props.performTransaction}
         visible={overlay}
         close={() => setOverlay(false)}

@@ -1,8 +1,7 @@
 import DescriptionIcon from "@mui/icons-material/Description";
 import EditIcon from "@mui/icons-material/Edit";
 import React from "react";
-import { Accordion, OverlayTrigger, Tooltip } from "react-bootstrap";
-import { Locale } from "../../config/Locale";
+import { Accordion } from "react-bootstrap";
 import { AppSettings, WorkspaceVocabularies } from "../../config/Variables";
 import {
   highlightElement,
@@ -44,7 +43,6 @@ export default class VocabularyFolder extends React.Component<Props> {
     return (
       <Accordion.Item
         eventKey={this.props.vocabulary}
-        onClick={(event) => this.handleClick(event)}
         className={
           "vocabularyFolder" +
           (this.props.elements.every((elem) =>
@@ -55,20 +53,12 @@ export default class VocabularyFolder extends React.Component<Props> {
         }
       >
         <Accordion.Header
+          onClick={(event) => this.handleClick(event)}
           style={{
             backgroundColor: WorkspaceVocabularies[this.props.vocabulary].color,
           }}
         >
-          <OverlayTrigger
-            placement="bottom"
-            overlay={
-              <Tooltip>
-                {Locale[AppSettings.interfaceLanguage].workspaceReady}
-              </Tooltip>
-            }
-          >
-            {this.props.readOnly ? <DescriptionIcon /> : <EditIcon />}
-          </OverlayTrigger>
+          {this.props.readOnly ? <DescriptionIcon /> : <EditIcon />}
           {getLabelOrBlank(
             WorkspaceVocabularies[this.props.vocabulary].labels,
             this.props.projectLanguage

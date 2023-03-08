@@ -14,7 +14,9 @@
   justify-content: space-around;
 
   select {
-    width: 24px;
+    width: 40px;
+    z-index: 1;
+    text-align: center;
     height: 18px;
     transition: background 0.25s;
     transition: border 0.25s;
@@ -63,7 +65,7 @@
 
   svg {
     position: absolute;
-    z-index: -9;
+    z-index: 0;
     top: 0;
     left: 0;
     pointer-events: none;
@@ -115,6 +117,17 @@
   float: right;
   height: calc(100vh - 112px) !important;
   max-width: 600px;
+
+  .spinnerFlex {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    .spinner-border {
+      margin: 10px;
+    }
+  }
+
 
   .diagramEntry {
     display: flex;

@@ -1,9 +1,7 @@
 import React, { useState } from "react";
-import { Modal, Form } from "react-bootstrap";
-import { Button, InputGroup } from "react-bootstrap";
-import { IconText } from "../../components/IconText";
-import { Diagrams } from "../../config/Variables";
-import { Edit, Close } from "@mui/icons-material";
+import { Button, Form, InputGroup, Modal } from "react-bootstrap";
+import { Locale } from "../../config/Locale";
+import { AppSettings, Diagrams } from "../../config/Variables";
 import {
   updateCreateDiagram,
   updateDiagram,
@@ -35,7 +33,7 @@ export const ModalRenameDiagram: React.FC<Props> = (props: Props) => {
       props.update();
     } else
       console.warn(
-        `Attemted to rename diagram ${props.diagram} to an empty string.`
+        `Attempted to rename diagram ${props.diagram} to an empty string.`
       );
   };
 
@@ -74,21 +72,23 @@ export const ModalRenameDiagram: React.FC<Props> = (props: Props) => {
         <Modal.Footer>
           <Button
             type="submit"
-            bsPrefix="iconButton"
+            variant="light"
+            className="plainButton"
             onClick={() => {
               renameDiagram();
               props.close();
             }}
           >
-            <IconText text="Přejmenovat" icon={Edit} />
+            {Locale[AppSettings.interfaceLanguage].confirm}
           </Button>
           <Button
-            bsPrefix="iconButton"
+            variant="light"
+            className="plainButton"
             onClick={() => {
               props.close();
             }}
           >
-            <IconText text="Zavřít" icon={Close} />
+            {Locale[AppSettings.interfaceLanguage].close}
           </Button>
         </Modal.Footer>
       </Form>

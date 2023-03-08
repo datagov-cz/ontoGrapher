@@ -1,5 +1,3 @@
-import { Representation } from "../config/Enum";
-
 export type CacheSearchResults = {
   [key: string]: {
     labels: { [key: string]: string };

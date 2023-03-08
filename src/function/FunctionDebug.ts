@@ -26,6 +26,7 @@ export function dumpDebugData() {
 }
 
 export function loadDebugData(): boolean {
+  console.trace();
   const json = require("../debug-data.json");
   if (!json) return false;
   for (const setting in json) {

@@ -19,6 +19,48 @@ interface Props {
 export const DetailPanelCardinalities: React.FC<Props> = (props: Props) => {
   return (
     <div className="linkCardinalities">
+      <Form.Control
+        size="sm"
+        onChange={(event) => props.setSourceCardinality(event.target.value)}
+        as="select"
+        value={props.sourceCardinality}
+        disabled={props.readOnly}
+      >
+        {CardinalityPool.map((card, i) => (
+          <option
+            key={i}
+            disabled={i.toString(10) === props.sourceCardinality}
+            value={i.toString(10)}
+          >
+            {card.getString()}
+          </option>
+        ))}
+      </Form.Control>
+      {props.linkID in WorkspaceLinks && (
+        <span className="plainButton">
+          {getLabelOrBlank(
+            getLinkOrVocabElem(WorkspaceLinks[props.linkID].iri).labels,
+            props.selectedLanguage
+          )}
+        </span>
+      )}
+      <Form.Control
+        size="sm"
+        onChange={(event) => props.setTargetCardinality(event.target.value)}
+        as="select"
+        value={props.targetCardinality}
+        disabled={props.readOnly}
+      >
+        {CardinalityPool.map((card, i) => (
+          <option
+            key={i}
+            disabled={i.toString(10) === props.targetCardinality}
+            value={i.toString(10)}
+          >
+            {card.getString()}
+          </option>
+        ))}
+      </Form.Control>
       <svg
         width="100%"
         height="24px"
@@ -50,46 +92,6 @@ export const DetailPanelCardinalities: React.FC<Props> = (props: Props) => {
           markerEnd={"url(#link)"}
         />
       </svg>
-      <Form.Control
-        size="sm"
-        onChange={(event) => props.setSourceCardinality(event.target.value)}
-        as="select"
-        value={props.sourceCardinality}
-        disabled={props.readOnly}
-      >
-        {CardinalityPool.map((card, i) => (
-          <option
-            disabled={i.toString(10) === props.sourceCardinality}
-            value={i.toString(10)}
-          >
-            {card.getString()}
-          </option>
-        ))}
-      </Form.Control>
-      {props.linkID in WorkspaceLinks && (
-        <span className="plainButton">
-          {getLabelOrBlank(
-            getLinkOrVocabElem(WorkspaceLinks[props.linkID].iri).labels,
-            props.selectedLanguage
-          )}
-        </span>
-      )}
-      <Form.Control
-        size="sm"
-        onChange={(event) => props.setTargetCardinality(event.target.value)}
-        as="select"
-        value={props.targetCardinality}
-        disabled={props.readOnly}
-      >
-        {CardinalityPool.map((card, i) => (
-          <option
-            disabled={i.toString(10) === props.targetCardinality}
-            value={i.toString(10)}
-          >
-            {card.getString()}
-          </option>
-        ))}
-      </Form.Control>
     </div>
   );
 };

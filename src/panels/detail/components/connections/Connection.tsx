@@ -21,9 +21,10 @@ interface Props {
   direction: boolean;
   backgroundColor: string;
   elementLabel: JSX.Element;
-  infoFunction: (link: string) => void;
+  infoFunction?: (link: string) => void;
   performTransaction: (...queries: string[]) => void;
   readOnly: boolean;
+  update?: Function;
 }
 
 export default class Connection extends React.Component<Props> {
@@ -125,31 +126,39 @@ export default class Connection extends React.Component<Props> {
             </OverlayTrigger>
           )}
         </span>
-        <span className="info">
-          <span
-            className={"element"}
-            style={{ backgroundColor: this.props.backgroundColor }}
-          >
-            {this.props.elementLabel}
-          </span>
-          <OverlayTrigger
-            delay={1000}
-            placement="left"
-            overlay={
-              <Tooltip>
-                {Locale[AppSettings.interfaceLanguage].deleteLink}
-              </Tooltip>
-            }
-          >
-            <Button
-              disabled={this.props.readOnly}
-              variant="light"
-              className="plainButton"
+        {this.props.infoFunction && (
+          <span className="info">
+            <span
+              className={"element"}
+              style={{ backgroundColor: this.props.backgroundColor }}
             >
-              <DeleteIcon onClick={() => deleteLink(this.props.link)} />
-            </Button>
-          </OverlayTrigger>
-        </span>
+              {this.props.elementLabel}
+            </span>
+            <OverlayTrigger
+              delay={1000}
+              placement="left"
+              overlay={
+                <Tooltip>
+                  {Locale[AppSettings.interfaceLanguage].deleteLink}
+                </Tooltip>
+              }
+            >
+              <Button
+                disabled={this.props.readOnly}
+                variant="light"
+                className="plainButton"
+              >
+                <DeleteIcon
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    deleteLink(this.props.link);
+                    if (this.props.update) this.props.update();
+                  }}
+                />
+              </Button>
+            </OverlayTrigger>
+          </span>
+        )}
       </div>
     );
   }

@@ -476,7 +476,7 @@ export async function fetchSubClassesAndCardinalities(
 export async function fetchUsers(...ids: string[]): Promise<boolean> {
   if (ids.length === 0) return false;
   function getUserID(iri: string): string {
-    return iri.replace("https://slovník.gov.cz/uživatel/", "");
+    return iri.replaceAll("https://slovník.gov.cz/uživatel/", "");
   }
   const query = [
     `PREFIX a-popis-dat-pojem: ${qb.i(Prefixes["a-popis-dat-pojem"])}`,

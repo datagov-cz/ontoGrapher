@@ -28,5 +28,5 @@ export const Environment: {
   id: ENV.get("ID"),
   url: ENV.get("URL"),
   auth: ENV.get("AUTHENTICATION", "true") === "true",
-  debug: ENV.get("DEBUG_DATA", "true") === "true",
+  debug: ENV.get("DEBUG", "true") === "true",
 };
