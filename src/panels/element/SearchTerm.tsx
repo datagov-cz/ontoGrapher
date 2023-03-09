@@ -17,9 +17,7 @@ interface Props {
   update: () => void;
 }
 
-interface State {}
-
-export class SearchTerm extends React.Component<Props, State> {
+export class SearchTerm extends React.Component<Props> {
   handleClick(event: React.MouseEvent<HTMLDivElement>) {
     event.stopPropagation();
     if (event.ctrlKey) {

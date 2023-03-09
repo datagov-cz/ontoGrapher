@@ -53,6 +53,24 @@ export default class ConnectionCache extends React.Component<Props> {
     );
   }
 
+  prepareUpdateSelection() {
+    if (!this.props.updateSelection) return;
+    let ids: string[] = [];
+    switch (AppSettings.representation) {
+      case Representation.FULL:
+        ids = [this.props.connection.target.iri];
+        break;
+      case Representation.COMPACT:
+        ids = [this.props.connection.target.iri, this.props.connection.link];
+        break;
+      default:
+        throw new Error(
+          `Unknown view representation number ${AppSettings.representation}.`
+        );
+    }
+    this.props.updateSelection(ids);
+  }
+
   render() {
     return (
       <OverlayTrigger
@@ -89,17 +107,7 @@ export default class ConnectionCache extends React.Component<Props> {
             onDragEnd={() => {
               if (this.props.update) this.props.update();
             }}
-            onClick={() => {
-              if (this.props.updateSelection)
-                this.props.updateSelection(
-                  AppSettings.representation === Representation.FULL
-                    ? [this.props.connection.target.iri]
-                    : [
-                        this.props.connection.target.iri,
-                        this.props.connection.link,
-                      ]
-                );
-            }}
+            onClick={() => this.prepareUpdateSelection()}
             selected={this.props.selected}
             link={this.props.connection.link}
             direction={this.props.connection.direction === "target"}

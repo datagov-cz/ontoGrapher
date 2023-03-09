@@ -6,6 +6,7 @@ import React from "react";
 import { Dropdown } from "react-bootstrap";
 import { IconText } from "../../components/IconText";
 import { MainViewMode } from "../../config/Enum";
+import { Locale } from "../../config/Locale";
 import { StoreSettings } from "../../config/Store";
 import { AppSettings, Diagrams } from "../../config/Variables";
 import { changeDiagrams } from "../../function/FunctionDiagram";
@@ -49,13 +50,22 @@ export const DiagramTab: React.FC<Props> = (props: Props) => {
         </Dropdown.Toggle>
         <Dropdown.Menu>
           <Dropdown.Item onClick={() => props.closeDiagram(props.diagram)}>
-            <IconText text="Zavřít" icon={CloseIcon} />
+            <IconText
+              text={Locale[AppSettings.interfaceLanguage].close}
+              icon={CloseIcon}
+            />
           </Dropdown.Item>
           <Dropdown.Item onClick={() => props.renameDiagram(props.diagram)}>
-            <IconText text="Přejmenovat" icon={EditIcon} />
+            <IconText
+              text={Locale[AppSettings.interfaceLanguage].rename}
+              icon={EditIcon}
+            />
           </Dropdown.Item>
           <Dropdown.Item onClick={() => props.deleteDiagram(props.diagram)}>
-            <IconText text="Smazat" icon={DeleteIcon} />
+            <IconText
+              text={Locale[AppSettings.interfaceLanguage].delete}
+              icon={DeleteIcon}
+            />
           </Dropdown.Item>
         </Dropdown.Menu>
       </Dropdown>

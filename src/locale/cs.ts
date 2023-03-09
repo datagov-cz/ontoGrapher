@@ -1,6 +1,9 @@
 import { en } from "./en";
 
 export const cs: { [Property in keyof typeof en]: string } = {
+  rename: "Přejmenovat",
+  renameDiagram: "Přejmenovat diagram ",
+  renameDiagramEmptyInput: "Prosíme, vyberte název.",
   cardinalities: "Kardinality",
   removeLanguage: "Odebrat naposledy přidaný vstup pro další jazyk",
   noOptions: "Žádné dostupné volby",

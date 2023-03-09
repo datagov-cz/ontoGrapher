@@ -1,4 +1,7 @@
 export const en = {
+  rename: "Rename",
+  renameDiagram: "Rename diagram ",
+  renameDiagramEmptyInput: "Please input a name",
   cardinalities: "Cardinalities",
   noOptions: "No options available",
   unknown: "Not available",

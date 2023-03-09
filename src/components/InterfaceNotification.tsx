@@ -83,10 +83,10 @@ export default class InterfaceNotification extends React.Component<
   async checkStatus(): Promise<boolean> {
     if (!navigator.onLine) return false;
     else {
-      const miliseconds = 5000;
+      const milliseconds = 5000;
       const controller = new AbortController();
       const signal = controller.signal;
-      let timeout = window.setTimeout(() => controller.abort(), miliseconds);
+      let timeout = window.setTimeout(() => controller.abort(), milliseconds);
       return await fetch(
         AppSettings.contextEndpoint +
           "?query=select%20*%20where%20%7B%3Fs%20%3Fp%20%3Fo.%7D%20limit%201",
@@ -97,7 +97,10 @@ export default class InterfaceNotification extends React.Component<
         }
       )
         .then((response) => response.ok)
-        .catch(() => false)
+        .catch((e) => {
+          console.error(e);
+          return false;
+        })
         .finally(() => window.clearTimeout(timeout));
     }
   }

@@ -7,9 +7,7 @@ interface Props {
   validate: Function;
 }
 
-interface State {}
-
-export default class MenuPanelValidate extends React.Component<Props, State> {
+export default class MenuPanelValidate extends React.Component<Props> {
   render() {
     return (
       <div className={"inert"}>

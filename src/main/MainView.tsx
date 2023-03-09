@@ -6,7 +6,7 @@ import {
 } from "../components/modals/CreationModals";
 import { DetailPanelMode, MainViewMode } from "../config/Enum";
 import { StoreSettings } from "../config/Store";
-import { DiagramManager } from "../panels/diagram/DiagramManager";
+import { DiagramManager } from "./DiagramManager";
 import DiagramCanvas from "./DiagramCanvas";
 
 type Props = {
@@ -24,7 +24,7 @@ type Props = {
     retry: boolean
   ) => void;
   projectLanguage: string;
-  update: Function;
+  update: () => void;
 };
 
 export const MainView: React.FC<Props> = (props: Props) => {

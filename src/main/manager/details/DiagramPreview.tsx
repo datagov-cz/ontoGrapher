@@ -1,21 +1,21 @@
 import React from "react";
 
 import * as joint from "jointjs";
-import { Representation } from "../../config/Enum";
+import { Representation } from "../../../config/Enum";
 import {
   AppSettings,
   Diagrams,
   WorkspaceElements,
-} from "../../config/Variables";
-import { centerDiagram, zoomDiagram } from "../../function/FunctionDiagram";
-import { drawGraphElement } from "../../function/FunctionDraw";
-import { isElementHidden } from "../../function/FunctionElem";
-import { getNewLink } from "../../function/FunctionGetVars";
+} from "../../../config/Variables";
+import { centerDiagram, zoomDiagram } from "../../../function/FunctionDiagram";
+import { drawGraphElement } from "../../../function/FunctionDraw";
+import { isElementHidden } from "../../../function/FunctionElem";
+import { getNewLink } from "../../../function/FunctionGetVars";
 import {
   restoreHiddenElem,
   setRepresentation,
-} from "../../function/FunctionGraph";
-import { graphElement } from "../../graph/GraphElement";
+} from "../../../function/FunctionGraph";
+import { graphElement } from "../../../graph/GraphElement";
 interface Props {
   diagram: string;
 }

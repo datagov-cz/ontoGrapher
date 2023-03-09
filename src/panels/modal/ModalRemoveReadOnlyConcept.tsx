@@ -12,12 +12,7 @@ interface Props {
   performTransaction: (...queries: string[]) => void;
 }
 
-interface State {}
-
-export default class ModalRemoveReadOnlyConcept extends React.Component<
-  Props,
-  State
-> {
+export default class ModalRemoveReadOnlyConcept extends React.Component<Props> {
   render() {
     return (
       <Modal

@@ -51,7 +51,7 @@ export const ModalRenameDiagram: React.FC<Props> = (props: Props) => {
     >
       <Modal.Header>
         <Modal.Title>
-          Přejmenovat diagram{" "}
+          {Locale[AppSettings.interfaceLanguage].renameDiagram}
           {props.diagram in Diagrams && Diagrams[props.diagram].name}
         </Modal.Title>
       </Modal.Header>
@@ -65,7 +65,7 @@ export const ModalRenameDiagram: React.FC<Props> = (props: Props) => {
               onChange={(evt) => setDiagramName(evt.currentTarget.value)}
             />
             <Form.Control.Feedback type="invalid">
-              Prosíme, vyberte název.
+              {Locale[AppSettings.interfaceLanguage].renameDiagramEmptyInput}
             </Form.Control.Feedback>
           </InputGroup>
         </Modal.Body>

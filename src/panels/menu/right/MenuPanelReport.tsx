@@ -4,11 +4,7 @@ import { AppSettings } from "../../../config/Variables";
 import { Locale } from "../../../config/Locale";
 import { Environment } from "../../../config/Environment";
 
-interface Props {}
-
-interface State {}
-
-export default class MenuPanelReport extends React.Component<Props, State> {
+export default class MenuPanelReport extends React.Component {
   render() {
     return (
       <span>

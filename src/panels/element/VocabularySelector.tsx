@@ -12,9 +12,7 @@ interface Props {
   availableVocabularies: string[];
 }
 
-interface State {}
-
-export class VocabularySelector extends React.Component<Props, State> {
+export class VocabularySelector extends React.Component<Props> {
   buildOptions(): {
     label: string;
     options: { value: string; label: string }[];

@@ -52,7 +52,7 @@ export default class ConnectionList extends React.Component<Props, State> {
     super(props);
     this.state = {
       filter: {
-        hidden: "",
+        hidden: false,
         search: "",
         direction: "",
         connection: "",
@@ -349,7 +349,7 @@ export default class ConnectionList extends React.Component<Props, State> {
                 this.setState(
                   {
                     filter: {
-                      hidden: "",
+                      hidden: false,
                       search: "",
                       direction: "",
                       connection: "",

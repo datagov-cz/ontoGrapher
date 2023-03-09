@@ -1,5 +1,5 @@
 export type ElementFilter = {
-  hidden: string;
+  hidden: boolean;
   search: string;
   direction: "target" | "source" | "";
   connection: string;

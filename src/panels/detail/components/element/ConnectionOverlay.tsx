@@ -73,11 +73,7 @@ export default class ConnectionOverlay extends React.Component<Props, State> {
     this.prepareDetails(this.props.id);
   }
 
-  componentDidUpdate(
-    prevProps: Readonly<Props>,
-    prevState: Readonly<State>,
-    snapshot?: any
-  ) {
+  componentDidUpdate(prevProps: Readonly<Props>, prevState: Readonly<State>) {
     if (prevState.changes !== this.state.changes && this.state.changes) {
       this.save();
     }

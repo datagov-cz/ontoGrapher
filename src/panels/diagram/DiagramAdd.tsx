@@ -13,9 +13,7 @@ interface Props {
   performTransaction: (...queries: string[]) => void;
 }
 
-interface State {}
-
-export default class DiagramAdd extends React.Component<Props, State> {
+export default class DiagramAdd extends React.Component<Props> {
   addDiagram() {
     const id = addDiagram(
       Locale[AppSettings.interfaceLanguage].untitled,

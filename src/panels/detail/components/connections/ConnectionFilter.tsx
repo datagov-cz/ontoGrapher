@@ -161,34 +161,6 @@ export default class ConnectionFilter extends React.Component<Props> {
             ))}
           </Form.Control>
           <LocalLibraryIcon className="library" />
-          {/* <Dropdown align={"end"} className="schemeSelect">
-            <Dropdown.Toggle
-              variant="light"
-              className="plainButton"
-              size="sm"
-            />
-            <Dropdown.Menu align={"end"}>
-              <Dropdown.Item
-                onClick={() => this.props.updateFilter("scheme", "")}
-              >
-                {Locale[AppSettings.interfaceLanguage].anyVocabulary}
-              </Dropdown.Item>
-              {this.props.vocabularies.map((v) => (
-                <Dropdown.Item
-                  key={v}
-                  onClick={() => this.props.updateFilter("scheme", v)}
-                  style={{
-                    backgroundColor: WorkspaceVocabularies[v].color,
-                  }}
-                >
-                  {getLabelOrBlank(
-                    WorkspaceVocabularies[v].labels,
-                    this.props.projectLanguage
-                  )}
-                </Dropdown.Item>
-              ))}
-            </Dropdown.Menu>
-          </Dropdown> */}
         </div>
       </div>
     );

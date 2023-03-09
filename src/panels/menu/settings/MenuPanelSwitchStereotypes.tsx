@@ -9,12 +9,7 @@ interface Props {
   update: Function;
 }
 
-interface State {}
-
-export default class MenuPanelSwitchStereotypes extends React.Component<
-  Props,
-  State
-> {
+export default class MenuPanelSwitchStereotypes extends React.Component<Props> {
   switch() {
     AppSettings.viewStereotypes = !AppSettings.viewStereotypes;
     graph

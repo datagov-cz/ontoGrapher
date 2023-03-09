@@ -6,11 +6,7 @@ import { centerDiagram, zoomDiagram } from "../../../function/FunctionDiagram";
 import { ReactComponent as CenterSVG } from "../../../svg/centerView.svg";
 import { ReactComponent as RestoreZoomSVG } from "../../../svg/restoreZoom.svg";
 
-interface Props {}
-
-interface State {}
-
-export default class ViewWidget extends React.Component<Props, State> {
+export default class ViewWidget extends React.Component {
   render() {
     return (
       <span>
