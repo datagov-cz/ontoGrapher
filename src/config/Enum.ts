@@ -26,3 +26,8 @@ export enum DetailPanelMode {
   LINK,
   MULTIPLE_LINKS,
 }
+
+export enum MainViewMode {
+  CANVAS,
+  MANAGER,
+}

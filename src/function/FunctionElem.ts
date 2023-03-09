@@ -1,56 +1,51 @@
+import * as joint from "jointjs";
+import _ from "lodash";
+import React from "react";
+import { Representation } from "../config/Enum";
+import { Locale } from "../config/Locale";
+import { RepresentationConfig } from "../config/logic/RepresentationConfig";
+import {
+  WorkspaceElements,
+  AppSettings,
+  Diagrams,
+  WorkspaceVocabularies,
+  WorkspaceTerms,
+  WorkspaceLinks,
+} from "../config/Variables";
 import { graph } from "../graph/Graph";
-import {
-  drawGraphElement,
-  highlightCell,
-  unHighlightCell,
-} from "./FunctionDraw";
-import { getElementShape, getElementVocabulary } from "./FunctionGetVars";
-import { paper } from "../main/DiagramCanvas";
 import { graphElement } from "../graph/GraphElement";
+import { paper } from "../main/DiagramCanvas";
 import {
+  fetchRelationships,
+  fetchReadOnlyTerms,
+} from "../queries/get/CacheQueries";
+import { updateCreateDiagram } from "../queries/update/UpdateDiagramQueries";
+import {
+  updateProjectElementDiagram,
+  updateProjectElement,
+} from "../queries/update/UpdateElementQueries";
+import {
+  updateProjectLinkVertex,
+  updateProjectLink,
+} from "../queries/update/UpdateLinkQueries";
+import { updateDeleteTriples } from "../queries/update/UpdateMiscQueries";
+import { insertNewCacheTerms, insertNewRestrictions } from "./FunctionCache";
+import {
+  createNewElemIRI,
+  addVocabularyElement,
   addClass,
   addToFlexSearch,
-  addVocabularyElement,
-  createNewElemIRI,
   removeFromFlexSearch,
 } from "./FunctionCreateVars";
 import {
-  changeVocabularyCount,
-  deleteConcept,
-  initElements,
-  parsePrefix,
-} from "./FunctionEditVars";
-import {
-  AppSettings,
-  Diagrams,
-  WorkspaceElements,
-  WorkspaceLinks,
-  WorkspaceTerms,
-  WorkspaceVocabularies,
-} from "../config/Variables";
-import * as joint from "jointjs";
-import {
-  updateProjectElement,
-  updateProjectElementDiagram,
-} from "../queries/update/UpdateElementQueries";
-import {
-  updateProjectLink,
-  updateProjectLinkVertex,
-} from "../queries/update/UpdateLinkQueries";
-import { Representation } from "../config/Enum";
-import { Locale } from "../config/Locale";
-import {
-  fetchReadOnlyTerms,
-  fetchRelationships,
-} from "../queries/get/CacheQueries";
-import { initConnections } from "./FunctionRestriction";
+  unHighlightCell,
+  highlightCell,
+  drawGraphElement,
+} from "./FunctionDraw";
+import { parsePrefix, initElements, deleteConcept } from "./FunctionEditVars";
+import { getElementShape } from "./FunctionGetVars";
 import { restoreHiddenElem, setRepresentation } from "./FunctionGraph";
-import React from "react";
-import { insertNewCacheTerms, insertNewRestrictions } from "./FunctionCache";
-import _ from "lodash";
-import { RepresentationConfig } from "../config/logic/RepresentationConfig";
-import { updateDeleteTriples } from "../queries/update/UpdateMiscQueries";
-import { updateCreateDiagram } from "../queries/update/UpdateDiagramQueries";
+import { initConnections } from "./FunctionRestriction";
 
 export function resizeElem(id: string, highlight: boolean = true) {
   let view = paper.findViewByModel(id);
@@ -123,6 +118,7 @@ export function createNewTerm(
     throw new Error(
       "Attempted to create a term for a vocabulary that is not recognized."
     );
+  console.log(name, language);
   const iri = createNewElemIRI(
     WorkspaceVocabularies[vocabulary].glossary,
     name[language]
@@ -151,19 +147,36 @@ export function createNewTerm(
   return iri;
 }
 
+/**
+ * Returns whether the element (based on its types) should be visible given a representation.
+ * By default, true is returned even if the types contain none of the requested types.
+ * This behaviour can be
+ * @param types Types of the element.
+ * @param representation Requested representation.
+ * @param strict Enforce that the types must contain a requested representation type.
+ * @returns if the element should be visible given the types and representation.
+ */
 export function isElementVisible(
   types: string[],
-  representation: Representation
+  representation: Representation,
+  strict: boolean = false
 ) {
   return (
-    _.difference(RepresentationConfig[representation].visibleStereotypes, types)
-      .length <
-      RepresentationConfig[representation].visibleStereotypes.length ||
-    !types.find((type) =>
-      RepresentationConfig[Representation.FULL].visibleStereotypes.includes(
-        type
-      )
-    )
+    (_.difference(
+      RepresentationConfig[representation].visibleStereotypes,
+      types
+    ).length < RepresentationConfig[representation].visibleStereotypes.length ||
+      !types.find((type) =>
+        RepresentationConfig[Representation.FULL].visibleStereotypes.includes(
+          type
+        )
+      )) &&
+    (strict
+      ? _.intersection(
+          RepresentationConfig[representation].visibleStereotypes,
+          types
+        ).length > 0
+      : true)
   );
 }
 
@@ -365,13 +378,16 @@ export async function putElementsOnCanvas(
         AppSettings.representation
       );
       queries.push(
-        ...restoreHiddenElem(id, cls, true, true, true),
+        ...restoreHiddenElem(id, true, true, true),
         updateProjectElementDiagram(AppSettings.selectedDiagram, id)
       );
     });
     if (AppSettings.representation === Representation.COMPACT)
       queries.push(
-        ...setRepresentation(AppSettings.representation).transaction
+        ...setRepresentation(
+          AppSettings.representation,
+          AppSettings.selectedDiagram
+        ).transaction
       );
   } else console.error("Did not receive element creation data from the event.");
   return queries;
@@ -379,7 +395,6 @@ export async function putElementsOnCanvas(
 
 export function removeReadOnlyElement(elem: string): string[] {
   removeFromFlexSearch(elem);
-  changeVocabularyCount(getElementVocabulary(elem), (count) => count - 1, elem);
   return [
     ...deleteConcept(elem),
     updateDeleteTriples(

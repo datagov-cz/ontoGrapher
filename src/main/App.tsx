@@ -1,38 +1,34 @@
+import hotkeys from "hotkeys-js";
+import * as _ from "lodash";
 import React from "react";
-import MenuPanel from "../panels/MenuPanel";
-import VocabularyPanel from "../panels/VocabularyPanel";
-import DiagramCanvas from "./DiagramCanvas";
+import {
+  CreationModals,
+  ElemCreationConfiguration,
+  LinkCreationConfiguration,
+} from "../components/modals/CreationModals";
+import { CriticalAlertModal } from "../components/modals/CriticalAlertModal";
+import {
+  DetailPanelMode,
+  ElemCreationStrategy,
+  MainViewMode,
+} from "../config/Enum";
+import { Environment } from "../config/Environment";
+import { Locale } from "../config/Locale";
+import { StoreAlerts, StoreSettings } from "../config/Store";
 import {
   AppSettings,
   WorkspaceElements,
   WorkspaceLinks,
   WorkspaceTerms,
 } from "../config/Variables";
-import DetailPanel from "../panels/DetailPanel";
-import { getVocabulariesFromRemoteJSON } from "../interface/JSONInterface";
-import { initVars } from "../function/FunctionEditVars";
+import { dumpDebugData, loadDebugData } from "../function/FunctionDebug";
 import {
-  retrieveContextData,
-  retrieveInfoFromURLParameters,
-  retrieveVocabularyData,
-  updateContexts,
-} from "../interface/ContextInterface";
-import { graph } from "../graph/Graph";
-import { nameGraphLink } from "../function/FunctionGraph";
-import {
-  abortTransaction,
-  processTransaction,
-} from "../interface/TransactionInterface";
-import ValidationPanel from "../panels/ValidationPanel";
-import DiagramPanel from "../panels/DiagramPanel";
-import { Locale } from "../config/Locale";
-import { drawGraphElement, unHighlightAll } from "../function/FunctionDraw";
-import {
-  changeDiagrams,
   highlightElement,
   resetDiagramSelection,
 } from "../function/FunctionDiagram";
-import { qb } from "../queries/QueryBuilder";
+import { drawGraphElement, unHighlightAll } from "../function/FunctionDraw";
+import { initVars } from "../function/FunctionEditVars";
+import { getElementPosition } from "../function/FunctionElem";
 import {
   getLastChangeDay,
   getLinkOrVocabElem,
@@ -40,18 +36,29 @@ import {
   getVocabularyFromScheme,
   setSchemeColors,
 } from "../function/FunctionGetVars";
+import { nameGraphLink } from "../function/FunctionGraph";
+import { graph } from "../graph/Graph";
 import {
-  CreationModals,
-  ElemCreationConfiguration,
-  LinkCreationConfiguration,
-} from "../components/modals/CreationModals";
-import { DetailPanelMode, ElemCreationStrategy } from "../config/Enum";
-import { getElementPosition } from "../function/FunctionElem";
+  retrieveContextData,
+  retrieveInfoFromURLParameters,
+  retrieveVocabularyData,
+  updateContexts,
+} from "../interface/ContextInterface";
+import { getVocabulariesFromRemoteJSON } from "../interface/JSONInterface";
+import {
+  abortTransaction,
+  processTransaction,
+} from "../interface/TransactionInterface";
 import { en } from "../locale/en";
-import { StoreAlerts } from "../config/Store";
-import { CriticalAlertModal } from "../components/modals/CriticalAlertModal";
-import * as _ from "lodash";
+import DetailPanel from "../panels/DetailPanel";
+import DiagramPanel from "../panels/DiagramPanel";
+import MenuPanel from "../panels/MenuPanel";
+import ValidationPanel from "../panels/ValidationPanel";
+import VocabularyPanel from "../panels/VocabularyPanel";
+import { qb } from "../queries/QueryBuilder";
 import { updateVocabularyAnnotations } from "../queries/update/UpdateChangeQueries";
+import { updateDiagramMetadata } from "../queries/update/UpdateDiagramQueries";
+import { MainView } from "./MainView";
 
 interface DiagramAppProps {}
 
@@ -75,20 +82,20 @@ export default class App extends React.Component<
   DiagramAppProps,
   DiagramAppState
 > {
-  private readonly canvas: React.RefObject<DiagramCanvas>;
   private readonly itemPanel: React.RefObject<VocabularyPanel>;
   private readonly detailPanel: React.RefObject<DetailPanel>;
   private readonly menuPanel: React.RefObject<MenuPanel>;
   private readonly validationPanel: React.RefObject<ValidationPanel>;
+  private readonly diagramPanel: React.RefObject<DiagramPanel>;
 
   constructor(props: DiagramAppProps) {
     super(props);
 
-    this.canvas = React.createRef();
     this.itemPanel = React.createRef();
     this.detailPanel = React.createRef();
     this.menuPanel = React.createRef();
     this.validationPanel = React.createRef();
+    this.diagramPanel = React.createRef();
 
     initVars();
 
@@ -141,15 +148,23 @@ export default class App extends React.Component<
   }
 
   componentDidMount(): void {
-    this.loadAndPrepareData().then((r) => {
-      if (r)
-        this.handleStatus(
-          false,
-          Locale[AppSettings.interfaceLanguage].workspaceReady,
-          false
-        );
-      else this.handleLoadingError();
-    });
+    const finishUp = () => {
+      hotkeys("ctrl+alt+d", () => dumpDebugData());
+      this.handleChangeLanguage(AppSettings.canvasLanguage);
+      setSchemeColors(AppSettings.viewColorPool);
+      this.itemPanel.current?.update();
+      this.checkLastViewedVersion();
+      StoreSettings.update((s) => {
+        s.mainViewMode = MainViewMode.MANAGER;
+      });
+      this.handleWorkspaceReady();
+    };
+    if (Environment.debug && loadDebugData()) finishUp();
+    else
+      this.loadAndPrepareData().then((r) => {
+        if (r) finishUp();
+        else this.handleLoadingError();
+      });
   }
 
   async loadAndPrepareData(): Promise<boolean> {
@@ -165,16 +180,6 @@ export default class App extends React.Component<
     if (!process3) return false;
     const process4 = await retrieveContextData();
     if (!process4) return false;
-    this.handleChangeLanguage(AppSettings.canvasLanguage);
-    setSchemeColors(AppSettings.viewColorPool);
-    changeDiagrams();
-    this.itemPanel.current?.update();
-    this.checkLastViewedVersion();
-    this.handleStatus(
-      false,
-      Locale[AppSettings.interfaceLanguage].workspaceReady,
-      false
-    );
     return true;
   }
 
@@ -220,7 +225,10 @@ export default class App extends React.Component<
       ...queriesTrimmed,
       ..._.uniq(AppSettings.changedVocabularies).map((v) =>
         updateVocabularyAnnotations(v)
-      )
+      ),
+      ...(AppSettings.selectedDiagram
+        ? [updateDiagramMetadata(AppSettings.selectedDiagram)]
+        : [])
     );
     AppSettings.changedVocabularies = [];
     this.handleStatus(
@@ -281,12 +289,8 @@ export default class App extends React.Component<
     );
   }
 
-  handleWorkspaceReady(message: keyof typeof en = "savedChanges") {
-    this.handleStatus(
-      false,
-      Locale[AppSettings.interfaceLanguage][message],
-      false
-    );
+  handleWorkspaceReady() {
+    this.handleStatus(false, "", false);
   }
 
   validate() {
@@ -304,7 +308,10 @@ export default class App extends React.Component<
   }
 
   handleUpdateDetailPanel(mode: DetailPanelMode, id?: string) {
-    this.detailPanel.current?.prepareDetails(mode, id);
+    StoreSettings.update((s) => {
+      s.detailPanelMode = mode;
+      s.detailPanelSelectedID = id ? id : "";
+    });
     this.validationPanel.current?.forceUpdate();
   }
 
@@ -354,6 +361,7 @@ export default class App extends React.Component<
             this.menuPanel.current?.update();
           }}
           performTransaction={this.performTransaction}
+          ref={this.diagramPanel}
         />
         <DetailPanel
           freeze={this.state.freeze}
@@ -364,10 +372,7 @@ export default class App extends React.Component<
             this.detailPanel.current?.forceUpdate();
           }}
           performTransaction={this.performTransaction}
-          updateDiagramCanvas={() => {
-            this.canvas.current?.setState({ modalAddElem: true });
-          }}
-          handleCreation={(source: string) => {
+          handleCreation={(source: string) =>
             this.handleCreation({
               strategy: ElemCreationStrategy.INTRINSIC_TROPE_TYPE,
               connections: [source],
@@ -378,8 +383,8 @@ export default class App extends React.Component<
               header:
                 Locale[AppSettings.interfaceLanguage]
                   .modalNewIntrinsicTropeTitle,
-            });
-          }}
+            })
+          }
         />
         {this.state.validation && (
           <ValidationPanel
@@ -391,8 +396,7 @@ export default class App extends React.Component<
             projectLanguage={this.state.projectLanguage}
           />
         )}
-        <DiagramCanvas
-          ref={this.canvas}
+        <MainView
           projectLanguage={this.state.projectLanguage}
           updateElementPanel={(id?: string, redoCacheSearch?: boolean) => {
             this.itemPanel.current?.update(id, redoCacheSearch);
@@ -405,6 +409,11 @@ export default class App extends React.Component<
           handleStatus={this.handleStatus}
           handleCreation={(configuration) => {
             this.handleCreation(configuration);
+          }}
+          update={(id?: string) => {
+            this.itemPanel.current?.update(id);
+            this.detailPanel.current?.forceUpdate();
+            this.diagramPanel.current?.forceUpdate();
           }}
         />
         <CreationModals

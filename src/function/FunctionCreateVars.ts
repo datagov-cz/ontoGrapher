@@ -1,8 +1,15 @@
+import { v4 as uuidv4 } from "uuid";
+import { LinkType, Representation } from "../config/Enum";
+import {
+  FlexDocumentIDTable,
+  FlexDocumentSearch,
+} from "../config/FlexDocumentSearch";
+import { Languages } from "../config/Languages";
+import { Locale } from "../config/Locale";
 import {
   AppSettings,
   CardinalityPool,
   Diagrams,
-  Languages,
   Links,
   WorkspaceElements,
   WorkspaceLinks,
@@ -10,19 +17,12 @@ import {
   WorkspaceVocabularies,
 } from "../config/Variables";
 import { initLanguageObject } from "./FunctionEditVars";
-import { LinkType, Representation } from "../config/Enum";
-import { Locale } from "../config/Locale";
 import {
   getLinkIRI,
   getNewDiagramContextIRI,
   getNewDiagramIRI,
   getVocabularyFromScheme,
 } from "./FunctionGetVars";
-import { v4 as uuidv4 } from "uuid";
-import {
-  FlexDocumentIDTable,
-  FlexDocumentSearch,
-} from "../config/FlexDocumentSearch";
 
 export function createValues(
   values: { [key: string]: string[] },
@@ -76,10 +76,10 @@ export function addToFlexSearch(...ids: string[]) {
 }
 
 export function removeFromFlexSearch(...ids: string[]) {
-  const entries = Object.entries(FlexDocumentIDTable).filter(([key, value]) =>
+  const entries = Object.entries(FlexDocumentIDTable).filter(([_, value]) =>
     ids.includes(value)
   );
-  entries.forEach(([key, value]) => {
+  entries.forEach(([key, _]) => {
     const num = parseInt(key, 10);
     FlexDocumentSearch.remove(num);
   });
@@ -102,10 +102,6 @@ export function addVocabularyElement(
   };
 }
 
-export function createCount(): { [key in Representation]: number } {
-  return { [Representation.COMPACT]: 0, [Representation.FULL]: 0 };
-}
-
 export function addClass(id: string, active: boolean = true) {
   WorkspaceElements[id] = {
     hidden: { [AppSettings.selectedDiagram]: true },
@@ -122,9 +118,14 @@ export function addDiagram(
   index?: number,
   iri?: string,
   id?: string,
-  graph?: string
+  graph?: string,
+  description?: string
 ): string {
   const diagramID = id ? id : uuidv4();
+  const collaborators = [];
+  if (AppSettings.currentUser) {
+    collaborators.push(AppSettings.currentUser);
+  }
   if (!index)
     index =
       Object.keys(Diagrams).length > 0
@@ -141,6 +142,14 @@ export function addDiagram(
     iri: iri ? iri : getNewDiagramIRI(diagramID),
     graph: graph ? graph : getNewDiagramContextIRI(diagramID),
     saved: false,
+    description: description ? description : "",
+    vocabularies: Object.keys(WorkspaceVocabularies).filter(
+      (v) => !WorkspaceVocabularies[v].readOnly
+    ),
+    modifiedDate: new Date(),
+    creationDate: new Date(),
+    collaborators: collaborators,
+    toBeDeleted: false,
   };
   return diagramID;
 }

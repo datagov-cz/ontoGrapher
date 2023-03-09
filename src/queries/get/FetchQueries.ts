@@ -1,19 +1,20 @@
-import { processQuery } from "../../interface/TransactionInterface";
-import {
-  initLanguageObject,
-  parsePrefix,
-} from "../../function/FunctionEditVars";
+import { AppSettings, Prefixes, Users } from "./../../config/Variables";
+import { LinkType } from "../../config/Enum";
+import { RestrictionConfig } from "../../config/logic/RestrictionConfig";
 import {
   Links,
   Stereotypes,
   WorkspaceTerms,
   WorkspaceVocabularies,
 } from "../../config/Variables";
-import { RestrictionConfig } from "../../config/logic/RestrictionConfig";
-import { LinkType } from "../../config/Enum";
-import { createRestriction } from "../../function/FunctionRestriction";
 import { Restriction } from "../../datatypes/Restriction";
-import { createCount } from "../../function/FunctionCreateVars";
+import {
+  initLanguageObject,
+  parsePrefix,
+} from "../../function/FunctionEditVars";
+import { createRestriction } from "../../function/FunctionRestriction";
+import { processQuery } from "../../interface/TransactionInterface";
+import { qb } from "../QueryBuilder";
 
 /**
  * Gets vocabulary info.
@@ -62,7 +63,6 @@ export async function fetchVocabulary(
               namespace: "",
               graph: "",
               glossary: result.scheme.value,
-              count: createCount(),
               color: "#FFF",
             };
           if (result.vocabTitle)
@@ -463,6 +463,43 @@ export async function fetchSubClassesAndCardinalities(
                   result.object.value
                 );
           }
+        }
+      }
+      return true;
+    })
+    .catch((e) => {
+      console.error(e);
+      return false;
+    });
+}
+
+export async function fetchUsers(...ids: string[]): Promise<boolean> {
+  if (ids.length === 0) return false;
+  function getUserID(iri: string): string {
+    return iri.replaceAll("https://slovník.gov.cz/uživatel/", "");
+  }
+  const query = [
+    `PREFIX a-popis-dat-pojem: ${qb.i(Prefixes["a-popis-dat-pojem"])}`,
+    "select ?id ?first ?last where {",
+    "?id a-popis-dat-pojem:má-křestní-jméno ?first.",
+    "?id a-popis-dat-pojem:má-příjmení ?last.",
+    `values ?id {<${ids.join("> <")}>}`,
+    "}",
+  ].join(`
+  `);
+
+  return await processQuery(AppSettings.contextEndpoint, query)
+    .then((response) => {
+      return response.json();
+    })
+    .then((data) => {
+      for (const result of data.results.bindings) {
+        const id = getUserID(result.id.value);
+        if (!(id in Users)) {
+          Users[id] = {
+            given_name: result.first.value,
+            family_name: result.last.value,
+          };
         }
       }
       return true;

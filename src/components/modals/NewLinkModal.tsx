@@ -63,8 +63,8 @@ export default class NewLinkModal extends React.Component<Props, State> {
     this.handleChangeLink = this.handleChangeLink.bind(this);
   }
 
-  handleChangeLink(event: React.ChangeEvent<HTMLSelectElement>) {
-    this.setState({ selectedLink: event.currentTarget.value });
+  handleChangeLink(value: string) {
+    this.setState({ selectedLink: value });
   }
 
   filtering(link: string): boolean {
@@ -242,7 +242,9 @@ export default class NewLinkModal extends React.Component<Props, State> {
                 htmlSize={Object.keys(Links).length}
                 as="select"
                 value={this.state.selectedLink}
-                onChange={this.handleChangeLink}
+                onChange={(evt) =>
+                  this.handleChangeLink(evt.currentTarget.value)
+                }
                 id={"newLinkInputSelect"}
               >
                 {options.map((link) => (
@@ -289,7 +291,9 @@ export default class NewLinkModal extends React.Component<Props, State> {
                     htmlSize={Object.keys(Links).length}
                     as="select"
                     value={this.state.selectedLink}
-                    onChange={this.handleChangeLink}
+                    onChange={(evt) =>
+                      this.handleChangeLink(evt.currentTarget.value)
+                    }
                     id={"newLinkInputSelect"}
                   >
                     {options.map((link) => (

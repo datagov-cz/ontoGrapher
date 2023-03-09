@@ -38,7 +38,7 @@ export default class MenuPanelSwitchColors extends React.Component<
 
   render() {
     return (
-      <Dropdown drop={"right"}>
+      <Dropdown drop={"end"}>
         <Dropdown.Toggle>
           {Locale[AppSettings.interfaceLanguage].switchColors}
         </Dropdown.Toggle>

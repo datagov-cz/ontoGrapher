@@ -1,25 +1,23 @@
-import { CacheConnection } from "../types/CacheConnection";
-import {
-  fetchFullRelationships,
-  fetchReadOnlyTerms,
-  fetchRelationships,
-  fetchSubClasses,
-} from "../queries/get/CacheQueries";
+import isUrl from "is-url";
+import _ from "lodash";
+import { LinkType, Representation } from "../config/Enum";
+import { LinkConfig } from "../config/logic/LinkConfig";
 import {
   AppSettings,
   Links,
   WorkspaceTerms,
   WorkspaceVocabularies,
 } from "../config/Variables";
-import { LinkType, Representation } from "../config/Enum";
-import { LinkConfig } from "../config/logic/LinkConfig";
-import _ from "lodash";
-import { getVocabularyFromScheme, setSchemeColors } from "./FunctionGetVars";
-import isUrl from "is-url";
 import { CacheSearchVocabularies } from "../datatypes/CacheSearchResults";
 import { Restriction } from "../datatypes/Restriction";
-import { createCount } from "./FunctionCreateVars";
-import { changeVocabularyCount } from "./FunctionEditVars";
+import {
+  fetchFullRelationships,
+  fetchReadOnlyTerms,
+  fetchRelationships,
+  fetchSubClasses,
+} from "../queries/get/CacheQueries";
+import { CacheConnection } from "../types/CacheConnection";
+import { getVocabularyFromScheme, setSchemeColors } from "./FunctionGetVars";
 
 export async function getCacheConnections(
   iri: string,
@@ -183,11 +181,9 @@ export function insertNewCacheTerms(newTerms: typeof WorkspaceTerms) {
           glossary: CacheSearchVocabularies[vocab].glossary,
           graph: vocab,
           color: "#FFF",
-          count: createCount(),
         };
         setSchemeColors(AppSettings.viewColorPool);
       }
-      changeVocabularyCount(vocab, (count) => count + 1, term);
     } else
       console.error(
         `Vocabulary with glossary ${newTerms[term].inScheme} has not been found in the database; term ${term} will not be added.`

@@ -47,6 +47,8 @@ import {
 import { insertNewCacheTerms, insertNewRestrictions } from "./FunctionCache";
 import { updateDiagram } from "../queries/update/UpdateDiagramQueries";
 import { addLink } from "./FunctionCreateVars";
+import { updateDiagramPosition } from "./FunctionDiagram";
+import { paper } from "../main/DiagramCanvas";
 
 export const mvp1IRI =
   "https://slovník.gov.cz/základní/pojem/má-vztažený-prvek-1";
@@ -79,6 +81,23 @@ export function nameGraphLink(
         }
       });
     }
+  }
+}
+
+export function centerElementInView(id: string) {
+  const elem = graph.getElements().find((elem) => elem.id === id);
+  if (elem) {
+    const scale = paper.scale().sx;
+    paper.translate(0, 0);
+    paper.translate(
+      -elem.position().x * scale +
+        paper.getComputedSize().width / 2 -
+        elem.getBBox().width,
+      -elem.position().y * scale +
+        paper.getComputedSize().height / 2 -
+        elem.getBBox().height
+    );
+    updateDiagramPosition(AppSettings.selectedDiagram);
   }
 }
 
@@ -126,13 +145,16 @@ export async function spreadConnections(
         AppSettings.representation
       );
       queries.push(
-        ...restoreHiddenElem(id, newElem, false, true, false),
+        ...restoreHiddenElem(id, false, true, false),
         updateProjectElement(true, id),
         updateProjectElementDiagram(AppSettings.selectedDiagram, id)
       );
     });
     if (AppSettings.representation === Representation.COMPACT)
-      setRepresentation(AppSettings.representation);
+      setRepresentation(
+        AppSettings.representation,
+        AppSettings.selectedDiagram
+      );
   }
   return queries;
 }
@@ -200,8 +222,10 @@ export function setLinkBoundary(
 
 export function setRepresentation(
   representation: number,
+  diag: string,
   restoreFull: boolean = true,
-  changeSettings: boolean = true
+  changeSettings: boolean = true,
+  g: joint.dia.Graph = graph
 ): {
   result: boolean;
   transaction: string[];
@@ -209,9 +233,9 @@ export function setRepresentation(
   const queries: string[] = [];
   if (changeSettings) {
     AppSettings.representation = representation;
-    Diagrams[AppSettings.selectedDiagram].representation = representation;
+    Diagrams[diag].representation = representation;
   }
-  queries.push(updateDiagram(AppSettings.selectedDiagram));
+  queries.push(updateDiagram(diag));
   AppSettings.selectedLinks = [];
   AppSettings.selectedElements = [];
   let del = false;
@@ -235,10 +259,10 @@ export function setRepresentation(
           if (sourceLink && targetLink) {
             const source = WorkspaceLinks[sourceLink].target;
             const target = WorkspaceLinks[targetLink].target;
-            const sourceBox = graph
+            const sourceBox = g
               .getElements()
               .find((elem) => elem.id === source);
-            const targetBox = graph
+            const targetBox = g
               .getElements()
               .find((elem) => elem.id === target);
             let linkID = Object.keys(WorkspaceLinks).find(
@@ -263,19 +287,14 @@ export function setRepresentation(
             const newLink = getNewLink(LinkType.DEFAULT, linkID);
             if (sourceBox && targetBox) {
               setLinkBoundary(newLink, source, target);
-              newLink.addTo(graph);
-              if (isLinkVertexArrayEmpty(linkID)) {
+              newLink.addTo(g);
+              if (isLinkVertexArrayEmpty(linkID, diag)) {
                 if (source === target) {
                   setSelfLoopConnectionPoints(newLink, sourceBox.getBBox());
                 }
-                WorkspaceLinks[newLink.id].vertices[
-                  AppSettings.selectedDiagram
-                ] = newLink.vertices();
+                WorkspaceLinks[newLink.id].vertices[diag] = newLink.vertices();
               } else {
-                setLinkVertices(
-                  newLink,
-                  WorkspaceLinks[linkID].vertices[AppSettings.selectedDiagram]
-                );
+                setLinkVertices(newLink, WorkspaceLinks[linkID].vertices[diag]);
               }
               setCompactLinkCardinalitiesFromFullComponents(
                 linkID,
@@ -289,7 +308,7 @@ export function setRepresentation(
             }
           }
         }
-        const cell = graph.getCell(id);
+        const cell = g.getCell(id);
         if (cell) {
           storeElement(cell);
           del = true;
@@ -299,15 +318,15 @@ export function setRepresentation(
           parsePrefix("z-sgov-pojem", "typ-vlastnosti")
         )
       ) {
-        const cell = graph.getCell(id);
+        const cell = g.getCell(id);
         if (cell) {
-          WorkspaceElements[id].hidden[AppSettings.selectedDiagram] = true;
+          WorkspaceElements[id].hidden[diag] = true;
           cell.remove();
           del = true;
         }
       }
     }
-    for (const link of graph.getLinks()) {
+    for (const link of g.getLinks()) {
       if (
         WorkspaceLinks[link.id].iri in Links &&
         Links[WorkspaceLinks[link.id].iri].type === LinkType.DEFAULT
@@ -320,7 +339,7 @@ export function setRepresentation(
         setLabels(link, getDisplayLabel(elem, AppSettings.canvasLanguage));
       }
     }
-    for (const elem of graph.getElements()) {
+    for (const elem of g.getElements()) {
       drawGraphElement(
         elem,
         AppSettings.canvasLanguage,
@@ -336,35 +355,34 @@ export function setRepresentation(
         )
       )
     )) {
-      if (WorkspaceElements[elem].position[AppSettings.selectedDiagram]) {
-        const find = graph
+      if (WorkspaceElements[elem].position[diag]) {
+        const find = g
           .getElements()
           .find(
             (cell) =>
               cell.id === elem &&
               WorkspaceElements[elem].active &&
-              WorkspaceElements[elem].hidden[AppSettings.selectedDiagram]
+              WorkspaceElements[elem].hidden[diag]
           );
         const cell = find || new graphElement({ id: elem });
-        cell.addTo(graph);
+        cell.addTo(g);
         cell.position(
-          WorkspaceElements[elem].position[AppSettings.selectedDiagram].x,
-          WorkspaceElements[elem].position[AppSettings.selectedDiagram].y
+          WorkspaceElements[elem].position[diag].x,
+          WorkspaceElements[elem].position[diag].y
         );
-        WorkspaceElements[elem].hidden[AppSettings.selectedDiagram] = false;
+        WorkspaceElements[elem].hidden[diag] = false;
         drawGraphElement(cell, AppSettings.canvasLanguage, representation);
         queries.push(
-          ...restoreHiddenElem(elem, cell, false, false, false, representation)
+          ...restoreHiddenElem(elem, false, false, false, representation)
         );
       }
     }
-    for (const elem of graph.getElements()) {
+    for (const elem of g.getElements()) {
       drawGraphElement(elem, AppSettings.canvasLanguage, representation);
       if (typeof elem.id === "string") {
         queries.push(
           ...restoreHiddenElem(
             elem.id,
-            elem,
             true,
             restoreFull,
             false,
@@ -373,7 +391,7 @@ export function setRepresentation(
         );
       }
     }
-    for (let link of graph.getLinks()) {
+    for (let link of g.getLinks()) {
       if (
         !(WorkspaceLinks[link.id].iri in Links) ||
         !WorkspaceLinks[link.id].active
@@ -449,21 +467,21 @@ export function setupLink(
 
 export function restoreHiddenElem(
   id: string,
-  cls: joint.dia.Element,
   restoreSimpleConnectionPosition: boolean,
   restoreFull: boolean,
   restoreFullConnectionPosition: boolean,
-  representation: Representation = AppSettings.representation
+  representation: Representation = AppSettings.representation,
+  g: joint.dia.Graph = graph
 ): string[] {
-  let queries: string[] = [];
-  for (let link of Object.keys(WorkspaceLinks).filter(
+  const queries: string[] = [];
+  for (const link of Object.keys(WorkspaceLinks).filter(
     (link) => WorkspaceLinks[link].active
   )) {
     if (
       (WorkspaceLinks[link].source === id ||
         WorkspaceLinks[link].target === id) &&
-      graph.getCell(WorkspaceLinks[link].source) &&
-      graph.getCell(WorkspaceLinks[link].target) &&
+      g.getCell(WorkspaceLinks[link].source) &&
+      g.getCell(WorkspaceLinks[link].target) &&
       (representation === Representation.FULL
         ? WorkspaceLinks[link].iri in Links
         : !(WorkspaceLinks[link].iri in Links) ||
@@ -487,7 +505,7 @@ export function restoreHiddenElem(
       representation === Representation.FULL &&
       WorkspaceLinks[link].target === id &&
       WorkspaceLinks[link].iri in Links &&
-      graph.getCell(WorkspaceLinks[link].target)
+      g.getCell(WorkspaceLinks[link].target)
     ) {
       let relID = WorkspaceLinks[link].source;
       for (let targetLink in WorkspaceLinks) {
@@ -495,16 +513,14 @@ export function restoreHiddenElem(
           WorkspaceLinks[targetLink].active &&
           WorkspaceLinks[targetLink].source === relID &&
           WorkspaceLinks[targetLink].target !== id &&
-          graph.getCell(WorkspaceLinks[targetLink].target)
+          g.getCell(WorkspaceLinks[targetLink].target)
         ) {
           let domainLink = getNewLink(WorkspaceLinks[link].type, link);
           let rangeLink = getNewLink(
             WorkspaceLinks[targetLink].type,
             targetLink
           );
-          let existingRel = graph
-            .getElements()
-            .find((elem) => elem.id === relID);
+          let existingRel = g.getElements().find((elem) => elem.id === relID);
           let relationship = existingRel
             ? existingRel
             : new graphElement({ id: relID });
@@ -521,10 +537,10 @@ export function restoreHiddenElem(
               WorkspaceElements[relID].position[AppSettings.selectedDiagram].y
             );
           } else {
-            const sourcepos = graph
+            const sourcepos = g
               .getCell(WorkspaceLinks[link].target)
               .get("position");
-            const targetpos = graph
+            const targetpos = g
               .getCell(WorkspaceLinks[targetLink].target)
               .get("position");
             const posx = (sourcepos.x + targetpos.x) / 2;
@@ -553,7 +569,7 @@ export function restoreHiddenElem(
               AppSettings.canvasLanguage
             ]
           );
-          relationship.addTo(graph);
+          relationship.addTo(g);
           queries.push(
             updateProjectElementDiagram(AppSettings.selectedDiagram, relID)
           );
@@ -595,8 +611,8 @@ export function restoreHiddenElem(
             WorkspaceLinks[targetLink].vertices[AppSettings.selectedDiagram] =
               [];
           }
-          domainLink.addTo(graph);
-          rangeLink.addTo(graph);
+          domainLink.addTo(g);
+          rangeLink.addTo(g);
           break;
         }
       }

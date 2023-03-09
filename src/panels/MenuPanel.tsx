@@ -1,22 +1,19 @@
 import React from "react";
-import { Form, OverlayTrigger, Tooltip } from "react-bootstrap";
-import { AppSettings } from "../config/Variables";
-import { Locale } from "../config/Locale";
-import { Environment } from "../config/Environment";
-import MenuPanelReport from "./menu/right/MenuPanelReport";
-import MenuPanelSettings from "./menu/left/MenuPanelSettings";
-import MenuPanelHelp from "./menu/right/MenuPanelHelp";
-import { MenuPanelSaveDiagrams } from "./menu/left/MenuPanelSaveDiagrams";
-import ZoomWidget from "./menu/widget/ZoomWidget";
+import { Col, Container, OverlayTrigger, Row, Tooltip } from "react-bootstrap";
 import InterfaceNotification from "../components/InterfaceNotification";
-import { MenuPanelLogout } from "./menu/right/MenuPanelLogout";
-import ViewWidget from "./menu/widget/ViewWidget";
-import MenuPanelAbout from "./menu/right/MenuPanelAbout";
-import MenuPanelValidate from "./menu/left/MenuPanelValidate";
-import FitContentWidget from "./menu/widget/FitContentWidget";
-import InterfaceStatus from "../components/InterfaceStatus";
+import { Environment } from "../config/Environment";
+import { Locale } from "../config/Locale";
+import { AppSettings } from "../config/Variables";
+import MenuPanelSettings from "./menu/left/MenuPanelSettings";
 import MenuPanelSwitchRepresentation from "./menu/left/MenuPanelSwitchRepresentation";
-import { getLabelOrBlank } from "../function/FunctionGetVars";
+import MenuPanelValidate from "./menu/left/MenuPanelValidate";
+import MenuPanelAbout from "./menu/right/MenuPanelAbout";
+import { MenuPanelAvatar } from "./menu/right/MenuPanelAvatar";
+import MenuPanelHelp from "./menu/right/MenuPanelHelp";
+import MenuPanelReport from "./menu/right/MenuPanelReport";
+import FitContentWidget from "./menu/widget/FitContentWidget";
+import ViewWidget from "./menu/widget/ViewWidget";
+import ZoomWidget from "./menu/widget/ZoomWidget";
 
 interface MenuPanelProps {
   readOnly?: boolean;
@@ -62,28 +59,28 @@ export default class MenuPanel extends React.Component<
   render() {
     return (
       <nav className={"menuPanel"}>
-        <div className={"upper"}>
-          <h5 className={"title"}>
-            {getLabelOrBlank(AppSettings.name, AppSettings.interfaceLanguage)}
-          </h5>
-          <InterfaceNotification
-            active={this.props.loading}
-            message={this.props.status}
-            error={this.props.freeze}
-            performTransaction={this.props.performTransaction}
-            retry={this.props.retry}
-          />
-          <div className={"right" + (this.props.freeze ? " nointeract" : "")}>
-            <Form inline>
-              <MenuPanelReport />
-              <InterfaceStatus
-                handleStatus={this.props.handleStatus}
+        <Container fluid className="upper">
+          <Row>
+            <Col className="left">
+              <h3 className={"title"}>
+                {Locale[AppSettings.interfaceLanguage].ontoGrapher}
+              </h3>
+              <InterfaceNotification
+                loading={this.props.loading}
+                message={this.props.status}
                 error={this.props.freeze}
+                performTransaction={this.props.performTransaction}
+                retry={this.props.retry}
+                handleStatus={this.props.handleStatus}
                 status={this.props.status}
               />
-            </Form>
-          </div>
-        </div>
+            </Col>
+            <Col className={"right" + (this.props.freeze ? " nointeract" : "")}>
+              <MenuPanelReport />
+              {Environment.auth && <MenuPanelAvatar />}
+            </Col>
+          </Row>
+        </Container>
         <div className={"lower" + (this.props.freeze ? " nointeract" : "")}>
           <MenuPanelSettings
             update={() => this.props.update()}
@@ -101,12 +98,11 @@ export default class MenuPanel extends React.Component<
           {Environment.auth && (
             <MenuPanelValidate validate={() => this.props.validate()} />
           )}
-          <MenuPanelSaveDiagrams />
+          {/* <MenuPanelExport /> */}
           <ZoomWidget />
           <ViewWidget />
           <FitContentWidget />
           <div className={"right" + (this.props.freeze ? " nointeract" : "")}>
-            {Environment.auth && <MenuPanelLogout />}
             <MenuPanelHelp />
             <OverlayTrigger
               trigger={[]}

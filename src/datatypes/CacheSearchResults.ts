@@ -1,5 +1,3 @@
-import { Representation } from "../config/Enum";
-
 export type CacheSearchResults = {
   [key: string]: {
     labels: { [key: string]: string };
@@ -14,7 +12,6 @@ export var CacheSearchVocabularies: {
   [key: string]: {
     labels: { [key: string]: string };
     namespace: string;
-    count: { [key in Representation]: number };
     glossary: string;
     diagrams: string[];
   };

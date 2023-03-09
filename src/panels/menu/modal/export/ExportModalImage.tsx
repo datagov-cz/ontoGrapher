@@ -1,29 +1,28 @@
+import * as joint from "jointjs";
 import React, { useState } from "react";
 import { Alert, Button, Col, Form, Modal, Row } from "react-bootstrap";
-import { Locale } from "../../../config/Locale";
+import { Representation } from "../../../../config/Enum";
+import { Languages } from "../../../../config/Languages";
+import { Locale } from "../../../../config/Locale";
 import {
   AppSettings,
   Diagrams,
-  Languages,
   WorkspaceElements,
   WorkspaceLinks,
-} from "../../../config/Variables";
-import { graph } from "../../../graph/Graph";
-import * as joint from "jointjs";
+} from "../../../../config/Variables";
+import { ColorPool } from "../../../../config/visual/ColorPool";
+import { drawGraphElement } from "../../../../function/FunctionDraw";
 import {
   getLinkOrVocabElem,
   getNewLink,
-} from "../../../function/FunctionGetVars";
-import { ColorPool } from "../../../config/visual/ColorPool";
-import { drawGraphElement } from "../../../function/FunctionDraw";
+} from "../../../../function/FunctionGetVars";
 import {
   nameGraphLink,
   setRepresentation,
-} from "../../../function/FunctionGraph";
-import { Representation } from "../../../config/Enum";
+} from "../../../../function/FunctionGraph";
+import { graph } from "../../../../graph/Graph";
 
 interface Props {
-  modal: boolean;
   close: () => void;
 }
 
@@ -67,7 +66,7 @@ const changeLanguage: (language: string) => void = (language) => {
   });
 };
 
-export const SaveDiagramsModal: React.FC<Props> = (props) => {
+export const ExportModalImage: React.FC<Props> = (props: Props) => {
   const [blackWhiteSwitch, setBlackWhiteSwitch] = useState<boolean>(false);
   const [language, setLanguage] = useState<string>(AppSettings.canvasLanguage);
   const [diagramRepresentation, setDiagramRepresentation] = useState<number>(
@@ -108,7 +107,12 @@ export const SaveDiagramsModal: React.FC<Props> = (props) => {
       changeLanguage(language);
     }
     if (diagramRepresentation !== AppSettings.representation) {
-      setRepresentation(diagramRepresentation, true, false);
+      setRepresentation(
+        diagramRepresentation,
+        AppSettings.selectedDiagram,
+        true,
+        false
+      );
     }
     // The paper is resized to the area of the content within.
     const area = paper.getContentArea({ useModelGeometry: false });
@@ -181,34 +185,20 @@ export const SaveDiagramsModal: React.FC<Props> = (props) => {
         changeLanguage(AppSettings.canvasLanguage);
       }
       if (diagramRepresentation !== AppSettings.representation) {
-        setRepresentation(AppSettings.representation, true, false);
+        setRepresentation(
+          AppSettings.representation,
+          AppSettings.selectedDiagram,
+          true,
+          false
+        );
       }
     };
     image.src = url;
     document.body.removeChild(paperElement);
   };
+
   return (
-    <Modal
-      size={"lg"}
-      centered
-      show={props.modal}
-      keyboard
-      scrollable
-      onEscapeKeyDown={() => props.close()}
-      onEntering={() => {
-        setLanguage(AppSettings.canvasLanguage);
-        setDiagramRepresentation(AppSettings.representation);
-      }}
-    >
-      <Modal.Header>
-        <Modal.Title>
-          {Locale[AppSettings.interfaceLanguage]
-            .generateDiagramImageModalTitle +
-            (AppSettings.selectedDiagram in Diagrams
-              ? Diagrams[AppSettings.selectedDiagram].name
-              : "")}
-        </Modal.Title>
-      </Modal.Header>
+    <div>
       <Modal.Body>
         <h5>{Locale[AppSettings.interfaceLanguage].settings}</h5>
         <Form>
@@ -336,6 +326,6 @@ export const SaveDiagramsModal: React.FC<Props> = (props) => {
           {Locale[AppSettings.interfaceLanguage].close}
         </Button>
       </Modal.Footer>
-    </Modal>
+    </div>
   );
 };

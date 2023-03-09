@@ -1,39 +1,40 @@
+import SearchIcon from "@mui/icons-material/Search";
+import { Id } from "flexsearch";
+import _ from "lodash";
 import React from "react";
+import { Accordion, Form, InputGroup, Spinner } from "react-bootstrap";
 import { ResizableBox } from "react-resizable";
+import { Representation } from "../config/Enum";
+import {
+  FlexDocumentIDTable,
+  FlexDocumentSearch,
+} from "../config/FlexDocumentSearch";
+import { Locale } from "../config/Locale";
 import {
   AppSettings,
   WorkspaceElements,
   WorkspaceTerms,
   WorkspaceVocabularies,
 } from "../config/Variables";
-import VocabularyFolder from "./element/VocabularyFolder";
-import VocabularyConcept from "./element/VocabularyConcept";
-import {
-  getLabelOrBlank,
-  getVocabularyFromScheme,
-} from "../function/FunctionGetVars";
-import ModalRemoveConcept from "./modal/ModalRemoveConcept";
-import { Form, InputGroup, OverlayTrigger, Tooltip } from "react-bootstrap";
-import { Representation } from "../config/Enum";
-import ConceptDivider from "./element/ConceptDivider";
-import { Locale } from "../config/Locale";
 import { Shapes } from "../config/visual/Shapes";
-import { SearchTerm } from "./element/SearchTerm";
-import SearchFolder from "./element/SearchFolder";
-import { VocabularySelector } from "./element/VocabularySelector";
 import {
   CacheSearchResults,
   CacheSearchVocabularies,
 } from "../datatypes/CacheSearchResults";
-import { searchCache } from "../queries/get/CacheQueries";
-import ModalRemoveReadOnlyConcept from "./modal/ModalRemoveReadOnlyConcept";
-import {
-  FlexDocumentIDTable,
-  FlexDocumentSearch,
-} from "../config/FlexDocumentSearch";
-import { Id } from "flexsearch";
-import _ from "lodash";
 import { isElementVisible } from "../function/FunctionElem";
+import {
+  getLabelOrBlank,
+  getVocabularyFromScheme,
+} from "../function/FunctionGetVars";
+import { searchCache } from "../queries/get/CacheQueries";
+import ConceptDivider from "./element/ConceptDivider";
+import SearchFolder from "./element/SearchFolder";
+import { SearchTerm } from "./element/SearchTerm";
+import VocabularyConcept from "./element/VocabularyConcept";
+import VocabularyFolder from "./element/VocabularyFolder";
+import { VocabularySelector } from "./element/VocabularySelector";
+import ModalRemoveConcept from "./modal/ModalRemoveConcept";
+import ModalRemoveReadOnlyConcept from "./modal/ModalRemoveReadOnlyConcept";
 
 interface Props {
   projectLanguage: string;
@@ -55,6 +56,7 @@ interface State {
   showLucene: boolean;
   shownLucene: CacheSearchResults;
   groupLucene: boolean;
+  loadingLucene: boolean;
   open: { [key: string]: boolean };
 }
 
@@ -75,7 +77,8 @@ export default class VocabularyPanel extends React.Component<Props, State> {
       selectedID: "",
       showLucene: true,
       shownLucene: {},
-      groupLucene: false,
+      groupLucene: true,
+      loadingLucene: false,
     };
     this.handleChangeSearch = this.handleChangeSearch.bind(this);
     this.handleOpenRemoveItemModal = this.handleOpenRemoveItemModal.bind(this);
@@ -87,27 +90,28 @@ export default class VocabularyPanel extends React.Component<Props, State> {
   }
 
   showItem(id: string) {
+    const vocabulary = getVocabularyFromScheme(WorkspaceTerms[id].inScheme);
+    const isOpen = this.state.open[vocabulary];
     this.setState(
       (prevState) => ({
         ...prevState,
         shownElements: this.updateShownElements(),
         selectedID: id,
-        open: Object.fromEntries(
-          Object.keys(WorkspaceVocabularies).map((vocab) => [
-            vocab,
-            vocab === getVocabularyFromScheme(WorkspaceTerms[id].inScheme),
-          ])
-        ),
+        open: { ...prevState.open, [vocabulary]: true },
       }),
       () => {
         const itemElement = document.getElementById(this.state.selectedID);
         const parent = document.getElementById("elementList");
         if (itemElement && parent) {
-          parent.scrollTo({
-            top: itemElement.offsetTop - parent.offsetHeight / 2,
-            left: 0,
-            behavior: "smooth",
-          });
+          window.setTimeout(
+            () =>
+              parent.scrollTo({
+                top: itemElement.offsetTop - parent.offsetHeight / 2,
+                left: 0,
+                behavior: "smooth",
+              }),
+            isOpen ? 0 : 400
+          );
         }
       }
     );
@@ -126,13 +130,13 @@ export default class VocabularyPanel extends React.Component<Props, State> {
     if (redoCacheSearch) this.getSearchResults(this.state.search);
   }
 
-  handleChangeSearch(event: React.ChangeEvent<HTMLSelectElement>) {
+  handleChangeSearch(search: string) {
     this.setState({
-      search: event.currentTarget.value,
+      search: search,
       open: Object.fromEntries(
         Object.keys(WorkspaceVocabularies).map((vocab) => [
           vocab,
-          !(event.currentTarget.value === ""),
+          !(search === ""),
         ])
       ),
     });
@@ -141,7 +145,7 @@ export default class VocabularyPanel extends React.Component<Props, State> {
       this.setState({
         shownElements: this.updateShownElements(),
       });
-      this.getSearchResults(event.target.value);
+      this.getSearchResults(search);
     }, 200);
   }
 
@@ -150,20 +154,31 @@ export default class VocabularyPanel extends React.Component<Props, State> {
       this.setState({ shownLucene: {} });
       return;
     }
+    this.setState({ loadingLucene: true });
     searchCache(
       AppSettings.contextEndpoint,
       AppSettings.luceneConnector,
       term,
       this.state.vocabs.map((vocab) => vocab.value)
     ).then((results) => {
-      this.setState({
-        shownLucene: _.omit(
-          results,
-          Object.keys(results).filter((iri) => 
-             iri in WorkspaceTerms && WorkspaceElements[iri].active && isElementVisible(results[iri].types, AppSettings.representation)
-          )
-        ),
-      });
+      const result = _.omit(
+        results,
+        Object.keys(results).filter(
+          (iri) =>
+            (iri in WorkspaceTerms && WorkspaceElements[iri].active) ||
+            !isElementVisible(results[iri].types, AppSettings.representation)
+        )
+      );
+      const openResult: { [key: string]: boolean } = {};
+      for (const r in result) {
+        if (!(result[r].vocabulary in openResult))
+          openResult[result[r].vocabulary] = true;
+      }
+      this.setState((prev) => ({
+        loadingLucene: false,
+        shownLucene: result,
+        open: { ...prev.open, ...openResult },
+      }));
     });
   }
 
@@ -203,7 +218,10 @@ export default class VocabularyPanel extends React.Component<Props, State> {
             (!this.state.search || flexSearchResults.includes(id)) &&
             (AppSettings.representation === Representation.FULL ||
               (AppSettings.representation === Representation.COMPACT &&
-                isElementVisible(WorkspaceTerms[id].types, Representation.COMPACT)))
+                isElementVisible(
+                  WorkspaceTerms[id].types,
+                  Representation.COMPACT
+                )))
         )
         .forEach((elem) => {
           const types = WorkspaceTerms[elem].types;
@@ -235,7 +253,7 @@ export default class VocabularyPanel extends React.Component<Props, State> {
   }
 
   getFolders(): JSX.Element[] {
-    let result: JSX.Element[] = [];
+    const result: JSX.Element[] = [];
     for (const vocabulary in WorkspaceVocabularies) {
       const vocabularyConcepts: JSX.Element[] = [];
       for (const iri in this.state.shownElements[vocabulary]) {
@@ -245,7 +263,6 @@ export default class VocabularyPanel extends React.Component<Props, State> {
             key={iri}
             iri={iri}
             items={this.state.shownElements[vocabulary][iri]}
-            visible={this.state.open[vocabulary]}
             projectLanguage={this.props.projectLanguage}
             update={this.updateElements}
           />
@@ -255,7 +272,6 @@ export default class VocabularyPanel extends React.Component<Props, State> {
             <VocabularyConcept
               key={id}
               id={id}
-              visible={this.state.open[vocabulary]}
               projectLanguage={this.props.projectLanguage}
               readOnly={WorkspaceVocabularies[vocabulary].readOnly}
               update={this.updateElements}
@@ -301,7 +317,7 @@ export default class VocabularyPanel extends React.Component<Props, State> {
               }))
             }
           >
-            {this.state.open[vocabulary] && vocabularyConcepts}
+            {vocabularyConcepts}
           </VocabularyFolder>
         );
     }
@@ -330,6 +346,17 @@ export default class VocabularyPanel extends React.Component<Props, State> {
           projectLanguage={this.props.projectLanguage}
           terms={terms}
           update={this.update}
+          setOpen={(vocabulary: string) =>
+            this.setState((prevState) => ({
+              open: {
+                ...prevState.open,
+                [vocabulary]:
+                  vocabulary in prevState.open
+                    ? !prevState.open[vocabulary]
+                    : true,
+              },
+            }))
+          }
         >
           {terms.map((iri) => (
             <SearchTerm
@@ -363,15 +390,6 @@ export default class VocabularyPanel extends React.Component<Props, State> {
     });
   }
 
-  getHeight(el: string): number {
-    const elem = document.getElementById(el);
-    if (elem) {
-      const rect = elem.getBoundingClientRect();
-      return window.innerHeight - rect.y;
-    }
-    return 0;
-  }
-
   render() {
     return (
       <ResizableBox
@@ -381,106 +399,54 @@ export default class VocabularyPanel extends React.Component<Props, State> {
         axis={"x"}
         handleSize={[8, 8]}
       >
-        <div>
+        <div className="vocabPanel">
           <InputGroup>
-            <InputGroup.Prepend>
-              <InputGroup.Text id="inputGroupPrepend">
-                <span
-                  role="img"
-                  aria-label={
-                    Locale[AppSettings.interfaceLanguage].searchStereotypes
-                  }
-                >
-                  🔎
-                </span>
-              </InputGroup.Text>
-            </InputGroup.Prepend>
+            <InputGroup.Text className="top-item" id="inputGroupPrepend">
+              <SearchIcon />
+            </InputGroup.Text>
             <Form.Control
               type="search"
               id={"searchInput"}
+              className="top-item"
               placeholder={
                 Locale[AppSettings.interfaceLanguage].searchStereotypes
               }
               aria-describedby="inputGroupPrepend"
               value={this.state.search}
-              onChange={this.handleChangeSearch}
+              onChange={(evt) =>
+                this.handleChangeSearch(evt.currentTarget.value)
+              }
             />
           </InputGroup>
-          <div style={{ display: "inline-flex" }}>
-            <OverlayTrigger
-              placement={"right"}
-              overlay={
-                <Tooltip id={`tooltipGroupSearchTerms`}>
-                  {Locale[AppSettings.interfaceLanguage].groupSearchTerms}
-                </Tooltip>
-              }
-            >
-              <button
-                style={{ fontSize: "22px", margin: "2px" }}
-                onClick={() =>
-                  this.setState({ groupLucene: !this.state.groupLucene })
-                }
-                className={
-                  "buttonlink" + (this.state.groupLucene ? " vocab" : "")
-                }
-              >
-                📚
-              </button>
-            </OverlayTrigger>
+          <InputGroup>
             <VocabularySelector
               filter={this.filter}
               projectLanguage={this.props.projectLanguage}
               values={this.state.vocabs}
+              availableVocabularies={Object.keys(
+                this.state.shownElements
+              ).filter(
+                (v) =>
+                  _.flatMap(Object.values(this.state.shownElements[v])).length >
+                  0
+              )}
             />
-          </div>
-          <div
-            id={"elementList"}
-            className={"elementLinkList"}
-            style={{
-              height: this.getHeight("elementList").toString(10) + "px",
-            }}
+          </InputGroup>
+          <Accordion
+            id="elementList"
+            alwaysOpen
+            activeKey={Object.keys(this.state.open)
+              .filter((o) => this.state.open[o])
+              .concat(Object.keys(this.state.shownLucene))}
           >
             {this.getFolders()}
-            <div>
-              {Object.keys(this.state.shownLucene).length > 0 && (
-                <div className={"lucene"}>
-                  <button
-                    onClick={() => {
-                      this.setState(
-                        { showLucene: !this.state.showLucene },
-                        () => {
-                          if (this.state.showLucene)
-                            this.getSearchResults(this.state.search);
-                        }
-                      );
-                    }}
-                    className="buttonlink"
-                  >
-                    {(this.state.showLucene ? "ᐯ " : "ᐱ ") +
-                      Locale[AppSettings.interfaceLanguage]
-                        .termsFromOtherVocabularies}
-                  </button>
-                </div>
-              )}
-              <div className={"hiddenLucene"}>
-                {(this.state.search.length > 0 ||
-                  this.state.vocabs.length > 0) &&
-                  this.state.showLucene &&
-                  (this.state.groupLucene
-                    ? this.getGroupLucene()
-                    : Object.keys(this.state.shownLucene).map((iri) => (
-                        <SearchTerm
-                          list
-                          key={iri}
-                          iri={iri}
-                          result={this.state.shownLucene[iri]}
-                          projectLanguage={this.props.projectLanguage}
-                          update={this.update}
-                        />
-                      )))}
-              </div>
-            </div>
-          </div>
+            {(this.state.search.length > 0 || this.state.vocabs.length > 0) &&
+              this.state.showLucene &&
+              this.getGroupLucene()}
+          </Accordion>
+          {this.state.loadingLucene && (
+            <Spinner animation="border" variant="dark" />
+          )}
           <ModalRemoveConcept
             modal={this.state.modalRemoveItem}
             id={this.state.selectedID}

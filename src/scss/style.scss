@@ -1,5 +1,6 @@
 @import "diagram/DiagramApp";
-@import "panels/ItemPanel";
+@import "diagram/DiagramManager";
+@import "panels/VocabularyPanel";
 @import "components/TableList";
 @import "components/ConnectionList";
 @import "components/ModalRemoveItem";
@@ -16,6 +17,13 @@ body {
   height: 100%;
 }
 
+.chip {
+  border-radius: 10px;
+  padding-left: 5px;
+  padding-right: 5px;
+  font-size: 1rem;
+  font-weight: 500;
+}
 
 .wrap {
   display: inline-block;
@@ -51,6 +59,10 @@ body {
   width: 100%;
 }
 
+.displayInline {
+  display: inline;
+}
+
 .buttonlink {
   border: none;
   background: none;
@@ -70,6 +82,34 @@ body {
 
     &.nounderline {
       text-decoration: none;
+    }
+  }
+}
+
+.plainButton {
+  border: none;
+  background: none;
+  margin: 0;
+  padding: 0;
+  color: #000000;
+
+  &::after {
+    display: none;
+  }
+
+  &.vocab {
+    border-radius: 4px;
+    background-color: lightgray;
+  }
+
+  &:hover {
+    color: black;
+    background: rgba(0, 0, 0, 0.25);
+  }
+
+  &.noBackground {
+    &:hover {
+      background: none;
     }
   }
 }
@@ -121,10 +161,10 @@ body {
   }
 
   br {
-   display: none;
+    display: none;
   }
 }
 
-.qualityTableSelect{
+.qualityTableSelect {
   max-height: 20px;
 }

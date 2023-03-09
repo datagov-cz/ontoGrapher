@@ -1,7 +1,6 @@
 import { Locale } from "../../config/Locale";
 import {
   AppSettings,
-  Languages,
   WorkspaceElements,
   WorkspaceTerms,
   WorkspaceVocabularies,
@@ -12,12 +11,18 @@ import {
   getVocabularyFromScheme,
 } from "../../function/FunctionGetVars";
 import { createNewElemIRI } from "../../function/FunctionCreateVars";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { initLanguageObject } from "../../function/FunctionEditVars";
+import { LanguageObject, Languages } from "../../config/Languages";
+import { getListClassNamesObject } from "../../function/FunctionDraw";
+import classNames from "classnames";
+import { Flags } from "../LanguageSelector";
+import * as _ from "lodash";
+import { ListLanguageControls } from "../../panels/detail/components/items/ListLanguageControls";
 
 interface Props {
   projectLanguage: string;
-  termName: ReturnType<typeof initLanguageObject>;
+  termName: LanguageObject;
   selectedVocabulary: string;
   errorText: string;
   setTermName: (s: string, l: string) => void;
@@ -26,6 +31,12 @@ interface Props {
 }
 
 export const NewElemForm: React.FC<Props> = (props) => {
+  const [activatedInputs, setActivatedInputs] = useState<string[]>([]);
+
+  useEffect(() => {
+    setActivatedInputs([AppSettings.canvasLanguage]);
+  }, []);
+
   const checkExists: (scheme: string, name: string) => boolean = (
     scheme: string,
     name: string
@@ -95,33 +106,50 @@ export const NewElemForm: React.FC<Props> = (props) => {
   return (
     <div>
       <p>{Locale[AppSettings.interfaceLanguage].modalNewElemDescription}</p>
-      {Object.keys(Languages).map((lang) => (
-        <div key={lang}>
-          <InputGroup>
-            <InputGroup.Prepend>
-              <InputGroup.Text id={"inputGroupPrepend" + lang}>
-                {Languages[lang] +
-                  (lang === AppSettings.canvasLanguage ? "*" : "")}
-              </InputGroup.Text>
-            </InputGroup.Prepend>
-            <Form.Control
-              id={"newElemLabelInput" + lang}
-              type="text"
-              value={props.termName[lang]}
-              required={lang === AppSettings.defaultLanguage}
-              onChange={(event) => {
-                props.setTermName(event.currentTarget.value, lang);
-                props.setErrorText(
-                  checkNames(
-                    WorkspaceVocabularies[props.selectedVocabulary].glossary,
-                    props.termName
-                  )
-                );
-              }}
+      {activatedInputs.map((lang, i) => (
+        <InputGroup key={i}>
+          <InputGroup.Text>
+            <img
+              className="flag"
+              src={`http://purecatamphetamine.github.io/country-flag-icons/3x2/${Flags[lang]}.svg`}
+              alt={Languages[lang]}
             />
-          </InputGroup>
-        </div>
+            {lang === AppSettings.canvasLanguage ? "*" : ""}
+          </InputGroup.Text>
+          <Form.Control
+            value={props.termName[lang]}
+            className={classNames(getListClassNamesObject(activatedInputs, i))}
+            placeholder={Languages[lang]}
+            onChange={(event) => {
+              props.setTermName(event.target.value, lang);
+              props.setErrorText(
+                checkNames(
+                  WorkspaceVocabularies[props.selectedVocabulary].glossary,
+                  { ...props.termName, [lang]: event.target.value }
+                )
+              );
+            }}
+          />
+        </InputGroup>
       ))}
+      <ListLanguageControls
+        removeAction={() => {
+          const removeLang = _.last(activatedInputs);
+          props.setTermName("", removeLang!);
+          setActivatedInputs((prev) => _.dropRight(prev, 1));
+        }}
+        tooltipText={Locale[AppSettings.interfaceLanguage].addLanguage}
+        unfilledLanguages={Object.keys(Languages).filter(
+          (l) => !activatedInputs.includes(l)
+        )}
+        addLanguageInput={(lang: string) =>
+          setActivatedInputs((prev) => [...prev, lang])
+        }
+        disableAddControl={
+          activatedInputs.length === Object.keys(Languages).length
+        }
+        disableRemoveControl={activatedInputs.length === 1}
+      />
       <br />
       <Form.Group controlId="exampleForm.ControlSelect1">
         <Form.Label>
@@ -149,13 +177,14 @@ export const NewElemForm: React.FC<Props> = (props) => {
             ))}
         </Form.Control>
       </Form.Group>
+      <br />
       {!props.errorText && (
         <Alert variant={"primary"}>{`${
           Locale[AppSettings.interfaceLanguage].modalNewElemIRI
         }
 					${createNewElemIRI(
             WorkspaceVocabularies[props.selectedVocabulary].glossary,
-            props.termName[AppSettings.defaultLanguage]
+            props.termName[AppSettings.interfaceLanguage]
           )}`}</Alert>
       )}
       {props.errorText && <Alert variant="danger">{props.errorText}</Alert>}

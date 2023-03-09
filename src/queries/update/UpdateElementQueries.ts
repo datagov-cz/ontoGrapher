@@ -1,7 +1,6 @@
 import {
   AppSettings,
   Diagrams,
-  Languages,
   WorkspaceElements,
   WorkspaceTerms,
   WorkspaceVocabularies,
@@ -10,6 +9,7 @@ import { qb } from "../QueryBuilder";
 import { DELETE, INSERT } from "@tpluscode/sparql-builder";
 import { getVocabularyFromScheme } from "../../function/FunctionGetVars";
 import { parsePrefix } from "../../function/FunctionEditVars";
+import { Languages } from "../../config/Languages";
 
 export function updateProjectElementNames(): string {
   return [
@@ -36,7 +36,7 @@ export function updateProjectElementNames(): string {
 
 export function updateProjectElement(del: boolean, ...iris: string[]): string {
   const diagramGraphs = Object.values(Diagrams)
-    .filter((diag) => diag.active)
+    .filter((diag) => !diag.toBeDeleted)
     .map((diag) => diag.graph);
   const data: { [key: string]: string[] } = {
     [AppSettings.applicationContext]: [],
@@ -78,7 +78,7 @@ export function updateProjectElement(del: boolean, ...iris: string[]): string {
 
     data[AppSettings.applicationContext].push(...ogStatements);
     Object.values(Diagrams)
-      .filter((diag) => diag.active)
+      .filter((diag) => !diag.toBeDeleted)
       .map((diag) => diag.graph)
       .forEach((graph) => data[graph].push(...ogStatements));
 

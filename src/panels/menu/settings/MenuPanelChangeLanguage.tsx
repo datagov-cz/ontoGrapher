@@ -1,9 +1,10 @@
 import * as React from "react";
 import { Dropdown } from "react-bootstrap";
 import { Locale } from "../../../config/Locale";
-import { AppSettings, Languages } from "../../../config/Variables";
+import { AppSettings } from "../../../config/Variables";
 import { en } from "../../../locale/en";
 import { getLocalStorageKey } from "../../../function/FunctionGetVars";
+import { Languages } from "../../../config/Languages";
 
 interface Props {
   handleChangeLanguage: (language: string) => void;
@@ -13,7 +14,7 @@ interface Props {
 
 export const MenuPanelChangeLanguage: React.FC<Props> = (props: Props) => {
   return (
-    <Dropdown drop={"right"}>
+    <Dropdown drop={"end"}>
       <Dropdown.Toggle>
         {Locale[AppSettings.interfaceLanguage][props.title]}
       </Dropdown.Toggle>

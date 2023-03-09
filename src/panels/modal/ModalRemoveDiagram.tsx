@@ -15,7 +15,7 @@ interface Props {
 
 export default class ModalRemoveDiagram extends React.Component<Props> {
   save() {
-    Diagrams[this.props.diagram].active = false;
+    Diagrams[this.props.diagram].toBeDeleted = true;
     if (AppSettings.selectedDiagram === this.props.diagram) {
       changeDiagrams();
     }

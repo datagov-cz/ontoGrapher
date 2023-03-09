@@ -1,52 +1,50 @@
+import RemoveIcon from "@mui/icons-material/Remove";
+import classNames from "classnames";
 import React from "react";
-import { Accordion, Button, Card } from "react-bootstrap";
-import { Locale } from "../../../../config/Locale";
 import {
+  Accordion,
+  Button,
+  Form,
+  OverlayTrigger,
+  Tooltip,
+} from "react-bootstrap";
+import { Locale } from "../../../../config/Locale";
+import { RepresentationConfig } from "../../../../config/logic/RepresentationConfig";
+import {
+  AlternativeLabel,
   AppSettings,
-  Languages,
   Stereotypes,
   WorkspaceElements,
   WorkspaceLinks,
   WorkspaceTerms,
   WorkspaceVocabularies,
 } from "../../../../config/Variables";
-import IRILink from "../../../../components/IRILink";
-import LabelTable from "../LabelTable";
-import AltLabelTable from "../AltLabelTable";
-import TableList from "../../../../components/TableList";
-import StereotypeOptions from "./StereotypeOptions";
+import { Shapes } from "../../../../config/visual/Shapes";
 import {
-  DetailPanelMode,
-  LinkType,
-  Representation,
-} from "../../../../config/Enum";
-import { IntrinsicTropeTable } from "../IntrinsicTropeTable";
+  drawGraphElement,
+  getListClassNamesObject,
+  getSelectedLabels,
+  redrawElement,
+} from "../../../../function/FunctionDraw";
+import { getName, parsePrefix } from "../../../../function/FunctionEditVars";
+import { resizeElem } from "../../../../function/FunctionElem";
 import {
   getIntrinsicTropeTypeIDs,
-  getNewLink,
+  getLabelOrBlank,
   getParentOfIntrinsicTropeType,
   getVocabularyFromScheme,
 } from "../../../../function/FunctionGetVars";
-import {
-  deleteConnections,
-  updateConnection,
-} from "../../../../function/FunctionLink";
-import {
-  drawGraphElement,
-  redrawElement,
-} from "../../../../function/FunctionDraw";
-import { parsePrefix } from "../../../../function/FunctionEditVars";
-import DescriptionTabs from "../DescriptionTabs";
-import { Shapes } from "../../../../config/visual/Shapes";
+import { deleteConnections } from "../../../../function/FunctionLink";
 import { graph } from "../../../../graph/Graph";
-import { resizeElem } from "../../../../function/FunctionElem";
 import { updateProjectElement } from "../../../../queries/update/UpdateElementQueries";
+import { DetailPanelAltLabels } from "../description/DetailPanelAltLabels";
+import { ListItemControls } from "../items/ListItemControls";
+import { ModalAddTrope } from "./ModalAddTrope";
 
 type Props = {
   id: string;
   performTransaction: (...queries: string[]) => void;
-  updateDetailPanel: (mode: DetailPanelMode, id?: string) => void;
-  projectLanguage: string;
+  selectedLanguage: string;
   handleCreation: Function;
   save: Function;
 };
@@ -54,13 +52,13 @@ type Props = {
 type State = {
   inputTypeType: string;
   inputTypeData: string;
-  inputLabels: { [key: string]: string };
-  inputAltLabels: { label: string; language: string }[];
+  inputAltLabels: AlternativeLabel[];
   inputDefinitions: { [key: string]: string };
   selectedLabel: { [key: string]: string };
-  newAltInput: string;
   readOnly: boolean;
   changes: boolean;
+  modalTropes: boolean;
+  hoveredTrope: number;
 };
 
 export class DetailElementDescriptionCard extends React.Component<
@@ -72,13 +70,13 @@ export class DetailElementDescriptionCard extends React.Component<
     this.state = {
       inputTypeType: "",
       inputTypeData: "",
-      inputLabels: {},
       inputAltLabels: [],
       inputDefinitions: {},
       selectedLabel: {},
-      newAltInput: "",
       readOnly: true,
       changes: false,
+      modalTropes: false,
+      hoveredTrope: -1,
     };
   }
 
@@ -89,7 +87,7 @@ export class DetailElementDescriptionCard extends React.Component<
   prepareDetails(id?: string) {
     if (id)
       this.setState({
-        selectedLabel: WorkspaceElements[id].selectedLabel,
+        selectedLabel: getSelectedLabels(id, this.props.selectedLanguage),
         inputTypeType:
           WorkspaceTerms[id].types.find(
             (type) => type in Stereotypes && type in Shapes
@@ -98,10 +96,8 @@ export class DetailElementDescriptionCard extends React.Component<
           WorkspaceTerms[id].types.find(
             (type) => type in Stereotypes && !(type in Shapes)
           ) || "",
-        inputLabels: WorkspaceTerms[id].labels,
         inputAltLabels: WorkspaceTerms[id].altLabels,
         inputDefinitions: WorkspaceTerms[id].definitions,
-        newAltInput: "",
         changes: false,
         readOnly:
           WorkspaceVocabularies[
@@ -111,14 +107,10 @@ export class DetailElementDescriptionCard extends React.Component<
   }
 
   componentWillUnmount() {
-    this.save();
+    if (!this.state.readOnly) this.save();
   }
 
-  componentDidUpdate(
-    prevProps: Readonly<Props>,
-    prevState: Readonly<State>,
-    snapshot?: any
-  ) {
+  componentDidUpdate(prevProps: Readonly<Props>, prevState: Readonly<State>) {
     if (prevState.changes !== this.state.changes && this.state.changes) {
       this.save();
     }
@@ -127,38 +119,49 @@ export class DetailElementDescriptionCard extends React.Component<
     }
   }
 
-  updateStereotype(newStereotype: string, type: boolean) {
-    const otherStereotype = type
-      ? this.state.inputTypeData
-      : this.state.inputTypeType;
+  updateStereotype(newStereotype: string) {
     const stereotypes = WorkspaceTerms[this.props.id].types.filter(
       (stereotype) => !(stereotype in Stereotypes)
     );
     if (newStereotype !== "") stereotypes.push(newStereotype);
-    if (otherStereotype !== "")
-      type
-        ? stereotypes.push(otherStereotype)
-        : stereotypes.unshift(otherStereotype);
+    stereotypes.unshift(this.state.inputTypeType);
     WorkspaceTerms[this.props.id].types = stereotypes;
     this.setState({
       changes: true,
+      inputTypeData: newStereotype,
     });
-    type
-      ? this.setState({ inputTypeType: newStereotype })
-      : this.setState({ inputTypeData: newStereotype });
   }
+
+  updateType(newType: string) {
+    const stereotypes = WorkspaceTerms[this.props.id].types.filter(
+      (stereotype) => !(stereotype in Stereotypes)
+    );
+    if (newType !== "") stereotypes.push(newType);
+    const dataStereotype = this.isObjectType(stereotypes)
+      ? this.state.inputTypeData
+      : "";
+    if (dataStereotype !== "") stereotypes.push(dataStereotype);
+    WorkspaceTerms[this.props.id].types = stereotypes;
+    this.setState({
+      changes: true,
+      inputTypeType: newType,
+      inputTypeData: dataStereotype,
+    });
+  }
+
+  isObjectType = (types: string[]) =>
+    types.includes(parsePrefix("z-sgov-pojem", "typ-objektu"));
 
   save() {
     const elem = graph.getElements().find((elem) => elem.id === this.props.id);
-    if (this.props.id in WorkspaceElements) {
+    if (this.props.id in WorkspaceElements && !this.state.readOnly) {
       WorkspaceTerms[this.props.id].altLabels = this.state.inputAltLabels;
       WorkspaceTerms[this.props.id].definitions = this.state.inputDefinitions;
       WorkspaceElements[this.props.id].selectedLabel = this.state.selectedLabel;
-      WorkspaceTerms[this.props.id].labels = this.state.inputLabels;
       if (elem) {
         drawGraphElement(
           elem,
-          this.props.projectLanguage,
+          this.props.selectedLanguage,
           AppSettings.representation
         );
       }
@@ -171,7 +174,7 @@ export class DetailElementDescriptionCard extends React.Component<
           if (elem)
             drawGraphElement(
               elem,
-              this.props.projectLanguage,
+              this.props.selectedLanguage,
               AppSettings.representation
             );
         });
@@ -180,244 +183,194 @@ export class DetailElementDescriptionCard extends React.Component<
       this.props.save(this.props.id);
       this.setState({ changes: false });
       this.props.performTransaction(updateProjectElement(true, this.props.id));
+    } else {
+      throw new Error("Attempted write to a read-only term.");
     }
   }
 
   render() {
+    const tropes = getIntrinsicTropeTypeIDs(this.props.id);
+
     return (
-      <Card>
-        <Card.Header>
-          <Accordion.Toggle as={Button} variant={"link"} eventKey={"0"}>
-            {Locale[AppSettings.interfaceLanguage].description}
-          </Accordion.Toggle>
-        </Card.Header>
-        <Accordion.Collapse eventKey={"0"}>
-          <Card.Body>
-            <h5>
-              {
-                <IRILink
-                  label={
-                    Locale[AppSettings.interfaceLanguage].detailPanelPrefLabel
-                  }
-                  iri={"http://www.w3.org/2004/02/skos/core#prefLabel"}
-                />
-              }
-            </h5>
-            <LabelTable
-              iri={this.props.id}
-              labels={WorkspaceTerms[this.props.id].labels}
-              default={this.state.selectedLabel[this.props.projectLanguage]}
-              selectAsDefault={(label: string) => {
-                let res = this.state.selectedLabel;
-                res[this.props.projectLanguage] = label;
-                this.setState({ selectedLabel: res, changes: true });
-              }}
-              onEdit={(label: string, lang: string) =>
-                this.setState((prevState) => ({
-                  inputLabels: {
-                    ...prevState.inputLabels,
-                    [lang]: label,
+      <Accordion.Item eventKey="0">
+        <Accordion.Header>
+          {Locale[AppSettings.interfaceLanguage].description}
+        </Accordion.Header>
+        <Accordion.Body>
+          <h5>{Locale[AppSettings.interfaceLanguage].detailPanelAltLabel}</h5>
+          <DetailPanelAltLabels
+            altLabels={this.state.inputAltLabels}
+            selectedLabel={this.state.selectedLabel}
+            language={this.props.selectedLanguage}
+            readOnly={this.state.readOnly}
+            addAltLabel={(alt: AlternativeLabel) =>
+              this.setState((prev) => ({
+                ...prev,
+                inputAltLabels: [...prev.inputAltLabels, alt],
+                changes: true,
+              }))
+            }
+            id={this.props.id}
+            selectDisplayLabel={(name, language) =>
+              this.setState((prev) => ({
+                changes: true,
+                selectedLabel: { ...prev.selectedLabel, [language]: name },
+              }))
+            }
+          />
+          <h5>{Locale[AppSettings.interfaceLanguage].detailPanelStereotype}</h5>
+          <Form.Select
+            size="sm"
+            as="select"
+            className="top-item detailInput"
+            value={this.state.inputTypeType}
+            disabled={this.state.readOnly}
+            onChange={(event) => this.updateType(event.currentTarget.value)}
+          >
+            <option key={""} value={""}>
+              {this.state.readOnly
+                ? Locale[AppSettings.interfaceLanguage].noStereotypeUML
+                : Locale[AppSettings.interfaceLanguage].setStereotypeUML}
+            </option>
+            {Object.keys(Stereotypes)
+              .filter((stereotype) =>
+                RepresentationConfig[
+                  AppSettings.representation
+                ].visibleStereotypes.includes(stereotype)
+              )
+              .map((stereotype) => (
+                <option key={stereotype} value={stereotype}>
+                  {getName(stereotype, this.props.selectedLanguage)}
+                </option>
+              ))}
+          </Form.Select>
+          <Form.Select
+            size="sm"
+            className="bottom-item detailInput"
+            value={this.state.inputTypeType}
+            disabled={
+              this.state.readOnly ||
+              !this.isObjectType(WorkspaceTerms[this.props.id].types)
+            }
+            onChange={(event) =>
+              this.updateStereotype(event.currentTarget.value)
+            }
+          >
+            <option key={""} value={""}>
+              {this.state.readOnly
+                ? Locale[AppSettings.interfaceLanguage].noStereotypeData
+                : Locale[AppSettings.interfaceLanguage].setStereotypeData}
+            </option>
+            {Object.keys(Stereotypes)
+              .filter((stereotype) => !(stereotype in Shapes))
+              .map((stereotype) => (
+                <option key={stereotype} value={stereotype}>
+                  {getName(stereotype, this.props.selectedLanguage)}
+                </option>
+              ))}
+          </Form.Select>
+          <h5>{Locale[AppSettings.interfaceLanguage].detailPanelDefinition}</h5>
+          <Form.Control
+            as={"textarea"}
+            rows={3}
+            size="sm"
+            className="detailInput"
+            disabled={this.state.readOnly}
+            value={this.state.inputDefinitions[this.props.selectedLanguage]}
+            onChange={(event) => {
+              if (!this.state.readOnly)
+                this.setState((prev) => ({
+                  ...prev,
+                  inputDefinitions: {
+                    ...prev.inputDefinitions,
+                    [this.props.selectedLanguage]: event.target.value,
                   },
-                  changes: true,
-                }))
-              }
-            />
-            <h5>
-              {
-                <IRILink
-                  label={
-                    Locale[AppSettings.interfaceLanguage].detailPanelAltLabel
-                  }
-                  iri={"http://www.w3.org/2004/02/skos/core#altLabel"}
-                />
-              }
-            </h5>
-            <AltLabelTable
-              labels={this.state.inputAltLabels}
-              readOnly={this.state.readOnly}
-              onEdit={(textarea: string, lang: string, i: number) => {
-                let res = this.state.inputAltLabels;
-                let resL = this.state.selectedLabel;
-                if (textarea === "") {
-                  if (
-                    res[i].label ===
-                    this.state.selectedLabel[this.props.projectLanguage]
-                  ) {
-                    resL[this.props.projectLanguage] =
-                      WorkspaceTerms[this.props.id].labels[
-                        this.props.projectLanguage
-                      ];
-                  }
-                  res.splice(i, 1);
-                } else {
-                  if (
-                    res[i].label ===
-                    this.state.selectedLabel[this.props.projectLanguage]
-                  ) {
-                    resL[this.props.projectLanguage] =
-                      lang === this.props.projectLanguage ? textarea : "";
-                  }
-                  res[i] = { label: textarea, language: lang };
-                }
-                this.setState({
-                  inputAltLabels: res,
-                  selectedLabel: resL,
-                  changes: true,
-                });
-              }}
-              default={this.state.selectedLabel[this.props.projectLanguage]}
-              selectAsDefault={(lang: string, i: number) => {
-                let res = this.state.selectedLabel;
-                res[this.props.projectLanguage] =
-                  this.state.inputAltLabels[i].label;
-                this.setState({ selectedLabel: res, changes: true });
-              }}
-              addAltLabel={(label: string) => {
-                if (
-                  label !== "" ||
-                  this.state.inputAltLabels.find((alt) => alt.label === label)
-                ) {
-                  let res = this.state.inputAltLabels;
-                  res.push({
-                    label: label,
-                    language: this.props.projectLanguage,
-                  });
-                  this.setState({
-                    inputAltLabels: res,
-                    changes: true,
-                  });
-                }
-              }}
-            />
-            <h5>
-              {
-                <IRILink
-                  label={
-                    Locale[AppSettings.interfaceLanguage].detailPanelStereotype
-                  }
-                  iri={"http://www.w3.org/2000/01/rdf-schema#type"}
-                />
-              }
-            </h5>
-            <TableList>
-              <StereotypeOptions
-                readonly={this.state.readOnly}
-                content={true}
-                projectLanguage={this.props.projectLanguage}
-                onChange={(value: string) => this.updateStereotype(value, true)}
-                value={this.state.inputTypeType}
-              />
-              <StereotypeOptions
-                readonly={this.state.readOnly}
-                content={false}
-                projectLanguage={this.props.projectLanguage}
-                onChange={(value: string) =>
-                  this.updateStereotype(value, false)
-                }
-                value={this.state.inputTypeData}
-              />
-            </TableList>
-            {AppSettings.representation === Representation.COMPACT && (
-              <div>
-                <h5>{Locale[AppSettings.interfaceLanguage].intrinsicTropes}</h5>
-                <IntrinsicTropeTable
-                  iri={this.props.id}
-                  tropes={getIntrinsicTropeTypeIDs(this.props.id)}
-                  onEdit={(id: string) =>
-                    this.props.updateDetailPanel(DetailPanelMode.TERM, id)
-                  }
-                  onRemove={(id: string) => {
-                    const connections = getIntrinsicTropeTypeIDs(
-                      this.props.id,
-                      true
-                    );
-                    for (const conn of connections.filter(
-                      (link) =>
-                        WorkspaceLinks[link].target === id ||
-                        WorkspaceLinks[link].source === id
-                    )) {
-                      this.props.performTransaction(...deleteConnections(conn));
-                    }
-                    redrawElement(this.props.id, this.props.projectLanguage);
-                  }}
-                  onAdd={(id: string) => {
-                    const link = getNewLink(LinkType.DEFAULT);
-                    this.props.performTransaction(
-                      ...updateConnection(
-                        this.props.id,
-                        id,
-                        link.id as string,
-                        LinkType.DEFAULT,
-                        parsePrefix("z-sgov-pojem", "má-vlastnost"),
-                        true
-                      )
-                    );
-                    redrawElement(this.props.id, this.props.projectLanguage);
-                  }}
-                  onCreate={() => {
-                    this.props.handleCreation(this.props.id);
-                  }}
-                  readOnly={this.state.readOnly}
-                  projectLanguage={this.props.projectLanguage}
-                />
-              </div>
-            )}
-            <h5>
-              {
-                <IRILink
-                  label={
-                    Locale[AppSettings.interfaceLanguage].detailPanelInScheme
-                  }
-                  iri={"http://www.w3.org/2004/02/skos/core#inScheme"}
-                />
-              }
-            </h5>
-            <LabelTable
-              showCopyIRI={true}
-              labels={
-                WorkspaceVocabularies[
-                  getVocabularyFromScheme(
-                    WorkspaceTerms[this.props.id].inScheme
-                  )
-                ].labels
-              }
-              iri={getVocabularyFromScheme(
-                WorkspaceTerms[this.props.id].inScheme
+                }));
+            }}
+            onBlur={() => {
+              if (!this.state.readOnly) this.setState({ changes: true });
+            }}
+          />
+          <h5>{Locale[AppSettings.interfaceLanguage].intrinsicTropes}</h5>
+          {tropes.map((iri, i) => (
+            <div
+              key={iri}
+              onMouseEnter={() => this.setState({ hoveredTrope: i })}
+              onMouseLeave={() => this.setState({ hoveredTrope: -1 })}
+              className={classNames(
+                "detailInput",
+                "form-control",
+                "form-control-sm",
+                getListClassNamesObject(tropes, i)
               )}
+            >
+              <span>
+                {getLabelOrBlank(
+                  WorkspaceTerms[iri].labels,
+                  this.props.selectedLanguage
+                )}
+              </span>
+              <span
+                className={classNames("controls", {
+                  hovered: i === this.state.hoveredTrope,
+                })}
+              >
+                <OverlayTrigger
+                  placement="left"
+                  delay={1000}
+                  overlay={
+                    <Tooltip>
+                      {Locale[AppSettings.interfaceLanguage].removeTrope}
+                    </Tooltip>
+                  }
+                >
+                  <Button
+                    className="plainButton"
+                    variant="light"
+                    onClick={() => {
+                      for (const l of Object.keys(WorkspaceLinks)) {
+                        if (
+                          (WorkspaceLinks[l].source === iri ||
+                            WorkspaceLinks[l].target === iri) &&
+                          WorkspaceLinks[l].active
+                        )
+                          this.props.performTransaction(
+                            ...deleteConnections(l)
+                          );
+                      }
+                      redrawElement(this.props.id, AppSettings.canvasLanguage);
+                    }}
+                  >
+                    <RemoveIcon />
+                  </Button>
+                </OverlayTrigger>
+              </span>
+            </div>
+          ))}
+          {tropes.length === 0 && (
+            <Form.Control
+              className="detailInput noInput"
+              disabled
+              value=""
+              size="sm"
             />
-            {Object.keys(Languages).length > 0 ? (
-              <h5>
-                {
-                  <IRILink
-                    label={
-                      Locale[AppSettings.interfaceLanguage]
-                        .detailPanelDefinition
-                    }
-                    iri={"http://www.w3.org/2004/02/skos/core#definition"}
-                  />
-                }
-              </h5>
-            ) : (
-              ""
-            )}
-            <DescriptionTabs
-              descriptions={this.state.inputDefinitions}
-              readOnly={this.state.readOnly}
-              onEdit={(
-                event: React.ChangeEvent<HTMLSelectElement>,
-                language: string
-              ) => {
-                let res = this.state.inputDefinitions;
-                res[language] = event.currentTarget.value;
-                this.setState({ inputDefinitions: res });
-              }}
-              onFocusOut={() => {
-                this.setState({ changes: true });
-              }}
-            />
-          </Card.Body>
-        </Accordion.Collapse>
-      </Card>
+          )}
+          <ListItemControls
+            addAction={() => this.setState({ modalTropes: true })}
+            popover={false}
+            tooltipText={Locale[AppSettings.interfaceLanguage].assignTrope}
+            disableAddControl={this.state.readOnly}
+          />
+        </Accordion.Body>
+        <ModalAddTrope
+          modalTropes={this.state.modalTropes}
+          hideModal={() => this.setState({ modalTropes: false })}
+          selectedLanguage={this.props.selectedLanguage}
+          performTransaction={this.props.performTransaction}
+          update={this.props.save}
+          id={this.props.id}
+        />
+      </Accordion.Item>
     );
   }
 }

@@ -1,85 +1,64 @@
+import CloseIcon from "@mui/icons-material/Close";
+import DeleteIcon from "@mui/icons-material/Delete";
+import EditIcon from "@mui/icons-material/Edit";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
 import React from "react";
+import { Dropdown } from "react-bootstrap";
+import { IconText } from "../../components/IconText";
+import { MainViewMode } from "../../config/Enum";
+import { StoreSettings } from "../../config/Store";
 import { AppSettings, Diagrams } from "../../config/Variables";
 import { changeDiagrams } from "../../function/FunctionDiagram";
-import InlineEdit, { InputType } from "riec";
-import {
-  updateCreateDiagram,
-  updateDiagram,
-} from "../../queries/update/UpdateDiagramQueries";
-import { removeNewlines } from "../../function/FunctionEditVars";
 
 interface Props {
   diagram: string;
   update: Function;
   deleteDiagram: Function;
+  renameDiagram: Function;
+  closeDiagram: Function;
   performTransaction: (...queries: string[]) => void;
 }
 
-interface State {}
-
-export default class DiagramTab extends React.Component<Props, State> {
-  changeDiagram() {
-    changeDiagrams(this.props.diagram);
-    this.props.update();
-    AppSettings.selectedLinks = [];
-  }
-
-  handleChangeDiagramName(value: string) {
-    if (value.length > 0) {
-      const queries = [];
-      Diagrams[this.props.diagram].name = value;
-      if (!Diagrams[this.props.diagram].saved) {
-        Diagrams[this.props.diagram].saved = true;
-        queries.push(updateCreateDiagram(this.props.diagram));
-      }
-      queries.push(updateDiagram(this.props.diagram));
-      this.props.performTransaction(...queries);
-      this.forceUpdate();
-      this.props.update();
+export const DiagramTab: React.FC<Props> = (props: Props) => {
+  const changeDiagram = () => {
+    if (props.diagram !== AppSettings.selectedDiagram) {
+      StoreSettings.update((s) => {
+        s.mainViewMode = MainViewMode.CANVAS;
+      });
+      changeDiagrams(props.diagram);
+      props.update();
+      AppSettings.selectedLinks = [];
     }
-  }
+  };
 
-  render() {
-    return (
-      <div
-        className={
-          "diagramTab" +
-          (this.props.diagram === AppSettings.selectedDiagram
-            ? " selected"
-            : "")
-        }
-        onClick={() => this.changeDiagram()}
+  return (
+    <div
+      className={
+        "diagramTab" +
+        (props.diagram === AppSettings.selectedDiagram ? " selected" : "")
+      }
+      onClick={() => changeDiagram()}
+    >
+      <span className="diagramText">{Diagrams[props.diagram].name}&nbsp;</span>
+      <Dropdown
+        className="displayInline"
+        onClick={(evt) => evt.stopPropagation()}
       >
-        {this.props.diagram === AppSettings.selectedDiagram ? (
-          <InlineEdit
-            viewClass={"rieinput"}
-            value={
-              Diagrams[this.props.diagram].name.length > 0
-                ? Diagrams[this.props.diagram].name
-                : "<blank>"
-            }
-            onChange={(value: string) => {
-              this.handleChangeDiagramName(removeNewlines(value));
-            }}
-            type={InputType.Text}
-          />
-        ) : (
-          Diagrams[this.props.diagram].name
-        )}
-        {Object.values(Diagrams).filter((diag) => diag.active).length > 1 && (
-          <button
-            className={"buttonlink"}
-            onClick={(evt) => {
-              evt.stopPropagation();
-              this.props.deleteDiagram(this.props.diagram);
-            }}
-          >
-            <span role="img" aria-label={""}>
-              &nbsp;❌
-            </span>
-          </button>
-        )}
-      </div>
-    );
-  }
-}
+        <Dropdown.Toggle className="plainButton" variant="secondary">
+          <MoreVertIcon />
+        </Dropdown.Toggle>
+        <Dropdown.Menu>
+          <Dropdown.Item onClick={() => props.closeDiagram(props.diagram)}>
+            <IconText text="Zavřít" icon={CloseIcon} />
+          </Dropdown.Item>
+          <Dropdown.Item onClick={() => props.renameDiagram(props.diagram)}>
+            <IconText text="Přejmenovat" icon={EditIcon} />
+          </Dropdown.Item>
+          <Dropdown.Item onClick={() => props.deleteDiagram(props.diagram)}>
+            <IconText text="Smazat" icon={DeleteIcon} />
+          </Dropdown.Item>
+        </Dropdown.Menu>
+      </Dropdown>
+    </div>
+  );
+};

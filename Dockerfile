@@ -1,4 +1,4 @@
-FROM node:12 as node
+FROM node:18 as node
 
 ARG PUBLIC_PATH=.
 ENV PUBLIC_URL=${PUBLIC_PATH}

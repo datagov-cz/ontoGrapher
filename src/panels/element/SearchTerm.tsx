@@ -46,19 +46,19 @@ export class SearchTerm extends React.Component<Props, State> {
         placement={"right"}
         overlay={
           <Popover id={"termDetailPopover"}>
-            <Popover.Title as="h3">
+            <Popover.Header as="h3">
               {getLabelOrBlank(
                 this.props.result.labels,
                 this.props.projectLanguage
               )}
               &nbsp;
-              <Badge className={"wrap"} variant={"secondary"}>
+              <Badge className={"wrap"} bg={"secondary"}>
                 {this.checkVocabulary(this.props.result.vocabulary)}
               </Badge>
-            </Popover.Title>
-            <Popover.Content>
+            </Popover.Header>
+            <Popover.Body>
               {this.props.result.definitions[this.props.projectLanguage]}
-            </Popover.Content>
+            </Popover.Body>
           </Popover>
         }
       >
@@ -98,7 +98,7 @@ export class SearchTerm extends React.Component<Props, State> {
           )}
           &nbsp;
           {this.props.list && (
-            <Badge variant={"secondary"}>
+            <Badge bg={"secondary"}>
               {getVocabularyShortLabel(this.props.result.vocabulary)}
             </Badge>
           )}

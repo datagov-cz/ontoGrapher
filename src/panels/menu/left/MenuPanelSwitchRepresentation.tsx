@@ -30,7 +30,8 @@ export default class MenuPanelSwitchRepresentation extends React.Component<
     const result = setRepresentation(
       AppSettings.representation === Representation.FULL
         ? Representation.COMPACT
-        : Representation.FULL
+        : Representation.FULL,
+      AppSettings.selectedDiagram
     );
     if (result) {
       this.setState({ alert: result.result });

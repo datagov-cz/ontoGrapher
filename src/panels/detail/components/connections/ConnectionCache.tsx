@@ -18,11 +18,10 @@ interface Props {
   selected: boolean;
   selection: string[];
   updateSelection?: (ids: string[]) => void;
+  performTransaction: (...queries: string[]) => void;
 }
 
-interface State {}
-
-export default class ConnectionCache extends React.Component<Props, State> {
+export default class ConnectionCache extends React.Component<Props> {
   getVocabularyLabel(vocabulary: string): string {
     return vocabulary in CacheSearchVocabularies
       ? getLabelOrBlank(
@@ -60,71 +59,70 @@ export default class ConnectionCache extends React.Component<Props, State> {
         placement={"left"}
         overlay={
           <Popover id={"termDetailPopover"}>
-            <Popover.Title as="h3">
+            <Popover.Header as="h3">
               {getLabelOrBlank(
                 this.props.connection.target.labels,
                 this.props.projectLanguage
               )}
               &nbsp;
-              <Badge className={"wrap"} variant={"secondary"}>
+              <Badge className={"wrap"} bg={"secondary"}>
                 {this.getVocabularyLabel(
                   this.props.connection.target.vocabulary
                 )}
               </Badge>
-            </Popover.Title>
-            <Popover.Content>
+            </Popover.Header>
+            <Popover.Body>
               {
                 this.props.connection.target.definitions[
                   this.props.projectLanguage
                 ]
               }
-            </Popover.Content>
+            </Popover.Body>
           </Popover>
         }
       >
-        <Connection
-          onDragStart={(event: DragEvent) => {
-            if (this.props.update) this.transferConnectionToEvent(event);
-          }}
-          onDragEnd={() => {
-            if (this.props.update) this.props.update();
-          }}
-          onClick={() => {
-            if (this.props.updateSelection)
-              this.props.updateSelection(
-                AppSettings.representation === Representation.FULL
-                  ? [this.props.connection.target.iri]
-                  : [
-                      this.props.connection.target.iri,
-                      this.props.connection.link,
-                    ]
-              );
-          }}
-          selected={this.props.selected}
-          linkLabel={getLabelOrBlank(
-            this.props.connection.linkLabels,
-            this.props.projectLanguage
-          )}
-          direction={this.props.connection.direction === "target"}
-          markerID={
-            this.props.connection.link + "/" + this.props.connection.target.iri
-          }
-          backgroundColor={"white"}
-          elementLabel={
-            <span>
-              {getLabelOrBlank(
-                this.props.connection.target.labels,
-                this.props.projectLanguage
-              )}
-              &nbsp;
-              <Badge variant={"secondary"}>
-                {getVocabularyShortLabel(
-                  this.props.connection.target.vocabulary
+        {
+          <Connection
+            onDragStart={(event: DragEvent) => {
+              if (this.props.update) this.transferConnectionToEvent(event);
+            }}
+            onDragEnd={() => {
+              if (this.props.update) this.props.update();
+            }}
+            onClick={() => {
+              if (this.props.updateSelection)
+                this.props.updateSelection(
+                  AppSettings.representation === Representation.FULL
+                    ? [this.props.connection.target.iri]
+                    : [
+                        this.props.connection.target.iri,
+                        this.props.connection.link,
+                      ]
+                );
+            }}
+            selected={this.props.selected}
+            link={this.props.connection.link}
+            direction={this.props.connection.direction === "target"}
+            selectedLanguage={this.props.projectLanguage}
+            backgroundColor={"white"}
+            performTransaction={this.props.performTransaction}
+            elementLabel={
+              <span>
+                {getLabelOrBlank(
+                  this.props.connection.target.labels,
+                  this.props.projectLanguage
                 )}
-              </Badge>
-            </span>
-          }
-        />
+                &nbsp;
+                <Badge bg={"secondary"}>
+                  {getVocabularyShortLabel(
+                    this.props.connection.target.vocabulary
+                  )}
+                </Badge>
+              </span>
+            }
+            readOnly={true}
+          />
+        }
       </OverlayTrigger>
     );
   }

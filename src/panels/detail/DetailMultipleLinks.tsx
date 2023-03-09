@@ -1,13 +1,7 @@
 import React from "react";
-import {
-  getExpressionByRepresentation,
-  getLabelOrBlank,
-  getLinkOrVocabElem,
-  getUnderlyingFullConnections,
-  isTermReadOnly,
-} from "../../function/FunctionGetVars";
-import { DetailPanelMode, LinkType, Representation } from "../../config/Enum";
-import { Accordion, Button, Card, Form } from "react-bootstrap";
+import { Alert, Dropdown, ListGroup } from "react-bootstrap";
+import { LanguageSelector } from "../../components/LanguageSelector";
+import { LinkType, Representation } from "../../config/Enum";
 import { Locale } from "../../config/Locale";
 import {
   AppSettings,
@@ -16,17 +10,22 @@ import {
   WorkspaceLinks,
   WorkspaceTerms,
 } from "../../config/Variables";
-import TableList from "../../components/TableList";
-import { graph } from "../../graph/Graph";
-import { setLabels } from "../../function/FunctionGraph";
-import { updateConnections } from "../../queries/update/UpdateConnectionQueries";
 import { Cardinality } from "../../datatypes/Cardinality";
-import { updateProjectLink } from "../../queries/update/UpdateLinkQueries";
 import { getDisplayLabel } from "../../function/FunctionDraw";
+import {
+  getExpressionByRepresentation,
+  getLabelOrBlank,
+  getLinkOrVocabElem,
+  getUnderlyingFullConnections,
+  isTermReadOnly,
+} from "../../function/FunctionGetVars";
+import { setLabels } from "../../function/FunctionGraph";
+import { graph } from "../../graph/Graph";
+import { updateConnections } from "../../queries/update/UpdateConnectionQueries";
+import { updateProjectLink } from "../../queries/update/UpdateLinkQueries";
 
 type Props = {
   error: boolean;
-  updateDetailPanel: (mode: DetailPanelMode, id?: string) => void;
   projectLanguage: string;
   save: (...ids: string[]) => void;
   performTransaction: (...queries: string[]) => void;
@@ -37,6 +36,7 @@ type State = {
   targetCardinality: string;
   changes: boolean;
   readOnly: boolean;
+  selectedLanguage: string;
 };
 
 export default class DetailMultipleLinks extends React.Component<Props, State> {
@@ -47,14 +47,11 @@ export default class DetailMultipleLinks extends React.Component<Props, State> {
       targetCardinality: "0",
       changes: false,
       readOnly: false,
+      selectedLanguage: AppSettings.canvasLanguage,
     };
   }
 
-  componentDidUpdate(
-    prevProps: Readonly<Props>,
-    prevState: Readonly<State>,
-    snapshot?: any
-  ) {
+  componentDidUpdate(prevProps: Readonly<Props>, prevState: Readonly<State>) {
     if (prevState.changes !== this.state.changes && this.state.changes) {
       if (
         prevState.sourceCardinality !== this.state.sourceCardinality &&
@@ -193,115 +190,135 @@ export default class DetailMultipleLinks extends React.Component<Props, State> {
 
   render() {
     return (
-      <div className={"accordions"}>
-        <Accordion defaultActiveKey={"0"}>
-          <Card>
-            <Card.Header>
-              <Accordion.Toggle as={Button} variant={"link"} eventKey={"0"}>
-                {Locale[AppSettings.interfaceLanguage].description}
-              </Accordion.Toggle>
-            </Card.Header>
-            <Accordion.Collapse eventKey={"0"}>
-              <Card.Body>
-                <TableList>
-                  <tr>
-                    <td className={"first"}>
-                      <span>
-                        {
-                          Locale[AppSettings.interfaceLanguage]
-                            .sourceCardinality
-                        }
-                      </span>
-                    </td>
-                    <td className={"last"}>
-                      {
-                        <Form.Control
-                          as="select"
-                          disabled={this.state.readOnly}
-                          value={this.state.sourceCardinality}
-                          onChange={(
-                            event: React.ChangeEvent<HTMLSelectElement>
-                          ) => {
-                            this.setState({
-                              sourceCardinality: event.currentTarget.value,
-                              changes: true,
-                            });
-                          }}
-                        >
-                          {CardinalityPool.map((card, i) => (
-                            <option key={i} value={i.toString(10)}>
-                              {card.getString()}
-                            </option>
-                          ))}
-                        </Form.Control>
-                      }
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className={"first"}>
-                      <span>
-                        {
-                          Locale[AppSettings.interfaceLanguage]
-                            .targetCardinality
-                        }
-                      </span>
-                    </td>
-                    <td className={"last"}>
-                      {
-                        <Form.Control
-                          disabled={this.state.readOnly}
-                          as="select"
-                          value={this.state.targetCardinality}
-                          onChange={(
-                            event: React.ChangeEvent<HTMLSelectElement>
-                          ) => {
-                            this.setState({
-                              targetCardinality: event.currentTarget.value,
-                              changes: true,
-                            });
-                          }}
-                        >
-                          {CardinalityPool.map((card, i) => (
-                            <option key={i} value={i.toString(10)}>
-                              {card.getString()}
-                            </option>
-                          ))}
-                        </Form.Control>
-                      }
-                    </td>
-                  </tr>
-                </TableList>
-                <p>
-                  {this.state.readOnly
-                    ? getExpressionByRepresentation({
-                        [Representation.COMPACT]:
-                          "detailPanelMultipleRelationshipsNotEditable",
-                        [Representation.FULL]:
-                          "detailPanelMultipleLinksNotEditable",
-                      })
-                    : getExpressionByRepresentation({
-                        [Representation.COMPACT]:
-                          "detailPanelMultipleRelationshipsEditable",
-                        [Representation.FULL]:
-                          "detailPanelMultipleLinksEditable",
-                      })}
-                </p>
-                <TableList>
-                  {this.getEditableLinks().map((link) => (
-                    <tr key={link}>
-                      <td>
-                        {getLabelOrBlank(
-                          getLinkOrVocabElem(WorkspaceLinks[link].iri).labels,
-                          this.props.projectLanguage
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </TableList>
-              </Card.Body>
-            </Accordion.Collapse>
-          </Card>
-        </Accordion>
+      <div className="detailElement">
+        <div className={"accordions"}>
+          <div className={"detailTitle"}>
+            <div className="top">
+              <span className="languageSelect">
+                <LanguageSelector
+                  language={this.state.selectedLanguage}
+                  setLanguage={(lang: string) =>
+                    this.setState({ selectedLanguage: lang })
+                  }
+                />
+              </span>
+              <span className="title link">
+                <i>
+                  {getExpressionByRepresentation({
+                    [Representation.COMPACT]:
+                      "detailPanelMultipleRelationships",
+                    [Representation.FULL]: "detailPanelMultipleLinks",
+                  })}
+                </i>
+              </span>
+            </div>
+          </div>
+          <h5>{Locale[AppSettings.interfaceLanguage].cardinalities}</h5>
+          <div className="linkCardinalities">
+            <svg
+              width="100%"
+              height="24px"
+              preserveAspectRatio="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <defs>
+                <marker
+                  id={"link"}
+                  viewBox="0 0 10 10"
+                  refX="9"
+                  refY="5"
+                  markerUnits="strokeWidth"
+                  markerWidth="7"
+                  markerHeight="7"
+                  orient="auto-start-reverse"
+                >
+                  <path d="M 0 0 L 10 5 L 0 10 z" fill="#000" />
+                </marker>
+              </defs>
+              <line
+                x1="2%"
+                y1="50%"
+                x2="100%"
+                y2="50%"
+                strokeWidth="2"
+                stroke="#000"
+                markerEnd={"url(#link)"}
+              />
+            </svg>
+            <Dropdown>
+              <Dropdown.Toggle
+                className="plainButton"
+                variant="light"
+                disabled={this.state.readOnly}
+              >
+                {CardinalityPool[
+                  parseInt(this.state.sourceCardinality, 10)
+                ].getString()}
+              </Dropdown.Toggle>
+              <Dropdown.Menu>
+                {CardinalityPool.map((card, i) => (
+                  <Dropdown.Item
+                    disabled={i.toString(10) === this.state.sourceCardinality}
+                  >
+                    {card.getString()}
+                  </Dropdown.Item>
+                ))}
+              </Dropdown.Menu>
+            </Dropdown>
+
+            <span className="plainButton">
+              {getExpressionByRepresentation({
+                [Representation.COMPACT]: "detailPanelMultipleRelationships",
+                [Representation.FULL]: "detailPanelMultipleLinks",
+              })}
+            </span>
+
+            <Dropdown>
+              <Dropdown.Toggle
+                disabled={this.state.readOnly}
+                className="plainButton"
+                variant="light"
+              >
+                {CardinalityPool[
+                  parseInt(this.state.targetCardinality, 10)
+                ].getString()}
+              </Dropdown.Toggle>
+              <Dropdown.Menu>
+                {CardinalityPool.map((card, i) => (
+                  <Dropdown.Item
+                    disabled={i.toString(10) === this.state.targetCardinality}
+                  >
+                    {card.getString()}
+                  </Dropdown.Item>
+                ))}
+              </Dropdown.Menu>
+            </Dropdown>
+          </div>
+          <br />
+          <Alert variant={this.state.readOnly ? "danger" : "primary"}>
+            {this.state.readOnly
+              ? getExpressionByRepresentation({
+                  [Representation.COMPACT]:
+                    "detailPanelMultipleRelationshipsNotEditable",
+                  [Representation.FULL]: "detailPanelMultipleLinksNotEditable",
+                })
+              : getExpressionByRepresentation({
+                  [Representation.COMPACT]:
+                    "detailPanelMultipleRelationshipsEditable",
+                  [Representation.FULL]: "detailPanelMultipleLinksEditable",
+                })}
+          </Alert>
+          <ListGroup>
+            {this.getEditableLinks().map((link) => (
+              <ListGroup.Item className="diagramEntry form-control form-control-sm">
+                {getLabelOrBlank(
+                  getLinkOrVocabElem(WorkspaceLinks[link].iri).labels,
+                  this.props.projectLanguage
+                )}
+              </ListGroup.Item>
+            ))}
+          </ListGroup>
+        </div>
       </div>
     );
   }

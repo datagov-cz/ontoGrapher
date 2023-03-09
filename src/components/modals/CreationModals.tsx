@@ -84,7 +84,10 @@ export const CreationModals: React.FC<Props> = (props) => {
               ),
               updateProjectLink(false, ...initConnections().add)
             );
-            setRepresentation(Representation.COMPACT);
+            setRepresentation(
+              Representation.COMPACT,
+              AppSettings.selectedDiagram
+            );
             AppSettings.selectedElements = [];
             props.update();
           }

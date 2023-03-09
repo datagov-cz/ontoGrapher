@@ -109,6 +109,7 @@ export default class ModalRemoveConcept extends React.Component<Props, State> {
                       elemID={this.props.id}
                       selected={false}
                       selection={[]}
+                      performTransaction={this.props.performTransaction}
                     />
                   ))}
                 </TableList>

@@ -1,21 +1,22 @@
+import DeleteIcon from "@mui/icons-material/Delete";
+import InfoIcon from "@mui/icons-material/Info";
+import classNames from "classnames";
 import React from "react";
+import { Button } from "react-bootstrap";
 import {
   AppSettings,
   WorkspaceElements,
   WorkspaceTerms,
 } from "../../config/Variables";
-import { getLabelOrBlank } from "../../function/FunctionGetVars";
 import {
   highlightElement,
   resetDiagramSelection,
   unhighlightElement,
-  updateDiagramPosition,
 } from "../../function/FunctionDiagram";
-import { graph } from "../../graph/Graph";
-import { paper } from "../../main/DiagramCanvas";
-import { ReactComponent as HiddenElementSVG } from "../../svg/hiddenElement.svg";
 import { isElementHidden } from "../../function/FunctionElem";
-import classNames from "classnames";
+import { getLabelOrBlank } from "../../function/FunctionGetVars";
+import { centerElementInView } from "../../function/FunctionGraph";
+import { ReactComponent as HiddenElementSVG } from "../../svg/hiddenElement.svg";
 
 interface Props {
   id: string;
@@ -24,7 +25,6 @@ interface Props {
   showDetails: Function;
   readOnly: boolean;
   projectLanguage: string;
-  visible: boolean;
   update: () => void;
 }
 
@@ -60,6 +60,11 @@ export default class VocabularyConcept extends React.Component<Props, State> {
               ")"}
           </span>
         )}
+        &nbsp;
+        {isElementHidden(this.props.id, AppSettings.selectedDiagram) &&
+          AppSettings.selectedDiagram && (
+            <HiddenElementSVG width="25px" height="25px" />
+          )}
       </span>
     );
   }
@@ -73,22 +78,7 @@ export default class VocabularyConcept extends React.Component<Props, State> {
       } else highlightElement(this.props.id);
     } else resetDiagramSelection();
     highlightElement(this.props.id);
-    let elem = graph.getElements().find((elem) => elem.id === this.props.id);
-    if (elem) {
-      const scale = paper.scale().sx;
-      paper.translate(0, 0);
-      paper.translate(
-        -elem.position().x * scale +
-          paper.getComputedSize().width / 2 -
-          elem.getBBox().width,
-        -elem.position().y * scale +
-          paper.getComputedSize().height / 2 -
-          elem.getBBox().height
-      );
-      updateDiagramPosition(AppSettings.selectedDiagram);
-    }
     this.props.update();
-    this.props.showDetails(this.props.id);
   }
 
   render() {
@@ -128,44 +118,36 @@ export default class VocabularyConcept extends React.Component<Props, State> {
         id={this.props.id}
         className={classNames("stereotypeElementItem", {
           hidden: isElementHidden(this.props.id, AppSettings.selectedDiagram),
-          closed: !this.props.visible,
           selected: AppSettings.selectedElements.includes(this.props.id),
         })}
       >
         {this.getLabel()}
-        {isElementHidden(this.props.id, AppSettings.selectedDiagram) && (
-          <HiddenElementSVG />
-        )}
-        {this.state.hover && !this.props.readOnly && (
-          <span className={"conceptOptions right"}>
-            <button
-              className={"buttonlink"}
-              onClick={(event) => {
-                event.stopPropagation();
-                this.props.openRemoveItem(this.props.id);
+        <span
+          className={classNames("conceptOptions right", {
+            hover: this.state.hover,
+          })}
+        >
+          <Button variant="light" className="plainButton">
+            <InfoIcon
+              onClick={() => {
+                centerElementInView(this.props.id);
+                this.props.showDetails(this.props.id);
               }}
-            >
-              <span role="img" aria-label={""}>
-                ❌
-              </span>
-            </button>
-          </span>
-        )}
-        {this.state.hover && this.props.readOnly && (
-          <span className={"conceptOptions right"}>
-            <button
-              className={"buttonlink"}
-              onClick={(event) => {
-                event.stopPropagation();
-                this.props.openRemoveReadOnlyItem(this.props.id);
+            />
+          </Button>
+          <Button variant="light" className="plainButton">
+            <DeleteIcon
+              onClick={(evt) => {
+                evt.stopPropagation();
+                if (!this.props.readOnly) {
+                  this.props.openRemoveItem(this.props.id);
+                } else if (this.props.readOnly) {
+                  this.props.openRemoveReadOnlyItem(this.props.id);
+                }
               }}
-            >
-              <span role="img" aria-label={""}>
-                ➖
-              </span>
-            </button>
-          </span>
-        )}
+            />
+          </Button>
+        </span>
       </div>
     );
   }

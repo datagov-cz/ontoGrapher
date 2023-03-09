@@ -3,9 +3,9 @@ import { Restriction } from "../datatypes/Restriction";
 import { Representation } from "./Enum";
 import * as joint from "jointjs";
 import { Environment } from "./Environment";
+import { Languages } from "./Languages";
 
-// language code : language label
-export var Languages: { [key: string]: string } = {};
+export type AlternativeLabel = { label: string; language: string };
 
 export var WorkspaceElements: {
   [key: string]: {
@@ -51,7 +51,6 @@ export var WorkspaceVocabularies: {
     labels: { [key: string]: string };
     readOnly: boolean;
     glossary: string;
-    count: { [key in Representation]: number };
     namespace: string;
     graph: string;
     color: string;
@@ -127,7 +126,18 @@ export var Diagrams: {
     iri: string;
     graph: string;
     saved: boolean;
+    toBeDeleted: boolean;
+    vocabularies: string[];
+    description: string;
+    modifiedDate: Date;
+    creationDate: Date;
+    // collaborators = ID!!!
+    collaborators: string[];
   };
+} = {};
+
+export var Users: {
+  [key: string]: { given_name: string; family_name: string };
 } = {};
 
 export var AppSettings: {
@@ -158,12 +168,7 @@ export var AppSettings: {
   interfaceLanguage: string;
   selectedElements: string[];
   selectedLinks: string[];
-  currentUser?: {
-    email: string;
-    given_name: string;
-    family_name: string;
-    id: string;
-  };
+  currentUser?: string;
   changedVocabularies: string[];
 } = {
   name: {},
@@ -210,3 +215,4 @@ export var CardinalityPool: Cardinality[] = [
   new Cardinality("2", "2"),
   new Cardinality("2", "*"),
 ];
+export { Languages };

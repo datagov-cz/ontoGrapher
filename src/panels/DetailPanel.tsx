@@ -1,21 +1,11 @@
 import React from "react";
-import DetailLink from "./detail/DetailLink";
-import DetailElement from "./detail/DetailElement";
-import { DetailPanelMode, Representation } from "../config/Enum";
-import {
-  WorkspaceElements,
-  WorkspaceLinks,
-  WorkspaceTerms,
-} from "../config/Variables";
-import DetailMultipleLinks from "./detail/DetailMultipleLinks";
-import {
-  getExpressionByRepresentation,
-  getLabelOrBlank,
-  getLinkOrVocabElem,
-} from "../function/FunctionGetVars";
-import IRILink from "../components/IRILink";
-import { unHighlightCell } from "../function/FunctionDraw";
 import { ResizableBox } from "react-resizable";
+import { DetailPanelMode, MainViewMode } from "../config/Enum";
+import { StoreSettings } from "../config/Store";
+import { WorkspaceElements } from "../config/Variables";
+import { DetailElement } from "./detail/DetailElement";
+import DetailLink from "./detail/DetailLink";
+import DetailMultipleLinks from "./detail/DetailMultipleLinks";
 
 interface Props {
   projectLanguage: string;
@@ -23,7 +13,6 @@ interface Props {
   performTransaction: (...queries: string[]) => void;
   freeze: boolean;
   handleCreation: Function;
-  updateDiagramCanvas: Function;
 }
 
 interface State {
@@ -39,49 +28,24 @@ export default class DetailPanel extends React.Component<Props, State> {
       id: "",
     };
     this.save = this.save.bind(this);
-  }
-
-  prepareDetails(mode: DetailPanelMode, id?: string) {
-    this.setState({ mode: mode, id: id ? id : "" });
+    StoreSettings.subscribe(
+      (s) => ({
+        mode: s.detailPanelMode,
+        id: s.detailPanelSelectedID,
+        view: s.mainViewMode,
+      }),
+      (s) => {
+        if (s.view === MainViewMode.CANVAS)
+          this.setState({ mode: s.mode, id: s.id ? s.id : "" });
+        else if (s.view === MainViewMode.MANAGER) {
+          this.setState({ mode: DetailPanelMode.HIDDEN, id: "" });
+        }
+      }
+    );
   }
 
   save(id: string) {
     this.props.update(id in WorkspaceElements && id);
-  }
-
-  getDetailPanelLabel(): JSX.Element {
-    switch (this.state.mode) {
-      case DetailPanelMode.LINK:
-        const iri = WorkspaceLinks[this.state.id].iri;
-        return (
-          <IRILink
-            label={getLinkOrVocabElem(iri).labels[this.props.projectLanguage]}
-            iri={iri}
-          />
-        );
-      case DetailPanelMode.TERM:
-        return (
-          <IRILink
-            label={
-              this.state.id
-                ? getLabelOrBlank(
-                    WorkspaceTerms[this.state.id].labels,
-                    this.props.projectLanguage
-                  )
-                : ""
-            }
-            iri={this.state.id}
-          />
-        );
-      case DetailPanelMode.MULTIPLE_LINKS:
-        const content = getExpressionByRepresentation({
-          [Representation.COMPACT]: "detailPanelMultipleRelationships",
-          [Representation.FULL]: "detailPanelMultipleLinks",
-        });
-        return <span>{content}</span>;
-      default:
-        return <span />;
-    }
   }
 
   render() {
@@ -89,7 +53,7 @@ export default class DetailPanel extends React.Component<Props, State> {
       <div>
         {this.state.mode !== DetailPanelMode.HIDDEN && (
           <ResizableBox
-            width={300}
+            width={350}
             height={1000}
             axis={"x"}
             handleSize={[8, 8]}
@@ -97,20 +61,6 @@ export default class DetailPanel extends React.Component<Props, State> {
             className={"details" + (this.props.freeze ? " disabled" : "")}
           >
             <div className={"detailsFlex"}>
-              <div className={"detailTitle"}>
-                <button
-                  className={"buttonlink close nounderline"}
-                  onClick={() => {
-                    unHighlightCell(this.state.id);
-                    this.setState({ mode: DetailPanelMode.HIDDEN });
-                  }}
-                >
-                  <span role="img" aria-label={"Hide detail panel"}>
-                    ➖
-                  </span>
-                </button>
-                <h3>{this.getDetailPanelLabel()}</h3>
-              </div>
               {this.state.mode === DetailPanelMode.TERM && (
                 <DetailElement
                   id={this.state.id}
@@ -118,8 +68,6 @@ export default class DetailPanel extends React.Component<Props, State> {
                   save={this.save}
                   performTransaction={this.props.performTransaction}
                   error={this.props.freeze}
-                  updateDetailPanel={this.prepareDetails}
-                  updateDiagramCanvas={this.props.updateDiagramCanvas}
                   handleCreation={this.props.handleCreation}
                 />
               )}
@@ -130,7 +78,6 @@ export default class DetailPanel extends React.Component<Props, State> {
                   projectLanguage={this.props.projectLanguage}
                   performTransaction={this.props.performTransaction}
                   save={this.save}
-                  updateDetailPanel={this.prepareDetails}
                 />
               )}
               {this.state.mode === DetailPanelMode.MULTIPLE_LINKS && (
@@ -139,7 +86,6 @@ export default class DetailPanel extends React.Component<Props, State> {
                   projectLanguage={this.props.projectLanguage}
                   performTransaction={this.props.performTransaction}
                   save={this.save}
-                  updateDetailPanel={this.prepareDetails}
                 />
               )}
             </div>

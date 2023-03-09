@@ -1,3 +1,4 @@
+import { ContextLoadingStrategy, LinkType } from "../../config/Enum";
 import {
   AppSettings,
   Diagrams,
@@ -6,16 +7,16 @@ import {
   WorkspaceLinks,
   WorkspaceVocabularies,
 } from "../../config/Variables";
-import { processQuery } from "../../interface/TransactionInterface";
-import { ContextLoadingStrategy, LinkType } from "../../config/Enum";
+import { CacheSearchVocabularies } from "../../datatypes/CacheSearchResults";
 import { Cardinality } from "../../datatypes/Cardinality";
+import { addDiagram } from "../../function/FunctionCreateVars";
 import {
   initLanguageObject,
   parsePrefix,
 } from "../../function/FunctionEditVars";
-import { addDiagram, createCount } from "../../function/FunctionCreateVars";
+import { processQuery } from "../../interface/TransactionInterface";
 import { qb } from "../QueryBuilder";
-import { CacheSearchVocabularies } from "../../datatypes/CacheSearchResults";
+import * as _ from "lodash";
 
 export async function getElementsConfig(
   contextEndpoint: string
@@ -146,7 +147,6 @@ export async function getElementsConfig(
               namespace: CacheSearchVocabularies[vocab].namespace,
               graph: vocab,
               color: "#FFF",
-              count: createCount(),
               glossary: CacheSearchVocabularies[vocab].glossary,
             };
           }
@@ -179,13 +179,20 @@ export async function getSettings(contextEndpoint: string): Promise<{
   };
   const query = [
     "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
-    "select distinct ?vocabContext ?ogContext ?graph ?diagram ?index ?name ?color ?id ?representation ?context where {",
+    "select distinct ?active ?vocabContext ?ogContext ?graph ?diagram ?index ?name ?color ?id ?representation ?context ?vocabulary ?description ?collaborator ?creationDate ?modifyDate where {",
     "optional {?vocabContext <https://slovník.gov.cz/datový/pracovní-prostor/pojem/odkazuje-na-přílohový-kontext> ?graph .",
     "graph ?graph {",
     " ?diagram og:index ?index .",
     " ?diagram og:name ?name .",
     " ?diagram og:id ?id .",
     " ?diagram og:representation ?representation .",
+    " optional {?diagram og:active ?active.}",
+    " optional {?diagram og:description ?description.}",
+    " optional {?diagram og:vocabulary ?vocabulary. ",
+    "           ?diagram og:collaborator ?collaborator. ",
+    "           ?diagram og:creationDate ?creationDate. ",
+    "           ?diagram og:modifiedDate ?modifyDate. ",
+    " }",
     "}",
     "}",
     "optional {?vocabContext <http://onto.fel.cvut.cz/ontologies/slovník/agendový/popis-dat/pojem/má-aplikační-kontext> ?ogContext .",
@@ -236,6 +243,7 @@ export async function getSettings(contextEndpoint: string): Promise<{
             result.id.value,
             result.graph.value
           );
+          Diagrams[result.id.value].collaborators = [];
           Diagrams[result.id.value].saved = true;
           indices.push(index);
           AppSettings.initWorkspace = false;
@@ -248,6 +256,37 @@ export async function getSettings(contextEndpoint: string): Promise<{
         } else {
           reconstructWorkspace = true;
         }
+        if (result.active) {
+          Diagrams[result.id.value].active = result.active.value === "true";
+        }
+        if (result.description) {
+          Diagrams[result.id.value].description = result.description.value;
+        }
+        if (result.vocabulary) {
+          Diagrams[result.id.value].vocabularies = _.uniq([
+            ...Diagrams[result.id.value].vocabularies,
+            result.vocabulary.value,
+          ]);
+        }
+        if (result.collaborator) {
+          Diagrams[result.id.value].collaborators = _.uniq([
+            ...Diagrams[result.id.value].collaborators,
+            result.collaborator.value.replace(
+              "https://slovník.gov.cz/uživatel/",
+              ""
+            ),
+          ]);
+        }
+        if (result.creationDate) {
+          Diagrams[result.id.value].creationDate = new Date(
+            result.creationDate.value
+          );
+        }
+        if (result.modifyDate) {
+          Diagrams[result.id.value].modifiedDate = new Date(
+            result.modifyDate.value
+          );
+        }
       }
       ret.contextsMissingAppContexts = Object.keys(contextInfo).filter(
         (context) => !contextInfo[context].appContext
@@ -258,7 +297,11 @@ export async function getSettings(contextEndpoint: string): Promise<{
           Object.values(Diagrams).length
       );
       Object.entries(Diagrams).forEach(([key, value]) => {
-        if (!indices.includes(value.index)) Diagrams[key].active = false;
+        if (!indices.includes(value.index)) Diagrams[key].toBeDeleted = true;
+        if (value.vocabularies.length === 0)
+          Diagrams[key].vocabularies = Object.keys(
+            WorkspaceVocabularies
+          ).filter((v) => !WorkspaceVocabularies[v].readOnly);
       });
       ret.strategy = reconstructWorkspace
         ? ContextLoadingStrategy.RECONSTRUCT_WORKSPACE

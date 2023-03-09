@@ -1,19 +1,20 @@
 import React from "react";
+import { LanguageSelector } from "../../components/LanguageSelector";
+import { Representation } from "../../config/Enum";
+import { Locale } from "../../config/Locale";
 import {
+  AlternativeLabel,
   AppSettings,
   CardinalityPool,
-  Languages,
   Links,
   WorkspaceElements,
   WorkspaceLinks,
   WorkspaceTerms,
   WorkspaceVocabularies,
 } from "../../config/Variables";
-import { Accordion, Button, Card, Form } from "react-bootstrap";
-import TableList from "../../components/TableList";
-import IRILink from "../../components/IRILink";
-import { graph } from "../../graph/Graph";
-import DescriptionTabs from "./components/DescriptionTabs";
+import { Cardinality } from "../../datatypes/Cardinality";
+import { getDisplayLabel } from "../../function/FunctionDraw";
+import { initLanguageObject } from "../../function/FunctionEditVars";
 import {
   getLabelOrBlank,
   getLinkOrVocabElem,
@@ -21,27 +22,19 @@ import {
   getVocabularyFromScheme,
 } from "../../function/FunctionGetVars";
 import { setLabels } from "../../function/FunctionGraph";
-import {
-  initLanguageObject,
-  parsePrefix,
-} from "../../function/FunctionEditVars";
-import { Cardinality } from "../../datatypes/Cardinality";
-import { DetailPanelMode, LinkType, Representation } from "../../config/Enum";
-import { Locale } from "../../config/Locale";
-import { updateProjectLink } from "../../queries/update/UpdateLinkQueries";
-import { updateConnections } from "../../queries/update/UpdateConnectionQueries";
-import AltLabelTable from "./components/AltLabelTable";
-import { updateProjectElement } from "../../queries/update/UpdateElementQueries";
-import LabelTable from "./components/LabelTable";
-import IRILabel from "../../components/IRILabel";
 import { setFullLinksCardinalitiesFromCompactLink } from "../../function/FunctionLink";
+import { graph } from "../../graph/Graph";
+import { updateConnections } from "../../queries/update/UpdateConnectionQueries";
+import { updateProjectElement } from "../../queries/update/UpdateElementQueries";
+import { updateProjectLink } from "../../queries/update/UpdateLinkQueries";
+import { DetailPanelAltLabels } from "./components/description/DetailPanelAltLabels";
+import { DetailPanelCardinalities } from "./components/description/DetailPanelCardinalities";
 
 interface Props {
   projectLanguage: string;
   save: (id: string) => void;
   performTransaction: (...queries: string[]) => void;
   error: boolean;
-  updateDetailPanel: (mode: DetailPanelMode, id?: string) => void;
   id: string;
 }
 
@@ -55,6 +48,7 @@ interface State {
   newAltInput: string;
   changes: boolean;
   readOnly: boolean;
+  selectedLanguage: string;
 }
 
 export default class DetailLink extends React.Component<Props, State> {
@@ -70,6 +64,7 @@ export default class DetailLink extends React.Component<Props, State> {
       newAltInput: "",
       changes: false,
       readOnly: false,
+      selectedLanguage: AppSettings.canvasLanguage,
     };
   }
 
@@ -98,34 +93,6 @@ export default class DetailLink extends React.Component<Props, State> {
     return WorkspaceVocabularies[
       getVocabularyFromScheme(WorkspaceTerms[iri].inScheme)
     ].readOnly;
-  }
-
-  prepareLinkOptions() {
-    const result: JSX.Element[] = [];
-    if (AppSettings.representation === Representation.FULL) {
-      for (const iri in Links) {
-        if (Links[iri].type === LinkType.DEFAULT)
-          result.push(
-            <option key={iri} value={iri}>
-              {getLabelOrBlank(Links[iri].labels, this.props.projectLanguage)}
-            </option>
-          );
-      }
-    } else if (AppSettings.representation === Representation.COMPACT) {
-      for (const iri in WorkspaceTerms) {
-        if (
-          WorkspaceTerms[iri].types.includes(
-            parsePrefix("z-sgov-pojem", "typ-vztahu")
-          )
-        )
-          result.push(
-            <option value={iri}>
-              {getLabelOrBlank(Links[iri].labels, this.props.projectLanguage)}
-            </option>
-          );
-      }
-    }
-    return result;
   }
 
   prepareCardinality(cardinality: string): Cardinality {
@@ -241,301 +208,85 @@ export default class DetailLink extends React.Component<Props, State> {
 
   render() {
     return (
-      <div className={"accordions"}>
-        <Accordion defaultActiveKey={"0"}>
-          <Card>
-            <Card.Header>
-              <Accordion.Toggle as={Button} variant={"link"} eventKey={"0"}>
-                {Locale[AppSettings.interfaceLanguage].description}
-              </Accordion.Toggle>
-            </Card.Header>
-            <Accordion.Collapse eventKey={"0"}>
-              <Card.Body>
-                {WorkspaceLinks[this.props.id].type === LinkType.DEFAULT && (
-                  <TableList>
-                    <tr>
-                      <td className={"first"}>
-                        <span>
-                          {
-                            Locale[AppSettings.interfaceLanguage]
-                              .sourceCardinality
-                          }
-                        </span>
-                      </td>
-                      <td className={"last"}>
-                        {!this.state.readOnly ? (
-                          <Form.Control
-                            as="select"
-                            value={this.state.sourceCardinality}
-                            onChange={(
-                              event: React.ChangeEvent<HTMLSelectElement>
-                            ) => {
-                              this.setState({
-                                sourceCardinality: event.currentTarget.value,
-                                changes: true,
-                              });
-                            }}
-                          >
-                            {CardinalityPool.map((card, i) => (
-                              <option key={i} value={i.toString(10)}>
-                                {card.getString()}
-                              </option>
-                            ))}
-                          </Form.Control>
-                        ) : (
-                          CardinalityPool[
-                            parseInt(this.state.sourceCardinality, 10)
-                          ].getString()
-                        )}
-                      </td>
-                    </tr>
-
-                    <tr>
-                      <td className={"first"}>
-                        <span>
-                          {
-                            Locale[AppSettings.interfaceLanguage]
-                              .targetCardinality
-                          }
-                        </span>
-                      </td>
-                      <td className={"last"}>
-                        {!this.state.readOnly ? (
-                          <Form.Control
-                            as="select"
-                            value={this.state.targetCardinality}
-                            onChange={(
-                              event: React.ChangeEvent<HTMLSelectElement>
-                            ) => {
-                              this.setState({
-                                targetCardinality: event.currentTarget.value,
-                                changes: true,
-                              });
-                            }}
-                          >
-                            {CardinalityPool.map((card, i) => (
-                              <option key={i} value={i.toString(10)}>
-                                {card.getString()}
-                              </option>
-                            ))}
-                          </Form.Control>
-                        ) : (
-                          CardinalityPool[
-                            parseInt(this.state.targetCardinality, 10)
-                          ].getString()
-                        )}
-                      </td>
-                    </tr>
-                    <tr>
-                      <td className={"first"}>
-                        <span>
-                          {Locale[AppSettings.interfaceLanguage].linkType}
-                        </span>
-                      </td>
-                      {AppSettings.representation === Representation.FULL &&
-                      !this.state.readOnly ? (
-                        <td className={"last"}>
-                          <Form.Control
-                            as="select"
-                            value={this.state.iri}
-                            onChange={(event) => {
-                              this.setState({
-                                iri: event.currentTarget.value,
-                                changes: true,
-                              });
-                            }}
-                          >
-                            {this.prepareLinkOptions()}
-                          </Form.Control>
-                        </td>
-                      ) : (
-                        <IRILabel
-                          label={getLabelOrBlank(
-                            getLinkOrVocabElem(this.state.iri).labels,
-                            this.props.projectLanguage
-                          )}
-                          iri={this.state.iri}
-                        />
-                      )}
-                    </tr>
-                  </TableList>
-                )}
-                <h5>
-                  {
-                    <IRILink
-                      label={
-                        Locale[AppSettings.interfaceLanguage]
-                          .detailPanelPrefLabel
-                      }
-                      iri={"http://www.w3.org/2004/02/skos/core#prefLabel"}
-                    />
-                  }
-                </h5>
-                <LabelTable
-                  iri={this.state.iri}
-                  labels={this.state.inputLabels}
-                  default={this.state.selectedLabel[this.props.projectLanguage]}
-                  selectAsDefault={(label: string) => {
-                    let res = this.state.selectedLabel;
-                    res[this.props.projectLanguage] = label;
-                    this.setState({ selectedLabel: res, changes: true });
-                  }}
-                  onEdit={(label: string, lang: string) =>
-                    this.setState((prevState) => ({
-                      inputLabels: {
-                        ...prevState.inputLabels,
-                        [lang]: label,
-                      },
-                      changes: true,
-                    }))
+      <div className="detailElement">
+        <div className={"accordions"}>
+          <div className={"detailTitle"}>
+            <div className="top">
+              <span className="languageSelect">
+                <LanguageSelector
+                  language={this.state.selectedLanguage}
+                  setLanguage={(lang: string) =>
+                    this.setState({ selectedLanguage: lang })
                   }
                 />
-                {(AppSettings.representation === Representation.COMPACT
-                  && this.props.id in WorkspaceLinks
-                  && WorkspaceLinks[this.props.id].type === LinkType.DEFAULT) && (
-                  <div>
-                    <h5>
-                      {
-                        <IRILink
-                          label={
-                            Locale[AppSettings.interfaceLanguage]
-                              .detailPanelAltLabel
-                          }
-                          iri={"http://www.w3.org/2004/02/skos/core#altLabel"}
-                        />
-                      }
-                    </h5>
-                    <AltLabelTable
-                      labels={this.state.inputAltLabels}
-                      readOnly={this.state.readOnly}
-                      onEdit={(textarea: string, lang: string, i: number) => {
-                        let res = this.state.inputAltLabels;
-                        let resL = this.state.selectedLabel;
-                        if (textarea === "") {
-                          if (
-                            res[i].label ===
-                            this.state.selectedLabel[this.props.projectLanguage]
-                          ) {
-                            resL[this.props.projectLanguage] =
-                              WorkspaceTerms[
-                                WorkspaceLinks[this.props.id].iri
-                              ].labels[this.props.projectLanguage];
-                          }
-                          res.splice(i, 1);
-                        } else {
-                          if (
-                            res[i].label ===
-                            this.state.selectedLabel[this.props.projectLanguage]
-                          ) {
-                            resL[this.props.projectLanguage] =
-                              lang === this.props.projectLanguage
-                                ? textarea
-                                : "";
-                          }
-                          res[i] = { label: textarea, language: lang };
-                        }
-                        this.setState({
-                          inputAltLabels: res,
-                          selectedLabel: resL,
-                          changes: true,
-                        });
-                      }}
-                      default={
-                        this.state.selectedLabel[this.props.projectLanguage]
-                      }
-                      selectAsDefault={(lang: string, i: number) => {
-                        let res = this.state.selectedLabel;
-                        res[this.props.projectLanguage] =
-                          this.state.inputAltLabels[i].label;
-                        this.setState({
-                          selectedLabel: res,
-                          changes: true,
-                        });
-                      }}
-                      addAltLabel={(label: string) => {
-                        if (
-                          label !== "" ||
-                          this.state.inputAltLabels.find(
-                            (alt) => alt.label === label
-                          )
-                        ) {
-                          let res = this.state.inputAltLabels;
-                          res.push({
-                            label: label,
-                            language: this.props.projectLanguage,
-                          });
-                          this.setState({
-                            inputAltLabels: res,
-                            changes: true,
-                          });
-                        }
-                      }}
-                    />
-                  </div>
-                )}
-                <h5>
-                  {
-                    <IRILink
-                      label={
-                        Locale[AppSettings.interfaceLanguage]
-                          .detailPanelInScheme
-                      }
-                      iri={"http://www.w3.org/2004/02/skos/core#inScheme"}
-                    />
-                  }
-                </h5>
-                <TableList>
-                  {Object.keys(
-                    WorkspaceVocabularies[
-                      getVocabularyFromScheme(
-                        getLinkOrVocabElem(this.state.iri).inScheme
-                      )
-                    ].labels
-                  ).map((lang) => (
-                    <tr key={lang}>
-                      <IRILabel
-                        label={
-                          WorkspaceVocabularies[
-                            getVocabularyFromScheme(
-                              getLinkOrVocabElem(this.state.iri).inScheme
-                            )
-                          ].labels[lang]
-                        }
-                        iri={getVocabularyFromScheme(
-                          getLinkOrVocabElem(this.state.iri).inScheme
-                        )}
-                      />
-                      <td>{Languages[lang]}</td>
-                    </tr>
-                  ))}
-                </TableList>
-
-                {Object.keys(getLinkOrVocabElem(this.state.iri).definitions)
-                  .length > 0 && (
-                  <div>
-                    <h5>
-                      {
-                        <IRILink
-                          label={
-                            Locale[AppSettings.interfaceLanguage]
-                              .detailPanelDefinition
-                          }
-                          iri={"http://www.w3.org/2004/02/skos/core#definition"}
-                        />
-                      }
-                    </h5>
-                    <DescriptionTabs
-                      descriptions={
-                        getLinkOrVocabElem(this.state.iri).definitions
-                      }
-                      readOnly={true}
-                    />
-                  </div>
-                )}
-              </Card.Body>
-            </Accordion.Collapse>
-          </Card>
-        </Accordion>
+              </span>
+              <span className="title link">
+                <i>
+                  {getDisplayLabel(
+                    WorkspaceLinks[this.props.id].source,
+                    this.state.selectedLanguage
+                  )}
+                </i>
+                &nbsp;
+                <b>
+                  {getLabelOrBlank(
+                    getLinkOrVocabElem(WorkspaceLinks[this.props.id].iri)
+                      .labels,
+                    this.state.selectedLanguage
+                  )}
+                </b>
+                &nbsp;
+                <i>
+                  {getDisplayLabel(
+                    WorkspaceLinks[this.props.id].target,
+                    this.state.selectedLanguage
+                  )}
+                </i>
+              </span>
+            </div>
+          </div>
+          <h5>{Locale[AppSettings.interfaceLanguage].cardinalities}</h5>
+          <DetailPanelCardinalities
+            linkID={this.props.id}
+            selectedLanguage={this.state.selectedLanguage}
+            readOnly={this.state.readOnly}
+            sourceCardinality={this.state.sourceCardinality}
+            targetCardinality={this.state.targetCardinality}
+            setSourceCardinality={(c) => {
+              this.setState({
+                sourceCardinality: c,
+                changes: true,
+              });
+            }}
+            setTargetCardinality={(c) => {
+              this.setState({
+                targetCardinality: c,
+                changes: true,
+              });
+            }}
+          />
+          <h5>Synonyma</h5>
+          <DetailPanelAltLabels
+            altLabels={this.state.inputAltLabels}
+            selectedLabel={this.state.selectedLabel}
+            language={this.state.selectedLanguage}
+            readOnly={this.state.readOnly}
+            addAltLabel={(alt: AlternativeLabel) =>
+              this.setState((prev) => ({
+                ...prev,
+                inputAltLabels: [...prev.inputAltLabels, alt],
+                changes: true,
+              }))
+            }
+            id={this.props.id}
+            selectDisplayLabel={(name, language) =>
+              this.setState((prev) => ({
+                changes: true,
+                selectedLabel: { ...prev.selectedLabel, [language]: name },
+              }))
+            }
+          />
+        </div>
       </div>
     );
   }

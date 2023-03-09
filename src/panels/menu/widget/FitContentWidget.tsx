@@ -23,8 +23,8 @@ export default class FitContentWidget extends React.Component<Props, State> {
         >
           <button
             onClick={() => {
-              let origin = paper.translate();
-              let dimensions = paper.getComputedSize();
+              const origin = paper.translate();
+              const dimensions = paper.getComputedSize();
               paper.scaleContentToFit({
                 padding: {
                   top: 10,
