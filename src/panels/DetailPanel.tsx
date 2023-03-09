@@ -63,6 +63,7 @@ export default class DetailPanel extends React.Component<Props, State> {
             <div className={"detailsFlex"}>
               {this.state.mode === DetailPanelMode.TERM && (
                 <DetailElement
+                  freeze={this.props.freeze}
                   id={this.state.id}
                   projectLanguage={this.props.projectLanguage}
                   save={this.save}

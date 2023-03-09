@@ -77,7 +77,6 @@ export default class VocabularyConcept extends React.Component<Props, State> {
         return;
       } else highlightElement(this.props.id);
     } else resetDiagramSelection();
-    highlightElement(this.props.id);
     this.props.update();
   }
 
@@ -89,18 +88,12 @@ export default class VocabularyConcept extends React.Component<Props, State> {
           event.dataTransfer.setData(
             "newClass",
             JSON.stringify({
-              id:
-                AppSettings.selectedElements.length > 0
-                  ? AppSettings.selectedElements.filter(
-                      (elem) => elem in WorkspaceElements
-                    )
-                  : [this.props.id],
-              iri:
-                AppSettings.selectedElements.length > 0
-                  ? AppSettings.selectedElements.filter(
-                      (elem) => !(elem in WorkspaceElements)
-                    )
-                  : [],
+              id: AppSettings.selectedElements
+                .concat([this.props.id])
+                .filter((elem) => elem in WorkspaceElements),
+              iri: AppSettings.selectedElements
+                .concat([this.props.id])
+                .filter((elem) => !(elem in WorkspaceElements)),
             })
           );
         }}
@@ -130,6 +123,7 @@ export default class VocabularyConcept extends React.Component<Props, State> {
           <Button variant="light" className="plainButton">
             <InfoIcon
               onClick={() => {
+                highlightElement(this.props.id);
                 centerElementInView(this.props.id);
                 this.props.showDetails(this.props.id);
               }}

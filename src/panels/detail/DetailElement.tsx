@@ -20,6 +20,7 @@ interface Props {
   error: boolean;
   handleCreation: Function;
   id: string;
+  freeze: boolean;
 }
 
 export const DetailElement: React.FC<Props> = (props: Props) => {
@@ -62,6 +63,7 @@ export const DetailElement: React.FC<Props> = (props: Props) => {
             save={props.save}
           />
           <DetailElementLinksCard
+            freeze={props.freeze}
             id={props.id}
             projectLanguage={props.projectLanguage}
             performTransaction={props.performTransaction}

@@ -74,6 +74,7 @@ export default class ConnectionCache extends React.Component<Props> {
   render() {
     return (
       <OverlayTrigger
+        trigger={["hover", "focus"]}
         placement={"left"}
         overlay={
           <Popover id={"termDetailPopover"}>
@@ -99,38 +100,36 @@ export default class ConnectionCache extends React.Component<Props> {
           </Popover>
         }
       >
-        {
-          <Connection
-            onDragStart={(event: DragEvent) => {
-              if (this.props.update) this.transferConnectionToEvent(event);
-            }}
-            onDragEnd={() => {
-              if (this.props.update) this.props.update();
-            }}
-            onClick={() => this.prepareUpdateSelection()}
-            selected={this.props.selected}
-            link={this.props.connection.link}
-            direction={this.props.connection.direction === "target"}
-            selectedLanguage={this.props.projectLanguage}
-            backgroundColor={"white"}
-            performTransaction={this.props.performTransaction}
-            elementLabel={
-              <span>
-                {getLabelOrBlank(
-                  this.props.connection.target.labels,
-                  this.props.projectLanguage
+        <Connection
+          onDragStart={(event: DragEvent) => {
+            if (this.props.update) this.transferConnectionToEvent(event);
+          }}
+          onDragEnd={() => {
+            if (this.props.update) this.props.update();
+          }}
+          onClick={() => this.prepareUpdateSelection()}
+          selected={this.props.selected}
+          link={this.props.connection.link}
+          direction={this.props.connection.direction === "target"}
+          selectedLanguage={this.props.projectLanguage}
+          backgroundColor={"white"}
+          performTransaction={this.props.performTransaction}
+          elementLabel={
+            <span>
+              {getLabelOrBlank(
+                this.props.connection.target.labels,
+                this.props.projectLanguage
+              )}
+              &nbsp;
+              <Badge bg={"secondary"}>
+                {getVocabularyShortLabel(
+                  this.props.connection.target.vocabulary
                 )}
-                &nbsp;
-                <Badge bg={"secondary"}>
-                  {getVocabularyShortLabel(
-                    this.props.connection.target.vocabulary
-                  )}
-                </Badge>
-              </span>
-            }
-            readOnly={true}
-          />
-        }
+              </Badge>
+            </span>
+          }
+          readOnly={true}
+        />
       </OverlayTrigger>
     );
   }

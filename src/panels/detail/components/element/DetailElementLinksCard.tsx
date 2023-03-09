@@ -9,6 +9,7 @@ type Props = {
   performTransaction: (...queries: string[]) => void;
   projectLanguage: string;
   infoFunction: (link: string) => void;
+  freeze: boolean;
 };
 
 export const DetailElementLinksCard: React.FC<Props> = (props) => {
@@ -22,6 +23,7 @@ export const DetailElementLinksCard: React.FC<Props> = (props) => {
       </Accordion.Header>
       <Accordion.Body>
         <ConnectionList
+          freeze={props.freeze}
           id={props.id}
           projectLanguage={props.projectLanguage}
           performTransaction={props.performTransaction}

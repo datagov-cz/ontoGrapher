@@ -7,7 +7,11 @@ import {
   getLabelOrBlank,
   getLinkOrVocabElem,
 } from "../../../../function/FunctionGetVars";
-import { AppSettings, WorkspaceLinks } from "../../../../config/Variables";
+import {
+  AppSettings,
+  Links,
+  WorkspaceLinks,
+} from "../../../../config/Variables";
 import { deleteLink } from "../../../../function/FunctionLink";
 import { Locale } from "../../../../config/Locale";
 
@@ -76,7 +80,7 @@ export default class Connection extends React.Component<Props> {
   render() {
     return (
       <div
-        draggable={this.props.readOnly}
+        draggable
         onDragStart={(event) => this.props.onDragStart(event)}
         onDragEnd={() => this.props.onDragEnd()}
         onClick={() => this.props.onClick()}
@@ -87,20 +91,33 @@ export default class Connection extends React.Component<Props> {
         <span className={"link"}>
           <span className="texts">
             {this.getSvg()}
-            <span className={"name cardLeft"}>
-              {WorkspaceLinks[this.props.link].sourceCardinality.getString()}
-            </span>
-
-            <span className={"name title"}>
-              {getLabelOrBlank(
-                getLinkOrVocabElem(WorkspaceLinks[this.props.link].iri).labels,
-                this.props.selectedLanguage
-              )}
-            </span>
-
-            <span className={"name cardRight"}>
-              {WorkspaceLinks[this.props.link].targetCardinality.getString()}
-            </span>
+            {this.props.link in WorkspaceLinks && (
+              <span className={"name cardLeft"}>
+                {WorkspaceLinks[this.props.link].sourceCardinality.getString()}
+              </span>
+            )}
+            {this.props.link in Links && (
+              <span className={"name title"}>
+                {getLabelOrBlank(
+                  getLinkOrVocabElem(this.props.link).labels,
+                  this.props.selectedLanguage
+                )}
+              </span>
+            )}
+            {this.props.link in WorkspaceLinks && (
+              <span className={"name title"}>
+                {getLabelOrBlank(
+                  getLinkOrVocabElem(WorkspaceLinks[this.props.link].iri)
+                    .labels,
+                  this.props.selectedLanguage
+                )}
+              </span>
+            )}
+            {this.props.link in WorkspaceLinks && (
+              <span className={"name cardRight"}>
+                {WorkspaceLinks[this.props.link].targetCardinality.getString()}
+              </span>
+            )}
           </span>
 
           {this.props.infoFunction && (
@@ -126,14 +143,14 @@ export default class Connection extends React.Component<Props> {
             </OverlayTrigger>
           )}
         </span>
-        {this.props.infoFunction && (
-          <span className="info">
-            <span
-              className={"element"}
-              style={{ backgroundColor: this.props.backgroundColor }}
-            >
-              {this.props.elementLabel}
-            </span>
+        <span className="info">
+          <span
+            className={"element"}
+            style={{ backgroundColor: this.props.backgroundColor }}
+          >
+            {this.props.elementLabel}
+          </span>
+          {this.props.infoFunction && (
             <OverlayTrigger
               delay={1000}
               placement="left"
@@ -157,8 +174,8 @@ export default class Connection extends React.Component<Props> {
                 />
               </Button>
             </OverlayTrigger>
-          </span>
-        )}
+          )}
+        </span>
       </div>
     );
   }

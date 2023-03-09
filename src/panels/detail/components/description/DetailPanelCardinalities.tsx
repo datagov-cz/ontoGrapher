@@ -1,5 +1,6 @@
 import React from "react";
 import { Form } from "react-bootstrap";
+import { LinkType } from "../../../../config/Enum";
 import { CardinalityPool, WorkspaceLinks } from "../../../../config/Variables";
 import {
   getLabelOrBlank,
@@ -19,23 +20,26 @@ interface Props {
 export const DetailPanelCardinalities: React.FC<Props> = (props: Props) => {
   return (
     <div className="linkCardinalities">
-      <Form.Control
-        size="sm"
-        onChange={(event) => props.setSourceCardinality(event.target.value)}
-        as="select"
-        value={props.sourceCardinality}
-        disabled={props.readOnly}
-      >
-        {CardinalityPool.map((card, i) => (
-          <option
-            key={i}
-            disabled={i.toString(10) === props.sourceCardinality}
-            value={i.toString(10)}
+      {props.linkID in WorkspaceLinks &&
+        WorkspaceLinks[props.linkID].type === LinkType.DEFAULT && (
+          <Form.Control
+            size="sm"
+            onChange={(event) => props.setSourceCardinality(event.target.value)}
+            as="select"
+            value={props.sourceCardinality}
+            disabled={props.readOnly}
           >
-            {card.getString()}
-          </option>
-        ))}
-      </Form.Control>
+            {CardinalityPool.map((card, i) => (
+              <option
+                key={i}
+                disabled={i.toString(10) === props.sourceCardinality}
+                value={i.toString(10)}
+              >
+                {card.getString()}
+              </option>
+            ))}
+          </Form.Control>
+        )}
       {props.linkID in WorkspaceLinks && (
         <span className="plainButton">
           {getLabelOrBlank(
@@ -44,23 +48,26 @@ export const DetailPanelCardinalities: React.FC<Props> = (props: Props) => {
           )}
         </span>
       )}
-      <Form.Control
-        size="sm"
-        onChange={(event) => props.setTargetCardinality(event.target.value)}
-        as="select"
-        value={props.targetCardinality}
-        disabled={props.readOnly}
-      >
-        {CardinalityPool.map((card, i) => (
-          <option
-            key={i}
-            disabled={i.toString(10) === props.targetCardinality}
-            value={i.toString(10)}
+      {props.linkID in WorkspaceLinks &&
+        WorkspaceLinks[props.linkID].type === LinkType.DEFAULT && (
+          <Form.Control
+            size="sm"
+            onChange={(event) => props.setTargetCardinality(event.target.value)}
+            as="select"
+            value={props.targetCardinality}
+            disabled={props.readOnly}
           >
-            {card.getString()}
-          </option>
-        ))}
-      </Form.Control>
+            {CardinalityPool.map((card, i) => (
+              <option
+                key={i}
+                disabled={i.toString(10) === props.targetCardinality}
+                value={i.toString(10)}
+              >
+                {card.getString()}
+              </option>
+            ))}
+          </Form.Control>
+        )}
       <svg
         width="100%"
         height="24px"

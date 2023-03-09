@@ -1,3 +1,4 @@
+import { WorkspaceElements } from "./../config/Variables";
 import isUrl from "is-url";
 import _ from "lodash";
 import { LinkType, Representation } from "../config/Enum";
@@ -37,7 +38,13 @@ export async function getCacheConnections(
   return _.uniqWith(
     connections,
     (a, b) => a.target.iri === b.target.iri && a.link === b.link
-  ).filter((conn) => !(conn.target.iri in WorkspaceTerms));
+  ).filter(
+    (conn) =>
+      !(
+        conn.target.iri in WorkspaceElements &&
+        WorkspaceElements[conn.target.iri].active
+      )
+  );
 }
 
 function mapResultToConnection(

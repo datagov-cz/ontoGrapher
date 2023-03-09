@@ -35,6 +35,7 @@ interface Props {
   projectLanguage: string;
   performTransaction: (...queries: string[]) => void;
   infoFunction: (link: string) => void;
+  freeze: boolean;
 }
 
 interface State {
@@ -196,9 +197,11 @@ export default class ConnectionList extends React.Component<Props, State> {
   }
 
   componentDidUpdate(prevProps: Readonly<Props>) {
-    if (prevProps.id !== this.props.id && this.props.id) {
-      this.setState({ shownConnections: this.filter() });
-    }
+    if (
+      (prevProps.id !== this.props.id && this.props.id) ||
+      this.props.freeze !== prevProps.freeze
+    )
+      this.getConnectionsFromOtherVocabularies();
   }
 
   updateSelection(ids: string[], remove?: boolean) {
