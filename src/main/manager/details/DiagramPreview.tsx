@@ -84,7 +84,14 @@ export default class DiagramPreview extends React.Component<Props> {
         );
         cls.addTo(g);
         drawGraphElement(cls, AppSettings.canvasLanguage, Representation.FULL);
-        restoreHiddenElem(id, true, false, false);
+        restoreHiddenElem(
+          id,
+          true,
+          false,
+          false,
+          Diagrams[this.props.diagram].representation,
+          g
+        );
       }
     }
     setRepresentation(

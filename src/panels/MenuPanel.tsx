@@ -1,8 +1,10 @@
 import React from "react";
 import { Col, Container, OverlayTrigger, Row, Tooltip } from "react-bootstrap";
 import InterfaceNotification from "../components/InterfaceNotification";
+import { MainViewMode } from "../config/Enum";
 import { Environment } from "../config/Environment";
 import { Locale } from "../config/Locale";
+import { StoreSettings } from "../config/Store";
 import { AppSettings } from "../config/Variables";
 import MenuPanelSettings from "./menu/left/MenuPanelSettings";
 import MenuPanelSwitchRepresentation from "./menu/left/MenuPanelSwitchRepresentation";
@@ -34,6 +36,7 @@ interface MenuPanelProps {
 
 interface MenuPanelState {
   tooltip: boolean;
+  interactive: boolean;
 }
 
 export default class MenuPanel extends React.Component<
@@ -44,8 +47,13 @@ export default class MenuPanel extends React.Component<
     super(props);
     this.state = {
       tooltip: false,
+      interactive: true,
     };
     this.handleChangeLanguage = this.handleChangeLanguage.bind(this);
+    StoreSettings.subscribe(
+      (s) => s.mainViewMode,
+      (s) => this.setState({ interactive: s === MainViewMode.CANVAS })
+    );
   }
 
   handleChangeLanguage(event: React.ChangeEvent<HTMLSelectElement>) {
@@ -81,7 +89,12 @@ export default class MenuPanel extends React.Component<
             </Col>
           </Row>
         </Container>
-        <div className={"lower" + (this.props.freeze ? " nointeract" : "")}>
+        <div
+          className={
+            "lower" +
+            (this.props.freeze || !this.state.interactive ? " nointeract" : "")
+          }
+        >
           <MenuPanelSettings
             update={() => this.props.update()}
             performTransaction={this.props.performTransaction}
