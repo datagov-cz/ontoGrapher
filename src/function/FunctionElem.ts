@@ -118,7 +118,6 @@ export function createNewTerm(
     throw new Error(
       "Attempted to create a term for a vocabulary that is not recognized."
     );
-  console.log(name, language);
   const iri = createNewElemIRI(
     WorkspaceVocabularies[vocabulary].glossary,
     name[language]

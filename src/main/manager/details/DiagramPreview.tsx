@@ -20,12 +20,10 @@ interface Props {
   diagram: string;
 }
 
-interface State {}
-
 var paper: joint.dia.Paper;
-var graph: joint.dia.Graph;
+var g: joint.dia.Graph;
 
-export default class DiagramPreview extends React.Component<Props, State> {
+export default class DiagramPreview extends React.Component<Props> {
   private readonly paperElement: React.RefObject<HTMLDivElement>;
   private drag: { x: any; y: any } | undefined;
 
@@ -37,16 +35,16 @@ export default class DiagramPreview extends React.Component<Props, State> {
   }
 
   componentDidMount(): void {
-    graph = new joint.dia.Graph();
+    g = new joint.dia.Graph();
     const node = this.paperElement.current! as HTMLElement;
     paper = new joint.dia.Paper({
       el: node,
-      model: graph,
+      model: g,
       gridSize: 1,
       linkPinning: false,
       clickThreshold: 0,
       async: false,
-      background: { color: "#FFFFFF" },
+      background: { color: "#e3e3e3" },
       sorting: joint.dia.Paper.sorting.APPROX,
       connectionStrategy: joint.connectionStrategies.pinAbsolute,
       defaultConnectionPoint: {
@@ -59,7 +57,7 @@ export default class DiagramPreview extends React.Component<Props, State> {
     });
 
     paper.on({
-      "blank:pointerup": (evt) => {
+      "blank:pointerup": () => {
         this.drag = undefined;
       },
       "blank:mousewheel": (evt, x, y, delta) => {
@@ -84,7 +82,7 @@ export default class DiagramPreview extends React.Component<Props, State> {
           WorkspaceElements[id].position[this.props.diagram].x,
           WorkspaceElements[id].position[this.props.diagram].y
         );
-        cls.addTo(graph);
+        cls.addTo(g);
         drawGraphElement(cls, AppSettings.canvasLanguage, Representation.FULL);
         restoreHiddenElem(id, true, false, false);
       }
@@ -94,7 +92,7 @@ export default class DiagramPreview extends React.Component<Props, State> {
       this.props.diagram,
       false,
       false,
-      graph
+      g
     );
     const area = paper.getContentArea({ useModelGeometry: false });
     const origin = paper.translate();
@@ -111,7 +109,7 @@ export default class DiagramPreview extends React.Component<Props, State> {
       minScale: 0.1,
       contentArea: area,
     });
-    centerDiagram(paper, graph);
+    centerDiagram(paper, g);
   }
 
   render(): React.ReactNode {

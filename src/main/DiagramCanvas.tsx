@@ -1,5 +1,13 @@
-import React from "react";
+import hotkeys from "hotkeys-js";
 import * as joint from "jointjs";
+import * as _ from "lodash";
+import React from "react";
+import {
+  ElemCreationConfiguration,
+  LinkCreationConfiguration,
+} from "../components/modals/CreationModals";
+import { DetailPanelMode, ElemCreationStrategy } from "../config/Enum";
+import { Locale } from "../config/Locale";
 import {
   AppSettings,
   Diagrams,
@@ -7,15 +15,7 @@ import {
   WorkspaceTerms,
   WorkspaceVocabularies,
 } from "../config/Variables";
-import { graph } from "../graph/Graph";
-import { HideButton } from "../graph/elementTool/ElemHide";
-import { ElemCreateLink } from "../graph/elementTool/ElemCreateLink";
-import {
-  getElementShape,
-  getNewLink,
-  getVocabularyFromScheme,
-} from "../function/FunctionGetVars";
-import { highlightCell, unHighlightAll } from "../function/FunctionDraw";
+import { ElementColors } from "../config/visual/ElementColors";
 import {
   highlightElement,
   highlightLink,
@@ -25,24 +25,24 @@ import {
   updateDiagramPosition,
   zoomDiagram,
 } from "../function/FunctionDiagram";
-import { updateProjectElementDiagram } from "../queries/update/UpdateElementQueries";
+import { highlightCell, unHighlightAll } from "../function/FunctionDraw";
 import {
   getElementToolPosition,
   isElementPositionOutdated,
   moveElements,
   putElementsOnCanvas,
 } from "../function/FunctionElem";
-import { addLinkTools, updateVertices } from "../function/FunctionLink";
-import { ElementColors } from "../config/visual/ElementColors";
-import hotkeys from "hotkeys-js";
-import * as _ from "lodash";
 import {
-  ElemCreationConfiguration,
-  LinkCreationConfiguration,
-} from "../components/modals/CreationModals";
-import { DetailPanelMode, ElemCreationStrategy } from "../config/Enum";
-import { Locale } from "../config/Locale";
+  getElementShape,
+  getNewLink,
+  getVocabularyFromScheme,
+} from "../function/FunctionGetVars";
+import { addLinkTools, updateVertices } from "../function/FunctionLink";
 import { initTouchEvents } from "../function/FunctionTouch";
+import { ElemCreateLink } from "../graph/elementTool/ElemCreateLink";
+import { HideButton } from "../graph/elementTool/ElemHide";
+import { graph } from "../graph/Graph";
+import { updateProjectElementDiagram } from "../queries/update/UpdateElementQueries";
 
 interface Props {
   projectLanguage: string;

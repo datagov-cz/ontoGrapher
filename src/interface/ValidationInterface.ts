@@ -12,9 +12,5 @@ export async function validateWorkspace(contexts: string[], language: string) {
     .catch((e) => {
       console.error(e);
       return false;
-    })
-    .catch((e) => {
-      console.error(e);
-      return false;
     });
 }

@@ -13,6 +13,7 @@ import IRILabel from "../components/IRILabel";
 import { Locale } from "../config/Locale";
 import { highlightCell } from "../function/FunctionDraw";
 import { validateWorkspace } from "../interface/ValidationInterface";
+import { centerElementInView } from "../function/FunctionGraph";
 
 interface Props {
   close: Function;
@@ -82,6 +83,7 @@ export default class ValidationPanel extends React.Component<Props, State> {
     if (cellElem)
       if (typeof cellElem.id === "string") {
         highlightCell(cellElem.id, "#FFFF00");
+        centerElementInView(cellElem.id);
       }
     if (cellLink)
       if (typeof cellLink.id === "string") {

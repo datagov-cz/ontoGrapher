@@ -416,7 +416,8 @@ export function findLinkSelfLoop(link: joint.dia.Link) {
 
 export function setupLink(
   link: string,
-  restoreConnectionPosition: boolean = true
+  restoreConnectionPosition: boolean = true,
+  g: joint.dia.Graph = graph
 ) {
   const lnk = getNewLink(WorkspaceLinks[link].type, link);
   setLabels(
@@ -439,7 +440,7 @@ export function setupLink(
       args: { selector: getElementShape(WorkspaceLinks[link].target) },
     },
   });
-  lnk.addTo(graph);
+  lnk.addTo(g);
   if (!WorkspaceLinks[link].vertices[AppSettings.selectedDiagram])
     WorkspaceLinks[link].vertices[AppSettings.selectedDiagram] = [];
   if (restoreConnectionPosition) {
@@ -490,7 +491,7 @@ export function restoreHiddenElem(
               AppSettings.ontographerContext
             )))
     ) {
-      const oldPos = setupLink(link, restoreSimpleConnectionPosition);
+      const oldPos = setupLink(link, restoreSimpleConnectionPosition, g);
       if (oldPos)
         queries.push(
           updateDeleteProjectLinkVertex(
@@ -507,21 +508,21 @@ export function restoreHiddenElem(
       WorkspaceLinks[link].iri in Links &&
       g.getCell(WorkspaceLinks[link].target)
     ) {
-      let relID = WorkspaceLinks[link].source;
-      for (let targetLink in WorkspaceLinks) {
+      const relID = WorkspaceLinks[link].source;
+      for (const targetLink in WorkspaceLinks) {
         if (
           WorkspaceLinks[targetLink].active &&
           WorkspaceLinks[targetLink].source === relID &&
           WorkspaceLinks[targetLink].target !== id &&
           g.getCell(WorkspaceLinks[targetLink].target)
         ) {
-          let domainLink = getNewLink(WorkspaceLinks[link].type, link);
-          let rangeLink = getNewLink(
+          const domainLink = getNewLink(WorkspaceLinks[link].type, link);
+          const rangeLink = getNewLink(
             WorkspaceLinks[targetLink].type,
             targetLink
           );
-          let existingRel = g.getElements().find((elem) => elem.id === relID);
-          let relationship = existingRel
+          const existingRel = g.getElements().find((elem) => elem.id === relID);
+          const relationship = existingRel
             ? existingRel
             : new graphElement({ id: relID });
           if (

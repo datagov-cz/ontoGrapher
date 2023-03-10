@@ -387,7 +387,7 @@ export function addLinkTools(
     distance: 5,
     action: (_, view) => {
       view.model.remove();
-      transaction(deleteLink(id));
+      transaction(...deleteLink(id));
       update();
     },
   });

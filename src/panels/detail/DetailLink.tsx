@@ -265,27 +265,33 @@ export default class DetailLink extends React.Component<Props, State> {
               });
             }}
           />
-          <h5>Synonyma</h5>
-          <DetailPanelAltLabels
-            altLabels={this.state.inputAltLabels}
-            selectedLabel={this.state.selectedLabel}
-            language={this.state.selectedLanguage}
-            readOnly={this.state.readOnly}
-            addAltLabel={(alt: AlternativeLabel) =>
-              this.setState((prev) => ({
-                ...prev,
-                inputAltLabels: [...prev.inputAltLabels, alt],
-                changes: true,
-              }))
-            }
-            id={this.props.id}
-            selectDisplayLabel={(name, language) =>
-              this.setState((prev) => ({
-                changes: true,
-                selectedLabel: { ...prev.selectedLabel, [language]: name },
-              }))
-            }
-          />
+          {AppSettings.representation === Representation.COMPACT && (
+            <div>
+              <h5>
+                {Locale[AppSettings.interfaceLanguage].detailPanelAltLabel}
+              </h5>
+              <DetailPanelAltLabels
+                altLabels={this.state.inputAltLabels}
+                selectedLabel={this.state.selectedLabel}
+                language={this.state.selectedLanguage}
+                readOnly={this.state.readOnly}
+                addAltLabel={(alt: AlternativeLabel) =>
+                  this.setState((prev) => ({
+                    ...prev,
+                    inputAltLabels: [...prev.inputAltLabels, alt],
+                    changes: true,
+                  }))
+                }
+                id={WorkspaceLinks[this.props.id].iri}
+                selectDisplayLabel={(name, language) =>
+                  this.setState((prev) => ({
+                    changes: true,
+                    selectedLabel: { ...prev.selectedLabel, [language]: name },
+                  }))
+                }
+              />
+            </div>
+          )}
         </div>
       </div>
     );
