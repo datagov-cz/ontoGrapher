@@ -9,7 +9,7 @@ import {
   unHighlightSelected,
 } from "./FunctionDraw";
 import { restoreHiddenElem, setRepresentation } from "./FunctionGraph";
-import { Representation } from "../config/Enum";
+import { MainViewMode, Representation } from "../config/Enum";
 import { paper } from "../main/DiagramCanvas";
 import * as _ from "lodash";
 import { isElementHidden } from "./FunctionElem";
@@ -17,7 +17,7 @@ import { isElementHidden } from "./FunctionElem";
 export function changeDiagrams(diagram?: string) {
   if (!diagram)
     diagram = Object.keys(Diagrams)
-      .filter((diag) => Diagrams[diag].active)
+      .filter((diag) => Diagrams[diag].active && !Diagrams[diag].toBeDeleted)
       .reduce((a, b) => (Diagrams[a].index < Diagrams[b].index ? a : b));
   if (diagram && Diagrams[diagram]) {
     graph.clear();
@@ -50,10 +50,16 @@ export function changeDiagrams(diagram?: string) {
     StoreSettings.update((s) => {
       s.selectedDiagram = diagram!;
     });
-  } else
-    throw new Error(
+  } else {
+    console.warn(
       "Attempted change to a diagram ID " + diagram + " that doesn't exist."
     );
+    AppSettings.selectedDiagram = "";
+    StoreSettings.update((s) => {
+      s.mainViewMode = MainViewMode.MANAGER;
+      s.selectedDiagram = "";
+    });
+  }
 }
 
 export function centerDiagram(

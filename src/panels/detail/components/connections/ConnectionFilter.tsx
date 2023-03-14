@@ -78,7 +78,7 @@ export default class ConnectionFilter extends React.Component<Props> {
               <polygon points={"0,20 0,4 18,12"} />
             </svg>
           </Button>
-          <svg className={"line"} height={"24px"}>
+          <svg className={"line"} width={"100%"} height={"24px"}>
             <line
               x1={0}
               y1={14}

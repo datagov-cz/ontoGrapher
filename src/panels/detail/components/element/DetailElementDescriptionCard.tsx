@@ -179,7 +179,8 @@ export class DetailElementDescriptionCard extends React.Component<
             );
         });
       }
-      if (elem) resizeElem(this.props.id);
+      if (elem && AppSettings.selectedElements.includes(this.props.id))
+        resizeElem(this.props.id);
       this.props.save(this.props.id);
       this.setState({ changes: false });
       this.props.performTransaction(updateProjectElement(true, this.props.id));
@@ -225,7 +226,7 @@ export class DetailElementDescriptionCard extends React.Component<
             className="top-item detailInput"
             value={this.state.inputTypeType}
             disabled={this.state.readOnly}
-            onChange={(event) => this.updateType(event.currentTarget.value)}
+            onChange={(event) => this.updateType(event.target.value)}
           >
             <option key={""} value={""}>
               {this.state.readOnly
@@ -247,14 +248,12 @@ export class DetailElementDescriptionCard extends React.Component<
           <Form.Select
             size="sm"
             className="bottom-item detailInput"
-            value={this.state.inputTypeType}
+            value={this.state.inputTypeData}
             disabled={
               this.state.readOnly ||
               !this.isObjectType(WorkspaceTerms[this.props.id].types)
             }
-            onChange={(event) =>
-              this.updateStereotype(event.currentTarget.value)
-            }
+            onChange={(event) => this.updateStereotype(event.target.value)}
           >
             <option key={""} value={""}>
               {this.state.readOnly

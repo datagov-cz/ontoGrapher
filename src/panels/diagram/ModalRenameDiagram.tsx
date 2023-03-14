@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Button, Form, InputGroup, Modal } from "react-bootstrap";
+import { Alert, Button, Form, InputGroup, Modal } from "react-bootstrap";
 import { Locale } from "../../config/Locale";
 import { AppSettings, Diagrams } from "../../config/Variables";
 import {
@@ -31,6 +31,7 @@ export const ModalRenameDiagram: React.FC<Props> = (props: Props) => {
       queries.push(updateDiagram(props.diagram));
       props.performTransaction(...queries);
       props.update();
+      props.close();
     } else
       console.warn(
         `Attempted to rename diagram ${props.diagram} to an empty string.`
@@ -64,26 +65,27 @@ export const ModalRenameDiagram: React.FC<Props> = (props: Props) => {
               value={diagramName}
               onChange={(evt) => setDiagramName(evt.currentTarget.value)}
             />
-            <Form.Control.Feedback type="invalid">
-              {Locale[AppSettings.interfaceLanguage].renameDiagramEmptyInput}
-            </Form.Control.Feedback>
           </InputGroup>
+          <br />
+          {diagramName.length === 0 && (
+            <Alert variant="danger">
+              {Locale[AppSettings.interfaceLanguage].renameDiagramEmptyInput}
+            </Alert>
+          )}
         </Modal.Body>
         <Modal.Footer>
           <Button
             type="submit"
-            variant="light"
-            className="plainButton"
-            onClick={() => {
+            variant="primary"
+            onClick={(evt) => {
+              evt.preventDefault();
               renameDiagram();
-              props.close();
             }}
           >
             {Locale[AppSettings.interfaceLanguage].confirm}
           </Button>
           <Button
-            variant="light"
-            className="plainButton"
+            variant="secondary"
             onClick={() => {
               props.close();
             }}

@@ -227,6 +227,9 @@ export const DiagramManagerDetails: React.FC<Props> = (props: Props) => {
                     </Form.Label>
                     <Select
                       isMulti
+                      noOptionsMessage={() =>
+                        Locale[AppSettings.interfaceLanguage].noOptions
+                      }
                       isSearchable
                       backspaceRemovesValue={false}
                       hideSelectedOptions={true}

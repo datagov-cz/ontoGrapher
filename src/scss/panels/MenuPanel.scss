@@ -77,6 +77,10 @@
   .lower {
     font-size: 14px;
 
+    .interact {
+      pointer-events: all !important;
+    }
+
     a,
     button {
       font-size: medium;

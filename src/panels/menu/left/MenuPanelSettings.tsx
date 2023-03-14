@@ -19,7 +19,7 @@ interface State {}
 export default class MenuPanelSettings extends React.Component<Props, State> {
   render() {
     return (
-      <Dropdown className={"lower inert"}>
+      <Dropdown className={"lower inert interact"}>
         <Dropdown.Toggle>
           {Locale[AppSettings.interfaceLanguage].menuPanelSettings}
         </Dropdown.Toggle>

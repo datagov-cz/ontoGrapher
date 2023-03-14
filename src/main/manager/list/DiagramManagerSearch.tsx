@@ -41,6 +41,7 @@ export const DiagramManagerSearch: React.FC<Props> = (props: Props) => {
       <Select
         isMulti
         isSearchable
+        noOptionsMessage={() => Locale[AppSettings.interfaceLanguage].noOptions}
         styles={{
           control: (baseStyles) => ({
             ...baseStyles,

@@ -87,6 +87,7 @@ export const DetailElementDiagramCard: React.FC<Props> = (props) => {
                         s.mainViewMode = MainViewMode.MANAGER;
                         s.detailPanelMode = DetailPanelMode.HIDDEN;
                         s.detailPanelSelectedID = "";
+                        s.diagramPanelSelectedDiagram = "";
                       });
                     }}
                     variant="light"

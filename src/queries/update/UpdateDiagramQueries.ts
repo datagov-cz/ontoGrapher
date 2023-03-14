@@ -3,6 +3,7 @@ import { DELETE, INSERT } from "@tpluscode/sparql-builder";
 import { qb } from "../QueryBuilder";
 import { AppSettings, Diagrams } from "../../config/Variables";
 import { parsePrefix } from "../../function/FunctionEditVars";
+import _ from "lodash";
 
 function getDiagramTriples(diagram: string): string {
   const diagramIRI = qb.i(Diagrams[diagram].iri);
@@ -202,6 +203,12 @@ export function updateDeleteDiagram(diagram: string) {
 export function updateDiagramMetadata(diagram: string): string {
   const diagramGraph = Diagrams[diagram].graph;
   const diagramIRI = Diagrams[diagram].iri;
+  Diagrams[diagram].modifiedDate = new Date();
+  if (AppSettings.currentUser)
+    Diagrams[diagram].collaborators = _.uniq([
+      ...Diagrams[diagram].collaborators,
+      AppSettings.currentUser,
+    ]);
   const del = DELETE`${qb.g(diagramGraph, [
     qb.s(qb.i(diagramIRI), "og:modifiedDate", "?v1"),
     qb.s(qb.i(diagramIRI), "og:collaborator", "?v2"),

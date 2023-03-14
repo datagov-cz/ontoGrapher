@@ -51,6 +51,7 @@ export class VocabularySelector extends React.Component<Props> {
       <Select
         isMulti={true}
         isSearchable={true}
+        noOptionsMessage={() => Locale[AppSettings.interfaceLanguage].noOptions}
         className={"luceneSelect"}
         styles={{
           control: (baseStyles) => ({

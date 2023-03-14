@@ -115,7 +115,11 @@ export default class MenuPanel extends React.Component<
           <ZoomWidget />
           <ViewWidget />
           <FitContentWidget />
-          <div className={"right" + (this.props.freeze ? " nointeract" : "")}>
+          <div
+            className={
+              "right" + (this.props.freeze ? " nointeract" : " interact")
+            }
+          >
             <MenuPanelHelp />
             <OverlayTrigger
               trigger={[]}
