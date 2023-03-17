@@ -103,7 +103,7 @@ export const ExportModalTerms: React.FC<Props> = (props: Props) => {
         </Form>
         {exportType === ExportType.CSV && (
           <Alert variant="warning">
-            Tento typ exportu vynechává pojmy, které nemají typový stereotyp.
+            {Locale[AppSettings.interfaceLanguage].listExportAlert}
           </Alert>
         )}
         {error && <Alert variant="danger">{error}</Alert>}

@@ -16,6 +16,7 @@ import {
 } from "../../../../function/FunctionGetVars";
 import { processQuery } from "../../../../interface/TransactionInterface";
 import * as _ from "lodash";
+import { Locale } from "../../../../config/Locale";
 
 export async function exportTermsCSV(
   exportLanguage: string
@@ -34,7 +35,8 @@ export async function exportTermsCSV(
         )
     )
     .sort();
-  if (diagramTerms.length === 0) return ["", "error"];
+  if (diagramTerms.length === 0)
+    return ["", Locale[AppSettings.interfaceLanguage].listExportErrorNoTerms];
   const query = [
     "PREFIX dct: <http://purl.org/dc/terms/>",
     "select ?term ?source where {",
@@ -72,7 +74,11 @@ export async function exportTermsCSV(
     });
   if (Object.keys(result).length === 0)
     console.warn("None of the terms from this diagram have a dct:source.");
-  if ("error" in result) return ["", "error1"];
+  if ("error" in result)
+    return [
+      "",
+      Locale[AppSettings.interfaceLanguage].listExportErrorNoConnection,
+    ];
   const rowDescriptionRow =
     [
       "Subjekt/objekt",

@@ -1,4 +1,9 @@
 export const en = {
+  listExportErrorNoConnection:
+    "Unable to retrieve sources of terms from the database.",
+  listExportErrorNoTerms: "No file generated, as it would be empty.",
+  listExportAlert:
+    "This export leaves out terms without a set type stereotype.",
   rename: "Rename",
   renameDiagram: "Rename diagram ",
   renameDiagramEmptyInput: "Please input a name",

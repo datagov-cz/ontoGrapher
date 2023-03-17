@@ -6,6 +6,7 @@ import { Environment } from "../config/Environment";
 import { Locale } from "../config/Locale";
 import { StoreSettings } from "../config/Store";
 import { AppSettings } from "../config/Variables";
+import { MenuPanelExport } from "./menu/left/MenuPanelExport";
 import MenuPanelSettings from "./menu/left/MenuPanelSettings";
 import MenuPanelSwitchRepresentation from "./menu/left/MenuPanelSwitchRepresentation";
 import MenuPanelValidate from "./menu/left/MenuPanelValidate";
@@ -111,7 +112,7 @@ export default class MenuPanel extends React.Component<
           {Environment.auth && (
             <MenuPanelValidate validate={() => this.props.validate()} />
           )}
-          {/* <MenuPanelExport /> */}
+          <MenuPanelExport />
           <ZoomWidget />
           <ViewWidget />
           <FitContentWidget />

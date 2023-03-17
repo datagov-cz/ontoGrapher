@@ -1,6 +1,10 @@
 import { en } from "./en";
 
 export const cs: { [Property in keyof typeof en]: string } = {
+  listExportErrorNoConnection: "Chyba při získávání zdrojů pojmů z databáze.",
+  listExportErrorNoTerms: "Tento export by vytvořil prázdný soubor.",
+  listExportAlert:
+    "Tento typ exportu vynechává pojmy, které nemají typový stereotyp.",
   rename: "Přejmenovat",
   renameDiagram: "Přejmenovat diagram ",
   renameDiagramEmptyInput: "Prosíme, vyberte název.",
