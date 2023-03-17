@@ -110,7 +110,7 @@ export function updateDiagramAssignments(diagram: string): string {
         ),
         qb.s(
           diagramGraph,
-          qb.i(parsePrefix("a-popis-dat-pojem", "vychází-z-verze")),
+          qb.i(parsePrefix("d-sgov-pracovní-prostor-pojem", "vychází-z-verze")),
           diagramIRI
         ),
       ])}`.build()
@@ -153,7 +153,7 @@ export function updateCreateDiagram(diagram: string): string {
       ),
       qb.s(
         diagramGraph,
-        qb.i(parsePrefix("a-popis-dat-pojem", "vychází-z-verze")),
+        qb.i(parsePrefix("d-sgov-pracovní-prostor-pojem", "vychází-z-verze")),
         diagramIRI
       ),
     ])}`.build()
