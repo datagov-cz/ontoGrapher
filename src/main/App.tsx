@@ -142,6 +142,9 @@ export default class App extends React.Component<
         if (!state) {
           this.itemPanel.current?.update();
           this.menuPanel.current?.update();
+          StoreSettings.update((s) => {
+            s.mainViewMode = MainViewMode.MANAGER;
+          });
         }
       }
     );

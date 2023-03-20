@@ -1,13 +1,15 @@
+import classNames from "classnames";
 import React from "react";
 import { Badge, OverlayTrigger, Popover } from "react-bootstrap";
-import { getLabelOrBlank } from "../../function/FunctionGetVars";
 import { AppSettings, WorkspaceElements } from "../../config/Variables";
-import { getVocabularyShortLabel } from "@opendata-mvcr/assembly-line-shared";
 import {
   CacheSearchResults,
   CacheSearchVocabularies,
 } from "../../datatypes/CacheSearchResults";
-import classNames from "classnames";
+import {
+  getLabelOrBlank,
+  getVocabularyLabel,
+} from "../../function/FunctionGetVars";
 
 interface Props {
   projectLanguage: string;
@@ -97,7 +99,7 @@ export class SearchTerm extends React.Component<Props> {
           &nbsp;
           {this.props.list && (
             <Badge bg={"secondary"}>
-              {getVocabularyShortLabel(this.props.result.vocabulary)}
+              {getVocabularyLabel(this.props.result.vocabulary)}
             </Badge>
           )}
         </div>

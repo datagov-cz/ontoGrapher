@@ -1,7 +1,6 @@
 import CloseIcon from "@mui/icons-material/Close";
 import DeleteIcon from "@mui/icons-material/Delete";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
-import { getVocabularyShortLabel } from "@opendata-mvcr/assembly-line-shared";
 import classNames from "classnames";
 import React, { useState } from "react";
 import { Button, OverlayTrigger, Tooltip } from "react-bootstrap";
@@ -12,6 +11,7 @@ import {
   Diagrams,
   WorkspaceVocabularies,
 } from "../../../config/Variables";
+import { getVocabularyLabel } from "../../../function/FunctionGetVars";
 import {
   updateDiagram,
   updateDiagramAssignments,
@@ -51,7 +51,7 @@ export const DiagramManagerListItem: React.FC<Props> = (props: Props) => {
             {Diagrams[props.diagram].vocabularies?.map((v) => (
               <VocabularyBadge
                 key={v}
-                text={getVocabularyShortLabel(v).toLowerCase()}
+                text={getVocabularyLabel(v)}
                 color={WorkspaceVocabularies[v].color}
                 cancellable={false}
               />

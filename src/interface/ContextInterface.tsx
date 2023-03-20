@@ -4,7 +4,7 @@ import { Alert } from "react-bootstrap";
 import { v4 as uuidv4 } from "uuid";
 import TableList from "../components/TableList";
 import { callCriticalAlert } from "../config/CriticalAlertData";
-import { ContextLoadingStrategy } from "../config/Enum";
+import { ContextLoadingStrategy, MainViewMode } from "../config/Enum";
 import { Locale } from "../config/Locale";
 import { StoreSettings } from "../config/Store";
 import {
@@ -18,8 +18,7 @@ import {
 } from "../config/Variables";
 import { CacheSearchVocabularies } from "../datatypes/CacheSearchResults";
 import { insertNewCacheTerms } from "../function/FunctionCache";
-import { addDiagram, addToFlexSearch } from "../function/FunctionCreateVars";
-import { changeDiagrams } from "../function/FunctionDiagram";
+import { addToFlexSearch } from "../function/FunctionCreateVars";
 import {
   deleteConcept,
   initElements,
@@ -374,10 +373,11 @@ function checkForObsoleteDiagrams() {
           Diagrams[diag].toBeDeleted = true;
           queries.push(updateDeleteDiagram(diag));
         }
-        if (diagramsToDelete.length === workspaceDiagrams.length) {
-          addDiagram(Locale[AppSettings.interfaceLanguage].untitled);
-        }
-        changeDiagrams();
+        AppSettings.selectedDiagram = "";
+        StoreSettings.update((s) => {
+          s.mainViewMode = MainViewMode.CANVAS;
+          s.selectedDiagram = "";
+        });
         await processTransaction(
           AppSettings.contextEndpoint,
           qb.constructQuery(...queries)
@@ -399,7 +399,7 @@ function checkForObsoleteDiagrams() {
               </tr>
             ))}
           </TableList>
-          <Alert variant={"primary"}>
+          <Alert variant={"warning"}>
             {Locale[AppSettings.interfaceLanguage].obsoleteDiagramsAlertInfo}
           </Alert>
         </div>

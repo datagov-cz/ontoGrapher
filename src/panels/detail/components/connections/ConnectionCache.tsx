@@ -1,14 +1,16 @@
 import React from "react";
-import { AppSettings, WorkspaceLinks } from "../../../../config/Variables";
-import { getLabelOrBlank } from "../../../../function/FunctionGetVars";
-import { getVocabularyShortLabel } from "@opendata-mvcr/assembly-line-shared";
 import { Badge, OverlayTrigger, Popover } from "react-bootstrap";
-import { CacheSearchVocabularies } from "../../../../datatypes/CacheSearchResults";
 import _ from "underscore";
-import { getOtherConnectionElementID } from "../../../../function/FunctionLink";
 import { Representation } from "../../../../config/Enum";
-import Connection from "./Connection";
+import { AppSettings, WorkspaceLinks } from "../../../../config/Variables";
+import { CacheSearchVocabularies } from "../../../../datatypes/CacheSearchResults";
+import {
+  getLabelOrBlank,
+  getVocabularyLabel,
+} from "../../../../function/FunctionGetVars";
+import { getOtherConnectionElementID } from "../../../../function/FunctionLink";
 import { CacheConnection } from "../../../../types/CacheConnection";
+import Connection from "./Connection";
 
 interface Props {
   connection: CacheConnection;
@@ -122,9 +124,7 @@ export default class ConnectionCache extends React.Component<Props> {
               )}
               &nbsp;
               <Badge bg={"secondary"}>
-                {getVocabularyShortLabel(
-                  this.props.connection.target.vocabulary
-                )}
+                {getVocabularyLabel(this.props.connection.target.vocabulary)}
               </Badge>
             </span>
           }

@@ -1,3 +1,10 @@
+import { getVocabularyShortLabel } from "@opendata-mvcr/assembly-line-shared";
+import * as joint from "jointjs";
+import { Representation } from "../config/Enum";
+import { Languages } from "../config/Languages";
+import { Locale } from "../config/Locale";
+import { LocalStorageVars } from "../config/LocalStorageVars";
+import { LinkConfig } from "../config/logic/LinkConfig";
 import {
   AppSettings,
   Links,
@@ -6,20 +13,39 @@ import {
   WorkspaceTerms,
   WorkspaceVocabularies,
 } from "../config/Variables";
-import { parsePrefix } from "./FunctionEditVars";
 import { ColorPool } from "../config/visual/ColorPool";
 import { Shapes } from "../config/visual/Shapes";
-import * as joint from "jointjs";
-import { LinkConfig } from "../config/logic/LinkConfig";
-import { mvp1IRI, mvp2IRI } from "./FunctionGraph";
-import { Cardinality } from "../datatypes/Cardinality";
 import { CacheSearchVocabularies } from "../datatypes/CacheSearchResults";
-import { enChangelog } from "../locale/enchangelog";
-import { Representation } from "../config/Enum";
-import { Locale } from "../config/Locale";
+import { Cardinality } from "../datatypes/Cardinality";
 import { en } from "../locale/en";
-import { LocalStorageVars } from "../config/LocalStorageVars";
-import { Languages } from "../config/Languages";
+import { enChangelog } from "../locale/enchangelog";
+import { parsePrefix } from "./FunctionEditVars";
+import { mvp1IRI, mvp2IRI } from "./FunctionGraph";
+
+export function getVocabularyLabel(vocabulary: string, cutoff: number = 24) {
+  const shortLabel = getVocabularyShortLabel(vocabulary);
+  if (shortLabel) return shortLabel.toLowerCase();
+  const fullLabelWorkspace =
+    vocabulary in WorkspaceVocabularies &&
+    getLabelOrBlank(
+      WorkspaceVocabularies[vocabulary].labels,
+      AppSettings.canvasLanguage
+    ).toLowerCase();
+  const fullLabelCache =
+    vocabulary in CacheSearchVocabularies &&
+    getLabelOrBlank(
+      CacheSearchVocabularies[vocabulary].labels,
+      AppSettings.canvasLanguage
+    ).toLowerCase();
+  if (!(fullLabelWorkspace && fullLabelCache))
+    throw new Error("Unknown vocabulary IRI" + vocabulary + ".");
+  const fullLabel: string = (
+    fullLabelWorkspace || fullLabelCache
+  ).toLowerCase();
+  return fullLabel.length >= cutoff
+    ? fullLabel.substring(0, cutoff) + "..."
+    : fullLabel;
+}
 
 export function getVocabElementByElementID(id: string): { [key: string]: any } {
   return WorkspaceTerms[id];
