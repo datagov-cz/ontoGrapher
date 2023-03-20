@@ -47,11 +47,12 @@
 
     .cardLeft {
       margin-left: 30px;
+      word-break: normal;
     }
 
     .cardRight {
       margin-right: 30px;
-
+      word-break: normal;
     }
 
     .texts {
@@ -88,8 +89,6 @@
       padding: 0 4px;
       border: 1px solid black;
       border-radius: 4px;
-      margin-left: 20px;
-      margin-right: 20px;
     }
   }
 

@@ -129,6 +129,12 @@ export default class ConnectionCache extends React.Component<Props> {
             </span>
           }
           readOnly={true}
+          title={getLabelOrBlank(
+            this.props.connection.linkLabels,
+            this.props.projectLanguage
+          )}
+          sourceCardinality={""}
+          targetCardinality={""}
         />
       </OverlayTrigger>
     );

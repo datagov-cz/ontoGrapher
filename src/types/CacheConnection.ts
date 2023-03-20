@@ -8,4 +8,6 @@ export type CacheConnection = {
     vocabulary: string;
   };
   direction: string;
+  sourceCardinality?: string;
+  targetCardinality?: string;
 };

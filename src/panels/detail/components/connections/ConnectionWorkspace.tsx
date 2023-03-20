@@ -8,7 +8,11 @@ import {
 } from "../../../../config/Variables";
 import { getDisplayLabel } from "../../../../function/FunctionDraw";
 import { isElementHidden } from "../../../../function/FunctionElem";
-import { getVocabularyFromScheme } from "../../../../function/FunctionGetVars";
+import {
+  getLabelOrBlank,
+  getLinkOrVocabElem,
+  getVocabularyFromScheme,
+} from "../../../../function/FunctionGetVars";
 import { getOtherConnectionElementID } from "../../../../function/FunctionLink";
 import { ReactComponent as HiddenElementSVG } from "../../../../svg/hiddenElement.svg";
 import Connection from "./Connection";
@@ -87,6 +91,20 @@ export default class ConnectionWorkspace extends React.Component<Props> {
           ].readOnly
         }
         update={() => this.props.update()}
+        title={getLabelOrBlank(
+          getLinkOrVocabElem(WorkspaceLinks[this.props.linkID].iri).labels,
+          this.props.projectLanguage
+        )}
+        sourceCardinality={WorkspaceLinks[this.props.linkID][
+          this.getConnectionDirection(elemID)
+            ? "targetCardinality"
+            : "sourceCardinality"
+        ].getString()}
+        targetCardinality={WorkspaceLinks[this.props.linkID][
+          this.getConnectionDirection(elemID)
+            ? "sourceCardinality"
+            : "targetCardinality"
+        ].getString()}
       />
     );
   }

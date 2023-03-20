@@ -1,19 +1,11 @@
-import React from "react";
-import classNames from "classnames";
-import { Button, OverlayTrigger, Tooltip } from "react-bootstrap";
-import InfoIcon from "@mui/icons-material/Info";
 import DeleteIcon from "@mui/icons-material/Delete";
-import {
-  getLabelOrBlank,
-  getLinkOrVocabElem,
-} from "../../../../function/FunctionGetVars";
-import {
-  AppSettings,
-  Links,
-  WorkspaceLinks,
-} from "../../../../config/Variables";
-import { deleteLink } from "../../../../function/FunctionLink";
+import InfoIcon from "@mui/icons-material/Info";
+import classNames from "classnames";
+import React from "react";
+import { Button, OverlayTrigger, Tooltip } from "react-bootstrap";
 import { Locale } from "../../../../config/Locale";
+import { AppSettings } from "../../../../config/Variables";
+import { deleteLink } from "../../../../function/FunctionLink";
 
 interface Props {
   onDragStart: Function;
@@ -29,6 +21,9 @@ interface Props {
   performTransaction: (...queries: string[]) => void;
   readOnly: boolean;
   update?: Function;
+  title: string;
+  sourceCardinality: string;
+  targetCardinality: string;
 }
 
 export default class Connection extends React.Component<Props> {
@@ -91,33 +86,13 @@ export default class Connection extends React.Component<Props> {
         <span className={"link"}>
           <span className="texts">
             {this.getSvg()}
-            {this.props.link in WorkspaceLinks && (
-              <span className={"name cardLeft"}>
-                {WorkspaceLinks[this.props.link].sourceCardinality.getString()}
-              </span>
-            )}
-            {this.props.link in Links && (
-              <span className={"name title"}>
-                {getLabelOrBlank(
-                  getLinkOrVocabElem(this.props.link).labels,
-                  this.props.selectedLanguage
-                )}
-              </span>
-            )}
-            {this.props.link in WorkspaceLinks && (
-              <span className={"name title"}>
-                {getLabelOrBlank(
-                  getLinkOrVocabElem(WorkspaceLinks[this.props.link].iri)
-                    .labels,
-                  this.props.selectedLanguage
-                )}
-              </span>
-            )}
-            {this.props.link in WorkspaceLinks && (
-              <span className={"name cardRight"}>
-                {WorkspaceLinks[this.props.link].targetCardinality.getString()}
-              </span>
-            )}
+            <span className={"name cardLeft"}>
+              {this.props.sourceCardinality}
+            </span>
+            <span className={"name title"}>{this.props.title}</span>
+            <span className={"name cardRight"}>
+              {this.props.targetCardinality}
+            </span>
           </span>
 
           {this.props.infoFunction && (
