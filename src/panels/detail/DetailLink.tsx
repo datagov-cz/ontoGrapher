@@ -1,6 +1,6 @@
 import React from "react";
 import { LanguageSelector } from "../../components/LanguageSelector";
-import { Representation } from "../../config/Enum";
+import { LinkType, Representation } from "../../config/Enum";
 import { Locale } from "../../config/Locale";
 import {
   AlternativeLabel,
@@ -265,33 +265,37 @@ export default class DetailLink extends React.Component<Props, State> {
               });
             }}
           />
-          {AppSettings.representation === Representation.COMPACT && (
-            <div>
-              <h5>
-                {Locale[AppSettings.interfaceLanguage].detailPanelAltLabel}
-              </h5>
-              <DetailPanelAltLabels
-                altLabels={this.state.inputAltLabels}
-                selectedLabel={this.state.selectedLabel}
-                language={this.state.selectedLanguage}
-                readOnly={this.state.readOnly}
-                addAltLabel={(alt: AlternativeLabel) =>
-                  this.setState((prev) => ({
-                    ...prev,
-                    inputAltLabels: [...prev.inputAltLabels, alt],
-                    changes: true,
-                  }))
-                }
-                id={WorkspaceLinks[this.props.id].iri}
-                selectDisplayLabel={(name, language) =>
-                  this.setState((prev) => ({
-                    changes: true,
-                    selectedLabel: { ...prev.selectedLabel, [language]: name },
-                  }))
-                }
-              />
-            </div>
-          )}
+          {AppSettings.representation === Representation.COMPACT &&
+            WorkspaceLinks[this.props.id].type === LinkType.DEFAULT && (
+              <div>
+                <h5>
+                  {Locale[AppSettings.interfaceLanguage].detailPanelAltLabel}
+                </h5>
+                <DetailPanelAltLabels
+                  altLabels={this.state.inputAltLabels}
+                  selectedLabel={this.state.selectedLabel}
+                  language={this.state.selectedLanguage}
+                  readOnly={this.state.readOnly}
+                  addAltLabel={(alt: AlternativeLabel) =>
+                    this.setState((prev) => ({
+                      ...prev,
+                      inputAltLabels: [...prev.inputAltLabels, alt],
+                      changes: true,
+                    }))
+                  }
+                  id={WorkspaceLinks[this.props.id].iri}
+                  selectDisplayLabel={(name, language) =>
+                    this.setState((prev) => ({
+                      changes: true,
+                      selectedLabel: {
+                        ...prev.selectedLabel,
+                        [language]: name,
+                      },
+                    }))
+                  }
+                />
+              </div>
+            )}
         </div>
       </div>
     );
