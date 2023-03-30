@@ -11,6 +11,7 @@ import {
 import { ElementFilter } from "../../../../datatypes/ElementFilter";
 import { ReactComponent as HiddenElementSVG } from "../../../../svg/hiddenElement.svg";
 import LocalLibraryIcon from "@mui/icons-material/LocalLibrary";
+import { CacheSearchVocabularies } from "../../../../datatypes/CacheSearchResults";
 
 interface Props {
   projectLanguage: string;
@@ -143,22 +144,32 @@ export default class ConnectionFilter extends React.Component<Props> {
             >
               {Locale[AppSettings.interfaceLanguage].anyVocabulary}
             </option>
-            {this.props.vocabularies.map((scheme) => (
-              <option
-                style={{
-                  backgroundColor: WorkspaceVocabularies[scheme].color,
-                }}
-                value={scheme}
-                onClick={() => this.props.updateFilter("scheme", scheme)}
-                key={scheme}
-              >
-                {
-                  WorkspaceVocabularies[scheme].labels[
-                    this.props.projectLanguage
-                  ]
-                }
-              </option>
-            ))}
+            {this.props.vocabularies.map((scheme) => {
+              let source;
+              if (scheme in CacheSearchVocabularies)
+                source = CacheSearchVocabularies;
+              else if (scheme in WorkspaceVocabularies)
+                source = WorkspaceVocabularies;
+              else
+                throw new Error(
+                  "Unknown vocabulary passed to ConnectionFilter."
+                );
+              return (
+                <option
+                  style={{
+                    backgroundColor:
+                      scheme in WorkspaceVocabularies
+                        ? WorkspaceVocabularies[scheme].color
+                        : "#FFFFFF",
+                  }}
+                  value={scheme}
+                  onClick={() => this.props.updateFilter("scheme", scheme)}
+                  key={scheme}
+                >
+                  {source[scheme].labels[this.props.projectLanguage]}
+                </option>
+              );
+            })}
           </Form.Control>
           <LocalLibraryIcon className="library" />
         </div>
