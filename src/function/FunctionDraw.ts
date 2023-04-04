@@ -6,7 +6,11 @@ import {
   WorkspaceElements,
   WorkspaceTerms,
 } from "../config/Variables";
-import { getStereotypeList, setElementShape } from "./FunctionEditVars";
+import {
+  getStereotypeList,
+  parsePrefix,
+  setElementShape,
+} from "./FunctionEditVars";
 import { Representation } from "../config/Enum";
 import {
   getElementShape,
@@ -50,6 +54,12 @@ export function getSelectedLabels(
   return WorkspaceElements[id].selectedLabel;
 }
 
+function isElementEventType(id: string) {
+  return WorkspaceTerms[id].types.includes(
+    parsePrefix("z-sgov-pojem", "typ-události")
+  );
+}
+
 export function drawGraphElement(
   elem: joint.dia.Element,
   languageCode: string,
@@ -75,6 +85,7 @@ export function drawGraphElement(
       );
     }
     elem.prop("attrs/labelAttrs/text", text.join("\n"));
+    if (isElementEventType(elem.id)) elem.prop("attrs/labelAttrs/x", 20);
     const width =
       representation === Representation.COMPACT
         ? Math.max(

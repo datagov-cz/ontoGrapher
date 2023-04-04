@@ -95,7 +95,7 @@ export const ExportModalTerms: React.FC<Props> = (props: Props) => {
                   CSV
                 </option>
                 <option key={1} value={ExportType.TEXT}>
-                  Text
+                  TXT
                 </option>
               </Form.Control>
             </Col>
@@ -127,12 +127,7 @@ export const ExportModalTerms: React.FC<Props> = (props: Props) => {
             </span>
           )}
         </Button>
-        <Button
-          variant={"secondary"}
-          onClick={() => {
-            props.close();
-          }}
-        >
+        <Button variant={"secondary"} onClick={() => props.close()}>
           {Locale[AppSettings.interfaceLanguage].close}
         </Button>
       </Modal.Footer>

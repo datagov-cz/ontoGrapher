@@ -26,20 +26,20 @@ interface Props {
   close: () => void;
 }
 
-enum saveBehaviourEnum {
+enum saveBehaviorEnum {
   PREVIEW,
   DOWNLOAD,
 }
 
-const saveBehaviour: { [key: number]: (source: string) => void } = {
-  [saveBehaviourEnum.PREVIEW]: (source) => {
+const saveBehavior: { [key: number]: (source: string) => void } = {
+  [saveBehaviorEnum.PREVIEW]: (source) => {
     const imageElement = document.getElementById(
       "imagePreview"
     ) as HTMLImageElement;
     imageElement!.src = source;
     imageElement!.alt = "Diagram " + Diagrams[AppSettings.selectedDiagram].name;
   },
-  [saveBehaviourEnum.DOWNLOAD]: (source) => {
+  [saveBehaviorEnum.DOWNLOAD]: (source) => {
     const linkElement = document.createElement("a");
     linkElement.href = source;
     linkElement.download = Diagrams[AppSettings.selectedDiagram].name;
@@ -72,11 +72,11 @@ export const ExportModalImage: React.FC<Props> = (props: Props) => {
   const [diagramRepresentation, setDiagramRepresentation] = useState<number>(
     AppSettings.representation
   );
-  const [iriData, setIRIdata] = useState<boolean>(false);
+  const [iriData, setIRIData] = useState<boolean>(false);
   const [format, setFormat] = useState<string>("PNG");
 
-  const saveDiagram: (behaviour: saveBehaviourEnum) => void = (
-    behaviour: saveBehaviourEnum
+  const saveDiagram: (behavior: saveBehaviorEnum) => void = (
+    behavior: saveBehaviorEnum
   ) => {
     // A Paper is to a Graph what a View is to a Model.
     // This function creates a new Paper, sets its size to the contents inside, and pulls the SVG of the paper.
@@ -180,7 +180,7 @@ export const ExportModalImage: React.FC<Props> = (props: Props) => {
         data += `data:image/svg+xml;base64,${btoa(
           unescape(encodeURIComponent(svgText))
         )}`;
-      saveBehaviour[behaviour](data);
+      saveBehavior[behavior](data);
       if (language !== AppSettings.canvasLanguage) {
         changeLanguage(AppSettings.canvasLanguage);
       }
@@ -256,7 +256,7 @@ export const ExportModalImage: React.FC<Props> = (props: Props) => {
                 value={format}
                 onChange={(event) => {
                   setFormat(event.currentTarget.value);
-                  if (event.currentTarget.value === "PNG") setIRIdata(false);
+                  if (event.currentTarget.value === "PNG") setIRIData(false);
                 }}
               >
                 <option key={1} value={"PNG"}>
@@ -289,7 +289,7 @@ export const ExportModalImage: React.FC<Props> = (props: Props) => {
             }
             checked={iriData}
             id={"setIRIcheckbox"}
-            onChange={(event) => setIRIdata(event.currentTarget.checked)}
+            onChange={(event) => setIRIData(event.currentTarget.checked)}
           />
         </Form>
         <br />
@@ -307,13 +307,13 @@ export const ExportModalImage: React.FC<Props> = (props: Props) => {
       <Modal.Footer>
         <Button
           disabled={graph.getElements().length === 0}
-          onClick={() => saveDiagram(saveBehaviourEnum.PREVIEW)}
+          onClick={() => saveDiagram(saveBehaviorEnum.PREVIEW)}
         >
           {Locale[AppSettings.interfaceLanguage].previewDiagramImage}
         </Button>
         <Button
           disabled={graph.getElements().length === 0}
-          onClick={() => saveDiagram(saveBehaviourEnum.DOWNLOAD)}
+          onClick={() => saveDiagram(saveBehaviorEnum.DOWNLOAD)}
         >
           {Locale[AppSettings.interfaceLanguage].downloadDiagramImage}
         </Button>
