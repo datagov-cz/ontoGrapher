@@ -21,10 +21,6 @@ export const ExportModal: React.FC<Props> = (props) => {
       keyboard
       scrollable
       onEscapeKeyDown={() => props.close()}
-      onEntering={() => {
-        // setLanguage(AppSettings.canvasLanguage);
-        // setDiagramRepresentation(AppSettings.representation);
-      }}
     >
       <Modal.Header>
         <Modal.Title>

@@ -8,14 +8,17 @@ import {
   WorkspaceLinks,
 } from "../../../../config/Variables";
 import { parsePrefix } from "../../../../function/FunctionEditVars";
-import { isElementVisible } from "../../../../function/FunctionElem";
+import {
+  isElementHidden,
+  isElementVisible,
+} from "../../../../function/FunctionElem";
 import {
   getLabelOrBlank,
   getIntrinsicTropeTypeIDs,
   getActiveToConnections,
 } from "../../../../function/FunctionGetVars";
 import { processQuery } from "../../../../interface/TransactionInterface";
-import * as _ from "lodash";
+import _ from "lodash";
 import { Locale } from "../../../../config/Locale";
 
 export async function exportTermsCSV(
@@ -27,7 +30,7 @@ export async function exportTermsCSV(
     .filter(
       (iri) =>
         WorkspaceElements[iri].active &&
-        !WorkspaceElements[iri].hidden[AppSettings.selectedDiagram] &&
+        !isElementHidden(iri, AppSettings.selectedDiagram) &&
         isElementVisible(
           WorkspaceTerms[iri].types,
           Representation.COMPACT,
@@ -80,7 +83,7 @@ export async function exportTermsCSV(
       Locale[AppSettings.interfaceLanguage].listExportErrorNoConnection,
     ];
   const rowDescriptionRow =
-    [
+    compile([
       "Subjekt/objekt",
       "Popis subjektu",
       "Právní předpis (vč. ustanovení)",
@@ -88,7 +91,7 @@ export async function exportTermsCSV(
       "Popis údaje",
       "Právní předpis (vč. ustanovení)",
       "Typ",
-    ].join(",") + carriageReturn;
+    ]) + carriageReturn;
   const source =
     fileID +
     rowDescriptionRow +

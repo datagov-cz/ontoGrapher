@@ -5,7 +5,10 @@ import {
   WorkspaceTerms,
   WorkspaceLinks,
 } from "../../../../config/Variables";
-import { isElementVisible } from "../../../../function/FunctionElem";
+import {
+  isElementHidden,
+  isElementVisible,
+} from "../../../../function/FunctionElem";
 import {
   getActiveToConnections,
   getIntrinsicTropeTypeIDs,
@@ -21,7 +24,7 @@ export async function exportTermsText(
     .filter(
       (iri) =>
         WorkspaceElements[iri].active &&
-        !WorkspaceElements[iri].hidden[AppSettings.selectedDiagram] &&
+        !isElementHidden(iri, AppSettings.selectedDiagram) &&
         isElementVisible(WorkspaceTerms[iri].types, Representation.COMPACT)
     )
     .sort();
