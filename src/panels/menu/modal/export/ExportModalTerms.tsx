@@ -9,29 +9,26 @@ interface Props {
   close: () => void;
 }
 
-enum ExportType {
-  CSV,
-  TEXT,
-}
-
 enum Status {
   IDLE,
   LOADING,
   ERROR,
 }
 
-var ExportFunction: {
-  [key: number]: (language: string) => Promise<[source: string, error: string]>;
-} = {
-  [ExportType.CSV]: exportTermsCSV,
-  [ExportType.TEXT]: exportTermsText,
-};
+type ExportType = "CSV" | "TXT";
+const ExportFunction: Record<
+  ExportType,
+  (language: string) => Promise<[source: Blob, error: string]>
+> = {
+  CSV: exportTermsCSV,
+  TXT: exportTermsText,
+} as const;
 
 export const ExportModalTerms: React.FC<Props> = (props: Props) => {
   const [exportLanguage, setExportLanguage] = useState<string>(
     AppSettings.canvasLanguage
   );
-  const [exportType, setExportType] = useState<ExportType>(ExportType.CSV);
+  const [exportType, setExportType] = useState<ExportType>("TXT");
   const [status, setStatus] = useState<Status>(Status.IDLE);
   const [error, setError] = useState<string>("");
 
@@ -45,8 +42,10 @@ export const ExportModalTerms: React.FC<Props> = (props: Props) => {
       return;
     }
     const linkElement = document.createElement("a");
-    linkElement.href = source;
-    linkElement.download = Diagrams[AppSettings.selectedDiagram].name;
+    linkElement.href = window.URL.createObjectURL(source);
+    linkElement.download =
+      Diagrams[AppSettings.selectedDiagram].name +
+      `.${exportType.toLowerCase()}`;
     document.body.appendChild(linkElement);
     linkElement.click();
     document.body.removeChild(linkElement);
@@ -88,20 +87,19 @@ export const ExportModalTerms: React.FC<Props> = (props: Props) => {
                 size={"sm"}
                 value={exportType}
                 onChange={(event) =>
-                  setExportType(parseInt(event.currentTarget.value, 10))
+                  setExportType(event.target.value as ExportType)
                 }
               >
-                <option key={0} value={ExportType.CSV}>
-                  CSV
-                </option>
-                <option key={1} value={ExportType.TEXT}>
-                  TXT
-                </option>
+                {(Object.keys(ExportFunction) as Array<ExportType>).map((t) => (
+                  <option key={t} value={t}>
+                    {t}
+                  </option>
+                ))}
               </Form.Control>
             </Col>
           </Form.Group>
         </Form>
-        {exportType === ExportType.CSV && (
+        {exportType === "CSV" && (
           <Alert variant="warning">
             {Locale[AppSettings.interfaceLanguage].listExportAlert}
           </Alert>
