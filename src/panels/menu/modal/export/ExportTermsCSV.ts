@@ -23,8 +23,8 @@ import { Locale } from "../../../../config/Locale";
 
 export async function exportTermsCSV(
   exportLanguage: string
-): Promise<[source: string, error: string]> {
-  const fileID = "data:text/csv;charset=utf-8,";
+): Promise<[source: Blob, error: string]> {
+  const fileID = "data:text/csv;charset=utf-8";
   const carriageReturn = "\r\n";
   const diagramTerms = Object.keys(WorkspaceElements)
     .filter(
@@ -39,7 +39,10 @@ export async function exportTermsCSV(
     )
     .sort();
   if (diagramTerms.length === 0)
-    return ["", Locale[AppSettings.interfaceLanguage].listExportErrorNoTerms];
+    return [
+      new Blob(),
+      Locale[AppSettings.interfaceLanguage].listExportErrorNoTerms,
+    ];
   const query = [
     "PREFIX dct: <http://purl.org/dc/terms/>",
     "select ?term ?source where {",
@@ -79,7 +82,7 @@ export async function exportTermsCSV(
     console.warn("None of the terms from this diagram have a dct:source.");
   if ("error" in result)
     return [
-      "",
+      new Blob(),
       Locale[AppSettings.interfaceLanguage].listExportErrorNoConnection,
     ];
   const rowDescriptionRow =
@@ -93,7 +96,6 @@ export async function exportTermsCSV(
       "Typ",
     ]) + carriageReturn;
   const source =
-    fileID +
     rowDescriptionRow +
     diagramTerms
       .map((term) => {
@@ -165,5 +167,5 @@ export async function exportTermsCSV(
         );
       })
       .join(carriageReturn);
-  return [source, ""];
+  return [new Blob([source], { type: fileID }), ""];
 }
