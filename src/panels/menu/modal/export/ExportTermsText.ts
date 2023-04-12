@@ -17,8 +17,8 @@ import {
 
 export async function exportTermsText(
   exportLanguage: string
-): Promise<[source: string, error: string]> {
-  const fileID = "data:text/plain;charset=utf-8,";
+): Promise<[source: Blob, error: string]> {
+  const fileID = "data:text/plain;charset=utf-8";
   const carriageReturn = "\r\n";
   const diagramTerms = Object.keys(WorkspaceElements)
     .filter(
@@ -28,40 +28,38 @@ export async function exportTermsText(
         isElementVisible(WorkspaceTerms[iri].types, Representation.COMPACT)
     )
     .sort();
-  const source =
-    fileID +
-    diagramTerms
-      .map((term) => {
-        const termName =
-          "- " +
-          getLabelOrBlank(WorkspaceTerms[term].labels, exportLanguage) +
-          carriageReturn;
-        const tropes = getIntrinsicTropeTypeIDs(term)
-          .map(
-            (trope) =>
-              "\t - " +
-              getLabelOrBlank(WorkspaceTerms[trope].labels, exportLanguage)
-          )
-          .join(carriageReturn);
-        const relationships = getActiveToConnections(term)
-          .filter((link) => WorkspaceLinks[link].iri in WorkspaceTerms)
-          .map(
-            (link) =>
-              "\t - " +
-              getLabelOrBlank(
-                WorkspaceTerms[WorkspaceLinks[link].iri].labels,
-                exportLanguage
-              )
-          )
-          .join(carriageReturn);
-        return (
-          termName +
-          tropes +
-          (tropes && relationships ? carriageReturn : "") +
-          relationships +
-          (tropes !== relationships ? carriageReturn : "")
-        );
-      })
-      .join(carriageReturn);
-  return [source, ""];
+  const source = diagramTerms
+    .map((term) => {
+      const termName =
+        "- " +
+        getLabelOrBlank(WorkspaceTerms[term].labels, exportLanguage) +
+        carriageReturn;
+      const tropes = getIntrinsicTropeTypeIDs(term)
+        .map(
+          (trope) =>
+            "\t - " +
+            getLabelOrBlank(WorkspaceTerms[trope].labels, exportLanguage)
+        )
+        .join(carriageReturn);
+      const relationships = getActiveToConnections(term)
+        .filter((link) => WorkspaceLinks[link].iri in WorkspaceTerms)
+        .map(
+          (link) =>
+            "\t - " +
+            getLabelOrBlank(
+              WorkspaceTerms[WorkspaceLinks[link].iri].labels,
+              exportLanguage
+            )
+        )
+        .join(carriageReturn);
+      return (
+        termName +
+        tropes +
+        (tropes && relationships ? carriageReturn : "") +
+        relationships +
+        (tropes !== relationships ? carriageReturn : "")
+      );
+    })
+    .join(carriageReturn);
+  return [new Blob([source], { type: fileID }), ""];
 }
