@@ -18,7 +18,6 @@ interface Props {
   save: (id: string) => void;
   performTransaction: (...queries: string[]) => void;
   error: boolean;
-  handleCreation: Function;
   id: string;
   freeze: boolean;
 }
@@ -59,7 +58,6 @@ export const DetailElement: React.FC<Props> = (props: Props) => {
             id={props.id}
             selectedLanguage={selectedLanguage}
             performTransaction={props.performTransaction}
-            handleCreation={props.handleCreation}
             save={props.save}
           />
           <DetailElementLinksCard

@@ -19,7 +19,6 @@ import {
   AppSettings,
   WorkspaceElements,
   WorkspaceLinks,
-  WorkspaceTerms,
 } from "../config/Variables";
 import { dumpDebugData, loadDebugData } from "../function/FunctionDebug";
 import {
@@ -28,12 +27,10 @@ import {
 } from "../function/FunctionDiagram";
 import { drawGraphElement, unHighlightAll } from "../function/FunctionDraw";
 import { initVars } from "../function/FunctionEditVars";
-import { getElementPosition } from "../function/FunctionElem";
 import {
   getLastChangeDay,
   getLinkOrVocabElem,
   getLocalStorageKey,
-  getVocabularyFromScheme,
   setSchemeColors,
 } from "../function/FunctionGetVars";
 import { nameGraphLink } from "../function/FunctionGraph";
@@ -375,19 +372,6 @@ export default class App extends React.Component<
             this.detailPanel.current?.forceUpdate();
           }}
           performTransaction={this.performTransaction}
-          handleCreation={(source: string) =>
-            this.handleCreation({
-              strategy: ElemCreationStrategy.INTRINSIC_TROPE_TYPE,
-              connections: [source],
-              vocabulary: getVocabularyFromScheme(
-                WorkspaceTerms[source].inScheme
-              ),
-              position: getElementPosition(source),
-              header:
-                Locale[AppSettings.interfaceLanguage]
-                  .modalNewIntrinsicTropeTitle,
-            })
-          }
         />
         {this.state.validation && (
           <ValidationPanel

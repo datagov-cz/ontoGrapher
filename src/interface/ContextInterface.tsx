@@ -318,7 +318,7 @@ export async function retrieveContextData(): Promise<boolean> {
     // This is expected behaviour e.g. for imported diagrams,
     // if they have references to links that no longer exist in the data.
     console.warn(
-      `Link ID ${id} ( ${WorkspaceLinks[id].source} -- ${WorkspaceLinks[id].iri} -> ${WorkspaceLinks[id].target} ) deactivated due its owl:Restriction counterpart(s) missing.`
+      `Link ID ${id} ( ${WorkspaceLinks[id].source} -- ${WorkspaceLinks[id].iri} -> ${WorkspaceLinks[id].target} ) deactivated due to its owl:Restriction counterpart(s) missing.`
     );
     WorkspaceLinks[id].active = false;
   }

@@ -1,4 +1,5 @@
 export const en = {
+  searchExistingTropes: "Search tropes...",
   listExportErrorNoConnection:
     "Unable to retrieve sources of terms from the database.",
   listExportErrorNoTerms: "No file generated, as it would be empty.",

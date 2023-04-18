@@ -45,7 +45,6 @@ type Props = {
   id: string;
   performTransaction: (...queries: string[]) => void;
   selectedLanguage: string;
-  handleCreation: Function;
   save: Function;
 };
 

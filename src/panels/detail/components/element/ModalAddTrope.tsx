@@ -44,6 +44,7 @@ import {
 } from "../../../../function/FunctionGetVars";
 import { updateConnection } from "../../../../function/FunctionLink";
 import { graph } from "../../../../graph/Graph";
+import { updateProjectElementDiagram } from "../../../../queries/update/UpdateElementQueries";
 import { ListLanguageControls } from "../items/ListLanguageControls";
 
 interface Props {
@@ -65,6 +66,7 @@ export const ModalAddTrope: React.FC<Props> = (props: Props) => {
   const [error, setError] = useState<string>(
     Locale[AppSettings.interfaceLanguage].modalNewElemError
   );
+  const [tropeSearch, setTropeSearch] = useState<string>("");
 
   useEffect(() => {
     if (!vocabulary) return;
@@ -153,9 +155,12 @@ export const ModalAddTrope: React.FC<Props> = (props: Props) => {
         highlightElement(props.id);
       }
       props.update();
-    }
-    if (activeKey === "exist") {
+    } else if (activeKey === "exist" && selectedTrope) {
       const link = getNewLink(LinkType.DEFAULT);
+      WorkspaceElements[selectedTrope].position[AppSettings.selectedDiagram] =
+        getElementPosition(props.id);
+      WorkspaceElements[selectedTrope].hidden[AppSettings.selectedDiagram] =
+        false;
       props.performTransaction(
         ...updateConnection(
           props.id,
@@ -164,9 +169,12 @@ export const ModalAddTrope: React.FC<Props> = (props: Props) => {
           LinkType.DEFAULT,
           parsePrefix("z-sgov-pojem", "má-vlastnost"),
           true
-        )
+        ),
+        updateProjectElementDiagram(AppSettings.selectedDiagram, selectedTrope)
       );
       redrawElement(props.id, props.selectedLanguage);
+    } else {
+      throw new Error("Invalid save request.");
     }
     props.hideModal();
   };
@@ -290,26 +298,48 @@ export const ModalAddTrope: React.FC<Props> = (props: Props) => {
                 {Locale[AppSettings.interfaceLanguage].noExistingTropes}
               </Alert>
             )}
+            {availableTropes.length > 0 && (
+              <Form.Control
+                value={tropeSearch}
+                onChange={(e) => setTropeSearch(e.target.value)}
+                placeholder={
+                  Locale[AppSettings.interfaceLanguage].searchExistingTropes
+                }
+              />
+            )}
+            <br />
             <div className="tropeList">
               <ListGroup>
-                {availableTropes.map((t) => (
-                  <ListGroup.Item
-                    action
-                    variant="light"
-                    key={t}
-                    active={t === selectedTrope}
-                    onClick={() => {
-                      setSelectedTrope(t);
-                    }}
-                  >
-                    {getLabelOrBlank(
+                {availableTropes
+                  .filter((t) =>
+                    getLabelOrBlank(
                       WorkspaceTerms[t].labels,
                       props.selectedLanguage
-                    )}
-                  </ListGroup.Item>
-                ))}
+                    )
+                      .toLowerCase()
+                      .trim()
+                      .includes(tropeSearch.toLowerCase().trim())
+                  )
+                  .sort()
+                  .map((t) => (
+                    <ListGroup.Item
+                      action
+                      variant="light"
+                      key={t}
+                      active={t === selectedTrope}
+                      onClick={() => {
+                        setSelectedTrope(t);
+                      }}
+                    >
+                      {getLabelOrBlank(
+                        WorkspaceTerms[t].labels,
+                        props.selectedLanguage
+                      )}
+                    </ListGroup.Item>
+                  ))}
               </ListGroup>
             </div>
+            <br />
             {!selectedTrope && availableTropes.length > 0 && (
               <Alert variant="danger">
                 {Locale[AppSettings.interfaceLanguage].mustAssignTropeConfirm}
