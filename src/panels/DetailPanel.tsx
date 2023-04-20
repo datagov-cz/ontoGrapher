@@ -12,7 +12,6 @@ interface Props {
   update: Function;
   performTransaction: (...queries: string[]) => void;
   freeze: boolean;
-  handleCreation: Function;
 }
 
 interface State {
@@ -69,7 +68,6 @@ export default class DetailPanel extends React.Component<Props, State> {
                   save={this.save}
                   performTransaction={this.props.performTransaction}
                   error={this.props.freeze}
-                  handleCreation={this.props.handleCreation}
                 />
               )}
               {this.state.mode === DetailPanelMode.LINK && (

@@ -11,13 +11,15 @@ function getUserIRI(): string {
 }
 
 export function updateVocabularyAnnotations(vocabulary: string): string {
-  if (!Environment.auth)
-    throw new Error(
-      "Attemted to update vocabulary annotations without a signed-in user."
+  if (!Environment.auth) {
+    console.warn(
+      "As authentication is disabled, no vocabulary annotations related to provenance are modified."
     );
+    return "";
+  }
   if (WorkspaceVocabularies[vocabulary].readOnly)
     throw new Error(
-      `Attemted to track changes for a read-only vocabulary ${vocabulary}.`
+      `Attempted to track changes for a read-only vocabulary ${vocabulary}.`
     );
   const context = WorkspaceVocabularies[vocabulary].graph;
   const queryInsert = INSERT.DATA`${qb.g(context, [
@@ -70,11 +72,11 @@ function constructChangeTrackingQuery(change: Change): string {
     );
   if (WorkspaceVocabularies[change.vocabulary].readOnly)
     throw new Error(
-      `Attemted to track changes for a read-only vocabulary ${change.vocabulary}.`
+      `Attempted to track changes for a read-only vocabulary ${change.vocabulary}.`
     );
   if (!Environment.auth)
     throw new Error(
-      "Attemted to update vocabulary annotations without a signed-in user."
+      "Attempted to update vocabulary annotations without a signed-in user."
     );
   const type = getChangeType(change.type);
   //TODO: change ID generation to conform to Termit implementation
