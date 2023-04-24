@@ -38,14 +38,15 @@ import {
   removeFromFlexSearch,
 } from "./FunctionCreateVars";
 import {
-  unHighlightCell,
-  highlightCell,
   drawGraphElement,
+  highlightCells,
+  unHighlightCells,
 } from "./FunctionDraw";
 import { parsePrefix, initElements, deleteConcept } from "./FunctionEditVars";
 import { getElementShape } from "./FunctionGetVars";
 import { restoreHiddenElem, setRepresentation } from "./FunctionGraph";
 import { initConnections } from "./FunctionRestriction";
+import { CellColors } from "../config/visual/CellColors";
 
 export function resizeElem(id: string, highlight: boolean = true) {
   let view = paper.findViewByModel(id);
@@ -61,8 +62,8 @@ export function resizeElem(id: string, highlight: boolean = true) {
       }
     }
     if (typeof cell.id === "string" && highlight) {
-      unHighlightCell(cell.id);
-      highlightCell(cell.id);
+      unHighlightCells(cell.id);
+      highlightCells(CellColors.detail, cell.id);
     }
     for (const link of links) {
       if (link.getSourceCell() === null) {

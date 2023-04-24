@@ -15,17 +15,17 @@ import {
   WorkspaceTerms,
   WorkspaceVocabularies,
 } from "../config/Variables";
-import { ElementColors } from "../config/visual/ElementColors";
+import { CellColors } from "../config/visual/CellColors";
 import {
-  highlightElement,
-  highlightLink,
   resetDiagramSelection,
-  unhighlightElement,
-  unhighlightLink,
   updateDiagramPosition,
   zoomDiagram,
 } from "../function/FunctionDiagram";
-import { highlightCell, unHighlightAll } from "../function/FunctionDraw";
+import {
+  highlightCells,
+  unHighlightAll,
+  unHighlightCells,
+} from "../function/FunctionDraw";
 import {
   getElementToolPosition,
   isElementPositionOutdated,
@@ -83,9 +83,10 @@ export default class DiagramCanvas extends React.Component<Props, State> {
   createNewLink(id: string) {
     this.newLink = true;
     this.sid = id;
-    graph.getElements().forEach((element) => {
-      highlightCell(element.id as string, ElementColors.select);
-    });
+    highlightCells(
+      CellColors.select,
+      ...graph.getElements().map((c) => c.id as string)
+    );
   }
 
   hideElements(cells: joint.dia.Cell[]) {
@@ -178,7 +179,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
             this.props.performTransaction(...moveElements(cellView.model, evt));
           } else {
             resetDiagramSelection();
-            highlightElement(cellView.model.id);
+            highlightCells(CellColors.detail, cellView.model.id);
             this.props.updateElementPanel(cellView.model.id);
             this.props.updateDetailPanel(
               DetailPanelMode.TERM,
@@ -191,8 +192,8 @@ export default class DiagramCanvas extends React.Component<Props, State> {
             (elem) => elem === cellView.model.id
           );
           find !== -1
-            ? unhighlightElement(cellView.model.id)
-            : highlightElement(cellView.model.id);
+            ? unHighlightCells(cellView.model.id)
+            : highlightCells(CellColors.detail, cellView.model.id);
         } else if (this.newLink) {
           this.tid = cellView.model.id;
           this.props.handleCreation({ sourceID: this.sid, targetID: this.tid });
@@ -422,7 +423,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
             );
             paper.findViewsInArea(area).forEach((elem) => {
               const id = elem.model.id as string;
-              highlightElement(id);
+              highlightCells(CellColors.detail, id);
             });
           }
           this.props.updateElementPanel();
@@ -439,8 +440,8 @@ export default class DiagramCanvas extends React.Component<Props, State> {
             (elem) => elem === linkView.model.id
           );
           find !== -1
-            ? unhighlightLink(linkView.model.id)
-            : highlightLink(linkView.model.id);
+            ? unHighlightCells(linkView.model.id)
+            : highlightCells(CellColors.detail, linkView.model.id);
           if (AppSettings.selectedLinks.length > 1)
             this.props.updateDetailPanel(DetailPanelMode.MULTIPLE_LINKS);
           else
@@ -454,7 +455,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
             this.newLink = false;
             unHighlightAll();
           }
-          highlightLink(linkView.model.id);
+          highlightCells(CellColors.detail, linkView.model.id);
           addLinkTools(
             linkView,
             this.props.performTransaction,
@@ -507,10 +508,13 @@ export default class DiagramCanvas extends React.Component<Props, State> {
      */
     hotkeys("ctrl+a", (event) => {
       event.preventDefault();
-      _.pull(
-        graph.getElements().map((elem) => elem.id as string),
-        ...AppSettings.selectedElements
-      ).forEach((id) => highlightElement(id));
+      highlightCells(
+        CellColors.detail,
+        ..._.pull(
+          graph.getElements().map((elem) => elem.id as string),
+          ...AppSettings.selectedElements
+        )
+      );
     });
   }
 

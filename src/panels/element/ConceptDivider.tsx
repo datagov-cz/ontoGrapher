@@ -1,10 +1,8 @@
 import React from "react";
 import { AppSettings, Stereotypes } from "../../config/Variables";
 import { Locale } from "../../config/Locale";
-import {
-  highlightElement,
-  unhighlightElement,
-} from "../../function/FunctionDiagram";
+import { CellColors } from "../../config/visual/CellColors";
+import { highlightCells, unHighlightCells } from "../../function/FunctionDraw";
 
 interface Props {
   iri: string;
@@ -33,10 +31,12 @@ export default class ConceptDivider extends React.Component<Props, State> {
           AppSettings.selectedElements.includes(id)
         )
       )
-        AppSettings.selectedElements
-          .filter((elem) => this.props.items.includes(elem))
-          .forEach((elem) => unhighlightElement(elem));
-      else this.props.items.forEach((elem) => highlightElement(elem));
+        unHighlightCells(
+          ...AppSettings.selectedElements.filter((elem) =>
+            this.props.items.includes(elem)
+          )
+        );
+      else highlightCells(CellColors.detail, ...this.props.items);
       this.props.update();
     }
   }

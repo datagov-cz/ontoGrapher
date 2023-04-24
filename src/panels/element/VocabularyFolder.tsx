@@ -3,11 +3,9 @@ import EditIcon from "@mui/icons-material/Edit";
 import React from "react";
 import { Accordion } from "react-bootstrap";
 import { AppSettings, WorkspaceVocabularies } from "../../config/Variables";
-import {
-  highlightElement,
-  unhighlightElement,
-} from "../../function/FunctionDiagram";
 import { getLabelOrBlank } from "../../function/FunctionGetVars";
+import { CellColors } from "../../config/visual/CellColors";
+import { unHighlightCells, highlightCells } from "../../function/FunctionDraw";
 
 interface Props {
   open: boolean;
@@ -29,10 +27,12 @@ export default class VocabularyFolder extends React.Component<Props> {
           AppSettings.selectedElements.includes(id)
         )
       )
-        AppSettings.selectedElements
-          .filter((elem) => this.props.elements.includes(elem))
-          .forEach((elem) => unhighlightElement(elem));
-      else this.props.elements.forEach((elem) => highlightElement(elem));
+        unHighlightCells(
+          ...AppSettings.selectedElements.filter((elem) =>
+            this.props.elements.includes(elem)
+          )
+        );
+      else highlightCells(CellColors.details, ...this.props.elements);
     } else {
       this.props.setOpen(this.props.vocabulary);
     }

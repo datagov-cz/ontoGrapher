@@ -24,10 +24,10 @@ import {
 } from "../../../../config/Variables";
 import { createTerm } from "../../../../function/FunctionCreateElem";
 import { createNewElemIRI } from "../../../../function/FunctionCreateVars";
-import { highlightElement } from "../../../../function/FunctionDiagram";
 import {
   drawGraphElement,
   getListClassNamesObject,
+  highlightCells,
   redrawElement,
 } from "../../../../function/FunctionDraw";
 import {
@@ -46,6 +46,7 @@ import { updateConnection } from "../../../../function/FunctionLink";
 import { graph } from "../../../../graph/Graph";
 import { updateProjectElementDiagram } from "../../../../queries/update/UpdateElementQueries";
 import { ListLanguageControls } from "../items/ListLanguageControls";
+import { CellColors } from "../../../../config/visual/CellColors";
 
 interface Props {
   modalTropes: boolean;
@@ -152,7 +153,7 @@ export const ModalAddTrope: React.FC<Props> = (props: Props) => {
           props.selectedLanguage,
           AppSettings.representation
         );
-        highlightElement(props.id);
+        highlightCells(CellColors.detail, props.id);
       }
       props.update();
     } else if (activeKey === "exist" && selectedTrope) {

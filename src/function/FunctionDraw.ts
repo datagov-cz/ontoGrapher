@@ -1,24 +1,29 @@
-import { LanguageObject } from "./../config/Languages";
-import { graph } from "../graph/Graph";
 import * as joint from "jointjs";
+import _ from "lodash";
+import { Representation } from "../config/Enum";
 import {
   AppSettings,
   WorkspaceElements,
   WorkspaceTerms,
 } from "../config/Variables";
+import { graph } from "../graph/Graph";
+import { LanguageObject } from "./../config/Languages";
+import {
+  addToSelection,
+  clearSelection,
+  removeFromSelection,
+} from "./FunctionDiagram";
 import {
   getStereotypeList,
   parsePrefix,
   setElementShape,
 } from "./FunctionEditVars";
-import { Representation } from "../config/Enum";
 import {
   getElementShape,
   getIntrinsicTropeTypeIDs,
   getLabelOrBlank,
 } from "./FunctionGetVars";
-import { ElementColors } from "../config/visual/ElementColors";
-import _ from "lodash";
+import { CellColors } from "../config/visual/CellColors";
 
 export function getListClassNamesObject(arr: any[], i: number) {
   return {
@@ -115,57 +120,60 @@ export function drawGraphElement(
  * @param id ID of colored cell
  * @param color Color to be used
  */
-export function highlightCell(
-  id: string,
-  color: string = ElementColors.detail
+export function highlightCells(
+  color: keyof typeof CellColors,
+  ...ids: string[]
 ) {
-  const cell = graph.getCell(id);
-  if (!cell) return;
-  if (cell.isLink()) {
-    cell.attr({
-      line: {
-        filter: {
-          name: "dropShadow",
-          args: {
-            dx: 2,
-            dy: 2,
-            blur: 3,
-            color: color,
+  for (const id of ids) {
+    const cell = graph.getCell(id);
+    if (!cell) return;
+    if (cell.isLink()) {
+      cell.attr({
+        line: {
+          filter: {
+            name: "dropShadow",
+            args: {
+              dx: 2,
+              dy: 2,
+              blur: 3,
+              color: color,
+            },
           },
         },
-      },
-    });
-  } else if (cell.id) {
-    cell.attr({
-      [getElementShape(cell.id)]: {
-        filter: {
-          name: "highlight",
-          args: {
-            color: color,
-            width: 2,
-            opacity: 0.5,
-            blur: 5,
+      });
+    } else if (cell.id) {
+      cell.attr({
+        [getElementShape(cell.id)]: {
+          filter: {
+            name: "highlight",
+            args: {
+              color: color,
+              width: 2,
+              opacity: 0.5,
+              blur: 5,
+            },
           },
         },
-      },
-    });
+      });
+    }
+    addToSelection(id);
   }
 }
 
-export function unHighlightCell(
-  id: string,
-  color: string = ElementColors.default
-) {
-  const cell = graph.getCell(id);
-  if (!cell) return;
-  if (cell.isLink()) {
-    cell.attr({ line: { filter: "none" } });
-  } else if (cell.id) {
-    cell.attr({
-      [getElementShape(cell.id)]: {
-        filter: "none",
-      },
-    });
+export function unHighlightCells(...ids: string[]) {
+  for (const id of ids) {
+    const cell = graph.getCell(id);
+    if (!cell) return;
+    if (cell.isLink()) {
+      cell.attr({ line: { filter: "none" } });
+    } else if (cell.id) {
+      cell.attr({
+        [getElementShape(cell.id)]: {
+          filter: "none",
+        },
+      });
+    }
+    removeFromSelection(id);
   }
 }
 
@@ -180,15 +188,7 @@ export function unHighlightAll() {
   for (const cell of graph.getLinks()) {
     cell.attr({ line: { filter: "none" } });
   }
-}
-
-export function unHighlightSelected(ids: string[]) {
-  for (const id of ids) {
-    const cell = graph.getCell(id);
-    if (cell && typeof cell.id === "string") {
-      unHighlightCell(cell.id);
-    }
-  }
+  clearSelection();
 }
 
 export function redrawElement(id: string, language: string) {

@@ -11,9 +11,10 @@ import {
 import { graph } from "../graph/Graph";
 import IRILabel from "../components/IRILabel";
 import { Locale } from "../config/Locale";
-import { highlightCell } from "../function/FunctionDraw";
+import { highlightCells } from "../function/FunctionDraw";
 import { validateWorkspace } from "../interface/ValidationInterface";
 import { centerElementInView } from "../function/FunctionGraph";
+import { CellColors } from "../config/visual/CellColors";
 
 interface Props {
   close: Function;
@@ -82,12 +83,12 @@ export default class ValidationPanel extends React.Component<Props, State> {
     const cellLink = graph.getLinks().find((element) => element.id === node);
     if (cellElem)
       if (typeof cellElem.id === "string") {
-        highlightCell(cellElem.id, "#FFFF00");
+        highlightCells(CellColors.invalidSelect, cellElem.id);
         centerElementInView(cellElem.id);
       }
     if (cellLink)
       if (typeof cellLink.id === "string") {
-        highlightCell(cellLink.id, "#FFFF00");
+        highlightCells(CellColors.invalidSelect, cellLink.id);
       }
   }
 
@@ -96,14 +97,14 @@ export default class ValidationPanel extends React.Component<Props, State> {
     graph.getCells().forEach((cell) => {
       if (cell.id in WorkspaceElements && iriList.includes(cell.id as string)) {
         if (typeof cell.id === "string") {
-          highlightCell(cell.id, "#FF0000");
+          highlightCells(CellColors.invalid, cell.id);
         }
       } else if (
         cell.id in WorkspaceLinks &&
         iriList.includes(cell.id as string)
       ) {
         if (typeof cell.id === "string") {
-          highlightCell(cell.id, "#FF0000");
+          highlightCells(CellColors.invalid, cell.id);
         }
       }
     });

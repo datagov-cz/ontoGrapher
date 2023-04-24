@@ -12,12 +12,11 @@ import {
   Diagrams,
   WorkspaceElements,
 } from "../../../../config/Variables";
-import {
-  changeDiagrams,
-  highlightElement,
-} from "../../../../function/FunctionDiagram";
+import { changeDiagrams } from "../../../../function/FunctionDiagram";
 import { isElementHidden } from "../../../../function/FunctionElem";
 import { centerElementInView } from "../../../../function/FunctionGraph";
+import { highlightCells } from "../../../../function/FunctionDraw";
+import { CellColors } from "../../../../config/visual/CellColors";
 
 type Props = {
   id: string;
@@ -68,7 +67,7 @@ export const DetailElementDiagramCard: React.FC<Props> = (props) => {
                         if (diag !== AppSettings.selectedDiagram) {
                           changeDiagrams(diag);
                           AppSettings.selectedLinks = [];
-                          highlightElement(props.id);
+                          highlightCells(CellColors.detail, props.id);
                           StoreSettings.update((s) => {
                             s.diagramPanelSelectedDiagram = diag;
                           });

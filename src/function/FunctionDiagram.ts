@@ -2,12 +2,7 @@ import { StoreSettings } from "./../config/Store";
 import { AppSettings, Diagrams, WorkspaceElements } from "../config/Variables";
 import { graphElement } from "../graph/GraphElement";
 import { graph } from "../graph/Graph";
-import {
-  drawGraphElement,
-  highlightCell,
-  unHighlightCell,
-  unHighlightSelected,
-} from "./FunctionDraw";
+import { drawGraphElement, unHighlightCells } from "./FunctionDraw";
 import { restoreHiddenElem, setRepresentation } from "./FunctionGraph";
 import { MainViewMode, Representation } from "../config/Enum";
 import { paper } from "../main/DiagramCanvas";
@@ -117,41 +112,36 @@ export function updateDiagramPosition(diagram: string) {
  *  Resets the diagram's selections (deselects the links and/or the elements selected).
  */
 export function resetDiagramSelection() {
-  unHighlightSelected(AppSettings.selectedElements);
-  unHighlightSelected(AppSettings.selectedLinks);
+  unHighlightCells(...AppSettings.selectedElements);
+  unHighlightCells(...AppSettings.selectedLinks);
+  clearSelection();
+}
+
+export function clearSelection() {
   AppSettings.selectedLinks = [];
   AppSettings.selectedElements = [];
 }
 
-/**
- * Higlights the element (colors the border of it and adds it to the list of selected elements).
- * @param id ID of the element to highlight
- * @param color (optional) Color with which to paint the border of the element
- */
-export function highlightElement(id: string, color?: string) {
-  if (!AppSettings.selectedElements.includes(id))
-    AppSettings.selectedElements.push(id);
-  highlightCell(id, color);
+export function removeFromSelection(id: string) {
+  const cell = graph.getCell(id);
+  if (!cell) return;
+  if (cell.isLink()) {
+    const index = AppSettings.selectedLinks.indexOf(id);
+    if (index !== -1) AppSettings.selectedLinks.splice(index, 1);
+  } else if (cell.isElement()) {
+    const index = AppSettings.selectedElements.indexOf(id);
+    if (index !== -1) AppSettings.selectedElements.splice(index, 1);
+  }
 }
 
-/**
- * Unhighlights the element (restores the original border color and removes it from the list of selected elements).
- * @param id ID of the element to unhighlight
- */
-export function unhighlightElement(id: string) {
-  const index = AppSettings.selectedElements.indexOf(id);
-  if (index !== -1) AppSettings.selectedElements.splice(index, 1);
-  unHighlightCell(id);
-}
-
-export function highlightLink(id: string, color?: string) {
-  if (!AppSettings.selectedLinks.includes(id))
-    AppSettings.selectedLinks.push(id);
-  highlightCell(id, color);
-}
-
-export function unhighlightLink(id: string) {
-  const index = AppSettings.selectedLinks.indexOf(id);
-  if (index !== -1) AppSettings.selectedLinks.splice(index, 1);
-  unHighlightCell(id);
+export function addToSelection(id: string) {
+  const cell = graph.getCell(id);
+  if (!cell) return;
+  if (cell.isLink()) {
+    if (!AppSettings.selectedLinks.includes(id))
+      AppSettings.selectedLinks.push(id);
+  } else if (cell.isElement()) {
+    if (!AppSettings.selectedElements.includes(id))
+      AppSettings.selectedElements.push(id);
+  }
 }

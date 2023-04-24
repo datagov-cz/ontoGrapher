@@ -8,15 +8,13 @@ import {
   WorkspaceElements,
   WorkspaceTerms,
 } from "../../config/Variables";
-import {
-  highlightElement,
-  resetDiagramSelection,
-  unhighlightElement,
-} from "../../function/FunctionDiagram";
+import { resetDiagramSelection } from "../../function/FunctionDiagram";
 import { isElementHidden } from "../../function/FunctionElem";
 import { getLabelOrBlank } from "../../function/FunctionGetVars";
 import { centerElementInView } from "../../function/FunctionGraph";
 import { ReactComponent as HiddenElementSVG } from "../../svg/hiddenElement.svg";
+import { CellColors } from "../../config/visual/CellColors";
+import { highlightCells, unHighlightCells } from "../../function/FunctionDraw";
 
 interface Props {
   id: string;
@@ -73,9 +71,9 @@ export default class VocabularyConcept extends React.Component<Props, State> {
     event.stopPropagation();
     if (event.ctrlKey) {
       if (AppSettings.selectedElements.includes(this.props.id)) {
-        unhighlightElement(this.props.id);
+        unHighlightCells(this.props.id);
         return;
-      } else highlightElement(this.props.id);
+      } else highlightCells(CellColors.detail, this.props.id);
     } else resetDiagramSelection();
     this.props.update();
   }
@@ -123,7 +121,7 @@ export default class VocabularyConcept extends React.Component<Props, State> {
           <Button variant="light" className="plainButton">
             <InfoIcon
               onClick={() => {
-                highlightElement(this.props.id);
+                highlightCells(CellColors.detail, this.props.id);
                 centerElementInView(this.props.id);
                 this.props.showDetails(this.props.id);
               }}

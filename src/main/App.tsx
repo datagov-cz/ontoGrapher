@@ -21,11 +21,12 @@ import {
   WorkspaceLinks,
 } from "../config/Variables";
 import { dumpDebugData, loadDebugData } from "../function/FunctionDebug";
+import { resetDiagramSelection } from "../function/FunctionDiagram";
 import {
-  highlightElement,
-  resetDiagramSelection,
-} from "../function/FunctionDiagram";
-import { drawGraphElement, unHighlightAll } from "../function/FunctionDraw";
+  drawGraphElement,
+  highlightCells,
+  unHighlightAll,
+} from "../function/FunctionDraw";
 import { initVars } from "../function/FunctionEditVars";
 import {
   getLastChangeDay,
@@ -56,6 +57,7 @@ import { qb } from "../queries/QueryBuilder";
 import { updateVocabularyAnnotations } from "../queries/update/UpdateChangeQueries";
 import { updateDiagramMetadata } from "../queries/update/UpdateDiagramQueries";
 import { MainView } from "./MainView";
+import { CellColors } from "../config/visual/CellColors";
 
 interface DiagramAppProps {}
 
@@ -349,7 +351,7 @@ export default class App extends React.Component<
           }}
           performTransaction={this.performTransaction}
           updateDetailPanel={(id: string) => {
-            highlightElement(id);
+            highlightCells(CellColors.detail, id);
             this.handleUpdateDetailPanel(DetailPanelMode.TERM, id);
           }}
         />

@@ -10,8 +10,13 @@ import {
   WorkspaceElements,
   WorkspaceLinks,
 } from "../../../../config/Variables";
+import { CellColors } from "../../../../config/visual/CellColors";
 import { ColorPool } from "../../../../config/visual/ColorPool";
-import { drawGraphElement } from "../../../../function/FunctionDraw";
+import {
+  drawGraphElement,
+  highlightCells,
+  unHighlightAll,
+} from "../../../../function/FunctionDraw";
 import {
   getLinkOrVocabElem,
   getNewLink,
@@ -78,6 +83,11 @@ export const ExportModalImage: React.FC<Props> = (props: Props) => {
   const saveDiagram: (behavior: saveBehaviorEnum) => void = (
     behavior: saveBehaviorEnum
   ) => {
+    const [selectedElements, selectedLinks] = [
+      AppSettings.selectedElements,
+      AppSettings.selectedLinks,
+    ];
+    unHighlightAll();
     // A Paper is to a Graph what a View is to a Model.
     // This function creates a new Paper, sets its size to the contents inside, and pulls the SVG of the paper.
 
@@ -164,7 +174,7 @@ export const ExportModalImage: React.FC<Props> = (props: Props) => {
       type: "image/svg+xml;utf-8,",
     });
     const url = URL.createObjectURL(blob);
-    let image = new Image();
+    const image = new Image();
     image.width = area.width;
     image.height = area.height;
     image.onload = () => {
@@ -195,10 +205,14 @@ export const ExportModalImage: React.FC<Props> = (props: Props) => {
     };
     image.src = url;
     document.body.removeChild(paperElement);
+    highlightCells(
+      CellColors.detail,
+      ...selectedElements.concat(selectedLinks)
+    );
   };
 
   return (
-    <div>
+    <>
       <Modal.Body>
         <h5>{Locale[AppSettings.interfaceLanguage].settings}</h5>
         <Form>
@@ -326,6 +340,6 @@ export const ExportModalImage: React.FC<Props> = (props: Props) => {
           {Locale[AppSettings.interfaceLanguage].close}
         </Button>
       </Modal.Footer>
-    </div>
+    </>
   );
 };

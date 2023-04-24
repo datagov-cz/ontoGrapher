@@ -53,7 +53,7 @@ export const ExportModalTerms: React.FC<Props> = (props: Props) => {
   };
 
   return (
-    <div>
+    <>
       <Modal.Body>
         <Form>
           <Form.Group as={Row} className="mb-3" controlId="formLanguage">
@@ -129,6 +129,6 @@ export const ExportModalTerms: React.FC<Props> = (props: Props) => {
           {Locale[AppSettings.interfaceLanguage].close}
         </Button>
       </Modal.Footer>
-    </div>
+    </>
   );
 };

@@ -1,10 +1,7 @@
 import React, { useEffect, useState } from "react";
 import NewLinkModal from "./NewLinkModal";
 import NewElemModal from "./NewElemModal";
-import {
-  highlightElement,
-  resetDiagramSelection,
-} from "../../function/FunctionDiagram";
+import { resetDiagramSelection } from "../../function/FunctionDiagram";
 import { ElemCreationStrategy, Representation } from "../../config/Enum";
 import { createTerm } from "../../function/FunctionCreateElem";
 import { saveNewLink } from "../../function/FunctionLink";
@@ -12,9 +9,10 @@ import { AppSettings } from "../../config/Variables";
 import { setRepresentation } from "../../function/FunctionGraph";
 import { getElementPosition } from "../../function/FunctionElem";
 import { graph } from "../../graph/Graph";
-import { drawGraphElement } from "../../function/FunctionDraw";
+import { drawGraphElement, highlightCells } from "../../function/FunctionDraw";
 import { initConnections } from "../../function/FunctionRestriction";
 import { updateProjectLink } from "../../queries/update/UpdateLinkQueries";
+import { CellColors } from "../../config/visual/CellColors";
 
 export type ElemCreationConfiguration = {
   strategy: ElemCreationStrategy;
@@ -124,7 +122,10 @@ export const CreationModals: React.FC<Props> = (props) => {
                   props.projectLanguage,
                   AppSettings.representation
                 );
-                highlightElement(props.elemConfiguration.connections[0]);
+                highlightCells(
+                  CellColors.detail,
+                  props.elemConfiguration.connections[0]
+                );
               }
             }
             props.update();
