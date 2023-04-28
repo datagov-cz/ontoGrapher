@@ -21,7 +21,7 @@ import {
 } from "../../function/FunctionGetVars";
 import { setLabels } from "../../function/FunctionGraph";
 import { graph } from "../../graph/Graph";
-import { updateConnections } from "../../queries/update/UpdateConnectionQueries";
+import { updateTermConnections } from "../../queries/update/UpdateConnectionQueries";
 import { updateProjectLink } from "../../queries/update/UpdateLinkQueries";
 
 type Props = {
@@ -51,7 +51,7 @@ export default class DetailMultipleLinks extends React.Component<Props, State> {
     };
   }
 
-  componentDidUpdate(prevProps: Readonly<Props>, prevState: Readonly<State>) {
+  componentDidUpdate(_: Readonly<Props>, prevState: Readonly<State>) {
     if (prevState.changes !== this.state.changes && this.state.changes) {
       if (
         prevState.sourceCardinality !== this.state.sourceCardinality &&
@@ -172,8 +172,10 @@ export default class DetailMultipleLinks extends React.Component<Props, State> {
               underlyingConnections.src,
               underlyingConnections.tgt
             ),
-            updateConnections(underlyingConnections.src),
-            updateConnections(underlyingConnections.tgt)
+            updateTermConnections(
+              underlyingConnections.src,
+              underlyingConnections.tgt
+            )
           );
         }
       }

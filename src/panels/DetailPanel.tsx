@@ -73,7 +73,6 @@ export default class DetailPanel extends React.Component<Props, State> {
               {this.state.mode === DetailPanelMode.LINK && (
                 <DetailLink
                   id={this.state.id}
-                  error={this.props.freeze}
                   projectLanguage={this.props.projectLanguage}
                   performTransaction={this.props.performTransaction}
                   save={this.save}

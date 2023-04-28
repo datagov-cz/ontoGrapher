@@ -1,3 +1,6 @@
+import * as joint from "jointjs";
+import _ from "lodash";
+import { LinkType, Representation } from "../config/Enum";
 import {
   AppSettings,
   Links,
@@ -6,31 +9,27 @@ import {
   WorkspaceTerms,
   WorkspaceVocabularies,
 } from "../config/Variables";
-import { LinkType, Representation } from "../config/Enum";
+import { Cardinality } from "../datatypes/Cardinality";
+import { graph } from "../graph/Graph";
+import { paper } from "../main/DiagramCanvas";
+import {
+  isNumber,
+  updateTermConnections,
+} from "../queries/update/UpdateConnectionQueries";
+import { updateProjectElement } from "../queries/update/UpdateElementQueries";
+import {
+  updateDeleteProjectLinkVertex,
+  updateProjectLink,
+  updateProjectLinkVertex,
+} from "../queries/update/UpdateLinkQueries";
+import { addLink } from "./FunctionCreateVars";
 import {
   getLinkOrVocabElem,
   getNewLink,
   getUnderlyingFullConnections,
   getVocabularyFromScheme,
 } from "./FunctionGetVars";
-import { graph } from "../graph/Graph";
-import * as joint from "jointjs";
-import { addLink } from "./FunctionCreateVars";
-import { updateProjectElement } from "../queries/update/UpdateElementQueries";
 import { mvp1IRI, mvp2IRI, setLabels, setLinkBoundary } from "./FunctionGraph";
-import { paper } from "../main/DiagramCanvas";
-import {
-  updateDeleteProjectLinkVertex,
-  updateProjectLink,
-  updateProjectLinkVertex,
-} from "../queries/update/UpdateLinkQueries";
-import { LinkConfig } from "../config/logic/LinkConfig";
-import {
-  isNumber,
-  updateConnections,
-} from "../queries/update/UpdateConnectionQueries";
-import { Cardinality } from "../datatypes/Cardinality";
-import _ from "lodash";
 
 export function getOtherConnectionElementID(
   linkID: string,
@@ -204,7 +203,17 @@ export function saveNewLink(
     representation === Representation.FULL ||
     type === LinkType.GENERALIZATION
   ) {
-    queries.push(...updateConnection(sid, tid, id, type, iri, true));
+    queries.push(
+      createConnection(
+        sid,
+        tid,
+        id,
+        type,
+        iri,
+        type !== LinkType.GENERALIZATION
+      ),
+      updateTermConnections(id)
+    );
   } else if (representation === Representation.COMPACT) {
     const propertyId = Object.keys(WorkspaceElements).find(
       (elem) => WorkspaceElements[elem].active && elem === iri
@@ -216,41 +225,22 @@ export function saveNewLink(
     const target = getNewLink();
     const sourceId = source.id as string;
     const targetId = target.id as string;
-    addLink(sourceId, mvp1IRI, propertyId, sid, type);
-    addLink(targetId, mvp2IRI, propertyId, tid, type);
-    queries.push(...updateConnection(sid, tid, id, type, iri, true));
+    queries.push(
+      createConnection(propertyId, sid, sourceId, type, mvp1IRI, false),
+      createConnection(propertyId, tid, targetId, type, mvp2IRI, false),
+      createConnection(sid, tid, id, type, iri, true)
+    );
     setFullLinksCardinalitiesFromCompactLink(id, sourceId, targetId);
     queries.push(
+      updateTermConnections(sourceId, targetId, id),
       updateProjectElement(true, propertyId),
-      updateConnections(sourceId),
-      updateProjectLink(true, sourceId),
-      updateConnections(targetId),
-      updateProjectLink(true, targetId)
+      updateProjectLink(true, sourceId, targetId)
     );
   }
   if (type === LinkType.DEFAULT)
     setLabels(link, getLinkOrVocabElem(iri).labels[AppSettings.canvasLanguage]);
   if (isLinkVisible(iri, type, AppSettings.representation)) link.addTo(graph);
   return queries;
-}
-
-export function doesLinkHaveInverse(linkID: string) {
-  return linkID in WorkspaceLinks && WorkspaceLinks[linkID].hasInverse;
-}
-
-export function checkDefaultCardinality(link: string) {
-  if (!Links[link].defaultSourceCardinality.checkCardinalities()) {
-    Links[link].defaultSourceCardinality = new Cardinality(
-      AppSettings.defaultCardinalitySource.getFirstCardinality(),
-      AppSettings.defaultCardinalitySource.getSecondCardinality()
-    );
-  }
-  if (!Links[link].defaultTargetCardinality.checkCardinalities()) {
-    Links[link].defaultTargetCardinality = new Cardinality(
-      AppSettings.defaultCardinalityTarget.getFirstCardinality(),
-      AppSettings.defaultCardinalityTarget.getSecondCardinality()
-    );
-  }
 }
 
 export function setLinkVertices(
@@ -260,14 +250,14 @@ export function setLinkVertices(
   link.vertices(_.compact(vertices));
 }
 
-export function updateConnection(
+function createConnection(
   sid: string,
   tid: string,
   linkID: string,
   type: number,
   iri: string,
   setCardinality: boolean = false
-): string[] {
+): string {
   addLink(linkID, iri, sid, tid, type);
   if (type === LinkType.DEFAULT && setCardinality) {
     WorkspaceLinks[linkID].sourceCardinality = new Cardinality(
@@ -279,12 +269,12 @@ export function updateConnection(
       AppSettings.defaultCardinalityTarget.getSecondCardinality()
     );
   }
-  return [updateConnections(linkID), updateProjectLink(true, linkID)];
+  return updateProjectLink(true, linkID);
 }
 
 export function updateVertices(
   id: string,
-  linkVerts: joint.dia.Link.Vertex[]
+  linkVertices: joint.dia.Link.Vertex[]
 ): string[] {
   if (!WorkspaceLinks[id].vertices[AppSettings.selectedDiagram])
     WorkspaceLinks[id].vertices[AppSettings.selectedDiagram] = [];
@@ -294,28 +284,28 @@ export function updateVertices(
     let i = 0;
     i <
     Math.max(
-      linkVerts.length,
+      linkVertices.length,
       WorkspaceLinks[id].vertices[AppSettings.selectedDiagram].length
     );
     i++
   ) {
     let projVert = WorkspaceLinks[id].vertices[AppSettings.selectedDiagram][i];
-    if (projVert && !linkVerts[i]) {
+    if (projVert && !linkVertices[i]) {
       del = i;
       break;
     } else if (
       !projVert ||
-      projVert.x !== linkVerts[i].x ||
-      projVert.y !== linkVerts[i].y
+      projVert.x !== linkVertices[i].x ||
+      projVert.y !== linkVertices[i].y
     ) {
       WorkspaceLinks[id].vertices[AppSettings.selectedDiagram][i] = {
-        x: linkVerts[i].x,
-        y: linkVerts[i].y,
+        x: linkVertices[i].x,
+        y: linkVertices[i].y,
       };
       update.push(i);
     }
   }
-  let queries = [
+  const queries = [
     updateProjectLinkVertex(id, update, AppSettings.selectedDiagram),
   ];
   if (del !== -1)
@@ -327,17 +317,14 @@ export function updateVertices(
         AppSettings.selectedDiagram
       )
     );
-  WorkspaceLinks[id].vertices[AppSettings.selectedDiagram] = linkVerts;
+  WorkspaceLinks[id].vertices[AppSettings.selectedDiagram] = linkVertices;
   return queries;
 }
 
-export function deleteConnections(id: string): string[] {
+function deleteConnections(id: string): string[] {
   WorkspaceLinks[id].active = false;
   if (graph.getCell(id)) graph.getCell(id).remove();
-  return [
-    updateProjectLink(true, id),
-    LinkConfig[WorkspaceLinks[id].type].update(id),
-  ];
+  return [updateProjectLink(true, id), updateTermConnections(id)];
 }
 
 export function deleteLink(id: string): string[] {
@@ -369,7 +356,6 @@ export function deleteLink(id: string): string[] {
       );
     }
     queries.push(...deleteConnections(id));
-    WorkspaceLinks[id].active = false;
     AppSettings.selectedLinks = [];
   }
   return queries;

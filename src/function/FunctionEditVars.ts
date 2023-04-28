@@ -2,7 +2,6 @@ import { LanguageObject } from "./../config/Languages";
 import { LinkType } from "../config/Enum";
 import { Languages } from "../config/Languages";
 import { Locale } from "../config/Locale";
-import { LinkConfig } from "../config/logic/LinkConfig";
 import {
   AppSettings,
   Diagrams,
@@ -25,6 +24,7 @@ import {
   loadDefaultCardinality,
 } from "./FunctionGetVars";
 import * as _ from "lodash";
+import { LinkConfig } from "../queries/update/UpdateConnectionQueries";
 
 export function trimLanguageObjectInput(input: LanguageObject): LanguageObject {
   return _.mapValues(input, (i) => i.trim());

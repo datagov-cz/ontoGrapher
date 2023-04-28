@@ -4,7 +4,6 @@ import { Representation } from "../config/Enum";
 import { Languages } from "../config/Languages";
 import { Locale } from "../config/Locale";
 import { LocalStorageVars } from "../config/LocalStorageVars";
-import { LinkConfig } from "../config/logic/LinkConfig";
 import {
   AppSettings,
   Links,
@@ -21,6 +20,7 @@ import { en } from "../locale/en";
 import { enChangelog } from "../locale/enchangelog";
 import { parsePrefix } from "./FunctionEditVars";
 import { mvp1IRI, mvp2IRI } from "./FunctionGraph";
+import { LinkConfig } from "../queries/update/UpdateConnectionQueries";
 
 export function getVocabularyLabel(vocabulary: string, cutoff: number = 24) {
   const shortLabel = getVocabularyShortLabel(vocabulary);

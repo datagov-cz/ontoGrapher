@@ -34,7 +34,7 @@ import {
   getParentOfIntrinsicTropeType,
   getVocabularyFromScheme,
 } from "../../../../function/FunctionGetVars";
-import { deleteConnections } from "../../../../function/FunctionLink";
+import { deleteLink } from "../../../../function/FunctionLink";
 import { graph } from "../../../../graph/Graph";
 import { updateProjectElement } from "../../../../queries/update/UpdateElementQueries";
 import { DetailPanelAltLabels } from "../description/DetailPanelAltLabels";
@@ -332,9 +332,7 @@ export class DetailElementDescriptionCard extends React.Component<
                             WorkspaceLinks[l].target === iri) &&
                           WorkspaceLinks[l].active
                         )
-                          this.props.performTransaction(
-                            ...deleteConnections(l)
-                          );
+                          this.props.performTransaction(...deleteLink(l));
                       }
                       redrawElement(this.props.id, AppSettings.canvasLanguage);
                     }}

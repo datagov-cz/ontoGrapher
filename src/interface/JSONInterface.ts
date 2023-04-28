@@ -10,13 +10,13 @@ import {
   getVocabularyFromScheme,
 } from "../function/FunctionGetVars";
 import { Locale } from "../config/Locale";
-import { checkDefaultCardinality } from "../function/FunctionLink";
 import {
   fetchBaseOntology,
   fetchSubClassesAndCardinalities,
   fetchVocabulary,
 } from "../queries/get/FetchQueries";
 import { initLanguageObject } from "../function/FunctionEditVars";
+import { Cardinality } from "../datatypes/Cardinality";
 
 export async function getVocabulariesFromRemoteJSON(
   pathToJSON: string
@@ -73,7 +73,18 @@ export async function getVocabulariesFromRemoteJSON(
               )
             );
             Object.keys(Links).forEach((link) => {
-              checkDefaultCardinality(link);
+              if (!Links[link].defaultSourceCardinality.checkCardinalities()) {
+                Links[link].defaultSourceCardinality = new Cardinality(
+                  AppSettings.defaultCardinalitySource.getFirstCardinality(),
+                  AppSettings.defaultCardinalitySource.getSecondCardinality()
+                );
+              }
+              if (!Links[link].defaultTargetCardinality.checkCardinalities()) {
+                Links[link].defaultTargetCardinality = new Cardinality(
+                  AppSettings.defaultCardinalityTarget.getFirstCardinality(),
+                  AppSettings.defaultCardinalityTarget.getSecondCardinality()
+                );
+              }
             });
             return results.every((bool) => bool);
           }

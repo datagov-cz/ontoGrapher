@@ -11,12 +11,7 @@ function getUserIRI(): string {
 }
 
 export function updateVocabularyAnnotations(vocabulary: string): string {
-  if (!Environment.auth) {
-    console.warn(
-      "As authentication is disabled, no vocabulary annotations related to provenance are modified."
-    );
-    return "";
-  }
+  if (!Environment.auth) return "";
   if (WorkspaceVocabularies[vocabulary].readOnly)
     throw new Error(
       `Attempted to track changes for a read-only vocabulary ${vocabulary}.`

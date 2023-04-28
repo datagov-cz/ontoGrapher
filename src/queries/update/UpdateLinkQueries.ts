@@ -1,7 +1,7 @@
 import { AppSettings, Diagrams, WorkspaceLinks } from "../../config/Variables";
 import { qb } from "../QueryBuilder";
-import { LinkConfig } from "../../config/logic/LinkConfig";
 import { DELETE, INSERT } from "@tpluscode/sparql-builder";
+import { LinkConfig } from "./UpdateConnectionQueries";
 
 export function updateProjectLinkVertex(
   id: string,

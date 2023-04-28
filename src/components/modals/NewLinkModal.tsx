@@ -53,7 +53,7 @@ export default class NewLinkModal extends React.Component<Props, State> {
     this.state = {
       search: "",
       selectedLink: "",
-      displayIncompatible: false,
+      displayIncompatible: true,
       termName: initLanguageObject(""),
       selectedVocabulary: "",
       errorText: Locale[AppSettings.interfaceLanguage].modalNewElemError,
@@ -127,7 +127,7 @@ export default class NewLinkModal extends React.Component<Props, State> {
   }
 
   getLinks() {
-    let elem = graph
+    const elem = graph
       .getElements()
       .find((elem) => elem.id === this.props.configuration.sourceID);
     if (elem && this.props.configuration.sourceID) {
@@ -211,24 +211,6 @@ export default class NewLinkModal extends React.Component<Props, State> {
                 [Representation.COMPACT]: "modalNewLinkDescriptionRelationship",
               })}
             </p>
-          )}
-          {AppSettings.representation === Representation.FULL && (
-            <span>
-              <input
-                defaultChecked={this.state.displayIncompatible}
-                onClick={(event: any) => {
-                  this.setState({
-                    displayIncompatible: event.currentTarget.checked,
-                  });
-                }}
-                type="checkbox"
-                id={"displayIncompatible"}
-              />
-              &nbsp;
-              <label htmlFor={"displayIncompatible"}>
-                {Locale[AppSettings.interfaceLanguage].showIncompatibleLinks}
-              </label>
-            </span>
           )}
           {AppSettings.representation === Representation.FULL ? (
             <Form

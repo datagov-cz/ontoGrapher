@@ -54,7 +54,7 @@ export function getSelectedLabels(
   id: string,
   languageCode: string
 ): LanguageObject {
-  if (!WorkspaceElements[id].selectedLabel[languageCode])
+  if (languageCode in WorkspaceElements[id].selectedLabel)
     setDisplayLabel(id, languageCode);
   return WorkspaceElements[id].selectedLabel;
 }

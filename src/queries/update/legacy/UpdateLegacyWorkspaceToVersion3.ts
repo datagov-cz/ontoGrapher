@@ -1,6 +1,6 @@
 import { Links, WorkspaceLinks } from "../../../config/Variables";
 import { LinkType } from "../../../config/Enum";
-import { updateConnections } from "../UpdateConnectionQueries";
+import { updateTermConnections } from "../UpdateConnectionQueries";
 
 export function updateLegacyWorkspaceToVersion3(): string[] {
   const queries = [];
@@ -10,14 +10,18 @@ export function updateLegacyWorkspaceToVersion3(): string[] {
       WorkspaceLinks[link].iri in Links;
   }
   queries.push(
-    ...Object.keys(WorkspaceLinks)
-      .filter((link) => WorkspaceLinks[link].hasInverse)
-      .map((link) => updateConnections(link))
+    updateTermConnections(
+      ...Object.keys(WorkspaceLinks).filter(
+        (link) => WorkspaceLinks[link].hasInverse
+      )
+    )
   );
   queries.push(
-    ...Object.keys(WorkspaceLinks)
-      .filter((link) => WorkspaceLinks[link].hasInverse)
-      .map((link) => updateConnections(link))
+    updateTermConnections(
+      ...Object.keys(WorkspaceLinks).filter(
+        (link) => WorkspaceLinks[link].hasInverse
+      )
+    )
   );
   return queries;
 }

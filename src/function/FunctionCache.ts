@@ -2,7 +2,6 @@ import { WorkspaceElements } from "./../config/Variables";
 import isUrl from "is-url";
 import _ from "lodash";
 import { LinkType, Representation } from "../config/Enum";
-import { LinkConfig } from "../config/logic/LinkConfig";
 import {
   AppSettings,
   Links,
@@ -19,6 +18,7 @@ import {
 } from "../queries/get/CacheQueries";
 import { CacheConnection } from "../types/CacheConnection";
 import { getVocabularyFromScheme, setSchemeColors } from "./FunctionGetVars";
+import { LinkConfig } from "../queries/update/UpdateConnectionQueries";
 
 export async function getCacheConnections(
   iri: string,

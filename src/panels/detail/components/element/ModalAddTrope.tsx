@@ -12,7 +12,7 @@ import {
   Tabs,
 } from "react-bootstrap";
 import { Flags } from "../../../../components/LanguageSelector";
-import { ElemCreationStrategy, LinkType } from "../../../../config/Enum";
+import { ElemCreationStrategy, Representation } from "../../../../config/Enum";
 import { Languages } from "../../../../config/Languages";
 import { Locale } from "../../../../config/Locale";
 import {
@@ -22,6 +22,7 @@ import {
   WorkspaceTerms,
   WorkspaceVocabularies,
 } from "../../../../config/Variables";
+import { CellColors } from "../../../../config/visual/CellColors";
 import { createTerm } from "../../../../function/FunctionCreateElem";
 import { createNewElemIRI } from "../../../../function/FunctionCreateVars";
 import {
@@ -38,15 +39,13 @@ import {
 import { getElementPosition } from "../../../../function/FunctionElem";
 import {
   getLabelOrBlank,
-  getNewLink,
   getVocabularyFromScheme,
   isTermReadOnly,
 } from "../../../../function/FunctionGetVars";
-import { updateConnection } from "../../../../function/FunctionLink";
+import { saveNewLink } from "../../../../function/FunctionLink";
 import { graph } from "../../../../graph/Graph";
 import { updateProjectElementDiagram } from "../../../../queries/update/UpdateElementQueries";
 import { ListLanguageControls } from "../items/ListLanguageControls";
-import { CellColors } from "../../../../config/visual/CellColors";
 
 interface Props {
   modalTropes: boolean;
@@ -157,19 +156,16 @@ export const ModalAddTrope: React.FC<Props> = (props: Props) => {
       }
       props.update();
     } else if (activeKey === "exist" && selectedTrope) {
-      const link = getNewLink(LinkType.DEFAULT);
       WorkspaceElements[selectedTrope].position[AppSettings.selectedDiagram] =
         getElementPosition(props.id);
       WorkspaceElements[selectedTrope].hidden[AppSettings.selectedDiagram] =
         false;
       props.performTransaction(
-        ...updateConnection(
+        ...saveNewLink(
+          parsePrefix("z-sgov-pojem", "má-vlastnost"),
           props.id,
           selectedTrope,
-          link.id as string,
-          LinkType.DEFAULT,
-          parsePrefix("z-sgov-pojem", "má-vlastnost"),
-          true
+          Representation.FULL
         ),
         updateProjectElementDiagram(AppSettings.selectedDiagram, selectedTrope)
       );
