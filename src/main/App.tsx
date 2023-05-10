@@ -20,6 +20,7 @@ import {
   WorkspaceElements,
   WorkspaceLinks,
 } from "../config/Variables";
+import { CellColors } from "../config/visual/CellColors";
 import { dumpDebugData, loadDebugData } from "../function/FunctionDebug";
 import { resetDiagramSelection } from "../function/FunctionDiagram";
 import {
@@ -57,7 +58,6 @@ import { qb } from "../queries/QueryBuilder";
 import { updateVocabularyAnnotations } from "../queries/update/UpdateChangeQueries";
 import { updateDiagramMetadata } from "../queries/update/UpdateDiagramQueries";
 import { MainView } from "./MainView";
-import { CellColors } from "../config/visual/CellColors";
 
 interface DiagramAppProps {}
 

@@ -1,5 +1,6 @@
 import RemoveIcon from "@mui/icons-material/Remove";
 import classNames from "classnames";
+import * as _ from "lodash";
 import React from "react";
 import {
   Accordion,
@@ -9,7 +10,6 @@ import {
   Tooltip,
 } from "react-bootstrap";
 import { Locale } from "../../../../config/Locale";
-import { RepresentationConfig } from "../../../../config/logic/RepresentationConfig";
 import {
   AlternativeLabel,
   AppSettings,
@@ -19,6 +19,7 @@ import {
   WorkspaceTerms,
   WorkspaceVocabularies,
 } from "../../../../config/Variables";
+import { RepresentationConfig } from "../../../../config/logic/RepresentationConfig";
 import { Shapes } from "../../../../config/visual/Shapes";
 import {
   drawGraphElement,
@@ -26,8 +27,12 @@ import {
   getSelectedLabels,
   redrawElement,
 } from "../../../../function/FunctionDraw";
-import { getName, parsePrefix } from "../../../../function/FunctionEditVars";
+import { parsePrefix } from "../../../../function/FunctionEditVars";
 import { resizeElem } from "../../../../function/FunctionElem";
+import {
+  filterEquivalent,
+  isEquivalent,
+} from "../../../../function/FunctionEquivalents";
 import {
   getIntrinsicTropeTypeIDs,
   getLabelOrBlank,
@@ -83,17 +88,28 @@ export class DetailElementDescriptionCard extends React.Component<
     this.prepareDetails(this.props.id);
   }
 
+  getName(element: string, language: string): string {
+    if (element in Stereotypes) {
+      return Stereotypes[element].labels[language];
+    } else {
+      return WorkspaceTerms[element].labels[language];
+    }
+  }
+
   prepareDetails(id?: string) {
     if (id)
       this.setState({
         selectedLabel: getSelectedLabels(id, this.props.selectedLanguage),
         inputTypeType:
           WorkspaceTerms[id].types.find(
-            (type) => type in Stereotypes && type in Shapes
+            (type) =>
+              type in Stereotypes && filterEquivalent(Object.keys(Shapes), type)
           ) || "",
         inputTypeData:
           WorkspaceTerms[id].types.find(
-            (type) => type in Stereotypes && !(type in Shapes)
+            (type) =>
+              type in Stereotypes &&
+              !filterEquivalent(Object.keys(Shapes), type)
           ) || "",
         inputAltLabels: WorkspaceTerms[id].altLabels,
         inputDefinitions: WorkspaceTerms[id].definitions,
@@ -149,7 +165,9 @@ export class DetailElementDescriptionCard extends React.Component<
   }
 
   isObjectType = (types: string[]) =>
-    types.includes(parsePrefix("z-sgov-pojem", "typ-objektu"));
+    types.find((t) =>
+      isEquivalent(t, parsePrefix("z-sgov-pojem", "typ-objektu"))
+    );
 
   save() {
     const elem = graph.getElements().find((elem) => elem.id === this.props.id);
@@ -232,15 +250,22 @@ export class DetailElementDescriptionCard extends React.Component<
                 ? Locale[AppSettings.interfaceLanguage].noStereotypeUML
                 : Locale[AppSettings.interfaceLanguage].setStereotypeUML}
             </option>
-            {Object.keys(Stereotypes)
-              .filter((stereotype) =>
-                RepresentationConfig[
-                  AppSettings.representation
-                ].visibleStereotypes.includes(stereotype)
+            {_.uniq(
+              _.compact([
+                ...RepresentationConfig[AppSettings.representation]
+                  .visibleStereotypes,
+                this.state.inputTypeType,
+              ])
+            )
+              .filter((s) =>
+                this.state.inputTypeType
+                  ? !isEquivalent(this.state.inputTypeType, s)
+                  : true
               )
+              .sort()
               .map((stereotype) => (
                 <option key={stereotype} value={stereotype}>
-                  {getName(stereotype, this.props.selectedLanguage)}
+                  {this.getName(stereotype, this.props.selectedLanguage)}
                 </option>
               ))}
           </Form.Select>
@@ -259,11 +284,25 @@ export class DetailElementDescriptionCard extends React.Component<
                 ? Locale[AppSettings.interfaceLanguage].noStereotypeData
                 : Locale[AppSettings.interfaceLanguage].setStereotypeData}
             </option>
-            {Object.keys(Stereotypes)
-              .filter((stereotype) => !(stereotype in Shapes))
+            {_.uniqWith(
+              _.compact([
+                ...Object.keys(Stereotypes).filter(
+                  (stereotype) =>
+                    !filterEquivalent(Object.keys(Shapes), stereotype)
+                ),
+                this.state.inputTypeData,
+              ]),
+              (a, b) => isEquivalent(a, b)
+            )
+              .filter((s) =>
+                this.state.inputTypeData
+                  ? !isEquivalent(this.state.inputTypeData, s)
+                  : true
+              )
+              .sort()
               .map((stereotype) => (
                 <option key={stereotype} value={stereotype}>
-                  {getName(stereotype, this.props.selectedLanguage)}
+                  {this.getName(stereotype, this.props.selectedLanguage)}
                 </option>
               ))}
           </Form.Select>

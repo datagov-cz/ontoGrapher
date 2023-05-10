@@ -35,6 +35,7 @@ import VocabularyFolder from "./element/VocabularyFolder";
 import { VocabularySelector } from "./element/VocabularySelector";
 import ModalRemoveConcept from "./modal/ModalRemoveConcept";
 import ModalRemoveReadOnlyConcept from "./modal/ModalRemoveReadOnlyConcept";
+import { filterEquivalent } from "../function/FunctionEquivalents";
 
 interface Props {
   projectLanguage: string;
@@ -226,7 +227,7 @@ export default class VocabularyPanel extends React.Component<Props, State> {
         .forEach((elem) => {
           const types = WorkspaceTerms[elem].types;
           for (const key in Shapes) {
-            if (types.includes(key)) {
+            if (filterEquivalent(types, key)) {
               result[vocab][key].push(elem);
               break;
             }
