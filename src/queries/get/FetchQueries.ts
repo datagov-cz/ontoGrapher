@@ -1,4 +1,9 @@
-import { AppSettings, Prefixes, Users } from "./../../config/Variables";
+import {
+  AppSettings,
+  Prefixes,
+  Users,
+  EquivalentClasses,
+} from "./../../config/Variables";
 import { LinkType } from "../../config/Enum";
 import { RestrictionConfig } from "../../config/logic/RestrictionConfig";
 import {
@@ -15,6 +20,16 @@ import {
 import { createRestriction } from "../../function/FunctionRestriction";
 import { processQuery } from "../../interface/TransactionInterface";
 import { qb } from "../QueryBuilder";
+import * as _ from "lodash";
+
+function pushEquivalentClass(iri: string, equivalent: string) {
+  const push = (iri: string, equivalent: string) =>
+    _.flatten(_.compact([EquivalentClasses[iri], equivalent]));
+  EquivalentClasses[iri] = push(iri, equivalent);
+  EquivalentClasses[equivalent] = push(equivalent, iri);
+  for (const eq of EquivalentClasses[equivalent]) push(eq, equivalent);
+  for (const eq of EquivalentClasses[iri]) push(eq, iri);
+}
 
 /**
  * Gets vocabulary info.
@@ -111,7 +126,8 @@ export async function fetchBaseOntology(
     "PREFIX skos: <http://www.w3.org/2004/02/skos/core#>",
     "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>",
     "PREFIX z-sgov-pojem: <https://slovník.gov.cz/základní/pojem/>",
-    "SELECT ?term ?termLabel ?termAltLabel ?termType ?termDefinition ?termDomain ?termRange ?inverseOf ?character ?subClassOf",
+    "PREFIX owl: <http://www.w3.org/2002/07/owl#>",
+    "SELECT ?term ?termLabel ?termAltLabel ?termType ?termDefinition ?termDomain ?termRange ?inverseOf ?character ?subClassOf ?equivalent",
     "WHERE {",
     "?term skos:inScheme <" + scheme + ">.",
     requiredTypes && "VALUES ?termType {<" + requiredTypes.join("> <") + ">}",
@@ -119,6 +135,7 @@ export async function fetchBaseOntology(
     "?term skos:prefLabel ?termLabel.",
     "?term a ?termType.",
     "OPTIONAL {?term skos:altLabel ?termAltLabel.}",
+    "OPTIONAL {?equivalent owl:equivalentClass ?term.}",
     "OPTIONAL {?term skos:definition ?termDefinition.}",
     "OPTIONAL {?term z-sgov-pojem:charakterizuje ?character.}",
     "OPTIONAL {?term rdfs:domain ?termDomain.}",
@@ -128,7 +145,8 @@ export async function fetchBaseOntology(
     "OPTIONAL {?term owl:inverseOf ?inverseOf. ",
     "filter (!isBlank(?inverseOf)) }",
     "}",
-  ].join(" ");
+  ].join(`
+  `);
   return await processQuery(endpoint, query)
     .then((response) => response.json())
     .then((data) => {
@@ -195,7 +213,12 @@ export async function fetchBaseOntology(
           result[row.term.value].subClassOf.push(row.subClassOf.value);
         if (row.inverseOf)
           result[row.term.value].inverseOf = row.inverseOf.value;
+        if (row.equivalent)
+          pushEquivalentClass(row.term.value, row.equivalent.value);
       }
+      Object.keys(EquivalentClasses).forEach(
+        (e) => (EquivalentClasses[e] = _.uniq(EquivalentClasses[e]))
+      );
       Object.assign(sendTo, result);
       return true;
     })

@@ -25,21 +25,14 @@ import {
 } from "./FunctionGetVars";
 import * as _ from "lodash";
 import { LinkConfig } from "../queries/update/UpdateConnectionQueries";
+import { filterEquivalent } from "./FunctionEquivalents";
 
 export function trimLanguageObjectInput(input: LanguageObject): LanguageObject {
   return _.mapValues(input, (i) => i.trim());
 }
 
-export function getName(element: string, language: string): string {
-  if (element in Stereotypes) {
-    return Stereotypes[element].labels[language];
-  } else {
-    return WorkspaceTerms[element].labels[language];
-  }
-}
-
 export function getStereotypeList(iris: string[], language: string): string[] {
-  let result: string[] = [];
+  const result: string[] = [];
   iris.forEach((iri) => {
     if (iri in Stereotypes) {
       result.push(Stereotypes[iri].labels[language]);
@@ -182,7 +175,7 @@ export function setElementShape(
     bodyDiamond: { display: "none" },
     label: { color: "black" },
   });
-  if (types.includes(parsePrefix("z-sgov-pojem", "typ-objektu"))) {
+  if (filterEquivalent(types, parsePrefix("z-sgov-pojem", "typ-objektu"))) {
     elem.attr({
       bodyBox: {
         display: "block",
@@ -195,7 +188,9 @@ export function setElementShape(
         ].color,
       },
     });
-  } else if (types.includes(parsePrefix("z-sgov-pojem", "typ-vlastnosti"))) {
+  } else if (
+    filterEquivalent(types, parsePrefix("z-sgov-pojem", "typ-vlastnosti"))
+  ) {
     elem.attr({
       bodyEllipse: {
         display: "block",
@@ -209,7 +204,9 @@ export function setElementShape(
         ].color,
       },
     });
-  } else if (types.includes(parsePrefix("z-sgov-pojem", "typ-vztahu"))) {
+  } else if (
+    filterEquivalent(types, parsePrefix("z-sgov-pojem", "typ-vztahu"))
+  ) {
     elem.attr({
       bodyDiamond: {
         display: "block",
@@ -222,7 +219,9 @@ export function setElementShape(
         ].color,
       },
     });
-  } else if (types.includes(parsePrefix("z-sgov-pojem", "typ-události"))) {
+  } else if (
+    filterEquivalent(types, parsePrefix("z-sgov-pojem", "typ-události"))
+  ) {
     elem.attr({
       bodyTrapezoid: {
         display: "block",

@@ -20,6 +20,7 @@ import {
 import { processQuery } from "../../../../interface/TransactionInterface";
 import _ from "lodash";
 import { Locale } from "../../../../config/Locale";
+import { filterEquivalent } from "../../../../function/FunctionEquivalents";
 
 export async function exportTermsCSV(
   exportLanguage: string
@@ -100,9 +101,10 @@ export async function exportTermsCSV(
     diagramTerms
       .map((term) => {
         const termType = WorkspaceTerms[term].types.find((f) =>
-          RepresentationConfig[
-            Representation.COMPACT
-          ].visibleStereotypes.includes(f)
+          filterEquivalent(
+            RepresentationConfig[Representation.COMPACT].visibleStereotypes,
+            f
+          )
         );
         const termRow =
           compile([

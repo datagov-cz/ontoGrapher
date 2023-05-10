@@ -2,8 +2,8 @@ import { getVocabularyShortLabel } from "@opendata-mvcr/assembly-line-shared";
 import * as joint from "jointjs";
 import { Representation } from "../config/Enum";
 import { Languages } from "../config/Languages";
-import { Locale } from "../config/Locale";
 import { LocalStorageVars } from "../config/LocalStorageVars";
+import { Locale } from "../config/Locale";
 import {
   AppSettings,
   Links,
@@ -18,9 +18,10 @@ import { CacheSearchVocabularies } from "../datatypes/CacheSearchResults";
 import { Cardinality } from "../datatypes/Cardinality";
 import { en } from "../locale/en";
 import { enChangelog } from "../locale/enchangelog";
+import { LinkConfig } from "../queries/update/UpdateConnectionQueries";
 import { parsePrefix } from "./FunctionEditVars";
 import { mvp1IRI, mvp2IRI } from "./FunctionGraph";
-import { LinkConfig } from "../queries/update/UpdateConnectionQueries";
+import { filterEquivalent } from "./FunctionEquivalents";
 
 export function getVocabularyLabel(vocabulary: string, cutoff: number = 24) {
   const shortLabel = getVocabularyShortLabel(vocabulary);
@@ -166,7 +167,7 @@ export function loadDefaultCardinality() {
 export function getElementShape(id: string | number): string {
   const types = WorkspaceTerms[id].types;
   for (const type in Shapes) {
-    if (types.includes(type)) return Shapes[type].body;
+    if (filterEquivalent(types, type)) return Shapes[type].body;
   }
   return Shapes["default"].body;
 }
