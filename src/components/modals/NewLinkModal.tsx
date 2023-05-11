@@ -3,11 +3,6 @@ import React from "react";
 import { Button, Form, Modal } from "react-bootstrap";
 import { Representation } from "../../config/Enum";
 import { Locale } from "../../config/Locale";
-import _ from "lodash";
-import React from "react";
-import { Button, Form, Modal } from "react-bootstrap";
-import { Representation } from "../../config/Enum";
-import { Locale } from "../../config/Locale";
 import {
   AppSettings,
   Links,

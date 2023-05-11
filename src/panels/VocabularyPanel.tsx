@@ -35,7 +35,6 @@ import VocabularyFolder from "./element/VocabularyFolder";
 import { VocabularySelector } from "./element/VocabularySelector";
 import ModalRemoveConcept from "./modal/ModalRemoveConcept";
 import ModalRemoveReadOnlyConcept from "./modal/ModalRemoveReadOnlyConcept";
-import { filterEquivalent } from "../function/FunctionEquivalents";
 
 interface Props {
   projectLanguage: string;
