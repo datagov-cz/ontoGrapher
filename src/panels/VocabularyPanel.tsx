@@ -4,7 +4,6 @@ import _ from "lodash";
 import React from "react";
 import { Accordion, Form, InputGroup, Spinner } from "react-bootstrap";
 import { ResizableBox } from "react-resizable";
-import { Representation } from "../config/Enum";
 import {
   FlexDocumentIDTable,
   FlexDocumentSearch,
@@ -22,6 +21,7 @@ import {
   CacheSearchVocabularies,
 } from "../datatypes/CacheSearchResults";
 import { isElementVisible } from "../function/FunctionElem";
+import { filterEquivalent } from "../function/FunctionEquivalents";
 import {
   getLabelOrBlank,
   getVocabularyFromScheme,
@@ -216,17 +216,15 @@ export default class VocabularyPanel extends React.Component<Props, State> {
         .filter(
           (id) =>
             (!this.state.search || flexSearchResults.includes(id)) &&
-            (AppSettings.representation === Representation.FULL ||
-              (AppSettings.representation === Representation.COMPACT &&
-                isElementVisible(
-                  WorkspaceTerms[id].types,
-                  Representation.COMPACT
-                )))
+            isElementVisible(
+              WorkspaceTerms[id].types,
+              AppSettings.representation
+            )
         )
         .forEach((elem) => {
           const types = WorkspaceTerms[elem].types;
           for (const key in Shapes) {
-            if (types.includes(key)) {
+            if (filterEquivalent(types, key)) {
               result[vocab][key].push(elem);
               break;
             }

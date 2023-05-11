@@ -12,6 +12,7 @@ import { parsePrefix } from "./FunctionEditVars";
 import { setCompactLinkCardinalitiesFromFullComponents } from "./FunctionLink";
 import { mvp1IRI, mvp2IRI } from "./FunctionGraph";
 import * as _ from "lodash";
+import { filterEquivalent } from "./FunctionEquivalents";
 
 export function createRestriction(
   restriction: Restriction,
@@ -68,7 +69,8 @@ export function initConnections(): { add: string[]; del: string[] } {
       }
     }
     if (
-      WorkspaceTerms[iri].types.includes(
+      filterEquivalent(
+        WorkspaceTerms[iri].types,
         parsePrefix("z-sgov-pojem", "typ-vztahu")
       )
     ) {

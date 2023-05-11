@@ -1,22 +1,23 @@
+import { Locale } from "../config/Locale";
 import {
   AppSettings,
+  EquivalentClasses,
   Links,
   Stereotypes,
   WorkspaceVocabularies,
 } from "../config/Variables";
+import { Cardinality } from "../datatypes/Cardinality";
 import { createValues } from "../function/FunctionCreateVars";
+import { initLanguageObject } from "../function/FunctionEditVars";
 import {
   checkLabels,
   getVocabularyFromScheme,
 } from "../function/FunctionGetVars";
-import { Locale } from "../config/Locale";
 import {
   fetchBaseOntology,
   fetchSubClassesAndCardinalities,
   fetchVocabulary,
 } from "../queries/get/FetchQueries";
-import { initLanguageObject } from "../function/FunctionEditVars";
-import { Cardinality } from "../datatypes/Cardinality";
 
 export async function getVocabulariesFromRemoteJSON(
   pathToJSON: string
@@ -86,6 +87,13 @@ export async function getVocabulariesFromRemoteJSON(
                 );
               }
             });
+            for (const iri of Object.keys(Links)) {
+              if (!(iri in EquivalentClasses)) continue;
+              for (const eq of EquivalentClasses[iri]) {
+                if (eq in Links) continue;
+                Links[eq] = Links[iri];
+              }
+            }
             return results.every((bool) => bool);
           }
         }
@@ -94,8 +102,20 @@ export async function getVocabulariesFromRemoteJSON(
         console.error(error);
         return false;
       });
+    activateEquivalentClasses(Links);
+    activateEquivalentClasses(Stereotypes);
     return true;
   } else {
     throw new Error(Locale[AppSettings.interfaceLanguage].vocabularyNotFound);
+  }
+}
+
+function activateEquivalentClasses(iris: typeof Links | typeof Stereotypes) {
+  for (const iri in iris) {
+    if (!(iri in EquivalentClasses)) continue;
+    for (const eq of EquivalentClasses[iri]) {
+      if (eq in iris) continue;
+      iris[eq] = iris[iri];
+    }
   }
 }

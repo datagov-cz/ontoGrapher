@@ -162,7 +162,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
         resetDiagramSelection();
         this.props.updateDetailPanel(DetailPanelMode.HIDDEN);
       },
-      "cell:contextmenu": (cellView, evt) => {
+      "cell:contextmenu": (_, evt) => {
         evt.preventDefault();
       },
       /**

@@ -1,20 +1,18 @@
+import _ from "lodash";
+import React from "react";
+import { Button, Form, Modal } from "react-bootstrap";
+import { Representation } from "../../config/Enum";
+import { Locale } from "../../config/Locale";
 import {
   AppSettings,
   Links,
-  Prefixes,
-  Stereotypes,
   WorkspaceLinks,
   WorkspaceTerms,
 } from "../../config/Variables";
-import { Locale } from "../../config/Locale";
 import {
   initLanguageObject,
   parsePrefix,
 } from "../../function/FunctionEditVars";
-import React from "react";
-import { LinkType, Representation } from "../../config/Enum";
-import { graph } from "../../graph/Graph";
-import { Button, Form, Modal } from "react-bootstrap";
 import {
   getActiveToConnections,
   getExpressionByRepresentation,
@@ -23,10 +21,10 @@ import {
   getVocabularyFromScheme,
   isTermReadOnly,
 } from "../../function/FunctionGetVars";
+import { graph } from "../../graph/Graph";
 import { LinkCreationConfiguration } from "./CreationModals";
 import { NewElemForm } from "./NewElemForm";
-import _ from "lodash";
-import { mvp1IRI, mvp2IRI } from "../../function/FunctionGraph";
+import { filterEquivalent } from "../../function/FunctionEquivalents";
 
 interface Props {
   modal: boolean;
@@ -67,65 +65,6 @@ export default class NewLinkModal extends React.Component<Props, State> {
     this.setState({ selectedLink: value });
   }
 
-  filtering(link: string): boolean {
-    if (
-      !this.props.configuration.sourceID ||
-      !this.props.configuration.targetID
-    )
-      return false;
-    if (
-      getActiveToConnections(this.props.configuration.sourceID).find(
-        (conn) =>
-          WorkspaceLinks[conn].iri === link &&
-          (WorkspaceLinks[conn].target === this.props.configuration.targetID ||
-            link === mvp1IRI ||
-            link === mvp2IRI)
-      )
-    )
-      return false;
-    if (Links[link].type === LinkType.GENERALIZATION)
-      return (
-        this.props.configuration.sourceID !== this.props.configuration.targetID
-      );
-    const sourceTypes = WorkspaceTerms[
-      this.props.configuration.sourceID
-    ].types.filter((type) => type.startsWith(Prefixes["z-sgov-pojem"]));
-    const targetTypes = WorkspaceTerms[
-      this.props.configuration.targetID
-    ].types.filter((type) => type.startsWith(Prefixes["z-sgov-pojem"]));
-    if (sourceTypes.length === 0 || targetTypes.length === 0) return false;
-    const domain = Links[link].domain;
-    const range = Links[link].range;
-    let source = false;
-    let target = false;
-
-    for (const type of sourceTypes) {
-      if (type in Stereotypes) {
-        const subClasses = Stereotypes[type].subClassOf;
-        const character = Stereotypes[type].character;
-        if (character === domain || subClasses.includes(domain)) {
-          source = true;
-          break;
-        }
-      }
-    }
-
-    if (!source) return false;
-
-    for (const type of targetTypes) {
-      if (type in Stereotypes) {
-        const subClasses = Stereotypes[type].subClassOf;
-        const character = Stereotypes[type].character;
-        if (character === range || subClasses.includes(range)) {
-          target = true;
-          break;
-        }
-      }
-    }
-
-    return target;
-  }
-
   getLinks() {
     const elem = graph
       .getElements()
@@ -135,22 +74,25 @@ export default class NewLinkModal extends React.Component<Props, State> {
         this.props.configuration.sourceID
       );
       if (AppSettings.representation === Representation.FULL) {
-        return Object.keys(Links).filter(
-          (link) =>
-            !connections.find(
-              (conn) =>
-                WorkspaceLinks[conn].iri === link &&
-                WorkspaceLinks[conn].target ===
-                  this.props.configuration.targetID
-            ) && (this.state.displayIncompatible ? true : this.filtering(link))
-        );
+        return Object.keys(Links)
+          .filter(
+            (link) =>
+              !connections.find(
+                (conn) =>
+                  WorkspaceLinks[conn].iri === link &&
+                  WorkspaceLinks[conn].target ===
+                    this.props.configuration.targetID
+              )
+          )
+          .sort();
       } else if (AppSettings.representation === Representation.COMPACT) {
         return Object.keys(WorkspaceTerms)
           .filter((iri) => {
             return (
               !isTermReadOnly(iri) &&
               getActiveToConnections(iri).length === 0 &&
-              WorkspaceTerms[iri].types.includes(
+              filterEquivalent(
+                WorkspaceTerms[iri].types,
                 parsePrefix("z-sgov-pojem", "typ-vztahu")
               )
             );
@@ -160,7 +102,8 @@ export default class NewLinkModal extends React.Component<Props, State> {
               (link) =>
                 Links[link].inScheme === AppSettings.ontographerContext + "/uml"
             )
-          );
+          )
+          .sort();
       } else return [];
     } else return [];
   }

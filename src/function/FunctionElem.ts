@@ -47,6 +47,7 @@ import { getElementShape } from "./FunctionGetVars";
 import { restoreHiddenElem, setRepresentation } from "./FunctionGraph";
 import { initConnections } from "./FunctionRestriction";
 import { CellColors } from "../config/visual/CellColors";
+import { getEquivalents } from "./FunctionEquivalents";
 
 export function resizeElem(id: string, highlight: boolean = true) {
   let view = paper.findViewByModel(id);
@@ -160,20 +161,27 @@ export function isElementVisible(
   types: string[],
   representation: Representation,
   strict: boolean = false
-) {
+): boolean {
   return (
     (_.difference(
-      RepresentationConfig[representation].visibleStereotypes,
+      RepresentationConfig[representation].visibleStereotypes.flatMap((s) =>
+        getEquivalents(s)
+      ),
       types
-    ).length < RepresentationConfig[representation].visibleStereotypes.length ||
+    ).length <
+      RepresentationConfig[representation].visibleStereotypes.flatMap((s) =>
+        getEquivalents(s)
+      ).length ||
       !types.find((type) =>
-        RepresentationConfig[Representation.FULL].visibleStereotypes.includes(
-          type
-        )
+        RepresentationConfig[Representation.FULL].visibleStereotypes
+          .flatMap((s) => getEquivalents(s))
+          .includes(type)
       )) &&
     (strict
       ? _.intersection(
-          RepresentationConfig[representation].visibleStereotypes,
+          RepresentationConfig[representation].visibleStereotypes.flatMap((s) =>
+            getEquivalents(s)
+          ),
           types
         ).length > 0
       : true)

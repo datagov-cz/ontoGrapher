@@ -46,6 +46,7 @@ import { saveNewLink } from "../../../../function/FunctionLink";
 import { graph } from "../../../../graph/Graph";
 import { updateProjectElementDiagram } from "../../../../queries/update/UpdateElementQueries";
 import { ListLanguageControls } from "../items/ListLanguageControls";
+import { filterEquivalent } from "../../../../function/FunctionEquivalents";
 
 interface Props {
   modalTropes: boolean;
@@ -118,7 +119,8 @@ export const ModalAddTrope: React.FC<Props> = (props: Props) => {
     return Object.keys(WorkspaceTerms)
       .filter(
         (term) =>
-          WorkspaceTerms[term].types.includes(
+          filterEquivalent(
+            WorkspaceTerms[term].types,
             parsePrefix("z-sgov-pojem", "typ-vlastnosti")
           ) && WorkspaceElements[term].active
       )
@@ -232,7 +234,7 @@ export const ModalAddTrope: React.FC<Props> = (props: Props) => {
                 <InputGroup.Text>
                   <img
                     className="flag"
-                    src={`http://purecatamphetamine.github.io/country-flag-icons/3x2/${Flags[lang]}.svg`}
+                    src={`https://purecatamphetamine.github.io/country-flag-icons/3x2/${Flags[lang]}.svg`}
                     alt={Languages[lang]}
                   />
                   {lang === AppSettings.canvasLanguage ? "*" : ""}

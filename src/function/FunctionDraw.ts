@@ -24,6 +24,8 @@ import {
   getLabelOrBlank,
 } from "./FunctionGetVars";
 import { CellColors } from "../config/visual/CellColors";
+import { filterEquivalent } from "./FunctionEquivalents";
+import { Shapes } from "../config/visual/Shapes";
 
 export function getListClassNamesObject(arr: any[], i: number) {
   return {
@@ -60,7 +62,8 @@ export function getSelectedLabels(
 }
 
 function isElementEventType(id: string) {
-  return WorkspaceTerms[id].types.includes(
+  return filterEquivalent(
+    WorkspaceTerms[id].types,
     parsePrefix("z-sgov-pojem", "typ-události")
   );
 }
@@ -76,9 +79,9 @@ export function drawGraphElement(
     const label = WorkspaceElements[elem.id].selectedLabel[languageCode];
     const labels: string[] = [];
     if (AppSettings.viewStereotypes)
-      getStereotypeList(types, languageCode).forEach((str) =>
-        labels.push("«" + str.toLowerCase() + "»")
-      );
+      getStereotypeList(types, languageCode)
+        .sort((a, b) => (a in Shapes && !(b in Shapes) ? -1 : 1))
+        .forEach((str) => labels.push("«" + str.toLowerCase() + "»"));
     labels.push(label === "" ? "<blank>" : label);
     elem.prop("attrs/label/text", labels.join("\n"));
     const text: string[] = [];
