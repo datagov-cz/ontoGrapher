@@ -162,31 +162,30 @@ export function isElementVisible(
   representation: Representation,
   strict: boolean = false
 ): boolean {
-  const intersectionLength = (arr1: any[], arr2: any[]) =>
-    _.intersection(arr1, arr2).length;
-  const visibleStereotypes = _.uniq(
-    RepresentationConfig[representation].visibleStereotypes.flatMap((s) =>
-      getEquivalents(s)
-    )
+  return (
+    (_.difference(
+      RepresentationConfig[representation].visibleStereotypes.flatMap((s) =>
+        getEquivalents(s)
+      ),
+      types
+    ).length <
+      RepresentationConfig[representation].visibleStereotypes.flatMap((s) =>
+        getEquivalents(s)
+      ).length ||
+      !types.find((type) =>
+        RepresentationConfig[Representation.FULL].visibleStereotypes
+          .flatMap((s) => getEquivalents(s))
+          .includes(type)
+      )) &&
+    (strict
+      ? _.intersection(
+          RepresentationConfig[representation].visibleStereotypes.flatMap((s) =>
+            getEquivalents(s)
+          ),
+          types
+        ).length > 0
+      : true)
   );
-  return intersectionLength(types, visibleStereotypes) >= (strict ? 1 : 0);
-  // (_.difference(
-  //   RepresentationConfig[representation].visibleStereotypes,
-  //   types
-  // ).length < RepresentationConfig[representation].visibleStereotypes.length ||
-  //   !types.find((type) =>
-  //     RepresentationConfig[Representation.FULL].visibleStereotypes.includes(
-  //       type
-  //     )
-  //   )) &&
-  // (strict
-  //   ? _.intersection(
-  //       RepresentationConfig[representation].visibleStereotypes.flatMap((s) =>
-  //         getEquivalents(s)
-  //       ),
-  //       types
-  //     ).length > 0
-  //   : true)
 }
 
 export function getElementToolPosition(

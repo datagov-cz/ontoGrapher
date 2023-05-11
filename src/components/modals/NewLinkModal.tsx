@@ -24,6 +24,7 @@ import {
 import { graph } from "../../graph/Graph";
 import { LinkCreationConfiguration } from "./CreationModals";
 import { NewElemForm } from "./NewElemForm";
+import { filterEquivalent } from "../../function/FunctionEquivalents";
 
 interface Props {
   modal: boolean;
@@ -90,7 +91,8 @@ export default class NewLinkModal extends React.Component<Props, State> {
             return (
               !isTermReadOnly(iri) &&
               getActiveToConnections(iri).length === 0 &&
-              WorkspaceTerms[iri].types.includes(
+              filterEquivalent(
+                WorkspaceTerms[iri].types,
                 parsePrefix("z-sgov-pojem", "typ-vztahu")
               )
             );

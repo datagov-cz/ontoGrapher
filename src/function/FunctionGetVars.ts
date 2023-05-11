@@ -21,7 +21,7 @@ import { enChangelog } from "../locale/enchangelog";
 import { LinkConfig } from "../queries/update/UpdateConnectionQueries";
 import { parsePrefix } from "./FunctionEditVars";
 import { mvp1IRI, mvp2IRI } from "./FunctionGraph";
-import { filterEquivalent } from "./FunctionEquivalents";
+import { filterEquivalent, getEquivalents } from "./FunctionEquivalents";
 
 export function getVocabularyLabel(vocabulary: string, cutoff: number = 24) {
   const shortLabel = getVocabularyShortLabel(vocabulary);
@@ -111,7 +111,9 @@ export function getExpressionByRepresentation(
 
 export function isConnectionWithTrope(link: string, id: string): boolean {
   if (
-    WorkspaceLinks[link].iri === parsePrefix("z-sgov-pojem", "má-vlastnost") &&
+    getEquivalents(parsePrefix("z-sgov-pojem", "má-vlastnost")).includes(
+      WorkspaceLinks[link].iri
+    ) &&
     WorkspaceLinks[link].source === id &&
     WorkspaceLinks[link].active &&
     !WorkspaceElements[WorkspaceLinks[link].target].hidden[
@@ -120,7 +122,9 @@ export function isConnectionWithTrope(link: string, id: string): boolean {
   ) {
     return true;
   } else if (
-    WorkspaceLinks[link].iri === parsePrefix("z-sgov-pojem", "je-vlastností") &&
+    getEquivalents(parsePrefix("z-sgov-pojem", "je-vlastností")).includes(
+      WorkspaceLinks[link].iri
+    ) &&
     WorkspaceLinks[link].target === id &&
     WorkspaceLinks[link].active &&
     !WorkspaceElements[WorkspaceLinks[link].source].hidden[
@@ -265,8 +269,8 @@ export function getParentOfIntrinsicTropeType(tropeID: string) {
   const connections = Object.keys(WorkspaceLinks).filter((link) => {
     return (
       ([
-        parsePrefix("z-sgov-pojem", "je-vlastností"),
-        parsePrefix("z-sgov-pojem", "má-vlastnost"),
+        ...getEquivalents(parsePrefix("z-sgov-pojem", "je-vlastností")),
+        ...getEquivalents(parsePrefix("z-sgov-pojem", "má-vlastnost")),
       ].includes(WorkspaceLinks[link].iri) &&
         WorkspaceLinks[link].active &&
         WorkspaceLinks[link].source === tropeID) ||
@@ -289,9 +293,11 @@ export function getIntrinsicTropeTypeIDs(
       (link) =>
         WorkspaceLinks[link].active &&
         WorkspaceLinks[link].source === id &&
-        WorkspaceLinks[link].iri ===
-          parsePrefix("z-sgov-pojem", "má-vlastnost") &&
-        WorkspaceTerms[WorkspaceLinks[link].target].types.includes(
+        getEquivalents(parsePrefix("z-sgov-pojem", "má-vlastnost")).includes(
+          WorkspaceLinks[link].iri
+        ) &&
+        filterEquivalent(
+          WorkspaceTerms[WorkspaceLinks[link].target].types,
           parsePrefix("z-sgov-pojem", "typ-vlastnosti")
         )
     )
@@ -302,9 +308,11 @@ export function getIntrinsicTropeTypeIDs(
           (link) =>
             WorkspaceLinks[link].active &&
             WorkspaceLinks[link].target === id &&
-            WorkspaceLinks[link].iri ===
-              parsePrefix("z-sgov-pojem", "je-vlastností") &&
-            WorkspaceTerms[WorkspaceLinks[link].source].types.includes(
+            getEquivalents(
+              parsePrefix("z-sgov-pojem", "je-vlastností")
+            ).includes(WorkspaceLinks[link].iri) &&
+            filterEquivalent(
+              WorkspaceTerms[WorkspaceLinks[link].source].types,
               parsePrefix("z-sgov-pojem", "typ-vlastnosti")
             )
         )

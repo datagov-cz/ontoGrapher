@@ -111,7 +111,7 @@ export const NewElemForm: React.FC<Props> = (props) => {
           <InputGroup.Text>
             <img
               className="flag"
-              src={`http://purecatamphetamine.github.io/country-flag-icons/3x2/${Flags[lang]}.svg`}
+              src={`https://purecatamphetamine.github.io/country-flag-icons/3x2/${Flags[lang]}.svg`}
               alt={Languages[lang]}
             />
             {lang === AppSettings.canvasLanguage ? "*" : ""}

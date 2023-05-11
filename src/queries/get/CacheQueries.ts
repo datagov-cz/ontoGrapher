@@ -9,6 +9,7 @@ import {
   initLanguageObject,
   parsePrefix,
 } from "../../function/FunctionEditVars";
+import { getEquivalents } from "../../function/FunctionEquivalents";
 import { createRestriction } from "../../function/FunctionRestriction";
 import { processQuery } from "../../interface/TransactionInterface";
 
@@ -367,7 +368,10 @@ export async function fetchFullRelationships(
     "select ?term2 ?label ?relation ?graph where {",
     "graph ?graph {",
     "values ?term {<" + term + ">}.",
-    "?relation a <" + parsePrefix("z-sgov-pojem", "typ-vztahu") + ">.",
+    "?relation a ?relationType.",
+    `values ?relationType {<${getEquivalents(
+      parsePrefix("z-sgov-pojem", "typ-vztahu")
+    ).join("> <")}>}`,
     "?relation rdfs:subClassOf ?restriction1.",
     "?relation rdfs:subClassOf ?restriction2.",
     "?relation skos:prefLabel ?label.",

@@ -19,7 +19,6 @@ import {
   WorkspaceTerms,
   WorkspaceVocabularies,
 } from "../../../../config/Variables";
-import { RepresentationConfig } from "../../../../config/logic/RepresentationConfig";
 import { Shapes } from "../../../../config/visual/Shapes";
 import {
   drawGraphElement,
@@ -28,9 +27,13 @@ import {
   redrawElement,
 } from "../../../../function/FunctionDraw";
 import { parsePrefix } from "../../../../function/FunctionEditVars";
-import { resizeElem } from "../../../../function/FunctionElem";
+import {
+  isElementVisible,
+  resizeElem,
+} from "../../../../function/FunctionElem";
 import {
   filterEquivalent,
+  getEquivalents,
   isEquivalent,
 } from "../../../../function/FunctionEquivalents";
 import {
@@ -94,6 +97,36 @@ export class DetailElementDescriptionCard extends React.Component<
     } else {
       return WorkspaceTerms[element].labels[language];
     }
+  }
+
+  getStereotypes(type: "type" | "data") {
+    let input: string = "";
+    let stereotypes: string[] = [];
+    // object-type, relator-type, trope-type, event-type
+    if (type === "type") {
+      input = this.state.inputTypeType;
+      stereotypes = Object.keys(Stereotypes).filter((stereotype) =>
+        // filter for types within representation/view
+        isElementVisible([stereotype], AppSettings.representation, true)
+      );
+    }
+    // kind, subkind, mixin...
+    if (type === "data") {
+      input = this.state.inputTypeData;
+      stereotypes = Object.keys(Stereotypes).filter(
+        // filter for non-types
+        (stereotype) => !filterEquivalent(Object.keys(Shapes), stereotype)
+      );
+    }
+    // filter for uniques
+    stereotypes = _.uniqWith(stereotypes, (a, b) => isEquivalent(a, b));
+    if (input && !stereotypes.includes(input)) {
+      // if there is a input set, filter duplicates
+      stereotypes = stereotypes
+        .concat(input)
+        .filter((s) => s === input || (s !== input && !isEquivalent(s, input)));
+    }
+    return stereotypes.sort();
   }
 
   prepareDetails(id?: string) {
@@ -183,8 +216,9 @@ export class DetailElementDescriptionCard extends React.Component<
         );
       }
       if (
-        this.state.inputTypeType ===
-        parsePrefix("z-sgov-pojem", "typ-vlastnosti")
+        getEquivalents(parsePrefix("z-sgov-pojem", "typ-vlastnosti")).includes(
+          this.state.inputTypeType
+        )
       ) {
         getParentOfIntrinsicTropeType(this.props.id).forEach((id) => {
           const elem = graph.getElements().find((elem) => elem.id === id);
@@ -250,24 +284,11 @@ export class DetailElementDescriptionCard extends React.Component<
                 ? Locale[AppSettings.interfaceLanguage].noStereotypeUML
                 : Locale[AppSettings.interfaceLanguage].setStereotypeUML}
             </option>
-            {_.uniq(
-              _.compact([
-                ...RepresentationConfig[AppSettings.representation]
-                  .visibleStereotypes,
-                this.state.inputTypeType,
-              ])
-            )
-              .filter((s) =>
-                this.state.inputTypeType
-                  ? !isEquivalent(this.state.inputTypeType, s)
-                  : true
-              )
-              .sort()
-              .map((stereotype) => (
-                <option key={stereotype} value={stereotype}>
-                  {this.getName(stereotype, this.props.selectedLanguage)}
-                </option>
-              ))}
+            {this.getStereotypes("type").map((stereotype) => (
+              <option key={stereotype} value={stereotype}>
+                {this.getName(stereotype, this.props.selectedLanguage)}
+              </option>
+            ))}
           </Form.Select>
           <Form.Select
             size="sm"
@@ -284,27 +305,11 @@ export class DetailElementDescriptionCard extends React.Component<
                 ? Locale[AppSettings.interfaceLanguage].noStereotypeData
                 : Locale[AppSettings.interfaceLanguage].setStereotypeData}
             </option>
-            {_.uniqWith(
-              _.compact([
-                ...Object.keys(Stereotypes).filter(
-                  (stereotype) =>
-                    !filterEquivalent(Object.keys(Shapes), stereotype)
-                ),
-                this.state.inputTypeData,
-              ]),
-              (a, b) => isEquivalent(a, b)
-            )
-              .filter((s) =>
-                this.state.inputTypeData
-                  ? !isEquivalent(this.state.inputTypeData, s)
-                  : true
-              )
-              .sort()
-              .map((stereotype) => (
-                <option key={stereotype} value={stereotype}>
-                  {this.getName(stereotype, this.props.selectedLanguage)}
-                </option>
-              ))}
+            {this.getStereotypes("data").map((stereotype) => (
+              <option key={stereotype} value={stereotype}>
+                {this.getName(stereotype, this.props.selectedLanguage)}
+              </option>
+            ))}
           </Form.Select>
           <h5>{Locale[AppSettings.interfaceLanguage].detailPanelDefinition}</h5>
           <Form.Control
