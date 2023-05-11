@@ -49,6 +49,7 @@ import { updateDiagram } from "../queries/update/UpdateDiagramQueries";
 import { addLink } from "./FunctionCreateVars";
 import { updateDiagramPosition } from "./FunctionDiagram";
 import { paper } from "../main/DiagramCanvas";
+import { filterEquivalent } from "./FunctionEquivalents";
 
 export const mvp1IRI =
   "https://slovník.gov.cz/základní/pojem/má-vztažený-prvek-1";
@@ -244,7 +245,8 @@ export function setRepresentation(
       (elem) => WorkspaceElements[elem].active && elem in WorkspaceTerms
     )) {
       if (
-        WorkspaceTerms[id].types.includes(
+        filterEquivalent(
+          WorkspaceTerms[id].types,
           parsePrefix("z-sgov-pojem", "typ-vztahu")
         )
       ) {
@@ -314,7 +316,8 @@ export function setRepresentation(
           del = true;
         }
       } else if (
-        WorkspaceTerms[id].types.includes(
+        filterEquivalent(
+          WorkspaceTerms[id].types,
           parsePrefix("z-sgov-pojem", "typ-vlastnosti")
         )
       ) {
@@ -350,7 +353,8 @@ export function setRepresentation(
   } else {
     for (const elem of AppSettings.switchElements.concat(
       Object.keys(WorkspaceTerms).filter((id) =>
-        WorkspaceTerms[id].types.includes(
+        filterEquivalent(
+          WorkspaceTerms[id].types,
           parsePrefix("z-sgov-pojem", "typ-vlastnosti")
         )
       )

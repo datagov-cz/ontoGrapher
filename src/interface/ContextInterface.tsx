@@ -58,6 +58,7 @@ import {
 import { updateApplicationContext } from "../queries/update/UpdateMiscQueries";
 import { reconstructApplicationContextWithDiagrams } from "../queries/update/UpdateReconstructAppContext";
 import { processQuery, processTransaction } from "./TransactionInterface";
+import { Environment } from "../config/Environment";
 
 export function retrieveInfoFromURLParameters(): boolean {
   const isURL = require("is-url");
@@ -68,14 +69,15 @@ export function retrieveInfoFromURLParameters(): boolean {
       AppSettings.contextIRIs.push(decodeURIComponent(vocab));
     return true;
   } else {
-    console.error("Unable to parse vocabulary IRI(s) from the URL.");
-    return false;
+    if (!Environment.standalone)
+      console.error("Unable to parse vocabulary IRI(s) from the URL.");
+    return Environment.standalone;
   }
 }
 
 export async function updateContexts(): Promise<boolean> {
   const { strategy, contextsMissingAppContexts, contextsMissingAttachments } =
-    await getSettings(AppSettings.contextEndpoint);
+    await getSettings(AppSettings.contextIRIs);
   await fetchUsers(
     ...Object.values(Diagrams)
       .flatMap((d) => d.collaborators)
@@ -152,33 +154,13 @@ export async function updateContexts(): Promise<boolean> {
   return true;
 }
 
-export async function retrieveVocabularyData(): Promise<boolean> {
+export async function retrieveVocabularyData(
+  contexts: string[] = AppSettings.contextIRIs
+): Promise<boolean> {
   await fetchVocabularies(
     AppSettings.contextEndpoint,
     AppSettings.cacheContext
   );
-  const vocabularyQ = [
-    "PREFIX owl: <http://www.w3.org/2002/07/owl#> ",
-    "PREFIX skos: <http://www.w3.org/2004/02/skos/core#> ",
-    "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> ",
-    "PREFIX termit: <http://onto.fel.cvut.cz/ontologies/application/termit/>",
-    "PREFIX a-popis-dat-pojem: <http://onto.fel.cvut.cz/ontologies/slovník/agendový/popis-dat/pojem/>",
-    "PREFIX dcterms: <http://purl.org/dc/terms/>",
-    "select ?contextIRI ?scheme ?vocabLabel ?vocabIRI ?changeContext",
-    "where {",
-    "graph ?contextIRI {",
-    `OPTIONAL { ?vocabulary <${parsePrefix(
-      "d-sgov-pracovní-prostor-pojem",
-      "má-kontext-sledování-změn"
-    )}> ?changeContext. }`,
-    "?vocabIRI a a-popis-dat-pojem:slovník .",
-    "?vocabIRI a-popis-dat-pojem:má-glosář ?scheme.",
-    "?vocabIRI dcterms:title ?vocabLabel .",
-    "}",
-    `values ?contextIRI {<${AppSettings.contextIRIs.join("> <")}>}`,
-    "}",
-  ].join(`
-  `);
   const vocabularies: {
     [key: string]: {
       names: { [key: string]: string };
@@ -188,38 +170,66 @@ export async function retrieveVocabularyData(): Promise<boolean> {
       changeContext?: string;
     };
   } = {};
-  const responseInit: boolean = await processQuery(
-    AppSettings.contextEndpoint,
-    vocabularyQ
-  )
-    .then((response) => response.json())
-    .then((data) => {
-      if (data.results.bindings.length === 0) return false;
-      for (const result of data.results.bindings) {
-        if (!(result.vocabIRI.value in vocabularies)) {
-          vocabularies[result.vocabIRI.value] = {
-            names: {},
-            terms: {},
-            graph: result.contextIRI.value,
-            glossary: result.scheme.value,
-          };
+  for (let i = 0; i < Math.ceil(contexts.length / 3); i++) {
+    const vocabSlice: typeof vocabularies = {};
+    const slice = contexts.slice(i * 3, (i + 1) * 3);
+    const vocabularyQ = [
+      "PREFIX owl: <http://www.w3.org/2002/07/owl#> ",
+      "PREFIX skos: <http://www.w3.org/2004/02/skos/core#> ",
+      "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> ",
+      "PREFIX termit: <http://onto.fel.cvut.cz/ontologies/application/termit/>",
+      "PREFIX a-popis-dat-pojem: <http://onto.fel.cvut.cz/ontologies/slovník/agendový/popis-dat/pojem/>",
+      "PREFIX dcterms: <http://purl.org/dc/terms/>",
+      "select ?contextIRI ?scheme ?vocabLabel ?vocabIRI ?changeContext",
+      "where {",
+      "graph ?contextIRI {",
+      `OPTIONAL { ?vocabulary <${parsePrefix(
+        "d-sgov-pracovní-prostor-pojem",
+        "má-kontext-sledování-změn"
+      )}> ?changeContext. }`,
+      "?vocabIRI a a-popis-dat-pojem:slovník .",
+      "?vocabIRI a-popis-dat-pojem:má-glosář ?scheme.",
+      "?vocabIRI dcterms:title ?vocabLabel .",
+      "}",
+      `values ?contextIRI {<${slice.join("> <")}>}`,
+      "}",
+    ].join(`
+  `);
+    await processQuery(AppSettings.contextEndpoint, vocabularyQ)
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.results.bindings.length === 0) return false;
+        for (const result of data.results.bindings) {
+          if (!(result.vocabIRI.value in vocabSlice)) {
+            vocabSlice[result.vocabIRI.value] = {
+              names: {},
+              terms: {},
+              graph: result.contextIRI.value,
+              glossary: result.scheme.value,
+            };
+          }
+          if (result.changeContext)
+            vocabSlice[result.vocabIRI.value].changeContext =
+              result.changeContext.value;
+          vocabSlice[result.vocabIRI.value].names[
+            result.vocabLabel["xml:lang"]
+          ] = result.vocabLabel.value;
         }
-        if (result.changeContext)
-          vocabularies[result.vocabIRI.value].changeContext =
-            result.changeContext.value;
-        vocabularies[result.vocabIRI.value].names[
-          result.vocabLabel["xml:lang"]
-        ] = result.vocabLabel.value;
-      }
-      return true;
-    })
-    .catch(() => false);
-  if (!responseInit) return false;
-  await fetchVocabulary(
-    Object.keys(vocabularies).map((vocab) => vocabularies[vocab].glossary),
-    false,
-    AppSettings.contextEndpoint
-  ).catch(() => false);
+        return true;
+      })
+      .then(() =>
+        fetchVocabulary(
+          Object.keys(vocabSlice).map((vocab) => vocabSlice[vocab].glossary),
+          false,
+          AppSettings.contextEndpoint
+        )
+      )
+      .then(() => Object.assign(vocabularies, vocabSlice))
+      .catch((e) => {
+        console.error(e);
+        return false;
+      });
+  }
   for (const vocab in vocabularies) {
     Object.assign(
       WorkspaceTerms,
@@ -249,19 +259,6 @@ export async function retrieveVocabularyData(): Promise<boolean> {
       WorkspaceVocabularies[vocab].changeContext =
         vocabularies[vocab].changeContext;
     Object.assign(WorkspaceTerms, vocabularies[vocab].terms);
-  }
-  const numberOfVocabularies = Object.keys(vocabularies).length;
-  if (numberOfVocabularies === 1)
-    AppSettings.name = Object.values(vocabularies)[0].names;
-  else {
-    for (const lang in AppSettings.name)
-      AppSettings.name[lang] = `${Object.keys(vocabularies).length} ${
-        Locale[AppSettings.interfaceLanguage][
-          numberOfVocabularies >= 5
-            ? "vocabulariesMorePlural"
-            : "vocabulariesPlural"
-        ]
-      }`;
   }
   return true;
 }

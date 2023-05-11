@@ -37,7 +37,7 @@ export const ListLanguageControls: React.FC<Props> = (props: Props) => {
                 onClick={() => props.addLanguageInput(lang)}
               >
                 <img
-                  src={`http://purecatamphetamine.github.io/country-flag-icons/3x2/${Flags[lang]}.svg`}
+                  src={`https://purecatamphetamine.github.io/country-flag-icons/3x2/${Flags[lang]}.svg`}
                   alt={Languages[lang]}
                   className="flag"
                 />

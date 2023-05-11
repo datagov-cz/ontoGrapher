@@ -1,5 +1,7 @@
+import { Locale } from "../config/Locale";
 import {
   AppSettings,
+  EquivalentClasses,
   Links,
   Stereotypes,
   WorkspaceVocabularies,
@@ -72,7 +74,21 @@ export async function getVocabularies(): Promise<boolean> {
           );
         }
       });
+      activateEquivalentClasses(Links);
+      activateEquivalentClasses(Stereotypes);
+    } else {
+      throw new Error(Locale[AppSettings.interfaceLanguage].vocabularyNotFound);
     }
   }
-  return results.every((bool) => bool);
+  return true;
+}
+
+function activateEquivalentClasses(iris: typeof Links | typeof Stereotypes) {
+  for (const iri in iris) {
+    if (!(iri in EquivalentClasses)) continue;
+    for (const eq of EquivalentClasses[iri]) {
+      if (eq in iris) continue;
+      iris[eq] = iris[iri];
+    }
+  }
 }

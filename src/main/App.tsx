@@ -20,6 +20,7 @@ import {
   WorkspaceElements,
   WorkspaceLinks,
 } from "../config/Variables";
+import { CellColors } from "../config/visual/CellColors";
 import { dumpDebugData, loadDebugData } from "../function/FunctionDebug";
 import { resetDiagramSelection } from "../function/FunctionDiagram";
 import {
@@ -43,6 +44,7 @@ import {
   updateContexts,
 } from "../interface/ContextInterface";
 import { getVocabularies } from "../interface/JSONInterface";
+import { standaloneGetVocabularies } from "../interface/StandaloneInterface";
 import {
   abortTransaction,
   processTransaction,
@@ -57,8 +59,6 @@ import { qb } from "../queries/QueryBuilder";
 import { updateVocabularyAnnotations } from "../queries/update/UpdateChangeQueries";
 import { updateDiagramMetadata } from "../queries/update/UpdateDiagramQueries";
 import { MainView } from "./MainView";
-import { CellColors } from "../config/visual/CellColors";
-import { standaloneGetVocabularies } from "../interface/StandaloneInterface";
 
 interface DiagramAppProps {}
 
@@ -174,8 +174,14 @@ export default class App extends React.Component<
     const process0 = await getVocabularies();
     if (!process0) return false;
     if (standalone) {
-      const process1 = standaloneGetVocabularies();
+      const process1 = await standaloneGetVocabularies();
       if (!process1) return false;
+      const process2 = await retrieveVocabularyData();
+      if (!process2) return false;
+      const process3 = await updateContexts();
+      if (!process3) return false;
+      const process4 = await retrieveContextData();
+      if (!process4) return false;
       return true;
     } else {
       const process1 = retrieveInfoFromURLParameters();
@@ -202,10 +208,7 @@ export default class App extends React.Component<
   handleChangeLanguage(languageCode: string) {
     this.setState({ projectLanguage: languageCode });
     AppSettings.canvasLanguage = languageCode;
-    document.title =
-      AppSettings.name[languageCode] +
-      " | " +
-      Locale[AppSettings.interfaceLanguage].ontoGrapher;
+    document.title = Locale[AppSettings.interfaceLanguage].ontoGrapher;
     graph.getElements().forEach((cell) => {
       if (cell.id in WorkspaceElements) {
         drawGraphElement(cell, languageCode, AppSettings.representation);

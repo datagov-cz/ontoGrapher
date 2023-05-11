@@ -14,5 +14,6 @@ export var CacheSearchVocabularies: {
     namespace: string;
     glossary: string;
     diagrams: string[];
+    graph: string;
   };
 } = {};

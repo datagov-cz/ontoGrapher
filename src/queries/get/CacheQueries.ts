@@ -9,6 +9,7 @@ import {
   initLanguageObject,
   parsePrefix,
 } from "../../function/FunctionEditVars";
+import { getEquivalents } from "../../function/FunctionEquivalents";
 import { createRestriction } from "../../function/FunctionRestriction";
 import { processQuery } from "../../interface/TransactionInterface";
 
@@ -18,6 +19,7 @@ export async function fetchVocabularies(
 ): Promise<boolean> {
   const query = [
     "PREFIX skos: <http://www.w3.org/2004/02/skos/core#> ",
+    "PREFIX a-popis-dat-pojem: <http://onto.fel.cvut.cz/ontologies/slovník/agendový/popis-dat/pojem/>",
     "SELECT ?vocabulary ?scheme ?title ?namespace ?term ?type ?diagram where {",
     "graph <" + context + "> {",
     "<" +
@@ -30,10 +32,9 @@ export async function fetchVocabularies(
       parsePrefix("a-popis-dat-pojem", "má-přílohu"),
       parsePrefix("d-sgov-pracovní-prostor-pojem", "má-přílohu"),
     ].join("> <")}>}}`,
-    "?vocabulary <http://onto.fel.cvut.cz/ontologies/slovník/agendový/popis-dat/pojem/má-glosář> ?scheme.",
+    "?vocabulary a a-popis-dat-pojem:slovník .",
+    "?vocabulary a-popis-dat-pojem:má-glosář ?scheme.",
     "?vocabulary <http://purl.org/dc/terms/title> ?title.",
-    "?term skos:inScheme ?scheme.",
-    "?term a ?type.",
     "}}",
   ].join(" ");
   return await processQuery(endpoint, query)
@@ -47,6 +48,7 @@ export async function fetchVocabularies(
             namespace: row.namespace ? row.namespace.value : "",
             glossary: row.scheme.value,
             diagrams: [],
+            graph: row.vocabulary.value,
           };
         }
         if (
@@ -367,7 +369,10 @@ export async function fetchFullRelationships(
     "select ?term2 ?label ?relation ?graph where {",
     "graph ?graph {",
     "values ?term {<" + term + ">}.",
-    "?relation a <" + parsePrefix("z-sgov-pojem", "typ-vztahu") + ">.",
+    "?relation a ?relationType.",
+    `values ?relationType {<${getEquivalents(
+      parsePrefix("z-sgov-pojem", "typ-vztahu")
+    ).join("> <")}>}`,
     "?relation rdfs:subClassOf ?restriction1.",
     "?relation rdfs:subClassOf ?restriction2.",
     "?relation skos:prefLabel ?label.",

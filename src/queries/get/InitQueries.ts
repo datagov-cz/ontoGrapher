@@ -163,7 +163,9 @@ export async function getElementsConfig(
   }
 }
 
-export async function getSettings(contextEndpoint: string): Promise<{
+export async function getSettings(
+  contexts: string[] = AppSettings.contextIRIs
+): Promise<{
   strategy: ContextLoadingStrategy | undefined;
   contextsMissingAppContexts: string[];
   contextsMissingAttachments: string[];
@@ -201,11 +203,11 @@ export async function getSettings(contextEndpoint: string): Promise<{
     "   ?ogContext og:contextVersion ?context .",
     "  }",
     "}",
-    `values ?vocabContext {<${AppSettings.contextIRIs.join("> <")}>}`,
+    `values ?vocabContext {<${contexts.join("> <")}>}`,
     "} order by asc(?index)",
   ].join(`
   `);
-  await processQuery(contextEndpoint, query)
+  await processQuery(AppSettings.contextEndpoint, query)
     .then((response) => {
       return response.json();
     })
