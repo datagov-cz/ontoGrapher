@@ -19,6 +19,7 @@ import {
   WorkspaceTerms,
   WorkspaceVocabularies,
 } from "../../../../config/Variables";
+import { RepresentationConfig } from "../../../../config/logic/RepresentationConfig";
 import { Shapes } from "../../../../config/visual/Shapes";
 import {
   drawGraphElement,
