@@ -28,7 +28,7 @@ export function createValues(
   values: { [key: string]: string[] },
   prefixes: { [key: string]: string }
 ) {
-  let result: string[] = [];
+  const result: string[] = [];
   for (const key in values) {
     const prefix = prefixes[key];
     for (const val of values[key]) {

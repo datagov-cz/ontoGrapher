@@ -42,7 +42,7 @@ import {
   retrieveVocabularyData,
   updateContexts,
 } from "../interface/ContextInterface";
-import { getVocabulariesFromRemoteJSON } from "../interface/JSONInterface";
+import { getVocabularies } from "../interface/JSONInterface";
 import {
   abortTransaction,
   processTransaction,
@@ -58,6 +58,7 @@ import { updateVocabularyAnnotations } from "../queries/update/UpdateChangeQueri
 import { updateDiagramMetadata } from "../queries/update/UpdateDiagramQueries";
 import { MainView } from "./MainView";
 import { CellColors } from "../config/visual/CellColors";
+import { standaloneGetVocabularies } from "../interface/StandaloneInterface";
 
 interface DiagramAppProps {}
 
@@ -163,26 +164,30 @@ export default class App extends React.Component<
     };
     if (Environment.debug && loadDebugData()) finishUp();
     else
-      this.loadAndPrepareData().then((r) => {
+      this.loadAndPrepareData(Environment.standalone).then((r) => {
         if (r) finishUp();
         else this.handleLoadingError();
       });
   }
 
-  async loadAndPrepareData(): Promise<boolean> {
-    const process0 = await getVocabulariesFromRemoteJSON(
-      "https://raw.githubusercontent.com/opendata-mvcr/ontoGrapher/main/src/config/Vocabularies.json"
-    );
+  async loadAndPrepareData(standalone: boolean): Promise<boolean> {
+    const process0 = await getVocabularies();
     if (!process0) return false;
-    const process1 = retrieveInfoFromURLParameters();
-    if (!process1) return false;
-    const process2 = await retrieveVocabularyData();
-    if (!process2) return false;
-    const process3 = await updateContexts();
-    if (!process3) return false;
-    const process4 = await retrieveContextData();
-    if (!process4) return false;
-    return true;
+    if (standalone) {
+      const process1 = standaloneGetVocabularies();
+      if (!process1) return false;
+      return true;
+    } else {
+      const process1 = retrieveInfoFromURLParameters();
+      if (!process1) return false;
+      const process2 = await retrieveVocabularyData();
+      if (!process2) return false;
+      const process3 = await updateContexts();
+      if (!process3) return false;
+      const process4 = await retrieveContextData();
+      if (!process4) return false;
+      return true;
+    }
   }
 
   handleChangeInterfaceLanguage(languageCode: string) {

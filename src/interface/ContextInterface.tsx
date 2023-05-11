@@ -30,6 +30,7 @@ import {
 } from "../function/FunctionElem";
 import { isTermReadOnly } from "../function/FunctionGetVars";
 import { initConnections } from "../function/FunctionRestriction";
+import { qb } from "../queries/QueryBuilder";
 import {
   fetchReadOnlyTerms,
   fetchVocabularies,
@@ -45,7 +46,6 @@ import {
   getLinksConfig,
   getSettings,
 } from "../queries/get/InitQueries";
-import { qb } from "../queries/QueryBuilder";
 import { updateDeleteDiagram } from "../queries/update/UpdateDiagramQueries";
 import {
   updateProjectElement,

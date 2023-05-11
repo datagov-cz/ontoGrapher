@@ -257,7 +257,8 @@ export async function getSettings(contextEndpoint: string): Promise<{
           reconstructWorkspace = true;
         }
         if (result.active) {
-          Diagrams[result.id.value].active = result.active.value === "true";
+          Diagrams[result.id.value].active =
+            result.active.value === "true" && result.vocabulary;
         }
         if (result.description) {
           Diagrams[result.id.value].description = result.description.value;
