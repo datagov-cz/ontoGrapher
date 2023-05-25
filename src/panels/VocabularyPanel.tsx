@@ -35,6 +35,7 @@ import VocabularyFolder from "./element/VocabularyFolder";
 import { VocabularySelector } from "./element/VocabularySelector";
 import ModalRemoveConcept from "./modal/ModalRemoveConcept";
 import ModalRemoveReadOnlyConcept from "./modal/ModalRemoveReadOnlyConcept";
+import { Environment } from "../config/Environment";
 
 interface Props {
   projectLanguage: string;
@@ -75,7 +76,7 @@ export default class VocabularyPanel extends React.Component<Props, State> {
       selectedElements: AppSettings.selectedElements,
       shownElements: {},
       selectedID: "",
-      showLucene: true,
+      showLucene: !Environment.standalone,
       shownLucene: {},
       groupLucene: true,
       loadingLucene: false,

@@ -28,6 +28,7 @@ import { CacheConnection } from "../../../../types/CacheConnection";
 import ConnectionCache from "./ConnectionCache";
 import ConnectionFilter from "./ConnectionFilter";
 import ConnectionWorkspace from "./ConnectionWorkspace";
+import { Environment } from "../../../../config/Environment";
 
 interface Props {
   //Element ID from DetailElement
@@ -43,7 +44,6 @@ interface State {
   selected: string[];
   shownConnections: string[];
   showFilter: boolean;
-  showLucene: boolean;
   shownLucene: CacheConnection[];
   loadingLucene: boolean;
 }
@@ -62,7 +62,6 @@ export default class ConnectionList extends React.Component<Props, State> {
       selected: [],
       shownConnections: [],
       showFilter: false,
-      showLucene: true,
       shownLucene: [],
       loadingLucene: false,
     };
@@ -193,13 +192,14 @@ export default class ConnectionList extends React.Component<Props, State> {
 
   componentDidMount() {
     this.setState({ shownConnections: this.filter() });
-    this.getConnectionsFromOtherVocabularies();
+    if (!Environment.standalone) this.getConnectionsFromOtherVocabularies();
   }
 
   componentDidUpdate(prevProps: Readonly<Props>) {
     if (
-      (prevProps.id !== this.props.id && this.props.id) ||
-      this.props.freeze !== prevProps.freeze
+      !Environment.standalone &&
+      ((prevProps.id !== this.props.id && this.props.id) ||
+        this.props.freeze !== prevProps.freeze)
     )
       this.getConnectionsFromOtherVocabularies();
   }
@@ -246,7 +246,8 @@ export default class ConnectionList extends React.Component<Props, State> {
                 spreadConnections(this.props.id, this.state.selected).then(
                   (queries) => {
                     this.props.performTransaction(...queries);
-                    this.getConnectionsFromOtherVocabularies();
+                    if (!Environment.standalone)
+                      this.getConnectionsFromOtherVocabularies();
                     this.setState({ selected: [] });
                   }
                 );
