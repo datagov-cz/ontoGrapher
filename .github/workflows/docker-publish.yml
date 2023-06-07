@@ -9,7 +9,7 @@ on:
 
 env:
   IMAGE_NAME: al-ontographer
-  AL_URL: https://xn--slovnk-test-scb.dia.gov.cz/modelujeme
+  AL_DEV_URL: https://xn--slovnk-test-scb.dia.gov.cz/modelujeme
 
 jobs:
 
@@ -61,4 +61,4 @@ jobs:
         uses: wei/curl@v1.1.1
         with:
           args: |
-            -H \"X-Secret: ${{ secrets.AL_DEV_SECRET }}\" -X POST ${{ env.AL_URL }}/update/${{ env.IMAGE_NAME }}.php
+            -H \"X-Secret: ${{ secrets.AL_DEV_SECRET }}\" -X POST ${{ env.AL_DEV_URL }}/update/${{ env.IMAGE_NAME }}.php
