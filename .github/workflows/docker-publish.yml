@@ -9,7 +9,7 @@ on:
 
 env:
   IMAGE_NAME: al-ontographer
-  AL_DEV_URL: https://xn--slovnk-test-scb.dia.gov.cz/modelujeme
+  AL_DEV_URL: ${{ vars.AL_DEV_URL }}    # e.g. https://xn--slovnk-test-scb.dia.gov.cz/modelujeme
 
 jobs:
 
