@@ -57,7 +57,7 @@ export const cs: { [Property in keyof typeof en]: string } = {
   modalNewElemIRI: "Pojem bude vytvořen s tímto IRI:",
   terms: "pojmy",
   termsCase: "pojmů",
-  fromList: "Ze seznamu",
+  fromList: "Z projektu",
   otherVocabularies: "Ostatní slovníky",
   authenticationError:
     "Chyba autentikace. Prosím, kontaktujte serverového administrátora.",
