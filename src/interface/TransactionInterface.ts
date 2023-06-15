@@ -28,7 +28,12 @@ export async function processTransaction(
       .then((headers) => {
         let location = headers.get("location");
         if (location) return location;
-        else return undefined;
+        else {
+          console.error(
+            "Unable to get location header to proceed with transaction."
+          );
+          return undefined;
+        }
       })
       .catch((e) => {
         console.error(e);

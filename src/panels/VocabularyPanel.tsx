@@ -35,6 +35,8 @@ import VocabularyFolder from "./element/VocabularyFolder";
 import { VocabularySelector } from "./element/VocabularySelector";
 import ModalRemoveConcept from "./modal/ModalRemoveConcept";
 import ModalRemoveReadOnlyConcept from "./modal/ModalRemoveReadOnlyConcept";
+import { LanguageObject } from "../config/Languages";
+import { initLanguageObject } from "../function/FunctionEditVars";
 
 interface Props {
   projectLanguage: string;
@@ -89,6 +91,12 @@ export default class VocabularyPanel extends React.Component<Props, State> {
     this.update = this.update.bind(this);
   }
 
+  getEditableVocabularies(): string[] {
+    return Object.keys(WorkspaceVocabularies).filter((v) =>
+      AppSettings.contextIRIs.includes(WorkspaceVocabularies[v].graph)
+    );
+  }
+
   showItem(id: string) {
     const vocabulary = getVocabularyFromScheme(WorkspaceTerms[id].inScheme);
     const isOpen = this.state.open[vocabulary];
@@ -134,10 +142,7 @@ export default class VocabularyPanel extends React.Component<Props, State> {
     this.setState({
       search: search,
       open: Object.fromEntries(
-        Object.keys(WorkspaceVocabularies).map((vocab) => [
-          vocab,
-          !(search === ""),
-        ])
+        this.getEditableVocabularies().map((vocab) => [vocab, !(search === "")])
       ),
     });
     window.clearTimeout(this.searchTimeout);
@@ -201,7 +206,7 @@ export default class VocabularyPanel extends React.Component<Props, State> {
         tag: AppSettings.canvasLanguage,
       }).map((result) => result.result)
     ).map((num) => FlexDocumentIDTable[num as number]);
-    Object.keys(WorkspaceVocabularies).forEach((vocab) => {
+    this.getEditableVocabularies().forEach((vocab) => {
       result[vocab] = {};
       Object.keys(Shapes)
         .concat("unsorted")
@@ -252,7 +257,7 @@ export default class VocabularyPanel extends React.Component<Props, State> {
 
   getFolders(): JSX.Element[] {
     const result: JSX.Element[] = [];
-    for (const vocabulary in WorkspaceVocabularies) {
+    for (const vocabulary of this.getEditableVocabularies()) {
       const vocabularyConcepts: JSX.Element[] = [];
       for (const iri in this.state.shownElements[vocabulary]) {
         if (this.state.shownElements[vocabulary][iri].length === 0) continue;
@@ -371,19 +376,21 @@ export default class VocabularyPanel extends React.Component<Props, State> {
     return result;
   }
 
-  filter(vocabs: string[]) {
+  filter(vocabularies: string[]) {
     const result: { label: string; value: string }[] = [];
-    for (const vocab of vocabs) {
+    for (const vocabulary of vocabularies) {
+      let labels: LanguageObject = initLanguageObject("");
+      if (vocabulary in WorkspaceVocabularies)
+        labels = WorkspaceVocabularies[vocabulary].labels;
+      if (vocabulary in CacheSearchVocabularies)
+        labels = CacheSearchVocabularies[vocabulary].labels;
       result.push({
-        label: getLabelOrBlank(
-          CacheSearchVocabularies[vocab].labels,
-          this.props.projectLanguage
-        ),
-        value: vocab,
+        label: getLabelOrBlank(labels, this.props.projectLanguage),
+        value: vocabulary,
       });
     }
     this.setState({ vocabs: result }, () => {
-      if (vocabs.length > 0 || this.state.search.length > 0)
+      if (vocabularies.length > 0 || this.state.search.length > 0)
         this.getSearchResults(this.state.search);
     });
   }
