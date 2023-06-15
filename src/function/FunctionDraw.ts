@@ -37,12 +37,8 @@ export function getListClassNamesObject(arr: any[], i: number) {
 
 export function setDisplayLabel(id: string, languageCode: string) {
   if (WorkspaceElements[id].selectedLabel[languageCode] === "") {
-    const altLabel = WorkspaceTerms[id].altLabels.find(
-      (alt) => alt.language === languageCode
-    );
-    WorkspaceElements[id].selectedLabel[languageCode] = altLabel
-      ? altLabel.label
-      : WorkspaceTerms[id].labels[languageCode];
+    WorkspaceElements[id].selectedLabel[languageCode] =
+      WorkspaceTerms[id].labels[languageCode];
   }
 }
 

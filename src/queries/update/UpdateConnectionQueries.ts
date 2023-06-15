@@ -164,7 +164,7 @@ function updateDefaultLink(ids: string[]): string {
   const inserts: string[] = [];
 
   for (const vocabulary of Object.keys(vocabulariesAndTerms)) {
-    checkReadOnlyVocabulary(vocabulary);
+    if (WorkspaceVocabularies[vocabulary].readOnly) continue;
     const contextIRI = WorkspaceVocabularies[vocabulary].graph;
     const terms = vocabulariesAndTerms[vocabulary];
     const insertConnections: Connection[] = [];

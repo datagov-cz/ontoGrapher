@@ -1,18 +1,16 @@
 import React, { useEffect, useState } from "react";
-import NewLinkModal from "./NewLinkModal";
-import NewElemModal from "./NewElemModal";
-import { resetDiagramSelection } from "../../function/FunctionDiagram";
 import { ElemCreationStrategy, Representation } from "../../config/Enum";
-import { createTerm } from "../../function/FunctionCreateElem";
-import { saveNewLink } from "../../function/FunctionLink";
 import { AppSettings } from "../../config/Variables";
-import { setRepresentation } from "../../function/FunctionGraph";
-import { getElementPosition } from "../../function/FunctionElem";
-import { graph } from "../../graph/Graph";
-import { drawGraphElement, highlightCells } from "../../function/FunctionDraw";
-import { initConnections } from "../../function/FunctionRestriction";
-import { updateProjectLink } from "../../queries/update/UpdateLinkQueries";
 import { CellColors } from "../../config/visual/CellColors";
+import { createTerm } from "../../function/FunctionCreateElem";
+import { resetDiagramSelection } from "../../function/FunctionDiagram";
+import { drawGraphElement, highlightCells } from "../../function/FunctionDraw";
+import { getElementPosition } from "../../function/FunctionElem";
+import { setRepresentation } from "../../function/FunctionGraph";
+import { saveNewLink } from "../../function/FunctionLink";
+import { graph } from "../../graph/Graph";
+import NewElemModal from "./NewElemModal";
+import NewLinkModal from "./NewLinkModal";
 
 export type ElemCreationConfiguration = {
   strategy: ElemCreationStrategy;
@@ -79,8 +77,7 @@ export const CreationModals: React.FC<Props> = (props) => {
                   props.linkConfiguration.sourceID,
                   props.linkConfiguration.targetID,
                 ]
-              ),
-              updateProjectLink(false, ...initConnections().add)
+              )
             );
             setRepresentation(
               Representation.COMPACT,
