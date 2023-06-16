@@ -29,14 +29,25 @@ type Props = {
 
 export const MainView: React.FC<Props> = (props: Props) => {
   const mode = useStoreState(StoreSettings, (s) => s.mainViewMode);
+  const getStyle = () => {
+    const diagramPanel = document.getElementById("diagramPanel");
+    const menuPanel = document.getElementById("menuPanel");
+    const subtract =
+      (diagramPanel ? diagramPanel.offsetHeight : 81) +
+      (menuPanel ? menuPanel.offsetHeight : 31);
+    return {
+      cursor: props.freeze ? "not-allowed" : "inherit",
+      opacity: props.freeze ? "0.5" : "1",
+      height: `calc(100vh - ${subtract}px)`,
+    };
+  };
+  let timer: NodeJS.Timeout;
+  window.addEventListener("resize", () => {
+    clearTimeout(timer);
+    timer = setTimeout(getStyle, 200);
+  });
   return (
-    <div
-      className={"mainView"}
-      style={{
-        cursor: props.freeze ? "not-allowed" : "inherit",
-        opacity: props.freeze ? "0.5" : "1",
-      }}
-    >
+    <div className={"mainView"} style={getStyle()}>
       {mode === MainViewMode.CANVAS && (
         <DiagramCanvas
           projectLanguage={props.projectLanguage}

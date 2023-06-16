@@ -269,6 +269,22 @@ export class DetailElementDescriptionCard extends React.Component<
                 selectedLabel: { ...prev.selectedLabel, [language]: name },
               }))
             }
+            deleteAltLabel={(alt: AlternativeLabel) => {
+              this.setState((prev) => ({
+                changes: true,
+                inputAltLabels: _.without(prev.inputAltLabels, alt),
+                selectedLabel:
+                  prev.selectedLabel[this.props.selectedLanguage] === alt.label
+                    ? {
+                        ...prev.selectedLabel,
+                        [this.props.selectedLanguage]:
+                          WorkspaceTerms[this.props.id].labels[
+                            this.props.selectedLanguage
+                          ],
+                      }
+                    : prev.selectedLabel,
+              }));
+            }}
           />
           <h5>{Locale[AppSettings.interfaceLanguage].detailPanelStereotype}</h5>
           <Form.Select

@@ -115,7 +115,7 @@
   word-wrap: break-word;
   background-color: white;
   float: right;
-  height: calc(100vh - 112px) !important;
+  height: fit-content;
   max-width: 600px;
 
   .spinnerFlex {
@@ -147,9 +147,9 @@
 
   .overlay {
     min-height: 33%;
-    overflow: hidden;
+    height: fit-content;
     position: absolute;
-    bottom: 0;
+    bottom: 1000;
     right: 0;
     border: 1px solid rgba(190, 190, 190, 0.75);
     background-color: white;
@@ -162,7 +162,7 @@
     transition: transform 0.25s ease;
 
     &.visible {
-      transform: translateY(0%);
+      transform: translateY(-100%);
       transition: transform 0.25s ease;
     }
 
@@ -201,14 +201,10 @@
     }
   }
 
-
-
-
   .detailsFlex {
     display: flex;
     align-items: flex-start;
     flex-direction: column;
-    height: 100%;
   }
 
   .disabled {
@@ -270,7 +266,7 @@
 
   .detailElement {
     width: 100%;
-    height: 90%;
+    height: 100%;
 
     .accordions {
       width: 100%;

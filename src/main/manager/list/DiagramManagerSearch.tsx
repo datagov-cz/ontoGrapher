@@ -23,7 +23,7 @@ interface Props {
 
 export const DiagramManagerSearch: React.FC<Props> = (props: Props) => {
   return (
-    <div>
+    <div id="diagramSearch">
       <InputGroup>
         <InputGroup.Text className="top-item" id="inputGroupPrepend">
           <SearchIcon />

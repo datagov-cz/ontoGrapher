@@ -67,7 +67,7 @@ export default class MenuPanel extends React.Component<
 
   render() {
     return (
-      <nav className={"menuPanel"}>
+      <nav className={"menuPanel"} id="menuPanel">
         <Container fluid className="upper">
           <Row>
             <Col className="left">
