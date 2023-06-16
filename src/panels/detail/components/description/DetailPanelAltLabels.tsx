@@ -12,6 +12,7 @@ import {
 } from "../../../../config/Variables";
 import { getListClassNamesObject } from "../../../../function/FunctionDraw";
 import { ListItemControls } from "../items/ListItemControls";
+import DeleteIcon from "@mui/icons-material/Delete";
 
 interface Props {
   id: string;
@@ -20,6 +21,7 @@ interface Props {
   language: string;
   readOnly: boolean;
   addAltLabel: (alt: AlternativeLabel) => void;
+  deleteAltLabel: (alt: AlternativeLabel) => void;
   selectDisplayLabel: (name: string, language: string) => void;
 }
 
@@ -81,6 +83,15 @@ export const DetailPanelAltLabels: React.FC<Props> = (props: Props) => {
                 ) : (
                   <LabelIcon />
                 )}
+              </Button>
+            )}
+            {!props.readOnly && (
+              <Button
+                variant="light"
+                onClick={() => props.deleteAltLabel(alt)}
+                className={classNames("plainButton")}
+              >
+                <DeleteIcon />
               </Button>
             )}
           </span>

@@ -331,7 +331,8 @@ export const ModalAddTrope: React.FC<Props> = (props: Props) => {
                         variant="light"
                         key={t}
                         active={t === selectedTrope}
-                        onClick={() => {
+                        onClick={(event) => {
+                          event.preventDefault();
                           setSelectedTrope(t);
                         }}
                       >
