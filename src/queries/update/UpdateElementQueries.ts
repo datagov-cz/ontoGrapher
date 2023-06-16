@@ -75,7 +75,6 @@ export function updateProjectElement(del: boolean, ...iris: string[]): string {
       qb.s(qb.i(iri), "og:name", qb.a(names), names.length > 0),
       qb.s(qb.i(iri), "og:active", qb.ll(WorkspaceElements[iri].active)),
     ];
-
     data[AppSettings.applicationContext].push(...ogStatements);
     Object.values(Diagrams)
       .filter((diag) => !diag.toBeDeleted)

@@ -33,6 +33,7 @@ import { updateProjectElement } from "../../../queries/update/UpdateElementQueri
 import { updateProjectLink } from "../../../queries/update/UpdateLinkQueries";
 import { DetailPanelAltLabels } from "./description/DetailPanelAltLabels";
 import { DetailPanelCardinalities } from "./description/DetailPanelCardinalities";
+import _ from "lodash";
 
 interface Props {
   id: string;
@@ -231,9 +232,28 @@ export const LinkControls: React.FC<Props> = (props: Props) => {
                   ...selectedLabel,
                   [language]: name,
                 };
-                setSelectedLabel(newSL);
                 WorkspaceElements[WorkspaceLinks[props.id].iri].selectedLabel =
                   newSL;
+                setSelectedLabel(newSL);
+                save();
+              }}
+              deleteAltLabel={(alt: AlternativeLabel) => {
+                if (selectedLabel[selectedLanguage] === alt.label) {
+                  const newSL = {
+                    ...selectedLabel,
+                    [selectedLanguage]:
+                      WorkspaceTerms[WorkspaceLinks[props.id].iri].labels[
+                        selectedLanguage
+                      ],
+                  };
+                  WorkspaceElements[
+                    WorkspaceLinks[props.id].iri
+                  ].selectedLabel = newSL;
+                  setSelectedLabel(newSL);
+                }
+                const newAL = _.without(inputAltLabels, alt);
+                setInputAltLabels(newAL);
+                WorkspaceTerms[WorkspaceLinks[props.id].iri].altLabels = newAL;
                 save();
               }}
             />

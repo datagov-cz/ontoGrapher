@@ -8,7 +8,7 @@ interface Props {
   id: string;
   performTransaction: (...queries: string[]) => void;
   visible: boolean;
-  close: Function;
+  close: () => void;
   save: (id: string) => void;
 }
 
@@ -22,6 +22,7 @@ export default class ConnectionOverlay extends React.Component<Props> {
             projectLanguage={this.props.projectLanguage}
             save={this.props.save}
             performTransaction={this.props.performTransaction}
+            close={this.props.close}
           />
         )}
       </div>

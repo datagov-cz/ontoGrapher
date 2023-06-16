@@ -50,7 +50,10 @@ export default class DiagramPanel extends React.Component<Props, State> {
 
   render() {
     return (
-      <div className={"diagramPanel" + (this.props.freeze ? " disabled" : "")}>
+      <div
+        className={"diagramPanel" + (this.props.freeze ? " disabled" : "")}
+        id="diagramPanel"
+      >
         <DiagramHome
           update={() => {
             this.forceUpdate();

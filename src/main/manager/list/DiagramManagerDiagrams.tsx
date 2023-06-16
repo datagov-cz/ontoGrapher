@@ -26,9 +26,21 @@ interface Props {
 export const DiagramManagerDiagrams: React.FC<Props> = (props: Props) => {
   const [hovered, setHovered] = useState<boolean>(false);
   const [modalRemoveDiagram, setModalRemoveDiagram] = useState<string>("");
+  const getStyle = () => {
+    const diagramSearch = document.getElementById("diagramSearch");
+    const subtract = (diagramSearch ? diagramSearch.offsetHeight : 0) + 200;
+    return {
+      height: `calc(100% - ${subtract}px)`,
+    };
+  };
+  let timer: NodeJS.Timeout;
+  window.addEventListener("resize", () => {
+    clearTimeout(timer);
+    timer = setTimeout(getStyle, 200);
+  });
 
   return (
-    <div className="diagramList">
+    <div className="diagramList" style={getStyle()}>
       {props.diagrams.map((diag) => (
         <DiagramManagerListItem
           key={diag}

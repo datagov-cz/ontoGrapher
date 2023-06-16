@@ -195,7 +195,7 @@ export const en = {
   help: "Help",
   modalNewElemError: "You must enter a label in order to create a new term.",
   selectVocabulary: "Term will be created in:",
-  fromList: "From the list",
+  fromList: "From project",
   otherVocabularies: "Other vocabularies",
   view: "View",
   switchColors: "Vocabulary color scheme",
