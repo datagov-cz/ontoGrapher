@@ -151,7 +151,7 @@ export function createNewTerm(
 /**
  * Returns whether the element (based on its types) should be visible given a representation.
  * By default, true is returned even if the types contain none of the requested types.
- * This behaviour can be
+ * This behaviour can be modified with the strict parameter.
  * @param types Types of the element.
  * @param representation Requested representation.
  * @param strict Enforce that the types must contain a requested representation type.
