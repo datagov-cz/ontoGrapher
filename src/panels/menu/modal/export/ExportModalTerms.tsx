@@ -99,11 +99,9 @@ export const ExportModalTerms: React.FC<Props> = (props: Props) => {
             </Col>
           </Form.Group>
         </Form>
-        {exportType === "CSV" && (
-          <Alert variant="warning">
-            {Locale[AppSettings.interfaceLanguage].listExportAlert}
-          </Alert>
-        )}
+        <Alert variant="warning">
+          {Locale[AppSettings.interfaceLanguage].listExportAlert}
+        </Alert>
         {error && <Alert variant="danger">{error}</Alert>}
       </Modal.Body>
       <Modal.Footer>
