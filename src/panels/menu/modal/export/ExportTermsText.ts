@@ -1,6 +1,13 @@
+import { Representation } from "../../../../config/Enum";
 import { Locale } from "../../../../config/Locale";
-import { AppSettings, WorkspaceTerms } from "../../../../config/Variables";
+import {
+  AppSettings,
+  WorkspaceLinks,
+  WorkspaceTerms,
+} from "../../../../config/Variables";
+import { RepresentationConfig } from "../../../../config/logic/RepresentationConfig";
 import { parsePrefix } from "../../../../function/FunctionEditVars";
+import { filterEquivalent } from "../../../../function/FunctionEquivalents";
 import { getLabelOrBlank } from "../../../../function/FunctionGetVars";
 import { exportFunctions } from "./FunctionExportTerms";
 
@@ -23,6 +30,15 @@ export async function exportTermsText(
       WorkspaceTerms[term].labels,
       exportLanguage
     );
+    const termType = WorkspaceTerms[term].types.find((f) =>
+      filterEquivalent(
+        RepresentationConfig[Representation.FULL].visibleStereotypes,
+        f
+      )
+    );
+    if (!termType) {
+      return [new Blob(), `Could not find type for term ${term}`];
+    }
     const superClassAttributes = exportFunctions.getSuperClassAttributes(
       exportTerms,
       term
@@ -70,6 +86,39 @@ export async function exportTermsText(
     for (const o of eventOutputs) output += o + carriageReturn;
     for (const o of tropeOutputs) output += o + carriageReturn;
     for (const o of relationshipOutputs) output += o + carriageReturn;
+    if (termType === parsePrefix("z-sgov-pojem", "typ-vztahu")) {
+      const linkID = Object.keys(WorkspaceLinks).find(
+        (l) => WorkspaceLinks[l].iri === term
+      );
+      if (linkID) {
+        const sourceIRI = WorkspaceLinks[linkID].source;
+        const targetIRI = WorkspaceLinks[linkID].target;
+        const sourceType = WorkspaceTerms[sourceIRI].types.find((f) =>
+          filterEquivalent(
+            RepresentationConfig[Representation.FULL].visibleStereotypes,
+            f
+          )
+        );
+        const targetType = WorkspaceTerms[targetIRI].types.find((f) =>
+          filterEquivalent(
+            RepresentationConfig[Representation.FULL].visibleStereotypes,
+            f
+          )
+        );
+        if (sourceType)
+          output +=
+            tab +
+            bullet +
+            getLabelOrBlank(WorkspaceTerms[sourceIRI].labels, exportLanguage) +
+            carriageReturn;
+        if (targetType)
+          output +=
+            tab +
+            bullet +
+            getLabelOrBlank(WorkspaceTerms[targetIRI].labels, exportLanguage) +
+            carriageReturn;
+      }
+    }
   });
   return [new Blob([output], { type: fileID }), ""];
 }
