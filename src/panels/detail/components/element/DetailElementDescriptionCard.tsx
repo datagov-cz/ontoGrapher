@@ -48,6 +48,7 @@ import { updateProjectElement } from "../../../../queries/update/UpdateElementQu
 import { DetailPanelAltLabels } from "../description/DetailPanelAltLabels";
 import { ListItemControls } from "../items/ListItemControls";
 import { ModalAddTrope } from "./ModalAddTrope";
+import { Representation } from "../../../../config/Enum";
 
 type Props = {
   id: string;
@@ -349,74 +350,81 @@ export class DetailElementDescriptionCard extends React.Component<
               if (!this.state.readOnly) this.setState({ changes: true });
             }}
           />
-          <h5>{Locale[AppSettings.interfaceLanguage].intrinsicTropes}</h5>
-          {tropes.map((iri, i) => (
-            <div
-              key={iri}
-              onMouseEnter={() => this.setState({ hoveredTrope: i })}
-              onMouseLeave={() => this.setState({ hoveredTrope: -1 })}
-              className={classNames(
-                "detailInput",
-                "form-control",
-                "form-control-sm",
-                getListClassNamesObject(tropes, i)
-              )}
-            >
-              <span>
-                {getLabelOrBlank(
-                  WorkspaceTerms[iri].labels,
-                  this.props.selectedLanguage
-                )}
-              </span>
-              <span
-                className={classNames("controls", {
-                  hovered: i === this.state.hoveredTrope,
-                })}
-              >
-                <OverlayTrigger
-                  placement="left"
-                  delay={1000}
-                  overlay={
-                    <Tooltip>
-                      {Locale[AppSettings.interfaceLanguage].removeTrope}
-                    </Tooltip>
-                  }
+          {AppSettings.representation === Representation.COMPACT && (
+            <>
+              <h5>{Locale[AppSettings.interfaceLanguage].intrinsicTropes}</h5>
+              {tropes.map((iri, i) => (
+                <div
+                  key={iri}
+                  onMouseEnter={() => this.setState({ hoveredTrope: i })}
+                  onMouseLeave={() => this.setState({ hoveredTrope: -1 })}
+                  className={classNames(
+                    "detailInput",
+                    "form-control",
+                    "form-control-sm",
+                    getListClassNamesObject(tropes, i)
+                  )}
                 >
-                  <Button
-                    className="plainButton"
-                    variant="light"
-                    onClick={() => {
-                      for (const l of Object.keys(WorkspaceLinks)) {
-                        if (
-                          (WorkspaceLinks[l].source === iri ||
-                            WorkspaceLinks[l].target === iri) &&
-                          WorkspaceLinks[l].active
-                        )
-                          this.props.performTransaction(...deleteLink(l));
-                      }
-                      redrawElement(this.props.id, AppSettings.canvasLanguage);
-                    }}
+                  <span>
+                    {getLabelOrBlank(
+                      WorkspaceTerms[iri].labels,
+                      this.props.selectedLanguage
+                    )}
+                  </span>
+                  <span
+                    className={classNames("controls", {
+                      hovered: i === this.state.hoveredTrope,
+                    })}
                   >
-                    <RemoveIcon />
-                  </Button>
-                </OverlayTrigger>
-              </span>
-            </div>
-          ))}
-          {tropes.length === 0 && (
-            <Form.Control
-              className="detailInput noInput"
-              disabled
-              value=""
-              size="sm"
-            />
+                    <OverlayTrigger
+                      placement="left"
+                      delay={1000}
+                      overlay={
+                        <Tooltip>
+                          {Locale[AppSettings.interfaceLanguage].removeTrope}
+                        </Tooltip>
+                      }
+                    >
+                      <Button
+                        className="plainButton"
+                        variant="light"
+                        onClick={() => {
+                          for (const l of Object.keys(WorkspaceLinks)) {
+                            if (
+                              (WorkspaceLinks[l].source === iri ||
+                                WorkspaceLinks[l].target === iri) &&
+                              WorkspaceLinks[l].active
+                            )
+                              this.props.performTransaction(...deleteLink(l));
+                          }
+                          redrawElement(
+                            this.props.id,
+                            AppSettings.canvasLanguage
+                          );
+                        }}
+                      >
+                        <RemoveIcon />
+                      </Button>
+                    </OverlayTrigger>
+                  </span>
+                </div>
+              ))}
+              {tropes.length === 0 && (
+                <Form.Control
+                  className="detailInput noInput"
+                  disabled
+                  value=""
+                  size="sm"
+                />
+              )}
+              <ListItemControls
+                addAction={() => this.setState({ modalTropes: true })}
+                popover={false}
+                tooltipText={Locale[AppSettings.interfaceLanguage].assignTrope}
+                disableAddControl={this.state.readOnly}
+              />
+            </>
           )}
-          <ListItemControls
-            addAction={() => this.setState({ modalTropes: true })}
-            popover={false}
-            tooltipText={Locale[AppSettings.interfaceLanguage].assignTrope}
-            disableAddControl={this.state.readOnly}
-          />
         </Accordion.Body>
         <ModalAddTrope
           modalTropes={this.state.modalTropes}
@@ -424,7 +432,7 @@ export class DetailElementDescriptionCard extends React.Component<
           selectedLanguage={this.props.selectedLanguage}
           performTransaction={this.props.performTransaction}
           update={this.props.save}
-          id={this.props.id}
+          term={this.props.id}
         />
       </Accordion.Item>
     );

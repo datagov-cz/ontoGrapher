@@ -69,10 +69,6 @@ export function getLabelOrBlank(
     : "<blank>";
 }
 
-export function getNameOrBlank(name: string) {
-  return name ? name : "<blank>";
-}
-
 export function checkLabels() {
   for (const link in Links) {
     for (const lang in Languages) {
@@ -239,7 +235,7 @@ export function getLastChangeDay() {
   return `${day}. ${month}. ${year}`;
 }
 
-export function getLinkIRI(linkID: string) {
+export function getOntographerLinkIRI(linkID: string) {
   return `${AppSettings.ontographerContext}/link/instance-${linkID}`;
 }
 

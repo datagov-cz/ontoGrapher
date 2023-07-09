@@ -54,7 +54,7 @@ interface Props {
   selectedLanguage: string;
   performTransaction: (...queries: string[]) => void;
   update: Function;
-  id: string;
+  term: string;
 }
 
 export const ModalAddTrope: React.FC<Props> = (props: Props) => {
@@ -140,37 +140,37 @@ export const ModalAddTrope: React.FC<Props> = (props: Props) => {
       props.performTransaction(
         ...createTerm(
           trimLanguageObjectInput(input),
-          getVocabularyFromScheme(WorkspaceTerms[props.id].inScheme),
+          getVocabularyFromScheme(WorkspaceTerms[props.term].inScheme),
           ElemCreationStrategy.INTRINSIC_TROPE_TYPE,
-          getElementPosition(props.id),
-          [props.id]
+          getElementPosition(props.term),
+          [props.term]
         )
       );
-      const elem = graph.getElements().find((elem) => elem.id === props.id);
+      const elem = graph.getElements().find((elem) => elem.id === props.term);
       if (elem) {
         drawGraphElement(
           elem,
           props.selectedLanguage,
           AppSettings.representation
         );
-        highlightCells(CellColors.detail, props.id);
+        highlightCells(CellColors.detail, props.term);
       }
       props.update();
     } else if (activeKey === "exist" && selectedTrope) {
       WorkspaceElements[selectedTrope].position[AppSettings.selectedDiagram] =
-        getElementPosition(props.id);
+        getElementPosition(props.term);
       WorkspaceElements[selectedTrope].hidden[AppSettings.selectedDiagram] =
         false;
       props.performTransaction(
         ...saveNewLink(
           parsePrefix("z-sgov-pojem", "má-vlastnost"),
-          props.id,
+          props.term,
           selectedTrope,
           Representation.FULL
         ),
         updateProjectElementDiagram(AppSettings.selectedDiagram, selectedTrope)
       );
-      redrawElement(props.id, props.selectedLanguage);
+      redrawElement(props.term, props.selectedLanguage);
     } else {
       throw new Error("Invalid save request.");
     }
@@ -209,7 +209,7 @@ export const ModalAddTrope: React.FC<Props> = (props: Props) => {
         <Modal.Title>
           {Locale[AppSettings.interfaceLanguage].assignTropeHeader}
           {getLabelOrBlank(
-            WorkspaceTerms[props.id].labels,
+            WorkspaceTerms[props.term].labels,
             props.selectedLanguage
           )}
         </Modal.Title>

@@ -24,7 +24,6 @@ import {
 } from "../queries/update/UpdateLinkQueries";
 import { addLink } from "./FunctionCreateVars";
 import {
-  getLinkOrVocabElem,
   getNewLink,
   getUnderlyingFullConnections,
   getVocabularyFromScheme,
@@ -237,8 +236,7 @@ export function saveNewLink(
       updateProjectLink(true, sourceId, targetId)
     );
   }
-  if (type === LinkType.DEFAULT)
-    setLabels(link, getLinkOrVocabElem(iri).labels[AppSettings.canvasLanguage]);
+  setLabels(link);
   if (isLinkVisible(iri, type, AppSettings.representation)) link.addTo(graph);
   return queries;
 }

@@ -122,6 +122,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
       },
       clickThreshold: 0,
       async: false,
+      frozen: false,
       sorting: joint.dia.Paper.sorting.APPROX,
       connectionStrategy: joint.connectionStrategies.pinAbsolute,
       defaultConnectionPoint: {

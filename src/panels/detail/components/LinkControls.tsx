@@ -1,5 +1,12 @@
 import React, { useRef, useState } from "react";
-import { CloseButton } from "react-bootstrap";
+import RemoveIcon from "@mui/icons-material/Remove";
+import {
+  Button,
+  CloseButton,
+  Form,
+  OverlayTrigger,
+  Tooltip,
+} from "react-bootstrap";
 import { LanguageSelector } from "../../../components/LanguageSelector";
 import { LinkType, Representation } from "../../../config/Enum";
 import { LanguageObject } from "../../../config/Languages";
@@ -16,17 +23,23 @@ import {
 import { Cardinality } from "../../../datatypes/Cardinality";
 import {
   getDisplayLabel,
+  getListClassNamesObject,
   getSelectedLabels,
+  redrawElement,
 } from "../../../function/FunctionDraw";
 import { initLanguageObject } from "../../../function/FunctionEditVars";
 import {
+  getIntrinsicTropeTypeIDs,
   getLabelOrBlank,
   getLinkOrVocabElem,
   getUnderlyingFullConnections,
   getVocabularyFromScheme,
 } from "../../../function/FunctionGetVars";
 import { setLabels } from "../../../function/FunctionGraph";
-import { setFullLinksCardinalitiesFromCompactLink } from "../../../function/FunctionLink";
+import {
+  deleteLink,
+  setFullLinksCardinalitiesFromCompactLink,
+} from "../../../function/FunctionLink";
 import { graph } from "../../../graph/Graph";
 import { updateTermConnections } from "../../../queries/update/UpdateConnectionQueries";
 import { updateProjectElement } from "../../../queries/update/UpdateElementQueries";
@@ -34,6 +47,9 @@ import { updateProjectLink } from "../../../queries/update/UpdateLinkQueries";
 import { DetailPanelAltLabels } from "./description/DetailPanelAltLabels";
 import { DetailPanelCardinalities } from "./description/DetailPanelCardinalities";
 import _ from "lodash";
+import classNames from "classnames";
+import { ListItemControls } from "./items/ListItemControls";
+import { ModalAddTrope } from "./element/ModalAddTrope";
 
 interface Props {
   id: string;
@@ -54,6 +70,9 @@ export const LinkControls: React.FC<Props> = (props: Props) => {
   const [selectedLanguage, setSelectedLanguage] = useState<string>(
     AppSettings.canvasLanguage
   );
+  const [tropes, setTropes] = useState<string[]>([]);
+  const [hoveredTrope, setHoveredTrope] = useState<number>(-1);
+  const [modalTropes, setModalTropes] = useState<boolean>(false);
 
   const prevPropsID = useRef<string>("");
 
@@ -62,48 +81,41 @@ export const LinkControls: React.FC<Props> = (props: Props) => {
       const iri = WorkspaceLinks[props.id].iri;
       const queries: string[] = [];
       const link = graph.getLinks().find((link) => link.id === props.id);
-      if (link) {
-        setLabels(link, getLinkOrVocabElem(iri).labels[props.projectLanguage]);
-      }
-      if (AppSettings.representation === Representation.FULL)
+      if (!link)
+        console.error(
+          "Link " + props.id + " to be edited couldn't be found on the canvas."
+        );
+      if (AppSettings.representation === Representation.FULL) {
+        setLabels(link!);
         queries.push(updateTermConnections(props.id));
-      else {
-        const link = graph.getLinks().find((link) => link.id === props.id);
-        if (link) {
-          if (iri in WorkspaceTerms) {
-            setLabels(
-              link,
-              WorkspaceElements[iri].selectedLabel[props.projectLanguage]
-            );
-            queries.push(updateProjectElement(true, iri));
-          }
-          const underlyingConnections = getUnderlyingFullConnections(props.id);
-          if (underlyingConnections) {
-            setFullLinksCardinalitiesFromCompactLink(
-              props.id,
-              underlyingConnections.src,
-              underlyingConnections.tgt
-            );
-            queries.push(
-              updateProjectLink(
-                true,
-                underlyingConnections.src,
-                underlyingConnections.tgt
-              ),
-              updateTermConnections(
-                underlyingConnections.src,
-                underlyingConnections.tgt
-              )
-            );
-          }
-          if (!(link && underlyingConnections && iri in WorkspaceTerms))
-            console.error("Error updating compact link.");
-        }
       }
-      queries.push(updateProjectLink(true, props.id));
-      props.save(props.id);
-      props.performTransaction(...queries);
-    }
+      if (AppSettings.representation === Representation.COMPACT) {
+        const underlyingConnections = getUnderlyingFullConnections(props.id);
+        if (!(underlyingConnections && iri in WorkspaceTerms))
+          console.error("Error updating compact link.");
+        setLabels(link!);
+        queries.push(updateProjectElement(true, iri));
+        setFullLinksCardinalitiesFromCompactLink(
+          props.id,
+          underlyingConnections!.src,
+          underlyingConnections!.tgt
+        );
+        queries.push(
+          updateProjectLink(
+            true,
+            underlyingConnections!.src,
+            underlyingConnections!.tgt
+          ),
+          updateTermConnections(
+            underlyingConnections!.src,
+            underlyingConnections!.tgt
+          )
+        );
+        queries.push(updateProjectLink(true, props.id));
+        props.save(props.id);
+        props.performTransaction(...queries);
+      }
+    } else console.error("Could not find link ID " + props.id + ".");
   };
 
   const isReadOnly = (id: string): boolean => {
@@ -121,6 +133,7 @@ export const LinkControls: React.FC<Props> = (props: Props) => {
     props.id in WorkspaceLinks &&
     prevPropsID.current !== props.id
   ) {
+    debugger;
     prevPropsID.current = props.id;
     const iri = WorkspaceLinks[props.id].iri;
     const sourceCardinality = CardinalityPool.findIndex(
@@ -148,6 +161,12 @@ export const LinkControls: React.FC<Props> = (props: Props) => {
         : initLanguageObject("")
     );
     setReadOnly(isReadOnly(props.id));
+    if (
+      AppSettings.representation === Representation.COMPACT &&
+      LinkType.DEFAULT === WorkspaceLinks[props.id].type
+    )
+      setTropes(getIntrinsicTropeTypeIDs(iri));
+    else setTropes([]);
   }
 
   const prepareCardinality = (cardinality: string): Cardinality =>
@@ -213,7 +232,7 @@ export const LinkControls: React.FC<Props> = (props: Props) => {
       />
       {AppSettings.representation === Representation.COMPACT &&
         WorkspaceLinks[props.id].type === LinkType.DEFAULT && (
-          <div>
+          <>
             <h5>{Locale[AppSettings.interfaceLanguage].detailPanelAltLabel}</h5>
             <DetailPanelAltLabels
               altLabels={inputAltLabels}
@@ -257,8 +276,86 @@ export const LinkControls: React.FC<Props> = (props: Props) => {
                 save();
               }}
             />
-          </div>
+            <h5>{Locale[AppSettings.interfaceLanguage].intrinsicTropes}</h5>
+            {tropes.map((iri, i) => (
+              <div
+                key={iri}
+                onMouseEnter={() => setHoveredTrope(i)}
+                onMouseLeave={() => setHoveredTrope(-1)}
+                className={classNames(
+                  "detailInput",
+                  "form-control",
+                  "form-control-sm",
+                  getListClassNamesObject(tropes, i)
+                )}
+              >
+                <span>
+                  {getLabelOrBlank(
+                    WorkspaceTerms[iri].labels,
+                    props.projectLanguage
+                  )}
+                </span>
+                <span
+                  className={classNames("controls", {
+                    hovered: i === hoveredTrope,
+                  })}
+                >
+                  <OverlayTrigger
+                    placement="left"
+                    delay={1000}
+                    overlay={
+                      <Tooltip>
+                        {Locale[AppSettings.interfaceLanguage].removeTrope}
+                      </Tooltip>
+                    }
+                  >
+                    <Button
+                      className="plainButton"
+                      variant="light"
+                      onClick={() => {
+                        for (const l of Object.keys(WorkspaceLinks)) {
+                          if (
+                            (WorkspaceLinks[l].source === iri ||
+                              WorkspaceLinks[l].target === iri) &&
+                            WorkspaceLinks[l].active
+                          )
+                            props.performTransaction(...deleteLink(l));
+                        }
+                        redrawElement(props.id, AppSettings.canvasLanguage);
+                      }}
+                    >
+                      <RemoveIcon />
+                    </Button>
+                  </OverlayTrigger>
+                </span>
+              </div>
+            ))}
+            {tropes.length === 0 && (
+              <Form.Control
+                className="detailInput noInput"
+                disabled
+                value=""
+                size="sm"
+              />
+            )}
+            <ListItemControls
+              addAction={() => setModalTropes(true)}
+              popover={false}
+              tooltipText={Locale[AppSettings.interfaceLanguage].assignTrope}
+              disableAddControl={readOnly}
+            />
+          </>
         )}
+      {AppSettings.representation === Representation.COMPACT && (
+        <ModalAddTrope
+          modalTropes={modalTropes}
+          hideModal={() => setModalTropes(false)}
+          selectedLanguage={props.projectLanguage}
+          performTransaction={props.performTransaction}
+          update={props.save}
+          term={WorkspaceLinks[props.id].iri}
+        />
+      )}
     </>
   );
 };
