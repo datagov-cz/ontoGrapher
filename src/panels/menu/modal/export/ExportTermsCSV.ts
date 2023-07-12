@@ -176,8 +176,8 @@ export async function exportTermsCSV(
                 WorkspaceTerms[sourceIRI].labels,
                 exportLanguage
               )}`,
-              WorkspaceTerms[sourceIRI].definitions[exportLanguage],
-              sourceIRI in sources ? sources[sourceIRI] : "",
+              "",
+              "",
               getLabelOrBlank(Links[mvp1IRI].labels, exportLanguage),
             ]) + carriageReturn;
         if (targetType)
@@ -193,8 +193,8 @@ export async function exportTermsCSV(
                 WorkspaceTerms[targetIRI].labels,
                 exportLanguage
               )}`,
-              WorkspaceTerms[targetIRI].definitions[exportLanguage],
-              targetIRI in sources ? sources[targetIRI] : "",
+              "",
+              "",
               getLabelOrBlank(Links[mvp2IRI].labels, exportLanguage),
             ]) + carriageReturn;
       }
