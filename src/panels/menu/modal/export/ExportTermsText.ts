@@ -2,6 +2,7 @@ import { Representation } from "../../../../config/Enum";
 import { Locale } from "../../../../config/Locale";
 import {
   AppSettings,
+  Links,
   WorkspaceLinks,
   WorkspaceTerms,
 } from "../../../../config/Variables";
@@ -9,6 +10,7 @@ import { RepresentationConfig } from "../../../../config/logic/RepresentationCon
 import { parsePrefix } from "../../../../function/FunctionEditVars";
 import { filterEquivalent } from "../../../../function/FunctionEquivalents";
 import { getLabelOrBlank } from "../../../../function/FunctionGetVars";
+import { mvp1IRI, mvp2IRI } from "../../../../function/FunctionGraph";
 import { exportFunctions } from "./FunctionExportTerms";
 
 export async function exportTermsText(
@@ -109,13 +111,25 @@ export async function exportTermsText(
           output +=
             tab +
             bullet +
-            getLabelOrBlank(WorkspaceTerms[sourceIRI].labels, exportLanguage) +
+            `${getLabelOrBlank(
+              Links[mvp1IRI].labels,
+              exportLanguage
+            )} ${getLabelOrBlank(
+              WorkspaceTerms[sourceIRI].labels,
+              exportLanguage
+            )}` +
             carriageReturn;
         if (targetType)
           output +=
             tab +
             bullet +
-            getLabelOrBlank(WorkspaceTerms[targetIRI].labels, exportLanguage) +
+            `${getLabelOrBlank(
+              Links[mvp2IRI].labels,
+              exportLanguage
+            )} ${getLabelOrBlank(
+              WorkspaceTerms[targetIRI].labels,
+              exportLanguage
+            )}` +
             carriageReturn;
       }
     }

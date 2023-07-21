@@ -1,6 +1,7 @@
 import { Locale } from "../../../../config/Locale";
 import {
   AppSettings,
+  Links,
   Stereotypes,
   WorkspaceLinks,
 } from "../../../../config/Variables";
@@ -8,6 +9,7 @@ import { RepresentationConfig } from "../../../../config/logic/RepresentationCon
 import { parsePrefix } from "../../../../function/FunctionEditVars";
 import { filterEquivalent } from "../../../../function/FunctionEquivalents";
 import { getLabelOrBlank } from "../../../../function/FunctionGetVars";
+import { mvp1IRI, mvp2IRI } from "../../../../function/FunctionGraph";
 import { Representation } from "./../../../../config/Enum";
 import { WorkspaceTerms } from "./../../../../config/Variables";
 import { exportFunctions } from "./FunctionExportTerms";
@@ -167,10 +169,16 @@ export async function exportTermsCSV(
               termLabel,
               "",
               "",
-              getLabelOrBlank(WorkspaceTerms[sourceIRI].labels, exportLanguage),
-              WorkspaceTerms[sourceIRI].definitions[exportLanguage],
-              sourceIRI in sources ? sources[sourceIRI] : "",
-              getLabelOrBlank(Stereotypes[sourceType].labels, exportLanguage),
+              `${getLabelOrBlank(
+                Links[mvp1IRI].labels,
+                exportLanguage
+              )} ${getLabelOrBlank(
+                WorkspaceTerms[sourceIRI].labels,
+                exportLanguage
+              )}`,
+              "",
+              "",
+              getLabelOrBlank(Links[mvp1IRI].labels, exportLanguage),
             ]) + carriageReturn;
         if (targetType)
           output +=
@@ -178,10 +186,16 @@ export async function exportTermsCSV(
               termLabel,
               "",
               "",
-              getLabelOrBlank(WorkspaceTerms[targetIRI].labels, exportLanguage),
-              WorkspaceTerms[targetIRI].definitions[exportLanguage],
-              targetIRI in sources ? sources[targetIRI] : "",
-              getLabelOrBlank(Stereotypes[targetType].labels, exportLanguage),
+              `${getLabelOrBlank(
+                Links[mvp2IRI].labels,
+                exportLanguage
+              )} ${getLabelOrBlank(
+                WorkspaceTerms[targetIRI].labels,
+                exportLanguage
+              )}`,
+              "",
+              "",
+              getLabelOrBlank(Links[mvp2IRI].labels, exportLanguage),
             ]) + carriageReturn;
       }
     }
