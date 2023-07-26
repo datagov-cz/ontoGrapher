@@ -236,7 +236,7 @@ export function isElementPositionOutdated(elem: joint.dia.Element) {
  */
 export function moveElements(
   sourceElem: joint.dia.Element,
-  evt: JQuery.MouseUpEvent
+  evt: joint.dia.Event
 ): string[] {
   // get the selection rectangle data
   const { rect, bbox, ox, oy } = evt.data;

@@ -16,8 +16,7 @@ export function changeDiagrams(diagram?: string) {
       .reduce((a, b) => (Diagrams[a].index < Diagrams[b].index ? a : b));
   if (diagram && Diagrams[diagram]) {
     graph.clear();
-    AppSettings.selectedLinks = [];
-    AppSettings.selectedElements = [];
+    clearSelection();
     AppSettings.selectedDiagram = diagram;
     for (const id in WorkspaceElements) {
       if (

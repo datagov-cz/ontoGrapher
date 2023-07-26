@@ -28,7 +28,7 @@ import {
 } from "../queries/update/UpdateLinkQueries";
 import { insertNewCacheTerms, insertNewRestrictions } from "./FunctionCache";
 import { addLink } from "./FunctionCreateVars";
-import { updateDiagramPosition } from "./FunctionDiagram";
+import { clearSelection, updateDiagramPosition } from "./FunctionDiagram";
 import { drawGraphElement, getDisplayLabel } from "./FunctionDraw";
 import {
   initElements,
@@ -174,52 +174,60 @@ export function setLabels(link: joint.dia.Link) {
       getDisplayLabel(trope, AppSettings.canvasLanguage)
     );
   }
-  const tropesLength = tropes.reduce(
-    (a, b) => (a.length > b.length ? a : b),
-    ""
-  ).length;
-  const width =
-    7 +
-    (tropes.length === 0 ? 0 : 20) +
-    (label.length > tropesLength ? 0 : tropesLength * 2);
   link.labels([]);
   link.appendLabel({
     markup: [
-      { tagName: "rect", selector: "body" },
-      { tagName: "text", selector: "label" },
-      { tagName: "text", selector: "labelAttrs" },
+      {
+        tagName: "g",
+        selector: "global",
+        children: [
+          { tagName: "rect", selector: "body" },
+          {
+            tagName: "g",
+            selector: "labels",
+            children: [
+              { tagName: "text", selector: "label" },
+              { tagName: "text", selector: "labelAttrs" },
+            ],
+          },
+        ],
+      },
     ],
     attrs: {
+      global: {
+        y: "-50%",
+      },
       label: {
         text: label,
         fill: "#000000",
-        fontSize: 14,
-        textVerticalAnchor: "top",
+        fontSize: tropes.length === 0 ? 14 : 16,
+        textVerticalAnchor: tropes.length === 0 ? "middle" : "top",
         textAnchor: "middle",
         pointerEvents: "none",
+        y: tropes.length === 0 ? 0 : -(11 + Math.floor(tropes.length * 6.5)),
       },
       labelAttrs: {
-        ref: "body",
+        ref: "label",
         text: tropes.join("\n"),
         fill: "#000000",
         fontSize: 14,
         textVerticalAnchor: "top",
         textAnchor: "start",
-        refY: 18,
-        refX: 1,
+        x: "calc(-0.55*w)",
+        y: "calc(y + 22)",
         pointerEvents: "none",
       },
       body: {
-        ref: "label",
-        fill: "#ffffff",
+        ref: "labels",
+        width: "calc(1.1*w)",
+        height: "calc(1.1*h)",
+        x: "calc(-0.55*w)",
+        y: "calc(-0.55*h)",
         rx: 3,
         ry: 3,
-        refWidth: width,
-        refHeight: 3 + tropes.length * 13,
-        refX: -1 - (tropes.length === 0 ? 0 : 10),
-        refY: 0,
-        stroke: "#000000",
-        strokeWidth: 1,
+        stroke: "black",
+        strokeWidth: "0.5",
+        fill: "white",
       },
     },
     position: { distance: 0.5 },
@@ -227,7 +235,7 @@ export function setLabels(link: joint.dia.Link) {
   if (
     WorkspaceLinks[link.id].sourceCardinality &&
     WorkspaceLinks[link.id].sourceCardinality.getString() !== ""
-  ) {
+  )
     link.appendLabel({
       attrs: {
         text: {
@@ -236,18 +244,16 @@ export function setLabels(link: joint.dia.Link) {
       },
       position: { distance: 30 },
     });
-  }
   if (
     WorkspaceLinks[link.id].targetCardinality &&
     WorkspaceLinks[link.id].targetCardinality.getString() !== ""
-  ) {
+  )
     link.appendLabel({
       attrs: {
         text: { text: WorkspaceLinks[link.id].targetCardinality.getString() },
       },
       position: { distance: -30 },
     });
-  }
 }
 
 function storeElement(elem: joint.dia.Cell) {
@@ -295,8 +301,7 @@ export function setRepresentation(
     Diagrams[diag].representation = representation;
   }
   queries.push(updateDiagram(diag));
-  AppSettings.selectedLinks = [];
-  AppSettings.selectedElements = [];
+  clearSelection();
   let del = false;
   if (representation === Representation.COMPACT) {
     for (const id of Object.keys(WorkspaceElements).filter(

@@ -127,31 +127,23 @@ export function highlightCells(
     const cell = graph.getCell(id);
     if (!cell) return;
     if (cell.isLink()) {
-      cell.attr({
-        line: {
-          filter: {
-            name: "dropShadow",
-            args: {
-              dx: 2,
-              dy: 2,
-              blur: 3,
-              color: color,
-            },
-          },
+      cell.attr(`line/filter`, {
+        name: "dropShadow",
+        args: {
+          dx: 2,
+          dy: 2,
+          blur: 3,
+          color: color,
         },
       });
     } else if (cell.id) {
-      cell.attr({
-        [getElementShape(cell.id)]: {
-          filter: {
-            name: "highlight",
-            args: {
-              color: color,
-              width: 2,
-              opacity: 0.5,
-              blur: 5,
-            },
-          },
+      cell.attr(`${getElementShape(cell.id)}/filter`, {
+        name: "highlight",
+        args: {
+          color: color,
+          width: 2,
+          opacity: 0.5,
+          blur: 5,
         },
       });
     }
