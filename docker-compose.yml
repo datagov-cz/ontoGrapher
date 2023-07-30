@@ -6,6 +6,13 @@ services:
       context: .
       dockerfile: Dockerfile
       args:
-        PUBLIC_PATH: /
+        - PUBLIC_PATH=/
+        - REACT_APP_CONTEXT=$REACT_APP_CONTEXT
+        - REACT_APP_ID=$REACT_APP_ID
+        - REACT_APP_URL=$REACT_APP_URL
+        - REACT_APP_COMPONENTS=$REACT_APP_COMPONENTS
+        - REACT_APP_DEBUG=$REACT_APP_DEBUG
+        - REACT_APP_AUTHENTICATION=$REACT_APP_AUTHENTICATION
+        - REACT_APP_STANDALONE=$REACT_APP_STANDALONE
     ports:
       - 80:80
