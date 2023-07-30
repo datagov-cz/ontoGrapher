@@ -11,5 +11,5 @@ COPY . .
 RUN npx eslint --ext .ts,.tsx ./src/
 RUN npm run build
 
-FROM ghcr.io/datagov-cz/react-nginx/react-nginx:latest
+FROM nginx:latest
 COPY --from=node /ontographer/build /usr/share/nginx/html
