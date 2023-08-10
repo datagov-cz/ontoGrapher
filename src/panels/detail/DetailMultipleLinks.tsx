@@ -6,12 +6,9 @@ import { Locale } from "../../config/Locale";
 import {
   AppSettings,
   CardinalityPool,
-  Links,
   WorkspaceLinks,
-  WorkspaceTerms,
 } from "../../config/Variables";
 import { Cardinality } from "../../datatypes/Cardinality";
-import { getDisplayLabel } from "../../function/FunctionDraw";
 import {
   getExpressionByRepresentation,
   getLabelOrBlank,
@@ -110,23 +107,12 @@ export default class DetailMultipleLinks extends React.Component<Props, State> {
       this.state.targetCardinality
     );
     for (const id of AppSettings.selectedLinks) {
-      const iri = WorkspaceLinks[id].iri;
       if (cardinality === "sourceCardinality")
         this.setSourceCardinality(id, sourceCardinality);
       if (cardinality === "targetCardinality")
         this.setTargetCardinality(id, targetCardinality);
       const link = graph.getLinks().find((link) => link.id === id);
-      if (link) {
-        let label = "";
-        if (iri in Links)
-          label = getLabelOrBlank(
-            Links[iri].labels,
-            this.props.projectLanguage
-          );
-        if (iri in WorkspaceTerms)
-          label = getDisplayLabel(iri, this.props.projectLanguage);
-        setLabels(link, label);
-      }
+      if (link) setLabels(link);
       if (AppSettings.representation === Representation.COMPACT) {
         const underlyingConnections = getUnderlyingFullConnections(id);
         if (underlyingConnections) {

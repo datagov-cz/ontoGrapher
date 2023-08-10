@@ -151,7 +151,7 @@ export function createNewTerm(
 /**
  * Returns whether the element (based on its types) should be visible given a representation.
  * By default, true is returned even if the types contain none of the requested types.
- * This behaviour can be
+ * This behaviour can be modified with the strict parameter.
  * @param types Types of the element.
  * @param representation Requested representation.
  * @param strict Enforce that the types must contain a requested representation type.
@@ -236,7 +236,7 @@ export function isElementPositionOutdated(elem: joint.dia.Element) {
  */
 export function moveElements(
   sourceElem: joint.dia.Element,
-  evt: JQuery.MouseUpEvent
+  evt: joint.dia.Event
 ): string[] {
   // get the selection rectangle data
   const { rect, bbox, ox, oy } = evt.data;

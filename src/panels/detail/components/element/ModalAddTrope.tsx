@@ -37,6 +37,7 @@ import {
   trimLanguageObjectInput,
 } from "../../../../function/FunctionEditVars";
 import { getElementPosition } from "../../../../function/FunctionElem";
+import { filterEquivalent } from "../../../../function/FunctionEquivalents";
 import {
   getLabelOrBlank,
   getVocabularyFromScheme,
@@ -46,7 +47,6 @@ import { saveNewLink } from "../../../../function/FunctionLink";
 import { graph } from "../../../../graph/Graph";
 import { updateProjectElementDiagram } from "../../../../queries/update/UpdateElementQueries";
 import { ListLanguageControls } from "../items/ListLanguageControls";
-import { filterEquivalent } from "../../../../function/FunctionEquivalents";
 
 interface Props {
   modalTropes: boolean;
@@ -54,7 +54,7 @@ interface Props {
   selectedLanguage: string;
   performTransaction: (...queries: string[]) => void;
   update: Function;
-  id: string;
+  term: string;
 }
 
 export const ModalAddTrope: React.FC<Props> = (props: Props) => {
@@ -115,8 +115,8 @@ export const ModalAddTrope: React.FC<Props> = (props: Props) => {
     setError(errorText);
   }, [input, vocabulary]);
 
-  const getUnusedTropes: () => string[] = () => {
-    return Object.keys(WorkspaceTerms)
+  const getUnusedTropes: () => string[] = () =>
+    Object.keys(WorkspaceTerms)
       .filter(
         (term) =>
           filterEquivalent(
@@ -134,44 +134,43 @@ export const ModalAddTrope: React.FC<Props> = (props: Props) => {
               WorkspaceLinks[l].active
           )
       );
-  };
 
   const save = () => {
     if (activeKey === "new") {
       props.performTransaction(
         ...createTerm(
           trimLanguageObjectInput(input),
-          getVocabularyFromScheme(WorkspaceTerms[props.id].inScheme),
+          getVocabularyFromScheme(WorkspaceTerms[props.term].inScheme),
           ElemCreationStrategy.INTRINSIC_TROPE_TYPE,
-          getElementPosition(props.id),
-          [props.id]
+          getElementPosition(props.term),
+          [props.term]
         )
       );
-      const elem = graph.getElements().find((elem) => elem.id === props.id);
+      const elem = graph.getElements().find((elem) => elem.id === props.term);
       if (elem) {
         drawGraphElement(
           elem,
           props.selectedLanguage,
           AppSettings.representation
         );
-        highlightCells(CellColors.detail, props.id);
+        highlightCells(CellColors.detail, props.term);
       }
       props.update();
     } else if (activeKey === "exist" && selectedTrope) {
       WorkspaceElements[selectedTrope].position[AppSettings.selectedDiagram] =
-        getElementPosition(props.id);
+        getElementPosition(props.term);
       WorkspaceElements[selectedTrope].hidden[AppSettings.selectedDiagram] =
         false;
       props.performTransaction(
         ...saveNewLink(
           parsePrefix("z-sgov-pojem", "má-vlastnost"),
-          props.id,
+          props.term,
           selectedTrope,
           Representation.FULL
         ),
         updateProjectElementDiagram(AppSettings.selectedDiagram, selectedTrope)
       );
-      redrawElement(props.id, props.selectedLanguage);
+      redrawElement(props.term, props.selectedLanguage);
     } else {
       throw new Error("Invalid save request.");
     }
@@ -210,155 +209,159 @@ export const ModalAddTrope: React.FC<Props> = (props: Props) => {
         <Modal.Title>
           {Locale[AppSettings.interfaceLanguage].assignTropeHeader}
           {getLabelOrBlank(
-            WorkspaceTerms[props.id].labels,
+            WorkspaceTerms[props.term].labels,
             props.selectedLanguage
           )}
         </Modal.Title>
       </Modal.Header>
-      <Modal.Body>
-        <Tabs
-          defaultActiveKey={"0"}
-          activeKey={activeKey}
-          onSelect={(key) => setActiveKey(key as string)}
-        >
-          <Tab
-            title={Locale[AppSettings.interfaceLanguage].createTrope}
-            eventKey={"new"}
+      <Form
+        onSubmit={(event) => {
+          event.preventDefault();
+          save();
+        }}
+      >
+        <Modal.Body>
+          <Tabs
+            defaultActiveKey={"0"}
+            activeKey={activeKey}
+            onSelect={(key) => setActiveKey(key as string)}
           >
-            <br />
-            <p>
-              {Locale[AppSettings.interfaceLanguage].modalNewTropeDescription}
-            </p>
-            {activatedInputs.map((lang, i) => (
-              <InputGroup key={i}>
-                <InputGroup.Text>
-                  <img
-                    className="flag"
-                    src={`https://purecatamphetamine.github.io/country-flag-icons/3x2/${Flags[lang]}.svg`}
-                    alt={Languages[lang]}
+            <Tab
+              title={Locale[AppSettings.interfaceLanguage].createTrope}
+              eventKey={"new"}
+            >
+              <br />
+              <p>
+                {Locale[AppSettings.interfaceLanguage].modalNewTropeDescription}
+              </p>
+              {activatedInputs.map((lang, i) => (
+                <InputGroup key={i}>
+                  <InputGroup.Text>
+                    <img
+                      className="flag"
+                      src={`https://purecatamphetamine.github.io/country-flag-icons/3x2/${Flags[lang]}.svg`}
+                      alt={Languages[lang]}
+                    />
+                    {lang === AppSettings.canvasLanguage ? "*" : ""}
+                  </InputGroup.Text>
+                  <Form.Control
+                    value={input[lang]}
+                    className={classNames(
+                      getListClassNamesObject(activatedInputs, i)
+                    )}
+                    placeholder={Languages[lang]}
+                    onChange={(event) => {
+                      setInput((prev) => ({
+                        ...prev,
+                        [lang]: event.target.value,
+                      }));
+                    }}
                   />
-                  {lang === AppSettings.canvasLanguage ? "*" : ""}
-                </InputGroup.Text>
-                <Form.Control
-                  value={input[lang]}
-                  className={classNames(
-                    getListClassNamesObject(activatedInputs, i)
-                  )}
-                  placeholder={Languages[lang]}
-                  onChange={(event) => {
-                    setInput((prev) => ({
-                      ...prev,
-                      [lang]: event.target.value,
-                    }));
-                  }}
-                />
-              </InputGroup>
-            ))}
-            <ListLanguageControls
-              removeAction={() => {
-                const removeLang = _.last(activatedInputs);
-                setInput((prev) => ({
-                  ...prev,
-                  [removeLang!]: "",
-                }));
-                setActivatedInputs((prev) => _.dropRight(prev, 1));
-              }}
-              tooltipText={Locale[AppSettings.interfaceLanguage].addLanguage}
-              unfilledLanguages={Object.keys(Languages).filter(
-                (l) => !activatedInputs.includes(l)
-              )}
-              addLanguageInput={(lang: string) =>
-                setActivatedInputs((prev) => [...prev, lang])
-              }
-              disableAddControl={
-                activatedInputs.length === Object.keys(Languages).length
-              }
-              disableRemoveControl={activatedInputs.length === 1}
-            />
-            <br />
-            {!error && (
-              <Alert variant={"primary"}>{`${
-                Locale[AppSettings.interfaceLanguage].modalNewElemIRI
-              }
+                </InputGroup>
+              ))}
+              <ListLanguageControls
+                removeAction={() => {
+                  const removeLang = _.last(activatedInputs);
+                  setInput((prev) => ({
+                    ...prev,
+                    [removeLang!]: "",
+                  }));
+                  setActivatedInputs((prev) => _.dropRight(prev, 1));
+                }}
+                tooltipText={Locale[AppSettings.interfaceLanguage].addLanguage}
+                unfilledLanguages={Object.keys(Languages).filter(
+                  (l) => !activatedInputs.includes(l)
+                )}
+                addLanguageInput={(lang: string) =>
+                  setActivatedInputs((prev) => [...prev, lang])
+                }
+                disableAddControl={
+                  activatedInputs.length === Object.keys(Languages).length
+                }
+                disableRemoveControl={activatedInputs.length === 1}
+              />
+              <br />
+              {!error && (
+                <Alert variant={"primary"}>{`${
+                  Locale[AppSettings.interfaceLanguage].modalNewElemIRI
+                }
 					${createNewElemIRI(
             WorkspaceVocabularies[vocabulary].glossary,
             input[AppSettings.defaultLanguage]
           )}`}</Alert>
-            )}
-            {error && <Alert variant="danger">{error}</Alert>}
-          </Tab>
-          <Tab
-            title={Locale[AppSettings.interfaceLanguage].assignExistingTrope}
-            eventKey={"exist"}
-          >
-            <p />
-            {availableTropes.length === 0 && (
-              <Alert variant="warning">
-                {Locale[AppSettings.interfaceLanguage].noExistingTropes}
-              </Alert>
-            )}
-            {availableTropes.length > 0 && (
-              <Form.Control
-                value={tropeSearch}
-                onChange={(e) => setTropeSearch(e.target.value)}
-                placeholder={
-                  Locale[AppSettings.interfaceLanguage].searchExistingTropes
-                }
-              />
-            )}
-            <br />
-            <div className="tropeList">
-              <ListGroup>
-                {availableTropes
-                  .filter((t) =>
-                    getLabelOrBlank(
-                      WorkspaceTerms[t].labels,
-                      props.selectedLanguage
-                    )
-                      .toLowerCase()
-                      .trim()
-                      .includes(tropeSearch.toLowerCase().trim())
-                  )
-                  .sort()
-                  .map((t) => (
-                    <ListGroup.Item
-                      action
-                      variant="light"
-                      key={t}
-                      active={t === selectedTrope}
-                      onClick={() => {
-                        setSelectedTrope(t);
-                      }}
-                    >
-                      {getLabelOrBlank(
+              )}
+              {error && <Alert variant="danger">{error}</Alert>}
+            </Tab>
+            <Tab
+              title={Locale[AppSettings.interfaceLanguage].assignExistingTrope}
+              eventKey={"exist"}
+            >
+              <p />
+              {availableTropes.length === 0 && (
+                <Alert variant="warning">
+                  {Locale[AppSettings.interfaceLanguage].noExistingTropes}
+                </Alert>
+              )}
+              {availableTropes.length > 0 && (
+                <Form.Control
+                  value={tropeSearch}
+                  onChange={(e) => setTropeSearch(e.target.value)}
+                  placeholder={
+                    Locale[AppSettings.interfaceLanguage].searchExistingTropes
+                  }
+                />
+              )}
+              <br />
+              <div className="tropeList">
+                <ListGroup>
+                  {availableTropes
+                    .filter((t) =>
+                      getLabelOrBlank(
                         WorkspaceTerms[t].labels,
                         props.selectedLanguage
-                      )}
-                    </ListGroup.Item>
-                  ))}
-              </ListGroup>
-            </div>
-            <br />
-            {!selectedTrope && availableTropes.length > 0 && (
-              <Alert variant="danger">
-                {Locale[AppSettings.interfaceLanguage].mustAssignTropeConfirm}
-              </Alert>
-            )}
-          </Tab>
-        </Tabs>
-      </Modal.Body>
-      <Modal.Footer>
-        <Button variant="secondary" onClick={() => props.hideModal()}>
-          {Locale[AppSettings.interfaceLanguage].close}
-        </Button>
-        <Button
-          variant="primary"
-          disabled={isDisabled()}
-          onClick={() => save()}
-        >
-          {Locale[AppSettings.interfaceLanguage].assignTropeConfirm}
-        </Button>
-      </Modal.Footer>
+                      )
+                        .toLowerCase()
+                        .trim()
+                        .includes(tropeSearch.toLowerCase().trim())
+                    )
+                    .sort()
+                    .map((t) => (
+                      <ListGroup.Item
+                        action
+                        variant="light"
+                        key={t}
+                        active={t === selectedTrope}
+                        onClick={(event) => {
+                          event.preventDefault();
+                          setSelectedTrope(t);
+                        }}
+                      >
+                        {getLabelOrBlank(
+                          WorkspaceTerms[t].labels,
+                          props.selectedLanguage
+                        )}
+                      </ListGroup.Item>
+                    ))}
+                </ListGroup>
+              </div>
+              <br />
+              {!selectedTrope && availableTropes.length > 0 && (
+                <Alert variant="danger">
+                  {Locale[AppSettings.interfaceLanguage].mustAssignTropeConfirm}
+                </Alert>
+              )}
+            </Tab>
+          </Tabs>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => props.hideModal()}>
+            {Locale[AppSettings.interfaceLanguage].close}
+          </Button>
+          <Button type="submit" variant="primary" disabled={isDisabled()}>
+            {Locale[AppSettings.interfaceLanguage].assignTropeConfirm}
+          </Button>
+        </Modal.Footer>
+      </Form>
     </Modal>
   );
 };

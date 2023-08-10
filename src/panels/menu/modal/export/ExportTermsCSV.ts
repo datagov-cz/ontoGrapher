@@ -1,91 +1,28 @@
-import { RepresentationConfig } from "./../../../../config/logic/RepresentationConfig";
-import { Representation } from "../../../../config/Enum";
+import { Locale } from "../../../../config/Locale";
 import {
-  WorkspaceElements,
   AppSettings,
-  WorkspaceTerms,
+  Links,
   Stereotypes,
   WorkspaceLinks,
 } from "../../../../config/Variables";
+import { RepresentationConfig } from "../../../../config/logic/RepresentationConfig";
 import { parsePrefix } from "../../../../function/FunctionEditVars";
-import {
-  isElementHidden,
-  isElementVisible,
-} from "../../../../function/FunctionElem";
-import {
-  getLabelOrBlank,
-  getIntrinsicTropeTypeIDs,
-  getActiveToConnections,
-} from "../../../../function/FunctionGetVars";
-import { processQuery } from "../../../../interface/TransactionInterface";
-import _ from "lodash";
-import { Locale } from "../../../../config/Locale";
 import { filterEquivalent } from "../../../../function/FunctionEquivalents";
+import { getLabelOrBlank } from "../../../../function/FunctionGetVars";
+import { mvp1IRI, mvp2IRI } from "../../../../function/FunctionGraph";
+import { Representation } from "./../../../../config/Enum";
+import { WorkspaceTerms } from "./../../../../config/Variables";
+import { exportFunctions } from "./FunctionExportTerms";
 
 export async function exportTermsCSV(
   exportLanguage: string
 ): Promise<[source: Blob, error: string]> {
   const fileID = "data:text/csv;charset=utf-8";
   const carriageReturn = "\r\n";
-  const diagramTerms = Object.keys(WorkspaceElements)
-    .filter(
-      (iri) =>
-        WorkspaceElements[iri].active &&
-        !isElementHidden(iri, AppSettings.selectedDiagram) &&
-        isElementVisible(
-          WorkspaceTerms[iri].types,
-          Representation.COMPACT,
-          true
-        )
-    )
-    .sort();
-  if (diagramTerms.length === 0)
-    return [
-      new Blob(),
-      Locale[AppSettings.interfaceLanguage].listExportErrorNoTerms,
-    ];
-  const query = [
-    "PREFIX dct: <http://purl.org/dc/terms/>",
-    "select ?term ?source where {",
-    "?term dct:source ?source.",
-    `values ?term {<${_.uniq(
-      diagramTerms
-        .concat(diagramTerms.flatMap((t) => getIntrinsicTropeTypeIDs(t)))
-        .concat(
-          diagramTerms
-            .flatMap((t) => getActiveToConnections(t))
-            .map((c) => WorkspaceLinks[c].iri)
-        )
-    ).join("> <")}>}`,
-    "}",
-  ].join(`
-  `);
   const separator = ",";
   const compile = (arr: string[]) =>
     arr.map((a) => '"' + a.replaceAll('"', '""') + '"').join(separator);
-  const result: { [key: string]: string } = await processQuery(
-    AppSettings.contextEndpoint,
-    query
-  )
-    .then((response) => response.json())
-    .then((data) => {
-      const r: { [key: string]: string } = {};
-      for (const row of data.results.bindings) {
-        r[row.term.value] = row.source.value;
-      }
-      return r;
-    })
-    .catch((e) => {
-      console.error(e);
-      return { error: e };
-    });
-  if (Object.keys(result).length === 0)
-    console.warn("None of the terms from this diagram have a dct:source.");
-  if ("error" in result)
-    return [
-      new Blob(),
-      Locale[AppSettings.interfaceLanguage].listExportErrorNoConnection,
-    ];
+
   const rowDescriptionRow =
     compile([
       "Subjekt/objekt",
@@ -96,78 +33,172 @@ export async function exportTermsCSV(
       "Právní předpis (vč. ustanovení)",
       "Typ",
     ]) + carriageReturn;
-  const source =
-    rowDescriptionRow +
-    diagramTerms
-      .map((term) => {
-        const termType = WorkspaceTerms[term].types.find((f) =>
+  const exportTerms = exportFunctions.constructExportTerms();
+  if (Object.keys(exportTerms).length === 0)
+    return [
+      new Blob(),
+      Locale[AppSettings.interfaceLanguage].listExportErrorNoTerms,
+    ];
+  const sources: { [key: string]: string } = await exportFunctions.getSources(
+    exportTerms
+  );
+  if (Object.keys(sources).length === 0)
+    console.warn("None of the terms from this diagram have a dct:source.");
+  if ("error" in sources)
+    return [
+      new Blob(),
+      Locale[AppSettings.interfaceLanguage].listExportErrorNoConnection,
+    ];
+  let output = rowDescriptionRow;
+  Object.keys(exportTerms).forEach((term) => {
+    const termLabel = getLabelOrBlank(
+      WorkspaceTerms[term].labels,
+      exportLanguage
+    );
+    const termType = WorkspaceTerms[term].types.find((f) =>
+      filterEquivalent(
+        RepresentationConfig[Representation.FULL].visibleStereotypes,
+        f
+      )
+    );
+    const superClassAttributes = exportFunctions.getSuperClassAttributes(
+      exportTerms,
+      term
+    );
+    if (!termType) {
+      return [new Blob(), `Could not find type for term ${term}`];
+    }
+    const termOutput = compile([
+      termLabel,
+      WorkspaceTerms[term].definitions[exportLanguage],
+      term in sources ? sources[term] : "",
+      "",
+      "",
+      "",
+      getLabelOrBlank(Stereotypes[termType!].labels, exportLanguage),
+    ]);
+    const relationshipOutputs = exportTerms[term]
+      .concat(superClassAttributes)
+      .filter((r) =>
+        WorkspaceTerms[r].types.includes(
+          parsePrefix("z-sgov-pojem", "typ-vztahu")
+        )
+      )
+      .map((link) =>
+        compile([
+          termLabel,
+          "",
+          "",
+          getLabelOrBlank(WorkspaceTerms[link].labels, exportLanguage),
+          WorkspaceTerms[link].definitions[exportLanguage],
+          link in sources ? sources[link] : "",
+          getLabelOrBlank(
+            Stereotypes[parsePrefix("z-sgov-pojem", "typ-vztahu")].labels,
+            exportLanguage
+          ),
+        ])
+      );
+    const eventOutputs = exportTerms[term]
+      .concat(superClassAttributes)
+      .filter((r) =>
+        WorkspaceTerms[r].types.includes(
+          parsePrefix("z-sgov-pojem", "typ-události")
+        )
+      )
+      .map((link) =>
+        compile([
+          termLabel,
+          "",
+          "",
+          getLabelOrBlank(WorkspaceTerms[link].labels, exportLanguage),
+          WorkspaceTerms[link].definitions[exportLanguage],
+          link in sources ? sources[link] : "",
+          getLabelOrBlank(
+            Stereotypes[parsePrefix("z-sgov-pojem", "typ-události")].labels,
+            exportLanguage
+          ),
+        ])
+      );
+    const tropeOutputs = exportTerms[term]
+      .concat(superClassAttributes)
+      .filter((r) =>
+        WorkspaceTerms[r].types.includes(
+          parsePrefix("z-sgov-pojem", "typ-vlastnosti")
+        )
+      )
+      .map((link) =>
+        compile([
+          termLabel,
+          "",
+          "",
+          getLabelOrBlank(WorkspaceTerms[link].labels, exportLanguage),
+          WorkspaceTerms[link].definitions[exportLanguage],
+          link in sources ? sources[link] : "",
+          getLabelOrBlank(
+            Stereotypes[parsePrefix("z-sgov-pojem", "typ-vlastnosti")].labels,
+            exportLanguage
+          ),
+        ])
+      );
+    output += termOutput + carriageReturn;
+    for (const o of eventOutputs) output += o + carriageReturn;
+    for (const o of tropeOutputs) output += o + carriageReturn;
+    for (const o of relationshipOutputs) output += o + carriageReturn;
+    if (termType === parsePrefix("z-sgov-pojem", "typ-vztahu")) {
+      const linkID = Object.keys(WorkspaceLinks).find(
+        (l) => WorkspaceLinks[l].iri === term
+      );
+      if (linkID) {
+        const sourceIRI = WorkspaceLinks[linkID].source;
+        const targetIRI = WorkspaceLinks[linkID].target;
+        const sourceType = WorkspaceTerms[sourceIRI].types.find((f) =>
           filterEquivalent(
-            RepresentationConfig[Representation.COMPACT].visibleStereotypes,
+            RepresentationConfig[Representation.FULL].visibleStereotypes,
             f
           )
         );
-        const termRow =
-          compile([
-            getLabelOrBlank(WorkspaceTerms[term].labels, exportLanguage),
-            WorkspaceTerms[term].definitions[exportLanguage],
-            term in result ? result[term] : "",
-            "",
-            "",
-            "",
-            termType
-              ? getLabelOrBlank(Stereotypes[termType].labels, exportLanguage)
-              : "",
-          ]) + carriageReturn;
-
-        const tropeRows = getIntrinsicTropeTypeIDs(term)
-          .map((trope) =>
-            compile([
-              "",
-              "",
-              "",
-              getLabelOrBlank(WorkspaceTerms[trope].labels, exportLanguage),
-              WorkspaceTerms[trope].definitions[exportLanguage],
-              term in result ? result[term] : "",
-              getLabelOrBlank(
-                Stereotypes[parsePrefix("z-sgov-pojem", "typ-vlastnosti")]
-                  .labels,
-                exportLanguage
-              ),
-            ])
+        const targetType = WorkspaceTerms[targetIRI].types.find((f) =>
+          filterEquivalent(
+            RepresentationConfig[Representation.FULL].visibleStereotypes,
+            f
           )
-          .join(carriageReturn);
-
-        const relationshipRows = getActiveToConnections(term)
-          .filter((link) => WorkspaceLinks[link].iri in WorkspaceTerms)
-          .map((link) =>
-            compile([
-              "",
-              "",
-              "",
-              getLabelOrBlank(
-                WorkspaceTerms[WorkspaceLinks[link].iri].labels,
-                exportLanguage
-              ),
-              WorkspaceTerms[WorkspaceLinks[link].iri].definitions[
-                exportLanguage
-              ],
-              term in result ? result[term] : "",
-              getLabelOrBlank(
-                Stereotypes[parsePrefix("z-sgov-pojem", "typ-vztahu")].labels,
-                exportLanguage
-              ),
-            ])
-          )
-          .join(carriageReturn);
-
-        return (
-          termRow +
-          tropeRows +
-          (tropeRows && relationshipRows ? carriageReturn : "") +
-          relationshipRows +
-          (tropeRows !== relationshipRows ? carriageReturn : "")
         );
-      })
-      .join(carriageReturn);
-  return [new Blob([source], { type: fileID }), ""];
+        if (sourceType)
+          output +=
+            compile([
+              termLabel,
+              "",
+              "",
+              `${getLabelOrBlank(
+                Links[mvp1IRI].labels,
+                exportLanguage
+              )} ${getLabelOrBlank(
+                WorkspaceTerms[sourceIRI].labels,
+                exportLanguage
+              )}`,
+              "",
+              "",
+              getLabelOrBlank(Links[mvp1IRI].labels, exportLanguage),
+            ]) + carriageReturn;
+        if (targetType)
+          output +=
+            compile([
+              termLabel,
+              "",
+              "",
+              `${getLabelOrBlank(
+                Links[mvp2IRI].labels,
+                exportLanguage
+              )} ${getLabelOrBlank(
+                WorkspaceTerms[targetIRI].labels,
+                exportLanguage
+              )}`,
+              "",
+              "",
+              getLabelOrBlank(Links[mvp2IRI].labels, exportLanguage),
+            ]) + carriageReturn;
+      }
+    }
+  });
+  return [new Blob([output], { type: fileID }), ""];
 }

@@ -1,3 +1,4 @@
+import _ from "lodash";
 import React, { useRef, useState } from "react";
 import { CloseButton } from "react-bootstrap";
 import { LanguageSelector } from "../../../components/LanguageSelector";
@@ -31,6 +32,7 @@ import { graph } from "../../../graph/Graph";
 import { updateTermConnections } from "../../../queries/update/UpdateConnectionQueries";
 import { updateProjectElement } from "../../../queries/update/UpdateElementQueries";
 import { updateProjectLink } from "../../../queries/update/UpdateLinkQueries";
+import { IntrinsicTropeControls } from "./IntrinsicTropeControls";
 import { DetailPanelAltLabels } from "./description/DetailPanelAltLabels";
 import { DetailPanelCardinalities } from "./description/DetailPanelCardinalities";
 
@@ -61,48 +63,41 @@ export const LinkControls: React.FC<Props> = (props: Props) => {
       const iri = WorkspaceLinks[props.id].iri;
       const queries: string[] = [];
       const link = graph.getLinks().find((link) => link.id === props.id);
-      if (link) {
-        setLabels(link, getLinkOrVocabElem(iri).labels[props.projectLanguage]);
-      }
-      if (AppSettings.representation === Representation.FULL)
+      if (!link)
+        console.error(
+          "Link " + props.id + " to be edited couldn't be found on the canvas."
+        );
+      if (AppSettings.representation === Representation.FULL) {
+        setLabels(link!);
         queries.push(updateTermConnections(props.id));
-      else {
-        const link = graph.getLinks().find((link) => link.id === props.id);
-        if (link) {
-          if (iri in WorkspaceTerms) {
-            setLabels(
-              link,
-              WorkspaceElements[iri].selectedLabel[props.projectLanguage]
-            );
-            queries.push(updateProjectElement(true, iri));
-          }
-          const underlyingConnections = getUnderlyingFullConnections(props.id);
-          if (underlyingConnections) {
-            setFullLinksCardinalitiesFromCompactLink(
-              props.id,
-              underlyingConnections.src,
-              underlyingConnections.tgt
-            );
-            queries.push(
-              updateProjectLink(
-                true,
-                underlyingConnections.src,
-                underlyingConnections.tgt
-              ),
-              updateTermConnections(
-                underlyingConnections.src,
-                underlyingConnections.tgt
-              )
-            );
-          }
-          if (!(link && underlyingConnections && iri in WorkspaceTerms))
-            console.error("Error updating compact link.");
-        }
       }
-      queries.push(updateProjectLink(true, props.id));
-      props.save(props.id);
-      props.performTransaction(...queries);
-    }
+      if (AppSettings.representation === Representation.COMPACT) {
+        const underlyingConnections = getUnderlyingFullConnections(props.id);
+        if (!(underlyingConnections && iri in WorkspaceTerms))
+          console.error("Error updating compact link.");
+        setLabels(link!);
+        queries.push(updateProjectElement(true, iri));
+        setFullLinksCardinalitiesFromCompactLink(
+          props.id,
+          underlyingConnections!.src,
+          underlyingConnections!.tgt
+        );
+        queries.push(
+          updateProjectLink(
+            true,
+            underlyingConnections!.src,
+            underlyingConnections!.tgt
+          ),
+          updateTermConnections(
+            underlyingConnections!.src,
+            underlyingConnections!.tgt
+          )
+        );
+        queries.push(updateProjectLink(true, props.id));
+        props.save(props.id);
+        props.performTransaction(...queries);
+      }
+    } else console.error("Could not find link ID " + props.id + ".");
   };
 
   const isReadOnly = (id: string): boolean => {
@@ -212,7 +207,7 @@ export const LinkControls: React.FC<Props> = (props: Props) => {
       />
       {AppSettings.representation === Representation.COMPACT &&
         WorkspaceLinks[props.id].type === LinkType.DEFAULT && (
-          <div>
+          <>
             <h5>{Locale[AppSettings.interfaceLanguage].detailPanelAltLabel}</h5>
             <DetailPanelAltLabels
               altLabels={inputAltLabels}
@@ -231,13 +226,42 @@ export const LinkControls: React.FC<Props> = (props: Props) => {
                   ...selectedLabel,
                   [language]: name,
                 };
-                setSelectedLabel(newSL);
                 WorkspaceElements[WorkspaceLinks[props.id].iri].selectedLabel =
                   newSL;
+                setSelectedLabel(newSL);
+                save();
+              }}
+              deleteAltLabel={(alt: AlternativeLabel) => {
+                if (selectedLabel[selectedLanguage] === alt.label) {
+                  const newSL = {
+                    ...selectedLabel,
+                    [selectedLanguage]:
+                      WorkspaceTerms[WorkspaceLinks[props.id].iri].labels[
+                        selectedLanguage
+                      ],
+                  };
+                  WorkspaceElements[
+                    WorkspaceLinks[props.id].iri
+                  ].selectedLabel = newSL;
+                  setSelectedLabel(newSL);
+                }
+                const newAL = _.without(inputAltLabels, alt);
+                setInputAltLabels(newAL);
+                WorkspaceTerms[WorkspaceLinks[props.id].iri].altLabels = newAL;
                 save();
               }}
             />
-          </div>
+            {WorkspaceLinks[props.id].iri in WorkspaceTerms && (
+              <IntrinsicTropeControls
+                performTransaction={props.performTransaction}
+                id={WorkspaceLinks[props.id].iri}
+                readOnly={readOnly}
+                projectLanguage={props.projectLanguage}
+                save={props.save}
+                linkID={props.id}
+              />
+            )}
+          </>
         )}
     </>
   );

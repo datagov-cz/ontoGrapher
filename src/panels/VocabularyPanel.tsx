@@ -36,6 +36,8 @@ import { VocabularySelector } from "./element/VocabularySelector";
 import ModalRemoveConcept from "./modal/ModalRemoveConcept";
 import ModalRemoveReadOnlyConcept from "./modal/ModalRemoveReadOnlyConcept";
 import { Environment } from "../config/Environment";
+import { LanguageObject } from "../config/Languages";
+import { initLanguageObject } from "../function/FunctionEditVars";
 
 interface Props {
   projectLanguage: string;
@@ -253,7 +255,7 @@ export default class VocabularyPanel extends React.Component<Props, State> {
 
   getFolders(): JSX.Element[] {
     const result: JSX.Element[] = [];
-    for (const vocabulary in WorkspaceVocabularies) {
+    for (const vocabulary of Object.keys(WorkspaceVocabularies)) {
       const vocabularyConcepts: JSX.Element[] = [];
       for (const iri in this.state.shownElements[vocabulary]) {
         if (this.state.shownElements[vocabulary][iri].length === 0) continue;
@@ -372,19 +374,21 @@ export default class VocabularyPanel extends React.Component<Props, State> {
     return result;
   }
 
-  filter(vocabs: string[]) {
+  filter(vocabularies: string[]) {
     const result: { label: string; value: string }[] = [];
-    for (const vocab of vocabs) {
+    for (const vocabulary of vocabularies) {
+      let labels: LanguageObject = initLanguageObject("");
+      if (vocabulary in WorkspaceVocabularies)
+        labels = WorkspaceVocabularies[vocabulary].labels;
+      if (vocabulary in CacheSearchVocabularies)
+        labels = CacheSearchVocabularies[vocabulary].labels;
       result.push({
-        label: getLabelOrBlank(
-          CacheSearchVocabularies[vocab].labels,
-          this.props.projectLanguage
-        ),
-        value: vocab,
+        label: getLabelOrBlank(labels, this.props.projectLanguage),
+        value: vocabulary,
       });
     }
     this.setState({ vocabs: result }, () => {
-      if (vocabs.length > 0 || this.state.search.length > 0)
+      if (vocabularies.length > 0 || this.state.search.length > 0)
         this.getSearchResults(this.state.search);
     });
   }

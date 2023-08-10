@@ -24,7 +24,7 @@ import * as _ from "lodash";
 
 function pushEquivalentClass(iri: string, equivalent: string) {
   const push = (iri: string, equivalent: string) =>
-    _.flatten(_.compact([EquivalentClasses[iri], equivalent]));
+    _.flatten(_.compact([EquivalentClasses[iri], iri, equivalent]));
   EquivalentClasses[iri] = push(iri, equivalent);
   EquivalentClasses[equivalent] = push(equivalent, iri);
   for (const eq of EquivalentClasses[equivalent]) push(eq, equivalent);

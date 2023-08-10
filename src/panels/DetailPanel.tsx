@@ -20,6 +20,8 @@ interface State {
 }
 
 export default class DetailPanel extends React.Component<Props, State> {
+  private timer: NodeJS.Timeout;
+
   constructor(props: Props) {
     super(props);
     this.state = {
@@ -41,10 +43,26 @@ export default class DetailPanel extends React.Component<Props, State> {
         }
       }
     );
+    this.timer = setTimeout(this.getStyle, 200);
+    window.addEventListener("resize", () => {
+      clearTimeout(this.timer);
+      this.timer = setTimeout(this.getStyle, 200);
+    });
   }
 
   save(id: string) {
     this.props.update(id in WorkspaceElements && id);
+  }
+
+  getStyle() {
+    const diagramPanel = document.getElementById("diagramPanel");
+    const menuPanel = document.getElementById("menuPanel");
+    const subtract =
+      (diagramPanel ? diagramPanel.offsetHeight : 81) +
+      (menuPanel ? menuPanel.offsetHeight : 31);
+    return {
+      height: `calc(100vh - ${subtract}px)`,
+    };
   }
 
   render() {
@@ -59,7 +77,7 @@ export default class DetailPanel extends React.Component<Props, State> {
             resizeHandles={["sw"]}
             className={"details" + (this.props.freeze ? " disabled" : "")}
           >
-            <div className={"detailsFlex"}>
+            <div className={"detailsFlex"} style={this.getStyle()}>
               {this.state.mode === DetailPanelMode.TERM && (
                 <DetailElement
                   freeze={this.props.freeze}

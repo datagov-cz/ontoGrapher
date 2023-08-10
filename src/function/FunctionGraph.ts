@@ -1,3 +1,7 @@
+import isUrl from "is-url";
+import * as joint from "jointjs";
+import * as _ from "lodash";
+import { LinkType, Representation } from "../config/Enum";
 import {
   AppSettings,
   Diagrams,
@@ -6,37 +10,39 @@ import {
   WorkspaceLinks,
   WorkspaceTerms,
 } from "../config/Variables";
-import {
-  initElements,
-  initLanguageObject,
-  parsePrefix,
-} from "./FunctionEditVars";
 import { graph } from "../graph/Graph";
-import {
-  getActiveToConnections,
-  getElementShape,
-  getLinkOrVocabElem,
-  getNewLink,
-} from "./FunctionGetVars";
-import * as joint from "jointjs";
-import * as _ from "lodash";
 import { graphElement } from "../graph/GraphElement";
-import { LinkType, Representation } from "../config/Enum";
-import { drawGraphElement, getDisplayLabel } from "./FunctionDraw";
+import { paper } from "../main/DiagramCanvas";
 import {
-  updateDeleteProjectLinkVertex,
-  updateProjectLink,
-} from "../queries/update/UpdateLinkQueries";
+  fetchReadOnlyTerms,
+  fetchRelationships,
+} from "../queries/get/CacheQueries";
+import { updateDiagram } from "../queries/update/UpdateDiagramQueries";
 import {
   updateProjectElement,
   updateProjectElementDiagram,
 } from "../queries/update/UpdateElementQueries";
 import {
-  fetchReadOnlyTerms,
-  fetchRelationships,
-} from "../queries/get/CacheQueries";
-import { initConnections } from "./FunctionRestriction";
-import isUrl from "is-url";
+  updateDeleteProjectLinkVertex,
+  updateProjectLink,
+} from "../queries/update/UpdateLinkQueries";
+import { insertNewCacheTerms, insertNewRestrictions } from "./FunctionCache";
+import { addLink } from "./FunctionCreateVars";
+import { clearSelection, updateDiagramPosition } from "./FunctionDiagram";
+import { drawGraphElement, getDisplayLabel } from "./FunctionDraw";
+import {
+  initElements,
+  initLanguageObject,
+  parsePrefix,
+} from "./FunctionEditVars";
+import { filterEquivalent } from "./FunctionEquivalents";
+import {
+  getActiveToConnections,
+  getElementShape,
+  getIntrinsicTropeTypeIDs,
+  getLabelOrBlank,
+  getNewLink,
+} from "./FunctionGetVars";
 import {
   getOtherConnectionElementID,
   isLinkVertexArrayEmpty,
@@ -44,12 +50,7 @@ import {
   setLinkVertices,
   setSelfLoopConnectionPoints,
 } from "./FunctionLink";
-import { insertNewCacheTerms, insertNewRestrictions } from "./FunctionCache";
-import { updateDiagram } from "../queries/update/UpdateDiagramQueries";
-import { addLink } from "./FunctionCreateVars";
-import { updateDiagramPosition } from "./FunctionDiagram";
-import { paper } from "../main/DiagramCanvas";
-import { filterEquivalent } from "./FunctionEquivalents";
+import { initConnections } from "./FunctionRestriction";
 
 export const mvp1IRI =
   "https://slovník.gov.cz/základní/pojem/má-vztažený-prvek-1";
@@ -160,36 +161,137 @@ export async function spreadConnections(
   return queries;
 }
 
-export function setLabels(link: joint.dia.Link, centerLabel: string) {
-  link.labels([]);
-  if (WorkspaceLinks[link.id].type === LinkType.DEFAULT) {
-    link.appendLabel({
-      attrs: { text: { text: centerLabel } },
-      position: { distance: 0.5 },
-    });
-    if (
-      WorkspaceLinks[link.id].sourceCardinality &&
-      WorkspaceLinks[link.id].sourceCardinality.getString() !== ""
-    ) {
-      link.appendLabel({
-        attrs: {
-          text: { text: WorkspaceLinks[link.id].sourceCardinality.getString() },
-        },
-        position: { distance: 20 },
-      });
-    }
-    if (
-      WorkspaceLinks[link.id].targetCardinality &&
-      WorkspaceLinks[link.id].targetCardinality.getString() !== ""
-    ) {
-      link.appendLabel({
-        attrs: {
-          text: { text: WorkspaceLinks[link.id].targetCardinality.getString() },
-        },
-        position: { distance: -20 },
-      });
-    }
+export function setLabels(link: joint.dia.Link) {
+  if (WorkspaceLinks[link.id].type !== LinkType.DEFAULT) return;
+  const iri = WorkspaceLinks[link.id].iri;
+  let label: string = "";
+  let tropes: string[] = [];
+  if (iri in Links)
+    label = getLabelOrBlank(Links[iri].labels, AppSettings.canvasLanguage);
+  if (iri in WorkspaceTerms) {
+    label = getDisplayLabel(iri, AppSettings.canvasLanguage);
+    tropes = getIntrinsicTropeTypeIDs(iri).flatMap((trope) =>
+      getDisplayLabel(trope, AppSettings.canvasLanguage)
+    );
   }
+  link.labels([]);
+  link.appendLabel({
+    markup: [
+      {
+        tagName: "g",
+        selector: "global",
+        children: [
+          { tagName: "rect", selector: "body" },
+          {
+            tagName: "g",
+            selector: "labels",
+            children: [
+              { tagName: "text", selector: "label" },
+              { tagName: "text", selector: "labelAttrs" },
+            ],
+          },
+        ],
+      },
+    ],
+    attrs: {
+      global: {
+        y: "-50%",
+      },
+      label: {
+        text: label,
+        fill: "#000000",
+        fontSize: tropes.length === 0 ? 14 : 16,
+        textVerticalAnchor: tropes.length === 0 ? "middle" : "top",
+        textAnchor: "middle",
+        pointerEvents: "none",
+        y: tropes.length === 0 ? 0 : -(11 + Math.floor(tropes.length * 6.5)),
+      },
+      labelAttrs: {
+        ref: "label",
+        text: tropes.join("\n"),
+        fill: "#000000",
+        fontSize: 14,
+        textVerticalAnchor: "top",
+        textAnchor: "start",
+        x: "calc(-0.55*w)",
+        y: "calc(y + 22)",
+        pointerEvents: "none",
+      },
+      body: {
+        ref: "labels",
+        width: "calc(1.1*w)",
+        height: "calc(1.1*h)",
+        x: "calc(-0.55*w)",
+        y: "calc(-0.55*h)",
+        rx: 3,
+        ry: 3,
+        stroke: "black",
+        strokeWidth: "0.5",
+        fill: "white",
+      },
+    },
+    position: { distance: 0.5 },
+  });
+  if (
+    WorkspaceLinks[link.id].sourceCardinality &&
+    WorkspaceLinks[link.id].sourceCardinality.getString() !== ""
+  )
+    link.appendLabel({
+      markup: [
+        { tagName: "rect", selector: "body" },
+        { tagName: "text", selector: "label" },
+      ],
+      attrs: {
+        label: {
+          text: WorkspaceLinks[link.id].sourceCardinality.getString(),
+          textVerticalAnchor: "middle",
+          textAnchor: "middle",
+        },
+        body: {
+          ref: "label",
+          fill: "white",
+          width: "calc(1.1*w)",
+          height: "calc(1.1*h)",
+          x: "calc(-0.55*w)",
+          y: "calc(-0.55*h)",
+          rx: 3,
+          ry: 3,
+          stroke: "black",
+          strokeWidth: "0.5",
+        },
+      },
+      position: { distance: 30 },
+    });
+  if (
+    WorkspaceLinks[link.id].targetCardinality &&
+    WorkspaceLinks[link.id].targetCardinality.getString() !== ""
+  )
+    link.appendLabel({
+      markup: [
+        { tagName: "rect", selector: "body" },
+        { tagName: "text", selector: "label" },
+      ],
+      attrs: {
+        label: {
+          text: WorkspaceLinks[link.id].sourceCardinality.getString(),
+          textVerticalAnchor: "middle",
+          textAnchor: "middle",
+        },
+        body: {
+          ref: "label",
+          fill: "white",
+          width: "calc(1.1*w)",
+          height: "calc(1.1*h)",
+          x: "calc(-0.55*w)",
+          y: "calc(-0.55*h)",
+          rx: 3,
+          ry: 3,
+          stroke: "black",
+          strokeWidth: "0.5",
+        },
+      },
+      position: { distance: -30 },
+    });
 }
 
 function storeElement(elem: joint.dia.Cell) {
@@ -237,8 +339,7 @@ export function setRepresentation(
     Diagrams[diag].representation = representation;
   }
   queries.push(updateDiagram(diag));
-  AppSettings.selectedLinks = [];
-  AppSettings.selectedElements = [];
+  clearSelection();
   let del = false;
   if (representation === Representation.COMPACT) {
     for (const id of Object.keys(WorkspaceElements).filter(
@@ -303,10 +404,7 @@ export function setRepresentation(
                 sourceLink,
                 targetLink
               );
-              setLabels(
-                newLink,
-                getDisplayLabel(id, AppSettings.canvasLanguage)
-              );
+              setLabels(newLink);
             }
           }
         }
@@ -339,7 +437,7 @@ export function setRepresentation(
       } else if (WorkspaceLinks[link.id].iri in WorkspaceTerms) {
         const elem = WorkspaceLinks[link.id].iri;
         if (!elem) continue;
-        setLabels(link, getDisplayLabel(elem, AppSettings.canvasLanguage));
+        setLabels(link);
       }
     }
     for (const elem of g.getElements()) {
@@ -424,12 +522,7 @@ export function setupLink(
   g: joint.dia.Graph = graph
 ) {
   const lnk = getNewLink(WorkspaceLinks[link].type, link);
-  setLabels(
-    lnk,
-    getLinkOrVocabElem(WorkspaceLinks[link].iri).labels[
-      AppSettings.canvasLanguage
-    ]
-  );
+  setLabels(lnk);
   lnk.source({
     id: WorkspaceLinks[link].source,
     connectionPoint: {
@@ -562,18 +655,8 @@ export function restoreHiddenElem(
           );
           setLinkBoundary(domainLink, relID, WorkspaceLinks[link].target);
           setLinkBoundary(rangeLink, relID, WorkspaceLinks[targetLink].target);
-          setLabels(
-            domainLink,
-            getLinkOrVocabElem(WorkspaceLinks[link].iri).labels[
-              AppSettings.canvasLanguage
-            ]
-          );
-          setLabels(
-            rangeLink,
-            getLinkOrVocabElem(WorkspaceLinks[targetLink].iri).labels[
-              AppSettings.canvasLanguage
-            ]
-          );
+          setLabels(domainLink);
+          setLabels(rangeLink);
           relationship.addTo(g);
           queries.push(
             updateProjectElementDiagram(AppSettings.selectedDiagram, relID)

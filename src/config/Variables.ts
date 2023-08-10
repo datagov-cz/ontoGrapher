@@ -82,6 +82,7 @@ export var WorkspaceTerms: {
     definitions: { [key: string]: string };
     inScheme: string;
     types: string[];
+    // term is subclass of these terms
     subClassOf: string[];
     restrictions: Restriction[];
     topConcept: string | undefined;

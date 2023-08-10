@@ -18,7 +18,7 @@ import {
 } from "../config/Variables";
 import { initLanguageObject } from "./FunctionEditVars";
 import {
-  getLinkIRI,
+  getOntographerLinkIRI,
   getNewDiagramContextIRI,
   getNewDiagramIRI,
   getVocabularyFromScheme,
@@ -171,6 +171,6 @@ export function addLink(
     vertices: {},
     active: true,
     hasInverse: type !== LinkType.GENERALIZATION && iri in Links,
-    linkIRI: getLinkIRI(id),
+    linkIRI: getOntographerLinkIRI(id),
   };
 }

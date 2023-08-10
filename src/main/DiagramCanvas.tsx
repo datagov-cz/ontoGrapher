@@ -122,6 +122,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
       },
       clickThreshold: 0,
       async: false,
+      frozen: false,
       sorting: joint.dia.Paper.sorting.APPROX,
       connectionStrategy: joint.connectionStrategies.pinAbsolute,
       defaultConnectionPoint: {
@@ -148,7 +149,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
         const vocabulary = Object.keys(WorkspaceVocabularies).find(
           (vocab) => !WorkspaceVocabularies[vocab].readOnly
         );
-        if (vocabulary) {
+        if (vocabulary && evt.clientX && evt.clientY) {
           this.props.handleCreation({
             strategy: ElemCreationStrategy.DEFAULT,
             position: { x: evt.clientX, y: evt.clientY },
@@ -156,7 +157,10 @@ export default class DiagramCanvas extends React.Component<Props, State> {
             header: Locale[AppSettings.interfaceLanguage].modalNewElemTitle,
             connections: [],
           });
-        }
+        } else
+          console.warn(
+            "Unable to create term as there is no writable vocabulary open."
+          );
         this.newLink = false;
         unHighlightAll();
         resetDiagramSelection();
@@ -173,18 +177,16 @@ export default class DiagramCanvas extends React.Component<Props, State> {
        */
       "element:pointerup": (cellView, evt) => {
         const { rect } = evt.data;
+        const id = cellView.model.id as string;
         if (rect) rect.remove();
         if (!this.newLink && !evt.ctrlKey) {
           if (isElementPositionOutdated(cellView.model)) {
             this.props.performTransaction(...moveElements(cellView.model, evt));
           } else {
             resetDiagramSelection();
-            highlightCells(CellColors.detail, cellView.model.id);
-            this.props.updateElementPanel(cellView.model.id);
-            this.props.updateDetailPanel(
-              DetailPanelMode.TERM,
-              cellView.model.id
-            );
+            highlightCells(CellColors.detail, id);
+            this.props.updateElementPanel(id);
+            this.props.updateDetailPanel(DetailPanelMode.TERM, id);
           }
         } else if (evt.ctrlKey) {
           this.props.updateDetailPanel(DetailPanelMode.HIDDEN);
@@ -192,10 +194,10 @@ export default class DiagramCanvas extends React.Component<Props, State> {
             (elem) => elem === cellView.model.id
           );
           find !== -1
-            ? unHighlightCells(cellView.model.id)
-            : highlightCells(CellColors.detail, cellView.model.id);
+            ? unHighlightCells(id)
+            : highlightCells(CellColors.detail, id);
         } else if (this.newLink) {
-          this.tid = cellView.model.id;
+          this.tid = id;
           this.props.handleCreation({ sourceID: this.sid, targetID: this.tid });
           this.newLink = false;
           unHighlightAll();
@@ -245,7 +247,7 @@ export default class DiagramCanvas extends React.Component<Props, State> {
        */
       "link:mouseenter": (linkView) => {
         if (
-          AppSettings.selectedLinks.includes(linkView.model.id) &&
+          AppSettings.selectedLinks.includes(linkView.model.id as string) &&
           AppSettings.selectedLinks.length === 1
         )
           addLinkTools(
@@ -383,9 +385,10 @@ export default class DiagramCanvas extends React.Component<Props, State> {
         ) {
           const { rect, bbox, ox, oy } = evt.data;
           if (rect && bbox && ox && oy) {
+            const mouseEvent = evt.originalEvent as MouseEvent;
             const newBbox = new joint.g.Rect(
-              bbox.x + evt.originalEvent.movementX,
-              bbox.y + evt.originalEvent.movementY,
+              bbox.x + mouseEvent.movementX,
+              bbox.y + mouseEvent.movementY,
               bbox.width,
               bbox.height
             );
@@ -434,34 +437,31 @@ export default class DiagramCanvas extends React.Component<Props, State> {
        * Highlight link and open the Detail panel
        */
       "link:pointerclick": (linkView, evt) => {
+        const id = linkView.model.id as string;
         if (evt.ctrlKey) {
           this.props.updateDetailPanel(DetailPanelMode.HIDDEN);
           const find = AppSettings.selectedLinks.findIndex(
-            (elem) => elem === linkView.model.id
+            (elem) => elem === id
           );
           find !== -1
-            ? unHighlightCells(linkView.model.id)
-            : highlightCells(CellColors.detail, linkView.model.id);
+            ? unHighlightCells(id)
+            : highlightCells(CellColors.detail, id);
           if (AppSettings.selectedLinks.length > 1)
             this.props.updateDetailPanel(DetailPanelMode.MULTIPLE_LINKS);
-          else
-            this.props.updateDetailPanel(
-              DetailPanelMode.LINK,
-              linkView.model.id
-            );
+          else this.props.updateDetailPanel(DetailPanelMode.LINK, id);
         } else {
           resetDiagramSelection();
           if (this.newLink) {
             this.newLink = false;
             unHighlightAll();
           }
-          highlightCells(CellColors.detail, linkView.model.id);
+          highlightCells(CellColors.detail, id);
           addLinkTools(
             linkView,
             this.props.performTransaction,
             this.props.updateElementPanel
           );
-          this.props.updateDetailPanel(DetailPanelMode.LINK, linkView.model.id);
+          this.props.updateDetailPanel(DetailPanelMode.LINK, id);
         }
       },
       /**
@@ -469,9 +469,9 @@ export default class DiagramCanvas extends React.Component<Props, State> {
        * Save changes of link vertices
        */
       "link:pointerup": (cellView) => {
-        const id = cellView.model.id;
+        const id = cellView.model.id as string;
         const link = cellView.model;
-        link.findView(paper).removeRedundantLinearVertices();
+        cellView.removeRedundantLinearVertices();
         this.props.performTransaction(...updateVertices(id, link.vertices()));
       },
       /**
@@ -479,9 +479,9 @@ export default class DiagramCanvas extends React.Component<Props, State> {
        * Save changes of link vertices
        */
       "link:pointerdblclick": (cellView) => {
-        const id = cellView.model.id;
+        const id = cellView.model.id as string;
         const link = cellView.model;
-        link.findView(paper).removeRedundantLinearVertices();
+        cellView.removeRedundantLinearVertices();
         this.props.performTransaction(...updateVertices(id, link.vertices()));
       },
     });

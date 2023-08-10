@@ -26,7 +26,6 @@ export function dumpDebugData() {
 }
 
 export function loadDebugData(): boolean {
-  console.trace();
   const json = require("../debug-data.json");
   if (!json) return false;
   for (const setting in json) {
@@ -71,6 +70,12 @@ export function loadDebugData(): boolean {
     if (setting === "Diagrams") {
       for (const element in json["Diagrams"]) {
         Diagrams[element] = json["Diagrams"][element];
+        Diagrams[element].creationDate = new Date(
+          json["Diagrams"][element]["creationDate"]
+        );
+        Diagrams[element].modifiedDate = new Date(
+          json["Diagrams"][element]["modifiedDate"]
+        );
       }
     }
     if (setting === "AppSettings") {

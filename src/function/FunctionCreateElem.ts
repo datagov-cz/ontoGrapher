@@ -27,14 +27,8 @@ export const createTerm: (
   strategy,
   position = { x: 0, y: 0 },
   connections
-) => {
-  return CreateElemStrategy[strategy](
-    conceptName,
-    vocabulary,
-    position,
-    connections
-  );
-};
+) =>
+  CreateElemStrategy[strategy](conceptName, vocabulary, position, connections);
 
 const CreateElemStrategy: {
   [key in ElemCreationStrategy]: CreateElemStrategyType;
