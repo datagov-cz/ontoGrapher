@@ -111,7 +111,7 @@ export async function spreadConnections(
     .filter((link) => !isUrl(link))
     .map((link) => getOtherConnectionElementID(link, id));
   const iris = elements.filter((iri) => isUrl(iri));
-  let queries: string[] = [];
+  const queries: string[] = [];
   if (iris.length > 0) {
     insertNewCacheTerms(
       await fetchReadOnlyTerms(AppSettings.contextEndpoint, iris)
@@ -164,6 +164,8 @@ export async function spreadConnections(
 export function setLabels(link: joint.dia.Link) {
   if (WorkspaceLinks[link.id].type !== LinkType.DEFAULT) return;
   const iri = WorkspaceLinks[link.id].iri;
+  const sourceCardinality = WorkspaceLinks[link.id].sourceCardinality;
+  const targetCardinality = WorkspaceLinks[link.id].targetCardinality;
   let label: string = "";
   let tropes: string[] = [];
   if (iri in Links)
@@ -232,10 +234,7 @@ export function setLabels(link: joint.dia.Link) {
     },
     position: { distance: 0.5 },
   });
-  if (
-    WorkspaceLinks[link.id].sourceCardinality &&
-    WorkspaceLinks[link.id].sourceCardinality.getString() !== ""
-  )
+  if (sourceCardinality && sourceCardinality.getString() !== "")
     link.appendLabel({
       markup: [
         { tagName: "rect", selector: "body" },
@@ -243,7 +242,7 @@ export function setLabels(link: joint.dia.Link) {
       ],
       attrs: {
         label: {
-          text: WorkspaceLinks[link.id].sourceCardinality.getString(),
+          text: sourceCardinality.getString(),
           textVerticalAnchor: "middle",
           textAnchor: "middle",
         },
@@ -262,10 +261,7 @@ export function setLabels(link: joint.dia.Link) {
       },
       position: { distance: 30 },
     });
-  if (
-    WorkspaceLinks[link.id].targetCardinality &&
-    WorkspaceLinks[link.id].targetCardinality.getString() !== ""
-  )
+  if (targetCardinality && targetCardinality.getString() !== "")
     link.appendLabel({
       markup: [
         { tagName: "rect", selector: "body" },
@@ -273,7 +269,7 @@ export function setLabels(link: joint.dia.Link) {
       ],
       attrs: {
         label: {
-          text: WorkspaceLinks[link.id].sourceCardinality.getString(),
+          text: targetCardinality.getString(),
           textVerticalAnchor: "middle",
           textAnchor: "middle",
         },
