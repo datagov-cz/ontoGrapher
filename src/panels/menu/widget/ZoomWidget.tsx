@@ -6,15 +6,15 @@ import { Locale } from "../../../config/Locale";
 import { AppSettings } from "../../../config/Variables";
 import { ReactComponent as ZoomInSVG } from "../../../svg/zoomIn.svg";
 import { ReactComponent as ZoomOutSVG } from "../../../svg/zoomOut.svg";
-
-interface Props {}
-
-interface State {}
-
-export default class ZoomWidget extends React.Component<Props, State> {
+import classNames from "classnames";
+export default class ZoomWidget extends React.Component {
   render() {
     return (
-      <span>
+      <span
+        className={classNames({
+          nointeract: AppSettings.selectedDiagram === "",
+        })}
+      >
         <OverlayTrigger
           placement="bottom"
           overlay={

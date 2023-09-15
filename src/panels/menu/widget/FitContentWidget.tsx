@@ -4,15 +4,16 @@ import { Locale } from "../../../config/Locale";
 import { AppSettings, Diagrams } from "../../../config/Variables";
 import { ReactComponent as FitContentSVG } from "../../../svg/fitContent.svg";
 import { paper } from "../../../main/DiagramCanvas";
+import classNames from "classnames";
 
-interface Props {}
-
-interface State {}
-
-export default class FitContentWidget extends React.Component<Props, State> {
+export default class FitContentWidget extends React.Component {
   render() {
     return (
-      <span>
+      <span
+        className={classNames({
+          nointeract: AppSettings.selectedDiagram === "",
+        })}
+      >
         <OverlayTrigger
           placement="bottom"
           overlay={
@@ -25,7 +26,7 @@ export default class FitContentWidget extends React.Component<Props, State> {
             onClick={() => {
               const origin = paper.translate();
               const dimensions = paper.getComputedSize();
-              paper.scaleContentToFit({
+              paper.transformToFitContent({
                 padding: {
                   top: 10,
                   bottom: 100,
