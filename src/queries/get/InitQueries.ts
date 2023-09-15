@@ -56,7 +56,7 @@ export async function getElementsConfig(
         const iri = result.elem.value;
         if (!(iri in elements)) {
           elements[iri] = {
-            active: result.active.value === "true",
+            active: true,
             diagramPosition: {},
             hidden: {},
             selectedName: initLanguageObject(""),
