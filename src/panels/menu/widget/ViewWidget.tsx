@@ -5,11 +5,16 @@ import { AppSettings, Diagrams } from "../../../config/Variables";
 import { centerDiagram, zoomDiagram } from "../../../function/FunctionDiagram";
 import { ReactComponent as CenterSVG } from "../../../svg/centerView.svg";
 import { ReactComponent as RestoreZoomSVG } from "../../../svg/restoreZoom.svg";
+import classNames from "classnames";
 
 export default class ViewWidget extends React.Component {
   render() {
     return (
-      <span>
+      <span
+        className={classNames({
+          nointeract: AppSettings.selectedDiagram === "",
+        })}
+      >
         <OverlayTrigger
           placement="bottom"
           overlay={

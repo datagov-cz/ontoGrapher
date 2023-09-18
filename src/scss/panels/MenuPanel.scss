@@ -81,6 +81,10 @@
       pointer-events: all !important;
     }
 
+    .nointeract {
+      opacity: 0.5;
+    }
+
     a,
     button {
       font-size: medium;

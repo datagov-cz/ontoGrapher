@@ -37,7 +37,6 @@ export async function getElementsConfig(
     "select ?elem ?scheme ?active ?name ?vocabulary where {",
     "graph <" + AppSettings.applicationContext + "> {",
     "?elem a og:element .",
-    "?elem og:active ?active .",
     "optional {?elem og:name ?name.}",
     "optional {?elem og:vocabulary ?vocabulary.}",
     "?elem og:scheme ?scheme .",
@@ -325,7 +324,6 @@ export async function getLinksConfig(
     "?link og:iri ?iri .",
     "?link og:source ?sourceID .",
     "?link og:target ?targetID .",
-    "?link og:active ?active .",
     "?link og:type ?type .",
     "?link og:sourceCardinality1 ?sourceCard1 .",
     "?link og:sourceCardinality2 ?sourceCard2 .",
@@ -368,7 +366,7 @@ export async function getLinksConfig(
             iri: result.iri.value,
             targetID: result.targetID.value,
             sourceID: result.sourceID.value,
-            active: result.active.value === "true",
+            active: true,
             vertices: {},
             type:
               result.type.value === "default"
