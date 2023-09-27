@@ -44,7 +44,11 @@ export const NewElemForm: React.FC<Props> = (props) => {
     const newIRI = createNewElemIRI(scheme, name);
     return (
       Object.keys(WorkspaceTerms)
-        .filter((iri) => WorkspaceTerms[iri].inScheme === scheme)
+        .filter(
+          (iri) =>
+            WorkspaceTerms[iri].inScheme === scheme &&
+            WorkspaceElements[iri].active
+        )
         .find(
           (iri) =>
             (iri === newIRI &&
@@ -151,7 +155,7 @@ export const NewElemForm: React.FC<Props> = (props) => {
         disableRemoveControl={activatedInputs.length === 1}
       />
       <br />
-      <Form.Group controlId="exampleForm.ControlSelect1">
+      <Form.Group controlId="vocabularySelect">
         <Form.Label>
           {Locale[AppSettings.interfaceLanguage].selectVocabulary}
         </Form.Label>
