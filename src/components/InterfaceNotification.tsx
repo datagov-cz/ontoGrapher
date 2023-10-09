@@ -6,6 +6,7 @@ import { Environment } from "../config/Environment";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import green from "@mui/material/colors/green";
+import { getToken } from "@opendata-mvcr/assembly-line-shared";
 
 const theme = createTheme({
   palette: {
@@ -91,7 +92,10 @@ export default class InterfaceNotification extends React.Component<
         AppSettings.contextEndpoint +
           "?query=select%20*%20where%20%7B%3Fs%20%3Fp%20%3Fo.%7D%20limit%201",
         {
-          headers: { Accept: "application/json" },
+          headers: {
+            Accept: "application/json",
+            ...(Environment.auth && { Authorization: `${getToken()}` }),
+          },
           method: "GET",
           signal,
         }
