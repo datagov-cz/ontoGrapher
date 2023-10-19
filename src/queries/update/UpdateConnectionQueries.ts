@@ -147,22 +147,25 @@ function updateDefaultLink(ids: string[]): string {
     const vocabularyTarget = getVocabularyFromScheme(
       WorkspaceTerms[source].inScheme
     );
-    vocabulariesAndTerms[vocabularySource] = _.uniq(
-      _.flatten(_.compact([vocabulariesAndTerms[vocabularySource], source]))
-    );
-    vocabulariesAndTerms[vocabularyTarget] = _.uniq(
-      _.flatten(_.compact([vocabulariesAndTerms[vocabularyTarget], target]))
-    );
-    termsAndLinks[source] = _.uniq(
-      _.flatten(_.compact([termsAndLinks[source], id]))
-    );
-    termsAndLinks[target] = _.uniq(
-      _.flatten(_.compact([termsAndLinks[target], id]))
-    );
+    if (!WorkspaceVocabularies[vocabularySource].readOnly) {
+      vocabulariesAndTerms[vocabularySource] = _.uniq(
+        _.flatten(_.compact([vocabulariesAndTerms[vocabularySource], source]))
+      );
+      termsAndLinks[source] = _.uniq(
+        _.flatten(_.compact([termsAndLinks[source], id]))
+      );
+    }
+    if (!WorkspaceVocabularies[vocabularyTarget].readOnly) {
+      vocabulariesAndTerms[vocabularyTarget] = _.uniq(
+        _.flatten(_.compact([vocabulariesAndTerms[vocabularyTarget], target]))
+      );
+      termsAndLinks[target] = _.uniq(
+        _.flatten(_.compact([termsAndLinks[target], id]))
+      );
+    }
   }
   const dels: string[] = [];
   const inserts: string[] = [];
-
   for (const vocabulary of Object.keys(vocabulariesAndTerms)) {
     if (WorkspaceVocabularies[vocabulary].readOnly) continue;
     const contextIRI = WorkspaceVocabularies[vocabulary].graph;
