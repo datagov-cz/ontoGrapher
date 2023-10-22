@@ -78,6 +78,7 @@ export const ExportModalImage: React.FC<Props> = (props: Props) => {
     AppSettings.representation
   );
   const [iriData, setIRIData] = useState<boolean>(false);
+  const [backgroundSwitch, setBackgroundSwitch] = useState<boolean>(false);
   const [format, setFormat] = useState<string>("PNG");
 
   const saveDiagram: (behavior: saveBehaviorEnum) => void = (
@@ -183,9 +184,15 @@ export const ExportModalImage: React.FC<Props> = (props: Props) => {
       canvas.width = area.width;
       canvas.height = area.height;
       const context = canvas.getContext("2d");
-      context?.drawImage(image, 0, 0);
+      if (!context)
+        throw new Error("Could not create 2D context for HTML canvas.");
+      if (!backgroundSwitch) {
+        context.fillStyle = "#FFFFFF";
+        context.fillRect(0, 0, canvas.width, canvas.height);
+      }
+      context.drawImage(image, 0, 0);
       let data = "";
-      if (format === "PNG") data += canvas.toDataURL();
+      if (format === "PNG") data += canvas.toDataURL("image/png");
       if (format === "SVG")
         data += `data:image/svg+xml;base64,${btoa(
           unescape(encodeURIComponent(svgText))
@@ -271,6 +278,8 @@ export const ExportModalImage: React.FC<Props> = (props: Props) => {
                 onChange={(event) => {
                   setFormat(event.currentTarget.value);
                   if (event.currentTarget.value === "PNG") setIRIData(false);
+                  if (event.currentTarget.value === "SVG")
+                    setBackgroundSwitch(false);
                 }}
               >
                 <option key={1} value={"PNG"}>
@@ -305,10 +314,26 @@ export const ExportModalImage: React.FC<Props> = (props: Props) => {
             id={"setIRIcheckbox"}
             onChange={(event) => setIRIData(event.currentTarget.checked)}
           />
+          <Form.Check
+            disabled={format !== "PNG"}
+            type={"checkbox"}
+            label={
+              Locale[AppSettings.interfaceLanguage]
+                .generateDiagramImageWithBackground
+            }
+            checked={backgroundSwitch}
+            id={"backgroundCheckbox"}
+            onChange={(event) =>
+              setBackgroundSwitch(event.currentTarget.checked)
+            }
+          />
         </Form>
         <br />
         <h5>{Locale[AppSettings.interfaceLanguage].preview}</h5>
-        <img id={"imagePreview"} alt={""} />
+        <img
+          id={"imagePreview"}
+          alt={Diagrams[AppSettings.selectedDiagram].name}
+        />
         {graph.getElements().length === 0 && (
           <Alert variant="danger">
             {

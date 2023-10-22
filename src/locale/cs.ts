@@ -178,6 +178,7 @@ export const cs: { [Property in keyof typeof en]: string } = {
   representationCompactSwitch: "Přepnout na kompaktní pohled",
   representationFullSwitch: "Přepnout na úplný pohled",
   generateDiagramImageWithIRIData: "Vložit data o pohledu a IRI do SVG",
+  generateDiagramImageWithBackground: "Exportovat s průhledným pozadím",
   showStereotypes: "Ukázat stereotypy",
   showIncompatibleLinks: "Ukázat nekompatibilní vazby",
   hideStereotypes: "Skrýt stereotypy",

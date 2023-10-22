@@ -173,6 +173,7 @@ export const en = {
   representationCompactSwitch: "Switch to Compact view",
   representationFullSwitch: "Switch to Full view",
   generateDiagramImageWithIRIData: "Embed view & IRI data into SVG",
+  generateDiagramImageWithBackground: "Export with transparent background",
   showStereotypes: "View stereotypes",
   showIncompatibleLinks: "Display incompatible links",
   hideStereotypes: "Hide stereotypes",
