@@ -38,6 +38,7 @@ import {
 import { nameGraphLink } from "../function/FunctionGraph";
 import { graph } from "../graph/Graph";
 import {
+  checkForObsoleteDiagrams,
   retrieveContextData,
   retrieveInfoFromURLParameters,
   retrieveVocabularyData,
@@ -152,6 +153,7 @@ export default class App extends React.Component<
   componentDidMount(): void {
     const finishUp = () => {
       hotkeys("ctrl+alt+d", () => dumpDebugData());
+      checkForObsoleteDiagrams();
       this.handleChangeLanguage(AppSettings.canvasLanguage);
       setSchemeColors(AppSettings.viewColorPool);
       this.itemPanel.current?.update();
