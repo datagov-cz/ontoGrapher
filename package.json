@@ -26,6 +26,7 @@
     "@types/jointjs": "^2.0.0",
     "@types/lodash": "^4.14.168",
     "@types/node": "^15.12.4",
+    "@types/preval.macro": "^3.0.1",
     "@types/rdf-js": "^4.0.1",
     "@types/react": "^17.0.3",
     "@types/react-bootstrap": "^0.32.32",
@@ -82,7 +83,6 @@
     ]
   },
   "devDependencies": {
-    "@types/preval.macro": "^3.0.1",
     "eslint": "^8.30.0",
     "eslint-config-react-app": "^7.0.1",
     "prettier": "^2.3.0",
