@@ -1,4 +1,5 @@
 export const en = {
+  changelogLoadError: "Error: unable to load changelog file.",
   searchExistingTropes: "Search tropes...",
   listExportErrorNoConnection:
     "Unable to retrieve sources of terms from the database.",

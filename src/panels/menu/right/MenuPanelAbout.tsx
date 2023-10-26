@@ -2,7 +2,7 @@ import React from "react";
 import { Nav, OverlayTrigger, Tooltip } from "react-bootstrap";
 import { Locale } from "../../../config/Locale";
 import { AppSettings } from "../../../config/Variables";
-import AboutModal from "../modal/AboutModal";
+import { AboutModal } from "../modal/AboutModal";
 import preval from "preval.macro";
 
 interface Props {
@@ -13,8 +13,8 @@ interface State {
   modal: boolean;
 }
 
-const buildDate = preval`module.exports = new Date().toLocaleDateString();`;
-const buildTime = preval`module.exports = new Date().toLocaleTimeString();`;
+const buildDate = preval`module.exports = new Date().toLocaleDateString(["cs", "en"]);`;
+const buildTime = preval`module.exports = new Date().toLocaleTimeString(["cs", "en"]);`;
 
 export default class MenuPanelAbout extends React.Component<Props, State> {
   constructor(props: Props) {

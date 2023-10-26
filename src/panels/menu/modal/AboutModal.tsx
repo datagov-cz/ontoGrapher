@@ -1,107 +1,63 @@
-import React from "react";
-import { Button, Modal, Tab, Tabs } from "react-bootstrap";
+import React, { useState } from "react";
+import { Alert, Button, Modal, Spinner } from "react-bootstrap";
+import { Locale } from "../../../config/Locale";
 import { AppSettings } from "../../../config/Variables";
-import { Locale, LocaleChangelog } from "../../../config/Locale";
-import isUrl from "is-url";
-import { enChangelog } from "../../../locale/enchangelog";
+import ReactMarkdown from "react-markdown";
 
 interface Props {
   modal: boolean;
   close: Function;
 }
 
-interface State {}
+const changelogURL =
+  "https://raw.githubusercontent.com/datagov-cz/sgov-assembly-line/main/CHANGELOG.md";
 
-export default class AboutModal extends React.Component<Props, State> {
-  render() {
-    return (
-      <Modal
-        centered
-        scrollable
-        show={this.props.modal}
-        keyboard
-        onEscapeKeyDown={() => this.props.close()}
-      >
-        <Modal.Header>
-          <Modal.Title>
-            {Locale[AppSettings.interfaceLanguage].changelog}
-          </Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <Tabs
-            id={"changelog"}
-            defaultActiveKey={Object.keys(enChangelog).reverse()[0]}
-          >
-            {Object.keys(LocaleChangelog[AppSettings.interfaceLanguage]).map(
-              (year, key) => (
-                <Tab title={year} key={key++} eventKey={year}>
-                  {Object.keys(
-                    LocaleChangelog[AppSettings.interfaceLanguage][year]
-                  )
-                    .reverse()
-                    .map((month) => (
-                      <div key={key++}>
-                        {Object.keys(
-                          LocaleChangelog[AppSettings.interfaceLanguage][year][
-                            month
-                          ]
-                        )
-                          .reverse()
-                          .map((day) => (
-                            <div key={key++}>
-                              <h6 key={key++}>{`${day}. ${month}.`}</h6>
-                              <ul key={key++}>
-                                {Object.keys(
-                                  LocaleChangelog[
-                                    AppSettings.interfaceLanguage
-                                  ][year][month][day]
-                                ).map((entry, i) => (
-                                  <li key={key++}>
-                                    {isUrl(
-                                      LocaleChangelog[
-                                        AppSettings.interfaceLanguage
-                                      ][year][month][day][i]
-                                    ) ? (
-                                      <a
-                                        href={
-                                          LocaleChangelog[
-                                            AppSettings.interfaceLanguage
-                                          ][year][month][day][i]
-                                        }
-                                      >
-                                        {
-                                          LocaleChangelog[
-                                            AppSettings.interfaceLanguage
-                                          ][year][month][day][i]
-                                        }
-                                      </a>
-                                    ) : (
-                                      LocaleChangelog[
-                                        AppSettings.interfaceLanguage
-                                      ][year][month][day][i]
-                                    )}
-                                  </li>
-                                ))}
-                              </ul>
-                            </div>
-                          ))}
-                      </div>
-                    ))}
-                </Tab>
-              )
-            )}
-          </Tabs>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button
-            onClick={() => {
-              this.props.close();
-            }}
-          >
-            {Locale[AppSettings.interfaceLanguage].close}
-          </Button>
-        </Modal.Footer>
-      </Modal>
-    );
-  }
-}
+export const AboutModal: React.FC<Props> = (props: Props) => {
+  const [changelog, setChangelog] = useState<JSX.Element>(<Spinner />);
+
+  const loadChangelog = async () => {
+    setChangelog(<Spinner />);
+    return fetch(changelogURL)
+      .then((response) => response.text())
+      .then((text) => {
+        setChangelog(<ReactMarkdown>{text}</ReactMarkdown>);
+      })
+      .catch((e) => {
+        console.error(e);
+        setChangelog(
+          <Alert variant="danger">
+            {`${Locale[AppSettings.interfaceLanguage].changelogLoadError} `}
+            <Button onClick={() => loadChangelog()}>
+              {Locale[AppSettings.interfaceLanguage].retry}
+            </Button>
+          </Alert>
+        );
+      });
+  };
+
+  return (
+    <Modal
+      centered
+      scrollable
+      show={props.modal}
+      keyboard
+      onEscapeKeyDown={() => props.close()}
+      onEnter={() => loadChangelog()}
+      size="xl"
+    >
+      <Modal.Header>
+        <Modal.Title>
+          {Locale[AppSettings.interfaceLanguage].changelog}
+        </Modal.Title>
+      </Modal.Header>
+      <Modal.Body className="flexCenter">
+        <div>{changelog}</div>
+      </Modal.Body>
+      <Modal.Footer>
+        <Button onClick={() => props.close()}>
+          {Locale[AppSettings.interfaceLanguage].close}
+        </Button>
+      </Modal.Footer>
+    </Modal>
+  );
+};

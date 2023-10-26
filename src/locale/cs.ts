@@ -47,7 +47,8 @@ export const cs: { [Property in keyof typeof en]: string } = {
   updating: "Ukládání...",
   newVersion:
     "Od vašeho posledního používání OntoGrapher získal nové funkce! Klikněte sem pro detailní popis změn.",
-  retry: "Zopakovat akci?",
+  retry: "Zkusit znovu?",
+  changelogLoadError: "Chyba: nepodařil se načíst soubor se změnami.",
   errorUpdating: "Chyba: ukládání se nezdařilo.",
   workspaceReady: "Připraveno k práci. Vaše změny se průběžně ukládají.",
   filterVocabulariesPlaceholder: "Vybrat slovník(y)...",

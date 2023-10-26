@@ -121,6 +121,11 @@ body {
   overflow: scroll;
 }
 
+.flexCenter {
+  display: flex;
+  justify-content: center;
+}
+
 .red {
   color: red;
 }
