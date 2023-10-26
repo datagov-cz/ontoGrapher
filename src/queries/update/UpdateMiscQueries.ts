@@ -1,40 +1,39 @@
-import { AppSettings } from "../../config/Variables";
+import { DELETE } from "@tpluscode/sparql-builder";
 import { qb } from "../QueryBuilder";
-import { DELETE, INSERT } from "@tpluscode/sparql-builder";
-import { parsePrefix } from "../../function/FunctionEditVars";
-import { Environment } from "../../config/Environment";
 
+// TODO: change to user context
 export function updateApplicationContext(): string {
-  const projIRI = AppSettings.applicationContext;
+  // const projIRI = AppSettings.applicationContext;
 
-  const insertAppContext = INSERT.DATA`${qb.g(projIRI, [
-    qb.s(qb.i(projIRI), "og:viewColor", qb.ll(AppSettings.viewColorPool)),
-    qb.s(
-      qb.i(projIRI),
-      "og:contextVersion",
-      qb.ll(AppSettings.latestContextVersion)
-    ),
-    qb.s(
-      qb.i(projIRI),
-      qb.i(parsePrefix("a-popis-dat-pojem", "má-id-aplikace")),
-      qb.ll(Environment.id)
-    ),
-  ])}`.build();
+  // const insertAppContext = INSERT.DATA`${qb.g(projIRI, [
+  //   qb.s(qb.i(projIRI), "og:viewColor", qb.ll(AppSettings.viewColorPool)),
+  //   qb.s(
+  //     qb.i(projIRI),
+  //     "og:contextVersion",
+  //     qb.ll(AppSettings.latestContextVersion)
+  //   ),
+  //   qb.s(
+  //     qb.i(projIRI),
+  //     qb.i(parsePrefix("a-popis-dat-pojem", "má-id-aplikace")),
+  //     qb.ll(Environment.id)
+  //   ),
+  // ])}`.build();
 
-  const insertVocabularyContext = AppSettings.contextIRIs.map((contextIRI) =>
-    INSERT.DATA`${qb.g(contextIRI, [
-      qb.s(
-        qb.i(contextIRI),
-        qb.i(parsePrefix("a-popis-dat-pojem", "má-aplikační-kontext")),
-        qb.i(projIRI)
-      ),
-    ])}`.build()
-  );
+  // const insertVocabularyContext = AppSettings.contextIRIs.map((contextIRI) =>
+  //   INSERT.DATA`${qb.g(contextIRI, [
+  //     qb.s(
+  //       qb.i(contextIRI),
+  //       qb.i(parsePrefix("a-popis-dat-pojem", "má-aplikační-kontext")),
+  //       qb.i(projIRI)
+  //     ),
+  //   ])}`.build()
+  // );
 
-  const del = DELETE`${qb.g(projIRI, [qb.s(qb.i(projIRI), "?p", "?o")])}`
-    .WHERE`${qb.g(projIRI, [qb.s(qb.i(projIRI), "?p", "?o")])}`.build();
+  // const del = DELETE`${qb.g(projIRI, [qb.s(qb.i(projIRI), "?p", "?o")])}`
+  //   .WHERE`${qb.g(projIRI, [qb.s(qb.i(projIRI), "?p", "?o")])}`.build();
 
-  return qb.combineQueries(del, insertAppContext, ...insertVocabularyContext);
+  // return qb.combineQueries(del, insertAppContext, ...insertVocabularyContext);
+  return "";
 }
 
 export function updateDeleteTriples(

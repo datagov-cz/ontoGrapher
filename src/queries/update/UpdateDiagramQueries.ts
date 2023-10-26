@@ -1,9 +1,9 @@
-import { WorkspaceVocabularies } from "./../../config/Variables";
 import { DELETE, INSERT } from "@tpluscode/sparql-builder";
-import { qb } from "../QueryBuilder";
+import _ from "lodash";
 import { AppSettings, Diagrams } from "../../config/Variables";
 import { parsePrefix } from "../../function/FunctionEditVars";
-import _ from "lodash";
+import { qb } from "../QueryBuilder";
+import { WorkspaceVocabularies } from "./../../config/Variables";
 
 function getDiagramTriples(diagram: string): string {
   const diagramIRI = qb.i(Diagrams[diagram].iri);
@@ -60,7 +60,7 @@ function getDiagramTriples(diagram: string): string {
     qb.s(diagramIRI, "og:index", qb.ll(Diagrams[diagram].index)),
     qb.s(diagramIRI, "og:name", qb.ll(Diagrams[diagram].name)),
     qb.s(diagramIRI, "og:id", qb.ll(diagram)),
-    qb.s(diagramIRI, "og:active", qb.ll(Diagrams[diagram].active)),
+    qb.s(diagramIRI, "og:open", qb.ll(Diagrams[diagram].active)),
     qb.s(
       diagramIRI,
       "og:representation",
@@ -125,9 +125,6 @@ export function updateDiagramAssignments(diagram: string): string {
 export function updateCreateDiagram(diagram: string): string {
   const diagramIRI = qb.i(Diagrams[diagram].iri);
   const diagramGraph = qb.i(Diagrams[diagram].graph);
-  const insertAppContext = INSERT.DATA`${qb.g(AppSettings.applicationContext, [
-    qb.s(qb.i(AppSettings.applicationContext), "og:diagram", qb.ll(diagram)),
-  ])}`.build();
   const insertDiagramContext = getDiagramTriples(diagram);
   const insertVocabularyContext = AppSettings.contextIRIs.map((contextIRI) =>
     INSERT.DATA`${qb.g(contextIRI, [
@@ -159,11 +156,7 @@ export function updateCreateDiagram(diagram: string): string {
     ])}`.build()
   );
 
-  return qb.combineQueries(
-    insertAppContext,
-    ...insertVocabularyContext,
-    insertDiagramContext
-  );
+  return qb.combineQueries(...insertVocabularyContext, insertDiagramContext);
 }
 
 export function updateDiagram(diagram: string): string {

@@ -303,9 +303,7 @@ export function updateVertices(
       update.push(i);
     }
   }
-  const queries = [
-    updateProjectLinkVertex(id, update, AppSettings.selectedDiagram),
-  ];
+  const queries = [updateProjectLinkVertex(id, update)];
   if (del !== -1)
     queries.push(
       updateDeleteProjectLinkVertex(

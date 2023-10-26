@@ -14,12 +14,6 @@ export enum ElemCreationStrategy {
   RELATOR_TYPE,
 }
 
-export enum ContextLoadingStrategy {
-  DEFAULT,
-  UPDATE_LEGACY_WORKSPACE,
-  RECONSTRUCT_WORKSPACE,
-}
-
 export enum DetailPanelMode {
   HIDDEN,
   TERM,
