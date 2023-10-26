@@ -19,7 +19,8 @@ import { processQuery } from "../../interface/TransactionInterface";
 import { qb } from "../QueryBuilder";
 
 export async function getElementsConfig(
-  contextEndpoint: string
+  contextEndpoint: string,
+  contexts: string[] = AppSettings.contextIRIs
 ): Promise<boolean> {
   const elements: {
     [key: string]: {
@@ -47,7 +48,7 @@ export async function getElementsConfig(
         `odkazuje-na-přílohový-kontext`
       )
     )} ?graph.`,
-    `values ?contextIRI {<${AppSettings.contextIRIs.join("> <")}>}`,
+    `values ?contextIRI {<${contexts.join("> <")}>}`,
     "}",
   ].join(`
   `);
@@ -105,7 +106,7 @@ export async function getElementsConfig(
           `odkazuje-na-přílohový-kontext`
         )
       )} ?graph.`,
-      `values ?contextIRI {<${AppSettings.contextIRIs.join("> <")}>}`,
+      `values ?contextIRI {<${contexts.join("> <")}>}`,
       "}",
     ].join(`
     `);
@@ -230,7 +231,7 @@ export async function getSettings(contextEndpoint: string): Promise<{
           while (indices.includes(index)) index++;
           addDiagram(
             result.name.value,
-            true,
+            false,
             parseInt(result.representation.value, 10),
             index,
             result.diagram.value,
@@ -248,7 +249,7 @@ export async function getSettings(contextEndpoint: string): Promise<{
           contextInfo[result.vocabContext.value].appContext = true;
         }
         if (result.open) {
-          Diagrams[result.id.value].active = result.open.value === "true";
+          Diagrams[result.id.value].open = result.open.value === "true";
         }
         if (result.description) {
           Diagrams[result.id.value].description = result.description.value;
@@ -299,7 +300,8 @@ export async function getSettings(contextEndpoint: string): Promise<{
 }
 
 export async function getLinksConfig(
-  contextEndpoint: string
+  contextEndpoint: string,
+  contexts: string[] = AppSettings.contextIRIs
 ): Promise<boolean> {
   const query = [
     "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
@@ -320,7 +322,7 @@ export async function getLinksConfig(
       "d-sgov-pracovní-prostor-pojem",
       "odkazuje-na-přílohový-kontext"
     )}> ?graph.`,
-    `values ?contextIRI {<${AppSettings.contextIRIs.join("> <")}>}`,
+    `values ?contextIRI {<${contexts.join("> <")}>}`,
     "} order by ?id",
   ].join(`
   `);
@@ -397,7 +399,7 @@ export async function getLinksConfig(
         "d-sgov-pracovní-prostor-pojem",
         "odkazuje-na-přílohový-kontext"
       )}> ?graph.`,
-      `values ?contextIRI {<${AppSettings.contextIRIs.join("> <")}>}`,
+      `values ?contextIRI {<${contexts.join("> <")}>}`,
       "}",
     ].join(`
     `);

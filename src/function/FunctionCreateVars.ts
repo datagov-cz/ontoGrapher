@@ -114,7 +114,7 @@ export function addClass(id: string, active: boolean = true) {
 
 export function addDiagram(
   name: string,
-  active: boolean = true,
+  open: boolean = true,
   representation: Representation = Representation.COMPACT,
   index?: number,
   iri?: string,
@@ -135,7 +135,7 @@ export function addDiagram(
         : 0;
   Diagrams[diagramID] = {
     name: name,
-    active: active,
+    open: open,
     origin: { x: 0, y: 0 },
     scale: 1,
     index: index,

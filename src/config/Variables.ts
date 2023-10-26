@@ -119,7 +119,7 @@ export var Stereotypes: {
 export var Diagrams: {
   [key: string]: {
     name: string;
-    active: boolean;
+    open: boolean;
     origin: { x: number; y: number };
     scale: number;
     representation: Representation;

@@ -60,7 +60,7 @@ function getDiagramTriples(diagram: string): string {
     qb.s(diagramIRI, "og:index", qb.ll(Diagrams[diagram].index)),
     qb.s(diagramIRI, "og:name", qb.ll(Diagrams[diagram].name)),
     qb.s(diagramIRI, "og:id", qb.ll(diagram)),
-    qb.s(diagramIRI, "og:open", qb.ll(Diagrams[diagram].active)),
+    qb.s(diagramIRI, "og:open", qb.ll(Diagrams[diagram].open)),
     qb.s(
       diagramIRI,
       "og:representation",
