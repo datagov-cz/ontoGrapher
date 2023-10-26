@@ -47,6 +47,7 @@ export function createNewElemIRI(scheme: string, name: string): string {
       .trim()
       .normalize()
       .replace(/[\s\\]/g, "-")
+      .replace(/[/]/g, encodeURIComponent("/"))
       .replace(/[(?&)"^<>]/g, "")
   );
 }
