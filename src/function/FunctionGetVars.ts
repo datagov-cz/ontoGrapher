@@ -17,11 +17,10 @@ import { Shapes } from "../config/visual/Shapes";
 import { CacheSearchVocabularies } from "../datatypes/CacheSearchResults";
 import { Cardinality } from "../datatypes/Cardinality";
 import { en } from "../locale/en";
-import { enChangelog } from "../locale/enchangelog";
 import { LinkConfig } from "../queries/update/UpdateConnectionQueries";
 import { parsePrefix } from "./FunctionEditVars";
-import { mvp1IRI, mvp2IRI } from "./FunctionGraph";
 import { filterEquivalent, getEquivalents } from "./FunctionEquivalents";
+import { mvp1IRI, mvp2IRI } from "./FunctionGraph";
 
 export function getVocabularyLabel(vocabulary: string, cutoff: number = 24) {
   const shortLabel = getVocabularyShortLabel(vocabulary);
@@ -223,16 +222,6 @@ export function getVocabularyFromScheme(scheme: string): string {
     );
   if (vocab) return vocab;
   else throw new Error("Vocabulary IRI not found");
-}
-
-/**
- * Retrieves the day and month of the last entry in the changelog to display in the button.
- */
-export function getLastChangeDay() {
-  const year: string = Object.keys(enChangelog).reverse()[0];
-  const month: string = Object.keys(enChangelog[year]).reverse()[0];
-  const day: string = Object.keys(enChangelog[year][month]).reverse()[0];
-  return `${day}. ${month}. ${year}`;
 }
 
 export function getOntographerLinkIRI(linkID: string) {

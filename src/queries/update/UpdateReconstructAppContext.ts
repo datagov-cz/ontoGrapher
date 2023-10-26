@@ -3,10 +3,30 @@ import { qb } from "../QueryBuilder";
 import { initElements, parsePrefix } from "../../function/FunctionEditVars";
 import { processQuery } from "../../interface/TransactionInterface";
 import { updateApplicationContext } from "./UpdateMiscQueries";
-import {
-  updateProjectElement,
-  updateProjectElementNames,
-} from "./UpdateElementQueries";
+import { updateProjectElement } from "./UpdateElementQueries";
+
+function updateProjectElementNames(): string {
+  return [
+    "delete {",
+    "graph ?graph {",
+    "?iri og:name ?name.",
+    "}",
+    "} where {",
+    `?vocabContext <${parsePrefix(
+      "d-sgov-pracovní-prostor-pojem",
+      "odkazuje-na-přílohový-kontext"
+    )}> ?graph.`,
+    "graph ?graph {",
+    "?diagram a og:diagram.",
+    "?iri a og:element.",
+    "?iri og:name ?name.",
+    'filter(str(?name) = "")',
+    "}",
+    `values ?vocabContext {<${AppSettings.contextIRIs.join("> <")}>}`,
+    "}",
+  ].join(`
+    `);
+}
 
 export async function reconstructApplicationContextWithDiagrams(): Promise<string> {
   const diagramRetrievalQuery = [

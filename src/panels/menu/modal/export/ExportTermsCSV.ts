@@ -1,3 +1,4 @@
+import _ from "lodash";
 import { Locale } from "../../../../config/Locale";
 import {
   AppSettings,
@@ -77,69 +78,72 @@ export async function exportTermsCSV(
       "",
       getLabelOrBlank(Stereotypes[termType!].labels, exportLanguage),
     ]);
-    const relationshipOutputs = exportTerms[term]
-      .concat(superClassAttributes)
-      .filter((r) =>
-        WorkspaceTerms[r].types.includes(
-          parsePrefix("z-sgov-pojem", "typ-vztahu")
+    const relationshipOutputs = _.uniq(
+      exportTerms[term]
+        .concat(superClassAttributes)
+        .filter((r) =>
+          WorkspaceTerms[r].types.includes(
+            parsePrefix("z-sgov-pojem", "typ-vztahu")
+          )
         )
-      )
-      .map((link) =>
-        compile([
-          termLabel,
-          "",
-          "",
-          getLabelOrBlank(WorkspaceTerms[link].labels, exportLanguage),
-          WorkspaceTerms[link].definitions[exportLanguage],
-          link in sources ? sources[link] : "",
-          getLabelOrBlank(
-            Stereotypes[parsePrefix("z-sgov-pojem", "typ-vztahu")].labels,
-            exportLanguage
-          ),
-        ])
-      );
-    const eventOutputs = exportTerms[term]
-      .concat(superClassAttributes)
-      .filter((r) =>
-        WorkspaceTerms[r].types.includes(
-          parsePrefix("z-sgov-pojem", "typ-události")
+    ).map((link) =>
+      compile([
+        termLabel,
+        "",
+        "",
+        getLabelOrBlank(WorkspaceTerms[link].labels, exportLanguage),
+        WorkspaceTerms[link].definitions[exportLanguage],
+        link in sources ? sources[link] : "",
+        getLabelOrBlank(
+          Stereotypes[parsePrefix("z-sgov-pojem", "typ-vztahu")].labels,
+          exportLanguage
+        ),
+      ])
+    );
+    const eventOutputs = _.uniq(
+      exportTerms[term]
+        .concat(superClassAttributes)
+        .filter((r) =>
+          WorkspaceTerms[r].types.includes(
+            parsePrefix("z-sgov-pojem", "typ-události")
+          )
         )
-      )
-      .map((link) =>
-        compile([
-          termLabel,
-          "",
-          "",
-          getLabelOrBlank(WorkspaceTerms[link].labels, exportLanguage),
-          WorkspaceTerms[link].definitions[exportLanguage],
-          link in sources ? sources[link] : "",
-          getLabelOrBlank(
-            Stereotypes[parsePrefix("z-sgov-pojem", "typ-události")].labels,
-            exportLanguage
-          ),
-        ])
-      );
-    const tropeOutputs = exportTerms[term]
-      .concat(superClassAttributes)
-      .filter((r) =>
-        WorkspaceTerms[r].types.includes(
-          parsePrefix("z-sgov-pojem", "typ-vlastnosti")
+    ).map((link) =>
+      compile([
+        termLabel,
+        "",
+        "",
+        getLabelOrBlank(WorkspaceTerms[link].labels, exportLanguage),
+        WorkspaceTerms[link].definitions[exportLanguage],
+        link in sources ? sources[link] : "",
+        getLabelOrBlank(
+          Stereotypes[parsePrefix("z-sgov-pojem", "typ-události")].labels,
+          exportLanguage
+        ),
+      ])
+    );
+    const tropeOutputs = _.uniq(
+      exportTerms[term]
+        .concat(superClassAttributes)
+        .filter((r) =>
+          WorkspaceTerms[r].types.includes(
+            parsePrefix("z-sgov-pojem", "typ-vlastnosti")
+          )
         )
-      )
-      .map((link) =>
-        compile([
-          termLabel,
-          "",
-          "",
-          getLabelOrBlank(WorkspaceTerms[link].labels, exportLanguage),
-          WorkspaceTerms[link].definitions[exportLanguage],
-          link in sources ? sources[link] : "",
-          getLabelOrBlank(
-            Stereotypes[parsePrefix("z-sgov-pojem", "typ-vlastnosti")].labels,
-            exportLanguage
-          ),
-        ])
-      );
+    ).map((link) =>
+      compile([
+        termLabel,
+        "",
+        "",
+        getLabelOrBlank(WorkspaceTerms[link].labels, exportLanguage),
+        WorkspaceTerms[link].definitions[exportLanguage],
+        link in sources ? sources[link] : "",
+        getLabelOrBlank(
+          Stereotypes[parsePrefix("z-sgov-pojem", "typ-vlastnosti")].labels,
+          exportLanguage
+        ),
+      ])
+    );
     output += termOutput + carriageReturn;
     for (const o of eventOutputs) output += o + carriageReturn;
     for (const o of tropeOutputs) output += o + carriageReturn;

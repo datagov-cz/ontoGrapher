@@ -3,7 +3,7 @@ import { Nav, OverlayTrigger, Tooltip } from "react-bootstrap";
 import { Locale } from "../../../config/Locale";
 import { AppSettings } from "../../../config/Variables";
 import AboutModal from "../modal/AboutModal";
-import { getLastChangeDay } from "../../../function/FunctionGetVars";
+import preval from "preval.macro";
 
 interface Props {
   tooltip: boolean;
@@ -12,6 +12,9 @@ interface Props {
 interface State {
   modal: boolean;
 }
+
+const buildDate = preval`module.exports = new Date().toLocaleDateString();`;
+const buildTime = preval`module.exports = new Date().toLocaleTimeString();`;
 
 export default class MenuPanelAbout extends React.Component<Props, State> {
   constructor(props: Props) {
@@ -25,22 +28,15 @@ export default class MenuPanelAbout extends React.Component<Props, State> {
     return (
       <div className={"inert"}>
         <OverlayTrigger
-          trigger={[]}
           placement="bottom"
-          delay={10000}
-          show={this.props.tooltip}
-          overlay={
-            <Tooltip id={"newVersionTooltip"}>
-              {Locale[AppSettings.interfaceLanguage].newVersion}
-            </Tooltip>
-          }
+          overlay={<Tooltip id={"newVersionTooltip"}>{buildTime}</Tooltip>}
         >
           <Nav.Link
             onClick={() => {
               this.setState({ modal: true });
             }}
           >
-            {`${getLastChangeDay()} - ${
+            {`${buildDate} - ${
               Locale[AppSettings.interfaceLanguage].changelogButton
             }`}
           </Nav.Link>

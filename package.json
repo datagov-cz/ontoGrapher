@@ -47,6 +47,7 @@
     "lodash": "^4.17.21",
     "md5": "^2.3.0",
     "node-sass": "^9.0.0",
+    "preval.macro": "^5.0.0",
     "pullstate": "^1.23.0",
     "rdf-js": "^1.0.2",
     "react": "^17.0.2",
@@ -81,6 +82,7 @@
     ]
   },
   "devDependencies": {
+    "@types/preval.macro": "^3.0.1",
     "eslint": "^8.30.0",
     "eslint-config-react-app": "^7.0.1",
     "prettier": "^2.3.0",

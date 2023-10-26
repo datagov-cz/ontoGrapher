@@ -1,3 +1,5 @@
+import { DELETE, INSERT } from "@tpluscode/sparql-builder";
+import { Languages } from "../../config/Languages";
 import {
   AppSettings,
   Diagrams,
@@ -5,34 +7,8 @@ import {
   WorkspaceTerms,
   WorkspaceVocabularies,
 } from "../../config/Variables";
-import { qb } from "../QueryBuilder";
-import { DELETE, INSERT } from "@tpluscode/sparql-builder";
 import { getVocabularyFromScheme } from "../../function/FunctionGetVars";
-import { parsePrefix } from "../../function/FunctionEditVars";
-import { Languages } from "../../config/Languages";
-
-export function updateProjectElementNames(): string {
-  return [
-    "delete {",
-    "graph ?graph {",
-    "?iri og:name ?name.",
-    "}",
-    "} where {",
-    `?vocabContext <${parsePrefix(
-      "d-sgov-pracovní-prostor-pojem",
-      "odkazuje-na-přílohový-kontext"
-    )}> ?graph.`,
-    "graph ?graph {",
-    "?diagram a og:diagram.",
-    "?iri a og:element.",
-    "?iri og:name ?name.",
-    'filter(str(?name) = "")',
-    "}",
-    `values ?vocabContext {<${AppSettings.contextIRIs.join("> <")}>}`,
-    "}",
-  ].join(`
-    `);
-}
+import { qb } from "../QueryBuilder";
 
 export function updateProjectElement(del: boolean, ...iris: string[]): string {
   const diagramGraphs = Object.values(Diagrams)

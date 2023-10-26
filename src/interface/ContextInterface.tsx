@@ -47,10 +47,7 @@ import {
   getSettings,
 } from "../queries/get/InitQueries";
 import { updateDeleteDiagram } from "../queries/update/UpdateDiagramQueries";
-import {
-  updateProjectElement,
-  updateProjectElementNames,
-} from "../queries/update/UpdateElementQueries";
+import { updateProjectElement } from "../queries/update/UpdateElementQueries";
 import {
   updateDeleteProjectLink,
   updateProjectLinkParallel,
@@ -304,10 +301,7 @@ export async function retrieveContextData(): Promise<boolean> {
   if (
     !(await processTransaction(
       AppSettings.contextEndpoint,
-      qb.constructQuery(
-        updateProjectElementNames(),
-        updateProjectElement(false, ...elements)
-      )
+      qb.constructQuery(updateProjectElement(false, ...elements))
     ))
   )
     return false;

@@ -30,9 +30,7 @@ import {
 } from "../function/FunctionDraw";
 import { initVars } from "../function/FunctionEditVars";
 import {
-  getLastChangeDay,
   getLinkOrVocabElem,
-  getLocalStorageKey,
   setSchemeColors,
 } from "../function/FunctionGetVars";
 import { nameGraphLink } from "../function/FunctionGraph";
@@ -157,7 +155,6 @@ export default class App extends React.Component<
       this.handleChangeLanguage(AppSettings.canvasLanguage);
       setSchemeColors(AppSettings.viewColorPool);
       this.itemPanel.current?.update();
-      this.checkLastViewedVersion();
       StoreSettings.update((s) => {
         s.mainViewMode = MainViewMode.MANAGER;
       });
@@ -269,20 +266,6 @@ export default class App extends React.Component<
       freeze: freeze,
       retry: retry,
     });
-  }
-
-  checkLastViewedVersion() {
-    const lastViewedVersion = window.localStorage.getItem(
-      getLocalStorageKey("lastViewedVersion")
-    );
-    if (!lastViewedVersion || lastViewedVersion !== getLastChangeDay()) {
-      this.setState({ tooltip: true });
-      window.setTimeout(() => this.setState({ tooltip: false }), 5000);
-    }
-    window.localStorage.setItem(
-      getLocalStorageKey("lastViewedVersion"),
-      getLastChangeDay()
-    );
   }
 
   handleLoadingError(message: keyof typeof en = "connectionError") {
