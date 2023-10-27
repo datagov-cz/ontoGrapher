@@ -281,101 +281,103 @@ export async function getSettings(contextEndpoint: string): Promise<boolean> {
 export async function getLinksConfig(
   contextEndpoint: string = AppSettings.contextEndpoint,
   contexts: string[] = AppSettings.contextIRIs
-): Promise<
-  [Partial<typeof WorkspaceElements[0]>, Partial<typeof WorkspaceLinks[0]>]
-> {
-  const query = [
-    "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
-    "select ?id ?iri ?sourceID ?targetID ?active ?sourceCard1 ?sourceCard2 ?targetCard1 ?targetCard2 ?type ?link where {",
-    "graph ?graph {",
-    "?link a og:link .",
-    "?link og:id ?id .",
-    "?link og:iri ?iri .",
-    "?link og:source ?sourceID .",
-    "?link og:target ?targetID .",
-    "?link og:type ?type .",
-    "}",
-    `?contextIRI <${parsePrefix(
-      "d-sgov-pracovní-prostor-pojem",
-      "odkazuje-na-přílohový-kontext"
-    )}> ?graph.`,
-    `values ?contextIRI {<${contexts.join("> <")}>}`,
-    "} order by ?id",
-  ].join(`
-  `);
+): Promise<Partial<typeof WorkspaceLinks[0]>> {
   const partialWorkspaceLinks: {
     [key: string]: Partial<typeof WorkspaceLinks[0]>;
   } = {};
-  const partialWorkspaceElements: {
-    [key: string]: Partial<typeof WorkspaceElements[0]>;
-  } = {};
-  await processQuery(contextEndpoint, query)
-    .then((response) => {
-      return response.json();
-    })
-    .then((data) => {
-      for (const result of data.results.bindings) {
-        partialWorkspaceLinks[result.id.value] = {
-          iri: result.iri.value,
-          target: result.targetID.value,
-          source: result.sourceID.value,
-          active: true,
-          vertices: {},
-          type:
+  async function fetchLinks() {
+    const query = [
+      "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
+      "select ?id ?iri ?sourceID ?targetID ?active ?sourceCard1 ?sourceCard2 ?targetCard1 ?targetCard2 ?type ?link where {",
+      "graph ?graph {",
+      "?link a og:link .",
+      "?link og:id ?id .",
+      "?link og:iri ?iri .",
+      "?link og:source ?sourceID .",
+      "?link og:target ?targetID .",
+      "?link og:type ?type .",
+      "}",
+      `?contextIRI <${parsePrefix(
+        "d-sgov-pracovní-prostor-pojem",
+        "odkazuje-na-přílohový-kontext"
+      )}> ?graph.`,
+      `values ?contextIRI {<${contexts.join("> <")}>}`,
+      "} order by ?id",
+    ].join(`
+    `);
+    await processQuery(contextEndpoint, query)
+      .then((response) => {
+        return response.json();
+      })
+      .then((data) => {
+        for (const result of data.results.bindings) {
+          if (!(result.id.value in partialWorkspaceLinks))
+            partialWorkspaceLinks[result.id.value] = {};
+          partialWorkspaceLinks[result.id.value].iri = result.iri.value;
+          partialWorkspaceLinks[result.id.value].source = result.sourceID.value;
+          partialWorkspaceLinks[result.id.value].target = result.targetID.value;
+          partialWorkspaceLinks[result.id.value].active = true;
+          partialWorkspaceLinks[result.id.value].type =
             result.type.value === "default"
               ? LinkType.DEFAULT
-              : LinkType.GENERALIZATION,
-          linkIRI: result.link.value,
-        };
-      }
-      return true;
-    })
-    .catch((e) => {
-      console.error(e);
-      return false;
-    });
-  const diagramContextQuery = [
-    "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
-    "select ?diagram ?diagramID ?index ?posX ?posY ?id where {",
-    "graph ?graph {",
-    "?link a og:link.",
-    "?link og:vertex ?vertex.",
-    "?link og:id ?id.",
-    "?vertex og:index ?index.",
-    "?vertex og:position-x ?posX.",
-    "?vertex og:position-y ?posY.",
-    "?diagram og:id ?diagramID.",
-    "?diagram og:representation ?representation.",
-    "}",
-    `?contextIRI <${parsePrefix(
-      "d-sgov-pracovní-prostor-pojem",
-      "odkazuje-na-přílohový-kontext"
-    )}> ?graph.`,
-    `values ?contextIRI {<${contexts.join("> <")}>}`,
-    "}",
-  ].join(`
-    `);
-  await processQuery(contextEndpoint, diagramContextQuery)
-    .then((response) => {
-      return response.json();
-    })
-    .then((data) => {
-      for (const result of data.results.bindings) {
-        const id = result.id.value;
-        if (!(id in partialWorkspaceLinks)) continue;
-        else {
-          if (!(result.diagramID.value in partialWorkspaceLinks[id].vertices))
-            partialWorkspaceLinks[id].vertices[result.diagramID.value] = [];
-          partialWorkspaceLinks[id].vertices[result.diagramID.value][
+              : LinkType.GENERALIZATION;
+          partialWorkspaceLinks[result.id.value].linkIRI = result.link.value;
+        }
+        return true;
+      })
+      .catch((e) => {
+        console.error(e);
+        return false;
+      });
+  }
+  async function fetchVertices() {
+    const query = [
+      "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
+      "select ?diagram ?diagramID ?index ?posX ?posY ?id where {",
+      "graph ?graph {",
+      "?link a og:link.",
+      "?link og:vertex ?vertex.",
+      "?link og:id ?id.",
+      "?vertex og:index ?index.",
+      "?vertex og:position-x ?posX.",
+      "?vertex og:position-y ?posY.",
+      "?diagram og:id ?diagramID.",
+      "?diagram og:representation ?representation.",
+      "}",
+      `?contextIRI <${parsePrefix(
+        "d-sgov-pracovní-prostor-pojem",
+        "odkazuje-na-přílohový-kontext"
+      )}> ?graph.`,
+      `values ?contextIRI {<${contexts.join("> <")}>}`,
+      "}",
+    ].join(`
+      `);
+    await processQuery(contextEndpoint, query)
+      .then((response) => {
+        return response.json();
+      })
+      .then((data) => {
+        for (const result of data.results.bindings) {
+          const id = result.id.value;
+          if (!(id in partialWorkspaceLinks))
+            partialWorkspaceLinks[id] = { vertices: {} };
+          else if (!partialWorkspaceLinks[id].vertices)
+            partialWorkspaceLinks[id].vertices = {};
+          if (!(result.diagramID.value in partialWorkspaceLinks[id].vertices!))
+            partialWorkspaceLinks[id].vertices![result.diagramID.value] = [];
+          partialWorkspaceLinks[id].vertices![result.diagramID.value][
             parseInt(result.index.value)
           ] = {
             x: parseInt(result.posX.value),
             y: parseInt(result.posY.value),
           };
         }
-      }
-    })
-    .catch((e) => {
-      console.error(e);
-    });
+      })
+      .catch((e) => {
+        console.error(e);
+      });
+  }
+  await Promise.all([fetchLinks(), fetchVertices()]);
+  _.merge(WorkspaceLinks, partialWorkspaceLinks);
+  return partialWorkspaceLinks;
 }
