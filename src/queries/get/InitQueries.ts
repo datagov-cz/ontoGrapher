@@ -3,13 +3,10 @@ import { LinkType } from "../../config/Enum";
 import {
   AppSettings,
   Diagrams,
-  Links,
   WorkspaceElements,
-  WorkspaceLinks,
   WorkspaceVocabularies,
 } from "../../config/Variables";
 import { CacheSearchVocabularies } from "../../datatypes/CacheSearchResults";
-import { Cardinality } from "../../datatypes/Cardinality";
 import { addDiagram } from "../../function/FunctionCreateVars";
 import {
   initLanguageObject,
@@ -17,9 +14,11 @@ import {
 } from "../../function/FunctionEditVars";
 import { processQuery } from "../../interface/TransactionInterface";
 import { qb } from "../QueryBuilder";
+import { WorkspaceLinks } from "./../../config/Variables";
 
+//TODO: hot
 export async function getElementsConfig(
-  contextEndpoint: string,
+  contextEndpoint: string = AppSettings.contextEndpoint,
   contexts: string[] = AppSettings.contextIRIs
 ): Promise<boolean> {
   const elements: {
@@ -165,6 +164,8 @@ export async function getElementsConfig(
           position: elements[iri].diagramPosition,
           active: elements[iri].active,
           selectedLabel: elements[iri].selectedName,
+          connectionsFrom: [],
+          connectionsTo: [],
         };
       }
     }
@@ -172,17 +173,10 @@ export async function getElementsConfig(
   }
 }
 
-export async function getSettings(contextEndpoint: string): Promise<{
-  contextsMissingAttachments: string[];
-}> {
-  const ret: {
-    contextsMissingAttachments: string[];
-  } = {
-    contextsMissingAttachments: [],
-  };
+export async function getSettings(contextEndpoint: string): Promise<boolean> {
   const query = [
     "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
-    "select distinct ?open ?vocabContext ?graph ?diagram ?index ?name ?color ?id ?representation ?context ?vocabulary ?description ?collaborator ?creationDate ?modifyDate where {",
+    "select distinct ?open ?vocabContext ?graph ?diagram ?index ?name ?id ?representation ?vocabulary ?description ?collaborator ?creationDate ?modifyDate where {",
     "optional {?vocabContext <https://slovník.gov.cz/datový/pracovní-prostor/pojem/odkazuje-na-přílohový-kontext> ?graph .",
     "graph ?graph {",
     " ?diagram og:index ?index .",
@@ -202,30 +196,24 @@ export async function getSettings(contextEndpoint: string): Promise<{
     "} order by asc(?index)",
   ].join(`
   `);
-  await processQuery(contextEndpoint, query)
+  return await processQuery(contextEndpoint, query)
     .then((response) => {
       return response.json();
     })
     .then((data) => {
       const indices: number[] = [];
       const contextInfo: {
-        [key: string]: { appContext: boolean; diagrams: string[] };
+        [key: string]: string[];
       } = {};
       AppSettings.contextIRIs.forEach(
-        (contextIRI) =>
-          (contextInfo[contextIRI] = { appContext: false, diagrams: [] })
+        (contextIRI) => (contextInfo[contextIRI] = [])
       );
       for (const result of data.results.bindings) {
         if (
-          result.diagramGraph &&
           result.vocabContext &&
-          !contextInfo[result.vocabContext.value].diagrams.includes(
-            result.graph.value
-          )
+          !contextInfo[result.vocabContext.value].includes(result.graph.value)
         )
-          contextInfo[result.vocabContext.value].diagrams.push(
-            result.graph.value
-          );
+          contextInfo[result.vocabContext.value].push(result.graph.value);
         if (result.id && !(result.id.value in Diagrams)) {
           let index = parseInt(result.index.value);
           while (indices.includes(index)) index++;
@@ -241,12 +229,6 @@ export async function getSettings(contextEndpoint: string): Promise<{
           Diagrams[result.id.value].collaborators = [];
           Diagrams[result.id.value].saved = true;
           indices.push(index);
-          AppSettings.initWorkspace = false;
-        }
-        if (result.context) {
-          AppSettings.viewColorPool = result.color.value;
-          AppSettings.contextVersion = parseInt(result.context.value, 10);
-          contextInfo[result.vocabContext.value].appContext = true;
         }
         if (result.open) {
           Diagrams[result.id.value].open = result.open.value === "true";
@@ -280,11 +262,6 @@ export async function getSettings(contextEndpoint: string): Promise<{
           );
         }
       }
-      ret.contextsMissingAttachments = Object.keys(contextInfo).filter(
-        (context) =>
-          contextInfo[context].diagrams.length !==
-          Object.values(Diagrams).length
-      );
       Object.entries(Diagrams).forEach(([key, value]) => {
         if (!indices.includes(value.index)) Diagrams[key].toBeDeleted = true;
         if (value.vocabularies.length === 0)
@@ -292,17 +269,21 @@ export async function getSettings(contextEndpoint: string): Promise<{
             WorkspaceVocabularies
           ).filter((v) => !WorkspaceVocabularies[v].readOnly);
       });
+      return true;
     })
     .catch((e) => {
       console.error(e);
+      return false;
     });
-  return ret;
 }
 
+//TODO: hot
 export async function getLinksConfig(
-  contextEndpoint: string,
+  contextEndpoint: string = AppSettings.contextEndpoint,
   contexts: string[] = AppSettings.contextIRIs
-): Promise<boolean> {
+): Promise<
+  [Partial<typeof WorkspaceElements[0]>, Partial<typeof WorkspaceLinks[0]>]
+> {
   const query = [
     "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
     "select ?id ?iri ?sourceID ?targetID ?active ?sourceCard1 ?sourceCard2 ?targetCard1 ?targetCard2 ?type ?link where {",
@@ -313,10 +294,6 @@ export async function getLinksConfig(
     "?link og:source ?sourceID .",
     "?link og:target ?targetID .",
     "?link og:type ?type .",
-    "?link og:sourceCardinality1 ?sourceCard1 .",
-    "?link og:sourceCardinality2 ?sourceCard2 .",
-    "?link og:targetCardinality1 ?targetCard1 .",
-    "?link og:targetCardinality2 ?targetCard2 .",
     "}",
     `?contextIRI <${parsePrefix(
       "d-sgov-pracovní-prostor-pojem",
@@ -326,53 +303,30 @@ export async function getLinksConfig(
     "} order by ?id",
   ].join(`
   `);
-  const links: {
-    [key: string]: {
-      iri: string;
-      targetID: string;
-      sourceID: string;
-      vertices: { [key: string]: { x: number; y: number }[] };
-      sourceCardinality1: string;
-      sourceCardinality2: string;
-      targetCardinality1: string;
-      targetCardinality2: string;
-      active: boolean;
-      type: number;
-      linkIRI: string;
-    };
+  const partialWorkspaceLinks: {
+    [key: string]: Partial<typeof WorkspaceLinks[0]>;
   } = {};
-  const appContextLinkRetrieval = await processQuery(contextEndpoint, query)
+  const partialWorkspaceElements: {
+    [key: string]: Partial<typeof WorkspaceElements[0]>;
+  } = {};
+  await processQuery(contextEndpoint, query)
     .then((response) => {
       return response.json();
     })
     .then((data) => {
       for (const result of data.results.bindings) {
-        if (
-          !Object.values(links).find(
-            (link) =>
-              link.active &&
-              link.iri === result.iri.value &&
-              link.sourceID === result.sourceID.value &&
-              link.targetID === result.targetID.value
-          )
-        ) {
-          links[result.id.value] = {
-            iri: result.iri.value,
-            targetID: result.targetID.value,
-            sourceID: result.sourceID.value,
-            active: true,
-            vertices: {},
-            type:
-              result.type.value === "default"
-                ? LinkType.DEFAULT
-                : LinkType.GENERALIZATION,
-            sourceCardinality1: result.sourceCard1.value,
-            sourceCardinality2: result.sourceCard2.value,
-            targetCardinality1: result.targetCard1.value,
-            targetCardinality2: result.targetCard2.value,
-            linkIRI: result.link.value,
-          };
-        }
+        partialWorkspaceLinks[result.id.value] = {
+          iri: result.iri.value,
+          target: result.targetID.value,
+          source: result.sourceID.value,
+          active: true,
+          vertices: {},
+          type:
+            result.type.value === "default"
+              ? LinkType.DEFAULT
+              : LinkType.GENERALIZATION,
+          linkIRI: result.link.value,
+        };
       }
       return true;
     })
@@ -380,79 +334,48 @@ export async function getLinksConfig(
       console.error(e);
       return false;
     });
-  if (!appContextLinkRetrieval) return false;
-  else {
-    const diagramContextQuery = [
-      "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
-      "select ?diagram ?diagramID ?index ?posX ?posY ?id where {",
-      "graph ?graph {",
-      "?link a og:link.",
-      "?link og:vertex ?vertex.",
-      "?link og:id ?id.",
-      "?vertex og:index ?index.",
-      "?vertex og:position-x ?posX.",
-      "?vertex og:position-y ?posY.",
-      "?diagram og:id ?diagramID.",
-      "?diagram og:representation ?representation.",
-      "}",
-      `?contextIRI <${parsePrefix(
-        "d-sgov-pracovní-prostor-pojem",
-        "odkazuje-na-přílohový-kontext"
-      )}> ?graph.`,
-      `values ?contextIRI {<${contexts.join("> <")}>}`,
-      "}",
-    ].join(`
+  const diagramContextQuery = [
+    "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
+    "select ?diagram ?diagramID ?index ?posX ?posY ?id where {",
+    "graph ?graph {",
+    "?link a og:link.",
+    "?link og:vertex ?vertex.",
+    "?link og:id ?id.",
+    "?vertex og:index ?index.",
+    "?vertex og:position-x ?posX.",
+    "?vertex og:position-y ?posY.",
+    "?diagram og:id ?diagramID.",
+    "?diagram og:representation ?representation.",
+    "}",
+    `?contextIRI <${parsePrefix(
+      "d-sgov-pracovní-prostor-pojem",
+      "odkazuje-na-přílohový-kontext"
+    )}> ?graph.`,
+    `values ?contextIRI {<${contexts.join("> <")}>}`,
+    "}",
+  ].join(`
     `);
-    return await processQuery(contextEndpoint, diagramContextQuery)
-      .then((response) => {
-        return response.json();
-      })
-      .then((data) => {
-        for (const result of data.results.bindings) {
-          if (!(result.id.value in links)) continue;
-          const id = result.id.value;
-          if (!(result.diagramID.value in links[id].vertices))
-            links[id].vertices[result.diagramID.value] = [];
-          links[id].vertices[result.diagramID.value][
+  await processQuery(contextEndpoint, diagramContextQuery)
+    .then((response) => {
+      return response.json();
+    })
+    .then((data) => {
+      for (const result of data.results.bindings) {
+        const id = result.id.value;
+        if (!(id in partialWorkspaceLinks)) continue;
+        else {
+          if (!(result.diagramID.value in partialWorkspaceLinks[id].vertices))
+            partialWorkspaceLinks[id].vertices[result.diagramID.value] = [];
+          partialWorkspaceLinks[id].vertices[result.diagramID.value][
             parseInt(result.index.value)
           ] = {
             x: parseInt(result.posX.value),
             y: parseInt(result.posY.value),
           };
         }
-        for (const link in links) {
-          if (
-            !(links[link].sourceID in WorkspaceElements) ||
-            !(links[link].targetID in WorkspaceElements)
-          )
-            continue;
-          const sourceCard = new Cardinality("", "");
-          const targetCard = new Cardinality("", "");
-          sourceCard.setFirstCardinality(links[link].sourceCardinality1);
-          sourceCard.setSecondCardinality(links[link].sourceCardinality2);
-          targetCard.setFirstCardinality(links[link].targetCardinality1);
-          targetCard.setSecondCardinality(links[link].targetCardinality2);
-          WorkspaceLinks[link] = {
-            iri: links[link].iri,
-            source: links[link].sourceID,
-            target: links[link].targetID,
-            sourceCardinality: sourceCard,
-            targetCardinality: targetCard,
-            type: links[link].type,
-            vertices: links[link].vertices,
-            active: links[link].active,
-            hasInverse:
-              links[link].type !== LinkType.GENERALIZATION &&
-              links[link].iri in Links,
-            linkIRI: links[link].linkIRI,
-          };
-        }
-        console.log(WorkspaceLinks);
-        return true;
-      })
-      .catch((e) => {
-        console.error(e);
-        return false;
-      });
-  }
+      }
+    })
+    .catch((e) => {
+      console.error(e);
+    });
 }

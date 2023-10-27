@@ -1,4 +1,3 @@
-import { INSERT } from "@tpluscode/sparql-builder";
 import * as _ from "lodash";
 import { Alert } from "react-bootstrap";
 import TableList from "../components/TableList";
@@ -68,9 +67,7 @@ export function retrieveInfoFromURLParameters(): boolean {
 }
 
 export async function updateContexts(): Promise<boolean> {
-  const { contextsMissingAttachments } = await getSettings(
-    AppSettings.contextEndpoint
-  );
+  const ret1 = await getSettings(AppSettings.contextEndpoint);
   await fetchUsers(
     ...Object.values(Diagrams)
       .flatMap((d) => d.collaborators)
@@ -84,26 +81,10 @@ export async function updateContexts(): Promise<boolean> {
   StoreSettings.update((s) => {
     s.selectedDiagram = AppSettings.selectedDiagram;
   });
-  if (contextsMissingAttachments.length > 1) {
-    const ret = await processTransaction(
-      AppSettings.contextEndpoint,
-      qb.constructQuery(
-        ...contextsMissingAttachments.map((context) =>
-          INSERT.DATA`
-      ${qb.g(context, [
-        qb.i(context),
-        qb.i(parsePrefix("a-popis-dat-pojem", "má-přílohu")),
-        qb.a(Object.values(Diagrams).map((diag) => qb.i(diag.iri))),
-      ])}
-      `.build()
-        )
-      )
-    );
-    if (!ret) return false;
-  }
-  return true;
+  return ret1;
 }
 
+//TODO: hot
 export async function retrieveVocabularyData(): Promise<boolean> {
   await fetchVocabularies(
     AppSettings.contextEndpoint,
@@ -218,9 +199,10 @@ export async function retrieveVocabularyData(): Promise<boolean> {
   return true;
 }
 
+//TODO: hot
 export async function retrieveContextData(): Promise<boolean> {
-  if (!(await getElementsConfig(AppSettings.contextEndpoint))) return false;
-  if (!(await getLinksConfig(AppSettings.contextEndpoint))) return false;
+  const configs = await Promise.all([getElementsConfig(), getLinksConfig()]);
+  if (configs.some((c) => !c)) return false;
   const missingTerms: string[] = Object.keys(WorkspaceElements).filter(
     (id) => !(id in WorkspaceTerms)
   );

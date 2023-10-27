@@ -584,13 +584,12 @@ export function restoreHiddenElem(
               AppSettings.ontographerContext
             )))
     ) {
-      const oldPos = setupLink(link, restoreSimpleConnectionPosition, g);
+      let oldPos = setupLink(link, restoreSimpleConnectionPosition, g);
       if (oldPos)
         queries.push(
           updateDeleteProjectLinkVertex(
             link,
-            0,
-            oldPos,
+            _.range(0, ++oldPos),
             AppSettings.selectedDiagram
           )
         );
@@ -672,9 +671,11 @@ export function restoreHiddenElem(
               queries.push(
                 updateDeleteProjectLinkVertex(
                   link,
-                  0,
-                  WorkspaceLinks[link].vertices[AppSettings.selectedDiagram]
-                    .length,
+                  _.range(
+                    0,
+                    ++WorkspaceLinks[link].vertices[AppSettings.selectedDiagram]
+                      .length
+                  ),
                   AppSettings.selectedDiagram
                 )
               );
@@ -684,10 +685,12 @@ export function restoreHiddenElem(
               queries.push(
                 updateDeleteProjectLinkVertex(
                   targetLink,
-                  0,
-                  WorkspaceLinks[targetLink].vertices[
-                    AppSettings.selectedDiagram
-                  ].length,
+                  _.range(
+                    0,
+                    ++WorkspaceLinks[targetLink].vertices[
+                      AppSettings.selectedDiagram
+                    ].length
+                  ),
                   AppSettings.selectedDiagram
                 )
               );

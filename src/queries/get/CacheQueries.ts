@@ -19,7 +19,7 @@ export async function fetchVocabularies(
 ): Promise<boolean> {
   const query = [
     "PREFIX skos: <http://www.w3.org/2004/02/skos/core#> ",
-    "SELECT ?vocabulary ?scheme ?title ?namespace ?term ?type ?diagram where {",
+    "SELECT ?vocabulary ?scheme ?title ?namespace ?diagram where {",
     "graph <" + context + "> {",
     "<" +
       context +
@@ -33,10 +33,9 @@ export async function fetchVocabularies(
     ].join("> <")}>}}`,
     "?vocabulary <http://onto.fel.cvut.cz/ontologies/slovník/agendový/popis-dat/pojem/má-glosář> ?scheme.",
     "?vocabulary <http://purl.org/dc/terms/title> ?title.",
-    "?term skos:inScheme ?scheme.",
-    "?term a ?type.",
     "}}",
-  ].join(" ");
+  ].join(`
+  `);
   return await processQuery(endpoint, query)
     .then((response) => response.json())
     .then((data) => {

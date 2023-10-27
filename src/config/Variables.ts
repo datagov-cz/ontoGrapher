@@ -19,6 +19,8 @@ export var WorkspaceElements: {
     selectedLabel: { [key: string]: string };
     //vocabulary (if known)
     vocabulary?: string;
+    connectionsFrom: string[];
+    connectionsTo: string[];
   };
 } = {};
 
@@ -153,7 +155,6 @@ export var AppSettings: {
   ontographerContext: string;
   cacheContext: string;
   luceneConnector: string;
-  initWorkspace: boolean;
   representation: Representation;
   defaultCardinalitySource: Cardinality;
   defaultCardinalityTarget: Cardinality;
@@ -178,7 +179,6 @@ export var AppSettings: {
   selectedDiagram: "",
   canvasLanguage: Object.keys(Languages)[0],
   contextIRIs: [],
-  initWorkspace: false,
   contextEndpoint: Environment.components["al-db-server"].url,
   ontographerContext:
     "http://onto.fel.cvut.cz/ontologies/application/ontoGrapher",

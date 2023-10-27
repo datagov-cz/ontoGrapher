@@ -16,37 +16,6 @@ export function updateProjectLinkVertex(
 
   const insert = INSERT.DATA`${qb.g(Diagrams[diagram].graph, [
     qb.s(qb.i(linkIRI), "og:vertex", qb.a(vertIRIs), vertIRIs.length > 0),
-    qb.s(qb.i(linkIRI), "og:id", qb.ll(id)),
-    qb.s(qb.i(linkIRI), "rdf:type", "og:link"),
-    qb.s(qb.i(linkIRI), "og:iri", qb.i(WorkspaceLinks[id].iri)),
-    qb.s(qb.i(linkIRI), "og:active", qb.ll(WorkspaceLinks[id].active)),
-    qb.s(qb.i(linkIRI), "og:source", qb.i(WorkspaceLinks[id].source)),
-    qb.s(qb.i(linkIRI), "og:target", qb.i(WorkspaceLinks[id].target)),
-    qb.s(
-      qb.i(linkIRI),
-      "og:type",
-      qb.ll(LinkConfig[WorkspaceLinks[id].type].id)
-    ),
-    qb.s(
-      qb.i(linkIRI),
-      "og:sourceCardinality1",
-      qb.ll(WorkspaceLinks[id].sourceCardinality.getFirstCardinality())
-    ),
-    qb.s(
-      qb.i(linkIRI),
-      "og:sourceCardinality2",
-      qb.ll(WorkspaceLinks[id].sourceCardinality.getSecondCardinality())
-    ),
-    qb.s(
-      qb.i(linkIRI),
-      "og:targetCardinality1",
-      qb.ll(WorkspaceLinks[id].targetCardinality.getFirstCardinality())
-    ),
-    qb.s(
-      qb.i(linkIRI),
-      "og:targetCardinality2",
-      qb.ll(WorkspaceLinks[id].targetCardinality.getSecondCardinality())
-    ),
     ...vertIRIs.map((iri, i) =>
       [
         qb.s(iri, "rdf:type", "og:vertex"),
@@ -66,29 +35,28 @@ export function updateProjectLinkVertex(
     ),
   ])}`.build();
 
-  const delS = vertIRIs.map((iri) =>
-    DELETE`${qb.g(Diagrams[diagram].graph, [qb.s(iri, "?p", "?o")])}`
-      .WHERE`${qb.g(Diagrams[diagram].graph, [qb.s(iri, "?p", "?o")])}`.build()
+  return qb.combineQueries(
+    updateDeleteProjectLinkVertex(id, vertices, diagram),
+    insert
   );
-
-  return qb.combineQueries(...delS, insert);
 }
 
 export function updateDeleteProjectLinkVertex(
   id: string,
-  from: number,
-  to: number,
+  vertices: number[],
   diagram: string
 ): string {
+  checkLink(id);
   const linkIRI = WorkspaceLinks[id].linkIRI;
-  const IRIs = [];
-  if (from === to) return "";
-  for (let i = from; i < to; i++) {
-    IRIs.push(qb.i(`${linkIRI}/vertex-${i + 1}`));
-  }
+  const vertIRIs = vertices.map((i) => qb.i(`${linkIRI}/vertex-${i + 1}`));
 
-  return DELETE.DATA`${qb.g(Diagrams[diagram].graph, [
-    qb.s(qb.i(linkIRI), "og:vertex", qb.a(IRIs)),
+  return DELETE`${qb.g(Diagrams[diagram].graph, [
+    qb.s(qb.i(linkIRI), "og:vertex", "?iri"),
+    qb.s("?iri", "?p", "?o"),
+  ])}`.WHERE`${qb.g(Diagrams[diagram].graph, [
+    qb.s(qb.i(linkIRI), "og:vertex", "?iri"),
+    `values ?iri {${vertIRIs.join(" ")}}`,
+    qb.s("?iri", "?p", "?o"),
   ])}`.build();
 }
 
@@ -134,27 +102,7 @@ export function updateProjectLink(del: boolean, ...ids: string[]): string {
       qb.s(linkIRI, "og:active", qb.ll(WorkspaceLinks[id].active)),
       qb.s(linkIRI, "og:source", qb.i(WorkspaceLinks[id].source)),
       qb.s(linkIRI, "og:target", qb.i(WorkspaceLinks[id].target)),
-      qb.s(linkIRI, "og:type", qb.ll(LinkConfig[WorkspaceLinks[id].type].id)),
-      qb.s(
-        linkIRI,
-        "og:sourceCardinality1",
-        qb.ll(WorkspaceLinks[id].sourceCardinality.getFirstCardinality())
-      ),
-      qb.s(
-        linkIRI,
-        "og:sourceCardinality2",
-        qb.ll(WorkspaceLinks[id].sourceCardinality.getSecondCardinality())
-      ),
-      qb.s(
-        linkIRI,
-        "og:targetCardinality1",
-        qb.ll(WorkspaceLinks[id].targetCardinality.getFirstCardinality())
-      ),
-      qb.s(
-        linkIRI,
-        "og:targetCardinality2",
-        qb.ll(WorkspaceLinks[id].targetCardinality.getSecondCardinality())
-      )
+      qb.s(linkIRI, "og:type", qb.ll(LinkConfig[WorkspaceLinks[id].type].id))
     );
   }
   insert.push(
@@ -184,27 +132,7 @@ export function updateProjectLinkParallel(...ids: string[]): string[] {
       qb.s(linkIRI, "og:active", qb.ll(WorkspaceLinks[id].active)),
       qb.s(linkIRI, "og:source", qb.i(WorkspaceLinks[id].source)),
       qb.s(linkIRI, "og:target", qb.i(WorkspaceLinks[id].target)),
-      qb.s(linkIRI, "og:type", qb.ll(LinkConfig[WorkspaceLinks[id].type].id)),
-      qb.s(
-        linkIRI,
-        "og:sourceCardinality1",
-        qb.ll(WorkspaceLinks[id].sourceCardinality.getFirstCardinality())
-      ),
-      qb.s(
-        linkIRI,
-        "og:sourceCardinality2",
-        qb.ll(WorkspaceLinks[id].sourceCardinality.getSecondCardinality())
-      ),
-      qb.s(
-        linkIRI,
-        "og:targetCardinality1",
-        qb.ll(WorkspaceLinks[id].targetCardinality.getFirstCardinality())
-      ),
-      qb.s(
-        linkIRI,
-        "og:targetCardinality2",
-        qb.ll(WorkspaceLinks[id].targetCardinality.getSecondCardinality())
-      )
+      qb.s(linkIRI, "og:type", qb.ll(LinkConfig[WorkspaceLinks[id].type].id))
     );
   }
   insert.push(

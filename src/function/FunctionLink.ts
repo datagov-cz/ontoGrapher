@@ -308,8 +308,10 @@ export function updateVertices(
     queries.push(
       updateDeleteProjectLinkVertex(
         id,
-        del,
-        WorkspaceLinks[id].vertices[AppSettings.selectedDiagram].length,
+        _.range(
+          del,
+          ++WorkspaceLinks[id].vertices[AppSettings.selectedDiagram].length
+        ),
         AppSettings.selectedDiagram
       )
     );
