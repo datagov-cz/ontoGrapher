@@ -101,7 +101,6 @@ export function updateDeleteProjectLink(
   const diagrams = Object.values(Diagrams)
     .filter((diag) => !diag.toBeDeleted)
     .map((diagram) => diagram.graph);
-  diagrams.push(AppSettings.applicationContext);
   const delStatement = qb.s("?link", `?p`, `?o`);
   const filter = deleteVertexTriples ? "" : `filter(?p not in (og:vertex))`;
   queries.push(
@@ -161,8 +160,7 @@ export function updateProjectLink(del: boolean, ...ids: string[]): string {
   insert.push(
     ...diagrams.map((diagram) =>
       INSERT.DATA`${qb.g(diagram, insertBody)}`.build()
-    ),
-    INSERT.DATA`${qb.g(AppSettings.applicationContext, insertBody)}`.build()
+    )
   );
 
   return qb.combineQueries(...(del ? [deletes, ...insert] : [...insert]));
@@ -212,8 +210,7 @@ export function updateProjectLinkParallel(...ids: string[]): string[] {
   insert.push(
     ...diagrams.map((diagram) =>
       INSERT.DATA`${qb.g(diagram, insertBody)}`.build()
-    ),
-    INSERT.DATA`${qb.g(AppSettings.applicationContext, insertBody)}`.build()
+    )
   );
   return insert;
 }

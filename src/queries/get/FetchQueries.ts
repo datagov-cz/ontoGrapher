@@ -1,26 +1,22 @@
-import {
-  AppSettings,
-  Prefixes,
-  Users,
-  EquivalentClasses,
-} from "./../../config/Variables";
+import * as _ from "lodash";
 import { LinkType } from "../../config/Enum";
-import { RestrictionConfig } from "../../config/logic/RestrictionConfig";
 import {
   Links,
-  Stereotypes,
   WorkspaceTerms,
   WorkspaceVocabularies,
 } from "../../config/Variables";
+import { RestrictionConfig } from "../../config/logic/RestrictionConfig";
 import { Restriction } from "../../datatypes/Restriction";
-import {
-  initLanguageObject,
-  parsePrefix,
-} from "../../function/FunctionEditVars";
+import { initLanguageObject } from "../../function/FunctionEditVars";
 import { createRestriction } from "../../function/FunctionRestriction";
 import { processQuery } from "../../interface/TransactionInterface";
 import { qb } from "../QueryBuilder";
-import * as _ from "lodash";
+import {
+  AppSettings,
+  EquivalentClasses,
+  Prefixes,
+  Users,
+} from "./../../config/Variables";
 
 function pushEquivalentClass(iri: string, equivalent: string) {
   const push = (iri: string, equivalent: string) =>
@@ -53,13 +49,10 @@ export async function fetchVocabulary(
     "OPTIONAL {?vocabulary <http://onto.fel.cvut.cz/ontologies/slovník/agendový/popis-dat/pojem/má-glosář> ?scheme.",
     "?vocabulary dct:title ?vocabTitle.",
     "OPTIONAL {?vocabulary <http://purl.org/vocab/vann/preferredNamespaceUri> ?namespace. }}",
-    "values " +
-      (scheme ? "?scheme" : "?vocabulary") +
-      " {<" +
-      iris.join("> <") +
-      ">}",
+    `values ${scheme ? "?scheme" : "?vocabulary"} {<${iris.join("> <")}>}`,
     "}",
-  ].join(" ");
+  ].join(`
+  `);
   return await processQuery(endpoint, query)
     .then((response) => {
       return response.json();
@@ -127,7 +120,7 @@ export async function fetchBaseOntology(
     "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>",
     "PREFIX z-sgov-pojem: <https://slovník.gov.cz/základní/pojem/>",
     "PREFIX owl: <http://www.w3.org/2002/07/owl#>",
-    "SELECT ?term ?termLabel ?termAltLabel ?termType ?termDefinition ?termDomain ?termRange ?inverseOf ?character ?subClassOf ?equivalent",
+    "SELECT ?term ?termLabel ?termAltLabel ?termType ?termDefinition ?equivalent",
     "WHERE {",
     "?term skos:inScheme <" + scheme + ">.",
     requiredTypes && "VALUES ?termType {<" + requiredTypes.join("> <") + ">}",
@@ -137,13 +130,6 @@ export async function fetchBaseOntology(
     "OPTIONAL {?term skos:altLabel ?termAltLabel.}",
     "OPTIONAL {?equivalent owl:equivalentClass ?term.}",
     "OPTIONAL {?term skos:definition ?termDefinition.}",
-    "OPTIONAL {?term z-sgov-pojem:charakterizuje ?character.}",
-    "OPTIONAL {?term rdfs:domain ?termDomain.}",
-    "OPTIONAL {?term rdfs:range ?termRange.}",
-    "OPTIONAL {?term rdfs:subClassOf ?subClassOf. ",
-    "filter (!isBlank(?subClassOf)) }",
-    "OPTIONAL {?term owl:inverseOf ?inverseOf. ",
-    "filter (!isBlank(?inverseOf)) }",
     "}",
   ].join(`
   `);
@@ -200,19 +186,6 @@ export async function fetchBaseOntology(
           result[row.term.value].definitions[row.termDefinition["xml:lang"]] =
             row.termDefinition.value;
         }
-        if (row.termDomain)
-          result[row.term.value].domain = row.termDomain.value;
-        if (row.termRange) result[row.term.value].range = row.termRange.value;
-        if (row.character)
-          result[row.term.value].character = row.character.value;
-        if (
-          row.subClassOf &&
-          row.subClassOf.type !== "bnode" &&
-          !result[row.term.value].subClassOf.includes(row.subClassOf.value)
-        )
-          result[row.term.value].subClassOf.push(row.subClassOf.value);
-        if (row.inverseOf)
-          result[row.term.value].inverseOf = row.inverseOf.value;
         if (row.equivalent)
           pushEquivalentClass(row.term.value, row.equivalent.value);
       }
@@ -274,7 +247,8 @@ export async function fetchRestrictions(
       ">}",
     "}",
     graph && "}",
-  ].join(" ");
+  ].join(`
+  `);
   return await processQuery(endpoint, query)
     .then((response) => response.json())
     .then((data) => {
@@ -341,7 +315,8 @@ export async function fetchTerms(
     "OPTIONAL {?topConcept skos:hasTopConcept ?term. }",
     "}",
     graph && "}",
-  ].join(" ");
+  ].join(`
+  `);
   return await processQuery(endpoint, query)
     .then((response) => response.json())
     .then((data) => {
@@ -408,91 +383,6 @@ export async function fetchTerms(
     .catch((e) => {
       console.error(e);
       return {};
-    });
-}
-
-/**
- * Gets subclasses of terms and cardinality restrictions of terms which are on certain properties.
- * @param endpoint SPARQL endpoint
- * @param scheme skos:inScheme of the terms
- * @param stereotypeList List of term IRIs to query
- * @param linkList List of term IRIs to restrict the restriction onProperty search to
- */
-export async function fetchSubClassesAndCardinalities(
-  endpoint: string,
-  scheme: string,
-  stereotypeList: string[],
-  linkList: string[]
-): Promise<boolean> {
-  let query = [
-    "PREFIX skos: <http://www.w3.org/2004/02/skos/core#>",
-    "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>",
-    "PREFIX owl: <http://www.w3.org/2002/07/owl#>",
-    "SELECT DISTINCT ?term ?subClass ?onProperty ?predicate ?object",
-    "WHERE {",
-    "?term rdfs:subClassOf+ ?subClass.",
-    "values ?term {<" + stereotypeList.join("> <") + ">}",
-    "?subClass skos:inScheme <" + scheme + ">.",
-    "filter (!isBlank(?subClass)).",
-    "OPTIONAL {",
-    "?superClass rdfs:subClassOf ?restriction.",
-    "?superClass skos:inScheme <" + scheme + ">.",
-    "?restriction a owl:Restriction.",
-    "?restriction owl:onClass ?subClass.",
-    "?restriction owl:onProperty ?onProperty.",
-    "?restriction ?predicate ?object.",
-    "values ?predicate {owl:minQualifiedCardinality owl:maxQualifiedCardinality}",
-    "values ?onProperty {<" + linkList.join("> <") + ">}",
-    "}",
-    "}",
-  ].join(" ");
-  return await processQuery(endpoint, query)
-    .then((response) => {
-      return response.json();
-    })
-    .then((data) => {
-      for (const result of data.results.bindings) {
-        if (
-          result.term.value in Stereotypes &&
-          !Stereotypes[result.term.value].subClassOf.includes(
-            result.subClass.value
-          )
-        )
-          Stereotypes[result.term.value].subClassOf.push(result.subClass.value);
-        if (result.onProperty && result.onProperty.value in Links) {
-          const domain = Object.keys(Links).find(
-            (link) => Links[link].domain === result.subClass.value
-          );
-          const range = Object.keys(Links).find(
-            (link) => Links[link].range === result.subClass.value
-          );
-          if (domain) {
-            result.predicate.value ===
-            parsePrefix("owl", "minQualifiedCardinality")
-              ? Links[domain].defaultSourceCardinality.setFirstCardinality(
-                  result.object.value
-                )
-              : Links[domain].defaultSourceCardinality.setSecondCardinality(
-                  result.object.value
-                );
-          }
-          if (range) {
-            result.predicate.value ===
-            parsePrefix("owl", "minQualifiedCardinality")
-              ? Links[range].defaultTargetCardinality.setFirstCardinality(
-                  result.object.value
-                )
-              : Links[range].defaultTargetCardinality.setSecondCardinality(
-                  result.object.value
-                );
-          }
-        }
-      }
-      return true;
-    })
-    .catch((e) => {
-      console.error(e);
-      return false;
     });
 }
 

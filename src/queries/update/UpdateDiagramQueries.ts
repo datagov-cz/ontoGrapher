@@ -125,9 +125,6 @@ export function updateDiagramAssignments(diagram: string): string {
 export function updateCreateDiagram(diagram: string): string {
   const diagramIRI = qb.i(Diagrams[diagram].iri);
   const diagramGraph = qb.i(Diagrams[diagram].graph);
-  const insertAppContext = INSERT.DATA`${qb.g(AppSettings.applicationContext, [
-    qb.s(qb.i(AppSettings.applicationContext), "og:diagram", qb.ll(diagram)),
-  ])}`.build();
   const insertDiagramContext = getDiagramTriples(diagram);
   const insertVocabularyContext = AppSettings.contextIRIs.map((contextIRI) =>
     INSERT.DATA`${qb.g(contextIRI, [
@@ -159,11 +156,7 @@ export function updateCreateDiagram(diagram: string): string {
     ])}`.build()
   );
 
-  return qb.combineQueries(
-    insertAppContext,
-    ...insertVocabularyContext,
-    insertDiagramContext
-  );
+  return qb.combineQueries(...insertVocabularyContext, insertDiagramContext);
 }
 
 export function updateDiagram(diagram: string): string {

@@ -127,10 +127,7 @@ export function deleteConcept(id: string): string[] {
     queries.push(
       updateDeleteTriples(
         WorkspaceLinks[connection].linkIRI,
-        [
-          AppSettings.applicationContext,
-          ...Object.values(Diagrams).map((diag) => diag.graph),
-        ],
+        Object.values(Diagrams).map((diag) => diag.graph),
         true,
         false,
         false
@@ -145,10 +142,7 @@ export function deleteConcept(id: string): string[] {
     queries.push(
       updateDeleteTriples(
         WorkspaceLinks[connection].linkIRI,
-        [
-          AppSettings.applicationContext,
-          ...Object.values(Diagrams).map((diag) => diag.graph),
-        ],
+        Object.values(Diagrams).map((diag) => diag.graph),
         true,
         false,
         false

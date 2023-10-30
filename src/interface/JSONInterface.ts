@@ -2,20 +2,16 @@ import { Locale } from "../config/Locale";
 import {
   AppSettings,
   EquivalentClasses,
+  Languages,
   Links,
   Stereotypes,
   WorkspaceVocabularies,
 } from "../config/Variables";
-import { Cardinality } from "../datatypes/Cardinality";
 import { createValues } from "../function/FunctionCreateVars";
 import { initLanguageObject } from "../function/FunctionEditVars";
-import {
-  checkLabels,
-  getVocabularyFromScheme,
-} from "../function/FunctionGetVars";
+import { getVocabularyFromScheme } from "../function/FunctionGetVars";
 import {
   fetchBaseOntology,
-  fetchSubClassesAndCardinalities,
   fetchVocabulary,
 } from "../queries/get/FetchQueries";
 
@@ -64,29 +60,14 @@ export async function getVocabulariesFromRemoteJSON(
                   : undefined
               )
             );
-            checkLabels();
-            results.push(
-              await fetchSubClassesAndCardinalities(
-                AppSettings.contextEndpoint,
-                data.sourceIRI,
-                Object.keys(Stereotypes),
-                Object.keys(Links)
-              )
-            );
-            Object.keys(Links).forEach((link) => {
-              if (!Links[link].defaultSourceCardinality.checkCardinalities()) {
-                Links[link].defaultSourceCardinality = new Cardinality(
-                  AppSettings.defaultCardinalitySource.getFirstCardinality(),
-                  AppSettings.defaultCardinalitySource.getSecondCardinality()
-                );
+            for (const link in Links) {
+              for (const lang in Languages) {
+                if (!Links[link].labels[lang]) {
+                  const label = link.lastIndexOf("/");
+                  Links[link].labels[lang] = link.substring(label + 1);
+                }
               }
-              if (!Links[link].defaultTargetCardinality.checkCardinalities()) {
-                Links[link].defaultTargetCardinality = new Cardinality(
-                  AppSettings.defaultCardinalityTarget.getFirstCardinality(),
-                  AppSettings.defaultCardinalityTarget.getSecondCardinality()
-                );
-              }
-            });
+            }
             for (const iri of Object.keys(Links)) {
               if (!(iri in EquivalentClasses)) continue;
               for (const eq of EquivalentClasses[iri]) {

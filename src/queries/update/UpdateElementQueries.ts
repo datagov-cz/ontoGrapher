@@ -14,9 +14,7 @@ export function updateProjectElement(del: boolean, ...iris: string[]): string {
   const diagramGraphs = Object.values(Diagrams)
     .filter((diag) => !diag.toBeDeleted)
     .map((diag) => diag.graph);
-  const data: { [key: string]: string[] } = {
-    [AppSettings.applicationContext]: [],
-  };
+  const data: { [key: string]: string[] } = {};
   diagramGraphs.forEach((diag) => (data[diag] = []));
   const deletes: string[] = [];
   const inserts: string[] = [];
@@ -51,7 +49,6 @@ export function updateProjectElement(del: boolean, ...iris: string[]): string {
       qb.s(qb.i(iri), "og:name", qb.a(names), names.length > 0),
       qb.s(qb.i(iri), "og:active", qb.ll(WorkspaceElements[iri].active)),
     ];
-    data[AppSettings.applicationContext].push(...ogStatements);
     Object.values(Diagrams)
       .filter((diag) => !diag.toBeDeleted)
       .map((diag) => diag.graph)
@@ -87,7 +84,7 @@ export function updateProjectElement(del: boolean, ...iris: string[]): string {
         qb.s(qb.i(iri), "og:active", "?active"),
       ];
       deletes.push(
-        ...[AppSettings.applicationContext, ...diagramGraphs].map((graph) =>
+        ...diagramGraphs.map((graph) =>
           DELETE`${qb.g(graph, deleteStatements)}`.WHERE`${qb.g(
             graph,
             deleteStatements
@@ -118,7 +115,7 @@ export function updateProjectElement(del: boolean, ...iris: string[]): string {
     }
   }
   inserts.push(
-    ...[AppSettings.applicationContext, ...diagramGraphs].map((graph) =>
+    ...diagramGraphs.map((graph) =>
       INSERT.DATA`${qb.g(graph, data[graph])}`.build()
     )
   );

@@ -36,7 +36,7 @@ export var WorkspaceLinks: {
     targetCardinality: Cardinality;
     //vertices - point breaks of link by diagram ID
     vertices: { [key: string]: joint.dia.Link.Vertex[] };
-    //type - dictates saving/loading behaviour
+    //type - dictates saving/loading behavior
     type: number;
     //active
     active: boolean;
@@ -150,11 +150,9 @@ export var AppSettings: {
   canvasLanguage: string;
   contextIRIs: string[];
   contextEndpoint: string;
-  applicationContext: string;
   ontographerContext: string;
   cacheContext: string;
   luceneConnector: string;
-  initWorkspace: boolean;
   representation: Representation;
   defaultCardinalitySource: Cardinality;
   defaultCardinalityTarget: Cardinality;
@@ -179,8 +177,6 @@ export var AppSettings: {
   selectedDiagram: "",
   canvasLanguage: Object.keys(Languages)[0],
   contextIRIs: [],
-  applicationContext: "",
-  initWorkspace: false,
   contextEndpoint: Environment.components["al-db-server"].url,
   ontographerContext:
     "http://onto.fel.cvut.cz/ontologies/application/ontoGrapher",

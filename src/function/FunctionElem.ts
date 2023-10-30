@@ -407,10 +407,7 @@ export function removeReadOnlyElement(elem: string): string[] {
     ...deleteConcept(elem),
     updateDeleteTriples(
       elem,
-      [
-        AppSettings.applicationContext,
-        ...Object.values(Diagrams).map((diag) => diag.graph),
-      ],
+      Object.values(Diagrams).map((diag) => diag.graph),
       true,
       true,
       false

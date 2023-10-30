@@ -1,4 +1,5 @@
-import { ContextLoadingStrategy, LinkType } from "../../config/Enum";
+import * as _ from "lodash";
+import { LinkType } from "../../config/Enum";
 import {
   AppSettings,
   Diagrams,
@@ -16,10 +17,10 @@ import {
 } from "../../function/FunctionEditVars";
 import { processQuery } from "../../interface/TransactionInterface";
 import { qb } from "../QueryBuilder";
-import * as _ from "lodash";
 
 export async function getElementsConfig(
-  contextEndpoint: string
+  contextEndpoint: string = AppSettings.contextEndpoint,
+  contexts: string[] = AppSettings.contextIRIs
 ): Promise<boolean> {
   const elements: {
     [key: string]: {
@@ -35,12 +36,20 @@ export async function getElementsConfig(
     "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
     "PREFIX skos: <http://www.w3.org/2004/02/skos/core#> ",
     "select ?elem ?scheme ?active ?name ?vocabulary where {",
-    "graph <" + AppSettings.applicationContext + "> {",
+    "graph ?graph {",
     "?elem a og:element .",
     "optional {?elem og:name ?name.}",
     "optional {?elem og:vocabulary ?vocabulary.}",
     "?elem og:scheme ?scheme .",
-    "}}",
+    "}",
+    `?contextIRI ${qb.i(
+      parsePrefix(
+        "d-sgov-pracovní-prostor-pojem",
+        `odkazuje-na-přílohový-kontext`
+      )
+    )} ?graph.`,
+    `values ?contextIRI {<${contexts.join("> <")}>}`,
+    "}",
   ].join(`
   `);
   const appContextElementRetrieval = await processQuery(
@@ -96,7 +105,7 @@ export async function getElementsConfig(
           `odkazuje-na-přílohový-kontext`
         )
       )} ?graph.`,
-      `values ?contextIRI {<${AppSettings.contextIRIs.join("> <")}>}`,
+      `values ?contextIRI {<${contexts.join("> <")}>}`,
       "}",
     ].join(`
     `);
@@ -162,20 +171,7 @@ export async function getElementsConfig(
   }
 }
 
-export async function getSettings(contextEndpoint: string): Promise<{
-  strategy: ContextLoadingStrategy | undefined;
-  contextsMissingAppContexts: string[];
-  contextsMissingAttachments: string[];
-}> {
-  const ret: {
-    strategy: ContextLoadingStrategy | undefined;
-    contextsMissingAppContexts: string[];
-    contextsMissingAttachments: string[];
-  } = {
-    strategy: undefined,
-    contextsMissingAppContexts: [],
-    contextsMissingAttachments: [],
-  };
+export async function getSettings(contextEndpoint: string): Promise<boolean> {
   const query = [
     "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
     "select distinct ?active ?vocabContext ?ogContext ?graph ?diagram ?index ?name ?color ?id ?representation ?context ?vocabulary ?description ?collaborator ?creationDate ?modifyDate where {",
@@ -194,42 +190,28 @@ export async function getSettings(contextEndpoint: string): Promise<{
     " }",
     "}",
     "}",
-    "optional {?vocabContext <http://onto.fel.cvut.cz/ontologies/slovník/agendový/popis-dat/pojem/má-aplikační-kontext> ?ogContext .",
-    " graph ?ogContext {",
-    "   ?ogContext og:viewColor ?color .",
-    "   ?ogContext og:contextVersion ?context .",
-    "  }",
-    "}",
     `values ?vocabContext {<${AppSettings.contextIRIs.join("> <")}>}`,
     "} order by asc(?index)",
   ].join(`
   `);
-  await processQuery(contextEndpoint, query)
+  return await processQuery(contextEndpoint, query)
     .then((response) => {
       return response.json();
     })
     .then((data) => {
       const indices: number[] = [];
       const contextInfo: {
-        [key: string]: { appContext: boolean; diagrams: string[] };
+        [key: string]: string[];
       } = {};
       AppSettings.contextIRIs.forEach(
-        (contextIRI) =>
-          (contextInfo[contextIRI] = { appContext: false, diagrams: [] })
+        (contextIRI) => (contextInfo[contextIRI] = [])
       );
-      AppSettings.initWorkspace = true;
-      let reconstructWorkspace = false;
       for (const result of data.results.bindings) {
         if (
-          result.diagramGraph &&
           result.vocabContext &&
-          !contextInfo[result.vocabContext.value].diagrams.includes(
-            result.graph.value
-          )
+          !contextInfo[result.vocabContext.value].includes(result.graph.value)
         )
-          contextInfo[result.vocabContext.value].diagrams.push(
-            result.graph.value
-          );
+          contextInfo[result.vocabContext.value].push(result.graph.value);
         if (result.id && !(result.id.value in Diagrams)) {
           let index = parseInt(result.index.value);
           while (indices.includes(index)) index++;
@@ -245,16 +227,8 @@ export async function getSettings(contextEndpoint: string): Promise<{
           Diagrams[result.id.value].collaborators = [];
           Diagrams[result.id.value].saved = true;
           indices.push(index);
-          AppSettings.initWorkspace = false;
         }
-        if (result.context) {
-          AppSettings.viewColorPool = result.color.value;
-          AppSettings.contextVersion = parseInt(result.context.value, 10);
-          AppSettings.applicationContext = result.ogContext.value;
-          contextInfo[result.vocabContext.value].appContext = true;
-        } else {
-          reconstructWorkspace = true;
-        }
+
         if (result.active) {
           Diagrams[result.id.value].active = result.active.value === "true";
         }
@@ -287,14 +261,6 @@ export async function getSettings(contextEndpoint: string): Promise<{
           );
         }
       }
-      ret.contextsMissingAppContexts = Object.keys(contextInfo).filter(
-        (context) => !contextInfo[context].appContext
-      );
-      ret.contextsMissingAttachments = Object.keys(contextInfo).filter(
-        (context) =>
-          contextInfo[context].diagrams.length !==
-          Object.values(Diagrams).length
-      );
       Object.entries(Diagrams).forEach(([key, value]) => {
         if (!indices.includes(value.index)) Diagrams[key].toBeDeleted = true;
         if (value.vocabularies.length === 0)
@@ -302,23 +268,22 @@ export async function getSettings(contextEndpoint: string): Promise<{
             WorkspaceVocabularies
           ).filter((v) => !WorkspaceVocabularies[v].readOnly);
       });
-      ret.strategy = reconstructWorkspace
-        ? ContextLoadingStrategy.RECONSTRUCT_WORKSPACE
-        : ContextLoadingStrategy.DEFAULT;
+      return true;
     })
     .catch((e) => {
       console.error(e);
+      return false;
     });
-  return ret;
 }
 
 export async function getLinksConfig(
-  contextEndpoint: string
+  contextEndpoint: string = AppSettings.contextEndpoint,
+  contexts: string[] = AppSettings.contextIRIs
 ): Promise<boolean> {
   const query = [
     "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
     "select ?id ?iri ?sourceID ?targetID ?active ?sourceCard1 ?sourceCard2 ?targetCard1 ?targetCard2 ?type ?link where {",
-    "graph <" + AppSettings.applicationContext + "> {",
+    "graph ?graph {",
     "?link a og:link .",
     "?link og:id ?id .",
     "?link og:iri ?iri .",
@@ -329,7 +294,13 @@ export async function getLinksConfig(
     "?link og:sourceCardinality2 ?sourceCard2 .",
     "?link og:targetCardinality1 ?targetCard1 .",
     "?link og:targetCardinality2 ?targetCard2 .",
-    "}} order by ?id",
+    "}",
+    `?contextIRI <${parsePrefix(
+      "d-sgov-pracovní-prostor-pojem",
+      "odkazuje-na-přílohový-kontext"
+    )}> ?graph.`,
+    `values ?contextIRI {<${contexts.join("> <")}>}`,
+    "} order by ?id",
   ].join(`
   `);
   const links: {
@@ -390,12 +361,9 @@ export async function getLinksConfig(
   else {
     const diagramContextQuery = [
       "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
-      "select ?graph ?vertex ?diagram ?diagramID ?index ?posX ?posY ?id ?iri where {",
-      "graph <" + AppSettings.applicationContext + "> {",
-      "?link a og:link.",
-      "?link og:iri ?iri.",
-      "}",
+      "select ?diagram ?diagramID ?index ?posX ?posY ?id where {",
       "graph ?graph {",
+      "?link a og:link.",
       "?link og:vertex ?vertex.",
       "?link og:id ?id.",
       "?vertex og:index ?index.",
@@ -408,7 +376,7 @@ export async function getLinksConfig(
         "d-sgov-pracovní-prostor-pojem",
         "odkazuje-na-přílohový-kontext"
       )}> ?graph.`,
-      `values ?contextIRI {<${AppSettings.contextIRIs.join("> <")}>}`,
+      `values ?contextIRI {<${contexts.join("> <")}>}`,
       "}",
     ].join(`
     `);

@@ -45,10 +45,7 @@ export default class ModalRemoveConcept extends React.Component<Props, State> {
       ...deleteConcept(this.props.id),
       updateDeleteTriples(
         this.props.id,
-        [
-          AppSettings.applicationContext,
-          ...Object.values(Diagrams).map((diag) => diag.graph),
-        ],
+        Object.values(Diagrams).map((diag) => diag.graph),
         true,
         false,
         false

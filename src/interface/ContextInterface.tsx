@@ -1,10 +1,8 @@
-import { INSERT } from "@tpluscode/sparql-builder";
 import * as _ from "lodash";
 import { Alert } from "react-bootstrap";
-import { v4 as uuidv4 } from "uuid";
 import TableList from "../components/TableList";
 import { callCriticalAlert } from "../config/CriticalAlertData";
-import { ContextLoadingStrategy, MainViewMode } from "../config/Enum";
+import { MainViewMode } from "../config/Enum";
 import { Locale } from "../config/Locale";
 import { StoreSettings } from "../config/Store";
 import {
@@ -52,8 +50,6 @@ import {
   updateDeleteProjectLink,
   updateProjectLinkParallel,
 } from "../queries/update/UpdateLinkQueries";
-import { updateApplicationContext } from "../queries/update/UpdateMiscQueries";
-import { reconstructApplicationContextWithDiagrams } from "../queries/update/UpdateReconstructAppContext";
 import { processQuery, processTransaction } from "./TransactionInterface";
 
 export function retrieveInfoFromURLParameters(): boolean {
@@ -71,8 +67,7 @@ export function retrieveInfoFromURLParameters(): boolean {
 }
 
 export async function updateContexts(): Promise<boolean> {
-  const { strategy, contextsMissingAppContexts, contextsMissingAttachments } =
-    await getSettings(AppSettings.contextEndpoint);
+  const ret1 = await getSettings(AppSettings.contextEndpoint);
   await fetchUsers(
     ...Object.values(Diagrams)
       .flatMap((d) => d.collaborators)
@@ -82,73 +77,14 @@ export async function updateContexts(): Promise<boolean> {
           d.replaceAll("https://slovník.gov.cz/uživatel/", "")
       )
   );
-  if (!AppSettings.applicationContext)
-    AppSettings.applicationContext = `${parsePrefix(
-      "d-sgov-pracovní-prostor-pojem",
-      "aplikační-kontext"
-    )}/${uuidv4()}/ontographer`;
-  switch (strategy) {
-    case ContextLoadingStrategy.RECONSTRUCT_WORKSPACE:
-      const ret2 = await processTransaction(
-        AppSettings.contextEndpoint,
-        qb.constructQuery(await reconstructApplicationContextWithDiagrams())
-      );
-      if (!ret2) return false;
-      break;
-    case ContextLoadingStrategy.DEFAULT:
-      break;
-    default:
-      return false;
-  }
-  if (AppSettings.initWorkspace) {
-    const queries = [updateApplicationContext()];
-    const ret = await processTransaction(
-      AppSettings.contextEndpoint,
-      qb.constructQuery(...queries)
-    );
-    if (!ret) return false;
-  }
   AppSettings.selectedDiagram = "";
   StoreSettings.update((s) => {
     s.selectedDiagram = AppSettings.selectedDiagram;
   });
-  if (contextsMissingAppContexts.length > 1) {
-    const ret = await processTransaction(
-      AppSettings.contextEndpoint,
-      qb.constructQuery(
-        ...contextsMissingAppContexts.map((context) =>
-          INSERT.DATA`
-      ${qb.g(context, [
-        qb.i(context),
-        qb.i(parsePrefix("a-popis-dat-pojem", "má-aplikační-kontext")),
-        qb.i(AppSettings.applicationContext),
-      ])}
-      `.build()
-        )
-      )
-    );
-    if (!ret) return false;
-  }
-  if (contextsMissingAttachments.length > 1) {
-    const ret = await processTransaction(
-      AppSettings.contextEndpoint,
-      qb.constructQuery(
-        ...contextsMissingAttachments.map((context) =>
-          INSERT.DATA`
-      ${qb.g(context, [
-        qb.i(context),
-        qb.i(parsePrefix("a-popis-dat-pojem", "má-přílohu")),
-        qb.a(Object.values(Diagrams).map((diag) => qb.i(diag.iri))),
-      ])}
-      `.build()
-        )
-      )
-    );
-    if (!ret) return false;
-  }
-  return true;
+  return ret1;
 }
 
+//TODO: hot
 export async function retrieveVocabularyData(): Promise<boolean> {
   await fetchVocabularies(
     AppSettings.contextEndpoint,
