@@ -1,7 +1,6 @@
 import { getVocabularyShortLabel } from "@opendata-mvcr/assembly-line-shared";
 import * as joint from "jointjs";
 import { Representation } from "../config/Enum";
-import { Languages } from "../config/Languages";
 import { LocalStorageVars } from "../config/LocalStorageVars";
 import { Locale } from "../config/Locale";
 import {
@@ -66,27 +65,6 @@ export function getLabelOrBlank(
   return labels[language] && labels[language].length > 0
     ? labels[language]
     : "<blank>";
-}
-
-export function checkLabels() {
-  for (const link in Links) {
-    for (const lang in Languages) {
-      if (!Links[link].labels[lang]) {
-        const label = link.lastIndexOf("/");
-        Links[link].labels[lang] = link.substring(label + 1);
-      }
-    }
-    Links[link].subClassOfDomain = [];
-    Links[link].subClassOfRange = [];
-    Links[link].defaultSourceCardinality = new Cardinality(
-      AppSettings.defaultCardinalitySource.getFirstCardinality(),
-      AppSettings.defaultCardinalitySource.getSecondCardinality()
-    );
-    Links[link].defaultTargetCardinality = new Cardinality(
-      AppSettings.defaultCardinalityTarget.getFirstCardinality(),
-      AppSettings.defaultCardinalityTarget.getSecondCardinality()
-    );
-  }
 }
 
 export function setSchemeColors(pool: string) {

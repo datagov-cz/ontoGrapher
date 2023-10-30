@@ -84,7 +84,6 @@ export function loadDebugData(): boolean {
       AppSettings.selectedDiagram = json[setting]["selectedDiagram"];
       AppSettings.canvasLanguage = json[setting]["canvasLanguage"];
       AppSettings.contextIRIs = json[setting]["contextIRIs"];
-      AppSettings.initWorkspace = json[setting]["initWorkspace"];
       AppSettings.contextEndpoint = json[setting]["contextEndpoint"];
       AppSettings.ontographerContext = json[setting]["ontographerContext"];
       AppSettings.cacheContext = json[setting]["cacheContext"];
