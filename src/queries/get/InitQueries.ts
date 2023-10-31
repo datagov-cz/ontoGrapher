@@ -175,7 +175,7 @@ export async function getSettings(contextEndpoint: string): Promise<boolean> {
   const query = [
     "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
     "select distinct ?active ?vocabContext ?ogContext ?graph ?diagram ?index ?name ?color ?id ?representation ?context ?vocabulary ?description ?collaborator ?creationDate ?modifyDate where {",
-    "optional {?vocabContext <https://slovník.gov.cz/datový/pracovní-prostor/pojem/odkazuje-na-přílohový-kontext> ?graph .",
+    "?vocabContext <https://slovník.gov.cz/datový/pracovní-prostor/pojem/odkazuje-na-přílohový-kontext> ?graph .",
     "graph ?graph {",
     " ?diagram og:index ?index .",
     " ?diagram og:name ?name .",
@@ -188,7 +188,6 @@ export async function getSettings(contextEndpoint: string): Promise<boolean> {
     "           ?diagram og:creationDate ?creationDate. ",
     "           ?diagram og:modifiedDate ?modifyDate. ",
     " }",
-    "}",
     "}",
     `values ?vocabContext {<${AppSettings.contextIRIs.join("> <")}>}`,
     "} order by asc(?index)",
@@ -208,7 +207,6 @@ export async function getSettings(contextEndpoint: string): Promise<boolean> {
       );
       for (const result of data.results.bindings) {
         if (
-          result.vocabContext &&
           !contextInfo[result.vocabContext.value].includes(result.graph.value)
         )
           contextInfo[result.vocabContext.value].push(result.graph.value);
