@@ -6,7 +6,6 @@ import {
   WorkspaceElements,
   WorkspaceVocabularies,
 } from "../../config/Variables";
-import { CacheSearchVocabularies } from "../../datatypes/CacheSearchResults";
 import { Cardinality } from "../../datatypes/Cardinality";
 import { addDiagram } from "../../function/FunctionCreateVars";
 import {
@@ -17,79 +16,68 @@ import { processQuery } from "../../interface/TransactionInterface";
 import { qb } from "../QueryBuilder";
 import { WorkspaceLinks } from "./../../config/Variables";
 
-//TODO: hot
 export async function getElementsConfig(
   contextEndpoint: string = AppSettings.contextEndpoint,
   contexts: string[] = AppSettings.contextIRIs
 ): Promise<boolean> {
-  const elements: {
-    [key: string]: {
-      active: boolean;
-      diagramPosition: { [key: string]: { x: number; y: number } };
-      hidden: { [key: string]: boolean };
-      selectedName: { [key: string]: string };
-      scheme: string;
-      vocabulary?: string;
-    };
+  const elements: { [key: string]: Partial<typeof WorkspaceElements[0]> } = {};
+  const elementPositions: {
+    [key: string]: Partial<typeof WorkspaceElements[0]>;
   } = {};
-  const appContextQuery = [
-    "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
-    "PREFIX skos: <http://www.w3.org/2004/02/skos/core#> ",
-    "select ?elem ?scheme ?active ?name ?vocabulary where {",
-    "graph ?graph {",
-    "?elem a og:element .",
-    "optional {?elem og:name ?name.}",
-    "optional {?elem og:vocabulary ?vocabulary.}",
-    "?elem og:scheme ?scheme .",
-    "}",
-    `?contextIRI ${qb.i(
-      parsePrefix(
-        "d-sgov-pracovní-prostor-pojem",
-        `odkazuje-na-přílohový-kontext`
-      )
-    )} ?graph.`,
-    `values ?contextIRI {<${contexts.join("> <")}>}`,
-    "}",
-  ].join(`
-  `);
-  const appContextElementRetrieval = await processQuery(
-    contextEndpoint,
-    appContextQuery
-  )
-    .then((response) => {
-      return response.json();
-    })
-    .then((data) => {
-      for (const result of data.results.bindings) {
-        const iri = result.elem.value;
-        if (!(iri in elements)) {
-          elements[iri] = {
-            active: true,
-            diagramPosition: {},
-            hidden: {},
-            selectedName: initLanguageObject(""),
-            scheme: result.scheme.value,
-          };
-        }
-        if (
-          result.name &&
-          result.name.value &&
-          !elements[iri].selectedName[result.name["xml:lang"]]
+  const getElements = async (): Promise<boolean> => {
+    const query = [
+      "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
+      "PREFIX skos: <http://www.w3.org/2004/02/skos/core#> ",
+      "select ?elem ?scheme ?active ?name ?vocabulary where {",
+      "graph ?graph {",
+      "?elem a og:element .",
+      "optional {?elem og:name ?name.}",
+      "optional {?elem og:vocabulary ?vocabulary.}",
+      "?elem og:scheme ?scheme .",
+      "}",
+      `?contextIRI ${qb.i(
+        parsePrefix(
+          "d-sgov-pracovní-prostor-pojem",
+          `odkazuje-na-přílohový-kontext`
         )
-          elements[iri].selectedName[result.name["xml:lang"]] =
-            result.name.value;
-        if (result.vocabulary)
-          elements[iri].vocabulary = result.vocabulary.value;
-      }
-      return true;
-    })
-    .catch((e) => {
-      console.error(e);
-      return false;
-    });
-  if (!appContextElementRetrieval) return false;
-  else {
-    const diagramContextQuery = [
+      )} ?graph.`,
+      `values ?contextIRI {<${contexts.join("> <")}>}`,
+      "}",
+    ].join(`
+    `);
+    return await processQuery(contextEndpoint, query)
+      .then((response) => {
+        return response.json();
+      })
+      .then((data) => {
+        for (const result of data.results.bindings) {
+          const iri = result.elem.value;
+          if (!(iri in elements)) {
+            elements[iri] = {
+              active: true,
+              position: {},
+              hidden: {},
+              selectedLabel: initLanguageObject(""),
+            };
+          }
+          if (
+            result.name &&
+            !elements[iri].selectedLabel![result.name["xml:lang"]]
+          )
+            elements[iri].selectedLabel![result.name["xml:lang"]] =
+              result.name.value;
+          if (result.vocabulary)
+            elements[iri].vocabulary = result.vocabulary.value;
+        }
+        return true;
+      })
+      .catch((e) => {
+        console.error(e);
+        return false;
+      });
+  };
+  const getElementPositions = async (): Promise<boolean> => {
+    const query = [
       "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
       "select ?diagramID ?iri ?posX ?posY ?hidden where {",
       "graph ?graph {",
@@ -110,26 +98,28 @@ export async function getElementsConfig(
       "}",
     ].join(`
     `);
-    const diagramContextElementRetrieval = await processQuery(
-      contextEndpoint,
-      diagramContextQuery
-    )
+    return await processQuery(contextEndpoint, query)
       .then((response) => {
         return response.json();
       })
       .then((data) => {
         for (const result of data.results.bindings) {
           const iri = result.iri.value;
-          if (iri in elements) {
-            if (!(result.diagramID.value in elements[iri].hidden)) {
-              elements[iri].diagramPosition[result.diagramID.value] = {
-                x: parseInt(result.posX.value),
-                y: parseInt(result.posY.value),
-              };
-              elements[iri].hidden[result.diagramID.value] =
-                result.hidden.value === "true";
-            }
-          }
+          if (
+            !(iri in elementPositions) ||
+            !("hidden" in elementPositions) ||
+            !("position" in elementPositions)
+          )
+            elementPositions[iri] = {
+              hidden: {},
+              position: {},
+            };
+          elements[iri].position![result.diagramID.value] = {
+            x: parseInt(result.posX.value),
+            y: parseInt(result.posY.value),
+          };
+          elements[iri].hidden![result.diagramID.value] =
+            result.hidden.value === "true";
         }
         return true;
       })
@@ -137,39 +127,20 @@ export async function getElementsConfig(
         console.error(e);
         return false;
       });
-    if (!diagramContextElementRetrieval) return false;
-    else {
-      for (const iri in elements) {
-        if (
-          !Object.keys(WorkspaceVocabularies)
-            .map((vocab) => WorkspaceVocabularies[vocab].glossary)
-            .includes(elements[iri].scheme)
-        ) {
-          const vocab = Object.keys(CacheSearchVocabularies).find(
-            (vocab) =>
-              CacheSearchVocabularies[vocab].glossary === elements[iri].scheme
-          );
-          if (vocab) {
-            WorkspaceVocabularies[vocab] = {
-              labels: CacheSearchVocabularies[vocab].labels,
-              readOnly: true,
-              namespace: CacheSearchVocabularies[vocab].namespace,
-              graph: vocab,
-              color: "#FFF",
-              glossary: CacheSearchVocabularies[vocab].glossary,
-            };
-          }
-        }
-        WorkspaceElements[iri] = {
-          hidden: elements[iri].hidden,
-          position: elements[iri].diagramPosition,
-          active: elements[iri].active,
-          selectedLabel: elements[iri].selectedName,
-        };
-      }
-    }
-    return true;
-  }
+  };
+  const ret = await Promise.all([getElements(), getElementPositions()]).then(
+    (r) => r.every((r) => !!r)
+  );
+  const obj: typeof elements = {};
+  _.merge(obj, elements, elementPositions);
+  _.merge(
+    WorkspaceElements,
+    _.pick(
+      obj,
+      Object.keys(obj).filter((k) => !!obj[k].active)
+    )
+  );
+  return ret;
 }
 
 export async function getSettings(contextEndpoint: string): Promise<boolean> {
@@ -276,7 +247,6 @@ export async function getSettings(contextEndpoint: string): Promise<boolean> {
     });
 }
 
-//TODO: hot
 export async function getLinksConfig(
   contextEndpoint: string = AppSettings.contextEndpoint,
   contexts: string[] = AppSettings.contextIRIs
