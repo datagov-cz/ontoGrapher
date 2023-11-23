@@ -17,33 +17,33 @@ import { CacheSearchVocabularies } from "../datatypes/CacheSearchResults";
 import { Cardinality } from "../datatypes/Cardinality";
 import { en } from "../locale/en";
 import { LinkConfig } from "../queries/update/UpdateConnectionQueries";
-import { parsePrefix } from "./FunctionEditVars";
+import { cutoffString, parsePrefix } from "./FunctionEditVars";
 import { filterEquivalent, getEquivalents } from "./FunctionEquivalents";
 import { mvp1IRI, mvp2IRI } from "./FunctionGraph";
 
-export function getVocabularyLabel(vocabulary: string, cutoff: number = 24) {
+export function getVocabularyLabel(
+  vocabulary: string,
+  cutoff: number = 24
+): string {
   const shortLabel = getVocabularyShortLabel(vocabulary);
   if (shortLabel) return shortLabel.toLowerCase();
-  const fullLabelWorkspace =
-    vocabulary in WorkspaceVocabularies &&
-    getLabelOrBlank(
-      WorkspaceVocabularies[vocabulary].labels,
-      AppSettings.canvasLanguage
-    ).toLowerCase();
-  const fullLabelCache =
-    vocabulary in CacheSearchVocabularies &&
-    getLabelOrBlank(
-      CacheSearchVocabularies[vocabulary].labels,
-      AppSettings.canvasLanguage
-    ).toLowerCase();
-  if (!(fullLabelWorkspace && fullLabelCache))
-    throw new Error("Unknown vocabulary IRI" + vocabulary + ".");
-  const fullLabel: string = (
-    fullLabelWorkspace || fullLabelCache
-  ).toLowerCase();
-  return fullLabel.length >= cutoff
-    ? fullLabel.substring(0, cutoff) + "..."
-    : fullLabel;
+  if (vocabulary in WorkspaceVocabularies)
+    return cutoffString(
+      getLabelOrBlank(
+        WorkspaceVocabularies[vocabulary].labels,
+        AppSettings.canvasLanguage
+      ),
+      cutoff
+    );
+  if (vocabulary in CacheSearchVocabularies)
+    return cutoffString(
+      getLabelOrBlank(
+        CacheSearchVocabularies[vocabulary].labels,
+        AppSettings.canvasLanguage
+      ),
+      cutoff
+    );
+  throw new Error("Unknown vocabulary IRI " + vocabulary + " .");
 }
 
 export function getVocabElementByElementID(id: string): { [key: string]: any } {

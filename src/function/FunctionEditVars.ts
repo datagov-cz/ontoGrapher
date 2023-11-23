@@ -80,6 +80,10 @@ export function loadUML() {
   }
 }
 
+export function cutoffString(input: string, cutoff: number): string {
+  return input.length >= cutoff ? input.substring(0, cutoff) + "..." : input;
+}
+
 export function loadLanguages() {
   const navigatorLanguage = navigator.language.slice(0, 2);
   const interfaceLanguage =
