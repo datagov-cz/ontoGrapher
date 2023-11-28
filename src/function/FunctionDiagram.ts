@@ -10,10 +10,24 @@ import * as _ from "lodash";
 import { isElementHidden } from "./FunctionElem";
 
 export function changeDiagrams(diagram?: string) {
-  if (!diagram)
-    diagram = Object.keys(Diagrams)
-      .filter((diag) => Diagrams[diag].active && !Diagrams[diag].toBeDeleted)
-      .reduce((a, b) => (Diagrams[a].index < Diagrams[b].index ? a : b));
+  if (!diagram) {
+    const availableDiagrams = Object.keys(Diagrams).filter(
+      (diag) => Diagrams[diag].active && !Diagrams[diag].toBeDeleted
+    );
+    if (availableDiagrams.length > 0) {
+      diagram = availableDiagrams.reduce((a, b) =>
+        Diagrams[a].index < Diagrams[b].index ? a : b
+      );
+    } else {
+      AppSettings.selectedDiagram = "";
+      StoreSettings.update((s) => {
+        s.mainViewMode = MainViewMode.MANAGER;
+        s.selectedDiagram = "";
+      });
+      return;
+    }
+  }
+
   if (diagram && Diagrams[diagram]) {
     graph.clear();
     clearSelection();
