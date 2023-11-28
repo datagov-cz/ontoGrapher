@@ -5,7 +5,14 @@ import {
   WorkspaceTerms,
   WorkspaceVocabularies,
 } from "../../config/Variables";
-import { Alert, Form, InputGroup } from "react-bootstrap";
+import {
+  Alert,
+  Button,
+  Form,
+  InputGroup,
+  OverlayTrigger,
+  Tooltip,
+} from "react-bootstrap";
 import {
   getLabelOrBlank,
   getVocabularyFromScheme,
@@ -32,9 +39,13 @@ interface Props {
 
 export const NewElemForm: React.FC<Props> = (props) => {
   const [activatedInputs, setActivatedInputs] = useState<string[]>([]);
+  const [selectedLanguage, setSelectedLanguage] = useState<string>(
+    AppSettings.canvasLanguage
+  );
 
   useEffect(() => {
     setActivatedInputs([AppSettings.canvasLanguage]);
+    setSelectedLanguage(AppSettings.canvasLanguage);
   }, []);
 
   const checkExists: (scheme: string, name: string) => boolean = (
@@ -68,7 +79,7 @@ export const NewElemForm: React.FC<Props> = (props) => {
     names: ReturnType<typeof initLanguageObject>
   ) => {
     let errorText = "";
-    if (names[AppSettings.canvasLanguage] === "") {
+    if (names[selectedLanguage] === "") {
       errorText = Locale[AppSettings.interfaceLanguage].modalNewElemError;
     } else if (Object.values(names).find((name) => checkExists(scheme, name))) {
       errorText = Locale[AppSettings.interfaceLanguage].modalNewElemExistsError;
@@ -79,7 +90,7 @@ export const NewElemForm: React.FC<Props> = (props) => {
     ) {
       errorText = Locale[AppSettings.interfaceLanguage].modalNewElemLengthError;
     } else if (
-      createNewElemIRI(scheme, names[AppSettings.canvasLanguage]) ===
+      createNewElemIRI(scheme, names[selectedLanguage]) ===
       WorkspaceVocabularies[getVocabularyFromScheme(scheme)].namespace
     ) {
       errorText =
@@ -112,14 +123,31 @@ export const NewElemForm: React.FC<Props> = (props) => {
       <p>{Locale[AppSettings.interfaceLanguage].modalNewElemDescription}</p>
       {activatedInputs.map((lang, i) => (
         <InputGroup key={i}>
-          <InputGroup.Text>
-            <img
-              className="flag"
-              src={`https://purecatamphetamine.github.io/country-flag-icons/3x2/${Flags[lang]}.svg`}
-              alt={Languages[lang]}
-            />
-            {lang === AppSettings.canvasLanguage ? "*" : ""}
-          </InputGroup.Text>
+          <OverlayTrigger
+            placement="left"
+            overlay={
+              <Tooltip>
+                {Locale[AppSettings.interfaceLanguage].setAsIRILanguage}
+              </Tooltip>
+            }
+          >
+            <InputGroup.Text
+              className={classNames(
+                getListClassNamesObject(activatedInputs, i),
+                "newElemLanguageButton"
+              )}
+              as={Button}
+              variant="light"
+              active={lang === selectedLanguage}
+              onClick={() => setSelectedLanguage(lang)}
+            >
+              <img
+                className="flag"
+                src={`https://purecatamphetamine.github.io/country-flag-icons/3x2/${Flags[lang]}.svg`}
+                alt={Languages[lang]}
+              />
+            </InputGroup.Text>
+          </OverlayTrigger>
           <Form.Control
             value={props.termName[lang]}
             className={classNames(getListClassNamesObject(activatedInputs, i))}
@@ -188,7 +216,7 @@ export const NewElemForm: React.FC<Props> = (props) => {
         }
 					${createNewElemIRI(
             WorkspaceVocabularies[props.selectedVocabulary].glossary,
-            props.termName[AppSettings.interfaceLanguage]
+            props.termName[selectedLanguage]
           )}`}</Alert>
       )}
       {props.errorText && <Alert variant="danger">{props.errorText}</Alert>}

@@ -1,4 +1,5 @@
 export const en = {
+  setAsIRILanguage: "Click to create IRI from this language",
   changelogLoadError: "Error: unable to load changelog file.",
   searchExistingTropes: "Search tropes...",
   listExportErrorNoConnection:

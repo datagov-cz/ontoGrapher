@@ -1,6 +1,7 @@
 import { en } from "./en";
 
 export const cs: { [Property in keyof typeof en]: string } = {
+  setAsIRILanguage: "Kliknutím se vytvoří IRI s tímto jazykem",
   searchExistingTropes: "Hledat vlastnosti...",
   listExportErrorNoConnection: "Chyba při získávání zdrojů pojmů z databáze.",
   listExportErrorNoTerms: "Tento export by vytvořil prázdný soubor.",
