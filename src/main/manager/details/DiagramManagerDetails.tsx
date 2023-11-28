@@ -243,6 +243,7 @@ export const DiagramManagerDetails: React.FC<Props> = (props: Props) => {
                         hideSelectedOptions={true}
                         isClearable={false}
                         value={inputVocabs}
+                        menuPosition="fixed"
                         styles={{
                           multiValue: (baseStyles, state) => ({
                             ...baseStyles,
