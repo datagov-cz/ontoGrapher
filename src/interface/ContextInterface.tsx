@@ -68,15 +68,7 @@ export function retrieveInfoFromURLParameters(): boolean {
 
 export async function updateContexts(): Promise<boolean> {
   const ret1 = await getSettings(AppSettings.contextEndpoint);
-  await fetchUsers(
-    ...Object.values(Diagrams)
-      .flatMap((d) => d.collaborators)
-      .map(
-        (d) =>
-          "https://slovník.gov.cz/uživatel/" +
-          d.replaceAll("https://slovník.gov.cz/uživatel/", "")
-      )
-  );
+  await fetchUsers(...Object.values(Diagrams).flatMap((d) => d.collaborators));
   AppSettings.selectedDiagram = "";
   StoreSettings.update((s) => {
     s.selectedDiagram = AppSettings.selectedDiagram;

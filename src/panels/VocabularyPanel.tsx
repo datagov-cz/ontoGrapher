@@ -8,6 +8,7 @@ import {
   FlexDocumentIDTable,
   FlexDocumentSearch,
 } from "../config/FlexDocumentSearch";
+import { LanguageObject } from "../config/Languages";
 import { Locale } from "../config/Locale";
 import {
   AppSettings,
@@ -20,6 +21,7 @@ import {
   CacheSearchResults,
   CacheSearchVocabularies,
 } from "../datatypes/CacheSearchResults";
+import { initLanguageObject } from "../function/FunctionEditVars";
 import { isElementVisible } from "../function/FunctionElem";
 import { filterEquivalent } from "../function/FunctionEquivalents";
 import {
@@ -35,8 +37,6 @@ import VocabularyFolder from "./element/VocabularyFolder";
 import { VocabularySelector } from "./element/VocabularySelector";
 import ModalRemoveConcept from "./modal/ModalRemoveConcept";
 import ModalRemoveReadOnlyConcept from "./modal/ModalRemoveReadOnlyConcept";
-import { LanguageObject } from "../config/Languages";
-import { initLanguageObject } from "../function/FunctionEditVars";
 
 interface Props {
   projectLanguage: string;

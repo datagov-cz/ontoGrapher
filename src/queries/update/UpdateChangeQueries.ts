@@ -1,14 +1,10 @@
+import { DELETE, INSERT } from "@tpluscode/sparql-builder";
+import { v4 as uuidv4 } from "uuid";
+import { Change, ChangeType } from "../../config/ChangeTypes";
+import { parsePrefix } from "../../function/FunctionEditVars";
+import { qb } from "../QueryBuilder";
 import { Environment } from "./../../config/Environment";
 import { AppSettings, WorkspaceVocabularies } from "./../../config/Variables";
-import { DELETE, INSERT } from "@tpluscode/sparql-builder";
-import { qb } from "../QueryBuilder";
-import { parsePrefix } from "../../function/FunctionEditVars";
-import { v4 as uuidv4 } from "uuid";
-import { ChangeType, Change } from "../../config/ChangeTypes";
-
-function getUserIRI(): string {
-  return `${AppSettings.cacheContext}/uživatel/${AppSettings.currentUser!}`;
-}
 
 export function updateVocabularyAnnotations(vocabulary: string): string {
   if (!Environment.auth) return "";
@@ -21,7 +17,7 @@ export function updateVocabularyAnnotations(vocabulary: string): string {
     qb.s(
       qb.i(context),
       qb.i(parsePrefix("a-popis-dat-pojem", "má-posledního-editora")),
-      qb.i(getUserIRI())
+      qb.i(AppSettings.currentUser!)
     ),
     qb.s(
       qb.i(context),
@@ -74,7 +70,6 @@ function constructChangeTrackingQuery(change: Change): string {
       "Attempted to update vocabulary annotations without a signed-in user."
     );
   const type = getChangeType(change.type);
-  //TODO: change ID generation to conform to Termit implementation
   const suffix = `/instance-${uuidv4()}`;
   const iri = qb.i(type + suffix);
   return qb.combineQueries(
@@ -85,7 +80,7 @@ function constructChangeTrackingQuery(change: Change): string {
         qb.s(
           iri,
           parsePrefix("a-popis-dat-pojem", "má-editora"),
-          qb.i(getUserIRI())
+          qb.i(AppSettings.currentUser!)
         ),
         qb.s(
           iri,
