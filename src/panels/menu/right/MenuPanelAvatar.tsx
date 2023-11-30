@@ -18,6 +18,7 @@ export const MenuPanelAvatar: React.FC = () => {
     Users[AppSettings.currentUser] = {
       given_name: user.profile.given_name,
       family_name: user.profile.family_name,
+      graph: "https://slovník.gov.cz/uživatel",
     };
   }, [user]);
 

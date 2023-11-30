@@ -390,11 +390,12 @@ export async function fetchUsers(...ids: string[]): Promise<boolean> {
   if (ids.length === 0) return false;
   const query = [
     `PREFIX a-popis-dat-pojem: ${qb.i(Prefixes["a-popis-dat-pojem"])}`,
-    "select ?id ?first ?last where {",
+    "select ?id ?first ?last ?graph where {",
+    "graph ?graph {",
     "?id a-popis-dat-pojem:má-křestní-jméno ?first.",
     "?id a-popis-dat-pojem:má-příjmení ?last.",
     `values ?id {<${ids.join("> <")}>}`,
-    "}",
+    "}}",
   ].join(`
   `);
 
@@ -407,6 +408,7 @@ export async function fetchUsers(...ids: string[]): Promise<boolean> {
         const id = result.id.value;
         if (!(id in Users)) {
           Users[id] = {
+            graph: result.graph.value,
             given_name: result.first.value,
             family_name: result.last.value,
           };

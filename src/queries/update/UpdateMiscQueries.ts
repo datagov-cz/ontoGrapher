@@ -1,39 +1,89 @@
-import { DELETE } from "@tpluscode/sparql-builder";
+import { DELETE, INSERT } from "@tpluscode/sparql-builder";
+import { AppSettings, Users } from "../../config/Variables";
+import { processQuery } from "../../interface/TransactionInterface";
 import { qb } from "../QueryBuilder";
+import { Environment } from "./../../config/Environment";
+import { Cardinality } from "../../datatypes/Cardinality";
 
-// TODO: change to user context
-export function updateApplicationContext(): string {
-  // const projIRI = AppSettings.applicationContext;
+function getUserSettings(): { [key: string]: string } {
+  return {
+    "og:viewColor": qb.ll(AppSettings.viewColorPool),
+    "og:helpToasts": Boolean(AppSettings.helpToasts).toString(),
+    "og:sourceCardinality1":
+      AppSettings.defaultCardinalitySource.getFirstCardinality(),
+    "og:sourceCardinality2":
+      AppSettings.defaultCardinalitySource.getSecondCardinality(),
+    "og:targetCardinality1":
+      AppSettings.defaultCardinalityTarget.getFirstCardinality(),
+    "og:targetCardinality2":
+      AppSettings.defaultCardinalityTarget.getSecondCardinality(),
+    "og:interfaceLanguage": AppSettings.interfaceLanguage,
+    "og:canvasLanguage": AppSettings.canvasLanguage,
+  };
+}
 
-  // const insertAppContext = INSERT.DATA`${qb.g(projIRI, [
-  //   qb.s(qb.i(projIRI), "og:viewColor", qb.ll(AppSettings.viewColorPool)),
-  //   qb.s(
-  //     qb.i(projIRI),
-  //     "og:contextVersion",
-  //     qb.ll(AppSettings.latestContextVersion)
-  //   ),
-  //   qb.s(
-  //     qb.i(projIRI),
-  //     qb.i(parsePrefix("a-popis-dat-pojem", "má-id-aplikace")),
-  //     qb.ll(Environment.id)
-  //   ),
-  // ])}`.build();
+export function updateUserSettings(): string {
+  if (!Environment.auth) return "";
+  const userGraph = Users[AppSettings.currentUser!].graph;
+  const userIRI = AppSettings.currentUser!;
+  const userSettings = getUserSettings();
 
-  // const insertVocabularyContext = AppSettings.contextIRIs.map((contextIRI) =>
-  //   INSERT.DATA`${qb.g(contextIRI, [
-  //     qb.s(
-  //       qb.i(contextIRI),
-  //       qb.i(parsePrefix("a-popis-dat-pojem", "má-aplikační-kontext")),
-  //       qb.i(projIRI)
-  //     ),
-  //   ])}`.build()
-  // );
+  const insert = INSERT.DATA`${qb.g(
+    userGraph,
+    Object.keys(userSettings).map((po) =>
+      qb.s(qb.i(userIRI), po, userSettings[po])
+    )
+  )}`.build();
 
-  // const del = DELETE`${qb.g(projIRI, [qb.s(qb.i(projIRI), "?p", "?o")])}`
-  //   .WHERE`${qb.g(projIRI, [qb.s(qb.i(projIRI), "?p", "?o")])}`.build();
+  const delPredObjs = qb.g(
+    qb.i(userGraph),
+    Object.keys(userSettings).map((po, i) => qb.s(qb.i(userIRI), po, `?v${i}`))
+  );
 
-  // return qb.combineQueries(del, insertAppContext, ...insertVocabularyContext);
-  return "";
+  const del = DELETE`${delPredObjs}`.WHERE`${delPredObjs}`.build();
+
+  return qb.combineQueries(del, insert);
+}
+
+export async function fetchUserSettings(): Promise<boolean> {
+  if (!Environment.auth) return true;
+  const userGraph = Users[AppSettings.currentUser!].graph;
+  const userIRI = AppSettings.currentUser!;
+  const query: string = [
+    "select * where {",
+    `graph ${qb.i(userGraph)} {`,
+    Object.keys(getUserSettings()).map((k) =>
+      qb.s(qb.i(userIRI), k, `?${k.replace("og:", "")}`)
+    ).join(`
+  `),
+    "}}",
+  ].join(`
+  `);
+  return await processQuery(AppSettings.contextEndpoint, query)
+    .then((response) => response.json())
+    .then((data) => {
+      if (data.results.bindings.length === 0) return false;
+      for (const result of data.results.bindings) {
+        AppSettings.viewColorPool = result.viewColorPool.value;
+        AppSettings.interfaceLanguage = result.interfaceLanguage.value;
+        AppSettings.canvasLanguage = result.canvasLanguage.value;
+        AppSettings.defaultCardinalitySource = new Cardinality(
+          result.sourceCardinality1.value,
+          result.sourceCardinality2.value,
+          true
+        );
+        AppSettings.defaultCardinalityTarget = new Cardinality(
+          result.targetCardinality1.value,
+          result.targetCardinality2.value,
+          true
+        );
+      }
+      return true;
+    })
+    .catch((e) => {
+      console.error(e);
+      return false;
+    });
 }
 
 export function updateDeleteTriples(

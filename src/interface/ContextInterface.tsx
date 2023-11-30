@@ -3,6 +3,7 @@ import { Alert } from "react-bootstrap";
 import TableList from "../components/TableList";
 import { callCriticalAlert } from "../config/CriticalAlertData";
 import { MainViewMode } from "../config/Enum";
+import { Environment } from "../config/Environment";
 import { Locale } from "../config/Locale";
 import { StoreSettings } from "../config/Store";
 import {
@@ -50,6 +51,7 @@ import {
   updateDeleteProjectLink,
   updateProjectLinkParallel,
 } from "../queries/update/UpdateLinkQueries";
+import { fetchUserSettings } from "../queries/update/UpdateMiscQueries";
 import { processQuery, processTransaction } from "./TransactionInterface";
 
 export function retrieveInfoFromURLParameters(): boolean {
@@ -67,13 +69,16 @@ export function retrieveInfoFromURLParameters(): boolean {
 }
 
 export async function updateContexts(): Promise<boolean> {
-  const ret1 = await getSettings(AppSettings.contextEndpoint);
-  await fetchUsers(...Object.values(Diagrams).flatMap((d) => d.collaborators));
+  const ret = Promise.all([
+    getSettings(AppSettings.contextEndpoint),
+    fetchUsers(...Object.values(Diagrams).flatMap((d) => d.collaborators)),
+    ...(Environment.auth ? [fetchUserSettings()] : []),
+  ]).then((results) => results.every((r) => r));
   AppSettings.selectedDiagram = "";
   StoreSettings.update((s) => {
     s.selectedDiagram = AppSettings.selectedDiagram;
   });
-  return ret1;
+  return ret;
 }
 
 //TODO: hot
