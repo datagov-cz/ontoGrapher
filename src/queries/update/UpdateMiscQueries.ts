@@ -8,7 +8,6 @@ import { Cardinality } from "../../datatypes/Cardinality";
 function getUserSettings(): { [key: string]: string } {
   return {
     "og:viewColor": qb.ll(AppSettings.viewColorPool),
-    "og:helpToasts": Boolean(AppSettings.helpToasts).toString(),
     "og:sourceCardinality1":
       AppSettings.defaultCardinalitySource.getFirstCardinality(),
     "og:sourceCardinality2":
@@ -41,7 +40,6 @@ export function updateUserSettings(): string {
   );
 
   const del = DELETE`${delPredObjs}`.WHERE`${delPredObjs}`.build();
-
   return qb.combineQueries(del, insert);
 }
 

@@ -10,6 +10,7 @@ export const StoreAlerts = new Store<StateAlerts>({
 });
 
 interface StateSettings {
+  toastQueue: string[];
   diagramPanelSelectedDiagram: string;
   // For diagram manager
   mainViewMode: MainViewMode;
@@ -20,6 +21,7 @@ interface StateSettings {
 }
 
 export const StoreSettings = new Store<StateSettings>({
+  toastQueue: [],
   mainViewMode: MainViewMode.CANVAS,
   detailPanelMode: DetailPanelMode.HIDDEN,
   detailPanelSelectedID: "",

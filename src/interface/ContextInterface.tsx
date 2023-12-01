@@ -69,16 +69,16 @@ export function retrieveInfoFromURLParameters(): boolean {
 }
 
 export async function updateContexts(): Promise<boolean> {
-  const ret = Promise.all([
-    getSettings(AppSettings.contextEndpoint),
-    fetchUsers(...Object.values(Diagrams).flatMap((d) => d.collaborators)),
-    ...(Environment.auth ? [fetchUserSettings()] : []),
-  ]).then((results) => results.every((r) => r));
+  const ret1 = await getSettings(AppSettings.contextEndpoint);
+  const ret2 = await fetchUsers(
+    ...Object.values(Diagrams).flatMap((d) => d.collaborators)
+  );
+  if (Environment.auth) await fetchUserSettings();
   AppSettings.selectedDiagram = "";
   StoreSettings.update((s) => {
     s.selectedDiagram = AppSettings.selectedDiagram;
   });
-  return ret;
+  return ret1 && ret2;
 }
 
 //TODO: hot

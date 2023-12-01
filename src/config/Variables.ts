@@ -171,7 +171,7 @@ export var AppSettings: {
   selectedLinks: string[];
   currentUser?: string;
   changedVocabularies: string[];
-  helpToasts: boolean;
+  shownToasts: string[];
 } = {
   name: {},
   description: {},
@@ -200,7 +200,7 @@ export var AppSettings: {
   selectedElements: [],
   selectedLinks: [],
   changedVocabularies: [],
-  helpToasts: true,
+  shownToasts: [],
 };
 
 export var CardinalityPool: Cardinality[] = [

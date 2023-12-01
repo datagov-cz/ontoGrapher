@@ -10,6 +10,7 @@ interface Props {
   values: { label: string; value: string }[];
   projectLanguage: string;
   availableVocabularies: string[];
+  prepareToastCall: Function;
 }
 
 export class VocabularySelector extends React.Component<Props> {
@@ -65,9 +66,10 @@ export class VocabularySelector extends React.Component<Props> {
           Locale[AppSettings.interfaceLanguage].filterVocabulariesPlaceholder
         }
         value={this.props.values}
-        onChange={(value) =>
-          this.props.filter(value.map((value) => value.value))
-        }
+        onChange={(value) => {
+          this.props.filter(value.map((value) => value.value));
+          this.props.prepareToastCall();
+        }}
       />
     );
   }
