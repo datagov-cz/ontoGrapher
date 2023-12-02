@@ -38,6 +38,7 @@ import { VocabularySelector } from "./element/VocabularySelector";
 import ModalRemoveConcept from "./modal/ModalRemoveConcept";
 import ModalRemoveReadOnlyConcept from "./modal/ModalRemoveReadOnlyConcept";
 import { callToast } from "../config/ToastData";
+import { Representation } from "../config/Enum";
 
 interface Props {
   projectLanguage: string;
@@ -188,10 +189,11 @@ export default class VocabularyPanel extends React.Component<Props, State> {
 
   prepareToastCall() {
     window.clearTimeout(this.helpToastTimeout);
-    this.helpToastTimeout = window.setTimeout(
-      () => callToast("lookingForRelationshipsOrProperties"),
-      5000
-    );
+    if (AppSettings.representation === Representation.COMPACT)
+      this.helpToastTimeout = window.setTimeout(
+        () => callToast("lookingForRelationshipsOrProperties"),
+        5000
+      );
   }
 
   sort(a: string, b: string): number {
