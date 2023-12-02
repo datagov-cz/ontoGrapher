@@ -41,6 +41,10 @@ export const en = {
   untitledProject: "OntoGrapher",
   unsorted: "No type",
   updating: "Saving...",
+  removeConcept: "Delete term",
+  removeReadOnlyConcept: "Remove term from workspace",
+  writeEnabledVocabulary: "This is an editable vocabulary.",
+  readOnlyVocabulary: "This is a vocabulary whose terms are read-only.",
   newVersion:
     "OntoGrapher has been updated with new functions since you were gone! Click here to see a detailed changelog.",
   retry: "Retry?",
