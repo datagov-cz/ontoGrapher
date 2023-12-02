@@ -51,6 +51,11 @@ export default class NewElemModal extends React.Component<Props, State> {
         keyboard={true}
         onEscapeKeyDown={() => this.props.close()}
         onHide={() => this.props.close}
+        onEnter={(element) =>
+          element.addEventListener("contextmenu", (evt) => {
+            if (!(evt.target instanceof HTMLInputElement)) evt.preventDefault();
+          })
+        }
         onEntering={() => {
           if (!this.state.selectedVocabulary) {
             const vocab = Object.keys(WorkspaceVocabularies).find(
