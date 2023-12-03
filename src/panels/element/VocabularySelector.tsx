@@ -59,6 +59,10 @@ export class VocabularySelector extends React.Component<Props> {
             borderTopLeftRadius: "0",
             borderTopRightRadius: "0",
           }),
+          menu: (baseStyles) => ({
+            ...baseStyles,
+            marginTop: "0",
+          }),
         }}
         options={this.buildOptions()}
         placeholder={
