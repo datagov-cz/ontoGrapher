@@ -19,9 +19,9 @@ import classNames from "classnames";
 import { Flags } from "../LanguageSelector";
 import * as _ from "lodash";
 import { ListLanguageControls } from "../../panels/detail/components/items/ListLanguageControls";
+import { Environment } from "../../config/Environment";
 
 interface Props {
-  projectLanguage: string;
   termName: LanguageObject;
   selectedVocabulary: string;
   errorText: string;
@@ -34,7 +34,7 @@ export const NewElemForm: React.FC<Props> = (props) => {
   const [activatedInputs, setActivatedInputs] = useState<string[]>([]);
 
   useEffect(() => {
-    setActivatedInputs([AppSettings.canvasLanguage]);
+    setActivatedInputs([Environment.language]);
   }, []);
 
   const checkExists: (scheme: string, name: string) => boolean = (
@@ -68,7 +68,7 @@ export const NewElemForm: React.FC<Props> = (props) => {
     names: ReturnType<typeof initLanguageObject>
   ) => {
     let errorText = "";
-    if (names[AppSettings.canvasLanguage] === "") {
+    if (names[Environment.language] === "") {
       errorText = Locale[AppSettings.interfaceLanguage].modalNewElemError;
     } else if (Object.values(names).find((name) => checkExists(scheme, name))) {
       errorText = Locale[AppSettings.interfaceLanguage].modalNewElemExistsError;
@@ -79,7 +79,7 @@ export const NewElemForm: React.FC<Props> = (props) => {
     ) {
       errorText = Locale[AppSettings.interfaceLanguage].modalNewElemLengthError;
     } else if (
-      createNewElemIRI(scheme, names[AppSettings.canvasLanguage]) ===
+      createNewElemIRI(scheme, names[Environment.language]) ===
       WorkspaceVocabularies[getVocabularyFromScheme(scheme)].namespace
     ) {
       errorText =
@@ -118,7 +118,7 @@ export const NewElemForm: React.FC<Props> = (props) => {
               src={`https://purecatamphetamine.github.io/country-flag-icons/3x2/${Flags[lang]}.svg`}
               alt={Languages[lang]}
             />
-            {lang === AppSettings.canvasLanguage ? "*" : ""}
+            {lang === Environment.language && <strong>*</strong>}
           </InputGroup.Text>
           <Form.Control
             value={props.termName[lang]}
@@ -175,7 +175,7 @@ export const NewElemForm: React.FC<Props> = (props) => {
               <option key={i} value={vocab}>
                 {getLabelOrBlank(
                   WorkspaceVocabularies[vocab].labels,
-                  props.projectLanguage
+                  AppSettings.canvasLanguage
                 )}
               </option>
             ))}
@@ -188,7 +188,7 @@ export const NewElemForm: React.FC<Props> = (props) => {
         }
 					${createNewElemIRI(
             WorkspaceVocabularies[props.selectedVocabulary].glossary,
-            props.termName[AppSettings.interfaceLanguage]
+            props.termName[Environment.language]
           )}`}</Alert>
       )}
       {props.errorText && <Alert variant="danger">{props.errorText}</Alert>}

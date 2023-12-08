@@ -250,7 +250,6 @@ export default class NewLinkModal extends React.Component<Props, State> {
               />
               {this.state.create && (
                 <NewElemForm
-                  projectLanguage={this.props.projectLanguage}
                   termName={this.state.termName}
                   selectedVocabulary={this.state.selectedVocabulary}
                   errorText={this.state.errorText}

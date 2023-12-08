@@ -4,7 +4,11 @@ import {
 } from "@opendata-mvcr/assembly-line-shared";
 import { Components } from "@opendata-mvcr/assembly-line-shared/dist/env/types";
 
-type LocalVars = "PUBLIC_URL" | "AUTHENTICATION" | "DEBUG_DATA";
+type LocalVars =
+  | "PUBLIC_URL"
+  | "AUTHENTICATION"
+  | "DEBUG_DATA"
+  | "TERM_LANGUAGE";
 
 setProcessEnv(process.env);
 const ENV = getEnvInstance<LocalVars>();
@@ -22,6 +26,8 @@ export const Environment: {
   auth: boolean;
   // Load local debug data instead of fetching off a DB
   debug: boolean;
+  // Default language
+  language: string;
 } = {
   components: ENV.getComponents(),
   context: ENV.get("CONTEXT"),
@@ -29,4 +35,5 @@ export const Environment: {
   url: ENV.get("URL"),
   auth: ENV.get("AUTHENTICATION", "true") === "true",
   debug: ENV.get("DEBUG", "true") === "true",
+  language: ENV.get("TERM_LANGUAGE"),
 };
