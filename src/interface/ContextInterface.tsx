@@ -57,7 +57,7 @@ import { Environment } from "../config/Environment";
 export function retrieveInfoFromURLParameters(): boolean {
   if (!(Environment.language in Languages))
     throw new Error(
-      "LANGUAGE environment variable is not listed in the Languages.ts object."
+      "TERM_LANGUAGE environment variable is not listed in the Languages.ts object."
     );
   const isURL = require("is-url");
   const urlParams = new URLSearchParams(window.location.search);
