@@ -89,7 +89,6 @@ export const CreationModals: React.FC<Props> = (props) => {
         }}
       />
       <NewElemModal
-        projectLanguage={props.projectLanguage}
         modal={modalAddElem}
         configuration={props.elemConfiguration}
         close={(
