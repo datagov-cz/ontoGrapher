@@ -56,7 +56,7 @@ export const cs: { [Property in keyof typeof en]: string } = {
   modalNewElemLengthError: "Jméno musí mít mezi 2 a 150 znaky.",
   modalNewElemCharacterError: "Jméno nemůže mít jenom speciální znaky.",
   modalNewElemIRI: "Pojem bude vytvořen s tímto IRI:",
-  terms: "pojmy",
+  term: "pojem",
   termsCase: "pojmů",
   fromList: "Z pracovního prostoru",
   otherVocabularies: "Mimo pracovní prostor",

@@ -41,7 +41,7 @@ export function createValues(
 export function createNewElemIRI(scheme: string, name: string): string {
   return (
     (WorkspaceVocabularies[getVocabularyFromScheme(scheme)].namespace ||
-      `${scheme}/${Locale[AppSettings.defaultLanguage].terms}/`) +
+      `${scheme}/${Locale[AppSettings.defaultLanguage].term}/`) +
     name
       .toLowerCase()
       .trim()
