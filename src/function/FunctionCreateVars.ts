@@ -23,6 +23,7 @@ import {
   getNewDiagramIRI,
   getVocabularyFromScheme,
 } from "./FunctionGetVars";
+import { Environment } from "../config/Environment";
 
 export function createValues(
   values: { [key: string]: string[] },
@@ -41,7 +42,7 @@ export function createValues(
 export function createNewElemIRI(scheme: string, name: string): string {
   return (
     (WorkspaceVocabularies[getVocabularyFromScheme(scheme)].namespace ||
-      `${scheme}/${Locale[AppSettings.defaultLanguage].term}/`) +
+      `${scheme}/${Locale[Environment.language].term}/`) +
     name
       .toLowerCase()
       .trim()
