@@ -3,11 +3,13 @@ import { Alert } from "react-bootstrap";
 import TableList from "../components/TableList";
 import { callCriticalAlert } from "../config/CriticalAlertData";
 import { MainViewMode } from "../config/Enum";
+import { Environment } from "../config/Environment";
 import { Locale } from "../config/Locale";
 import { StoreSettings } from "../config/Store";
 import {
   AppSettings,
   Diagrams,
+  Languages,
   Links,
   WorkspaceElements,
   WorkspaceLinks,
@@ -46,13 +48,14 @@ import {
 } from "../queries/get/InitQueries";
 import { updateDeleteDiagram } from "../queries/update/UpdateDiagramQueries";
 import { updateProjectElement } from "../queries/update/UpdateElementQueries";
-import {
-  updateDeleteProjectLink,
-  updateProjectLinkParallel,
-} from "../queries/update/UpdateLinkQueries";
+import { updateProjectLinkParallel } from "../queries/update/UpdateLinkQueries";
 import { processQuery, processTransaction } from "./TransactionInterface";
 
 export function retrieveInfoFromURLParameters(): boolean {
+  if (!(Environment.language in Languages))
+    throw new Error(
+      "TERM_LANGUAGE environment variable is not listed in the Languages.ts object."
+    );
   const isURL = require("is-url");
   const urlParams = new URLSearchParams(window.location.search);
   const URIContexts = urlParams.getAll("vocabulary");
@@ -254,7 +257,6 @@ export async function retrieveContextData(): Promise<boolean> {
   }
   return await processTransaction(
     AppSettings.contextEndpoint,
-    qb.constructQuery(updateDeleteProjectLink(true, ...connections.del)),
     ...updateProjectLinkParallel(...connections.add).map((t) =>
       qb.constructQuery(t)
     )

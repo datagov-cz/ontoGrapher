@@ -58,8 +58,8 @@ export const cs: { [Property in keyof typeof en]: string } = {
   modalNewElemIRI: "Pojem bude vytvořen s tímto IRI:",
   terms: "pojmy",
   termsCase: "pojmů",
-  fromList: "Z projektu",
-  otherVocabularies: "Ostatní slovníky",
+  fromList: "Z pracovního prostoru",
+  otherVocabularies: "Mimo pracovní prostor",
   authenticationError:
     "Chyba autentikace. Prosím, kontaktujte serverového administrátora.",
   authenticationUpdateError:
@@ -162,6 +162,10 @@ export const cs: { [Property in keyof typeof en]: string } = {
   description: "Popis",
   vocabularyNotFound: "URL definice slovníků chybí nebo není správné",
   validate: "Zkontrolovat",
+  removeConcept: "Smazat pojem",
+  removeReadOnlyConcept: "Odstranit pojem z pracovního prostoru",
+  writeEnabledVocabulary: "Tento slovník je upravitelný.",
+  readOnlyVocabulary: "Pojmy z toho slovníku jsou pouze pro čtení.",
   modalRemoveConceptTitle: "Smazat pojem?",
   modalRemoveDiagramTitle: "Smazat diagram?",
   modalRemoveDiagramDescription: "Opravdu chcete smazat diagram?",

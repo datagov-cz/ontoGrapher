@@ -6,11 +6,11 @@ import { ElemCreationConfiguration } from "./CreationModals";
 import { initLanguageObject } from "../../function/FunctionEditVars";
 import { Locale } from "../../config/Locale";
 import { NewElemForm } from "./NewElemForm";
+import { Environment } from "../../config/Environment";
 
 interface Props {
   modal: boolean;
   close: (names?: State["termName"], vocabulary?: string) => void;
-  projectLanguage: string;
   configuration: ElemCreationConfiguration;
 }
 
@@ -51,6 +51,11 @@ export default class NewElemModal extends React.Component<Props, State> {
         keyboard={true}
         onEscapeKeyDown={() => this.props.close()}
         onHide={() => this.props.close}
+        onEnter={(element) =>
+          element.addEventListener("contextmenu", (evt) => {
+            if (!(evt.target instanceof HTMLInputElement)) evt.preventDefault();
+          })
+        }
         onEntering={() => {
           if (!this.state.selectedVocabulary) {
             const vocab = Object.keys(WorkspaceVocabularies).find(
@@ -71,7 +76,7 @@ export default class NewElemModal extends React.Component<Props, State> {
                 Locale[AppSettings.interfaceLanguage].modalNewElemError,
             });
           const input = document.getElementById(
-            "newElemLabelInput" + this.props.projectLanguage
+            "newElemLabelInput" + Environment.language
           );
           if (input) input.focus();
         }}
@@ -88,7 +93,6 @@ export default class NewElemModal extends React.Component<Props, State> {
           <Modal.Body>
             {this.state.selectedVocabulary && (
               <NewElemForm
-                projectLanguage={this.props.projectLanguage}
                 termName={this.state.termName}
                 selectedVocabulary={this.state.selectedVocabulary}
                 errorText={this.state.errorText}

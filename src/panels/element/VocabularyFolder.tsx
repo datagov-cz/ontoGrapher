@@ -1,11 +1,12 @@
 import DescriptionIcon from "@mui/icons-material/Description";
 import EditIcon from "@mui/icons-material/Edit";
 import React from "react";
-import { Accordion } from "react-bootstrap";
+import { Accordion, OverlayTrigger, Tooltip } from "react-bootstrap";
 import { AppSettings, WorkspaceVocabularies } from "../../config/Variables";
 import { getLabelOrBlank } from "../../function/FunctionGetVars";
 import { CellColors } from "../../config/visual/CellColors";
 import { unHighlightCells, highlightCells } from "../../function/FunctionDraw";
+import { Locale } from "../../config/Locale";
 
 interface Props {
   open: boolean;
@@ -58,7 +59,22 @@ export default class VocabularyFolder extends React.Component<Props> {
             backgroundColor: WorkspaceVocabularies[this.props.vocabulary].color,
           }}
         >
-          {this.props.readOnly ? <DescriptionIcon /> : <EditIcon />}
+          <OverlayTrigger
+            placement="right"
+            delay={{ show: 250, hide: 0 }}
+            overlay={
+              <Tooltip>
+                {this.props.readOnly
+                  ? Locale[AppSettings.interfaceLanguage].readOnlyVocabulary
+                  : Locale[AppSettings.interfaceLanguage]
+                      .writeEnabledVocabulary}
+              </Tooltip>
+            }
+          >
+            <span className="vocabularyFolderIcon">
+              {this.props.readOnly ? <DescriptionIcon /> : <EditIcon />}
+            </span>
+          </OverlayTrigger>
           {getLabelOrBlank(
             WorkspaceVocabularies[this.props.vocabulary].labels,
             this.props.projectLanguage

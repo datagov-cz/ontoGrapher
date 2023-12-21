@@ -83,9 +83,9 @@ export function drawGraphElement(
     const text: string[] = [];
     if (representation === Representation.COMPACT) {
       text.push(
-        ..._.uniq(getIntrinsicTropeTypeIDs(elem.id)).map((id) =>
-          getDisplayLabel(id, languageCode)
-        )
+        ..._.uniq(getIntrinsicTropeTypeIDs(elem.id))
+          .map((id) => getDisplayLabel(id, languageCode))
+          .sort()
       );
     }
     elem.prop("attrs/labelAttrs/text", text.join("\n"));

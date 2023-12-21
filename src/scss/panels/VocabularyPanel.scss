@@ -22,7 +22,6 @@
 
   .accordion {
     overflow: auto;
-    // height: 100%;
   }
 
   .lucene {
@@ -158,6 +157,11 @@
     font-size: 14px;
     user-select: none;
     width: 100%;
+
+    .vocabularyFolderIcon {
+      cursor: help;
+      margin-right: 2px;
+    }
 
     .vocabularyLabel {
       border: 1px solid rgba(0, 0, 0, 0.7);

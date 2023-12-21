@@ -56,17 +56,14 @@ interface Props {
   handleStatus: Function;
 }
 
-interface State {}
-
 export var paper: joint.dia.Paper;
 
-export default class DiagramCanvas extends React.Component<Props, State> {
+export default class DiagramCanvas extends React.Component<Props> {
   private readonly canvasRef: React.RefObject<HTMLDivElement>;
   private drag: { x: any; y: any } | undefined;
   private newLink: boolean;
   private sid: string;
   private tid: string;
-  private drawStart: joint.g.Rect | undefined;
 
   constructor(props: Props) {
     super(props);
@@ -76,7 +73,6 @@ export default class DiagramCanvas extends React.Component<Props, State> {
     this.newLink = false;
     this.sid = "";
     this.tid = "";
-    this.drawStart = undefined;
     this.createNewLink = this.createNewLink.bind(this);
   }
 

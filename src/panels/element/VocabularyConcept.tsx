@@ -1,8 +1,9 @@
 import DeleteIcon from "@mui/icons-material/Delete";
 import InfoIcon from "@mui/icons-material/Info";
+import RemoveCircleIcon from "@mui/icons-material/RemoveCircle";
 import classNames from "classnames";
 import React from "react";
-import { Button } from "react-bootstrap";
+import { Button, OverlayTrigger, Tooltip } from "react-bootstrap";
 import {
   AppSettings,
   WorkspaceElements,
@@ -15,6 +16,7 @@ import { centerElementInView } from "../../function/FunctionGraph";
 import { ReactComponent as HiddenElementSVG } from "../../svg/hiddenElement.svg";
 import { CellColors } from "../../config/visual/CellColors";
 import { highlightCells, unHighlightCells } from "../../function/FunctionDraw";
+import { Locale } from "../../config/Locale";
 
 interface Props {
   id: string;
@@ -127,18 +129,50 @@ export default class VocabularyConcept extends React.Component<Props, State> {
               }}
             />
           </Button>
-          <Button variant="light" className="plainButton">
-            <DeleteIcon
-              onClick={(evt) => {
-                evt.stopPropagation();
-                if (!this.props.readOnly) {
-                  this.props.openRemoveItem(this.props.id);
-                } else if (this.props.readOnly) {
+          {this.props.readOnly && (
+            <OverlayTrigger
+              placement="right"
+              delay={{ show: 250, hide: 0 }}
+              overlay={
+                <Tooltip>
+                  {Locale[AppSettings.interfaceLanguage].removeReadOnlyConcept}
+                </Tooltip>
+              }
+            >
+              <Button
+                variant="light"
+                className="plainButton"
+                onClick={(event) => {
+                  event.stopPropagation();
                   this.props.openRemoveReadOnlyItem(this.props.id);
-                }
-              }}
-            />
-          </Button>
+                }}
+              >
+                <RemoveCircleIcon />
+              </Button>
+            </OverlayTrigger>
+          )}
+          {!this.props.readOnly && (
+            <OverlayTrigger
+              placement="right"
+              delay={{ show: 250, hide: 0 }}
+              overlay={
+                <Tooltip>
+                  {Locale[AppSettings.interfaceLanguage].removeConcept}
+                </Tooltip>
+              }
+            >
+              <Button
+                variant="light"
+                className="plainButton"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  this.props.openRemoveItem(this.props.id);
+                }}
+              >
+                <DeleteIcon />
+              </Button>
+            </OverlayTrigger>
+          )}
         </span>
       </div>
     );

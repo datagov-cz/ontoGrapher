@@ -28,7 +28,7 @@ export async function getElementsConfig(
     const query = [
       "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
       "PREFIX skos: <http://www.w3.org/2004/02/skos/core#> ",
-      "select ?elem ?scheme ?active ?name ?vocabulary where {",
+      "select ?elem ?scheme ?name ?vocabulary where {",
       "graph ?graph {",
       "?elem a og:element .",
       "optional {?elem og:name ?name.}",
@@ -105,20 +105,16 @@ export async function getElementsConfig(
       .then((data) => {
         for (const result of data.results.bindings) {
           const iri = result.iri.value;
-          if (
-            !(iri in elementPositions) ||
-            !("hidden" in elementPositions) ||
-            !("position" in elementPositions)
-          )
+          if (!(iri in elementPositions))
             elementPositions[iri] = {
               hidden: {},
               position: {},
             };
-          elements[iri].position![result.diagramID.value] = {
+          elementPositions[iri].position![result.diagramID.value] = {
             x: parseInt(result.posX.value),
             y: parseInt(result.posY.value),
           };
-          elements[iri].hidden![result.diagramID.value] =
+          elementPositions[iri].hidden![result.diagramID.value] =
             result.hidden.value === "true";
         }
         return true;
@@ -140,6 +136,7 @@ export async function getElementsConfig(
       Object.keys(obj).filter((k) => !!obj[k].active)
     )
   );
+  console.log(WorkspaceElements);
   return ret;
 }
 
@@ -147,7 +144,7 @@ export async function getSettings(contextEndpoint: string): Promise<boolean> {
   const query = [
     "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
     "select distinct ?open ?vocabContext ?graph ?diagram ?index ?name ?id ?representation ?vocabulary ?description ?collaborator ?creationDate ?modifyDate where {",
-    "optional {?vocabContext <https://slovník.gov.cz/datový/pracovní-prostor/pojem/odkazuje-na-přílohový-kontext> ?graph .",
+    "?vocabContext <https://slovník.gov.cz/datový/pracovní-prostor/pojem/odkazuje-na-přílohový-kontext> ?graph .",
     "graph ?graph {",
     " ?diagram og:index ?index .",
     " ?diagram og:name ?name .",
@@ -160,7 +157,6 @@ export async function getSettings(contextEndpoint: string): Promise<boolean> {
     "           ?diagram og:creationDate ?creationDate. ",
     "           ?diagram og:modifiedDate ?modifyDate. ",
     " }",
-    "}",
     "}",
     `values ?vocabContext {<${AppSettings.contextIRIs.join("> <")}>}`,
     "} order by asc(?index)",
@@ -180,7 +176,6 @@ export async function getSettings(contextEndpoint: string): Promise<boolean> {
       );
       for (const result of data.results.bindings) {
         if (
-          result.vocabContext &&
           !contextInfo[result.vocabContext.value].includes(result.graph.value)
         )
           contextInfo[result.vocabContext.value].push(result.graph.value);
@@ -256,7 +251,7 @@ export async function getLinksConfig(
   const getLinks = async (): Promise<boolean> => {
     const query = [
       "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
-      "select distinct ?id ?iri ?sourceID ?targetID ?type ?link where {",
+      "select distinct ?id ?iri ?sourceID ?targetID ?sourceCard1 ?sourceCard2 ?targetCard1 ?targetCard2 ?type ?link where {",
       "graph ?graph {",
       "?link a og:link .",
       "?link og:id ?id .",
@@ -264,6 +259,10 @@ export async function getLinksConfig(
       "?link og:source ?sourceID .",
       "?link og:target ?targetID .",
       "?link og:type ?type .",
+      "?link og:sourceCardinality1 ?sourceCard1 .",
+      "?link og:sourceCardinality2 ?sourceCard2 .",
+      "?link og:targetCardinality1 ?targetCard1 .",
+      "?link og:targetCardinality2 ?targetCard2 .",
       "}",
       `?contextIRI <${parsePrefix(
         "d-sgov-pracovní-prostor-pojem",
@@ -290,6 +289,10 @@ export async function getLinksConfig(
           ) {
             const sourceCard = new Cardinality("", "");
             const targetCard = new Cardinality("", "");
+            sourceCard.setFirstCardinality(result.sourceCard1.value);
+            sourceCard.setSecondCardinality(result.sourceCard2.value);
+            targetCard.setFirstCardinality(result.targetCard1.value);
+            targetCard.setSecondCardinality(result.targetCard2.value);
             links[result.id.value] = {
               iri: result.iri.value,
               target: result.targetID.value,
