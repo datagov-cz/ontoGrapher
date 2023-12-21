@@ -58,8 +58,8 @@ export const cs: { [Property in keyof typeof en]: string } = {
   modalNewElemIRI: "Pojem bude vytvořen s tímto IRI:",
   terms: "pojmy",
   termsCase: "pojmů",
-  fromList: "Z pracovního prostoru",
-  otherVocabularies: "Mimo pracovní prostor",
+  fromList: "Ze seznamu",
+  otherVocabularies: "Ostatní slovníky",
   authenticationError:
     "Chyba autentikace. Prosím, kontaktujte serverového administrátora.",
   authenticationUpdateError:
@@ -163,7 +163,6 @@ export const cs: { [Property in keyof typeof en]: string } = {
   vocabularyNotFound: "URL definice slovníků chybí nebo není správné",
   validate: "Zkontrolovat",
   removeConcept: "Smazat pojem",
-  removeReadOnlyConcept: "Odstranit pojem z pracovního prostoru",
   writeEnabledVocabulary: "Tento slovník je upravitelný.",
   readOnlyVocabulary: "Pojmy z toho slovníku jsou pouze pro čtení.",
   modalRemoveConceptTitle: "Smazat pojem?",
@@ -218,9 +217,6 @@ export const cs: { [Property in keyof typeof en]: string } = {
   connectionListShowFilter: "Zobrazit/skrýt filtr",
   connectionListEmptyFilter: "Zrušit filtr",
   downloadingTerms: "Přidávání vybraných pojmů...",
-  modalRemoveReadOnlyConceptDescription:
-    "Opravdu chcete smazat pojem? Daný pojem zůstane ve svém slovníku, pouze se odstraní ze seznamu pojmů společně s vazbami směřujícími k tomuto pojmu.",
-  updatingWorkspaceVersion: "Aktualizace verze aplikačního kontextu...",
   vocabularyNotFullyRepresented:
     "Tento slovník není v seznamu zastoupen všemi jeho pojmy. Klikněte sem pro zobrazení všech pojmů tohoto slovníku.",
   criticalAlert: "Důležité upozornění",
