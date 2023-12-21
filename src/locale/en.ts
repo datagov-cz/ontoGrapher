@@ -42,7 +42,6 @@ export const en = {
   unsorted: "No type",
   updating: "Saving...",
   removeConcept: "Delete term",
-  removeReadOnlyConcept: "Remove term from workspace",
   writeEnabledVocabulary: "This is an editable vocabulary.",
   readOnlyVocabulary: "This is a vocabulary whose terms are read-only.",
   newVersion:
@@ -201,8 +200,8 @@ export const en = {
   help: "Help",
   modalNewElemError: "You must enter a label in order to create a new term.",
   selectVocabulary: "Term will be created in:",
-  fromList: "From workspace",
-  otherVocabularies: "From outside the workspace",
+  fromList: "From list",
+  otherVocabularies: "Other vocabularies",
   view: "View",
   switchColors: "Vocabulary color scheme",
   reportIssue: "Report an issue",
@@ -221,11 +220,8 @@ export const en = {
   connectionListShowFilter: "Show/hide filter options",
   connectionListEmptyFilter: "Disable filter",
   downloadingTerms: "Adding selected term(s) into the term list...",
-  modalRemoveReadOnlyConceptDescription:
-    "Are you sure you want to remove the term? This will remove the term and created connections to the term from the list, but won't delete the term from its own vocabulary.",
   vocabularyNotFullyRepresented:
     "The term list does not contain all terms from this vocabulary. Click here to show all terms of this vocabulary.",
-  updatingWorkspaceVersion: "Updating application context version...",
   criticalAlert: "Critical alert",
   obsoleteDiagramsAlertIntro:
     "OntoGrapher has detected that a vocabulary has been removed. As such, these following diagrams are unpublishable and should be deleted:",
