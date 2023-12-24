@@ -67,7 +67,7 @@ export function getLabelOrBlank(
     : "<blank>";
 }
 
-export function setSchemeColors(pool: string) {
+export function setSchemeColors(pool: string = AppSettings.viewColorPool) {
   Object.keys(WorkspaceVocabularies).forEach((scheme, i) => {
     WorkspaceVocabularies[scheme].color =
       ColorPool[pool].colors[i % ColorPool[pool].colors.length];

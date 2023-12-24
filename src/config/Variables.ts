@@ -55,6 +55,8 @@ export var WorkspaceVocabularies: {
     graph: string;
     color: string;
     changeContext?: string;
+    //base vocabulary (from Vocabularies.json)
+    hidden?: boolean;
   };
 } = {};
 

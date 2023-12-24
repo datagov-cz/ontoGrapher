@@ -1,10 +1,12 @@
 {
   "Z-SGoV": {
-    "type": "stereotype",
-    "endpoint": "https://slovník.gov.cz/sparql",
     "sourceIRI": "https://slovník.gov.cz/základní/glosář",
-    "classIRI": ["http://www.w3.org/2002/07/owl#Class"],
-    "relationshipIRI": ["http://www.w3.org/2002/07/owl#ObjectProperty"],
+    "classIRI": [
+      "http://www.w3.org/2002/07/owl#Class"
+    ],
+    "relationshipIRI": [
+      "http://www.w3.org/2002/07/owl#ObjectProperty"
+    ],
     "values": {
       "z-sgov-pojem": [
         "typ-vztahu",
@@ -35,20 +37,6 @@
     },
     "prefixes": {
       "z-sgov-pojem": "https://slovník.gov.cz/základní/pojem/"
-    },
-    "attributes": [
-      {
-        "name": "term label",
-        "iri": "rdfs:label",
-        "type": "xsd:string"
-      },
-      {
-        "name": "search index",
-        "iri": "skos:altLabel",
-        "type": [
-          "xsd:string"
-        ]
-      }
-    ]
+    }
   }
 }

@@ -168,33 +168,55 @@ function getSubclassConnections(
 }
 
 export function insertNewCacheTerms(newTerms: typeof WorkspaceTerms) {
-  Object.assign(WorkspaceTerms, newTerms);
-  for (const term in newTerms) {
-    const vocab = Object.keys(CacheSearchVocabularies).find(
-      (vocab) =>
-        CacheSearchVocabularies[vocab].glossary === newTerms[term].inScheme
+  const incomingSchemes = _.uniq(
+    Object.values(newTerms).map((v) => v.inScheme)
+  );
+  for (const incomingScheme of incomingSchemes) {
+    const incomingWV = Object.keys(WorkspaceVocabularies).find(
+      (vocab) => WorkspaceVocabularies[vocab].glossary === incomingScheme
     );
-    if (vocab) {
-      if (
-        !Object.keys(WorkspaceVocabularies).find(
-          (vocab) =>
-            WorkspaceVocabularies[vocab].glossary === newTerms[term].inScheme
+    const incomingCV = Object.keys(CacheSearchVocabularies).find(
+      (vocab) => CacheSearchVocabularies[vocab].glossary === incomingScheme
+    );
+    if (incomingWV && WorkspaceVocabularies[incomingWV].hidden) {
+      WorkspaceVocabularies[incomingWV].hidden = false;
+      Object.assign(
+        WorkspaceTerms,
+        _.pick(
+          newTerms,
+          Object.keys(newTerms).filter(
+            (t) => newTerms[t].inScheme === incomingScheme
+          )
         )
-      ) {
-        WorkspaceVocabularies[vocab] = {
-          labels: CacheSearchVocabularies[vocab].labels,
-          readOnly: true,
-          namespace: CacheSearchVocabularies[vocab].namespace,
-          glossary: CacheSearchVocabularies[vocab].glossary,
-          graph: vocab,
-          color: "#FFF",
-        };
-        setSchemeColors(AppSettings.viewColorPool);
-      }
+      );
+    } else if (incomingCV) {
+      WorkspaceVocabularies[incomingCV] = {
+        labels: CacheSearchVocabularies[incomingCV].labels,
+        readOnly: true,
+        namespace: CacheSearchVocabularies[incomingCV].namespace,
+        glossary: CacheSearchVocabularies[incomingCV].glossary,
+        graph: incomingCV,
+        color: "#FFF",
+      };
+      Object.assign(
+        WorkspaceTerms,
+        _.pick(
+          newTerms,
+          Object.keys(newTerms).filter(
+            (t) => newTerms[t].inScheme === incomingScheme
+          )
+        )
+      );
     } else
       console.error(
-        `Vocabulary with glossary ${newTerms[term].inScheme} has not been found in the database; term ${term} will not be added.`
+        `Vocabulary with glossary ${incomingScheme} has not been found in the database; terms ${Object.keys(
+          newTerms
+        )
+          .filter((t) => newTerms[t].inScheme === incomingScheme)
+          .join(", ")} will not be added.`
       );
+
+    setSchemeColors();
   }
 }
 

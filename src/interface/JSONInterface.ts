@@ -27,56 +27,53 @@ export async function getVocabulariesFromRemoteJSON(
         if (Object.keys(json).length === 0) return false;
         for (const key of Object.keys(json)) {
           const data = json[key];
-          if (data.type === "stereotype") {
-            results.push(
-              await fetchVocabulary(
-                [data.sourceIRI],
-                true,
-                AppSettings.contextEndpoint
-              )
-            );
-            WorkspaceVocabularies[
-              getVocabularyFromScheme(data.sourceIRI)
-            ].labels = initLanguageObject(key);
-            results.push(
-              await fetchBaseOntology(
-                AppSettings.contextEndpoint,
-                data.sourceIRI,
-                Stereotypes,
-                [data.classIRI],
-                data.values
-                  ? createValues(data.values, data.prefixes)
-                  : undefined
-              )
-            );
-            results.push(
-              await fetchBaseOntology(
-                AppSettings.contextEndpoint,
-                data.sourceIRI,
-                Links,
-                [data.relationshipIRI],
-                data.values
-                  ? createValues(data.values, data.prefixes)
-                  : undefined
-              )
-            );
-            for (const link in Links) {
-              for (const lang in Languages) {
-                if (!Links[link].labels[lang]) {
-                  const label = link.lastIndexOf("/");
-                  Links[link].labels[lang] = link.substring(label + 1);
-                }
+          results.push(
+            await fetchVocabulary(
+              [data.sourceIRI],
+              true,
+              AppSettings.contextEndpoint
+            )
+          );
+          WorkspaceVocabularies[
+            getVocabularyFromScheme(data.sourceIRI)
+          ].labels = initLanguageObject(key);
+          WorkspaceVocabularies[
+            getVocabularyFromScheme(data.sourceIRI)
+          ].hidden = true;
+          results.push(
+            await fetchBaseOntology(
+              AppSettings.contextEndpoint,
+              data.sourceIRI,
+              Stereotypes,
+              [data.classIRI],
+              data.values ? createValues(data.values, data.prefixes) : undefined
+            )
+          );
+          results.push(
+            await fetchBaseOntology(
+              AppSettings.contextEndpoint,
+              data.sourceIRI,
+              Links,
+              [data.relationshipIRI],
+              data.values ? createValues(data.values, data.prefixes) : undefined
+            )
+          );
+          for (const link in Links) {
+            for (const lang in Languages) {
+              if (!Links[link].labels[lang]) {
+                const label = link.lastIndexOf("/");
+                Links[link].labels[lang] = link.substring(label + 1);
               }
             }
-            for (const iri of Object.keys(Links)) {
-              if (!(iri in EquivalentClasses)) continue;
-              for (const eq of EquivalentClasses[iri]) {
-                if (eq in Links) continue;
-                Links[eq] = Links[iri];
-              }
-            }
-            return results.every((bool) => bool);
           }
+          for (const iri of Object.keys(Links)) {
+            if (!(iri in EquivalentClasses)) continue;
+            for (const eq of EquivalentClasses[iri]) {
+              if (eq in Links) continue;
+              Links[eq] = Links[iri];
+            }
+          }
+          return results.every((bool) => bool);
         }
       })
       .catch((error) => {

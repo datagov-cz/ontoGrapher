@@ -198,43 +198,44 @@ export default class VocabularyPanel extends React.Component<Props, State> {
         tag: AppSettings.canvasLanguage,
       }).map((result) => result.result)
     ).map((num) => FlexDocumentIDTable[num as number]);
-    Object.keys(WorkspaceVocabularies).forEach((vocab) => {
-      result[vocab] = {};
-      Object.keys(Shapes)
-        .concat("unsorted")
-        .forEach((type) => (result[vocab][type] = []));
-      Object.keys(WorkspaceTerms)
-        .filter(
-          (iri) =>
-            getVocabularyFromScheme(WorkspaceTerms[iri].inScheme) === vocab &&
-            WorkspaceElements[iri].active
-        )
-        .sort((a, b) => this.sort(a, b))
-        .filter(
-          (id) =>
-            (!this.state.search || flexSearchResults.includes(id)) &&
-            isElementVisible(
-              WorkspaceTerms[id].types,
-              AppSettings.representation
-            )
-        )
-        .forEach((elem) => {
-          if (
-            WorkspaceVocabularies[vocab].readOnly &&
-            Object.values(WorkspaceElements[elem].hidden).every((e) => e)
+    Object.keys(WorkspaceVocabularies)
+      .filter((v) => !!WorkspaceVocabularies[v].hidden)
+      .forEach((vocab) => {
+        result[vocab] = {};
+        Object.keys(Shapes)
+          .concat("unsorted")
+          .forEach((type) => (result[vocab][type] = []));
+        Object.keys(WorkspaceTerms)
+          .filter(
+            (iri) =>
+              getVocabularyFromScheme(WorkspaceTerms[iri].inScheme) === vocab &&
+              WorkspaceElements[iri].active
           )
-            return;
-          const types = WorkspaceTerms[elem].types;
-          for (const key in Shapes) {
-            if (filterEquivalent(types, key)) {
-              result[vocab][key].push(elem);
-              break;
+          .sort((a, b) => this.sort(a, b))
+          .filter(
+            (id) =>
+              (!this.state.search || flexSearchResults.includes(id)) &&
+              isElementVisible(
+                WorkspaceTerms[id].types,
+                AppSettings.representation
+              )
+          )
+          .forEach((elem) => {
+            if (
+              WorkspaceVocabularies[vocab].readOnly &&
+              Object.values(WorkspaceElements[elem].hidden).every((e) => e)
+            )
+              return;
+            for (const key in Shapes) {
+              if (filterEquivalent(WorkspaceTerms[elem].types, key)) {
+                result[vocab][key].push(elem);
+                break;
+              }
             }
-          }
-          if (!Object.values(result[vocab]).find((arr) => arr.includes(elem)))
-            result[vocab]["unsorted"].push(elem);
-        });
-    });
+            if (!Object.values(result[vocab]).find((arr) => arr.includes(elem)))
+              result[vocab]["unsorted"].push(elem);
+          });
+      });
     return result;
   }
 

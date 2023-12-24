@@ -308,15 +308,15 @@ export async function putElementsOnCanvas(
   if (event.dataTransfer) {
     const dataToParse = event.dataTransfer.getData("newClass");
     const data = JSON.parse(dataToParse);
-    const iris = data.iri.filter((iri: string) => {
-      return !(iri in WorkspaceTerms);
-    });
-    const ids = data.id.filter((id: string) => !graph.getCell(id));
     if (!data) {
       console.error(`Unable to parse element information from data:
       ${dataToParse}`);
       return [];
     }
+    const iris = data.iri.filter((iri: string) => {
+      return !(iri in WorkspaceTerms);
+    });
+    const ids = data.id.filter((id: string) => !graph.getCell(id));
     if (iris.length === 0 && ids.length === 0) {
       console.warn(`Expected to receive valid IRI data, got
       ${dataToParse}
