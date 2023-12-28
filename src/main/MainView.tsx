@@ -47,7 +47,7 @@ export const MainView: React.FC<Props> = (props: Props) => {
     timer = setTimeout(getStyle, 200);
   });
   return (
-    <div className={"mainView"} style={getStyle()}>
+    <div className={"mainView"} id={"mainView"} style={getStyle()}>
       {mode === MainViewMode.CANVAS && (
         <DiagramCanvas
           projectLanguage={props.projectLanguage}

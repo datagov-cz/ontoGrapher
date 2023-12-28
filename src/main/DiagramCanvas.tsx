@@ -17,6 +17,7 @@ import {
 } from "../config/Variables";
 import { CellColors } from "../config/visual/CellColors";
 import {
+  centerDiagram,
   resetDiagramSelection,
   updateDiagramPosition,
   zoomDiagram,
@@ -129,6 +130,24 @@ export default class DiagramCanvas extends React.Component<Props> {
         return getNewLink();
       },
     });
+
+    if (graph.getElements().length > 0) {
+      if (
+        Diagrams[AppSettings.selectedDiagram].origin.x === 0 &&
+        Diagrams[AppSettings.selectedDiagram].origin.y === 0
+      ) {
+        centerDiagram();
+      } else {
+        paper.scale(
+          Diagrams[AppSettings.selectedDiagram].scale,
+          Diagrams[AppSettings.selectedDiagram].scale
+        );
+        paper.translate(
+          Diagrams[AppSettings.selectedDiagram].origin.x,
+          Diagrams[AppSettings.selectedDiagram].origin.y
+        );
+      }
+    }
 
     /**
      * This handles all the various mouse events on the canvas and the elements within.

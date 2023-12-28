@@ -49,12 +49,6 @@ export function changeDiagrams(diagram?: string) {
       }
     }
     setRepresentation(Diagrams[diagram].representation, diagram, false);
-    if (Diagrams[diagram].origin.x === 0 && Diagrams[diagram].origin.y === 0) {
-      centerDiagram();
-    } else {
-      paper.scale(Diagrams[diagram].scale, Diagrams[diagram].scale);
-      paper.translate(Diagrams[diagram].origin.x, Diagrams[diagram].origin.y);
-    }
     StoreSettings.update((s) => {
       s.selectedDiagram = diagram!;
     });
@@ -82,9 +76,15 @@ export function centerDiagram(
     x += elem.getBBox().x;
     y += elem.getBBox().y;
   }
+  const computedSize = p.getComputedSize();
+  if (computedSize.width === 0 && computedSize.height === 0) {
+    computedSize.width = document.getElementById("mainView")?.offsetWidth ?? 0;
+    computedSize.height =
+      document.getElementById("mainView")?.offsetHeight ?? 0;
+  }
   p.translate(
-    -((x / g.getElements().length) * scale) + p.getComputedSize().width / 2,
-    -((y / g.getElements().length) * scale) + p.getComputedSize().height / 2
+    -((x / g.getElements().length) * scale) + computedSize.width / 2,
+    -((y / g.getElements().length) * scale) + computedSize.height / 2
   );
   if (g === graph) updateDiagramPosition(AppSettings.selectedDiagram);
 }
