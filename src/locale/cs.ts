@@ -18,6 +18,8 @@ export const cs: { [Property in keyof typeof en]: string } = {
   addLanguage: "Přidat vstup pro další jazyk",
   modalNewTropeDescription:
     "Jméno pro novou vlastnost (nelze později změnit!):",
+  modalNewRelationshipDescription:
+    "Jméno pro nový vztah (nelze později změnit!):",
   createTrope: "Vytvořit novou vlastnost",
   assignExistingTrope: "Přiřadit existující vlastnost",
   noExistingTropes:
