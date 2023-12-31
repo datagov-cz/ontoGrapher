@@ -421,9 +421,9 @@ export default class VocabularyPanel extends React.Component<Props, State> {
               value={this.state.search}
               onChange={(evt) => {
                 this.handleChangeSearch(evt.currentTarget.value);
-                this.prepareToastCall();
+                // this.prepareToastCall();
               }}
-              onFocus={() => this.prepareToastCall()}
+              // onFocus={() => this.prepareToastCall()}
             />
           </InputGroup>
           <InputGroup>

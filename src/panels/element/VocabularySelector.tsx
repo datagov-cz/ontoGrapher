@@ -72,7 +72,7 @@ export class VocabularySelector extends React.Component<Props> {
         value={this.props.values}
         onChange={(value) => {
           this.props.filter(value.map((value) => value.value));
-          this.props.prepareToastCall();
+          // this.props.prepareToastCall();
         }}
       />
     );
