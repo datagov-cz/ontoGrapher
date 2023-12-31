@@ -20,9 +20,10 @@ export async function getElementsConfig(
   contextEndpoint: string = AppSettings.contextEndpoint,
   contexts: string[] = AppSettings.contextIRIs
 ): Promise<boolean> {
-  const elements: { [key: string]: Partial<typeof WorkspaceElements[0]> } = {};
+  const elements: { [key: string]: Partial<(typeof WorkspaceElements)[0]> } =
+    {};
   const elementPositions: {
-    [key: string]: Partial<typeof WorkspaceElements[0]>;
+    [key: string]: Partial<(typeof WorkspaceElements)[0]>;
   } = {};
   const getElements = async (): Promise<boolean> => {
     const query = [
@@ -58,6 +59,8 @@ export async function getElementsConfig(
               position: {},
               hidden: {},
               selectedLabel: initLanguageObject(""),
+              sourceLinks: [],
+              targetLinks: [],
             };
           }
           if (
@@ -136,7 +139,6 @@ export async function getElementsConfig(
       Object.keys(obj).filter((k) => !!obj[k].active)
     )
   );
-  console.log(WorkspaceElements);
   return ret;
 }
 
@@ -246,8 +248,9 @@ export async function getLinksConfig(
   contextEndpoint: string = AppSettings.contextEndpoint,
   contexts: string[] = AppSettings.contextIRIs
 ): Promise<boolean> {
-  const links: { [key: string]: Partial<typeof WorkspaceLinks[0]> } = {};
-  const linkVertices: { [key: string]: Partial<typeof WorkspaceLinks[0]> } = {};
+  const links: { [key: string]: Partial<(typeof WorkspaceLinks)[0]> } = {};
+  const linkVertices: { [key: string]: Partial<(typeof WorkspaceLinks)[0]> } =
+    {};
   const getLinks = async (): Promise<boolean> => {
     const query = [
       "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
@@ -368,13 +371,14 @@ export async function getLinksConfig(
     r.every((r) => !!r)
   );
   const obj: typeof links = {};
-  _.merge(obj, links, linkVertices);
   _.merge(
-    WorkspaceLinks,
+    obj,
+    links,
     _.pick(
-      obj,
-      Object.keys(obj).filter((k) => !!obj[k].iri)
+      linkVertices,
+      Object.keys(linkVertices).filter((k) => k in links)
     )
   );
+  _.merge(WorkspaceLinks, obj);
   return ret;
 }

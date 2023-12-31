@@ -130,7 +130,6 @@ export default class App extends React.Component<
     this.handleChangeInterfaceLanguage =
       this.handleChangeInterfaceLanguage.bind(this);
     this.handleStatus = this.handleStatus.bind(this);
-    this.validate = this.validate.bind(this);
     this.performTransaction = this.performTransaction.bind(this);
 
     StoreAlerts.subscribe(
@@ -280,10 +279,6 @@ export default class App extends React.Component<
     this.handleStatus(false, "", false);
   }
 
-  validate() {
-    this.setState({ validation: !this.state.validation });
-  }
-
   handleCreation(
     configuration: ElemCreationConfiguration | LinkCreationConfiguration
   ) {
@@ -321,7 +316,7 @@ export default class App extends React.Component<
             resetDiagramSelection();
           }}
           freeze={this.state.freeze}
-          validate={this.validate}
+          validate={() => this.setState({ validation: !this.state.validation })}
           handleStatus={this.handleStatus}
           performTransaction={this.performTransaction}
           tooltip={this.state.tooltip}

@@ -19,7 +19,9 @@ export var WorkspaceElements: {
     selectedLabel: { [key: string]: string };
     //vocabulary (if known)
     vocabulary?: string;
-      };
+    sourceLinks: string[];
+    targetLinks: string[];
+  };
 } = {};
 
 export var WorkspaceLinks: {

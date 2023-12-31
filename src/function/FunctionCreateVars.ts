@@ -109,6 +109,8 @@ export function addClass(id: string, active: boolean = true) {
     position: { [AppSettings.selectedDiagram]: { x: 0, y: 0 } },
     active: active,
     selectedLabel: initLanguageObject(""),
+    sourceLinks: [],
+    targetLinks: [],
   };
 }
 
@@ -174,4 +176,8 @@ export function addLink(
     hasInverse: type !== LinkType.GENERALIZATION && iri in Links,
     linkIRI: getOntographerLinkIRI(id),
   };
+  if (source in WorkspaceElements && target in WorkspaceElements) {
+    WorkspaceElements[source].sourceLinks.push(id);
+    WorkspaceElements[target].targetLinks.push(id);
+  }
 }

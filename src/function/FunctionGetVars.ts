@@ -1,12 +1,11 @@
 import { getVocabularyShortLabel } from "@opendata-mvcr/assembly-line-shared";
 import * as joint from "jointjs";
 import { Representation } from "../config/Enum";
-import { LocalStorageVars } from "../config/LocalStorageVars";
 import { Locale } from "../config/Locale";
+import { LocalStorageVars } from "../config/LocalStorageVars";
 import {
   AppSettings,
   Links,
-  WorkspaceElements,
   WorkspaceLinks,
   WorkspaceTerms,
   WorkspaceVocabularies,
@@ -17,6 +16,7 @@ import { CacheSearchVocabularies } from "../datatypes/CacheSearchResults";
 import { Cardinality } from "../datatypes/Cardinality";
 import { en } from "../locale/en";
 import { LinkConfig } from "../queries/update/UpdateConnectionQueries";
+import { WorkspaceElements } from "./../config/Variables";
 import { cutoffString, parsePrefix } from "./FunctionEditVars";
 import { filterEquivalent, getEquivalents } from "./FunctionEquivalents";
 import { mvp1IRI, mvp2IRI } from "./FunctionGraph";
@@ -149,9 +149,15 @@ export function getElementShape(id: string | number): string {
   return Shapes["default"].body;
 }
 
-export function getActiveToConnections(iri: string): string[] {
-  return Object.keys(WorkspaceLinks).filter(
-    (id) => WorkspaceLinks[id].source === iri && WorkspaceLinks[id].active
+export function getActiveSourceConnections(iri: string): string[] {
+  return WorkspaceElements[iri].sourceLinks.filter(
+    (id) => WorkspaceLinks[id].active
+  );
+}
+
+export function getActiveTargetConnections(iri: string): string[] {
+  return WorkspaceElements[iri].targetLinks.filter(
+    (id) => WorkspaceLinks[id].active
   );
 }
 
@@ -165,7 +171,7 @@ export function getUnderlyingFullConnections(
   if (sourceElem && targetElem) {
     const preds = Object.keys(WorkspaceElements).filter((id) => id === iri);
     for (const pred of preds) {
-      const connections = getActiveToConnections(pred);
+      const connections = getActiveSourceConnections(pred);
       const sourceLink = Object.keys(WorkspaceLinks).find(
         (id) =>
           connections.includes(id) &&
@@ -174,7 +180,7 @@ export function getUnderlyingFullConnections(
       );
       const targetLink = Object.keys(WorkspaceLinks).find(
         (id) =>
-          getActiveToConnections(pred).includes(id) &&
+          getActiveSourceConnections(pred).includes(id) &&
           WorkspaceLinks[id].iri === mvp2IRI &&
           WorkspaceLinks[id].target === targetElem
       );

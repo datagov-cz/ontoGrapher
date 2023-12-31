@@ -18,7 +18,7 @@ import { graph } from "../graph/Graph";
 import { updateDeleteTriples } from "../queries/update/UpdateMiscQueries";
 import { addClass } from "./FunctionCreateVars";
 import {
-  getActiveToConnections,
+  getActiveSourceConnections,
   getLocalStorageKey,
   getVocabularyFromScheme,
   loadDefaultCardinality,
@@ -126,7 +126,7 @@ export function removeNewlines(str: string): string {
 
 export function deleteConcept(id: string): string[] {
   let queries: string[] = [];
-  for (const connection of getActiveToConnections(id)) {
+  for (const connection of getActiveSourceConnections(id)) {
     WorkspaceLinks[connection].active = false;
     queries.push(
       updateDeleteTriples(

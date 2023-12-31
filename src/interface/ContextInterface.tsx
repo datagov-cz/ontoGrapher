@@ -206,6 +206,15 @@ export async function retrieveVocabularyData(): Promise<boolean> {
 export async function retrieveContextData(): Promise<boolean> {
   const configs = await Promise.all([getElementsConfig(), getLinksConfig()]);
   if (configs.some((c) => !c)) return false;
+  Object.keys(WorkspaceLinks).forEach((l) => {
+    if (
+      WorkspaceLinks[l].source in WorkspaceElements &&
+      WorkspaceLinks[l].target in WorkspaceElements
+    ) {
+      WorkspaceElements[WorkspaceLinks[l].source].sourceLinks.push(l);
+      WorkspaceElements[WorkspaceLinks[l].target].targetLinks.push(l);
+    }
+  });
   const missingTerms: string[] = Object.keys(WorkspaceElements).filter(
     (id) => !(id in WorkspaceTerms)
   );

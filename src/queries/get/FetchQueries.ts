@@ -221,7 +221,7 @@ export async function fetchRestrictions(
   const query = [
     "PREFIX skos: <http://www.w3.org/2004/02/skos/core#>",
     "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>",
-    "PREFIX z-sgov-pojem: <https://slovník.gov.cz/základní/pojem/>",
+    "PREFIX owl: <http://www.w3.org/2002/07/owl#>",
     "SELECT ?term ?inverseOnProperty ?restrictionPred ?onProperty ?onClass ?target",
     "WHERE {",
     graph && "GRAPH <" + graph + "> {",

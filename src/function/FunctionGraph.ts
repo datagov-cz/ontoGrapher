@@ -37,7 +37,7 @@ import {
 } from "./FunctionEditVars";
 import { filterEquivalent } from "./FunctionEquivalents";
 import {
-  getActiveToConnections,
+  getActiveSourceConnections,
   getElementShape,
   getIntrinsicTropeTypeIDs,
   getLabelOrBlank,
@@ -347,7 +347,7 @@ export function setRepresentation(
           parsePrefix("z-sgov-pojem", "typ-vztahu")
         )
       ) {
-        const connections: string[] = getActiveToConnections(id);
+        const connections: string[] = getActiveSourceConnections(id);
         if (connections.length > 1) {
           const sourceLink: string | undefined = connections.find(
             (src) => WorkspaceLinks[src].iri === mvp1IRI

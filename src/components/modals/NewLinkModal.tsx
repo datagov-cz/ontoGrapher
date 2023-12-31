@@ -14,7 +14,7 @@ import {
   parsePrefix,
 } from "../../function/FunctionEditVars";
 import {
-  getActiveToConnections,
+  getActiveSourceConnections,
   getExpressionByRepresentation,
   getLabelOrBlank,
   getLinkOrVocabElem,
@@ -70,7 +70,7 @@ export default class NewLinkModal extends React.Component<Props, State> {
       .getElements()
       .find((elem) => elem.id === this.props.configuration.sourceID);
     if (elem && this.props.configuration.sourceID) {
-      const connections = getActiveToConnections(
+      const connections = getActiveSourceConnections(
         this.props.configuration.sourceID
       );
       if (AppSettings.representation === Representation.FULL) {
@@ -90,7 +90,7 @@ export default class NewLinkModal extends React.Component<Props, State> {
           .filter((iri) => {
             return (
               !isTermReadOnly(iri) &&
-              getActiveToConnections(iri).length === 0 &&
+              getActiveSourceConnections(iri).length === 0 &&
               filterEquivalent(
                 WorkspaceTerms[iri].types,
                 parsePrefix("z-sgov-pojem", "typ-vztahu")

@@ -84,7 +84,8 @@ export async function fetchSubClasses(
       AppSettings.cacheContext +
       "> <https://slovník.gov.cz/datový/pracovní-prostor/pojem/odkazuje-na-kontext> ?graph.",
     "}",
-  ].join(" ");
+  ].join(`
+  `);
   return await processQuery(endpoint, query)
     .then((response) => response.json())
     .then((data) => {
@@ -189,7 +190,8 @@ export async function searchCache(
       ? "VALUES ?vocabulary {<" + limitToVocabularies.join("> <") + ">}"
       : "",
     "}",
-  ].join(" ");
+  ].join(`
+  `);
   return await processQuery(endpoint, query)
     .then((response) => response.json())
     .then((json) => {
@@ -256,7 +258,8 @@ export async function fetchReadOnlyTerms(
         AppSettings.cacheContext +
         "> <https://slovník.gov.cz/datový/pracovní-prostor/pojem/odkazuje-na-kontext> ?graph.",
       "}",
-    ].join(" ");
+    ].join(`
+    `);
     await processQuery(contextEndpoint, query)
       .then((response) => response.json())
       .then((data) => {
@@ -386,7 +389,8 @@ export async function fetchFullRelationships(
       AppSettings.cacheContext +
       "> <https://slovník.gov.cz/datový/pracovní-prostor/pojem/odkazuje-na-kontext> ?graph.",
     "}",
-  ].join(" ");
+  ].join(`
+  `);
   const relationships: {
     relation: string;
     target: string;
