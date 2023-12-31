@@ -142,7 +142,7 @@ export var Diagrams: {
 export const EquivalentClasses: Record<string, string[]> = {};
 
 export var Users: {
-  [key: string]: { given_name: string; family_name: string };
+  [key: string]: { given_name: string; family_name: string; graph: string };
 } = {};
 
 export var AppSettings: {
@@ -173,6 +173,7 @@ export var AppSettings: {
   selectedLinks: string[];
   currentUser?: string;
   changedVocabularies: string[];
+  shownToasts: string[];
 } = {
   name: {},
   description: {},
@@ -201,6 +202,7 @@ export var AppSettings: {
   selectedElements: [],
   selectedLinks: [],
   changedVocabularies: [],
+  shownToasts: [],
 };
 
 export var CardinalityPool: Cardinality[] = [

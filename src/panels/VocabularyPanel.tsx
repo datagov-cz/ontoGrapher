@@ -36,6 +36,8 @@ import VocabularyConcept from "./element/VocabularyConcept";
 import VocabularyFolder from "./element/VocabularyFolder";
 import { VocabularySelector } from "./element/VocabularySelector";
 import ModalRemoveConcept from "./modal/ModalRemoveConcept";
+import { callToast } from "../config/ToastData";
+import { Representation } from "../config/Enum";
 
 interface Props {
   projectLanguage: string;
@@ -62,6 +64,7 @@ interface State {
 
 export default class VocabularyPanel extends React.Component<Props, State> {
   private searchTimeout: number = 0;
+  private helpToastTimeout: number = 0;
 
   constructor(props: Props) {
     super(props);
@@ -177,6 +180,15 @@ export default class VocabularyPanel extends React.Component<Props, State> {
         open: { ...prev.open, ...openResult },
       }));
     });
+  }
+
+  prepareToastCall() {
+    window.clearTimeout(this.helpToastTimeout);
+    if (AppSettings.representation === Representation.COMPACT)
+      this.helpToastTimeout = window.setTimeout(
+        () => callToast("lookingForRelationshipsOrProperties"),
+        5000
+      );
   }
 
   sort(a: string, b: string): number {
@@ -407,9 +419,11 @@ export default class VocabularyPanel extends React.Component<Props, State> {
               }
               aria-describedby="inputGroupPrepend"
               value={this.state.search}
-              onChange={(evt) =>
-                this.handleChangeSearch(evt.currentTarget.value)
-              }
+              onChange={(evt) => {
+                this.handleChangeSearch(evt.currentTarget.value);
+                this.prepareToastCall();
+              }}
+              onFocus={() => this.prepareToastCall()}
             />
           </InputGroup>
           <InputGroup>
@@ -417,6 +431,7 @@ export default class VocabularyPanel extends React.Component<Props, State> {
               filter={this.filter}
               projectLanguage={this.props.projectLanguage}
               values={this.state.vocabs}
+              prepareToastCall={this.prepareToastCall}
               availableVocabularies={Object.keys(
                 this.state.shownElements
               ).filter(

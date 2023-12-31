@@ -212,10 +212,7 @@ export async function getSettings(contextEndpoint: string): Promise<boolean> {
         if (result.collaborator) {
           Diagrams[result.id.value].collaborators = _.uniq([
             ...Diagrams[result.id.value].collaborators,
-            result.collaborator.value.replace(
-              "https://slovník.gov.cz/uživatel/",
-              ""
-            ),
+            result.collaborator.value,
           ]);
         }
         if (result.creationDate) {

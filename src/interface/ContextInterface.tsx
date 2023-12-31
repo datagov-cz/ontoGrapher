@@ -49,6 +49,7 @@ import {
 import { updateDeleteDiagram } from "../queries/update/UpdateDiagramQueries";
 import { updateProjectElement } from "../queries/update/UpdateElementQueries";
 import { updateProjectLinkParallel } from "../queries/update/UpdateLinkQueries";
+import { fetchUserSettings } from "../queries/update/UpdateMiscQueries";
 import { processQuery, processTransaction } from "./TransactionInterface";
 
 export function retrieveInfoFromURLParameters(): boolean {
@@ -71,20 +72,15 @@ export function retrieveInfoFromURLParameters(): boolean {
 
 export async function updateContexts(): Promise<boolean> {
   const ret1 = await getSettings(AppSettings.contextEndpoint);
-  await fetchUsers(
-    ...Object.values(Diagrams)
-      .flatMap((d) => d.collaborators)
-      .map(
-        (d) =>
-          "https://slovník.gov.cz/uživatel/" +
-          d.replaceAll("https://slovník.gov.cz/uživatel/", "")
-      )
+  const ret2 = await fetchUsers(
+    ...Object.values(Diagrams).flatMap((d) => d.collaborators)
   );
+  if (Environment.auth) await fetchUserSettings();
   AppSettings.selectedDiagram = "";
   StoreSettings.update((s) => {
     s.selectedDiagram = AppSettings.selectedDiagram;
   });
-  return ret1;
+  return ret1 && ret2;
 }
 
 //TODO: hot

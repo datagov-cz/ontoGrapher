@@ -27,11 +27,7 @@ function getDiagramTriples(diagram: string): string {
       qb.s(
         diagramIRI,
         "og:collaborator",
-        qb.a(
-          Diagrams[diagram].collaborators.map((c) =>
-            qb.i("https://slovník.gov.cz/uživatel/" + c)
-          )
-        ),
+        qb.a(Diagrams[diagram].collaborators),
         Diagrams[diagram].collaborators.length > 0
       )
     );
@@ -218,11 +214,7 @@ export function updateDiagramMetadata(diagram: string): string {
     qb.s(
       qb.i(diagramIRI),
       "og:collaborator",
-      qb.a(
-        Diagrams[diagram].collaborators.map((c) =>
-          qb.i("https://slovník.gov.cz/uživatel/" + c)
-        )
-      ),
+      qb.a(Diagrams[diagram].collaborators),
       Diagrams[diagram].collaborators.length > 0
     ),
   ])}`.build();

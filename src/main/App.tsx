@@ -57,6 +57,7 @@ import { qb } from "../queries/QueryBuilder";
 import { updateVocabularyAnnotations } from "../queries/update/UpdateChangeQueries";
 import { updateDiagramMetadata } from "../queries/update/UpdateDiagramQueries";
 import { MainView } from "./MainView";
+import { ToastService } from "./ToastService";
 
 interface DiagramAppProps {}
 
@@ -392,6 +393,7 @@ export default class App extends React.Component<
           projectLanguage={this.state.projectLanguage}
           update={() => this.itemPanel.current?.update()}
         />
+        <ToastService />
         <CriticalAlertModal show={this.state.showCriticalAlert} />
       </div>
     );
