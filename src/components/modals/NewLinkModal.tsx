@@ -263,6 +263,7 @@ export default class NewLinkModal extends React.Component<Props, State> {
                     this.setState({ selectedVocabulary: p })
                   }
                   setErrorText={(s) => this.setState({ errorText: s })}
+                  newElemDescription="modalNewRelationshipDescription"
                 />
               )}
             </Form>

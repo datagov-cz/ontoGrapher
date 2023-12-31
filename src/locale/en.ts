@@ -18,6 +18,8 @@ export const en = {
   removeLanguage: "Remove last added language input",
   modalNewTropeDescription:
     "Enter a label for the new trope (these cannot be changed later!):",
+  modalNewRelationshipDescription:
+    "Enter a label for the new relationship (these cannot be changed later!):",
   createTrope: "Create new trope",
   assignExistingTrope: "Assign existing trope",
   noExistingTropes:
