@@ -388,9 +388,10 @@ export function setRepresentation(
               setLinkBoundary(newLink, source, target);
               newLink.addTo(g);
               if (isLinkVertexArrayEmpty(linkID, diag)) {
-                if (source === target) {
-                  setSelfLoopConnectionPoints(newLink, sourceBox.getBBox());
-                }
+                if (source === target)
+                  queries.push(
+                    setSelfLoopConnectionPoints(newLink, sourceBox.getBBox())
+                  );
                 WorkspaceLinks[newLink.id].vertices[diag] = newLink.vertices();
               } else {
                 setLinkVertices(newLink, WorkspaceLinks[linkID].vertices[diag]);
@@ -502,7 +503,7 @@ export function setRepresentation(
   }
 }
 
-export function findLinkSelfLoop(link: joint.dia.Link) {
+function findLinkSelfLoop(link: joint.dia.Link) {
   const id = link.id as string;
   if (
     WorkspaceLinks[id].source === WorkspaceLinks[id].target &&

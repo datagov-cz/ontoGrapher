@@ -1,27 +1,25 @@
 import DeleteIcon from "@mui/icons-material/Delete";
 import InfoIcon from "@mui/icons-material/Info";
-import RemoveCircleIcon from "@mui/icons-material/RemoveCircle";
 import classNames from "classnames";
 import React from "react";
 import { Button, OverlayTrigger, Tooltip } from "react-bootstrap";
+import { Locale } from "../../config/Locale";
 import {
   AppSettings,
   WorkspaceElements,
   WorkspaceTerms,
 } from "../../config/Variables";
+import { CellColors } from "../../config/visual/CellColors";
 import { resetDiagramSelection } from "../../function/FunctionDiagram";
+import { highlightCells, unHighlightCells } from "../../function/FunctionDraw";
 import { isElementHidden } from "../../function/FunctionElem";
 import { getLabelOrBlank } from "../../function/FunctionGetVars";
 import { centerElementInView } from "../../function/FunctionGraph";
 import { ReactComponent as HiddenElementSVG } from "../../svg/hiddenElement.svg";
-import { CellColors } from "../../config/visual/CellColors";
-import { highlightCells, unHighlightCells } from "../../function/FunctionDraw";
-import { Locale } from "../../config/Locale";
 
 interface Props {
   id: string;
   openRemoveItem: (id: string) => void;
-  openRemoveReadOnlyItem: (id: string) => void;
   showDetails: Function;
   readOnly: boolean;
   projectLanguage: string;
@@ -129,28 +127,6 @@ export default class VocabularyConcept extends React.Component<Props, State> {
               }}
             />
           </Button>
-          {this.props.readOnly && (
-            <OverlayTrigger
-              placement="right"
-              delay={{ show: 250, hide: 0 }}
-              overlay={
-                <Tooltip>
-                  {Locale[AppSettings.interfaceLanguage].removeReadOnlyConcept}
-                </Tooltip>
-              }
-            >
-              <Button
-                variant="light"
-                className="plainButton"
-                onClick={(event) => {
-                  event.stopPropagation();
-                  this.props.openRemoveReadOnlyItem(this.props.id);
-                }}
-              >
-                <RemoveCircleIcon />
-              </Button>
-            </OverlayTrigger>
-          )}
           {!this.props.readOnly && (
             <OverlayTrigger
               placement="right"

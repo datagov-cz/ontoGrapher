@@ -42,14 +42,20 @@ export function getOtherConnectionElementID(
 export function setSelfLoopConnectionPoints(
   link: joint.dia.Link,
   bbox?: joint.g.Rect
-) {
+): string {
   const sourcePoint = link.getSourcePoint();
   const offsetX = bbox ? bbox.width / 2 + 50 : sourcePoint.x + 300;
+  const id = link.id as string;
   link.vertices([
     new joint.g.Point(sourcePoint.x, sourcePoint.y + 100),
     new joint.g.Point(sourcePoint.x + offsetX, sourcePoint.y + 100),
     new joint.g.Point(sourcePoint.x + offsetX, sourcePoint.y),
   ]);
+  WorkspaceLinks[id].vertices[AppSettings.selectedDiagram] = link.vertices();
+  return updateProjectLinkVertex(
+    id,
+    WorkspaceLinks[id].vertices[AppSettings.selectedDiagram].map((_, i) => i)
+  );
 }
 
 export function isLinkVertexArrayEmpty(
@@ -190,14 +196,16 @@ export function saveNewLink(
   tid: string,
   representation: Representation = AppSettings.representation
 ): string[] {
+  const queries: string[] = [];
   const type = iri in Links ? Links[iri].type : LinkType.DEFAULT;
   const link = getNewLink(type);
   setLinkBoundary(link, sid, tid);
   const id = link.id as string;
   if (sid === tid)
-    setSelfLoopConnectionPoints(link, paper.findViewByModel(sid).getBBox());
+    queries.push(
+      setSelfLoopConnectionPoints(link, paper.findViewByModel(sid).getBBox())
+    );
   setLinkBoundary(link, sid, tid);
-  const queries: string[] = [];
   if (
     representation === Representation.FULL ||
     type === LinkType.GENERALIZATION

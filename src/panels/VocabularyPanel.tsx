@@ -8,6 +8,7 @@ import {
   FlexDocumentIDTable,
   FlexDocumentSearch,
 } from "../config/FlexDocumentSearch";
+import { LanguageObject } from "../config/Languages";
 import { Locale } from "../config/Locale";
 import {
   AppSettings,
@@ -20,6 +21,7 @@ import {
   CacheSearchResults,
   CacheSearchVocabularies,
 } from "../datatypes/CacheSearchResults";
+import { initLanguageObject } from "../function/FunctionEditVars";
 import { isElementVisible } from "../function/FunctionElem";
 import { filterEquivalent } from "../function/FunctionEquivalents";
 import {
@@ -34,9 +36,6 @@ import VocabularyConcept from "./element/VocabularyConcept";
 import VocabularyFolder from "./element/VocabularyFolder";
 import { VocabularySelector } from "./element/VocabularySelector";
 import ModalRemoveConcept from "./modal/ModalRemoveConcept";
-import ModalRemoveReadOnlyConcept from "./modal/ModalRemoveReadOnlyConcept";
-import { LanguageObject } from "../config/Languages";
-import { initLanguageObject } from "../function/FunctionEditVars";
 
 interface Props {
   projectLanguage: string;
@@ -51,7 +50,6 @@ interface State {
   vocabs: { label: string; value: string }[];
   search: string;
   modalRemoveItem: boolean;
-  modalRemoveReadOnlyItem: boolean;
   selectedElements: string[];
   shownElements: { [key: string]: { [key: string]: string[] } };
   selectedID: string;
@@ -73,7 +71,6 @@ export default class VocabularyPanel extends React.Component<Props, State> {
       vocabs: [],
       search: "",
       modalRemoveItem: false,
-      modalRemoveReadOnlyItem: false,
       selectedElements: AppSettings.selectedElements,
       shownElements: {},
       selectedID: "",
@@ -84,8 +81,6 @@ export default class VocabularyPanel extends React.Component<Props, State> {
     };
     this.handleChangeSearch = this.handleChangeSearch.bind(this);
     this.handleOpenRemoveItemModal = this.handleOpenRemoveItemModal.bind(this);
-    this.handleOpenRemoveReadOnlyItemModal =
-      this.handleOpenRemoveReadOnlyItemModal.bind(this);
     this.updateElements = this.updateElements.bind(this);
     this.filter = this.filter.bind(this);
     this.update = this.update.bind(this);
@@ -224,6 +219,11 @@ export default class VocabularyPanel extends React.Component<Props, State> {
             )
         )
         .forEach((elem) => {
+          if (
+            WorkspaceVocabularies[vocab].readOnly &&
+            Object.values(WorkspaceElements[elem].hidden).every((e) => e)
+          )
+            return;
           const types = WorkspaceTerms[elem].types;
           for (const key in Shapes) {
             if (filterEquivalent(types, key)) {
@@ -242,13 +242,6 @@ export default class VocabularyPanel extends React.Component<Props, State> {
     this.setState({
       selectedID: id,
       modalRemoveItem: true,
-    });
-  }
-
-  handleOpenRemoveReadOnlyItemModal(id: string) {
-    this.setState({
-      selectedID: id,
-      modalRemoveReadOnlyItem: true,
     });
   }
 
@@ -276,7 +269,6 @@ export default class VocabularyPanel extends React.Component<Props, State> {
               readOnly={WorkspaceVocabularies[vocabulary].readOnly}
               update={this.updateElements}
               openRemoveItem={this.handleOpenRemoveItemModal}
-              openRemoveReadOnlyItem={this.handleOpenRemoveReadOnlyItemModal}
               showDetails={this.props.updateDetailPanel}
             />
           );
@@ -461,18 +453,6 @@ export default class VocabularyPanel extends React.Component<Props, State> {
             }}
             performTransaction={this.props.performTransaction}
             projectLanguage={this.props.projectLanguage}
-          />
-          <ModalRemoveReadOnlyConcept
-            modal={this.state.modalRemoveReadOnlyItem}
-            id={this.state.selectedID}
-            close={() => {
-              this.setState({ modalRemoveReadOnlyItem: false });
-            }}
-            update={() => {
-              this.updateElements(true);
-              this.props.update();
-            }}
-            performTransaction={this.props.performTransaction}
           />
         </div>
       </ResizableBox>
