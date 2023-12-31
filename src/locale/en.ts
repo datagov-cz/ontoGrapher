@@ -56,7 +56,7 @@ export const en = {
   modalNewElemLengthError: "The name must have between 2 and 150 characters.",
   modalNewElemCharacterError: "The name has to have non-special characters.",
   modalNewElemIRI: "The term will be created using IRI:",
-  terms: "terms",
+  term: "term",
   termsCase: "terms",
   authenticationError:
     "Authentication error. Please contact the server administrator.",
