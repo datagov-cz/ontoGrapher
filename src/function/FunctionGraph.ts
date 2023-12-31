@@ -364,11 +364,9 @@ export function setRepresentation(
             const targetBox = g
               .getElements()
               .find((elem) => elem.id === target);
-            let linkID = Object.keys(WorkspaceLinks).find(
+            let linkID = getActiveSourceConnections(source).find(
               (link) =>
-                WorkspaceLinks[link].active &&
                 WorkspaceLinks[link].iri === id &&
-                WorkspaceLinks[link].source === source &&
                 WorkspaceLinks[link].target === target
             );
             if (!linkID) {

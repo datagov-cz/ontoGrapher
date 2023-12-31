@@ -1,11 +1,12 @@
 import * as joint from "jointjs";
-import _ from "lodash";
 import { Representation } from "../config/Enum";
 import {
   AppSettings,
   WorkspaceElements,
   WorkspaceTerms,
 } from "../config/Variables";
+import { CellColors } from "../config/visual/CellColors";
+import { Shapes } from "../config/visual/Shapes";
 import { graph } from "../graph/Graph";
 import { LanguageObject } from "./../config/Languages";
 import {
@@ -18,14 +19,12 @@ import {
   parsePrefix,
   setElementShape,
 } from "./FunctionEditVars";
+import { filterEquivalent } from "./FunctionEquivalents";
 import {
   getElementShape,
   getIntrinsicTropeTypeIDs,
   getLabelOrBlank,
 } from "./FunctionGetVars";
-import { CellColors } from "../config/visual/CellColors";
-import { filterEquivalent } from "./FunctionEquivalents";
-import { Shapes } from "../config/visual/Shapes";
 
 export function getListClassNamesObject(arr: any[], i: number) {
   return {
@@ -83,9 +82,9 @@ export function drawGraphElement(
     const text: string[] = [];
     if (representation === Representation.COMPACT) {
       text.push(
-        ..._.uniq(getIntrinsicTropeTypeIDs(elem.id))
-          .map((id) => getDisplayLabel(id, languageCode))
-          .sort()
+        ...getIntrinsicTropeTypeIDs(elem.id).map((id) =>
+          getDisplayLabel(id, languageCode)
+        )
       );
     }
     elem.prop("attrs/labelAttrs/text", text.join("\n"));

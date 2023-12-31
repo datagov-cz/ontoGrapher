@@ -8,16 +8,20 @@ import { Cardinality } from "../../datatypes/Cardinality";
 function getUserSettings(): { [key: string]: string } {
   return {
     "og:viewColor": qb.ll(AppSettings.viewColorPool),
-    "og:sourceCardinality1":
-      AppSettings.defaultCardinalitySource.getFirstCardinality(),
-    "og:sourceCardinality2":
-      AppSettings.defaultCardinalitySource.getSecondCardinality(),
-    "og:targetCardinality1":
-      AppSettings.defaultCardinalityTarget.getFirstCardinality(),
-    "og:targetCardinality2":
-      AppSettings.defaultCardinalityTarget.getSecondCardinality(),
-    "og:interfaceLanguage": AppSettings.interfaceLanguage,
-    "og:canvasLanguage": AppSettings.canvasLanguage,
+    "og:sourceCardinality1": qb.ll(
+      AppSettings.defaultCardinalitySource.getFirstCardinality()
+    ),
+    "og:sourceCardinality2": qb.ll(
+      AppSettings.defaultCardinalitySource.getSecondCardinality()
+    ),
+    "og:targetCardinality1": qb.ll(
+      AppSettings.defaultCardinalityTarget.getFirstCardinality()
+    ),
+    "og:targetCardinality2": qb.ll(
+      AppSettings.defaultCardinalityTarget.getSecondCardinality()
+    ),
+    "og:interfaceLanguage": qb.ll(AppSettings.interfaceLanguage),
+    "og:canvasLanguage": qb.ll(AppSettings.canvasLanguage),
   };
 }
 
@@ -26,6 +30,7 @@ export function updateUserSettings(): string {
   const userGraph = Users[AppSettings.currentUser!].graph;
   const userIRI = AppSettings.currentUser!;
   const userSettings = getUserSettings();
+  console.log(userGraph);
 
   const insert = INSERT.DATA`${qb.g(
     userGraph,
@@ -35,7 +40,7 @@ export function updateUserSettings(): string {
   )}`.build();
 
   const delPredObjs = qb.g(
-    qb.i(userGraph),
+    userGraph,
     Object.keys(userSettings).map((po, i) => qb.s(qb.i(userIRI), po, `?v${i}`))
   );
 
@@ -48,6 +53,7 @@ export async function fetchUserSettings(): Promise<boolean> {
   const userGraph = Users[AppSettings.currentUser!].graph;
   const userIRI = AppSettings.currentUser!;
   const query: string = [
+    "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
     "select * where {",
     `graph ${qb.i(userGraph)} {`,
     Object.keys(getUserSettings()).map((k) =>
@@ -62,7 +68,7 @@ export async function fetchUserSettings(): Promise<boolean> {
     .then((data) => {
       if (data.results.bindings.length === 0) return false;
       for (const result of data.results.bindings) {
-        AppSettings.viewColorPool = result.viewColorPool.value;
+        AppSettings.viewColorPool = result.viewColor.value;
         AppSettings.interfaceLanguage = result.interfaceLanguage.value;
         AppSettings.canvasLanguage = result.canvasLanguage.value;
         AppSettings.defaultCardinalitySource = new Cardinality(

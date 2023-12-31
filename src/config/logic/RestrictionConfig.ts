@@ -48,9 +48,8 @@ function createConnection(iri: string, restriction: Restriction) {
 
 function createCardinality(iri: string, restriction: Restriction) {
   if (iri && restriction.target && restriction.onClass) {
-    const linkID = Object.keys(WorkspaceLinks).find(
+    const linkID = getActiveSourceConnections(restriction.source).find(
       (link) =>
-        getActiveSourceConnections(restriction.source).includes(link) &&
         WorkspaceLinks[link].iri === restriction.onProperty &&
         restriction.onClass === WorkspaceLinks[link].target
     );

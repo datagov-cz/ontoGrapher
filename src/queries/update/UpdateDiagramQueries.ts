@@ -27,7 +27,7 @@ function getDiagramTriples(diagram: string): string {
       qb.s(
         diagramIRI,
         "og:collaborator",
-        qb.a(Diagrams[diagram].collaborators),
+        qb.a(Diagrams[diagram].collaborators.map((c) => qb.i(c))),
         Diagrams[diagram].collaborators.length > 0
       )
     );
@@ -214,7 +214,7 @@ export function updateDiagramMetadata(diagram: string): string {
     qb.s(
       qb.i(diagramIRI),
       "og:collaborator",
-      qb.a(Diagrams[diagram].collaborators),
+      qb.a(Diagrams[diagram].collaborators.map((c) => qb.i(c))),
       Diagrams[diagram].collaborators.length > 0
     ),
   ])}`.build();
