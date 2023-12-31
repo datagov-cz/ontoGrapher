@@ -10,11 +10,15 @@ import { AppSettings, Users } from "../../../config/Variables";
 export const MenuPanelAvatar: React.FC = () => {
   const { logout, user } = useAuth();
 
+  const getUserIRI: (user: string) => string = (user: string) =>
+    `${AppSettings.cacheContext}/uživatel/${user}`;
+
   useEffect(() => {
-    AppSettings.currentUser = user.profile.sub;
-    Users[user.profile.sub] = {
+    AppSettings.currentUser = getUserIRI(user.profile.sub);
+    Users[AppSettings.currentUser] = {
       given_name: user.profile.given_name,
       family_name: user.profile.family_name,
+      graph: "https://slovník.gov.cz/uživatel",
     };
   }, [user]);
 

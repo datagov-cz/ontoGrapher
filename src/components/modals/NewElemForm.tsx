@@ -20,14 +20,16 @@ import { Flags } from "../LanguageSelector";
 import * as _ from "lodash";
 import { ListLanguageControls } from "../../panels/detail/components/items/ListLanguageControls";
 import { Environment } from "../../config/Environment";
+import { en } from "../../locale/en";
 
 interface Props {
   termName: LanguageObject;
   selectedVocabulary: string;
   errorText: string;
   setTermName: (s: string, l: string) => void;
-  setSelectedVocabulary: (p: string) => void;
+  setSelectedVocabulary?: (p: string) => void;
   setErrorText: (s: string) => void;
+  newElemDescription?: keyof typeof en;
 }
 
 export const NewElemForm: React.FC<Props> = (props) => {
@@ -96,7 +98,7 @@ export const NewElemForm: React.FC<Props> = (props) => {
     const pkg = Object.keys(WorkspaceVocabularies).find(
       (pkg) => pkg === event.currentTarget.value
     );
-    if (pkg) props.setSelectedVocabulary(pkg);
+    if (pkg && props.setSelectedVocabulary) props.setSelectedVocabulary(pkg);
     else
       console.error(`Vocabulary ${pkg} not found within the vocabulary list.`);
     props.setErrorText(
@@ -109,7 +111,13 @@ export const NewElemForm: React.FC<Props> = (props) => {
 
   return (
     <div>
-      <p>{Locale[AppSettings.interfaceLanguage].modalNewElemDescription}</p>
+      <p>
+        {
+          Locale[AppSettings.interfaceLanguage][
+            props.newElemDescription ?? "modalNewElemDescription"
+          ]
+        }
+      </p>
       {activatedInputs.map((lang, i) => (
         <InputGroup key={i}>
           <InputGroup.Text>
@@ -164,6 +172,7 @@ export const NewElemForm: React.FC<Props> = (props) => {
           value={props.selectedVocabulary}
           onChange={(event) => handleChangeSelect(event)}
           disabled={
+            !!!props.setSelectedVocabulary ||
             Object.keys(WorkspaceVocabularies).filter(
               (vocab) => !WorkspaceVocabularies[vocab].readOnly
             ).length <= 1

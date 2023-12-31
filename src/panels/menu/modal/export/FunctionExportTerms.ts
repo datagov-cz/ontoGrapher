@@ -14,7 +14,7 @@ import {
 } from "../../../../function/FunctionElem";
 import {
   getIntrinsicTropeTypeIDs,
-  getActiveToConnections,
+  getActiveSourceConnections,
 } from "../../../../function/FunctionGetVars";
 
 type exportTermObject = { [key: string]: string[] };
@@ -109,7 +109,7 @@ export const exportFunctions: {
     );
     // we don't treat code lists any differently for now
     Object.keys(exportTerms).forEach((t) => {
-      const activeToConnections = getActiveToConnections(t);
+      const activeToConnections = getActiveSourceConnections(t);
       exportTerms[t].push(...getIntrinsicTropeTypeIDs(t));
       exportTerms[t].push(
         ..._.intersection(
@@ -121,7 +121,7 @@ export const exportFunctions: {
         ...simpleEvents.filter(
           (e) =>
             activeToConnections.find((c) => WorkspaceLinks[c].target === e) ||
-            getActiveToConnections(e).find(
+            getActiveSourceConnections(e).find(
               (c) => WorkspaceLinks[c].target === t
             )
         )

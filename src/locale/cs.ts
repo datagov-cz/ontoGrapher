@@ -18,6 +18,8 @@ export const cs: { [Property in keyof typeof en]: string } = {
   addLanguage: "Přidat vstup pro další jazyk",
   modalNewTropeDescription:
     "Jméno pro novou vlastnost (nelze později změnit!):",
+  modalNewRelationshipDescription:
+    "Jméno pro nový vztah (nelze později změnit!):",
   createTrope: "Vytvořit novou vlastnost",
   assignExistingTrope: "Přiřadit existující vlastnost",
   noExistingTropes:
@@ -56,7 +58,7 @@ export const cs: { [Property in keyof typeof en]: string } = {
   modalNewElemLengthError: "Jméno musí mít mezi 2 a 150 znaky.",
   modalNewElemCharacterError: "Jméno nemůže mít jenom speciální znaky.",
   modalNewElemIRI: "Pojem bude vytvořen s tímto IRI:",
-  terms: "pojmy",
+  term: "pojem",
   termsCase: "pojmů",
   fromList: "Ze seznamu",
   otherVocabularies: "Ostatní slovníky",

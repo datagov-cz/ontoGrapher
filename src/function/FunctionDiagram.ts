@@ -12,7 +12,7 @@ import { isElementHidden } from "./FunctionElem";
 export function changeDiagrams(diagram?: string) {
   if (!diagram) {
     const availableDiagrams = Object.keys(Diagrams).filter(
-      (diag) => Diagrams[diag].active && !Diagrams[diag].toBeDeleted
+      (diag) => Diagrams[diag].open && !Diagrams[diag].toBeDeleted
     );
     if (availableDiagrams.length > 0) {
       diagram = availableDiagrams.reduce((a, b) =>

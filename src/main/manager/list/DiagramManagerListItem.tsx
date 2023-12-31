@@ -61,7 +61,7 @@ export const DiagramManagerListItem: React.FC<Props> = (props: Props) => {
         {(props.selected || hovered) && (
           <span className="options">
             &nbsp;
-            {!Diagrams[props.diagram].active && (
+            {!Diagrams[props.diagram].open && (
               <OverlayTrigger
                 placement={"bottom"}
                 overlay={
@@ -73,7 +73,7 @@ export const DiagramManagerListItem: React.FC<Props> = (props: Props) => {
                 <Button
                   onClick={(e) => {
                     e.stopPropagation();
-                    Diagrams[props.diagram].active = true;
+                    Diagrams[props.diagram].open = true;
                     saveActive(props.diagram);
                     props.update();
                   }}
@@ -84,7 +84,7 @@ export const DiagramManagerListItem: React.FC<Props> = (props: Props) => {
                 </Button>
               </OverlayTrigger>
             )}
-            {Diagrams[props.diagram].active && (
+            {Diagrams[props.diagram].open && (
               <OverlayTrigger
                 placement={"bottom"}
                 overlay={
@@ -96,7 +96,7 @@ export const DiagramManagerListItem: React.FC<Props> = (props: Props) => {
                 <Button
                   onClick={(e) => {
                     e.stopPropagation();
-                    Diagrams[props.diagram].active = false;
+                    Diagrams[props.diagram].open = false;
                     saveActive(props.diagram);
                     props.update();
                   }}

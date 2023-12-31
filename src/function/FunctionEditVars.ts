@@ -18,7 +18,8 @@ import { graph } from "../graph/Graph";
 import { updateDeleteTriples } from "../queries/update/UpdateMiscQueries";
 import { addClass } from "./FunctionCreateVars";
 import {
-  getActiveToConnections,
+  getActiveSourceConnections,
+  getActiveTargetConnections,
   getLocalStorageKey,
   getVocabularyFromScheme,
   loadDefaultCardinality,
@@ -126,7 +127,7 @@ export function removeNewlines(str: string): string {
 
 export function deleteConcept(id: string): string[] {
   let queries: string[] = [];
-  for (const connection of getActiveToConnections(id)) {
+  for (const connection of getActiveSourceConnections(id)) {
     WorkspaceLinks[connection].active = false;
     queries.push(
       updateDeleteTriples(
@@ -138,10 +139,7 @@ export function deleteConcept(id: string): string[] {
       )
     );
   }
-  const targets = Object.keys(WorkspaceLinks).filter(
-    (link) => WorkspaceLinks[link].target === id
-  );
-  for (const connection of targets) {
+  for (const connection of getActiveTargetConnections(id)) {
     WorkspaceLinks[connection].active = false;
     queries.push(
       updateDeleteTriples(

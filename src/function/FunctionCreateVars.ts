@@ -23,6 +23,7 @@ import {
   getNewDiagramIRI,
   getVocabularyFromScheme,
 } from "./FunctionGetVars";
+import { Environment } from "../config/Environment";
 
 export function createValues(
   values: { [key: string]: string[] },
@@ -41,13 +42,12 @@ export function createValues(
 export function createNewElemIRI(scheme: string, name: string): string {
   return (
     (WorkspaceVocabularies[getVocabularyFromScheme(scheme)].namespace ||
-      `${scheme}/${Locale[AppSettings.defaultLanguage].terms}/`) +
+      `${scheme}/${Locale[Environment.language].term}/`) +
     name
       .toLowerCase()
       .trim()
       .normalize()
-      .replace(/[\s\\]/g, "-")
-      .replace(/[/]/g, encodeURIComponent("/"))
+      .replace(/[\s\\/]/g, "-")
       .replace(/[(?&)"^<>]/g, "")
   );
 }
@@ -109,12 +109,14 @@ export function addClass(id: string, active: boolean = true) {
     position: { [AppSettings.selectedDiagram]: { x: 0, y: 0 } },
     active: active,
     selectedLabel: initLanguageObject(""),
+    sourceLinks: [],
+    targetLinks: [],
   };
 }
 
 export function addDiagram(
   name: string,
-  active: boolean = true,
+  open: boolean = true,
   representation: Representation = Representation.COMPACT,
   index?: number,
   iri?: string,
@@ -135,7 +137,7 @@ export function addDiagram(
         : 0;
   Diagrams[diagramID] = {
     name: name,
-    active: active,
+    open: open,
     origin: { x: 0, y: 0 },
     scale: 1,
     index: index,
@@ -174,4 +176,8 @@ export function addLink(
     hasInverse: type !== LinkType.GENERALIZATION && iri in Links,
     linkIRI: getOntographerLinkIRI(id),
   };
+  if (source in WorkspaceElements && target in WorkspaceElements) {
+    WorkspaceElements[source].sourceLinks.push(id);
+    WorkspaceElements[target].targetLinks.push(id);
+  }
 }

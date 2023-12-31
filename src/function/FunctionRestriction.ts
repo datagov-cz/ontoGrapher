@@ -5,7 +5,7 @@ import {
   WorkspaceTerms,
 } from "../config/Variables";
 import { Restriction } from "../datatypes/Restriction";
-import { getActiveToConnections, getNewLink } from "./FunctionGetVars";
+import { getActiveSourceConnections, getNewLink } from "./FunctionGetVars";
 import { LinkType } from "../config/Enum";
 import { addLink } from "./FunctionCreateVars";
 import { parsePrefix } from "./FunctionEditVars";
@@ -23,7 +23,7 @@ export function createRestriction(
 }
 
 export function initConnections(): { add: string[]; del: string[] } {
-  const linksToPush = [];
+  const linksToPush: string[] = [];
   const linksToDelete: string[] = Object.keys(WorkspaceLinks);
   const restrictions = Object.keys(WorkspaceTerms).flatMap(
     (term) => WorkspaceTerms[term].restrictions
@@ -31,7 +31,7 @@ export function initConnections(): { add: string[]; del: string[] } {
   for (const restriction of restrictions) {
     if (restriction.onClass) restriction.initRestriction(restriction.source);
     else {
-      const find = getActiveToConnections(restriction.source).find(
+      const find = getActiveSourceConnections(restriction.source).find(
         (conn) =>
           WorkspaceLinks[conn].iri === restriction.onProperty &&
           WorkspaceLinks[conn].target === restriction.target
@@ -50,7 +50,7 @@ export function initConnections(): { add: string[]; del: string[] } {
         const rangeID = Object.keys(WorkspaceElements).find(
           (element) => element === subClassOf
         );
-        const find = getActiveToConnections(iri).find(
+        const find = getActiveSourceConnections(iri).find(
           (conn) => WorkspaceLinks[conn].target === subClassOf
         );
         if (find) _.pull(linksToDelete, find);
@@ -74,7 +74,7 @@ export function initConnections(): { add: string[]; del: string[] } {
         parsePrefix("z-sgov-pojem", "typ-vztahu")
       )
     ) {
-      const connections: string[] = getActiveToConnections(iri);
+      const connections: string[] = getActiveSourceConnections(iri);
       if (connections.length > 1) {
         const sourceLink: string | undefined = connections.find(
           (src) => WorkspaceLinks[src].iri === mvp1IRI

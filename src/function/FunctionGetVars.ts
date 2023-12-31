@@ -1,12 +1,12 @@
 import { getVocabularyShortLabel } from "@opendata-mvcr/assembly-line-shared";
 import * as joint from "jointjs";
+import _ from "lodash";
 import { Representation } from "../config/Enum";
-import { LocalStorageVars } from "../config/LocalStorageVars";
 import { Locale } from "../config/Locale";
+import { LocalStorageVars } from "../config/LocalStorageVars";
 import {
   AppSettings,
   Links,
-  WorkspaceElements,
   WorkspaceLinks,
   WorkspaceTerms,
   WorkspaceVocabularies,
@@ -17,6 +17,7 @@ import { CacheSearchVocabularies } from "../datatypes/CacheSearchResults";
 import { Cardinality } from "../datatypes/Cardinality";
 import { en } from "../locale/en";
 import { LinkConfig } from "../queries/update/UpdateConnectionQueries";
+import { WorkspaceElements } from "./../config/Variables";
 import { cutoffString, parsePrefix } from "./FunctionEditVars";
 import { filterEquivalent, getEquivalents } from "./FunctionEquivalents";
 import { mvp1IRI, mvp2IRI } from "./FunctionGraph";
@@ -149,9 +150,15 @@ export function getElementShape(id: string | number): string {
   return Shapes["default"].body;
 }
 
-export function getActiveToConnections(iri: string): string[] {
-  return Object.keys(WorkspaceLinks).filter(
-    (id) => WorkspaceLinks[id].source === iri && WorkspaceLinks[id].active
+export function getActiveSourceConnections(iri: string): string[] {
+  return WorkspaceElements[iri].sourceLinks.filter(
+    (id) => WorkspaceLinks[id].active
+  );
+}
+
+export function getActiveTargetConnections(iri: string): string[] {
+  return WorkspaceElements[iri].targetLinks.filter(
+    (id) => WorkspaceLinks[id].active
   );
 }
 
@@ -165,16 +172,13 @@ export function getUnderlyingFullConnections(
   if (sourceElem && targetElem) {
     const preds = Object.keys(WorkspaceElements).filter((id) => id === iri);
     for (const pred of preds) {
-      const connections = getActiveToConnections(pred);
-      const sourceLink = Object.keys(WorkspaceLinks).find(
+      const sourceLink = getActiveSourceConnections(pred).find(
         (id) =>
-          connections.includes(id) &&
           WorkspaceLinks[id].iri === mvp1IRI &&
           WorkspaceLinks[id].target === sourceElem
       );
-      const targetLink = Object.keys(WorkspaceLinks).find(
+      const targetLink = getActiveSourceConnections(pred).find(
         (id) =>
-          getActiveToConnections(pred).includes(id) &&
           WorkspaceLinks[id].iri === mvp2IRI &&
           WorkspaceLinks[id].target === targetElem
       );
@@ -229,17 +233,18 @@ export function isTermReadOnly(iri: string) {
 }
 
 export function getParentOfIntrinsicTropeType(tropeID: string) {
-  const connections = Object.keys(WorkspaceLinks).filter((link) => {
-    return (
-      ([
-        ...getEquivalents(parsePrefix("z-sgov-pojem", "je-vlastností")),
-        ...getEquivalents(parsePrefix("z-sgov-pojem", "má-vlastnost")),
-      ].includes(WorkspaceLinks[link].iri) &&
-        WorkspaceLinks[link].active &&
-        WorkspaceLinks[link].source === tropeID) ||
-      WorkspaceLinks[link].target === tropeID
-    );
-  });
+  const connections = getActiveSourceConnections(tropeID)
+    .concat(getActiveTargetConnections(tropeID))
+    .filter((link) => {
+      return (
+        ([
+          ...getEquivalents(parsePrefix("z-sgov-pojem", "je-vlastností")),
+          ...getEquivalents(parsePrefix("z-sgov-pojem", "má-vlastnost")),
+        ].includes(WorkspaceLinks[link].iri) &&
+          WorkspaceLinks[link].source === tropeID) ||
+        WorkspaceLinks[link].target === tropeID
+      );
+    });
   return connections.map((link) =>
     WorkspaceLinks[link].source === tropeID
       ? WorkspaceLinks[link].target
@@ -251,34 +256,35 @@ export function getIntrinsicTropeTypeIDs(
   id: string,
   returnLinkIDs: boolean = false
 ) {
-  return Object.keys(WorkspaceLinks)
-    .filter(
-      (link) =>
-        WorkspaceLinks[link].active &&
-        WorkspaceLinks[link].source === id &&
-        getEquivalents(parsePrefix("z-sgov-pojem", "má-vlastnost")).includes(
-          WorkspaceLinks[link].iri
-        ) &&
-        filterEquivalent(
-          WorkspaceTerms[WorkspaceLinks[link].target].types,
-          parsePrefix("z-sgov-pojem", "typ-vlastnosti")
-        )
-    )
-    .map((link) => (returnLinkIDs ? link : WorkspaceLinks[link].target))
-    .concat(
-      Object.keys(WorkspaceLinks)
-        .filter(
-          (link) =>
-            WorkspaceLinks[link].active &&
-            WorkspaceLinks[link].target === id &&
-            getEquivalents(
-              parsePrefix("z-sgov-pojem", "je-vlastností")
-            ).includes(WorkspaceLinks[link].iri) &&
-            filterEquivalent(
-              WorkspaceTerms[WorkspaceLinks[link].source].types,
-              parsePrefix("z-sgov-pojem", "typ-vlastnosti")
-            )
-        )
-        .map((link) => (returnLinkIDs ? link : WorkspaceLinks[link].source))
-    );
+  return _.uniq(
+    getActiveSourceConnections(id)
+      .filter(
+        (link) =>
+          WorkspaceLinks[link].active &&
+          getEquivalents(parsePrefix("z-sgov-pojem", "má-vlastnost")).includes(
+            WorkspaceLinks[link].iri
+          ) &&
+          filterEquivalent(
+            WorkspaceTerms[WorkspaceLinks[link].target].types,
+            parsePrefix("z-sgov-pojem", "typ-vlastnosti")
+          )
+      )
+      .map((link) => (returnLinkIDs ? link : WorkspaceLinks[link].target))
+      .concat(
+        getActiveTargetConnections(id)
+          .filter(
+            (link) =>
+              WorkspaceLinks[link].active &&
+              getEquivalents(
+                parsePrefix("z-sgov-pojem", "je-vlastností")
+              ).includes(WorkspaceLinks[link].iri) &&
+              filterEquivalent(
+                WorkspaceTerms[WorkspaceLinks[link].source].types,
+                parsePrefix("z-sgov-pojem", "typ-vlastnosti")
+              )
+          )
+          .map((link) => (returnLinkIDs ? link : WorkspaceLinks[link].source))
+      )
+      .sort()
+  );
 }

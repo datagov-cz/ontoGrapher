@@ -2,7 +2,7 @@ import { Restriction } from "../../datatypes/Restriction";
 import { AppSettings, WorkspaceLinks, WorkspaceTerms } from "../Variables";
 import { addLink } from "../../function/FunctionCreateVars";
 import {
-  getActiveToConnections,
+  getActiveSourceConnections,
   getNewLink,
 } from "../../function/FunctionGetVars";
 import { LinkType } from "../Enum";
@@ -33,7 +33,7 @@ export const RestrictionConfig: {
 function createConnection(iri: string, restriction: Restriction) {
   if (restriction.inverse) return;
   const target = restriction.target;
-  const find = getActiveToConnections(iri).find(
+  const find = getActiveSourceConnections(iri).find(
     (conn) =>
       WorkspaceLinks[conn].iri === restriction.onProperty &&
       WorkspaceLinks[conn].target === target
@@ -48,9 +48,8 @@ function createConnection(iri: string, restriction: Restriction) {
 
 function createCardinality(iri: string, restriction: Restriction) {
   if (iri && restriction.target && restriction.onClass) {
-    const linkID = Object.keys(WorkspaceLinks).find(
+    const linkID = getActiveSourceConnections(restriction.source).find(
       (link) =>
-        getActiveToConnections(restriction.source).includes(link) &&
         WorkspaceLinks[link].iri === restriction.onProperty &&
         restriction.onClass === WorkspaceLinks[link].target
     );

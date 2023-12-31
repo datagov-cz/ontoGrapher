@@ -17,7 +17,7 @@ import {
   parsePrefix,
 } from "../../function/FunctionEditVars";
 import {
-  getActiveToConnections,
+  getActiveSourceConnections,
   getVocabularyFromScheme,
 } from "../../function/FunctionGetVars";
 import { generalizationLink } from "../../graph/uml/GeneralizationLink";
@@ -300,7 +300,7 @@ function updateGeneralizationLink(ids: string[]): string {
     const vocabulary = getVocabularyFromScheme(WorkspaceTerms[iri].inScheme);
     checkReadOnlyVocabulary(vocabulary);
     const contextIRI = WorkspaceVocabularies[vocabulary].graph;
-    const subClassOf: string[] = getActiveToConnections(
+    const subClassOf: string[] = getActiveSourceConnections(
       WorkspaceLinks[id].source
     )
       .filter((conn) => WorkspaceLinks[conn].type === LinkType.GENERALIZATION)

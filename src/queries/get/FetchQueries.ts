@@ -201,6 +201,7 @@ export async function fetchBaseOntology(
     });
 }
 
+//TODO: hot
 export async function fetchRestrictions(
   endpoint: string,
   terms: { [key: string]: any },
@@ -220,7 +221,7 @@ export async function fetchRestrictions(
   const query = [
     "PREFIX skos: <http://www.w3.org/2004/02/skos/core#>",
     "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>",
-    "PREFIX z-sgov-pojem: <https://slovník.gov.cz/základní/pojem/>",
+    "PREFIX owl: <http://www.w3.org/2002/07/owl#>",
     "SELECT ?term ?inverseOnProperty ?restrictionPred ?onProperty ?onClass ?target",
     "WHERE {",
     graph && "GRAPH <" + graph + "> {",
@@ -388,16 +389,14 @@ export async function fetchTerms(
 
 export async function fetchUsers(...ids: string[]): Promise<boolean> {
   if (ids.length === 0) return false;
-  function getUserID(iri: string): string {
-    return iri.replaceAll("https://slovník.gov.cz/uživatel/", "");
-  }
   const query = [
     `PREFIX a-popis-dat-pojem: ${qb.i(Prefixes["a-popis-dat-pojem"])}`,
-    "select ?id ?first ?last where {",
+    "select ?id ?first ?last ?graph where {",
+    "graph ?graph {",
     "?id a-popis-dat-pojem:má-křestní-jméno ?first.",
     "?id a-popis-dat-pojem:má-příjmení ?last.",
     `values ?id {<${ids.join("> <")}>}`,
-    "}",
+    "}}",
   ].join(`
   `);
 
@@ -407,9 +406,10 @@ export async function fetchUsers(...ids: string[]): Promise<boolean> {
     })
     .then((data) => {
       for (const result of data.results.bindings) {
-        const id = getUserID(result.id.value);
+        const id = result.id.value;
         if (!(id in Users)) {
           Users[id] = {
+            graph: result.graph.value,
             given_name: result.first.value,
             family_name: result.last.value,
           };

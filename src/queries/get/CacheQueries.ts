@@ -84,7 +84,8 @@ export async function fetchSubClasses(
       AppSettings.cacheContext +
       "> <https://slovník.gov.cz/datový/pracovní-prostor/pojem/odkazuje-na-kontext> ?graph.",
     "}",
-  ].join(" ");
+  ].join(`
+  `);
   return await processQuery(endpoint, query)
     .then((response) => response.json())
     .then((data) => {
@@ -107,8 +108,9 @@ export async function fetchRelationships(
   terms: string[]
 ): Promise<{ [key: string]: Restriction[] }> {
   const result: { [key: string]: Restriction[] } = {};
-  for (let i = 0; i < Math.ceil(terms.length / 25); i++) {
-    const termSlice = terms.slice(i * 25, (i + 1) * 25);
+  const sliceSize: number = 50;
+  for (let i = 0; i < Math.ceil(terms.length / sliceSize); i++) {
+    const termSlice = terms.slice(i * sliceSize, (i + 1) * sliceSize);
     const query = [
       "SELECT ?graph ?term ?restrictionPred ?target ?onProperty ?onClass WHERE {",
       "graph ?graph {",
@@ -189,7 +191,8 @@ export async function searchCache(
       ? "VALUES ?vocabulary {<" + limitToVocabularies.join("> <") + ">}"
       : "",
     "}",
-  ].join(" ");
+  ].join(`
+  `);
   return await processQuery(endpoint, query)
     .then((response) => response.json())
     .then((json) => {
@@ -225,8 +228,9 @@ export async function fetchReadOnlyTerms(
   terms: string[]
 ): Promise<typeof WorkspaceTerms> {
   const result: typeof WorkspaceTerms = {};
-  for (let i = 0; i < Math.ceil(terms.length / 25); i++) {
-    const termSlice = terms.slice(i * 25, (i + 1) * 25);
+  const sliceSize: number = 50;
+  for (let i = 0; i < Math.ceil(terms.length / sliceSize); i++) {
+    const termSlice = terms.slice(i * sliceSize, (i + 1) * sliceSize);
     const query = [
       "PREFIX skos: <http://www.w3.org/2004/02/skos/core#>",
       "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>",
@@ -256,7 +260,8 @@ export async function fetchReadOnlyTerms(
         AppSettings.cacheContext +
         "> <https://slovník.gov.cz/datový/pracovní-prostor/pojem/odkazuje-na-kontext> ?graph.",
       "}",
-    ].join(" ");
+    ].join(`
+    `);
     await processQuery(contextEndpoint, query)
       .then((response) => response.json())
       .then((data) => {
@@ -386,7 +391,8 @@ export async function fetchFullRelationships(
       AppSettings.cacheContext +
       "> <https://slovník.gov.cz/datový/pracovní-prostor/pojem/odkazuje-na-kontext> ?graph.",
     "}",
-  ].join(" ");
+  ].join(`
+  `);
   const relationships: {
     relation: string;
     target: string;

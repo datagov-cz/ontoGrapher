@@ -18,6 +18,8 @@ export const en = {
   removeLanguage: "Remove last added language input",
   modalNewTropeDescription:
     "Enter a label for the new trope (these cannot be changed later!):",
+  modalNewRelationshipDescription:
+    "Enter a label for the new relationship (these cannot be changed later!):",
   createTrope: "Create new trope",
   assignExistingTrope: "Assign existing trope",
   noExistingTropes:
@@ -54,7 +56,7 @@ export const en = {
   modalNewElemLengthError: "The name must have between 2 and 150 characters.",
   modalNewElemCharacterError: "The name has to have non-special characters.",
   modalNewElemIRI: "The term will be created using IRI:",
-  terms: "terms",
+  term: "term",
   termsCase: "terms",
   authenticationError:
     "Authentication error. Please contact the server administrator.",

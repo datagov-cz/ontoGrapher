@@ -3,6 +3,7 @@ import { Alert } from "react-bootstrap";
 import TableList from "../components/TableList";
 import { callCriticalAlert } from "../config/CriticalAlertData";
 import { MainViewMode } from "../config/Enum";
+import { Environment } from "../config/Environment";
 import { Locale } from "../config/Locale";
 import { StoreSettings } from "../config/Store";
 import {
@@ -47,12 +48,9 @@ import {
 } from "../queries/get/InitQueries";
 import { updateDeleteDiagram } from "../queries/update/UpdateDiagramQueries";
 import { updateProjectElement } from "../queries/update/UpdateElementQueries";
-import {
-  updateDeleteProjectLink,
-  updateProjectLinkParallel,
-} from "../queries/update/UpdateLinkQueries";
+import { updateProjectLinkParallel } from "../queries/update/UpdateLinkQueries";
+import { fetchUserSettings } from "../queries/update/UpdateMiscQueries";
 import { processQuery, processTransaction } from "./TransactionInterface";
-import { Environment } from "../config/Environment";
 
 export function retrieveInfoFromURLParameters(): boolean {
   if (!(Environment.language in Languages))
@@ -74,20 +72,15 @@ export function retrieveInfoFromURLParameters(): boolean {
 
 export async function updateContexts(): Promise<boolean> {
   const ret1 = await getSettings(AppSettings.contextEndpoint);
-  await fetchUsers(
-    ...Object.values(Diagrams)
-      .flatMap((d) => d.collaborators)
-      .map(
-        (d) =>
-          "https://slovník.gov.cz/uživatel/" +
-          d.replaceAll("https://slovník.gov.cz/uživatel/", "")
-      )
+  const ret2 = await fetchUsers(
+    ...Object.values(Diagrams).flatMap((d) => d.collaborators)
   );
+  if (Environment.auth) await fetchUserSettings();
   AppSettings.selectedDiagram = "";
   StoreSettings.update((s) => {
     s.selectedDiagram = AppSettings.selectedDiagram;
   });
-  return ret1;
+  return ret1 && ret2;
 }
 
 //TODO: hot
@@ -205,9 +198,19 @@ export async function retrieveVocabularyData(): Promise<boolean> {
   return true;
 }
 
+//TODO: hot
 export async function retrieveContextData(): Promise<boolean> {
-  if (!(await getElementsConfig(AppSettings.contextEndpoint))) return false;
-  if (!(await getLinksConfig(AppSettings.contextEndpoint))) return false;
+  const configs = await Promise.all([getElementsConfig(), getLinksConfig()]);
+  if (configs.some((c) => !c)) return false;
+  Object.keys(WorkspaceLinks).forEach((l) => {
+    if (
+      WorkspaceLinks[l].source in WorkspaceElements &&
+      WorkspaceLinks[l].target in WorkspaceElements
+    ) {
+      WorkspaceElements[WorkspaceLinks[l].source].sourceLinks.push(l);
+      WorkspaceElements[WorkspaceLinks[l].target].targetLinks.push(l);
+    }
+  });
   const missingTerms: string[] = Object.keys(WorkspaceElements).filter(
     (id) => !(id in WorkspaceTerms)
   );
@@ -259,7 +262,6 @@ export async function retrieveContextData(): Promise<boolean> {
   }
   return await processTransaction(
     AppSettings.contextEndpoint,
-    qb.constructQuery(updateDeleteProjectLink(true, ...connections.del)),
     ...updateProjectLinkParallel(...connections.add).map((t) =>
       qb.constructQuery(t)
     )

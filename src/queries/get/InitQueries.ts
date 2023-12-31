@@ -3,12 +3,9 @@ import { LinkType } from "../../config/Enum";
 import {
   AppSettings,
   Diagrams,
-  Links,
   WorkspaceElements,
-  WorkspaceLinks,
   WorkspaceVocabularies,
 } from "../../config/Variables";
-import { CacheSearchVocabularies } from "../../datatypes/CacheSearchResults";
 import { Cardinality } from "../../datatypes/Cardinality";
 import { addDiagram } from "../../function/FunctionCreateVars";
 import {
@@ -17,86 +14,81 @@ import {
 } from "../../function/FunctionEditVars";
 import { processQuery } from "../../interface/TransactionInterface";
 import { qb } from "../QueryBuilder";
+import { WorkspaceLinks } from "./../../config/Variables";
 
 export async function getElementsConfig(
   contextEndpoint: string = AppSettings.contextEndpoint,
   contexts: string[] = AppSettings.contextIRIs
 ): Promise<boolean> {
-  const elements: {
-    [key: string]: {
-      active: boolean;
-      diagramPosition: { [key: string]: { x: number; y: number } };
-      hidden: { [key: string]: boolean };
-      selectedName: { [key: string]: string };
-      scheme: string;
-      vocabulary?: string;
-    };
+  const elements: { [key: string]: Partial<(typeof WorkspaceElements)[0]> } =
+    {};
+  const elementPositions: {
+    [key: string]: Partial<(typeof WorkspaceElements)[0]>;
   } = {};
-  const appContextQuery = [
-    "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
-    "PREFIX skos: <http://www.w3.org/2004/02/skos/core#> ",
-    "select ?elem ?scheme ?active ?name ?vocabulary where {",
-    "graph ?graph {",
-    "?elem a og:element .",
-    "optional {?elem og:name ?name.}",
-    "optional {?elem og:vocabulary ?vocabulary.}",
-    "?elem og:scheme ?scheme .",
-    "}",
-    `?contextIRI ${qb.i(
-      parsePrefix(
-        "d-sgov-pracovní-prostor-pojem",
-        `odkazuje-na-přílohový-kontext`
-      )
-    )} ?graph.`,
-    `values ?contextIRI {<${contexts.join("> <")}>}`,
-    "}",
-  ].join(`
-  `);
-  const appContextElementRetrieval = await processQuery(
-    contextEndpoint,
-    appContextQuery
-  )
-    .then((response) => {
-      return response.json();
-    })
-    .then((data) => {
-      for (const result of data.results.bindings) {
-        const iri = result.elem.value;
-        if (!(iri in elements)) {
-          elements[iri] = {
-            active: true,
-            diagramPosition: {},
-            hidden: {},
-            selectedName: initLanguageObject(""),
-            scheme: result.scheme.value,
-          };
-        }
-        if (
-          result.name &&
-          result.name.value &&
-          !elements[iri].selectedName[result.name["xml:lang"]]
-        )
-          elements[iri].selectedName[result.name["xml:lang"]] =
-            result.name.value;
-        if (result.vocabulary)
-          elements[iri].vocabulary = result.vocabulary.value;
-      }
-      return true;
-    })
-    .catch((e) => {
-      console.error(e);
-      return false;
-    });
-  if (!appContextElementRetrieval) return false;
-  else {
-    const diagramContextQuery = [
+  const getElements = async (): Promise<boolean> => {
+    const query = [
       "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
-      "select ?diagram ?graph ?diagramID ?iri ?posX ?posY ?hidden where {",
+      "PREFIX skos: <http://www.w3.org/2004/02/skos/core#> ",
+      "select ?elem ?scheme ?name ?vocabulary where {",
+      "graph ?graph {",
+      "?elem a og:element .",
+      "optional {?elem og:name ?name.}",
+      "optional {?elem og:vocabulary ?vocabulary.}",
+      "?elem og:scheme ?scheme .",
+      "}",
+      `?contextIRI ${qb.i(
+        parsePrefix(
+          "d-sgov-pracovní-prostor-pojem",
+          `odkazuje-na-přílohový-kontext`
+        )
+      )} ?graph.`,
+      `values ?contextIRI {<${contexts.join("> <")}>}`,
+      "}",
+    ].join(`
+    `);
+    return await processQuery(contextEndpoint, query)
+      .then((response) => {
+        return response.json();
+      })
+      .then((data) => {
+        for (const result of data.results.bindings) {
+          const iri = result.elem.value;
+          if (!(iri in elements)) {
+            elements[iri] = {
+              active: true,
+              position: {},
+              hidden: {},
+              selectedLabel: initLanguageObject(""),
+              sourceLinks: [],
+              targetLinks: [],
+            };
+          }
+          if (
+            result.name &&
+            !elements[iri].selectedLabel![result.name["xml:lang"]]
+          )
+            elements[iri].selectedLabel![result.name["xml:lang"]] =
+              result.name.value;
+          if (result.vocabulary)
+            elements[iri].vocabulary = result.vocabulary.value;
+        }
+        return true;
+      })
+      .catch((e) => {
+        console.error(e);
+        return false;
+      });
+  };
+  const getElementPositions = async (): Promise<boolean> => {
+    const query = [
+      "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
+      "select ?diagramID ?iri ?posX ?posY ?hidden where {",
       "graph ?graph {",
       "?iri og:position-x ?posX.",
       "?iri og:position-y ?posY.",
       "?iri og:hidden ?hidden.",
       "?diagram og:id ?diagramID.",
+      // Make sure it is really a diagram we are querying
       "?diagram og:representation ?representation .",
       "}",
       `?contextIRI ${qb.i(
@@ -109,26 +101,24 @@ export async function getElementsConfig(
       "}",
     ].join(`
     `);
-    const diagramContextElementRetrieval = await processQuery(
-      contextEndpoint,
-      diagramContextQuery
-    )
+    return await processQuery(contextEndpoint, query)
       .then((response) => {
         return response.json();
       })
       .then((data) => {
         for (const result of data.results.bindings) {
           const iri = result.iri.value;
-          if (iri in elements) {
-            if (!(result.diagramID.value in elements[iri].hidden)) {
-              elements[iri].diagramPosition[result.diagramID.value] = {
-                x: parseInt(result.posX.value),
-                y: parseInt(result.posY.value),
-              };
-              elements[iri].hidden[result.diagramID.value] =
-                result.hidden.value === "true";
-            }
-          }
+          if (!(iri in elementPositions))
+            elementPositions[iri] = {
+              hidden: {},
+              position: {},
+            };
+          elementPositions[iri].position![result.diagramID.value] = {
+            x: parseInt(result.posX.value),
+            y: parseInt(result.posY.value),
+          };
+          elementPositions[iri].hidden![result.diagramID.value] =
+            result.hidden.value === "true";
         }
         return true;
       })
@@ -136,52 +126,33 @@ export async function getElementsConfig(
         console.error(e);
         return false;
       });
-    if (!diagramContextElementRetrieval) return false;
-    else {
-      for (const iri in elements) {
-        if (
-          !Object.keys(WorkspaceVocabularies)
-            .map((vocab) => WorkspaceVocabularies[vocab].glossary)
-            .includes(elements[iri].scheme)
-        ) {
-          const vocab = Object.keys(CacheSearchVocabularies).find(
-            (vocab) =>
-              CacheSearchVocabularies[vocab].glossary === elements[iri].scheme
-          );
-          if (vocab) {
-            WorkspaceVocabularies[vocab] = {
-              labels: CacheSearchVocabularies[vocab].labels,
-              readOnly: true,
-              namespace: CacheSearchVocabularies[vocab].namespace,
-              graph: vocab,
-              color: "#FFF",
-              glossary: CacheSearchVocabularies[vocab].glossary,
-            };
-          }
-        }
-        WorkspaceElements[iri] = {
-          hidden: elements[iri].hidden,
-          position: elements[iri].diagramPosition,
-          active: elements[iri].active,
-          selectedLabel: elements[iri].selectedName,
-        };
-      }
-    }
-    return true;
-  }
+  };
+  const ret = await Promise.all([getElements(), getElementPositions()]).then(
+    (r) => r.every((r) => !!r)
+  );
+  const obj: typeof elements = {};
+  _.merge(obj, elements, elementPositions);
+  _.merge(
+    WorkspaceElements,
+    _.pick(
+      obj,
+      Object.keys(obj).filter((k) => !!obj[k].active)
+    )
+  );
+  return ret;
 }
 
 export async function getSettings(contextEndpoint: string): Promise<boolean> {
   const query = [
     "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
-    "select distinct ?active ?vocabContext ?ogContext ?graph ?diagram ?index ?name ?color ?id ?representation ?context ?vocabulary ?description ?collaborator ?creationDate ?modifyDate where {",
+    "select distinct ?open ?vocabContext ?graph ?diagram ?index ?name ?id ?representation ?vocabulary ?description ?collaborator ?creationDate ?modifyDate where {",
     "?vocabContext <https://slovník.gov.cz/datový/pracovní-prostor/pojem/odkazuje-na-přílohový-kontext> ?graph .",
     "graph ?graph {",
     " ?diagram og:index ?index .",
     " ?diagram og:name ?name .",
     " ?diagram og:id ?id .",
     " ?diagram og:representation ?representation .",
-    " optional {?diagram og:active ?active.}",
+    " optional {?diagram og:open ?open.}",
     " optional {?diagram og:description ?description.}",
     " optional {?diagram og:vocabulary ?vocabulary. ",
     "           ?diagram og:collaborator ?collaborator. ",
@@ -215,7 +186,7 @@ export async function getSettings(contextEndpoint: string): Promise<boolean> {
           while (indices.includes(index)) index++;
           addDiagram(
             result.name.value,
-            true,
+            false,
             parseInt(result.representation.value, 10),
             index,
             result.diagram.value,
@@ -226,9 +197,8 @@ export async function getSettings(contextEndpoint: string): Promise<boolean> {
           Diagrams[result.id.value].saved = true;
           indices.push(index);
         }
-
-        if (result.active) {
-          Diagrams[result.id.value].active = result.active.value === "true";
+        if (result.open) {
+          Diagrams[result.id.value].open = result.open.value === "true";
         }
         if (result.description) {
           Diagrams[result.id.value].description = result.description.value;
@@ -242,10 +212,7 @@ export async function getSettings(contextEndpoint: string): Promise<boolean> {
         if (result.collaborator) {
           Diagrams[result.id.value].collaborators = _.uniq([
             ...Diagrams[result.id.value].collaborators,
-            result.collaborator.value.replace(
-              "https://slovník.gov.cz/uživatel/",
-              ""
-            ),
+            result.collaborator.value,
           ]);
         }
         if (result.creationDate) {
@@ -278,88 +245,81 @@ export async function getLinksConfig(
   contextEndpoint: string = AppSettings.contextEndpoint,
   contexts: string[] = AppSettings.contextIRIs
 ): Promise<boolean> {
-  const query = [
-    "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
-    "select ?id ?iri ?sourceID ?targetID ?active ?sourceCard1 ?sourceCard2 ?targetCard1 ?targetCard2 ?type ?link where {",
-    "graph ?graph {",
-    "?link a og:link .",
-    "?link og:id ?id .",
-    "?link og:iri ?iri .",
-    "?link og:source ?sourceID .",
-    "?link og:target ?targetID .",
-    "?link og:type ?type .",
-    "?link og:sourceCardinality1 ?sourceCard1 .",
-    "?link og:sourceCardinality2 ?sourceCard2 .",
-    "?link og:targetCardinality1 ?targetCard1 .",
-    "?link og:targetCardinality2 ?targetCard2 .",
-    "}",
-    `?contextIRI <${parsePrefix(
-      "d-sgov-pracovní-prostor-pojem",
-      "odkazuje-na-přílohový-kontext"
-    )}> ?graph.`,
-    `values ?contextIRI {<${contexts.join("> <")}>}`,
-    "} order by ?id",
-  ].join(`
-  `);
-  const links: {
-    [key: string]: {
-      iri: string;
-      targetID: string;
-      sourceID: string;
-      vertices: { [key: string]: { x: number; y: number }[] };
-      sourceCardinality1: string;
-      sourceCardinality2: string;
-      targetCardinality1: string;
-      targetCardinality2: string;
-      active: boolean;
-      type: number;
-      linkIRI: string;
-    };
-  } = {};
-  const appContextLinkRetrieval = await processQuery(contextEndpoint, query)
-    .then((response) => {
-      return response.json();
-    })
-    .then((data) => {
-      for (const result of data.results.bindings) {
-        if (
-          !Object.values(links).find(
-            (link) =>
-              link.active &&
-              link.iri === result.iri.value &&
-              link.sourceID === result.sourceID.value &&
-              link.targetID === result.targetID.value
-          )
-        ) {
-          links[result.id.value] = {
-            iri: result.iri.value,
-            targetID: result.targetID.value,
-            sourceID: result.sourceID.value,
-            active: true,
-            vertices: {},
-            type:
-              result.type.value === "default"
-                ? LinkType.DEFAULT
-                : LinkType.GENERALIZATION,
-            sourceCardinality1: result.sourceCard1.value,
-            sourceCardinality2: result.sourceCard2.value,
-            targetCardinality1: result.targetCard1.value,
-            targetCardinality2: result.targetCard2.value,
-            linkIRI: result.link.value,
-          };
-        }
-      }
-      return true;
-    })
-    .catch((e) => {
-      console.error(e);
-      return false;
-    });
-  if (!appContextLinkRetrieval) return false;
-  else {
-    const diagramContextQuery = [
+  const links: { [key: string]: Partial<(typeof WorkspaceLinks)[0]> } = {};
+  const linkVertices: { [key: string]: Partial<(typeof WorkspaceLinks)[0]> } =
+    {};
+  const getLinks = async (): Promise<boolean> => {
+    const query = [
       "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
-      "select ?diagram ?diagramID ?index ?posX ?posY ?id where {",
+      "select distinct ?id ?iri ?sourceID ?targetID ?sourceCard1 ?sourceCard2 ?targetCard1 ?targetCard2 ?type ?link where {",
+      "graph ?graph {",
+      "?link a og:link .",
+      "?link og:id ?id .",
+      "?link og:iri ?iri .",
+      "?link og:source ?sourceID .",
+      "?link og:target ?targetID .",
+      "?link og:type ?type .",
+      "?link og:sourceCardinality1 ?sourceCard1 .",
+      "?link og:sourceCardinality2 ?sourceCard2 .",
+      "?link og:targetCardinality1 ?targetCard1 .",
+      "?link og:targetCardinality2 ?targetCard2 .",
+      "}",
+      `?contextIRI <${parsePrefix(
+        "d-sgov-pracovní-prostor-pojem",
+        "odkazuje-na-přílohový-kontext"
+      )}> ?graph.`,
+      `values ?contextIRI {<${contexts.join("> <")}>}`,
+      "}",
+    ].join(`
+      `);
+    return await processQuery(contextEndpoint, query)
+      .then((response) => {
+        return response.json();
+      })
+      .then((data) => {
+        for (const result of data.results.bindings) {
+          if (
+            !Object.values(links).find(
+              (link) =>
+                link.active &&
+                link.iri === result.iri.value &&
+                link.source === result.sourceID.value &&
+                link.target === result.targetID.value
+            )
+          ) {
+            const sourceCard = new Cardinality("", "");
+            const targetCard = new Cardinality("", "");
+            sourceCard.setFirstCardinality(result.sourceCard1.value);
+            sourceCard.setSecondCardinality(result.sourceCard2.value);
+            targetCard.setFirstCardinality(result.targetCard1.value);
+            targetCard.setSecondCardinality(result.targetCard2.value);
+            links[result.id.value] = {
+              iri: result.iri.value,
+              target: result.targetID.value,
+              source: result.sourceID.value,
+              active: true,
+              vertices: {},
+              type:
+                result.type.value === "default"
+                  ? LinkType.DEFAULT
+                  : LinkType.GENERALIZATION,
+              linkIRI: result.link.value,
+              sourceCardinality: sourceCard,
+              targetCardinality: targetCard,
+            };
+          }
+        }
+        return true;
+      })
+      .catch((e) => {
+        console.error(e);
+        return false;
+      });
+  };
+  const getVertices = async (): Promise<boolean> => {
+    const query = [
+      "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
+      "select ?diagramID ?index ?posX ?posY ?id where {",
       "graph ?graph {",
       "?link a og:link.",
       "?link og:vertex ?vertex.",
@@ -377,49 +337,23 @@ export async function getLinksConfig(
       `values ?contextIRI {<${contexts.join("> <")}>}`,
       "}",
     ].join(`
-    `);
-    return await processQuery(contextEndpoint, diagramContextQuery)
+      `);
+    return await processQuery(contextEndpoint, query)
       .then((response) => {
         return response.json();
       })
       .then((data) => {
         for (const result of data.results.bindings) {
-          if (!(result.id.value in links)) continue;
           const id = result.id.value;
-          if (!(result.diagramID.value in links[id].vertices))
-            links[id].vertices[result.diagramID.value] = [];
-          links[id].vertices[result.diagramID.value][
+          if (!(id in linkVertices) || !("vertices" in linkVertices[id]))
+            linkVertices[id] = { vertices: {} };
+          if (!(result.diagramID.value in linkVertices[id].vertices!))
+            linkVertices[id].vertices![result.diagramID.value] = [];
+          linkVertices[id].vertices![result.diagramID.value][
             parseInt(result.index.value)
           ] = {
             x: parseInt(result.posX.value),
             y: parseInt(result.posY.value),
-          };
-        }
-        for (const link in links) {
-          if (
-            !(links[link].sourceID in WorkspaceElements) ||
-            !(links[link].targetID in WorkspaceElements)
-          )
-            continue;
-          const sourceCard = new Cardinality("", "");
-          const targetCard = new Cardinality("", "");
-          sourceCard.setFirstCardinality(links[link].sourceCardinality1);
-          sourceCard.setSecondCardinality(links[link].sourceCardinality2);
-          targetCard.setFirstCardinality(links[link].targetCardinality1);
-          targetCard.setSecondCardinality(links[link].targetCardinality2);
-          WorkspaceLinks[link] = {
-            iri: links[link].iri,
-            source: links[link].sourceID,
-            target: links[link].targetID,
-            sourceCardinality: sourceCard,
-            targetCardinality: targetCard,
-            type: links[link].type,
-            vertices: links[link].vertices,
-            active: links[link].active,
-            hasInverse:
-              links[link].type !== LinkType.GENERALIZATION &&
-              links[link].iri in Links,
-            linkIRI: links[link].linkIRI,
           };
         }
         return true;
@@ -428,5 +362,20 @@ export async function getLinksConfig(
         console.error(e);
         return false;
       });
-  }
+  };
+
+  const ret = await Promise.all([getLinks(), getVertices()]).then((r) =>
+    r.every((r) => !!r)
+  );
+  const obj: typeof links = {};
+  _.merge(
+    obj,
+    links,
+    _.pick(
+      linkVertices,
+      Object.keys(linkVertices).filter((k) => k in links)
+    )
+  );
+  _.merge(WorkspaceLinks, obj);
+  return ret;
 }

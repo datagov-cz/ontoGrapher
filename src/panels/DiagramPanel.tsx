@@ -36,7 +36,7 @@ export default class DiagramPanel extends React.Component<Props, State> {
   }
 
   closeDiagram(diag: string) {
-    Diagrams[diag].active = false;
+    Diagrams[diag].open = false;
     if (Diagrams[diag].saved) {
       const queries = [];
       queries.push(updateCreateDiagram(diag));
@@ -61,9 +61,7 @@ export default class DiagramPanel extends React.Component<Props, State> {
           }}
         />
         {Object.keys(Diagrams)
-          .filter(
-            (diag) => Diagrams[diag].active && !Diagrams[diag].toBeDeleted
-          )
+          .filter((diag) => Diagrams[diag].open && !Diagrams[diag].toBeDeleted)
           .sort((a, b) => Diagrams[a].index - Diagrams[b].index)
           .map((diag, i) => (
             <DiagramTab

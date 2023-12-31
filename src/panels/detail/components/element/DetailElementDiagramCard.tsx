@@ -43,12 +43,12 @@ export const DetailElementDiagramCard: React.FC<Props> = (props) => {
               >
                 <span className="diagram">{Diagrams[diag].name}</span>
                 <span className="actions">
-                  {!Diagrams[diag].active ? (
+                  {!Diagrams[diag].open ? (
                     <Button
                       variant="light"
                       className="plainButton"
                       onClick={() => {
-                        Diagrams[diag].active = true;
+                        Diagrams[diag].open = true;
                         changeDiagrams(diag);
                         AppSettings.selectedLinks = [];
                         centerElementInView(props.id);
