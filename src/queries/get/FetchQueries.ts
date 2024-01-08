@@ -388,7 +388,7 @@ export async function fetchTerms(
 }
 
 export async function fetchUsers(...ids: string[]): Promise<boolean> {
-  if (ids.length === 0) return false;
+  if (ids.length === 0) return true;
   const query = [
     `PREFIX a-popis-dat-pojem: ${qb.i(Prefixes["a-popis-dat-pojem"])}`,
     "select ?id ?first ?last ?graph where {",
