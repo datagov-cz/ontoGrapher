@@ -81,6 +81,7 @@ export const NewElemForm: React.FC<Props> = (props) => {
     ) {
       errorText = Locale[AppSettings.interfaceLanguage].modalNewElemLengthError;
     } else if (
+      //TODO
       createNewElemIRI(scheme, names[Environment.language]) ===
       WorkspaceVocabularies[getVocabularyFromScheme(scheme)].namespace
     ) {
