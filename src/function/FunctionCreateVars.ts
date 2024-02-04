@@ -39,37 +39,42 @@ export function createValues(
   return result;
 }
 
-export function createNewElemIRI(scheme: string, name: string): string {
-  // https://www.w3.org/TR/sparql11-query/#rPN_CHARS_U
+export function createNewElemIRI(scheme: string, input: string): string {
+  // https://www.w3.org/TR/sparql11-query/#rPN_CHARS_U without [#x10000-#xEFFFF]
   const PN_CHARS_U =
-    /[_A-z]|[\u00C0-\u00D6]|[\u00D8-\u00F6]|[\u00F8-\u02FF]|[\u0370-\u037D]|[\u037F-\u1FFF]|[\u200C-\u200D]|[\u2070-\u218F]|[\u2C00-\u2FEF]|[\u3001-\uD7FF]|[\uF900-\uFDCF]|[\uFDF0-\uFFFD]|[\u1000-\uEFFF]/gu;
-  // https://www.w3.org/TR/sparql11-query/#rPLX
-  const PLX = /(%([0-9A-F])([0-9A-F]))|(\\[-_~.!$&'()*+,;=/?#@%])/gi;
-  // https://www.w3.org/TR/sparql11-query/#rPN_CHARS
+    /[A-Za-z]|[\u00C0-\u00D6]|[\u00D8-\u00F6]|[\u00F8-\u02FF]|[\u0370-\u037D]|[\u037F-\u1FFF]|[\u200C-\u200D]|[\u2070-\u218F]|[\u2C00-\u2FEF]|[\u3001-\uD7FF]|[\uF900-\uFDCF]|[\uFDF0-\uFFFD]|_/gu;
+  const PERCENT = /%([0-9A-Fa-f])([0-9A-Fa-f])/gu;
+  const PN_LOCAL_ESC = /\\[_~.\-!$&'()*+,;=/?#@%]/g;
+  const PLX = new RegExp(`(${PERCENT.source})|(${PN_LOCAL_ESC.source})`, "gi");
   const PN_CHARS = new RegExp(
-    `${PN_CHARS_U.source}|-|[0-9]|\u00B7|[\u0300-\u036F]|[\u203F-\u2040]`,
+    `(${PN_CHARS_U.source})|[-0-9]|\u00B7|[\u0300-\u036F]|[\u203F-\u2040]`,
     "gu"
   );
+  const PN_LOCAL_1 = new RegExp(
+    `(${PN_CHARS_U.source})|[:0-9]|(${PLX.source})`
+  );
+  const PN_LOCAL_2 = new RegExp(`(${PN_CHARS.source})|[.:]|(${PLX.source})`);
+  const PN_LOCAL_3 = new RegExp(`(${PN_CHARS.source})|:|(${PLX.source})`);
   // https://www.w3.org/TR/sparql11-query/#rPN_LOCAL
   const PN_LOCAL = new RegExp(
-    `(${PN_CHARS_U.source}|:|[0-9]|${PLX.source})((${PN_CHARS.source}|.|:|${PLX.source})*(${PN_CHARS.source}|.|${PLX.source})?)`,
-    "gui"
+    `(${PN_LOCAL_1.source})((${PN_LOCAL_2.source})*(${PN_LOCAL_3.source}))?`,
+    "gu"
   );
-  console.log(PN_LOCAL);
+  const name = input.toLowerCase().trim().normalize();
+  let result = "";
+  while (true) {
+    const arr = PN_LOCAL.exec(name);
+    if (arr === null) break;
+    result =
+      result
+        .padEnd(PN_LOCAL.lastIndex, "-")
+        .substring(0, PN_LOCAL.lastIndex - arr[0].length) + arr[0];
+  }
+  // Remove trailing dashes
+  result = result.replace(/-+$/g, "");
   return (
     (WorkspaceVocabularies[getVocabularyFromScheme(scheme)].namespace ||
-      `${scheme}/${Locale[Environment.language].term}/`) +
-    name
-      .toLowerCase()
-      .trim()
-      .normalize()
-      // .replace(/[\s\\/<>"{}|^`§]/gu, "-")
-      // Replace any spaces with dashes
-      // .replace(/[\p{Z}\p{C}]/gu, "-")
-      // Replace anything not conforming to PN_LOCAL to dashes
-      .replace(/[\p{Z}\p{C}]/g, "-")
-      // Remove trailing dashes
-      .replace(/-*$/g, "")
+      `${scheme}/${Locale[Environment.language].term}/`) + result
   );
 }
 
