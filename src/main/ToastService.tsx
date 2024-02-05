@@ -6,6 +6,7 @@ import { StoreSettings } from "../config/Store";
 import { ToastData } from "../config/ToastData";
 import { AppSettings } from "../config/Variables";
 import _ from "lodash";
+import { getLocalStorageKey } from "../function/FunctionGetVars";
 
 export const ToastService: React.FC = () => {
   const toasts = useStoreState(StoreSettings, (s) => s.toastQueue);
@@ -14,7 +15,7 @@ export const ToastService: React.FC = () => {
     ToastData[toast].action;
 
   useEffect(() => {
-    const shownToasts = localStorage.getItem("og:shownToasts");
+    const shownToasts = localStorage.getItem(getLocalStorageKey("shownToasts"));
     if (shownToasts) AppSettings.shownToasts = JSON.parse(shownToasts);
   }, []);
 
@@ -32,7 +33,7 @@ export const ToastService: React.FC = () => {
                 toast,
               ]);
               localStorage.setItem(
-                "og:shownToasts",
+                getLocalStorageKey("shownToasts"),
                 JSON.stringify(AppSettings.shownToasts)
               );
             }

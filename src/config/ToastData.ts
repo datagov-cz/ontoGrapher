@@ -4,6 +4,7 @@ import { AppSettings } from "./Variables";
 
 export const ToastData: { [Key in keyof typeof enToast]: ToastType } = {
   lookingForRelationshipsOrProperties: { repeatable: false },
+  diagramsClosedByDefault: { repeatable: false },
 };
 
 export type ToastType = {

@@ -12,4 +12,9 @@ export const csToast: {
     content:
       "V kompaktním pohledu můžete používat typy vztahů vytvořené v jiných nástrojích při vytváření nových vztahů mezi pojmy. Vlastnosti se spravují v detailu pojmů.",
   },
+  diagramsClosedByDefault: {
+    header: "Hledáte své diagramy?",
+    content:
+      "V nové verzi OntoGrapheru byly uzavřeny všechny diagramy. Pro jejich znovuotevření použijte tlačítko Otevřít diagram, které se zobrazí při najetí myší na položku diagramu v domovské kartě.",
+  },
 };

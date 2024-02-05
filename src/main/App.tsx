@@ -58,6 +58,7 @@ import { updateVocabularyAnnotations } from "../queries/update/UpdateChangeQueri
 import { updateDiagramMetadata } from "../queries/update/UpdateDiagramQueries";
 import { MainView } from "./MainView";
 import { ToastService } from "./ToastService";
+import { callToast } from "../config/ToastData";
 
 interface DiagramAppProps {}
 
@@ -159,6 +160,7 @@ export default class App extends React.Component<
         s.mainViewMode = MainViewMode.MANAGER;
       });
       this.handleWorkspaceReady();
+      callToast("diagramsClosedByDefault");
     };
     if (Environment.debug && loadDebugData()) finishUp();
     else

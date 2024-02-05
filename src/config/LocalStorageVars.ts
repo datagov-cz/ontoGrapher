@@ -3,4 +3,5 @@ export type LocalStorageVars =
   | "canvasLanguage"
   | "lastViewedVersion"
   | "defaultCardinalitySource"
-  | "defaultCardinalityTarget";
+  | "defaultCardinalityTarget"
+  | "shownToasts";
