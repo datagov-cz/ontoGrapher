@@ -11,6 +11,7 @@ import { getVocabularyFromScheme } from "../../function/FunctionGetVars";
 import { qb } from "../QueryBuilder";
 
 export function updateProjectElement(del: boolean, ...iris: string[]): string {
+  const isUrl = require("is-url");
   const diagramGraphs = Object.values(Diagrams)
     .filter((diag) => !diag.toBeDeleted)
     .map((diag) => diag.graph);
@@ -41,7 +42,9 @@ export function updateProjectElement(del: boolean, ...iris: string[]): string {
     const definitions = Object.keys(vocabElem.definitions)
       .filter((lang) => vocabElem.definitions[lang])
       .map((lang) => qb.ll(vocabElem.definitions[lang], lang));
-
+    const descriptions = Object.keys(vocabElem.descriptions)
+      .filter((lang) => vocabElem.descriptions[lang])
+      .map((lang) => qb.ll(vocabElem.descriptions[lang], lang));
     const ogStatements: string[] = [
       qb.s(qb.i(iri), "rdf:type", "og:element"),
       qb.s(qb.i(iri), "og:scheme", qb.i(scheme)),
@@ -69,7 +72,21 @@ export function updateProjectElement(del: boolean, ...iris: string[]): string {
           qb.a(definitions),
           definitions.length > 0
         ),
+        qb.s(
+          qb.i(iri),
+          "dc:description",
+          qb.a(descriptions),
+          descriptions.length > 0
+        ),
         qb.s(qb.i(iri), "skos:inScheme", qb.i(scheme)),
+        qb.s(
+          qb.i(iri),
+          "dc:relation",
+          isUrl(vocabElem.source)
+            ? qb.i(vocabElem.source)
+            : qb.ll(vocabElem.source),
+          !!vocabElem.source
+        ),
         qb.s(
           qb.i(scheme),
           "skos:hasTopConcept",

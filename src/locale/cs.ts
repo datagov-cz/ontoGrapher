@@ -13,6 +13,7 @@ export const cs: { [Property in keyof typeof en]: string } = {
   removeLanguage: "Odebrat naposledy přidaný vstup pro další jazyk",
   noOptions: "Žádné dostupné volby",
   unknown: "Není známo",
+  source: "Zdroj",
   vocabularySelectInfo:
     "Určuje slovníky, ke kterým je diagram přiřazen. Při přidávání slovníků do projektu Kontrolního panelu se přidají pouze ty diagramy, které jsou k těmto slovníkům přiřazené.",
   addLanguage: "Přidat vstup pro další jazyk",

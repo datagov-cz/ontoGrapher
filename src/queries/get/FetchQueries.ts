@@ -294,7 +294,8 @@ export async function fetchTerms(
     "PREFIX skos: <http://www.w3.org/2004/02/skos/core#>",
     "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>",
     "PREFIX z-sgov-pojem: <https://slovník.gov.cz/základní/pojem/>",
-    "SELECT ?term ?termLabel ?termAltLabel ?termType ?termDefinition ?topConcept ?subClassOf",
+    "PREFIX dcterms: <http://purl.org/dc/terms/>",
+    "SELECT ?term ?termLabel ?termAltLabel ?termType ?termDefinition ?termDescription ?termRelation ?topConcept ?subClassOf",
     "WHERE {",
     graph && "GRAPH <" + graph + "> {",
     vocabulary
@@ -311,6 +312,8 @@ export async function fetchTerms(
     scheme && "?term skos:inScheme ?scheme",
     "OPTIONAL {?term skos:altLabel ?termAltLabel.}",
     "OPTIONAL {?term skos:definition ?termDefinition.}",
+    "OPTIONAL {?term dcterms:description ?termDescription.}",
+    "OPTIONAL {?term dcterms:relation ?termRelation.}",
     "OPTIONAL {?term rdfs:subClassOf ?subClassOf. ",
     "filter (!isBlank(?subClassOf)) }",
     "OPTIONAL {?topConcept skos:hasTopConcept ?term. }",
@@ -327,6 +330,8 @@ export async function fetchTerms(
             topConcept: undefined,
             labels: initLanguageObject(""),
             definitions: initLanguageObject(""),
+            descriptions: initLanguageObject(""),
+            source: "",
             altLabels: [],
             types: [],
             inScheme: scheme ? scheme : row.scheme.value,
@@ -370,6 +375,21 @@ export async function fetchTerms(
           result[row.term.value].definitions[row.termDefinition["xml:lang"]] =
             row.termDefinition.value;
         }
+        if (row.termDescription) {
+          if (
+            !(
+              row.termDescription["xml:lang"] in
+              result[row.term.value].descriptions
+            )
+          )
+            result[row.term.value].descriptions[
+              row.termDescription["xml:lang"]
+            ] = "";
+          result[row.term.value].descriptions[row.termDescription["xml:lang"]] =
+            row.termDescription.value;
+        }
+        if (row.termRelation)
+          result[row.term.value].source = row.termRelation.value;
         if (row.topConcept)
           result[row.term.value].topConcept = row.topConcept.value;
         if (

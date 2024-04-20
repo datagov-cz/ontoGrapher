@@ -82,6 +82,8 @@ export var WorkspaceTerms: {
     labels: { [key: string]: string };
     altLabels: { label: string; language: string }[];
     definitions: { [key: string]: string };
+    descriptions: { [key: string]: string };
+    source: string;
     inScheme: string;
     types: string[];
     // term is subclass of these terms
@@ -89,6 +91,15 @@ export var WorkspaceTerms: {
     restrictions: Restriction[];
     topConcept: string | undefined;
   };
+} = {};
+
+export var attributesForRPP: {
+  [key: string]: Partial<{
+    shared: boolean;
+    agenda: string;
+    ais: string;
+    nonPublicSource: string;
+  }>;
 } = {};
 
 export var Links: {

@@ -235,7 +235,7 @@ export async function fetchReadOnlyTerms(
       "PREFIX skos: <http://www.w3.org/2004/02/skos/core#>",
       "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>",
       "PREFIX dct: <http://purl.org/dc/terms/>",
-      "SELECT DISTINCT ?term ?termLabel ?termAltLabel ?termType ?termDefinition ?topConcept ?inverseOnProperty ?restriction ?restrictionPred ?onProperty ?onClass ?target ?subClassOf ?scheme",
+      "SELECT DISTINCT ?term ?termLabel ?termAltLabel ?termType ?termDescription ?termRelation ?termDefinition ?topConcept ?inverseOnProperty ?restriction ?restrictionPred ?onProperty ?onClass ?target ?subClassOf ?scheme",
       "WHERE {",
       "GRAPH ?graph {",
       "?term skos:inScheme ?scheme.",
@@ -244,6 +244,8 @@ export async function fetchReadOnlyTerms(
       "OPTIONAL {?term skos:prefLabel ?termLabel.}",
       "OPTIONAL {?term skos:altLabel ?termAltLabel.}",
       "OPTIONAL {?term skos:definition ?termDefinition.}",
+      "OPTIONAL {?term dct:description ?termDescription.}",
+      "OPTIONAL {?term dct:relation ?termRelation.}",
       "OPTIONAL {?term rdfs:subClassOf ?subClassOf. ",
       "filter (!isBlank(?subClassOf)) }",
       "OPTIONAL {?topConcept skos:hasTopConcept ?term. }",
@@ -272,6 +274,8 @@ export async function fetchReadOnlyTerms(
               topConcept: undefined,
               labels: initLanguageObject(""),
               definitions: initLanguageObject(""),
+              descriptions: initLanguageObject(""),
+              source: "",
               altLabels: [],
               types: [],
               inScheme: row.scheme.value,
@@ -304,6 +308,22 @@ export async function fetchReadOnlyTerms(
               });
             }
           }
+          if (row.termDescription) {
+            if (
+              !(
+                row.termDescription["xml:lang"] in
+                result[row.term.value].descriptions
+              )
+            )
+              result[row.term.value].descriptions[
+                row.termDescription["xml:lang"]
+              ] = "";
+            result[row.term.value].descriptions[
+              row.termDescription["xml:lang"]
+            ] = row.termDescription.value;
+          }
+          if (row.termRelation)
+            result[row.term.value].source = row.termRelation.value;
           if (row.termDefinition) {
             if (
               !(

@@ -40,16 +40,6 @@ export async function exportTermsCSV(
       new Blob(),
       Locale[AppSettings.interfaceLanguage].listExportErrorNoTerms,
     ];
-  const sources: { [key: string]: string } = await exportFunctions.getSources(
-    exportTerms
-  );
-  if (Object.keys(sources).length === 0)
-    console.warn("None of the terms from this diagram have a dct:source.");
-  if ("error" in sources)
-    return [
-      new Blob(),
-      Locale[AppSettings.interfaceLanguage].listExportErrorNoConnection,
-    ];
   let output = rowDescriptionRow;
   Object.keys(exportTerms).forEach((term) => {
     const termLabel = getLabelOrBlank(
@@ -72,7 +62,7 @@ export async function exportTermsCSV(
     const termOutput = compile([
       termLabel,
       WorkspaceTerms[term].definitions[exportLanguage],
-      term in sources ? sources[term] : "",
+      WorkspaceTerms[term].source,
       "",
       "",
       "",
@@ -93,7 +83,7 @@ export async function exportTermsCSV(
         "",
         getLabelOrBlank(WorkspaceTerms[link].labels, exportLanguage),
         WorkspaceTerms[link].definitions[exportLanguage],
-        link in sources ? sources[link] : "",
+        WorkspaceTerms[link].source,
         getLabelOrBlank(
           Stereotypes[parsePrefix("z-sgov-pojem", "typ-vztahu")].labels,
           exportLanguage
@@ -115,7 +105,7 @@ export async function exportTermsCSV(
         "",
         getLabelOrBlank(WorkspaceTerms[link].labels, exportLanguage),
         WorkspaceTerms[link].definitions[exportLanguage],
-        link in sources ? sources[link] : "",
+        WorkspaceTerms[link].source,
         getLabelOrBlank(
           Stereotypes[parsePrefix("z-sgov-pojem", "typ-události")].labels,
           exportLanguage
@@ -137,7 +127,7 @@ export async function exportTermsCSV(
         "",
         getLabelOrBlank(WorkspaceTerms[link].labels, exportLanguage),
         WorkspaceTerms[link].definitions[exportLanguage],
-        link in sources ? sources[link] : "",
+        WorkspaceTerms[link].source,
         getLabelOrBlank(
           Stereotypes[parsePrefix("z-sgov-pojem", "typ-vlastnosti")].labels,
           exportLanguage

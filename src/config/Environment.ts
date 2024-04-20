@@ -8,7 +8,8 @@ type LocalVars =
   | "PUBLIC_URL"
   | "AUTHENTICATION"
   | "DEBUG_DATA"
-  | "TERM_LANGUAGE";
+  | "TERM_LANGUAGE"
+  | "BASE_ONTOLOGY_URL";
 
 setProcessEnv(process.env);
 const ENV = getEnvInstance<LocalVars>();
@@ -28,6 +29,8 @@ export const Environment: {
   debug: boolean;
   // Default language
   language: string;
+  // URL of the Vocabularies.json file
+  baseOntologyURL: string;
 } = {
   components: ENV.getComponents(),
   context: ENV.get("CONTEXT"),
@@ -36,4 +39,14 @@ export const Environment: {
   auth: ENV.get("AUTHENTICATION", "true") === "true",
   debug: ENV.get("DEBUG", "true") === "true",
   language: ENV.get("TERM_LANGUAGE"),
+  baseOntologyURL: getVar("BASE_ONTOLOGY_URL", ""),
 };
+
+function getVar<Type>(variable: LocalVars, fallback: Type): Type {
+  try {
+    return ENV.get(variable);
+  } catch (error) {
+    console.warn(error);
+    return fallback;
+  }
+}

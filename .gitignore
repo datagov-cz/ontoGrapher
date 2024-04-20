@@ -26,5 +26,6 @@ yarn-error.log*
 .netlify
 .idea/
 .vscode/
+.next
 /.vs
 ontographer.code-workspace

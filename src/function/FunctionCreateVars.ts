@@ -120,6 +120,8 @@ export function addVocabularyElement(
     labels: initLanguageObject(""),
     altLabels: [],
     definitions: initLanguageObject(""),
+    descriptions: initLanguageObject(""),
+    source: "",
     inScheme: scheme,
     types: types ? types : [],
     subClassOf: [],

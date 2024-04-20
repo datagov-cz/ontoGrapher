@@ -47,6 +47,8 @@ type State = {
   inputTypeData: string;
   inputAltLabels: AlternativeLabel[];
   inputDefinitions: { [key: string]: string };
+  inputDescriptions: { [key: string]: string };
+  inputSource: string;
   selectedLabel: { [key: string]: string };
   readOnly: boolean;
   changes: boolean;
@@ -63,8 +65,10 @@ export class DetailElementDescriptionCard extends React.Component<
     this.state = {
       inputTypeType: "",
       inputTypeData: "",
+      inputSource: "",
       inputAltLabels: [],
       inputDefinitions: {},
+      inputDescriptions: {},
       selectedLabel: {},
       readOnly: true,
       changes: false,
@@ -132,6 +136,8 @@ export class DetailElementDescriptionCard extends React.Component<
           ) || "",
         inputAltLabels: WorkspaceTerms[id].altLabels,
         inputDefinitions: WorkspaceTerms[id].definitions,
+        inputDescriptions: WorkspaceTerms[id].descriptions,
+        inputSource: WorkspaceTerms[id].source,
         changes: false,
         readOnly:
           WorkspaceVocabularies[
@@ -193,6 +199,8 @@ export class DetailElementDescriptionCard extends React.Component<
     if (this.props.id in WorkspaceElements && !this.state.readOnly) {
       WorkspaceTerms[this.props.id].altLabels = this.state.inputAltLabels;
       WorkspaceTerms[this.props.id].definitions = this.state.inputDefinitions;
+      WorkspaceTerms[this.props.id].descriptions = this.state.inputDescriptions;
+      WorkspaceTerms[this.props.id].source = this.state.inputSource;
       WorkspaceElements[this.props.id].selectedLabel = this.state.selectedLabel;
       if (elem) {
         drawGraphElement(
@@ -227,13 +235,25 @@ export class DetailElementDescriptionCard extends React.Component<
   }
 
   render() {
-    // const tropes = getIntrinsicTropeTypeIDs(this.props.id);
     return (
       <Accordion.Item eventKey="0">
         <Accordion.Header>
           {Locale[AppSettings.interfaceLanguage].description}
         </Accordion.Header>
         <Accordion.Body>
+          <h5>{Locale[AppSettings.interfaceLanguage].source}</h5>
+          <Form.Control
+            size="sm"
+            className="detailInput"
+            value={this.state.inputSource}
+            disabled={this.state.readOnly}
+            onChange={(event) =>
+              this.setState({ inputSource: event.target.value })
+            }
+            onBlur={() => {
+              if (!this.state.readOnly) this.setState({ changes: true });
+            }}
+          />
           <h5>{Locale[AppSettings.interfaceLanguage].detailPanelAltLabel}</h5>
           <DetailPanelAltLabels
             altLabels={this.state.inputAltLabels}
@@ -326,6 +346,28 @@ export class DetailElementDescriptionCard extends React.Component<
                   ...prev,
                   inputDefinitions: {
                     ...prev.inputDefinitions,
+                    [this.props.selectedLanguage]: event.target.value,
+                  },
+                }));
+            }}
+            onBlur={() => {
+              if (!this.state.readOnly) this.setState({ changes: true });
+            }}
+          />
+          <h5>{Locale[AppSettings.interfaceLanguage].description}</h5>
+          <Form.Control
+            as={"textarea"}
+            rows={3}
+            size="sm"
+            className="detailInput"
+            disabled={this.state.readOnly}
+            value={this.state.inputDescriptions[this.props.selectedLanguage]}
+            onChange={(event) => {
+              if (!this.state.readOnly)
+                this.setState((prev) => ({
+                  ...prev,
+                  inputDescriptions: {
+                    ...prev.inputDescriptions,
                     [this.props.selectedLanguage]: event.target.value,
                   },
                 }));

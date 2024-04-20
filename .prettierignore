@@ -4,3 +4,5 @@ build
 node_modules
 public
 package-lock.json
+.idea
+.next

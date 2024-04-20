@@ -58,6 +58,7 @@ export const en = {
   modalNewElemIRI: "The term will be created using IRI:",
   term: "term",
   termsCase: "terms",
+  source: "Source",
   authenticationError:
     "Authentication error. Please contact the server administrator.",
   authenticationUpdateError: "Authentication error. Please refresh the page.",

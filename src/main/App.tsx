@@ -15,6 +15,7 @@ import {
 import { Environment } from "../config/Environment";
 import { Locale } from "../config/Locale";
 import { StoreAlerts, StoreSettings } from "../config/Store";
+import { callToast } from "../config/ToastData";
 import {
   AppSettings,
   WorkspaceElements,
@@ -35,6 +36,7 @@ import {
 } from "../function/FunctionGetVars";
 import { nameGraphLink } from "../function/FunctionGraph";
 import { graph } from "../graph/Graph";
+import { getVocabulariesFromRemoteJSON } from "../interface/JSONInterface";
 import {
   checkForObsoleteDiagrams,
   retrieveContextData,
@@ -42,7 +44,6 @@ import {
   retrieveVocabularyData,
   updateContexts,
 } from "../interface/ContextInterface";
-import { getVocabulariesFromRemoteJSON } from "../interface/JSONInterface";
 import {
   abortTransaction,
   processTransaction,
@@ -58,7 +59,6 @@ import { updateVocabularyAnnotations } from "../queries/update/UpdateChangeQueri
 import { updateDiagramMetadata } from "../queries/update/UpdateDiagramQueries";
 import { MainView } from "./MainView";
 import { ToastService } from "./ToastService";
-import { callToast } from "../config/ToastData";
 
 interface DiagramAppProps {}
 
@@ -172,7 +172,7 @@ export default class App extends React.Component<
 
   async loadAndPrepareData(): Promise<boolean> {
     const process0 = await getVocabulariesFromRemoteJSON(
-      "https://raw.githubusercontent.com/opendata-mvcr/ontoGrapher/main/src/config/Vocabularies.json"
+      Environment.baseOntologyURL
     );
     if (!process0) return false;
     const process1 = retrieveInfoFromURLParameters();
