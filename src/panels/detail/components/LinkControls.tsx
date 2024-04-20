@@ -1,6 +1,6 @@
 import _ from "lodash";
-import React, { useRef, useState } from "react";
-import { CloseButton } from "react-bootstrap";
+import React, { useEffect, useRef, useState } from "react";
+import { CloseButton, Form } from "react-bootstrap";
 import { LanguageSelector } from "../../../components/LanguageSelector";
 import { LinkType, Representation } from "../../../config/Enum";
 import { LanguageObject } from "../../../config/Languages";
@@ -48,13 +48,25 @@ export const LinkControls: React.FC<Props> = (props: Props) => {
   const [sourceCardinality, setSourceCardinality] = useState<string>("0");
   const [targetCardinality, setTargetCardinality] = useState<string>("0");
   const [inputAltLabels, setInputAltLabels] = useState<AlternativeLabel[]>([]);
+  const [inputDefinitions, setInputDefinitions] = useState<LanguageObject>({});
+  const [inputDescriptions, setInputDescriptions] = useState<LanguageObject>(
+    {}
+  );
   const [selectedLabel, setSelectedLabel] = useState<LanguageObject>(
     initLanguageObject("")
   );
+  const [inputSource, setInputSource] = useState<string>("");
   const [readOnly, setReadOnly] = useState<boolean>(false);
   const [selectedLanguage, setSelectedLanguage] = useState<string>(
     AppSettings.canvasLanguage
   );
+
+  useEffect(() => {
+    return () => {
+      if (!readOnly) save();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const prevPropsID = useRef<string>("");
 
@@ -75,6 +87,11 @@ export const LinkControls: React.FC<Props> = (props: Props) => {
         const underlyingConnections = getUnderlyingFullConnections(props.id);
         if (!(underlyingConnections && iri in WorkspaceTerms))
           console.error("Error updating compact link.");
+        WorkspaceTerms[iri].altLabels = inputAltLabels;
+        WorkspaceTerms[iri].definitions = inputDefinitions;
+        WorkspaceTerms[iri].descriptions = inputDescriptions;
+        WorkspaceTerms[iri].source = inputSource;
+        WorkspaceElements[iri].selectedLabel = selectedLabel;
         setLabels(link!);
         queries.push(updateProjectElement(true, iri));
         setFullLinksCardinalitiesFromCompactLink(
@@ -141,6 +158,17 @@ export const LinkControls: React.FC<Props> = (props: Props) => {
         ? getSelectedLabels(iri, AppSettings.canvasLanguage)
         : initLanguageObject("")
     );
+    setInputDefinitions(
+      iri in WorkspaceElements
+        ? WorkspaceTerms[iri].definitions
+        : initLanguageObject("")
+    );
+    setInputDescriptions(
+      iri in WorkspaceElements
+        ? WorkspaceTerms[iri].descriptions
+        : initLanguageObject("")
+    );
+    setInputSource(iri in WorkspaceElements ? WorkspaceTerms[iri].source : "");
     setReadOnly(isReadOnly(props.id));
   }
 
@@ -208,6 +236,17 @@ export const LinkControls: React.FC<Props> = (props: Props) => {
       {AppSettings.representation === Representation.COMPACT &&
         WorkspaceLinks[props.id].type === LinkType.DEFAULT && (
           <>
+            <h5>{Locale[AppSettings.interfaceLanguage].source}</h5>
+            <Form.Control
+              size="sm"
+              className="detailInput"
+              value={inputSource}
+              disabled={readOnly}
+              onChange={(event) => setInputSource(event.target.value)}
+              onBlur={() => {
+                if (!readOnly) save();
+              }}
+            />
             <h5>{Locale[AppSettings.interfaceLanguage].detailPanelAltLabel}</h5>
             <DetailPanelAltLabels
               altLabels={inputAltLabels}
@@ -249,6 +288,46 @@ export const LinkControls: React.FC<Props> = (props: Props) => {
                 setInputAltLabels(newAL);
                 WorkspaceTerms[WorkspaceLinks[props.id].iri].altLabels = newAL;
                 save();
+              }}
+            />
+            <h5>
+              {Locale[AppSettings.interfaceLanguage].detailPanelDefinition}
+            </h5>
+            <Form.Control
+              as={"textarea"}
+              rows={3}
+              size="sm"
+              className="detailInput"
+              disabled={readOnly}
+              value={inputDefinitions[selectedLanguage]}
+              onChange={(event) => {
+                if (!readOnly)
+                  setInputDefinitions((prev) => ({
+                    ...prev,
+                    [selectedLanguage]: event.target.value,
+                  }));
+              }}
+              onBlur={() => {
+                if (!readOnly) save();
+              }}
+            />
+            <h5>{Locale[AppSettings.interfaceLanguage].description}</h5>
+            <Form.Control
+              as={"textarea"}
+              rows={3}
+              size="sm"
+              className="detailInput"
+              disabled={readOnly}
+              value={inputDescriptions[selectedLanguage]}
+              onChange={(event) => {
+                if (!readOnly)
+                  setInputDescriptions((prev) => ({
+                    ...prev,
+                    [selectedLanguage]: event.target.value,
+                  }));
+              }}
+              onBlur={() => {
+                if (!readOnly) save();
               }}
             />
             {WorkspaceLinks[props.id].iri in WorkspaceTerms && (
