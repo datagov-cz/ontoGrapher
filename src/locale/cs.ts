@@ -1,7 +1,11 @@
 import { en } from "./en";
 
 export const cs: { [Property in keyof typeof en]: string } = {
+  datatype: "Datový typ",
+  noDatatype: "Nespecifikovaný datový typ",
+  setDatatype: "Specifikovat datový typ",
   searchExistingTropes: "Hledat vlastnosti...",
+  editTrope: "Upravit vlastnost",
   listExportErrorNoConnection: "Chyba při získávání zdrojů pojmů z databáze.",
   listExportErrorNoTerms: "Tento export by vytvořil prázdný soubor.",
   listExportAlert:

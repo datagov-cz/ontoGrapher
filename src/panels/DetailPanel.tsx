@@ -6,6 +6,7 @@ import { WorkspaceElements } from "../config/Variables";
 import { DetailElement } from "./detail/DetailElement";
 import DetailLink from "./detail/DetailLink";
 import DetailMultipleLinks from "./detail/DetailMultipleLinks";
+import { TropeOverlay } from "./detail/components/element/TropeOverlay";
 
 interface Props {
   projectLanguage: string;
@@ -105,6 +106,11 @@ export default class DetailPanel extends React.Component<Props, State> {
                 />
               )}
             </div>
+            <TropeOverlay
+              projectLanguage={this.props.projectLanguage}
+              performTransaction={this.props.performTransaction}
+              save={this.save}
+            />
           </ResizableBox>
         )}
       </div>

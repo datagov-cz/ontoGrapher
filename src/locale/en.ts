@@ -1,5 +1,9 @@
 export const en = {
+  datatype: "Datatype",
+  noDatatype: "Unspecified datatype",
+  setDatatype: "Specify datatype",
   changelogLoadError: "Error: unable to load changelog file.",
+  editTrope: "Edit trope",
   searchExistingTropes: "Search tropes...",
   listExportErrorNoConnection:
     "Unable to retrieve sources of terms from the database.",

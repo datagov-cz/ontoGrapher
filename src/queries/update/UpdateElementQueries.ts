@@ -3,6 +3,7 @@ import { Languages } from "../../config/Languages";
 import {
   AppSettings,
   Diagrams,
+  TropeDatatypes,
   WorkspaceElements,
   WorkspaceTerms,
   WorkspaceVocabularies,
@@ -68,6 +69,12 @@ export function updateProjectElement(del: boolean, ...iris: string[]): string {
         qb.s(qb.i(iri), "dc:title", qb.a(names), names.length > 0),
         qb.s(
           qb.i(iri),
+          "rdfs:range",
+          qb.i(TropeDatatypes[iri]),
+          iri in TropeDatatypes && !!TropeDatatypes[iri]
+        ),
+        qb.s(
+          qb.i(iri),
           "skos:definition",
           qb.a(definitions),
           definitions.length > 0
@@ -113,6 +120,9 @@ export function updateProjectElement(del: boolean, ...iris: string[]): string {
           qb.s(qb.i(iri), "skos:altLabel", "?alt"),
           qb.s(qb.i(iri), "skos:definition", "?definition"),
           qb.s(qb.i(iri), "dc:title", "?title"),
+          qb.s(qb.i(iri), "dc:relation", "?relation"),
+          qb.s(qb.i(iri), "dc:description", "?description"),
+          qb.s(qb.i(iri), "rdfs:range", "?range"),
         ].map((stmt) =>
           DELETE`${qb.g(graph, [stmt])}`.WHERE`${qb.g(graph, [stmt])}`.build()
         )

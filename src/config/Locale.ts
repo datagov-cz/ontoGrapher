@@ -4,6 +4,8 @@ import { enHelp } from "../locale/enhelp";
 import { csHelp } from "../locale/cshelp";
 import { enToast } from "../locale/entoast";
 import { csToast } from "../locale/cstoast";
+import { csDatatypes } from "../locale/csdatatypes";
+import { enDatatypes } from "../locale/endatatypes";
 
 export const Locale: {
   [key: string]: { [Property in keyof typeof en]: string };
@@ -24,4 +26,11 @@ export const LocaleToast: {
 } = {
   en: enToast,
   cs: csToast,
+};
+
+export const LocaleDatatypes: {
+  [key: string]: { [key: string]: string };
+} = {
+  en: enDatatypes,
+  cs: csDatatypes,
 };

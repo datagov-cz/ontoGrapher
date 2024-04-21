@@ -232,7 +232,7 @@ export function isTermReadOnly(iri: string) {
   );
 }
 
-export function getParentOfIntrinsicTropeType(tropeID: string) {
+export function getParentsOfIntrinsicTropeType(tropeID: string) {
   const connections = getActiveSourceConnections(tropeID)
     .concat(getActiveTargetConnections(tropeID))
     .filter((link) => {
@@ -250,6 +250,39 @@ export function getParentOfIntrinsicTropeType(tropeID: string) {
       ? WorkspaceLinks[link].target
       : WorkspaceLinks[link].source
   );
+}
+
+export function getConnectionAndParentOfIntrinsicTropeType(tropeID: string): {
+  connection: string;
+  parent: string;
+} {
+  const blank = { connection: "", parent: "" };
+  if (!(tropeID in WorkspaceTerms)) return blank;
+  const connectionFind = getActiveSourceConnections(tropeID)
+    .concat(getActiveTargetConnections(tropeID))
+    .find((link) => {
+      return (
+        ([
+          ...getEquivalents(parsePrefix("z-sgov-pojem", "je-vlastností")),
+          ...getEquivalents(parsePrefix("z-sgov-pojem", "má-vlastnost")),
+        ].includes(WorkspaceLinks[link].iri) &&
+          WorkspaceLinks[link].source === tropeID) ||
+        WorkspaceLinks[link].target === tropeID
+      );
+    });
+  if (connectionFind) {
+    if (WorkspaceLinks[connectionFind].source === tropeID) {
+      return {
+        connection: connectionFind,
+        parent: WorkspaceLinks[connectionFind].target,
+      };
+    } else if (WorkspaceLinks[connectionFind].target === tropeID) {
+      return {
+        connection: connectionFind,
+        parent: WorkspaceLinks[connectionFind].source,
+      };
+    } else return blank;
+  } else return blank;
 }
 
 export function getIntrinsicTropeTypeIDs(

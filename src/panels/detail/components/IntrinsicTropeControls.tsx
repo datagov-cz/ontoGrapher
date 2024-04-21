@@ -1,4 +1,5 @@
 import RemoveIcon from "@mui/icons-material/Remove";
+import EditIcon from "@mui/icons-material/Edit";
 import classNames from "classnames";
 import React, { useEffect, useState, useCallback } from "react";
 import { Button, Form, OverlayTrigger, Tooltip } from "react-bootstrap";
@@ -22,6 +23,7 @@ import { ListItemControls } from "./items/ListItemControls";
 import { setLabels } from "../../../function/FunctionGraph";
 import { graph } from "../../../graph/Graph";
 import { addToSelection } from "../../../function/FunctionDiagram";
+import { StoreSettings } from "../../../config/Store";
 
 interface Props {
   performTransaction: (...queries: string[]) => void;
@@ -79,6 +81,28 @@ export const IntrinsicTropeControls: React.FC<Props> = (props: Props) => {
               hovered: i === hoveredTrope,
             })}
           >
+            <OverlayTrigger
+              placement="left"
+              delay={1000}
+              overlay={
+                <Tooltip>
+                  {Locale[AppSettings.interfaceLanguage].editTrope}
+                </Tooltip>
+              }
+            >
+              <Button
+                className="plainButton"
+                variant="light"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  StoreSettings.update((s) => {
+                    s.tropeOverlay = iri;
+                  });
+                }}
+              >
+                <EditIcon />
+              </Button>
+            </OverlayTrigger>
             <OverlayTrigger
               placement="left"
               delay={1000}

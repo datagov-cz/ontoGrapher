@@ -35,7 +35,6 @@ import { updateProjectLink } from "../../../queries/update/UpdateLinkQueries";
 import { IntrinsicTropeControls } from "./IntrinsicTropeControls";
 import { DetailPanelAltLabels } from "./description/DetailPanelAltLabels";
 import { DetailPanelCardinalities } from "./description/DetailPanelCardinalities";
-
 interface Props {
   id: string;
   projectLanguage: string;
@@ -178,42 +177,31 @@ export const LinkControls: React.FC<Props> = (props: Props) => {
   return (
     <>
       <div className={"detailTitle"}>
-        <div className="top">
-          {props.close && (
-            <CloseButton
-              className="closeButton"
-              onClick={() => props.close!()}
-            />
-          )}
-          <span className="languageSelect">
-            <LanguageSelector
-              language={selectedLanguage}
-              setLanguage={(lang: string) => setSelectedLanguage(lang)}
-            />
-          </span>
-          <span className="title link">
-            <i>
-              {getDisplayLabel(
-                WorkspaceLinks[props.id].source,
-                selectedLanguage
-              )}
-            </i>
-            &nbsp;
-            <b>
-              {getLabelOrBlank(
-                getLinkOrVocabElem(WorkspaceLinks[props.id].iri).labels,
-                selectedLanguage
-              )}
-            </b>
-            &nbsp;
-            <i>
-              {getDisplayLabel(
-                WorkspaceLinks[props.id].target,
-                selectedLanguage
-              )}
-            </i>
-          </span>
-        </div>
+        {props.close && (
+          <CloseButton className="closeButton" onClick={() => props.close!()} />
+        )}
+        <span className="languageSelect">
+          <LanguageSelector
+            language={selectedLanguage}
+            setLanguage={(lang: string) => setSelectedLanguage(lang)}
+          />
+        </span>
+        <span className="title link">
+          <i>
+            {getDisplayLabel(WorkspaceLinks[props.id].source, selectedLanguage)}
+          </i>
+          &nbsp;
+          <b>
+            {getLabelOrBlank(
+              getLinkOrVocabElem(WorkspaceLinks[props.id].iri).labels,
+              selectedLanguage
+            )}
+          </b>
+          &nbsp;
+          <i>
+            {getDisplayLabel(WorkspaceLinks[props.id].target, selectedLanguage)}
+          </i>
+        </span>
       </div>
       <h5>{Locale[AppSettings.interfaceLanguage].cardinalities}</h5>
       <DetailPanelCardinalities

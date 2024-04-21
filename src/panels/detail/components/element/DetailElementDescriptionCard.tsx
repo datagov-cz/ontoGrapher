@@ -27,7 +27,7 @@ import {
   isEquivalent,
 } from "../../../../function/FunctionEquivalents";
 import {
-  getParentOfIntrinsicTropeType,
+  getParentsOfIntrinsicTropeType,
   getVocabularyFromScheme,
 } from "../../../../function/FunctionGetVars";
 import { graph } from "../../../../graph/Graph";
@@ -100,7 +100,7 @@ export class DetailElementDescriptionCard extends React.Component<
         isElementVisible([stereotype], AppSettings.representation, true)
       );
     }
-    // kind, subkind, mixin...
+    // kind, sub-kind, mixin...
     if (type === "data") {
       input = this.state.inputTypeData;
       stereotypes = Object.keys(Stereotypes).filter(
@@ -214,7 +214,7 @@ export class DetailElementDescriptionCard extends React.Component<
           this.state.inputTypeType
         )
       ) {
-        getParentOfIntrinsicTropeType(this.props.id).forEach((id) => {
+        getParentsOfIntrinsicTropeType(this.props.id).forEach((id) => {
           const elem = graph.getElements().find((elem) => elem.id === id);
           if (elem)
             drawGraphElement(

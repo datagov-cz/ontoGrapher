@@ -12,6 +12,7 @@ export const StoreAlerts = new Store<StateAlerts>({
 interface StateSettings {
   toastQueue: string[];
   diagramPanelSelectedDiagram: string;
+  tropeOverlay: string;
   // For diagram manager
   mainViewMode: MainViewMode;
   selectedDiagram: string;
@@ -22,6 +23,7 @@ interface StateSettings {
 
 export const StoreSettings = new Store<StateSettings>({
   toastQueue: [],
+  tropeOverlay: "",
   mainViewMode: MainViewMode.CANVAS,
   detailPanelMode: DetailPanelMode.HIDDEN,
   detailPanelSelectedID: "",

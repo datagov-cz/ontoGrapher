@@ -93,7 +93,8 @@ export var WorkspaceTerms: {
   };
 } = {};
 
-export var attributesForRPP: {
+// TODO: implement
+export var AttributesForRPP: {
   [key: string]: Partial<{
     shared: boolean;
     agenda: string;
@@ -101,6 +102,8 @@ export var attributesForRPP: {
     nonPublicSource: string;
   }>;
 } = {};
+
+export var TropeDatatypes: { [key: string]: string } = {};
 
 export var Links: {
   [key: string]: {

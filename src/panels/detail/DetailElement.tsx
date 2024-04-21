@@ -27,12 +27,12 @@ export const DetailElement: React.FC<Props> = (props: Props) => {
     AppSettings.canvasLanguage
   );
 
-  const [overlay, setOverlay] = useState<boolean>(false);
+  const [connectionOverlay, setConnectionOverlay] = useState<boolean>(false);
   const [linkID, setLinkID] = useState<string>("");
 
   return (
     <div className="detailElement">
-      <div className={classNames("accordions", { blur: overlay })}>
+      <div className={classNames("accordions", { blur: connectionOverlay })}>
         <div className={"detailTitle"}>
           <div className="top">
             <span className="languageSelect">
@@ -51,7 +51,6 @@ export const DetailElement: React.FC<Props> = (props: Props) => {
               />
             </span>
           </div>
-          <p>{getLinkOrVocabElem(props.id).definitions[selectedLanguage]}</p>
         </div>
         <Accordion defaultActiveKey={"0"}>
           <DetailElementDescriptionCard
@@ -67,7 +66,7 @@ export const DetailElement: React.FC<Props> = (props: Props) => {
             performTransaction={props.performTransaction}
             infoFunction={(link: string) => {
               setLinkID(link);
-              setOverlay(true);
+              setConnectionOverlay(true);
             }}
           />
           <DetailElementDiagramCard id={props.id} />
@@ -77,8 +76,8 @@ export const DetailElement: React.FC<Props> = (props: Props) => {
         projectLanguage={selectedLanguage}
         id={linkID}
         performTransaction={props.performTransaction}
-        visible={overlay}
-        close={() => setOverlay(false)}
+        visible={connectionOverlay}
+        close={() => setConnectionOverlay(false)}
         save={props.save}
       />
     </div>
