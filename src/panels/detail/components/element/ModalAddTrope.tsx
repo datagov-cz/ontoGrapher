@@ -16,7 +16,6 @@ import {
   WorkspaceElements,
   WorkspaceLinks,
   WorkspaceTerms,
-  WorkspaceVocabularies,
 } from "../../../../config/Variables";
 import { CellColors } from "../../../../config/visual/CellColors";
 import { createTerm } from "../../../../function/FunctionCreateElem";
@@ -134,13 +133,12 @@ export const ModalAddTrope: React.FC<Props> = (props: Props) => {
     <Modal
       show={props.modalTropes}
       onEntering={() => {
-        if (!vocabulary) {
-          const vocab = Object.keys(WorkspaceVocabularies).find(
-            (vocab) => !WorkspaceVocabularies[vocab].readOnly
-          );
-          if (!vocab) props.hideModal();
-          else setVocabulary(vocab);
-        }
+        const vocab = getVocabularyFromScheme(
+          WorkspaceTerms[props.term].inScheme
+        );
+        if (!vocab) props.hideModal();
+        else setVocabulary(vocab);
+
         setError(Locale[AppSettings.interfaceLanguage].modalNewElemError);
         setInput(initLanguageObject(""));
         setAvailableTropes(getUnusedTropes());
