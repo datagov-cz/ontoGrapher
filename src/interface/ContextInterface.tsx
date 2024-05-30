@@ -259,6 +259,24 @@ export async function retrieveContextData(): Promise<boolean> {
       `Link ID ${id} ( ${WorkspaceLinks[id].source} -- ${WorkspaceLinks[id].iri} -> ${WorkspaceLinks[id].target} ) deactivated due to its statement counterpart(s) missing.`
     );
     WorkspaceLinks[id].active = false;
+    // Really poorly thought out hack!
+    if (
+      WorkspaceLinks[id].iri ===
+        parsePrefix("z-sgov-pojem", "má-vztažený-prvek-1") ||
+      WorkspaceLinks[id].iri ===
+        parsePrefix("z-sgov-pojem", "má-vztažený-prvek-2")
+    ) {
+      const relElem = WorkspaceLinks[id].source;
+      const relLink = Object.keys(WorkspaceLinks).find(
+        (id) => WorkspaceLinks[id].iri === relElem
+      );
+      if (relLink) {
+        console.warn(
+          `Link ID ${relLink} ( ${WorkspaceLinks[relLink].source} -- ${WorkspaceLinks[relLink].iri} -> ${WorkspaceLinks[relLink].target} ) deactivated due to its statement counterpart(s) missing.`
+        );
+        WorkspaceLinks[relLink].active = false;
+      }
+    }
   }
   return await processTransaction(
     AppSettings.contextEndpoint,
