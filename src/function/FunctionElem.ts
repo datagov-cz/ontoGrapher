@@ -48,6 +48,7 @@ import { restoreHiddenElem, setRepresentation } from "./FunctionGraph";
 import { initConnections } from "./FunctionRestriction";
 import { CellColors } from "../config/visual/CellColors";
 import { getEquivalents } from "./FunctionEquivalents";
+import isUrl from "is-url";
 
 export function resizeElem(id: string, highlight: boolean = true) {
   let view = paper.findViewByModel(id);
@@ -179,11 +180,11 @@ export function isElementVisible(
       )) &&
     (strict
       ? _.intersection(
-          RepresentationConfig[representation].visibleStereotypes.flatMap((s) =>
-            getEquivalents(s)
-          ),
-          types
-        ).length > 0
+        RepresentationConfig[representation].visibleStereotypes.flatMap((s) =>
+          getEquivalents(s)
+        ),
+        types
+      ).length > 0
       : true)
   );
 }
@@ -222,7 +223,7 @@ export function isElementPositionOutdated(elem: joint.dia.Element) {
   const id = elem.id;
   return (
     position.x !==
-      WorkspaceElements[id].position[AppSettings.selectedDiagram].x ||
+    WorkspaceElements[id].position[AppSettings.selectedDiagram].x ||
     position.y !== WorkspaceElements[id].position[AppSettings.selectedDiagram].y
   );
 }
@@ -308,15 +309,13 @@ export async function putElementsOnCanvas(
   if (event.dataTransfer) {
     const dataToParse = event.dataTransfer.getData("newClass");
     const data = JSON.parse(dataToParse);
-    const iris = data.iri.filter((iri: string) => {
-      return !(iri in WorkspaceTerms);
-    });
-    const ids = data.id.filter((id: string) => !graph.getCell(id));
     if (!data) {
       console.error(`Unable to parse element information from data:
       ${dataToParse}`);
       return [];
     }
+    const iris: string[] = data.iri;
+    const ids: string[] = data.id.filter((id: string) => !graph.getCell(id));
     if (iris.length === 0 && ids.length === 0) {
       console.warn(`Expected to receive valid IRI data, got
       ${dataToParse}
@@ -338,11 +337,21 @@ export async function putElementsOnCanvas(
         AppSettings.contextEndpoint,
         iris
       );
+      const readOnlyTermsArgument = Object.keys(relationships);
+      const readOnlyTermsTropes: string[] = Object.values(relationships)
+        .flatMap(r => r)
+        .filter(
+          (r) =>
+            r.onProperty === parsePrefix("z-sgov-pojem", "má-vlastnost") &&
+            isUrl(r.target) &&
+            !(r.target in WorkspaceTerms)
+        )
+        .map((r) => r.target);
       const readOnlyTerms = await fetchReadOnlyTerms(
         AppSettings.contextEndpoint,
         iris.concat(
           Representation.COMPACT === AppSettings.representation
-            ? Object.keys(relationships)
+            ? readOnlyTermsArgument.concat(readOnlyTermsTropes)
             : []
         )
       );

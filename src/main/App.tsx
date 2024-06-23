@@ -15,6 +15,7 @@ import {
 import { Environment } from "../config/Environment";
 import { Locale } from "../config/Locale";
 import { StoreAlerts, StoreSettings } from "../config/Store";
+import { callToast } from "../config/ToastData";
 import {
   AppSettings,
   WorkspaceElements,
@@ -58,7 +59,6 @@ import { updateVocabularyAnnotations } from "../queries/update/UpdateChangeQueri
 import { updateDiagramMetadata } from "../queries/update/UpdateDiagramQueries";
 import { MainView } from "./MainView";
 import { ToastService } from "./ToastService";
-import { callToast } from "../config/ToastData";
 
 interface DiagramAppProps {}
 

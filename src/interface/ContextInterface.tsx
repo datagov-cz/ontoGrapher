@@ -51,6 +51,7 @@ import { updateProjectElement } from "../queries/update/UpdateElementQueries";
 import { updateProjectLinkParallel } from "../queries/update/UpdateLinkQueries";
 import { fetchUserSettings } from "../queries/update/UpdateMiscQueries";
 import { processQuery, processTransaction } from "./TransactionInterface";
+import isUrl from "is-url";
 
 export function retrieveInfoFromURLParameters(): boolean {
   if (!(Environment.language in Languages))
@@ -214,9 +215,25 @@ export async function retrieveContextData(): Promise<boolean> {
   const missingTerms: string[] = Object.keys(WorkspaceElements).filter(
     (id) => !(id in WorkspaceTerms)
   );
-  insertNewCacheTerms(
-    await fetchReadOnlyTerms(AppSettings.contextEndpoint, missingTerms)
+  const readOnlyTerms = await fetchReadOnlyTerms(
+    AppSettings.contextEndpoint,
+    missingTerms
   );
+  insertNewCacheTerms(readOnlyTerms);
+  const readOnlyTermsTropes = Object.values(readOnlyTerms)
+    .flatMap((t) => t.restrictions)
+    .filter(
+      (r) =>
+        r.onProperty === parsePrefix("z-sgov-pojem", "má-vlastnost") &&
+        isUrl(r.target) &&
+        !(r.target in WorkspaceTerms)
+    )
+    .map((r) => r.target);
+  if (readOnlyTermsTropes.length > 0) {
+    insertNewCacheTerms(
+      await fetchReadOnlyTerms(AppSettings.contextEndpoint, readOnlyTermsTropes)
+    );
+  }
   Object.keys(WorkspaceLinks)
     .filter((id) => {
       const iri = WorkspaceLinks[id].iri;

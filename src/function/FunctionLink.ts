@@ -108,8 +108,8 @@ export function setCompactLinkCardinalitiesFromFullComponents(
           ? a
           : b
         : isNumber(a)
-        ? b
-        : a;
+          ? b
+          : a;
     }
   };
   const mvp1SourceCardinality = WorkspaceLinks[mvp1linkID].sourceCardinality;
@@ -333,35 +333,28 @@ function deleteConnections(id: string): string[] {
 
 export function deleteLink(id: string): string[] {
   const queries: string[] = [];
-  if (AppSettings.representation === Representation.FULL) {
-    queries.push(...deleteConnections(id));
-    const compactConn = Object.keys(WorkspaceLinks).find(
-      (link) =>
-        WorkspaceLinks[link].active &&
-        WorkspaceLinks[link].iri === WorkspaceLinks[id].source &&
-        WorkspaceLinks[link].target === WorkspaceLinks[id].target
-    );
-    if (compactConn) {
-      queries.push(...deleteConnections(compactConn));
-    }
-    return queries;
-  } else {
-    const deleteLinks = getUnderlyingFullConnections(id as string);
-    if (
-      deleteLinks &&
-      WorkspaceLinks[deleteLinks.src] &&
-      WorkspaceLinks[deleteLinks.tgt]
-    ) {
-      WorkspaceLinks[deleteLinks.src].active = false;
-      WorkspaceLinks[deleteLinks.tgt].active = false;
-      queries.push(
-        ...deleteConnections(deleteLinks.src),
-        ...deleteConnections(deleteLinks.tgt)
-      );
-    }
-    queries.push(...deleteConnections(id));
-    AppSettings.selectedLinks = [];
+  const compactConn = Object.keys(WorkspaceLinks).find(
+    (link) =>
+      WorkspaceLinks[link].active &&
+      WorkspaceLinks[link].iri === WorkspaceLinks[id].source &&
+      WorkspaceLinks[link].target === WorkspaceLinks[id].target
+  );
+  if (compactConn) {
+    queries.push(...deleteConnections(compactConn));
   }
+  const deleteLinks = getUnderlyingFullConnections(id as string);
+  if (deleteLinks) {
+    if (deleteLinks.src in WorkspaceLinks) {
+      WorkspaceLinks[deleteLinks.src].active = false;
+      queries.push(...deleteConnections(deleteLinks.src));
+    }
+    if (deleteLinks.tgt in WorkspaceLinks) {
+      WorkspaceLinks[deleteLinks.tgt].active = false;
+      queries.push(...deleteConnections(deleteLinks.tgt));
+    }
+  }
+  queries.push(...deleteConnections(id));
+  AppSettings.selectedLinks = [];
   return queries;
 }
 

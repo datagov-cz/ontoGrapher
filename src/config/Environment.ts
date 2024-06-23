@@ -4,11 +4,7 @@ import {
 } from "@opendata-mvcr/assembly-line-shared";
 import { Components } from "@opendata-mvcr/assembly-line-shared/dist/env/types";
 
-type LocalVars =
-  | "PUBLIC_URL"
-  | "AUTHENTICATION"
-  | "DEBUG_DATA"
-  | "TERM_LANGUAGE";
+type LocalVars = "PUBLIC_URL" | "AUTHENTICATION" | "DEBUG" | "TERM_LANGUAGE";
 
 setProcessEnv(process.env);
 const ENV = getEnvInstance<LocalVars>();
@@ -33,7 +29,16 @@ export const Environment: {
   context: ENV.get("CONTEXT"),
   id: ENV.get("ID"),
   url: ENV.get("URL"),
-  auth: ENV.get("AUTHENTICATION", "true") === "true",
-  debug: ENV.get("DEBUG", "true") === "true",
-  language: ENV.get("TERM_LANGUAGE"),
+  auth: getVar("AUTHENTICATION", "true") === "true",
+  debug: getVar("DEBUG", "true") === "true",
+  language: getVar("TERM_LANGUAGE", "cs"),
 };
+
+function getVar<Type>(variable: LocalVars, fallback: Type): Type {
+  try {
+    return ENV.get(variable);
+  } catch (error) {
+    console.warn(error);
+    return fallback;
+  }
+}

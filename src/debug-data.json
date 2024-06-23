@@ -1,1212 +1,1146 @@
 {
-    "WorkspaceElements": {},
-    "WorkspaceLinks": {},
-    "WorkspaceVocabularies": {
-        "http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/uml": {
-            "labels": {
-                "cs": "UML",
-                "en": "UML"
-            },
-            "readOnly": true,
-            "namespace": "",
-            "graph": "http://onto.fel.cvut.cz/ontologies/application/ontoGrapher",
-            "color": "#ffe0b2",
-            "glossary": "http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/uml"
-        },
-        "https://slovník.gov.cz/základní": {
-            "labels": {
-                "cs": "Z-SGoV",
-                "en": "Z-SGoV"
-            },
-            "readOnly": true,
-            "namespace": "https://slovník.gov.cz/základní/pojem/",
-            "graph": "",
-            "glossary": "https://slovník.gov.cz/základní/glosář",
-            "color": "#ffcdd2"
-        },
-        "https://slovník.gov.cz/generický/netlify-test": {
-            "labels": {
-                "cs": "netlify-test"
-            },
-            "readOnly": false,
-            "namespace": "https://slovník.gov.cz/generický/netlify-test/pojem/",
-            "graph": "https://slovník.gov.cz/generický/netlify-test/verze/33b38110-64d0-4f77-acd1-2e8b7771e194",
-            "glossary": "https://slovník.gov.cz/generický/netlify-test/glosář",
-            "color": "#e1bee7",
-            "changeContext": "https://slovník.gov.cz/generický/netlify-test/verze/33b38110-64d0-4f77-acd1-2e8b7771e194/změny"
-        }
+  "WorkspaceElements": {},
+  "WorkspaceLinks": {},
+  "WorkspaceVocabularies": {
+    "http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/uml": {
+      "labels": {
+        "cs": "UML",
+        "en": "UML"
+      },
+      "readOnly": true,
+      "namespace": "",
+      "graph": "http://onto.fel.cvut.cz/ontologies/application/ontoGrapher",
+      "color": "#ffe0b2",
+      "glossary": "http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/uml"
     },
-    "WorkspaceTerms": {},
-    "Links": {
-        "http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/uml/generalization": {
-            "subClassOfDomain": [],
-            "subClassOfRange": [],
-            "labels": {
-                "cs": "je podtřídou",
-                "en": "is subclass of"
-            },
-            "definitions": {
-                "cs": "",
-                "en": ""
-            },
-            "inScheme": "http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/uml",
-            "type": 1,
-            "domain": "",
-            "range": "",
-            "inverseOf": "",
-            "defaultSourceCardinality": {
-                "first": "0",
-                "second": "0"
-            },
-            "defaultTargetCardinality": {
-                "first": "1",
-                "second": "*"
-            }
-        },
-        "https://slovník.gov.cz/základní/pojem/má-vztažený-prvek": {
-            "labels": {
-                "cs": "má vztažený prvek",
-                "en": "mediates"
-            },
-            "definitions": {
-                "cs": "Typ vazby, která propojuje vztah a prvky, které tento vztah určují",
-                "en": "Type of link which connects a relation and endurants mediated by the relation."
-            },
-            "altLabels": [],
-            "types": [
-                "http://www.w3.org/2002/07/owl#ObjectProperty"
-            ],
-            "inScheme": "https://slovník.gov.cz/základní/glosář",
-            "subClassOf": [],
-            "restrictions": [],
-            "type": 0,
-            "domain": "https://slovník.gov.cz/základní/pojem/vztah",
-            "range": "https://slovník.gov.cz/základní/pojem/proměnný-prvek",
-            "inverseOf": "https://slovník.gov.cz/základní/pojem/je-ve-vztahu",
-            "subClassOfDomain": [],
-            "subClassOfRange": [],
-            "defaultSourceCardinality": {
-                "first": "0",
-                "second": "0"
-            },
-            "defaultTargetCardinality": {
-                "first": "1",
-                "second": "1"
-            }
-        },
-        "https://slovník.gov.cz/základní/pojem/je-vlastností": {
-            "labels": {
-                "cs": "je vlastností",
-                "en": "inheres in"
-            },
-            "definitions": {
-                "cs": "Typ vazby, která spojuje vlastnost s proměnným prvkem, jehož je vlastností.",
-                "en": "Type of link, which connects an intrinsic trope with an endurant, it inheres in."
-            },
-            "altLabels": [],
-            "types": [
-                "http://www.w3.org/2002/07/owl#ObjectProperty"
-            ],
-            "inScheme": "https://slovník.gov.cz/základní/glosář",
-            "subClassOf": [],
-            "restrictions": [],
-            "type": 0,
-            "domain": "https://slovník.gov.cz/základní/pojem/vlastnost",
-            "range": "https://slovník.gov.cz/základní/pojem/proměnný-prvek",
-            "inverseOf": "https://slovník.gov.cz/základní/pojem/má-vlastnost",
-            "subClassOfDomain": [],
-            "subClassOfRange": [],
-            "defaultSourceCardinality": {
-                "first": "0",
-                "second": "0"
-            },
-            "defaultTargetCardinality": {
-                "first": "1",
-                "second": "*"
-            }
-        },
-        "https://slovník.gov.cz/základní/pojem/je-ve-vztahu": {
-            "labels": {
-                "cs": "je ve vztahu",
-                "en": "is mediated by"
-            },
-            "definitions": {
-                "cs": "Typ vazby, která propojuje proměnný prvek a vztah, jímž je proměnný prvek vztažen. Např. 'František Novák' 'je ve vztahu' 'Manželství Františka Nováka'",
-                "en": "Type of link, which connects an endurant and a relation which mediates the endurant."
-            },
-            "altLabels": [],
-            "types": [
-                "http://www.w3.org/2002/07/owl#ObjectProperty"
-            ],
-            "inScheme": "https://slovník.gov.cz/základní/glosář",
-            "subClassOf": [],
-            "restrictions": [],
-            "type": 0,
-            "domain": "https://slovník.gov.cz/základní/pojem/proměnný-prvek",
-            "range": "https://slovník.gov.cz/základní/pojem/vztah",
-            "inverseOf": "https://slovník.gov.cz/základní/pojem/má-vztažený-prvek",
-            "subClassOfDomain": [],
-            "subClassOfRange": [],
-            "defaultSourceCardinality": {
-                "first": "1",
-                "second": "1"
-            },
-            "defaultTargetCardinality": {
-                "first": "1",
-                "second": "*"
-            }
-        },
-        "https://slovník.gov.cz/základní/pojem/má-vlastnost": {
-            "labels": {
-                "cs": "má vlastnost",
-                "en": "has intrinsic trope"
-            },
-            "definitions": {
-                "cs": "Type of link which connects an endurant with its intrinsic trope, e.g. 'Franta' 'has intrinsic trope' 'age of Franta'",
-                "en": ""
-            },
-            "altLabels": [],
-            "types": [
-                "http://www.w3.org/2002/07/owl#ObjectProperty"
-            ],
-            "inScheme": "https://slovník.gov.cz/základní/glosář",
-            "subClassOf": [],
-            "restrictions": [],
-            "type": 0,
-            "domain": "https://slovník.gov.cz/základní/pojem/proměnný-prvek",
-            "range": "https://slovník.gov.cz/základní/pojem/vlastnost",
-            "inverseOf": "https://slovník.gov.cz/základní/pojem/je-vlastností",
-            "subClassOfDomain": [],
-            "subClassOfRange": [],
-            "defaultSourceCardinality": {
-                "first": "0",
-                "second": "0"
-            },
-            "defaultTargetCardinality": {
-                "first": "1",
-                "second": "*"
-            }
-        },
-        "https://slovník.gov.cz/základní/pojem/má-vztažený-prvek-1": {
-            "labels": {
-                "cs": "má vztažený prvek 1",
-                "en": "mediates 1"
-            },
-            "definitions": {
-                "cs": "Typ vazby, která propojuje vztah a doménu tohoto vztahu.",
-                "en": ""
-            },
-            "altLabels": [],
-            "types": [
-                "http://www.w3.org/2002/07/owl#ObjectProperty"
-            ],
-            "inScheme": "https://slovník.gov.cz/základní/glosář",
-            "subClassOf": [],
-            "restrictions": [],
-            "type": 0,
-            "domain": "https://slovník.gov.cz/základní/pojem/vztah",
-            "range": "https://slovník.gov.cz/základní/pojem/proměnný-prvek",
-            "subClassOfDomain": [],
-            "subClassOfRange": [],
-            "defaultSourceCardinality": {
-                "first": "0",
-                "second": "0"
-            },
-            "defaultTargetCardinality": {
-                "first": "1",
-                "second": "*"
-            }
-        },
-        "https://slovník.gov.cz/základní/pojem/má-vztažený-prvek-2": {
-            "labels": {
-                "cs": "má vztažený prvek 2",
-                "en": "mediates 2"
-            },
-            "definitions": {
-                "cs": "Typ vazby, která propojuje vztah a obor hodnot tohoto vztahu.",
-                "en": ""
-            },
-            "altLabels": [],
-            "types": [
-                "http://www.w3.org/2002/07/owl#ObjectProperty"
-            ],
-            "inScheme": "https://slovník.gov.cz/základní/glosář",
-            "subClassOf": [],
-            "restrictions": [],
-            "type": 0,
-            "domain": "https://slovník.gov.cz/základní/pojem/vztah",
-            "range": "https://slovník.gov.cz/základní/pojem/proměnný-prvek",
-            "subClassOfDomain": [],
-            "subClassOfRange": [],
-            "defaultSourceCardinality": {
-                "first": "0",
-                "second": "0"
-            },
-            "defaultTargetCardinality": {
-                "first": "1",
-                "second": "*"
-            }
-        },
-        "https://slovník.gov.cz/základní/pojem/je-vykonána": {
-            "labels": {
-                "cs": "je vykonána",
-                "en": "is performed by"
-            },
-            "definitions": {
-                "cs": "Propojuje akci a agenta, který jí vykonává",
-                "en": "Type of link which connects an action and the agent who performs the action."
-            },
-            "altLabels": [],
-            "types": [
-                "http://www.w3.org/2002/07/owl#ObjectProperty"
-            ],
-            "inScheme": "https://slovník.gov.cz/základní/glosář",
-            "subClassOf": [],
-            "restrictions": [],
-            "type": 0,
-            "domain": "https://slovník.gov.cz/základní/pojem/akce",
-            "range": "https://slovník.gov.cz/základní/pojem/agent",
-            "subClassOfDomain": [],
-            "subClassOfRange": [],
-            "defaultSourceCardinality": {
-                "first": "0",
-                "second": "0"
-            },
-            "defaultTargetCardinality": {
-                "first": "1",
-                "second": "*"
-            }
-        },
-        "https://slovník.gov.cz/základní/pojem/má-účastníka": {
-            "labels": {
-                "cs": "má účastníka",
-                "en": "has participant"
-            },
-            "definitions": {
-                "cs": "Tato vazba spojuje událost a proměnný prvek, který se jí účastní. Např. Fotbalista se účastní fotbalového zápasu.",
-                "en": "This link connects an event and an endurant which participates in the event. For example, a soccer player participates in a football match."
-            },
-            "altLabels": [],
-            "types": [
-                "http://www.w3.org/2002/07/owl#ObjectProperty"
-            ],
-            "inScheme": "https://slovník.gov.cz/základní/glosář",
-            "subClassOf": [],
-            "restrictions": [],
-            "type": 0,
-            "domain": "https://slovník.gov.cz/základní/pojem/událost",
-            "range": "https://slovník.gov.cz/základní/pojem/okamžitý-stav-proměnného-prvku",
-            "subClassOfDomain": [],
-            "subClassOfRange": [],
-            "defaultSourceCardinality": {
-                "first": "0",
-                "second": "0"
-            },
-            "defaultTargetCardinality": {
-                "first": "1",
-                "second": "*"
-            }
-        },
-        "https://slovník.gov.cz/základní/pojem/má-časové-určení": {
-            "labels": {
-                "cs": "má časové určení",
-                "en": "has temporal span"
-            },
-            "definitions": {
-                "cs": "Typ vazby, která propojuje neměnný prvek s jeho časovým určením.",
-                "en": "Type of link connecting a perdurant with its temporal specification."
-            },
-            "altLabels": [],
-            "types": [
-                "http://www.w3.org/2002/07/owl#ObjectProperty"
-            ],
-            "inScheme": "https://slovník.gov.cz/základní/glosář",
-            "subClassOf": [],
-            "restrictions": [],
-            "type": 0,
-            "domain": "https://slovník.gov.cz/základní/pojem/neměnný-prvek",
-            "range": "https://slovník.gov.cz/základní/pojem/časový-prvek",
-            "subClassOfDomain": [],
-            "subClassOfRange": [],
-            "defaultSourceCardinality": {
-                "first": "0",
-                "second": "0"
-            },
-            "defaultTargetCardinality": {
-                "first": "1",
-                "second": "*"
-            }
-        }
+    "https://slovník.gov.cz/základní": {
+      "labels": {
+        "cs": "Z-SGoV",
+        "en": "Z-SGoV"
+      },
+      "readOnly": true,
+      "namespace": "https://slovník.gov.cz/základní/pojem/",
+      "graph": "",
+      "glossary": "https://slovník.gov.cz/základní/glosář",
+      "color": "#ffcdd2"
     },
-    "Stereotypes": {
-        "https://slovník.gov.cz/základní/pojem/typ-vztahu": {
-            "labels": {
-                "cs": "Typ vztahu",
-                "en": "Relator"
-            },
-            "definitions": {
-                "cs": "Instance typu vztahu jsou vztahy mezi objekty, tedy např. Manželství Martina Nováka a Martiny Novákové je  vztah mezi objekty Martin Novák a Martina Nováková",
-                "en": ""
-            },
-            "altLabels": [],
-            "types": [
-                "http://www.w3.org/2002/07/owl#Class"
-            ],
-            "inScheme": "https://slovník.gov.cz/základní/glosář",
-            "subClassOf": [
-                "http://onto.fel.cvut.cz/ontologies/ufo/object",
-                "https://slovník.gov.cz/základní/pojem/typ-vztahu",
-                "https://slovník.gov.cz/základní/pojem/objekt",
-                "http://onto.fel.cvut.cz/ontologies/ufo/endurant",
-                "https://slovník.gov.cz/základní/pojem/proměnný-prvek",
-                "https://slovník.gov.cz/základní/pojem/prvek",
-                "https://slovník.gov.cz/základní/pojem/typ-proměnného-prvku",
-                "https://slovník.gov.cz/základní/pojem/pasivní-objekt",
-                "https://slovník.gov.cz/základní/pojem/typ",
-                "http://onto.fel.cvut.cz/ontologies/ufo/relator-type",
-                "http://onto.fel.cvut.cz/ontologies/ufo/endurant-type",
-                "http://purl.org/nemo/gufo#EndurantType",
-                "http://onto.fel.cvut.cz/ontologies/ufo/entity",
-                "http://purl.org/nemo/gufo#RelationshipType",
-                "http://onto.fel.cvut.cz/ontologies/ufo/type",
-                "http://purl.org/nemo/gufo#Type"
-            ],
-            "restrictions": [],
-            "type": 0,
-            "character": "https://slovník.gov.cz/základní/pojem/vztah"
-        },
-        "https://slovník.gov.cz/základní/pojem/typ-vlastnosti": {
-            "labels": {
-                "cs": "Typ vlastnosti",
-                "en": "Intrinsic Trope Type"
-            },
-            "definitions": {
-                "cs": "Typ vlastnosti popisuje kategorie proměnných prvků, které jsou závislé na existenci jiného proměnného prvku. Příklady instancí: konkrétní typ letadla (Airbus 380), objekt/subjekt RPP (např. malé plavidlo),",
-                "en": ""
-            },
-            "altLabels": [],
-            "types": [
-                "http://www.w3.org/2002/07/owl#Class"
-            ],
-            "inScheme": "https://slovník.gov.cz/základní/glosář",
-            "subClassOf": [
-                "http://onto.fel.cvut.cz/ontologies/ufo/object",
-                "https://slovník.gov.cz/základní/pojem/typ-vlastnosti",
-                "https://slovník.gov.cz/základní/pojem/objekt",
-                "http://onto.fel.cvut.cz/ontologies/ufo/endurant",
-                "https://slovník.gov.cz/základní/pojem/proměnný-prvek",
-                "https://slovník.gov.cz/základní/pojem/prvek",
-                "https://slovník.gov.cz/základní/pojem/typ-proměnného-prvku",
-                "https://slovník.gov.cz/základní/pojem/pasivní-objekt",
-                "https://slovník.gov.cz/základní/pojem/typ",
-                "http://onto.fel.cvut.cz/ontologies/ufo/intrinsic-trope-type",
-                "http://onto.fel.cvut.cz/ontologies/ufo/endurant-type",
-                "http://purl.org/nemo/gufo#EndurantType",
-                "http://onto.fel.cvut.cz/ontologies/ufo/entity",
-                "http://onto.fel.cvut.cz/ontologies/ufo/type",
-                "http://purl.org/nemo/gufo#Type"
-            ],
-            "restrictions": [],
-            "type": 0,
-            "character": "https://slovník.gov.cz/základní/pojem/vlastnost"
-        },
-        "https://slovník.gov.cz/základní/pojem/typ-objektu": {
-            "labels": {
-                "cs": "Typ objektu",
-                "en": "Object type"
-            },
-            "definitions": {
-                "cs": "Typ objektu (typ[objekt]) popisuje kategorii která může být objektu přiřazena.  Příklady instancí: konkrétní typ letadla (Airbus 380), objekt/subjekt RPP (např. malé plavidlo),",
-                "en": ""
-            },
-            "altLabels": [],
-            "types": [
-                "http://www.w3.org/2002/07/owl#Class"
-            ],
-            "inScheme": "https://slovník.gov.cz/základní/glosář",
-            "subClassOf": [
-                "https://slovník.gov.cz/základní/pojem/typ-objektu",
-                "http://onto.fel.cvut.cz/ontologies/ufo/object",
-                "https://slovník.gov.cz/základní/pojem/objekt",
-                "http://onto.fel.cvut.cz/ontologies/ufo/endurant",
-                "https://slovník.gov.cz/základní/pojem/proměnný-prvek",
-                "https://slovník.gov.cz/základní/pojem/prvek",
-                "https://slovník.gov.cz/základní/pojem/typ-proměnného-prvku",
-                "https://slovník.gov.cz/základní/pojem/pasivní-objekt",
-                "https://slovník.gov.cz/základní/pojem/typ",
-                "http://onto.fel.cvut.cz/ontologies/ufo/object-type",
-                "http://onto.fel.cvut.cz/ontologies/ufo/endurant-type",
-                "http://purl.org/nemo/gufo#EndurantType",
-                "http://onto.fel.cvut.cz/ontologies/ufo/entity",
-                "http://onto.fel.cvut.cz/ontologies/ufo/type",
-                "http://purl.org/nemo/gufo#Type"
-            ],
-            "restrictions": [],
-            "type": 0,
-            "character": "https://slovník.gov.cz/základní/pojem/objekt"
-        },
-        "https://slovník.gov.cz/základní/pojem/typ-události": {
-            "labels": {
-                "cs": "Typ události",
-                "en": "Event type"
-            },
-            "definitions": {
-                "cs": "Typ, do nějž lze Událost klasifikovat. Příkladem je typ události Narození.",
-                "en": ""
-            },
-            "altLabels": [],
-            "types": [
-                "http://www.w3.org/2002/07/owl#Class"
-            ],
-            "inScheme": "https://slovník.gov.cz/základní/glosář",
-            "subClassOf": [
-                "http://onto.fel.cvut.cz/ontologies/ufo/object",
-                "https://slovník.gov.cz/základní/pojem/objekt",
-                "http://onto.fel.cvut.cz/ontologies/ufo/endurant",
-                "https://slovník.gov.cz/základní/pojem/typ-události",
-                "https://slovník.gov.cz/základní/pojem/proměnný-prvek",
-                "https://slovník.gov.cz/základní/pojem/prvek",
-                "https://slovník.gov.cz/základní/pojem/pasivní-objekt",
-                "https://slovník.gov.cz/základní/pojem/typ",
-                "http://onto.fel.cvut.cz/ontologies/ufo/entity",
-                "http://onto.fel.cvut.cz/ontologies/ufo/event-type",
-                "http://purl.org/nemo/gufo#EventType",
-                "http://onto.fel.cvut.cz/ontologies/ufo/type",
-                "http://purl.org/nemo/gufo#Type"
-            ],
-            "restrictions": [],
-            "type": 0,
-            "character": "https://slovník.gov.cz/základní/pojem/událost"
-        },
-        "https://slovník.gov.cz/základní/pojem/druh": {
-            "labels": {
-                "cs": "Druh",
-                "en": "Kind"
-            },
-            "definitions": {
-                "cs": "Druh je rigidní typ objektu, který poskytuje princip identity.",
-                "en": "Kind is a rigid sortal supplying principle of identity ."
-            },
-            "altLabels": [],
-            "types": [
-                "http://www.w3.org/2002/07/owl#Class"
-            ],
-            "inScheme": "https://slovník.gov.cz/základní/glosář",
-            "subClassOf": [
-                "http://onto.fel.cvut.cz/ontologies/ufo/object",
-                "https://slovník.gov.cz/základní/pojem/objekt",
-                "http://onto.fel.cvut.cz/ontologies/ufo/endurant",
-                "https://slovník.gov.cz/základní/pojem/druh",
-                "https://slovník.gov.cz/základní/pojem/proměnný-prvek",
-                "https://slovník.gov.cz/základní/pojem/prvek",
-                "https://slovník.gov.cz/základní/pojem/sortál",
-                "https://slovník.gov.cz/základní/pojem/typ-proměnného-prvku",
-                "https://slovník.gov.cz/základní/pojem/pasivní-objekt",
-                "https://slovník.gov.cz/základní/pojem/typ",
-                "http://onto.fel.cvut.cz/ontologies/ufo/endurant-type",
-                "http://purl.org/nemo/gufo#EndurantType",
-                "http://onto.fel.cvut.cz/ontologies/ufo/entity",
-                "http://onto.fel.cvut.cz/ontologies/ufo/kind",
-                "http://purl.org/nemo/gufo#Kind",
-                "http://onto.fel.cvut.cz/ontologies/ufo/type",
-                "http://purl.org/nemo/gufo#Type"
-            ],
-            "restrictions": [],
-            "type": 0
-        },
-        "https://slovník.gov.cz/základní/pojem/poddruh": {
-            "labels": {
-                "cs": "Poddruh",
-                "en": "Subkind"
-            },
-            "definitions": {
-                "cs": "Poddruh je rigidní typ, který princip identity přejímá od druhu, od kterého specializuje.",
-                "en": "Subkind is a rigid sortal which takes the principle of identity from the kind it specializes from."
-            },
-            "altLabels": [],
-            "types": [
-                "http://www.w3.org/2002/07/owl#Class"
-            ],
-            "inScheme": "https://slovník.gov.cz/základní/glosář",
-            "subClassOf": [
-                "http://onto.fel.cvut.cz/ontologies/ufo/object",
-                "https://slovník.gov.cz/základní/pojem/objekt",
-                "http://onto.fel.cvut.cz/ontologies/ufo/endurant",
-                "https://slovník.gov.cz/základní/pojem/proměnný-prvek",
-                "https://slovník.gov.cz/základní/pojem/prvek",
-                "https://slovník.gov.cz/základní/pojem/sortál",
-                "https://slovník.gov.cz/základní/pojem/typ-proměnného-prvku",
-                "https://slovník.gov.cz/základní/pojem/pasivní-objekt",
-                "https://slovník.gov.cz/základní/pojem/typ",
-                "https://slovník.gov.cz/základní/pojem/poddruh",
-                "http://onto.fel.cvut.cz/ontologies/ufo/endurant-type",
-                "http://purl.org/nemo/gufo#EndurantType",
-                "http://onto.fel.cvut.cz/ontologies/ufo/entity",
-                "http://onto.fel.cvut.cz/ontologies/ufo/sub-kind",
-                "http://purl.org/nemo/gufo#SubKind",
-                "http://onto.fel.cvut.cz/ontologies/ufo/type",
-                "http://purl.org/nemo/gufo#Type"
-            ],
-            "restrictions": [],
-            "type": 0
-        },
-        "https://slovník.gov.cz/základní/pojem/mixin": {
-            "labels": {
-                "cs": "Mixin",
-                "en": "Mixin"
-            },
-            "definitions": {
-                "cs": "",
-                "en": ""
-            },
-            "altLabels": [],
-            "types": [
-                "http://www.w3.org/2002/07/owl#Class"
-            ],
-            "inScheme": "https://slovník.gov.cz/základní/glosář",
-            "subClassOf": [
-                "http://onto.fel.cvut.cz/ontologies/ufo/object",
-                "https://slovník.gov.cz/základní/pojem/objekt",
-                "http://onto.fel.cvut.cz/ontologies/ufo/endurant",
-                "https://slovník.gov.cz/základní/pojem/proměnný-prvek",
-                "https://slovník.gov.cz/základní/pojem/prvek",
-                "https://slovník.gov.cz/základní/pojem/nesortál",
-                "https://slovník.gov.cz/základní/pojem/typ-proměnného-prvku",
-                "https://slovník.gov.cz/základní/pojem/pasivní-objekt",
-                "https://slovník.gov.cz/základní/pojem/typ",
-                "https://slovník.gov.cz/základní/pojem/mixin",
-                "http://onto.fel.cvut.cz/ontologies/ufo/endurant-type",
-                "http://purl.org/nemo/gufo#EndurantType",
-                "http://onto.fel.cvut.cz/ontologies/ufo/entity",
-                "http://onto.fel.cvut.cz/ontologies/ufo/mixin",
-                "http://purl.org/nemo/gufo#Mixin",
-                "http://onto.fel.cvut.cz/ontologies/ufo/type",
-                "http://purl.org/nemo/gufo#Type",
-                "http://purl.org/nemo/gufo#NonSortal"
-            ],
-            "restrictions": [],
-            "type": 0
-        },
-        "https://slovník.gov.cz/základní/pojem/kategorie": {
-            "labels": {
-                "cs": "Kategorie",
-                "en": "Category"
-            },
-            "definitions": {
-                "cs": "Kategorie je rigidní mixin",
-                "en": "Category is a rigid mixin"
-            },
-            "altLabels": [],
-            "types": [
-                "http://www.w3.org/2002/07/owl#Class"
-            ],
-            "inScheme": "https://slovník.gov.cz/základní/glosář",
-            "subClassOf": [
-                "http://onto.fel.cvut.cz/ontologies/ufo/object",
-                "https://slovník.gov.cz/základní/pojem/objekt",
-                "http://onto.fel.cvut.cz/ontologies/ufo/endurant",
-                "https://slovník.gov.cz/základní/pojem/kategorie",
-                "https://slovník.gov.cz/základní/pojem/proměnný-prvek",
-                "https://slovník.gov.cz/základní/pojem/prvek",
-                "https://slovník.gov.cz/základní/pojem/nesortál",
-                "https://slovník.gov.cz/základní/pojem/typ-proměnného-prvku",
-                "https://slovník.gov.cz/základní/pojem/pasivní-objekt",
-                "https://slovník.gov.cz/základní/pojem/typ",
-                "http://onto.fel.cvut.cz/ontologies/ufo/category",
-                "http://purl.org/nemo/gufo#Category",
-                "http://onto.fel.cvut.cz/ontologies/ufo/endurant-type",
-                "http://purl.org/nemo/gufo#EndurantType",
-                "http://onto.fel.cvut.cz/ontologies/ufo/entity",
-                "http://onto.fel.cvut.cz/ontologies/ufo/type",
-                "http://purl.org/nemo/gufo#Type",
-                "http://purl.org/nemo/gufo#NonSortal"
-            ],
-            "restrictions": [],
-            "type": 0
-        },
-        "https://slovník.gov.cz/základní/pojem/role": {
-            "labels": {
-                "cs": "Role",
-                "en": "Role"
-            },
-            "definitions": {
-                "cs": "Role je anti-rigidní typ pro jediný princip identity, závislý na vztahu.",
-                "en": "Role is an anti-rigid sortal - an individual has this type whenever it is mediated by some particular relator."
-            },
-            "altLabels": [],
-            "types": [
-                "http://www.w3.org/2002/07/owl#Class"
-            ],
-            "inScheme": "https://slovník.gov.cz/základní/glosář",
-            "subClassOf": [
-                "http://onto.fel.cvut.cz/ontologies/ufo/object",
-                "https://slovník.gov.cz/základní/pojem/objekt",
-                "http://onto.fel.cvut.cz/ontologies/ufo/endurant",
-                "https://slovník.gov.cz/základní/pojem/role",
-                "https://slovník.gov.cz/základní/pojem/proměnný-prvek",
-                "https://slovník.gov.cz/základní/pojem/prvek",
-                "https://slovník.gov.cz/základní/pojem/sortál",
-                "https://slovník.gov.cz/základní/pojem/typ-proměnného-prvku",
-                "https://slovník.gov.cz/základní/pojem/pasivní-objekt",
-                "https://slovník.gov.cz/základní/pojem/typ",
-                "http://onto.fel.cvut.cz/ontologies/ufo/endurant-type",
-                "http://purl.org/nemo/gufo#EndurantType",
-                "http://onto.fel.cvut.cz/ontologies/ufo/entity",
-                "http://onto.fel.cvut.cz/ontologies/ufo/role",
-                "http://purl.org/nemo/gufo#Role",
-                "http://onto.fel.cvut.cz/ontologies/ufo/type",
-                "http://purl.org/nemo/gufo#Type"
-            ],
-            "restrictions": [],
-            "type": 0
-        },
-        "https://slovník.gov.cz/základní/pojem/fáze": {
-            "labels": {
-                "cs": "Fáze",
-                "en": "Phase"
-            },
-            "definitions": {
-                "cs": "Fáze je anti-rigidní typ pro jediný princip identity, závislý na vlastnoti.",
-                "en": "Phase is an anti-rigid sortal - an individual has this type whenever an intrinsic trope inheres in it."
-            },
-            "altLabels": [],
-            "types": [
-                "http://www.w3.org/2002/07/owl#Class"
-            ],
-            "inScheme": "https://slovník.gov.cz/základní/glosář",
-            "subClassOf": [
-                "http://onto.fel.cvut.cz/ontologies/ufo/object",
-                "https://slovník.gov.cz/základní/pojem/objekt",
-                "http://onto.fel.cvut.cz/ontologies/ufo/endurant",
-                "https://slovník.gov.cz/základní/pojem/proměnný-prvek",
-                "https://slovník.gov.cz/základní/pojem/prvek",
-                "https://slovník.gov.cz/základní/pojem/sortál",
-                "https://slovník.gov.cz/základní/pojem/typ-proměnného-prvku",
-                "https://slovník.gov.cz/základní/pojem/pasivní-objekt",
-                "https://slovník.gov.cz/základní/pojem/typ",
-                "https://slovník.gov.cz/základní/pojem/fáze",
-                "http://onto.fel.cvut.cz/ontologies/ufo/endurant-type",
-                "http://purl.org/nemo/gufo#EndurantType",
-                "http://onto.fel.cvut.cz/ontologies/ufo/entity",
-                "http://onto.fel.cvut.cz/ontologies/ufo/phase",
-                "http://purl.org/nemo/gufo#Phase",
-                "http://onto.fel.cvut.cz/ontologies/ufo/type",
-                "http://purl.org/nemo/gufo#Type"
-            ],
-            "restrictions": [],
-            "type": 0
-        },
-        "https://slovník.gov.cz/základní/pojem/mixin-rolí": {
-            "labels": {
-                "cs": "Mixin rolí",
-                "en": "Role Mixin"
-            },
-            "definitions": {
-                "cs": "Mixin rolí je anti-rigidní mixin",
-                "en": "Role mixin is an anti-rigid mixin"
-            },
-            "altLabels": [],
-            "types": [
-                "http://www.w3.org/2002/07/owl#Class"
-            ],
-            "inScheme": "https://slovník.gov.cz/základní/glosář",
-            "subClassOf": [
-                "http://onto.fel.cvut.cz/ontologies/ufo/object",
-                "https://slovník.gov.cz/základní/pojem/objekt",
-                "http://onto.fel.cvut.cz/ontologies/ufo/endurant",
-                "https://slovník.gov.cz/základní/pojem/proměnný-prvek",
-                "https://slovník.gov.cz/základní/pojem/prvek",
-                "https://slovník.gov.cz/základní/pojem/mixin-rolí",
-                "https://slovník.gov.cz/základní/pojem/nesortál",
-                "https://slovník.gov.cz/základní/pojem/typ-proměnného-prvku",
-                "https://slovník.gov.cz/základní/pojem/pasivní-objekt",
-                "https://slovník.gov.cz/základní/pojem/typ",
-                "http://onto.fel.cvut.cz/ontologies/ufo/endurant-type",
-                "http://purl.org/nemo/gufo#EndurantType",
-                "http://onto.fel.cvut.cz/ontologies/ufo/entity",
-                "http://onto.fel.cvut.cz/ontologies/ufo/role-mixin",
-                "http://purl.org/nemo/gufo#RoleMixin",
-                "http://onto.fel.cvut.cz/ontologies/ufo/type",
-                "http://purl.org/nemo/gufo#Type",
-                "http://purl.org/nemo/gufo#NonSortal"
-            ],
-            "restrictions": [],
-            "type": 0
-        },
-        "https://slovník.gov.cz/základní/pojem/mixin-fází": {
-            "labels": {
-                "cs": "Mixin fází",
-                "en": "Phase mixin"
-            },
-            "definitions": {
-                "cs": "Mixin fází je anti-rigidní nesortál.",
-                "en": "Phase mixin is an anti-rigid non-sortal."
-            },
-            "altLabels": [],
-            "types": [
-                "http://www.w3.org/2002/07/owl#Class"
-            ],
-            "inScheme": "https://slovník.gov.cz/základní/glosář",
-            "subClassOf": [
-                "http://onto.fel.cvut.cz/ontologies/ufo/object",
-                "https://slovník.gov.cz/základní/pojem/objekt",
-                "http://onto.fel.cvut.cz/ontologies/ufo/endurant",
-                "https://slovník.gov.cz/základní/pojem/proměnný-prvek",
-                "https://slovník.gov.cz/základní/pojem/prvek",
-                "https://slovník.gov.cz/základní/pojem/nesortál",
-                "https://slovník.gov.cz/základní/pojem/typ-proměnného-prvku",
-                "https://slovník.gov.cz/základní/pojem/pasivní-objekt",
-                "https://slovník.gov.cz/základní/pojem/typ",
-                "http://onto.fel.cvut.cz/ontologies/ufo/endurant-type",
-                "http://purl.org/nemo/gufo#EndurantType",
-                "http://onto.fel.cvut.cz/ontologies/ufo/entity",
-                "http://onto.fel.cvut.cz/ontologies/ufo/type",
-                "http://purl.org/nemo/gufo#Type",
-                "http://purl.org/nemo/gufo#NonSortal",
-                "http://purl.org/nemo/gufo#PhaseMixin"
-            ],
-            "restrictions": [],
-            "type": 0
-        },
-        "http://onto.fel.cvut.cz/ontologies/ufo/relator-type": {
-            "labels": {
-                "cs": "Typ vztahu",
-                "en": "Relator"
-            },
-            "definitions": {
-                "cs": "Instance typu vztahu jsou vztahy mezi objekty, tedy např. Manželství Martina Nováka a Martiny Novákové je  vztah mezi objekty Martin Novák a Martina Nováková",
-                "en": ""
-            },
-            "altLabels": [],
-            "types": [
-                "http://www.w3.org/2002/07/owl#Class"
-            ],
-            "inScheme": "https://slovník.gov.cz/základní/glosář",
-            "subClassOf": [
-                "http://onto.fel.cvut.cz/ontologies/ufo/object",
-                "https://slovník.gov.cz/základní/pojem/typ-vztahu",
-                "https://slovník.gov.cz/základní/pojem/objekt",
-                "http://onto.fel.cvut.cz/ontologies/ufo/endurant",
-                "https://slovník.gov.cz/základní/pojem/proměnný-prvek",
-                "https://slovník.gov.cz/základní/pojem/prvek",
-                "https://slovník.gov.cz/základní/pojem/typ-proměnného-prvku",
-                "https://slovník.gov.cz/základní/pojem/pasivní-objekt",
-                "https://slovník.gov.cz/základní/pojem/typ",
-                "http://onto.fel.cvut.cz/ontologies/ufo/relator-type",
-                "http://onto.fel.cvut.cz/ontologies/ufo/endurant-type",
-                "http://purl.org/nemo/gufo#EndurantType",
-                "http://onto.fel.cvut.cz/ontologies/ufo/entity",
-                "http://purl.org/nemo/gufo#RelationshipType",
-                "http://onto.fel.cvut.cz/ontologies/ufo/type",
-                "http://purl.org/nemo/gufo#Type"
-            ],
-            "restrictions": [],
-            "type": 0,
-            "character": "https://slovník.gov.cz/základní/pojem/vztah"
-        },
-        "http://onto.fel.cvut.cz/ontologies/ufo/intrinsic-trope-type": {
-            "labels": {
-                "cs": "Typ vlastnosti",
-                "en": "Intrinsic Trope Type"
-            },
-            "definitions": {
-                "cs": "Typ vlastnosti popisuje kategorie proměnných prvků, které jsou závislé na existenci jiného proměnného prvku. Příklady instancí: konkrétní typ letadla (Airbus 380), objekt/subjekt RPP (např. malé plavidlo),",
-                "en": ""
-            },
-            "altLabels": [],
-            "types": [
-                "http://www.w3.org/2002/07/owl#Class"
-            ],
-            "inScheme": "https://slovník.gov.cz/základní/glosář",
-            "subClassOf": [
-                "http://onto.fel.cvut.cz/ontologies/ufo/object",
-                "https://slovník.gov.cz/základní/pojem/typ-vlastnosti",
-                "https://slovník.gov.cz/základní/pojem/objekt",
-                "http://onto.fel.cvut.cz/ontologies/ufo/endurant",
-                "https://slovník.gov.cz/základní/pojem/proměnný-prvek",
-                "https://slovník.gov.cz/základní/pojem/prvek",
-                "https://slovník.gov.cz/základní/pojem/typ-proměnného-prvku",
-                "https://slovník.gov.cz/základní/pojem/pasivní-objekt",
-                "https://slovník.gov.cz/základní/pojem/typ",
-                "http://onto.fel.cvut.cz/ontologies/ufo/intrinsic-trope-type",
-                "http://onto.fel.cvut.cz/ontologies/ufo/endurant-type",
-                "http://purl.org/nemo/gufo#EndurantType",
-                "http://onto.fel.cvut.cz/ontologies/ufo/entity",
-                "http://onto.fel.cvut.cz/ontologies/ufo/type",
-                "http://purl.org/nemo/gufo#Type"
-            ],
-            "restrictions": [],
-            "type": 0,
-            "character": "https://slovník.gov.cz/základní/pojem/vlastnost"
-        },
-        "http://onto.fel.cvut.cz/ontologies/ufo/object-type": {
-            "labels": {
-                "cs": "Typ objektu",
-                "en": "Object type"
-            },
-            "definitions": {
-                "cs": "Typ objektu (typ[objekt]) popisuje kategorii která může být objektu přiřazena.  Příklady instancí: konkrétní typ letadla (Airbus 380), objekt/subjekt RPP (např. malé plavidlo),",
-                "en": ""
-            },
-            "altLabels": [],
-            "types": [
-                "http://www.w3.org/2002/07/owl#Class"
-            ],
-            "inScheme": "https://slovník.gov.cz/základní/glosář",
-            "subClassOf": [
-                "https://slovník.gov.cz/základní/pojem/typ-objektu",
-                "http://onto.fel.cvut.cz/ontologies/ufo/object",
-                "https://slovník.gov.cz/základní/pojem/objekt",
-                "http://onto.fel.cvut.cz/ontologies/ufo/endurant",
-                "https://slovník.gov.cz/základní/pojem/proměnný-prvek",
-                "https://slovník.gov.cz/základní/pojem/prvek",
-                "https://slovník.gov.cz/základní/pojem/typ-proměnného-prvku",
-                "https://slovník.gov.cz/základní/pojem/pasivní-objekt",
-                "https://slovník.gov.cz/základní/pojem/typ",
-                "http://onto.fel.cvut.cz/ontologies/ufo/object-type",
-                "http://onto.fel.cvut.cz/ontologies/ufo/endurant-type",
-                "http://purl.org/nemo/gufo#EndurantType",
-                "http://onto.fel.cvut.cz/ontologies/ufo/entity",
-                "http://onto.fel.cvut.cz/ontologies/ufo/type",
-                "http://purl.org/nemo/gufo#Type"
-            ],
-            "restrictions": [],
-            "type": 0,
-            "character": "https://slovník.gov.cz/základní/pojem/objekt"
-        },
-        "http://onto.fel.cvut.cz/ontologies/ufo/event-type": {
-            "labels": {
-                "cs": "Typ události",
-                "en": "Event type"
-            },
-            "definitions": {
-                "cs": "Typ, do nějž lze Událost klasifikovat. Příkladem je typ události Narození.",
-                "en": ""
-            },
-            "altLabels": [],
-            "types": [
-                "http://www.w3.org/2002/07/owl#Class"
-            ],
-            "inScheme": "https://slovník.gov.cz/základní/glosář",
-            "subClassOf": [
-                "http://onto.fel.cvut.cz/ontologies/ufo/object",
-                "https://slovník.gov.cz/základní/pojem/objekt",
-                "http://onto.fel.cvut.cz/ontologies/ufo/endurant",
-                "https://slovník.gov.cz/základní/pojem/typ-události",
-                "https://slovník.gov.cz/základní/pojem/proměnný-prvek",
-                "https://slovník.gov.cz/základní/pojem/prvek",
-                "https://slovník.gov.cz/základní/pojem/pasivní-objekt",
-                "https://slovník.gov.cz/základní/pojem/typ",
-                "http://onto.fel.cvut.cz/ontologies/ufo/entity",
-                "http://onto.fel.cvut.cz/ontologies/ufo/event-type",
-                "http://purl.org/nemo/gufo#EventType",
-                "http://onto.fel.cvut.cz/ontologies/ufo/type",
-                "http://purl.org/nemo/gufo#Type"
-            ],
-            "restrictions": [],
-            "type": 0,
-            "character": "https://slovník.gov.cz/základní/pojem/událost"
-        },
-        "http://onto.fel.cvut.cz/ontologies/ufo/kind": {
-            "labels": {
-                "cs": "Druh",
-                "en": "Kind"
-            },
-            "definitions": {
-                "cs": "Druh je rigidní typ objektu, který poskytuje princip identity.",
-                "en": "Kind is a rigid sortal supplying principle of identity ."
-            },
-            "altLabels": [],
-            "types": [
-                "http://www.w3.org/2002/07/owl#Class"
-            ],
-            "inScheme": "https://slovník.gov.cz/základní/glosář",
-            "subClassOf": [
-                "http://onto.fel.cvut.cz/ontologies/ufo/object",
-                "https://slovník.gov.cz/základní/pojem/objekt",
-                "http://onto.fel.cvut.cz/ontologies/ufo/endurant",
-                "https://slovník.gov.cz/základní/pojem/druh",
-                "https://slovník.gov.cz/základní/pojem/proměnný-prvek",
-                "https://slovník.gov.cz/základní/pojem/prvek",
-                "https://slovník.gov.cz/základní/pojem/sortál",
-                "https://slovník.gov.cz/základní/pojem/typ-proměnného-prvku",
-                "https://slovník.gov.cz/základní/pojem/pasivní-objekt",
-                "https://slovník.gov.cz/základní/pojem/typ",
-                "http://onto.fel.cvut.cz/ontologies/ufo/endurant-type",
-                "http://purl.org/nemo/gufo#EndurantType",
-                "http://onto.fel.cvut.cz/ontologies/ufo/entity",
-                "http://onto.fel.cvut.cz/ontologies/ufo/kind",
-                "http://purl.org/nemo/gufo#Kind",
-                "http://onto.fel.cvut.cz/ontologies/ufo/type",
-                "http://purl.org/nemo/gufo#Type"
-            ],
-            "restrictions": [],
-            "type": 0
-        },
-        "http://onto.fel.cvut.cz/ontologies/ufo/sub-kind": {
-            "labels": {
-                "cs": "Poddruh",
-                "en": "Subkind"
-            },
-            "definitions": {
-                "cs": "Poddruh je rigidní typ, který princip identity přejímá od druhu, od kterého specializuje.",
-                "en": "Subkind is a rigid sortal which takes the principle of identity from the kind it specializes from."
-            },
-            "altLabels": [],
-            "types": [
-                "http://www.w3.org/2002/07/owl#Class"
-            ],
-            "inScheme": "https://slovník.gov.cz/základní/glosář",
-            "subClassOf": [
-                "http://onto.fel.cvut.cz/ontologies/ufo/object",
-                "https://slovník.gov.cz/základní/pojem/objekt",
-                "http://onto.fel.cvut.cz/ontologies/ufo/endurant",
-                "https://slovník.gov.cz/základní/pojem/proměnný-prvek",
-                "https://slovník.gov.cz/základní/pojem/prvek",
-                "https://slovník.gov.cz/základní/pojem/sortál",
-                "https://slovník.gov.cz/základní/pojem/typ-proměnného-prvku",
-                "https://slovník.gov.cz/základní/pojem/pasivní-objekt",
-                "https://slovník.gov.cz/základní/pojem/typ",
-                "https://slovník.gov.cz/základní/pojem/poddruh",
-                "http://onto.fel.cvut.cz/ontologies/ufo/endurant-type",
-                "http://purl.org/nemo/gufo#EndurantType",
-                "http://onto.fel.cvut.cz/ontologies/ufo/entity",
-                "http://onto.fel.cvut.cz/ontologies/ufo/sub-kind",
-                "http://purl.org/nemo/gufo#SubKind",
-                "http://onto.fel.cvut.cz/ontologies/ufo/type",
-                "http://purl.org/nemo/gufo#Type"
-            ],
-            "restrictions": [],
-            "type": 0
-        },
-        "http://onto.fel.cvut.cz/ontologies/ufo/mixin": {
-            "labels": {
-                "cs": "Mixin",
-                "en": "Mixin"
-            },
-            "definitions": {
-                "cs": "",
-                "en": ""
-            },
-            "altLabels": [],
-            "types": [
-                "http://www.w3.org/2002/07/owl#Class"
-            ],
-            "inScheme": "https://slovník.gov.cz/základní/glosář",
-            "subClassOf": [
-                "http://onto.fel.cvut.cz/ontologies/ufo/object",
-                "https://slovník.gov.cz/základní/pojem/objekt",
-                "http://onto.fel.cvut.cz/ontologies/ufo/endurant",
-                "https://slovník.gov.cz/základní/pojem/proměnný-prvek",
-                "https://slovník.gov.cz/základní/pojem/prvek",
-                "https://slovník.gov.cz/základní/pojem/nesortál",
-                "https://slovník.gov.cz/základní/pojem/typ-proměnného-prvku",
-                "https://slovník.gov.cz/základní/pojem/pasivní-objekt",
-                "https://slovník.gov.cz/základní/pojem/typ",
-                "https://slovník.gov.cz/základní/pojem/mixin",
-                "http://onto.fel.cvut.cz/ontologies/ufo/endurant-type",
-                "http://purl.org/nemo/gufo#EndurantType",
-                "http://onto.fel.cvut.cz/ontologies/ufo/entity",
-                "http://onto.fel.cvut.cz/ontologies/ufo/mixin",
-                "http://purl.org/nemo/gufo#Mixin",
-                "http://onto.fel.cvut.cz/ontologies/ufo/type",
-                "http://purl.org/nemo/gufo#Type",
-                "http://purl.org/nemo/gufo#NonSortal"
-            ],
-            "restrictions": [],
-            "type": 0
-        },
-        "http://onto.fel.cvut.cz/ontologies/ufo/category": {
-            "labels": {
-                "cs": "Kategorie",
-                "en": "Category"
-            },
-            "definitions": {
-                "cs": "Kategorie je rigidní mixin",
-                "en": "Category is a rigid mixin"
-            },
-            "altLabels": [],
-            "types": [
-                "http://www.w3.org/2002/07/owl#Class"
-            ],
-            "inScheme": "https://slovník.gov.cz/základní/glosář",
-            "subClassOf": [
-                "http://onto.fel.cvut.cz/ontologies/ufo/object",
-                "https://slovník.gov.cz/základní/pojem/objekt",
-                "http://onto.fel.cvut.cz/ontologies/ufo/endurant",
-                "https://slovník.gov.cz/základní/pojem/kategorie",
-                "https://slovník.gov.cz/základní/pojem/proměnný-prvek",
-                "https://slovník.gov.cz/základní/pojem/prvek",
-                "https://slovník.gov.cz/základní/pojem/nesortál",
-                "https://slovník.gov.cz/základní/pojem/typ-proměnného-prvku",
-                "https://slovník.gov.cz/základní/pojem/pasivní-objekt",
-                "https://slovník.gov.cz/základní/pojem/typ",
-                "http://onto.fel.cvut.cz/ontologies/ufo/category",
-                "http://purl.org/nemo/gufo#Category",
-                "http://onto.fel.cvut.cz/ontologies/ufo/endurant-type",
-                "http://purl.org/nemo/gufo#EndurantType",
-                "http://onto.fel.cvut.cz/ontologies/ufo/entity",
-                "http://onto.fel.cvut.cz/ontologies/ufo/type",
-                "http://purl.org/nemo/gufo#Type",
-                "http://purl.org/nemo/gufo#NonSortal"
-            ],
-            "restrictions": [],
-            "type": 0
-        },
-        "http://onto.fel.cvut.cz/ontologies/ufo/role": {
-            "labels": {
-                "cs": "Role",
-                "en": "Role"
-            },
-            "definitions": {
-                "cs": "Role je anti-rigidní typ pro jediný princip identity, závislý na vztahu.",
-                "en": "Role is an anti-rigid sortal - an individual has this type whenever it is mediated by some particular relator."
-            },
-            "altLabels": [],
-            "types": [
-                "http://www.w3.org/2002/07/owl#Class"
-            ],
-            "inScheme": "https://slovník.gov.cz/základní/glosář",
-            "subClassOf": [
-                "http://onto.fel.cvut.cz/ontologies/ufo/object",
-                "https://slovník.gov.cz/základní/pojem/objekt",
-                "http://onto.fel.cvut.cz/ontologies/ufo/endurant",
-                "https://slovník.gov.cz/základní/pojem/role",
-                "https://slovník.gov.cz/základní/pojem/proměnný-prvek",
-                "https://slovník.gov.cz/základní/pojem/prvek",
-                "https://slovník.gov.cz/základní/pojem/sortál",
-                "https://slovník.gov.cz/základní/pojem/typ-proměnného-prvku",
-                "https://slovník.gov.cz/základní/pojem/pasivní-objekt",
-                "https://slovník.gov.cz/základní/pojem/typ",
-                "http://onto.fel.cvut.cz/ontologies/ufo/endurant-type",
-                "http://purl.org/nemo/gufo#EndurantType",
-                "http://onto.fel.cvut.cz/ontologies/ufo/entity",
-                "http://onto.fel.cvut.cz/ontologies/ufo/role",
-                "http://purl.org/nemo/gufo#Role",
-                "http://onto.fel.cvut.cz/ontologies/ufo/type",
-                "http://purl.org/nemo/gufo#Type"
-            ],
-            "restrictions": [],
-            "type": 0
-        },
-        "http://onto.fel.cvut.cz/ontologies/ufo/phase": {
-            "labels": {
-                "cs": "Fáze",
-                "en": "Phase"
-            },
-            "definitions": {
-                "cs": "Fáze je anti-rigidní typ pro jediný princip identity, závislý na vlastnoti.",
-                "en": "Phase is an anti-rigid sortal - an individual has this type whenever an intrinsic trope inheres in it."
-            },
-            "altLabels": [],
-            "types": [
-                "http://www.w3.org/2002/07/owl#Class"
-            ],
-            "inScheme": "https://slovník.gov.cz/základní/glosář",
-            "subClassOf": [
-                "http://onto.fel.cvut.cz/ontologies/ufo/object",
-                "https://slovník.gov.cz/základní/pojem/objekt",
-                "http://onto.fel.cvut.cz/ontologies/ufo/endurant",
-                "https://slovník.gov.cz/základní/pojem/proměnný-prvek",
-                "https://slovník.gov.cz/základní/pojem/prvek",
-                "https://slovník.gov.cz/základní/pojem/sortál",
-                "https://slovník.gov.cz/základní/pojem/typ-proměnného-prvku",
-                "https://slovník.gov.cz/základní/pojem/pasivní-objekt",
-                "https://slovník.gov.cz/základní/pojem/typ",
-                "https://slovník.gov.cz/základní/pojem/fáze",
-                "http://onto.fel.cvut.cz/ontologies/ufo/endurant-type",
-                "http://purl.org/nemo/gufo#EndurantType",
-                "http://onto.fel.cvut.cz/ontologies/ufo/entity",
-                "http://onto.fel.cvut.cz/ontologies/ufo/phase",
-                "http://purl.org/nemo/gufo#Phase",
-                "http://onto.fel.cvut.cz/ontologies/ufo/type",
-                "http://purl.org/nemo/gufo#Type"
-            ],
-            "restrictions": [],
-            "type": 0
-        },
-        "http://onto.fel.cvut.cz/ontologies/ufo/role-mixin": {
-            "labels": {
-                "cs": "Mixin rolí",
-                "en": "Role Mixin"
-            },
-            "definitions": {
-                "cs": "Mixin rolí je anti-rigidní mixin",
-                "en": "Role mixin is an anti-rigid mixin"
-            },
-            "altLabels": [],
-            "types": [
-                "http://www.w3.org/2002/07/owl#Class"
-            ],
-            "inScheme": "https://slovník.gov.cz/základní/glosář",
-            "subClassOf": [
-                "http://onto.fel.cvut.cz/ontologies/ufo/object",
-                "https://slovník.gov.cz/základní/pojem/objekt",
-                "http://onto.fel.cvut.cz/ontologies/ufo/endurant",
-                "https://slovník.gov.cz/základní/pojem/proměnný-prvek",
-                "https://slovník.gov.cz/základní/pojem/prvek",
-                "https://slovník.gov.cz/základní/pojem/mixin-rolí",
-                "https://slovník.gov.cz/základní/pojem/nesortál",
-                "https://slovník.gov.cz/základní/pojem/typ-proměnného-prvku",
-                "https://slovník.gov.cz/základní/pojem/pasivní-objekt",
-                "https://slovník.gov.cz/základní/pojem/typ",
-                "http://onto.fel.cvut.cz/ontologies/ufo/endurant-type",
-                "http://purl.org/nemo/gufo#EndurantType",
-                "http://onto.fel.cvut.cz/ontologies/ufo/entity",
-                "http://onto.fel.cvut.cz/ontologies/ufo/role-mixin",
-                "http://purl.org/nemo/gufo#RoleMixin",
-                "http://onto.fel.cvut.cz/ontologies/ufo/type",
-                "http://purl.org/nemo/gufo#Type",
-                "http://purl.org/nemo/gufo#NonSortal"
-            ],
-            "restrictions": [],
-            "type": 0
-        }
-    },
-    "Diagrams": {},
-    "AppSettings": {
-        "name": {
-            "cs": "netlify-test"
-        },
-        "description": {
-            "cs": "",
-            "en": ""
-        },
-        "selectedDiagram": "",
-        "canvasLanguage": "cs",
-        "contextIRIs": [
-            "https://slovník.gov.cz/generický/netlify-test/verze/33b38110-64d0-4f77-acd1-2e8b7771e194"
-        ],
-        "applicationContext": "https://slovník.gov.cz/datový/pracovní-prostor/pojem/aplikační-kontext/590746da-103f-45a6-b748-0af462dfe4fd/ontographer",
-        "initWorkspace": true,
-        "contextEndpoint": "http://localhost:7200/repositories/testOG",
-        "ontographerContext": "http://onto.fel.cvut.cz/ontologies/application/ontoGrapher",
-        "cacheContext": "https://slovník.gov.cz",
-        "luceneConnector": "label_index",
-        "representation": 1,
-        "defaultCardinalitySource": {
-            "first": "0",
-            "second": "0"
-        },
-        "defaultCardinalityTarget": {
-            "first": "1",
-            "second": "*"
-        },
-        "contextVersion": 4,
-        "latestContextVersion": 4,
-        "lastTransactions": [
-            ""
-        ],
-        "lastTransactionID": "",
-        "switchElements": [],
-        "defaultLanguage": "cs",
-        "viewStereotypes": true,
-        "viewZoom": 1,
-        "viewColorPool": "pastelLow",
-        "viewItemPanelTypes": true,
-        "interfaceLanguage": "cs",
-        "selectedElements": [],
-        "selectedLinks": [],
-        "changedVocabularies": []
+    "https://slovník.gov.cz/generický/netlify-test": {
+      "labels": {
+        "cs": "netlify-test"
+      },
+      "readOnly": false,
+      "namespace": "https://slovník.gov.cz/generický/netlify-test/pojem/",
+      "graph": "https://slovník.gov.cz/generický/netlify-test/verze/33b38110-64d0-4f77-acd1-2e8b7771e194",
+      "glossary": "https://slovník.gov.cz/generický/netlify-test/glosář",
+      "color": "#e1bee7",
+      "changeContext": "https://slovník.gov.cz/generický/netlify-test/verze/33b38110-64d0-4f77-acd1-2e8b7771e194/změny"
     }
+  },
+  "WorkspaceTerms": {},
+  "Links": {
+    "http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/uml/generalization": {
+      "subClassOfDomain": [],
+      "subClassOfRange": [],
+      "labels": {
+        "cs": "je podtřídou",
+        "en": "is subclass of"
+      },
+      "definitions": {
+        "cs": "",
+        "en": ""
+      },
+      "inScheme": "http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/uml",
+      "type": 1,
+      "domain": "",
+      "range": "",
+      "inverseOf": "",
+      "defaultSourceCardinality": {
+        "first": "0",
+        "second": "0"
+      },
+      "defaultTargetCardinality": {
+        "first": "1",
+        "second": "*"
+      }
+    },
+    "https://slovník.gov.cz/základní/pojem/má-vztažený-prvek": {
+      "labels": {
+        "cs": "má vztažený prvek",
+        "en": "mediates"
+      },
+      "definitions": {
+        "cs": "Typ vazby, která propojuje vztah a prvky, které tento vztah určují",
+        "en": "Type of link which connects a relation and endurants mediated by the relation."
+      },
+      "altLabels": [],
+      "types": ["http://www.w3.org/2002/07/owl#ObjectProperty"],
+      "inScheme": "https://slovník.gov.cz/základní/glosář",
+      "subClassOf": [],
+      "restrictions": [],
+      "type": 0,
+      "domain": "https://slovník.gov.cz/základní/pojem/vztah",
+      "range": "https://slovník.gov.cz/základní/pojem/proměnný-prvek",
+      "inverseOf": "https://slovník.gov.cz/základní/pojem/je-ve-vztahu",
+      "subClassOfDomain": [],
+      "subClassOfRange": [],
+      "defaultSourceCardinality": {
+        "first": "0",
+        "second": "0"
+      },
+      "defaultTargetCardinality": {
+        "first": "1",
+        "second": "1"
+      }
+    },
+    "https://slovník.gov.cz/základní/pojem/je-vlastností": {
+      "labels": {
+        "cs": "je vlastností",
+        "en": "inheres in"
+      },
+      "definitions": {
+        "cs": "Typ vazby, která spojuje vlastnost s proměnným prvkem, jehož je vlastností.",
+        "en": "Type of link, which connects an intrinsic trope with an endurant, it inheres in."
+      },
+      "altLabels": [],
+      "types": ["http://www.w3.org/2002/07/owl#ObjectProperty"],
+      "inScheme": "https://slovník.gov.cz/základní/glosář",
+      "subClassOf": [],
+      "restrictions": [],
+      "type": 0,
+      "domain": "https://slovník.gov.cz/základní/pojem/vlastnost",
+      "range": "https://slovník.gov.cz/základní/pojem/proměnný-prvek",
+      "inverseOf": "https://slovník.gov.cz/základní/pojem/má-vlastnost",
+      "subClassOfDomain": [],
+      "subClassOfRange": [],
+      "defaultSourceCardinality": {
+        "first": "0",
+        "second": "0"
+      },
+      "defaultTargetCardinality": {
+        "first": "1",
+        "second": "*"
+      }
+    },
+    "https://slovník.gov.cz/základní/pojem/je-ve-vztahu": {
+      "labels": {
+        "cs": "je ve vztahu",
+        "en": "is mediated by"
+      },
+      "definitions": {
+        "cs": "Typ vazby, která propojuje proměnný prvek a vztah, jímž je proměnný prvek vztažen. Např. 'František Novák' 'je ve vztahu' 'Manželství Františka Nováka'",
+        "en": "Type of link, which connects an endurant and a relation which mediates the endurant."
+      },
+      "altLabels": [],
+      "types": ["http://www.w3.org/2002/07/owl#ObjectProperty"],
+      "inScheme": "https://slovník.gov.cz/základní/glosář",
+      "subClassOf": [],
+      "restrictions": [],
+      "type": 0,
+      "domain": "https://slovník.gov.cz/základní/pojem/proměnný-prvek",
+      "range": "https://slovník.gov.cz/základní/pojem/vztah",
+      "inverseOf": "https://slovník.gov.cz/základní/pojem/má-vztažený-prvek",
+      "subClassOfDomain": [],
+      "subClassOfRange": [],
+      "defaultSourceCardinality": {
+        "first": "1",
+        "second": "1"
+      },
+      "defaultTargetCardinality": {
+        "first": "1",
+        "second": "*"
+      }
+    },
+    "https://slovník.gov.cz/základní/pojem/má-vlastnost": {
+      "labels": {
+        "cs": "má vlastnost",
+        "en": "has intrinsic trope"
+      },
+      "definitions": {
+        "cs": "Type of link which connects an endurant with its intrinsic trope, e.g. 'Franta' 'has intrinsic trope' 'age of Franta'",
+        "en": ""
+      },
+      "altLabels": [],
+      "types": ["http://www.w3.org/2002/07/owl#ObjectProperty"],
+      "inScheme": "https://slovník.gov.cz/základní/glosář",
+      "subClassOf": [],
+      "restrictions": [],
+      "type": 0,
+      "domain": "https://slovník.gov.cz/základní/pojem/proměnný-prvek",
+      "range": "https://slovník.gov.cz/základní/pojem/vlastnost",
+      "inverseOf": "https://slovník.gov.cz/základní/pojem/je-vlastností",
+      "subClassOfDomain": [],
+      "subClassOfRange": [],
+      "defaultSourceCardinality": {
+        "first": "0",
+        "second": "0"
+      },
+      "defaultTargetCardinality": {
+        "first": "1",
+        "second": "*"
+      }
+    },
+    "https://slovník.gov.cz/základní/pojem/má-vztažený-prvek-1": {
+      "labels": {
+        "cs": "má vztažený prvek 1",
+        "en": "mediates 1"
+      },
+      "definitions": {
+        "cs": "Typ vazby, která propojuje vztah a doménu tohoto vztahu.",
+        "en": ""
+      },
+      "altLabels": [],
+      "types": ["http://www.w3.org/2002/07/owl#ObjectProperty"],
+      "inScheme": "https://slovník.gov.cz/základní/glosář",
+      "subClassOf": [],
+      "restrictions": [],
+      "type": 0,
+      "domain": "https://slovník.gov.cz/základní/pojem/vztah",
+      "range": "https://slovník.gov.cz/základní/pojem/proměnný-prvek",
+      "subClassOfDomain": [],
+      "subClassOfRange": [],
+      "defaultSourceCardinality": {
+        "first": "0",
+        "second": "0"
+      },
+      "defaultTargetCardinality": {
+        "first": "1",
+        "second": "*"
+      }
+    },
+    "https://slovník.gov.cz/základní/pojem/má-vztažený-prvek-2": {
+      "labels": {
+        "cs": "má vztažený prvek 2",
+        "en": "mediates 2"
+      },
+      "definitions": {
+        "cs": "Typ vazby, která propojuje vztah a obor hodnot tohoto vztahu.",
+        "en": ""
+      },
+      "altLabels": [],
+      "types": ["http://www.w3.org/2002/07/owl#ObjectProperty"],
+      "inScheme": "https://slovník.gov.cz/základní/glosář",
+      "subClassOf": [],
+      "restrictions": [],
+      "type": 0,
+      "domain": "https://slovník.gov.cz/základní/pojem/vztah",
+      "range": "https://slovník.gov.cz/základní/pojem/proměnný-prvek",
+      "subClassOfDomain": [],
+      "subClassOfRange": [],
+      "defaultSourceCardinality": {
+        "first": "0",
+        "second": "0"
+      },
+      "defaultTargetCardinality": {
+        "first": "1",
+        "second": "*"
+      }
+    },
+    "https://slovník.gov.cz/základní/pojem/je-vykonána": {
+      "labels": {
+        "cs": "je vykonána",
+        "en": "is performed by"
+      },
+      "definitions": {
+        "cs": "Propojuje akci a agenta, který jí vykonává",
+        "en": "Type of link which connects an action and the agent who performs the action."
+      },
+      "altLabels": [],
+      "types": ["http://www.w3.org/2002/07/owl#ObjectProperty"],
+      "inScheme": "https://slovník.gov.cz/základní/glosář",
+      "subClassOf": [],
+      "restrictions": [],
+      "type": 0,
+      "domain": "https://slovník.gov.cz/základní/pojem/akce",
+      "range": "https://slovník.gov.cz/základní/pojem/agent",
+      "subClassOfDomain": [],
+      "subClassOfRange": [],
+      "defaultSourceCardinality": {
+        "first": "0",
+        "second": "0"
+      },
+      "defaultTargetCardinality": {
+        "first": "1",
+        "second": "*"
+      }
+    },
+    "https://slovník.gov.cz/základní/pojem/má-účastníka": {
+      "labels": {
+        "cs": "má účastníka",
+        "en": "has participant"
+      },
+      "definitions": {
+        "cs": "Tato vazba spojuje událost a proměnný prvek, který se jí účastní. Např. Fotbalista se účastní fotbalového zápasu.",
+        "en": "This link connects an event and an endurant which participates in the event. For example, a soccer player participates in a football match."
+      },
+      "altLabels": [],
+      "types": ["http://www.w3.org/2002/07/owl#ObjectProperty"],
+      "inScheme": "https://slovník.gov.cz/základní/glosář",
+      "subClassOf": [],
+      "restrictions": [],
+      "type": 0,
+      "domain": "https://slovník.gov.cz/základní/pojem/událost",
+      "range": "https://slovník.gov.cz/základní/pojem/okamžitý-stav-proměnného-prvku",
+      "subClassOfDomain": [],
+      "subClassOfRange": [],
+      "defaultSourceCardinality": {
+        "first": "0",
+        "second": "0"
+      },
+      "defaultTargetCardinality": {
+        "first": "1",
+        "second": "*"
+      }
+    },
+    "https://slovník.gov.cz/základní/pojem/má-časové-určení": {
+      "labels": {
+        "cs": "má časové určení",
+        "en": "has temporal span"
+      },
+      "definitions": {
+        "cs": "Typ vazby, která propojuje neměnný prvek s jeho časovým určením.",
+        "en": "Type of link connecting a perdurant with its temporal specification."
+      },
+      "altLabels": [],
+      "types": ["http://www.w3.org/2002/07/owl#ObjectProperty"],
+      "inScheme": "https://slovník.gov.cz/základní/glosář",
+      "subClassOf": [],
+      "restrictions": [],
+      "type": 0,
+      "domain": "https://slovník.gov.cz/základní/pojem/neměnný-prvek",
+      "range": "https://slovník.gov.cz/základní/pojem/časový-prvek",
+      "subClassOfDomain": [],
+      "subClassOfRange": [],
+      "defaultSourceCardinality": {
+        "first": "0",
+        "second": "0"
+      },
+      "defaultTargetCardinality": {
+        "first": "1",
+        "second": "*"
+      }
+    }
+  },
+  "Stereotypes": {
+    "https://slovník.gov.cz/základní/pojem/typ-vztahu": {
+      "labels": {
+        "cs": "Typ vztahu",
+        "en": "Relator"
+      },
+      "definitions": {
+        "cs": "Instance typu vztahu jsou vztahy mezi objekty, tedy např. Manželství Martina Nováka a Martiny Novákové je  vztah mezi objekty Martin Novák a Martina Nováková",
+        "en": ""
+      },
+      "altLabels": [],
+      "types": ["http://www.w3.org/2002/07/owl#Class"],
+      "inScheme": "https://slovník.gov.cz/základní/glosář",
+      "subClassOf": [
+        "http://onto.fel.cvut.cz/ontologies/ufo/object",
+        "https://slovník.gov.cz/základní/pojem/typ-vztahu",
+        "https://slovník.gov.cz/základní/pojem/objekt",
+        "http://onto.fel.cvut.cz/ontologies/ufo/endurant",
+        "https://slovník.gov.cz/základní/pojem/proměnný-prvek",
+        "https://slovník.gov.cz/základní/pojem/prvek",
+        "https://slovník.gov.cz/základní/pojem/typ-proměnného-prvku",
+        "https://slovník.gov.cz/základní/pojem/pasivní-objekt",
+        "https://slovník.gov.cz/základní/pojem/typ",
+        "http://onto.fel.cvut.cz/ontologies/ufo/relator-type",
+        "http://onto.fel.cvut.cz/ontologies/ufo/endurant-type",
+        "http://purl.org/nemo/gufo#EndurantType",
+        "http://onto.fel.cvut.cz/ontologies/ufo/entity",
+        "http://purl.org/nemo/gufo#RelationshipType",
+        "http://onto.fel.cvut.cz/ontologies/ufo/type",
+        "http://purl.org/nemo/gufo#Type"
+      ],
+      "restrictions": [],
+      "type": 0,
+      "character": "https://slovník.gov.cz/základní/pojem/vztah"
+    },
+    "https://slovník.gov.cz/základní/pojem/typ-vlastnosti": {
+      "labels": {
+        "cs": "Typ vlastnosti",
+        "en": "Intrinsic Trope Type"
+      },
+      "definitions": {
+        "cs": "Typ vlastnosti popisuje kategorie proměnných prvků, které jsou závislé na existenci jiného proměnného prvku. Příklady instancí: konkrétní typ letadla (Airbus 380), objekt/subjekt RPP (např. malé plavidlo),",
+        "en": ""
+      },
+      "altLabels": [],
+      "types": ["http://www.w3.org/2002/07/owl#Class"],
+      "inScheme": "https://slovník.gov.cz/základní/glosář",
+      "subClassOf": [
+        "http://onto.fel.cvut.cz/ontologies/ufo/object",
+        "https://slovník.gov.cz/základní/pojem/typ-vlastnosti",
+        "https://slovník.gov.cz/základní/pojem/objekt",
+        "http://onto.fel.cvut.cz/ontologies/ufo/endurant",
+        "https://slovník.gov.cz/základní/pojem/proměnný-prvek",
+        "https://slovník.gov.cz/základní/pojem/prvek",
+        "https://slovník.gov.cz/základní/pojem/typ-proměnného-prvku",
+        "https://slovník.gov.cz/základní/pojem/pasivní-objekt",
+        "https://slovník.gov.cz/základní/pojem/typ",
+        "http://onto.fel.cvut.cz/ontologies/ufo/intrinsic-trope-type",
+        "http://onto.fel.cvut.cz/ontologies/ufo/endurant-type",
+        "http://purl.org/nemo/gufo#EndurantType",
+        "http://onto.fel.cvut.cz/ontologies/ufo/entity",
+        "http://onto.fel.cvut.cz/ontologies/ufo/type",
+        "http://purl.org/nemo/gufo#Type"
+      ],
+      "restrictions": [],
+      "type": 0,
+      "character": "https://slovník.gov.cz/základní/pojem/vlastnost"
+    },
+    "https://slovník.gov.cz/základní/pojem/typ-objektu": {
+      "labels": {
+        "cs": "Typ objektu",
+        "en": "Object type"
+      },
+      "definitions": {
+        "cs": "Typ objektu (typ[objekt]) popisuje kategorii která může být objektu přiřazena.  Příklady instancí: konkrétní typ letadla (Airbus 380), objekt/subjekt RPP (např. malé plavidlo),",
+        "en": ""
+      },
+      "altLabels": [],
+      "types": ["http://www.w3.org/2002/07/owl#Class"],
+      "inScheme": "https://slovník.gov.cz/základní/glosář",
+      "subClassOf": [
+        "https://slovník.gov.cz/základní/pojem/typ-objektu",
+        "http://onto.fel.cvut.cz/ontologies/ufo/object",
+        "https://slovník.gov.cz/základní/pojem/objekt",
+        "http://onto.fel.cvut.cz/ontologies/ufo/endurant",
+        "https://slovník.gov.cz/základní/pojem/proměnný-prvek",
+        "https://slovník.gov.cz/základní/pojem/prvek",
+        "https://slovník.gov.cz/základní/pojem/typ-proměnného-prvku",
+        "https://slovník.gov.cz/základní/pojem/pasivní-objekt",
+        "https://slovník.gov.cz/základní/pojem/typ",
+        "http://onto.fel.cvut.cz/ontologies/ufo/object-type",
+        "http://onto.fel.cvut.cz/ontologies/ufo/endurant-type",
+        "http://purl.org/nemo/gufo#EndurantType",
+        "http://onto.fel.cvut.cz/ontologies/ufo/entity",
+        "http://onto.fel.cvut.cz/ontologies/ufo/type",
+        "http://purl.org/nemo/gufo#Type"
+      ],
+      "restrictions": [],
+      "type": 0,
+      "character": "https://slovník.gov.cz/základní/pojem/objekt"
+    },
+    "https://slovník.gov.cz/základní/pojem/typ-události": {
+      "labels": {
+        "cs": "Typ události",
+        "en": "Event type"
+      },
+      "definitions": {
+        "cs": "Typ, do nějž lze Událost klasifikovat. Příkladem je typ události Narození.",
+        "en": ""
+      },
+      "altLabels": [],
+      "types": ["http://www.w3.org/2002/07/owl#Class"],
+      "inScheme": "https://slovník.gov.cz/základní/glosář",
+      "subClassOf": [
+        "http://onto.fel.cvut.cz/ontologies/ufo/object",
+        "https://slovník.gov.cz/základní/pojem/objekt",
+        "http://onto.fel.cvut.cz/ontologies/ufo/endurant",
+        "https://slovník.gov.cz/základní/pojem/typ-události",
+        "https://slovník.gov.cz/základní/pojem/proměnný-prvek",
+        "https://slovník.gov.cz/základní/pojem/prvek",
+        "https://slovník.gov.cz/základní/pojem/pasivní-objekt",
+        "https://slovník.gov.cz/základní/pojem/typ",
+        "http://onto.fel.cvut.cz/ontologies/ufo/entity",
+        "http://onto.fel.cvut.cz/ontologies/ufo/event-type",
+        "http://purl.org/nemo/gufo#EventType",
+        "http://onto.fel.cvut.cz/ontologies/ufo/type",
+        "http://purl.org/nemo/gufo#Type"
+      ],
+      "restrictions": [],
+      "type": 0,
+      "character": "https://slovník.gov.cz/základní/pojem/událost"
+    },
+    "https://slovník.gov.cz/základní/pojem/druh": {
+      "labels": {
+        "cs": "Druh",
+        "en": "Kind"
+      },
+      "definitions": {
+        "cs": "Druh je rigidní typ objektu, který poskytuje princip identity.",
+        "en": "Kind is a rigid sortal supplying principle of identity ."
+      },
+      "altLabels": [],
+      "types": ["http://www.w3.org/2002/07/owl#Class"],
+      "inScheme": "https://slovník.gov.cz/základní/glosář",
+      "subClassOf": [
+        "http://onto.fel.cvut.cz/ontologies/ufo/object",
+        "https://slovník.gov.cz/základní/pojem/objekt",
+        "http://onto.fel.cvut.cz/ontologies/ufo/endurant",
+        "https://slovník.gov.cz/základní/pojem/druh",
+        "https://slovník.gov.cz/základní/pojem/proměnný-prvek",
+        "https://slovník.gov.cz/základní/pojem/prvek",
+        "https://slovník.gov.cz/základní/pojem/sortál",
+        "https://slovník.gov.cz/základní/pojem/typ-proměnného-prvku",
+        "https://slovník.gov.cz/základní/pojem/pasivní-objekt",
+        "https://slovník.gov.cz/základní/pojem/typ",
+        "http://onto.fel.cvut.cz/ontologies/ufo/endurant-type",
+        "http://purl.org/nemo/gufo#EndurantType",
+        "http://onto.fel.cvut.cz/ontologies/ufo/entity",
+        "http://onto.fel.cvut.cz/ontologies/ufo/kind",
+        "http://purl.org/nemo/gufo#Kind",
+        "http://onto.fel.cvut.cz/ontologies/ufo/type",
+        "http://purl.org/nemo/gufo#Type"
+      ],
+      "restrictions": [],
+      "type": 0
+    },
+    "https://slovník.gov.cz/základní/pojem/poddruh": {
+      "labels": {
+        "cs": "Poddruh",
+        "en": "Subkind"
+      },
+      "definitions": {
+        "cs": "Poddruh je rigidní typ, který princip identity přejímá od druhu, od kterého specializuje.",
+        "en": "Subkind is a rigid sortal which takes the principle of identity from the kind it specializes from."
+      },
+      "altLabels": [],
+      "types": ["http://www.w3.org/2002/07/owl#Class"],
+      "inScheme": "https://slovník.gov.cz/základní/glosář",
+      "subClassOf": [
+        "http://onto.fel.cvut.cz/ontologies/ufo/object",
+        "https://slovník.gov.cz/základní/pojem/objekt",
+        "http://onto.fel.cvut.cz/ontologies/ufo/endurant",
+        "https://slovník.gov.cz/základní/pojem/proměnný-prvek",
+        "https://slovník.gov.cz/základní/pojem/prvek",
+        "https://slovník.gov.cz/základní/pojem/sortál",
+        "https://slovník.gov.cz/základní/pojem/typ-proměnného-prvku",
+        "https://slovník.gov.cz/základní/pojem/pasivní-objekt",
+        "https://slovník.gov.cz/základní/pojem/typ",
+        "https://slovník.gov.cz/základní/pojem/poddruh",
+        "http://onto.fel.cvut.cz/ontologies/ufo/endurant-type",
+        "http://purl.org/nemo/gufo#EndurantType",
+        "http://onto.fel.cvut.cz/ontologies/ufo/entity",
+        "http://onto.fel.cvut.cz/ontologies/ufo/sub-kind",
+        "http://purl.org/nemo/gufo#SubKind",
+        "http://onto.fel.cvut.cz/ontologies/ufo/type",
+        "http://purl.org/nemo/gufo#Type"
+      ],
+      "restrictions": [],
+      "type": 0
+    },
+    "https://slovník.gov.cz/základní/pojem/mixin": {
+      "labels": {
+        "cs": "Mixin",
+        "en": "Mixin"
+      },
+      "definitions": {
+        "cs": "",
+        "en": ""
+      },
+      "altLabels": [],
+      "types": ["http://www.w3.org/2002/07/owl#Class"],
+      "inScheme": "https://slovník.gov.cz/základní/glosář",
+      "subClassOf": [
+        "http://onto.fel.cvut.cz/ontologies/ufo/object",
+        "https://slovník.gov.cz/základní/pojem/objekt",
+        "http://onto.fel.cvut.cz/ontologies/ufo/endurant",
+        "https://slovník.gov.cz/základní/pojem/proměnný-prvek",
+        "https://slovník.gov.cz/základní/pojem/prvek",
+        "https://slovník.gov.cz/základní/pojem/nesortál",
+        "https://slovník.gov.cz/základní/pojem/typ-proměnného-prvku",
+        "https://slovník.gov.cz/základní/pojem/pasivní-objekt",
+        "https://slovník.gov.cz/základní/pojem/typ",
+        "https://slovník.gov.cz/základní/pojem/mixin",
+        "http://onto.fel.cvut.cz/ontologies/ufo/endurant-type",
+        "http://purl.org/nemo/gufo#EndurantType",
+        "http://onto.fel.cvut.cz/ontologies/ufo/entity",
+        "http://onto.fel.cvut.cz/ontologies/ufo/mixin",
+        "http://purl.org/nemo/gufo#Mixin",
+        "http://onto.fel.cvut.cz/ontologies/ufo/type",
+        "http://purl.org/nemo/gufo#Type",
+        "http://purl.org/nemo/gufo#NonSortal"
+      ],
+      "restrictions": [],
+      "type": 0
+    },
+    "https://slovník.gov.cz/základní/pojem/kategorie": {
+      "labels": {
+        "cs": "Kategorie",
+        "en": "Category"
+      },
+      "definitions": {
+        "cs": "Kategorie je rigidní mixin",
+        "en": "Category is a rigid mixin"
+      },
+      "altLabels": [],
+      "types": ["http://www.w3.org/2002/07/owl#Class"],
+      "inScheme": "https://slovník.gov.cz/základní/glosář",
+      "subClassOf": [
+        "http://onto.fel.cvut.cz/ontologies/ufo/object",
+        "https://slovník.gov.cz/základní/pojem/objekt",
+        "http://onto.fel.cvut.cz/ontologies/ufo/endurant",
+        "https://slovník.gov.cz/základní/pojem/kategorie",
+        "https://slovník.gov.cz/základní/pojem/proměnný-prvek",
+        "https://slovník.gov.cz/základní/pojem/prvek",
+        "https://slovník.gov.cz/základní/pojem/nesortál",
+        "https://slovník.gov.cz/základní/pojem/typ-proměnného-prvku",
+        "https://slovník.gov.cz/základní/pojem/pasivní-objekt",
+        "https://slovník.gov.cz/základní/pojem/typ",
+        "http://onto.fel.cvut.cz/ontologies/ufo/category",
+        "http://purl.org/nemo/gufo#Category",
+        "http://onto.fel.cvut.cz/ontologies/ufo/endurant-type",
+        "http://purl.org/nemo/gufo#EndurantType",
+        "http://onto.fel.cvut.cz/ontologies/ufo/entity",
+        "http://onto.fel.cvut.cz/ontologies/ufo/type",
+        "http://purl.org/nemo/gufo#Type",
+        "http://purl.org/nemo/gufo#NonSortal"
+      ],
+      "restrictions": [],
+      "type": 0
+    },
+    "https://slovník.gov.cz/základní/pojem/role": {
+      "labels": {
+        "cs": "Role",
+        "en": "Role"
+      },
+      "definitions": {
+        "cs": "Role je anti-rigidní typ pro jediný princip identity, závislý na vztahu.",
+        "en": "Role is an anti-rigid sortal - an individual has this type whenever it is mediated by some particular relator."
+      },
+      "altLabels": [],
+      "types": ["http://www.w3.org/2002/07/owl#Class"],
+      "inScheme": "https://slovník.gov.cz/základní/glosář",
+      "subClassOf": [
+        "http://onto.fel.cvut.cz/ontologies/ufo/object",
+        "https://slovník.gov.cz/základní/pojem/objekt",
+        "http://onto.fel.cvut.cz/ontologies/ufo/endurant",
+        "https://slovník.gov.cz/základní/pojem/role",
+        "https://slovník.gov.cz/základní/pojem/proměnný-prvek",
+        "https://slovník.gov.cz/základní/pojem/prvek",
+        "https://slovník.gov.cz/základní/pojem/sortál",
+        "https://slovník.gov.cz/základní/pojem/typ-proměnného-prvku",
+        "https://slovník.gov.cz/základní/pojem/pasivní-objekt",
+        "https://slovník.gov.cz/základní/pojem/typ",
+        "http://onto.fel.cvut.cz/ontologies/ufo/endurant-type",
+        "http://purl.org/nemo/gufo#EndurantType",
+        "http://onto.fel.cvut.cz/ontologies/ufo/entity",
+        "http://onto.fel.cvut.cz/ontologies/ufo/role",
+        "http://purl.org/nemo/gufo#Role",
+        "http://onto.fel.cvut.cz/ontologies/ufo/type",
+        "http://purl.org/nemo/gufo#Type"
+      ],
+      "restrictions": [],
+      "type": 0
+    },
+    "https://slovník.gov.cz/základní/pojem/fáze": {
+      "labels": {
+        "cs": "Fáze",
+        "en": "Phase"
+      },
+      "definitions": {
+        "cs": "Fáze je anti-rigidní typ pro jediný princip identity, závislý na vlastnoti.",
+        "en": "Phase is an anti-rigid sortal - an individual has this type whenever an intrinsic trope inheres in it."
+      },
+      "altLabels": [],
+      "types": ["http://www.w3.org/2002/07/owl#Class"],
+      "inScheme": "https://slovník.gov.cz/základní/glosář",
+      "subClassOf": [
+        "http://onto.fel.cvut.cz/ontologies/ufo/object",
+        "https://slovník.gov.cz/základní/pojem/objekt",
+        "http://onto.fel.cvut.cz/ontologies/ufo/endurant",
+        "https://slovník.gov.cz/základní/pojem/proměnný-prvek",
+        "https://slovník.gov.cz/základní/pojem/prvek",
+        "https://slovník.gov.cz/základní/pojem/sortál",
+        "https://slovník.gov.cz/základní/pojem/typ-proměnného-prvku",
+        "https://slovník.gov.cz/základní/pojem/pasivní-objekt",
+        "https://slovník.gov.cz/základní/pojem/typ",
+        "https://slovník.gov.cz/základní/pojem/fáze",
+        "http://onto.fel.cvut.cz/ontologies/ufo/endurant-type",
+        "http://purl.org/nemo/gufo#EndurantType",
+        "http://onto.fel.cvut.cz/ontologies/ufo/entity",
+        "http://onto.fel.cvut.cz/ontologies/ufo/phase",
+        "http://purl.org/nemo/gufo#Phase",
+        "http://onto.fel.cvut.cz/ontologies/ufo/type",
+        "http://purl.org/nemo/gufo#Type"
+      ],
+      "restrictions": [],
+      "type": 0
+    },
+    "https://slovník.gov.cz/základní/pojem/mixin-rolí": {
+      "labels": {
+        "cs": "Mixin rolí",
+        "en": "Role Mixin"
+      },
+      "definitions": {
+        "cs": "Mixin rolí je anti-rigidní mixin",
+        "en": "Role mixin is an anti-rigid mixin"
+      },
+      "altLabels": [],
+      "types": ["http://www.w3.org/2002/07/owl#Class"],
+      "inScheme": "https://slovník.gov.cz/základní/glosář",
+      "subClassOf": [
+        "http://onto.fel.cvut.cz/ontologies/ufo/object",
+        "https://slovník.gov.cz/základní/pojem/objekt",
+        "http://onto.fel.cvut.cz/ontologies/ufo/endurant",
+        "https://slovník.gov.cz/základní/pojem/proměnný-prvek",
+        "https://slovník.gov.cz/základní/pojem/prvek",
+        "https://slovník.gov.cz/základní/pojem/mixin-rolí",
+        "https://slovník.gov.cz/základní/pojem/nesortál",
+        "https://slovník.gov.cz/základní/pojem/typ-proměnného-prvku",
+        "https://slovník.gov.cz/základní/pojem/pasivní-objekt",
+        "https://slovník.gov.cz/základní/pojem/typ",
+        "http://onto.fel.cvut.cz/ontologies/ufo/endurant-type",
+        "http://purl.org/nemo/gufo#EndurantType",
+        "http://onto.fel.cvut.cz/ontologies/ufo/entity",
+        "http://onto.fel.cvut.cz/ontologies/ufo/role-mixin",
+        "http://purl.org/nemo/gufo#RoleMixin",
+        "http://onto.fel.cvut.cz/ontologies/ufo/type",
+        "http://purl.org/nemo/gufo#Type",
+        "http://purl.org/nemo/gufo#NonSortal"
+      ],
+      "restrictions": [],
+      "type": 0
+    },
+    "https://slovník.gov.cz/základní/pojem/mixin-fází": {
+      "labels": {
+        "cs": "Mixin fází",
+        "en": "Phase mixin"
+      },
+      "definitions": {
+        "cs": "Mixin fází je anti-rigidní nesortál.",
+        "en": "Phase mixin is an anti-rigid non-sortal."
+      },
+      "altLabels": [],
+      "types": ["http://www.w3.org/2002/07/owl#Class"],
+      "inScheme": "https://slovník.gov.cz/základní/glosář",
+      "subClassOf": [
+        "http://onto.fel.cvut.cz/ontologies/ufo/object",
+        "https://slovník.gov.cz/základní/pojem/objekt",
+        "http://onto.fel.cvut.cz/ontologies/ufo/endurant",
+        "https://slovník.gov.cz/základní/pojem/proměnný-prvek",
+        "https://slovník.gov.cz/základní/pojem/prvek",
+        "https://slovník.gov.cz/základní/pojem/nesortál",
+        "https://slovník.gov.cz/základní/pojem/typ-proměnného-prvku",
+        "https://slovník.gov.cz/základní/pojem/pasivní-objekt",
+        "https://slovník.gov.cz/základní/pojem/typ",
+        "http://onto.fel.cvut.cz/ontologies/ufo/endurant-type",
+        "http://purl.org/nemo/gufo#EndurantType",
+        "http://onto.fel.cvut.cz/ontologies/ufo/entity",
+        "http://onto.fel.cvut.cz/ontologies/ufo/type",
+        "http://purl.org/nemo/gufo#Type",
+        "http://purl.org/nemo/gufo#NonSortal",
+        "http://purl.org/nemo/gufo#PhaseMixin"
+      ],
+      "restrictions": [],
+      "type": 0
+    },
+    "http://onto.fel.cvut.cz/ontologies/ufo/relator-type": {
+      "labels": {
+        "cs": "Typ vztahu",
+        "en": "Relator"
+      },
+      "definitions": {
+        "cs": "Instance typu vztahu jsou vztahy mezi objekty, tedy např. Manželství Martina Nováka a Martiny Novákové je  vztah mezi objekty Martin Novák a Martina Nováková",
+        "en": ""
+      },
+      "altLabels": [],
+      "types": ["http://www.w3.org/2002/07/owl#Class"],
+      "inScheme": "https://slovník.gov.cz/základní/glosář",
+      "subClassOf": [
+        "http://onto.fel.cvut.cz/ontologies/ufo/object",
+        "https://slovník.gov.cz/základní/pojem/typ-vztahu",
+        "https://slovník.gov.cz/základní/pojem/objekt",
+        "http://onto.fel.cvut.cz/ontologies/ufo/endurant",
+        "https://slovník.gov.cz/základní/pojem/proměnný-prvek",
+        "https://slovník.gov.cz/základní/pojem/prvek",
+        "https://slovník.gov.cz/základní/pojem/typ-proměnného-prvku",
+        "https://slovník.gov.cz/základní/pojem/pasivní-objekt",
+        "https://slovník.gov.cz/základní/pojem/typ",
+        "http://onto.fel.cvut.cz/ontologies/ufo/relator-type",
+        "http://onto.fel.cvut.cz/ontologies/ufo/endurant-type",
+        "http://purl.org/nemo/gufo#EndurantType",
+        "http://onto.fel.cvut.cz/ontologies/ufo/entity",
+        "http://purl.org/nemo/gufo#RelationshipType",
+        "http://onto.fel.cvut.cz/ontologies/ufo/type",
+        "http://purl.org/nemo/gufo#Type"
+      ],
+      "restrictions": [],
+      "type": 0,
+      "character": "https://slovník.gov.cz/základní/pojem/vztah"
+    },
+    "http://onto.fel.cvut.cz/ontologies/ufo/intrinsic-trope-type": {
+      "labels": {
+        "cs": "Typ vlastnosti",
+        "en": "Intrinsic Trope Type"
+      },
+      "definitions": {
+        "cs": "Typ vlastnosti popisuje kategorie proměnných prvků, které jsou závislé na existenci jiného proměnného prvku. Příklady instancí: konkrétní typ letadla (Airbus 380), objekt/subjekt RPP (např. malé plavidlo),",
+        "en": ""
+      },
+      "altLabels": [],
+      "types": ["http://www.w3.org/2002/07/owl#Class"],
+      "inScheme": "https://slovník.gov.cz/základní/glosář",
+      "subClassOf": [
+        "http://onto.fel.cvut.cz/ontologies/ufo/object",
+        "https://slovník.gov.cz/základní/pojem/typ-vlastnosti",
+        "https://slovník.gov.cz/základní/pojem/objekt",
+        "http://onto.fel.cvut.cz/ontologies/ufo/endurant",
+        "https://slovník.gov.cz/základní/pojem/proměnný-prvek",
+        "https://slovník.gov.cz/základní/pojem/prvek",
+        "https://slovník.gov.cz/základní/pojem/typ-proměnného-prvku",
+        "https://slovník.gov.cz/základní/pojem/pasivní-objekt",
+        "https://slovník.gov.cz/základní/pojem/typ",
+        "http://onto.fel.cvut.cz/ontologies/ufo/intrinsic-trope-type",
+        "http://onto.fel.cvut.cz/ontologies/ufo/endurant-type",
+        "http://purl.org/nemo/gufo#EndurantType",
+        "http://onto.fel.cvut.cz/ontologies/ufo/entity",
+        "http://onto.fel.cvut.cz/ontologies/ufo/type",
+        "http://purl.org/nemo/gufo#Type"
+      ],
+      "restrictions": [],
+      "type": 0,
+      "character": "https://slovník.gov.cz/základní/pojem/vlastnost"
+    },
+    "http://onto.fel.cvut.cz/ontologies/ufo/object-type": {
+      "labels": {
+        "cs": "Typ objektu",
+        "en": "Object type"
+      },
+      "definitions": {
+        "cs": "Typ objektu (typ[objekt]) popisuje kategorii která může být objektu přiřazena.  Příklady instancí: konkrétní typ letadla (Airbus 380), objekt/subjekt RPP (např. malé plavidlo),",
+        "en": ""
+      },
+      "altLabels": [],
+      "types": ["http://www.w3.org/2002/07/owl#Class"],
+      "inScheme": "https://slovník.gov.cz/základní/glosář",
+      "subClassOf": [
+        "https://slovník.gov.cz/základní/pojem/typ-objektu",
+        "http://onto.fel.cvut.cz/ontologies/ufo/object",
+        "https://slovník.gov.cz/základní/pojem/objekt",
+        "http://onto.fel.cvut.cz/ontologies/ufo/endurant",
+        "https://slovník.gov.cz/základní/pojem/proměnný-prvek",
+        "https://slovník.gov.cz/základní/pojem/prvek",
+        "https://slovník.gov.cz/základní/pojem/typ-proměnného-prvku",
+        "https://slovník.gov.cz/základní/pojem/pasivní-objekt",
+        "https://slovník.gov.cz/základní/pojem/typ",
+        "http://onto.fel.cvut.cz/ontologies/ufo/object-type",
+        "http://onto.fel.cvut.cz/ontologies/ufo/endurant-type",
+        "http://purl.org/nemo/gufo#EndurantType",
+        "http://onto.fel.cvut.cz/ontologies/ufo/entity",
+        "http://onto.fel.cvut.cz/ontologies/ufo/type",
+        "http://purl.org/nemo/gufo#Type"
+      ],
+      "restrictions": [],
+      "type": 0,
+      "character": "https://slovník.gov.cz/základní/pojem/objekt"
+    },
+    "http://onto.fel.cvut.cz/ontologies/ufo/event-type": {
+      "labels": {
+        "cs": "Typ události",
+        "en": "Event type"
+      },
+      "definitions": {
+        "cs": "Typ, do nějž lze Událost klasifikovat. Příkladem je typ události Narození.",
+        "en": ""
+      },
+      "altLabels": [],
+      "types": ["http://www.w3.org/2002/07/owl#Class"],
+      "inScheme": "https://slovník.gov.cz/základní/glosář",
+      "subClassOf": [
+        "http://onto.fel.cvut.cz/ontologies/ufo/object",
+        "https://slovník.gov.cz/základní/pojem/objekt",
+        "http://onto.fel.cvut.cz/ontologies/ufo/endurant",
+        "https://slovník.gov.cz/základní/pojem/typ-události",
+        "https://slovník.gov.cz/základní/pojem/proměnný-prvek",
+        "https://slovník.gov.cz/základní/pojem/prvek",
+        "https://slovník.gov.cz/základní/pojem/pasivní-objekt",
+        "https://slovník.gov.cz/základní/pojem/typ",
+        "http://onto.fel.cvut.cz/ontologies/ufo/entity",
+        "http://onto.fel.cvut.cz/ontologies/ufo/event-type",
+        "http://purl.org/nemo/gufo#EventType",
+        "http://onto.fel.cvut.cz/ontologies/ufo/type",
+        "http://purl.org/nemo/gufo#Type"
+      ],
+      "restrictions": [],
+      "type": 0,
+      "character": "https://slovník.gov.cz/základní/pojem/událost"
+    },
+    "http://onto.fel.cvut.cz/ontologies/ufo/kind": {
+      "labels": {
+        "cs": "Druh",
+        "en": "Kind"
+      },
+      "definitions": {
+        "cs": "Druh je rigidní typ objektu, který poskytuje princip identity.",
+        "en": "Kind is a rigid sortal supplying principle of identity ."
+      },
+      "altLabels": [],
+      "types": ["http://www.w3.org/2002/07/owl#Class"],
+      "inScheme": "https://slovník.gov.cz/základní/glosář",
+      "subClassOf": [
+        "http://onto.fel.cvut.cz/ontologies/ufo/object",
+        "https://slovník.gov.cz/základní/pojem/objekt",
+        "http://onto.fel.cvut.cz/ontologies/ufo/endurant",
+        "https://slovník.gov.cz/základní/pojem/druh",
+        "https://slovník.gov.cz/základní/pojem/proměnný-prvek",
+        "https://slovník.gov.cz/základní/pojem/prvek",
+        "https://slovník.gov.cz/základní/pojem/sortál",
+        "https://slovník.gov.cz/základní/pojem/typ-proměnného-prvku",
+        "https://slovník.gov.cz/základní/pojem/pasivní-objekt",
+        "https://slovník.gov.cz/základní/pojem/typ",
+        "http://onto.fel.cvut.cz/ontologies/ufo/endurant-type",
+        "http://purl.org/nemo/gufo#EndurantType",
+        "http://onto.fel.cvut.cz/ontologies/ufo/entity",
+        "http://onto.fel.cvut.cz/ontologies/ufo/kind",
+        "http://purl.org/nemo/gufo#Kind",
+        "http://onto.fel.cvut.cz/ontologies/ufo/type",
+        "http://purl.org/nemo/gufo#Type"
+      ],
+      "restrictions": [],
+      "type": 0
+    },
+    "http://onto.fel.cvut.cz/ontologies/ufo/sub-kind": {
+      "labels": {
+        "cs": "Poddruh",
+        "en": "Subkind"
+      },
+      "definitions": {
+        "cs": "Poddruh je rigidní typ, který princip identity přejímá od druhu, od kterého specializuje.",
+        "en": "Subkind is a rigid sortal which takes the principle of identity from the kind it specializes from."
+      },
+      "altLabels": [],
+      "types": ["http://www.w3.org/2002/07/owl#Class"],
+      "inScheme": "https://slovník.gov.cz/základní/glosář",
+      "subClassOf": [
+        "http://onto.fel.cvut.cz/ontologies/ufo/object",
+        "https://slovník.gov.cz/základní/pojem/objekt",
+        "http://onto.fel.cvut.cz/ontologies/ufo/endurant",
+        "https://slovník.gov.cz/základní/pojem/proměnný-prvek",
+        "https://slovník.gov.cz/základní/pojem/prvek",
+        "https://slovník.gov.cz/základní/pojem/sortál",
+        "https://slovník.gov.cz/základní/pojem/typ-proměnného-prvku",
+        "https://slovník.gov.cz/základní/pojem/pasivní-objekt",
+        "https://slovník.gov.cz/základní/pojem/typ",
+        "https://slovník.gov.cz/základní/pojem/poddruh",
+        "http://onto.fel.cvut.cz/ontologies/ufo/endurant-type",
+        "http://purl.org/nemo/gufo#EndurantType",
+        "http://onto.fel.cvut.cz/ontologies/ufo/entity",
+        "http://onto.fel.cvut.cz/ontologies/ufo/sub-kind",
+        "http://purl.org/nemo/gufo#SubKind",
+        "http://onto.fel.cvut.cz/ontologies/ufo/type",
+        "http://purl.org/nemo/gufo#Type"
+      ],
+      "restrictions": [],
+      "type": 0
+    },
+    "http://onto.fel.cvut.cz/ontologies/ufo/mixin": {
+      "labels": {
+        "cs": "Mixin",
+        "en": "Mixin"
+      },
+      "definitions": {
+        "cs": "",
+        "en": ""
+      },
+      "altLabels": [],
+      "types": ["http://www.w3.org/2002/07/owl#Class"],
+      "inScheme": "https://slovník.gov.cz/základní/glosář",
+      "subClassOf": [
+        "http://onto.fel.cvut.cz/ontologies/ufo/object",
+        "https://slovník.gov.cz/základní/pojem/objekt",
+        "http://onto.fel.cvut.cz/ontologies/ufo/endurant",
+        "https://slovník.gov.cz/základní/pojem/proměnný-prvek",
+        "https://slovník.gov.cz/základní/pojem/prvek",
+        "https://slovník.gov.cz/základní/pojem/nesortál",
+        "https://slovník.gov.cz/základní/pojem/typ-proměnného-prvku",
+        "https://slovník.gov.cz/základní/pojem/pasivní-objekt",
+        "https://slovník.gov.cz/základní/pojem/typ",
+        "https://slovník.gov.cz/základní/pojem/mixin",
+        "http://onto.fel.cvut.cz/ontologies/ufo/endurant-type",
+        "http://purl.org/nemo/gufo#EndurantType",
+        "http://onto.fel.cvut.cz/ontologies/ufo/entity",
+        "http://onto.fel.cvut.cz/ontologies/ufo/mixin",
+        "http://purl.org/nemo/gufo#Mixin",
+        "http://onto.fel.cvut.cz/ontologies/ufo/type",
+        "http://purl.org/nemo/gufo#Type",
+        "http://purl.org/nemo/gufo#NonSortal"
+      ],
+      "restrictions": [],
+      "type": 0
+    },
+    "http://onto.fel.cvut.cz/ontologies/ufo/category": {
+      "labels": {
+        "cs": "Kategorie",
+        "en": "Category"
+      },
+      "definitions": {
+        "cs": "Kategorie je rigidní mixin",
+        "en": "Category is a rigid mixin"
+      },
+      "altLabels": [],
+      "types": ["http://www.w3.org/2002/07/owl#Class"],
+      "inScheme": "https://slovník.gov.cz/základní/glosář",
+      "subClassOf": [
+        "http://onto.fel.cvut.cz/ontologies/ufo/object",
+        "https://slovník.gov.cz/základní/pojem/objekt",
+        "http://onto.fel.cvut.cz/ontologies/ufo/endurant",
+        "https://slovník.gov.cz/základní/pojem/kategorie",
+        "https://slovník.gov.cz/základní/pojem/proměnný-prvek",
+        "https://slovník.gov.cz/základní/pojem/prvek",
+        "https://slovník.gov.cz/základní/pojem/nesortál",
+        "https://slovník.gov.cz/základní/pojem/typ-proměnného-prvku",
+        "https://slovník.gov.cz/základní/pojem/pasivní-objekt",
+        "https://slovník.gov.cz/základní/pojem/typ",
+        "http://onto.fel.cvut.cz/ontologies/ufo/category",
+        "http://purl.org/nemo/gufo#Category",
+        "http://onto.fel.cvut.cz/ontologies/ufo/endurant-type",
+        "http://purl.org/nemo/gufo#EndurantType",
+        "http://onto.fel.cvut.cz/ontologies/ufo/entity",
+        "http://onto.fel.cvut.cz/ontologies/ufo/type",
+        "http://purl.org/nemo/gufo#Type",
+        "http://purl.org/nemo/gufo#NonSortal"
+      ],
+      "restrictions": [],
+      "type": 0
+    },
+    "http://onto.fel.cvut.cz/ontologies/ufo/role": {
+      "labels": {
+        "cs": "Role",
+        "en": "Role"
+      },
+      "definitions": {
+        "cs": "Role je anti-rigidní typ pro jediný princip identity, závislý na vztahu.",
+        "en": "Role is an anti-rigid sortal - an individual has this type whenever it is mediated by some particular relator."
+      },
+      "altLabels": [],
+      "types": ["http://www.w3.org/2002/07/owl#Class"],
+      "inScheme": "https://slovník.gov.cz/základní/glosář",
+      "subClassOf": [
+        "http://onto.fel.cvut.cz/ontologies/ufo/object",
+        "https://slovník.gov.cz/základní/pojem/objekt",
+        "http://onto.fel.cvut.cz/ontologies/ufo/endurant",
+        "https://slovník.gov.cz/základní/pojem/role",
+        "https://slovník.gov.cz/základní/pojem/proměnný-prvek",
+        "https://slovník.gov.cz/základní/pojem/prvek",
+        "https://slovník.gov.cz/základní/pojem/sortál",
+        "https://slovník.gov.cz/základní/pojem/typ-proměnného-prvku",
+        "https://slovník.gov.cz/základní/pojem/pasivní-objekt",
+        "https://slovník.gov.cz/základní/pojem/typ",
+        "http://onto.fel.cvut.cz/ontologies/ufo/endurant-type",
+        "http://purl.org/nemo/gufo#EndurantType",
+        "http://onto.fel.cvut.cz/ontologies/ufo/entity",
+        "http://onto.fel.cvut.cz/ontologies/ufo/role",
+        "http://purl.org/nemo/gufo#Role",
+        "http://onto.fel.cvut.cz/ontologies/ufo/type",
+        "http://purl.org/nemo/gufo#Type"
+      ],
+      "restrictions": [],
+      "type": 0
+    },
+    "http://onto.fel.cvut.cz/ontologies/ufo/phase": {
+      "labels": {
+        "cs": "Fáze",
+        "en": "Phase"
+      },
+      "definitions": {
+        "cs": "Fáze je anti-rigidní typ pro jediný princip identity, závislý na vlastnoti.",
+        "en": "Phase is an anti-rigid sortal - an individual has this type whenever an intrinsic trope inheres in it."
+      },
+      "altLabels": [],
+      "types": ["http://www.w3.org/2002/07/owl#Class"],
+      "inScheme": "https://slovník.gov.cz/základní/glosář",
+      "subClassOf": [
+        "http://onto.fel.cvut.cz/ontologies/ufo/object",
+        "https://slovník.gov.cz/základní/pojem/objekt",
+        "http://onto.fel.cvut.cz/ontologies/ufo/endurant",
+        "https://slovník.gov.cz/základní/pojem/proměnný-prvek",
+        "https://slovník.gov.cz/základní/pojem/prvek",
+        "https://slovník.gov.cz/základní/pojem/sortál",
+        "https://slovník.gov.cz/základní/pojem/typ-proměnného-prvku",
+        "https://slovník.gov.cz/základní/pojem/pasivní-objekt",
+        "https://slovník.gov.cz/základní/pojem/typ",
+        "https://slovník.gov.cz/základní/pojem/fáze",
+        "http://onto.fel.cvut.cz/ontologies/ufo/endurant-type",
+        "http://purl.org/nemo/gufo#EndurantType",
+        "http://onto.fel.cvut.cz/ontologies/ufo/entity",
+        "http://onto.fel.cvut.cz/ontologies/ufo/phase",
+        "http://purl.org/nemo/gufo#Phase",
+        "http://onto.fel.cvut.cz/ontologies/ufo/type",
+        "http://purl.org/nemo/gufo#Type"
+      ],
+      "restrictions": [],
+      "type": 0
+    },
+    "http://onto.fel.cvut.cz/ontologies/ufo/role-mixin": {
+      "labels": {
+        "cs": "Mixin rolí",
+        "en": "Role Mixin"
+      },
+      "definitions": {
+        "cs": "Mixin rolí je anti-rigidní mixin",
+        "en": "Role mixin is an anti-rigid mixin"
+      },
+      "altLabels": [],
+      "types": ["http://www.w3.org/2002/07/owl#Class"],
+      "inScheme": "https://slovník.gov.cz/základní/glosář",
+      "subClassOf": [
+        "http://onto.fel.cvut.cz/ontologies/ufo/object",
+        "https://slovník.gov.cz/základní/pojem/objekt",
+        "http://onto.fel.cvut.cz/ontologies/ufo/endurant",
+        "https://slovník.gov.cz/základní/pojem/proměnný-prvek",
+        "https://slovník.gov.cz/základní/pojem/prvek",
+        "https://slovník.gov.cz/základní/pojem/mixin-rolí",
+        "https://slovník.gov.cz/základní/pojem/nesortál",
+        "https://slovník.gov.cz/základní/pojem/typ-proměnného-prvku",
+        "https://slovník.gov.cz/základní/pojem/pasivní-objekt",
+        "https://slovník.gov.cz/základní/pojem/typ",
+        "http://onto.fel.cvut.cz/ontologies/ufo/endurant-type",
+        "http://purl.org/nemo/gufo#EndurantType",
+        "http://onto.fel.cvut.cz/ontologies/ufo/entity",
+        "http://onto.fel.cvut.cz/ontologies/ufo/role-mixin",
+        "http://purl.org/nemo/gufo#RoleMixin",
+        "http://onto.fel.cvut.cz/ontologies/ufo/type",
+        "http://purl.org/nemo/gufo#Type",
+        "http://purl.org/nemo/gufo#NonSortal"
+      ],
+      "restrictions": [],
+      "type": 0
+    }
+  },
+  "Diagrams": {},
+  "AppSettings": {
+    "name": {
+      "cs": "netlify-test"
+    },
+    "description": {
+      "cs": "",
+      "en": ""
+    },
+    "selectedDiagram": "",
+    "canvasLanguage": "cs",
+    "contextIRIs": [
+      "https://slovník.gov.cz/generický/netlify-test/verze/33b38110-64d0-4f77-acd1-2e8b7771e194"
+    ],
+    "applicationContext": "https://slovník.gov.cz/datový/pracovní-prostor/pojem/aplikační-kontext/590746da-103f-45a6-b748-0af462dfe4fd/ontographer",
+    "initWorkspace": true,
+    "contextEndpoint": "http://localhost:7200/repositories/testOG",
+    "ontographerContext": "http://onto.fel.cvut.cz/ontologies/application/ontoGrapher",
+    "cacheContext": "https://slovník.gov.cz",
+    "luceneConnector": "label_index",
+    "representation": 1,
+    "defaultCardinalitySource": {
+      "first": "0",
+      "second": "0"
+    },
+    "defaultCardinalityTarget": {
+      "first": "1",
+      "second": "*"
+    },
+    "contextVersion": 4,
+    "latestContextVersion": 4,
+    "lastTransactions": [""],
+    "lastTransactionID": "",
+    "switchElements": [],
+    "defaultLanguage": "cs",
+    "viewStereotypes": true,
+    "viewZoom": 1,
+    "viewColorPool": "pastelLow",
+    "viewItemPanelTypes": true,
+    "interfaceLanguage": "cs",
+    "selectedElements": [],
+    "selectedLinks": [],
+    "changedVocabularies": []
+  }
 }

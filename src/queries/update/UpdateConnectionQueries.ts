@@ -141,11 +141,18 @@ function updateDefaultLink(ids: string[]): string {
   for (const id of ids) {
     const source = WorkspaceLinks[id].source;
     const target = WorkspaceLinks[id].target;
+    if (!(source in WorkspaceTerms) || !(target in WorkspaceTerms)) {
+      console.log(WorkspaceElements[source], WorkspaceElements[target]);
+      console.error(
+        "Unable to find source and/or target of relationship " + id
+      );
+      continue;
+    }
     const vocabularySource = getVocabularyFromScheme(
       WorkspaceTerms[source].inScheme
     );
     const vocabularyTarget = getVocabularyFromScheme(
-      WorkspaceTerms[source].inScheme
+      WorkspaceTerms[target].inScheme
     );
     if (!WorkspaceVocabularies[vocabularySource].readOnly) {
       vocabulariesAndTerms[vocabularySource] = _.uniq(

@@ -32,17 +32,19 @@ import {
   isElementPositionOutdated,
   moveElements,
   putElementsOnCanvas,
+  removeReadOnlyElement,
 } from "../function/FunctionElem";
 import {
   getElementShape,
+  getElementVocabulary,
   getNewLink,
   getVocabularyFromScheme,
 } from "../function/FunctionGetVars";
 import { addLinkTools, updateVertices } from "../function/FunctionLink";
 import { initTouchEvents } from "../function/FunctionTouch";
+import { graph } from "../graph/Graph";
 import { ElemCreateLink } from "../graph/elementTool/ElemCreateLink";
 import { HideButton } from "../graph/elementTool/ElemHide";
-import { graph } from "../graph/Graph";
 import { updateProjectElementDiagram } from "../queries/update/UpdateElementQueries";
 
 interface Props {
@@ -89,9 +91,11 @@ export default class DiagramCanvas extends React.Component<Props> {
   hideElements(cells: joint.dia.Cell[]) {
     const ids = cells.map((cell) => cell.id as string);
     cells.forEach((cell) => cell.remove());
-    ids.forEach(
-      (id) => (WorkspaceElements[id].hidden[AppSettings.selectedDiagram] = true)
-    );
+    ids.forEach((id) => {
+      WorkspaceElements[id].hidden[AppSettings.selectedDiagram] = true;
+      if (WorkspaceVocabularies[getElementVocabulary(id)].readOnly)
+        this.props.performTransaction(...removeReadOnlyElement(id));
+    });
     if (_.intersection(AppSettings.selectedElements, ids).length > 0)
       this.props.updateDetailPanel(DetailPanelMode.HIDDEN);
     _.pull(AppSettings.selectedElements, ...ids);
