@@ -18,6 +18,7 @@ import { paper } from "../main/DiagramCanvas";
 import {
   fetchRelationships,
   fetchReadOnlyTerms,
+  fetchRelationshipsFromSource,
 } from "../queries/get/CacheQueries";
 import { updateCreateDiagram } from "../queries/update/UpdateDiagramQueries";
 import {
@@ -337,6 +338,10 @@ export async function putElementsOnCanvas(
         AppSettings.contextEndpoint,
         iris
       );
+      const sourceRelationships = await fetchRelationshipsFromSource(
+        AppSettings.contextEndpoint,
+        iris
+      );
       const readOnlyTermsArgument = Object.keys(relationships);
       const readOnlyTermsTropes: string[] = Object.values(relationships)
         .flatMap(r => r)
@@ -346,7 +351,16 @@ export async function putElementsOnCanvas(
             isUrl(r.target) &&
             !(r.target in WorkspaceTerms)
         )
-        .map((r) => r.target);
+        .map((r) => r.target)
+        .concat(Object.values(sourceRelationships)
+          .flatMap(r => r)
+          .filter(
+            (r) =>
+              r.onProperty === parsePrefix("z-sgov-pojem", "má-vlastnost") &&
+              isUrl(r.target) &&
+              !(r.target in WorkspaceTerms)
+          )
+          .map((r) => r.target));
       const readOnlyTerms = await fetchReadOnlyTerms(
         AppSettings.contextEndpoint,
         iris.concat(

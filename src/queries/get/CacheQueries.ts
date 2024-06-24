@@ -22,8 +22,8 @@ export async function fetchVocabularies(
     "SELECT ?vocabulary ?scheme ?title ?namespace ?diagram where {",
     "graph <" + context + "> {",
     "<" +
-      context +
-      "> <https://slovník.gov.cz/datový/pracovní-prostor/pojem/odkazuje-na-kontext> ?vocabulary.}",
+    context +
+    "> <https://slovník.gov.cz/datový/pracovní-prostor/pojem/odkazuje-na-kontext> ?vocabulary.}",
     "graph ?vocabulary {",
     "OPTIONAL {?vocabulary <http://purl.org/vocab/vann/preferredNamespaceUri> ?namespace.}",
     "OPTIONAL {?vocabulary ?hasAttachmentPredicate ?diagram.",
@@ -81,8 +81,8 @@ export async function fetchSubClasses(
     "values ?subClass {<" + term + ">}.",
     "}",
     "<" +
-      AppSettings.cacheContext +
-      "> <https://slovník.gov.cz/datový/pracovní-prostor/pojem/odkazuje-na-kontext> ?graph.",
+    AppSettings.cacheContext +
+    "> <https://slovník.gov.cz/datový/pracovní-prostor/pojem/odkazuje-na-kontext> ?graph.",
     "}",
   ].join(`
   `);
@@ -103,6 +103,59 @@ export async function fetchSubClasses(
     });
 }
 
+export async function fetchRelationshipsFromSource(
+  endpoint: string,
+  terms: string[]
+): Promise<{ [key: string]: Restriction[] }> {
+  const result: { [key: string]: Restriction[] } = {};
+  const sliceSize: number = 50;
+  for (let i = 0; i < Math.ceil(terms.length / sliceSize); i++) {
+    const termSlice = terms.slice(i * sliceSize, (i + 1) * sliceSize);
+    const query = [
+      "SELECT ?graph ?term ?restrictionPred ?target ?onProperty ?onClass WHERE {",
+      "graph ?graph {",
+      "?term rdfs:subClassOf ?restriction.",
+      "filter(isBlank(?restriction))",
+      "?restriction a owl:Restriction.",
+      "?restriction owl:onProperty ?onProperty.",
+      "values ?onProperty {<" + Object.keys(Links).join("> <") + ">}",
+      "?restriction ?restrictionPred ?target.",
+      "values ?restrictionPred {<" +
+      Object.keys(RestrictionConfig).join("> <") +
+      ">}",
+      "values ?term {<" + termSlice.join("> <") + ">}",
+      "optional {?restriction owl:onClass ?onClass.}",
+      "}",
+      "<" +
+      AppSettings.cacheContext +
+      "> <https://slovník.gov.cz/datový/pracovní-prostor/pojem/odkazuje-na-kontext> ?graph.",
+      "}",
+    ].join(`
+    `);
+    await processQuery(endpoint, query)
+      .then((response) => response.json())
+      .then((data) => {
+        for (const row of data.results.bindings) {
+          if (!(row.term.value in result)) result[row.term.value] = [];
+          result[row.term.value].push(
+            new Restriction(
+              row.term.value,
+              row.restrictionPred.value,
+              row.onProperty.value,
+              row.target.value,
+              row.onClass ? row.onClass.value : undefined
+            )
+          );
+        }
+      })
+      .catch((e) => {
+        console.error(e);
+        return false;
+      });
+  }
+  return result;
+}
+
 export async function fetchRelationships(
   endpoint: string,
   terms: string[]
@@ -121,14 +174,14 @@ export async function fetchRelationships(
       "values ?onProperty {<" + Object.keys(Links).join("> <") + ">}",
       "?restriction ?restrictionPred ?target.",
       "values ?restrictionPred {<" +
-        Object.keys(RestrictionConfig).join("> <") +
-        ">}",
+      Object.keys(RestrictionConfig).join("> <") +
+      ">}",
       "values ?target {<" + termSlice.join("> <") + ">}",
       "optional {?restriction owl:onClass ?onClass.}",
       "}",
       "<" +
-        AppSettings.cacheContext +
-        "> <https://slovník.gov.cz/datový/pracovní-prostor/pojem/odkazuje-na-kontext> ?graph.",
+      AppSettings.cacheContext +
+      "> <https://slovník.gov.cz/datový/pracovní-prostor/pojem/odkazuje-na-kontext> ?graph.",
       "}",
     ].join(`
     `);
@@ -142,7 +195,7 @@ export async function fetchRelationships(
               row.term.value,
               row.restrictionPred.value,
               row.onProperty.value,
-              row.target,
+              row.target.value,
               row.onClass ? row.onClass.value : undefined
             )
           );
@@ -185,8 +238,8 @@ export async function searchCache(
     "}",
     "?vocabulary <http://onto.fel.cvut.cz/ontologies/slovník/agendový/popis-dat/pojem/má-glosář> ?scheme.",
     "<" +
-      AppSettings.cacheContext +
-      "> <https://slovník.gov.cz/datový/pracovní-prostor/pojem/odkazuje-na-kontext> ?vocabulary.",
+    AppSettings.cacheContext +
+    "> <https://slovník.gov.cz/datový/pracovní-prostor/pojem/odkazuje-na-kontext> ?vocabulary.",
     limitToVocabularies && limitToVocabularies.length > 0
       ? "VALUES ?vocabulary {<" + limitToVocabularies.join("> <") + ">}"
       : "",
@@ -254,11 +307,11 @@ export async function fetchReadOnlyTerms(
       "OPTIONAL {?restriction owl:onClass ?onClass.}",
       "?restriction ?restrictionPred ?target.",
       "filter (?restrictionPred in (<" +
-        Object.keys(RestrictionConfig).join(">, <") +
-        ">))}}",
+      Object.keys(RestrictionConfig).join(">, <") +
+      ">))}}",
       "<" +
-        AppSettings.cacheContext +
-        "> <https://slovník.gov.cz/datový/pracovní-prostor/pojem/odkazuje-na-kontext> ?graph.",
+      AppSettings.cacheContext +
+      "> <https://slovník.gov.cz/datový/pracovní-prostor/pojem/odkazuje-na-kontext> ?graph.",
       "}",
     ].join(`
     `);
@@ -388,8 +441,8 @@ export async function fetchFullRelationships(
     "filter(?term != ?term2).",
     "}",
     "<" +
-      AppSettings.cacheContext +
-      "> <https://slovník.gov.cz/datový/pracovní-prostor/pojem/odkazuje-na-kontext> ?graph.",
+    AppSettings.cacheContext +
+    "> <https://slovník.gov.cz/datový/pracovní-prostor/pojem/odkazuje-na-kontext> ?graph.",
     "}",
   ].join(`
   `);
