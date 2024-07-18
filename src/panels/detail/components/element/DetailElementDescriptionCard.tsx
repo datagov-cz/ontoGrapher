@@ -40,6 +40,7 @@ type Props = {
   performTransaction: (...queries: string[]) => void;
   selectedLanguage: string;
   save: (id: string) => void;
+  infoFunction?: (trope: string) => void;
 };
 
 type State = {
@@ -227,91 +228,99 @@ export class DetailElementDescriptionCard extends React.Component<
   }
 
   render() {
-    // const tropes = getIntrinsicTropeTypeIDs(this.props.id);
     return (
       <Accordion.Item eventKey="0">
         <Accordion.Header>
           {Locale[AppSettings.interfaceLanguage].description}
         </Accordion.Header>
         <Accordion.Body>
-          <h5>{Locale[AppSettings.interfaceLanguage].detailPanelAltLabel}</h5>
-          <DetailPanelAltLabels
-            altLabels={this.state.inputAltLabels}
-            selectedLabel={this.state.selectedLabel}
-            language={this.props.selectedLanguage}
-            readOnly={this.state.readOnly}
-            addAltLabel={(alt: AlternativeLabel) =>
-              this.setState((prev) => ({
-                ...prev,
-                inputAltLabels: [...prev.inputAltLabels, alt],
-                changes: true,
-              }))
-            }
-            id={this.props.id}
-            selectDisplayLabel={(name, language) =>
-              this.setState((prev) => ({
-                changes: true,
-                selectedLabel: { ...prev.selectedLabel, [language]: name },
-              }))
-            }
-            deleteAltLabel={(alt: AlternativeLabel) => {
-              this.setState((prev) => ({
-                changes: true,
-                inputAltLabels: _.without(prev.inputAltLabels, alt),
-                selectedLabel:
-                  prev.selectedLabel[this.props.selectedLanguage] === alt.label
-                    ? {
-                        ...prev.selectedLabel,
-                        [this.props.selectedLanguage]:
-                          WorkspaceTerms[this.props.id].labels[
-                            this.props.selectedLanguage
-                          ],
-                      }
-                    : prev.selectedLabel,
-              }));
-            }}
-          />
-          <h5>{Locale[AppSettings.interfaceLanguage].detailPanelStereotype}</h5>
-          <Form.Select
-            size="sm"
-            as="select"
-            className="top-item detailInput"
-            value={this.state.inputTypeType}
-            disabled={this.state.readOnly}
-            onChange={(event) => this.updateType(event.target.value)}
-          >
-            <option key={""} value={""}>
-              {this.state.readOnly
-                ? Locale[AppSettings.interfaceLanguage].noStereotypeUML
-                : Locale[AppSettings.interfaceLanguage].setStereotypeUML}
-            </option>
-            {this.getStereotypes("type").map((stereotype) => (
-              <option key={stereotype} value={stereotype}>
-                {this.getName(stereotype, this.props.selectedLanguage)}
-              </option>
-            ))}
-          </Form.Select>
-          <Form.Select
-            size="sm"
-            className="bottom-item detailInput"
-            value={this.state.inputTypeData}
-            disabled={
-              this.state.readOnly ||
-              !this.isObjectType(WorkspaceTerms[this.props.id].types)
-            }
-            onChange={(event) => this.updateStereotype(event.target.value)}
-          >
-            <option key={""} value={""}>
-              {this.state.readOnly
-                ? Locale[AppSettings.interfaceLanguage].noStereotypeData
-                : Locale[AppSettings.interfaceLanguage].setStereotypeData}
-            </option>
-            {this.getStereotypes("data").map((stereotype) => (
-              <option key={stereotype} value={stereotype}>
-                {this.getName(stereotype, this.props.selectedLanguage)}
-              </option>
-            ))}
-          </Form.Select>
+          {this.props.infoFunction && (
+            <>
+              <h5>
+                {Locale[AppSettings.interfaceLanguage].detailPanelAltLabel}
+              </h5>
+              <DetailPanelAltLabels
+                altLabels={this.state.inputAltLabels}
+                selectedLabel={this.state.selectedLabel}
+                language={this.props.selectedLanguage}
+                readOnly={this.state.readOnly}
+                addAltLabel={(alt: AlternativeLabel) =>
+                  this.setState((prev) => ({
+                    ...prev,
+                    inputAltLabels: [...prev.inputAltLabels, alt],
+                    changes: true,
+                  }))
+                }
+                id={this.props.id}
+                selectDisplayLabel={(name, language) =>
+                  this.setState((prev) => ({
+                    changes: true,
+                    selectedLabel: { ...prev.selectedLabel, [language]: name },
+                  }))
+                }
+                deleteAltLabel={(alt: AlternativeLabel) => {
+                  this.setState((prev) => ({
+                    changes: true,
+                    inputAltLabels: _.without(prev.inputAltLabels, alt),
+                    selectedLabel:
+                      prev.selectedLabel[this.props.selectedLanguage] ===
+                      alt.label
+                        ? {
+                            ...prev.selectedLabel,
+                            [this.props.selectedLanguage]:
+                              WorkspaceTerms[this.props.id].labels[
+                                this.props.selectedLanguage
+                              ],
+                          }
+                        : prev.selectedLabel,
+                  }));
+                }}
+              />
+              <h5>
+                {Locale[AppSettings.interfaceLanguage].detailPanelStereotype}
+              </h5>
+              <Form.Select
+                size="sm"
+                as="select"
+                className="top-item detailInput"
+                value={this.state.inputTypeType}
+                disabled={this.state.readOnly}
+                onChange={(event) => this.updateType(event.target.value)}
+              >
+                <option key={""} value={""}>
+                  {this.state.readOnly
+                    ? Locale[AppSettings.interfaceLanguage].noStereotypeUML
+                    : Locale[AppSettings.interfaceLanguage].setStereotypeUML}
+                </option>
+                {this.getStereotypes("type").map((stereotype) => (
+                  <option key={stereotype} value={stereotype}>
+                    {this.getName(stereotype, this.props.selectedLanguage)}
+                  </option>
+                ))}
+              </Form.Select>
+              <Form.Select
+                size="sm"
+                className="bottom-item detailInput"
+                value={this.state.inputTypeData}
+                disabled={
+                  this.state.readOnly ||
+                  !this.isObjectType(WorkspaceTerms[this.props.id].types)
+                }
+                onChange={(event) => this.updateStereotype(event.target.value)}
+              >
+                <option key={""} value={""}>
+                  {this.state.readOnly
+                    ? Locale[AppSettings.interfaceLanguage].noStereotypeData
+                    : Locale[AppSettings.interfaceLanguage].setStereotypeData}
+                </option>
+                {this.getStereotypes("data").map((stereotype) => (
+                  <option key={stereotype} value={stereotype}>
+                    {this.getName(stereotype, this.props.selectedLanguage)}
+                  </option>
+                ))}
+              </Form.Select>
+            </>
+          )}
           <h5>{Locale[AppSettings.interfaceLanguage].detailPanelDefinition}</h5>
           <Form.Control
             as={"textarea"}
@@ -334,15 +343,19 @@ export class DetailElementDescriptionCard extends React.Component<
               if (!this.state.readOnly) this.setState({ changes: true });
             }}
           />
-          {AppSettings.representation === Representation.COMPACT && (
-            <IntrinsicTropeControls
-              performTransaction={this.props.performTransaction}
-              id={this.props.id}
-              readOnly={this.state.readOnly}
-              projectLanguage={this.props.selectedLanguage}
-              save={this.props.save}
-            />
-          )}
+          {AppSettings.representation === Representation.COMPACT &&
+            this.props.infoFunction && (
+              <IntrinsicTropeControls
+                performTransaction={this.props.performTransaction}
+                id={this.props.id}
+                readOnly={this.state.readOnly}
+                projectLanguage={this.props.selectedLanguage}
+                save={this.props.save}
+                infoFunction={(trope: string) =>
+                  this.props.infoFunction!(trope)
+                }
+              />
+            )}
         </Accordion.Body>
       </Accordion.Item>
     );

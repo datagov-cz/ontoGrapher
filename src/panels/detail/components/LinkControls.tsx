@@ -59,7 +59,7 @@ export const LinkControls: React.FC<Props> = (props: Props) => {
   const prevPropsID = useRef<string>("");
 
   const save = () => {
-    if (props.id && props.id in WorkspaceLinks) {
+    if (props.id && props.id in WorkspaceLinks && !readOnly) {
       const iri = WorkspaceLinks[props.id].iri;
       const queries: string[] = [];
       const link = graph.getLinks().find((link) => link.id === props.id);

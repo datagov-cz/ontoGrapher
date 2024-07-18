@@ -160,7 +160,7 @@ export default class App extends React.Component<
         s.mainViewMode = MainViewMode.MANAGER;
       });
       this.handleWorkspaceReady();
-      callToast("diagramsClosedByDefault");
+      callToast("newFunctionEditTrope");
     };
     if (Environment.debug && loadDebugData()) finishUp();
     else

@@ -12,6 +12,7 @@ import ConnectionOverlay from "./components/element/ConnectionOverlay";
 import { DetailElementDescriptionCard } from "./components/element/DetailElementDescriptionCard";
 import { DetailElementDiagramCard } from "./components/element/DetailElementDiagramCard";
 import { DetailElementLinksCard } from "./components/element/DetailElementLinksCard";
+import { TropeOverlay } from "./components/element/TropeOverlay";
 
 interface Props {
   projectLanguage: string;
@@ -27,12 +28,14 @@ export const DetailElement: React.FC<Props> = (props: Props) => {
     AppSettings.canvasLanguage
   );
 
-  const [overlay, setOverlay] = useState<boolean>(false);
+  const [linkOverlay, setLinkOverlay] = useState<boolean>(false);
   const [linkID, setLinkID] = useState<string>("");
+  const [tropeOverlay, setTropeOverlay] = useState<boolean>(false);
+  const [tropeID, setTropeID] = useState<string>("");
 
   return (
     <div className="detailElement">
-      <div className={classNames("accordions", { blur: overlay })}>
+      <div className={classNames("accordions", { blur: linkOverlay })}>
         <div className={"detailTitle"}>
           <div className="top">
             <span className="languageSelect">
@@ -59,6 +62,10 @@ export const DetailElement: React.FC<Props> = (props: Props) => {
             selectedLanguage={selectedLanguage}
             performTransaction={props.performTransaction}
             save={props.save}
+            infoFunction={(trope: string) => {
+              setTropeID(trope);
+              setTropeOverlay(true);
+            }}
           />
           <DetailElementLinksCard
             freeze={props.freeze}
@@ -67,7 +74,7 @@ export const DetailElement: React.FC<Props> = (props: Props) => {
             performTransaction={props.performTransaction}
             infoFunction={(link: string) => {
               setLinkID(link);
-              setOverlay(true);
+              setLinkOverlay(true);
             }}
           />
           <DetailElementDiagramCard id={props.id} />
@@ -77,8 +84,16 @@ export const DetailElement: React.FC<Props> = (props: Props) => {
         projectLanguage={selectedLanguage}
         id={linkID}
         performTransaction={props.performTransaction}
-        visible={overlay}
-        close={() => setOverlay(false)}
+        visible={linkOverlay}
+        close={() => setLinkOverlay(false)}
+        save={props.save}
+      />
+      <TropeOverlay
+        projectLanguage={selectedLanguage}
+        id={tropeID}
+        performTransaction={props.performTransaction}
+        visible={tropeOverlay}
+        close={() => setTropeOverlay(false)}
         save={props.save}
       />
     </div>

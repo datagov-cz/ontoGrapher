@@ -245,6 +245,11 @@
       margin-right: 2px;
     }
 
+    .top {
+      display: flex;
+      flex-direction: row-reverse;
+      justify-content: space-between;
+    }
 
     p {
       white-space: nowrap;

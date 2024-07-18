@@ -22,6 +22,7 @@ import { ListItemControls } from "./items/ListItemControls";
 import { setLabels } from "../../../function/FunctionGraph";
 import { graph } from "../../../graph/Graph";
 import { addToSelection } from "../../../function/FunctionDiagram";
+import InfoIcon from "@mui/icons-material/Info";
 
 interface Props {
   performTransaction: (...queries: string[]) => void;
@@ -30,6 +31,7 @@ interface Props {
   readOnly: boolean;
   projectLanguage: string;
   save: (id: string) => void;
+  infoFunction?: (trope: string) => void;
 }
 
 export const IntrinsicTropeControls: React.FC<Props> = (props: Props) => {
@@ -79,6 +81,18 @@ export const IntrinsicTropeControls: React.FC<Props> = (props: Props) => {
               hovered: i === hoveredTrope,
             })}
           >
+            {props.infoFunction && (
+              <Button
+                className="plainButton"
+                variant="light"
+                onClick={() => {
+                  props.infoFunction!(iri);
+                  // refresh();
+                }}
+              >
+                <InfoIcon />
+              </Button>
+            )}
             <OverlayTrigger
               placement="left"
               delay={1000}

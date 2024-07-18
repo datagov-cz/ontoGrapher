@@ -11,4 +11,8 @@ export const enToast: {
     content:
       "In the new version of OntoGrapher, all diagrams have been closed for performance reasons. To open them again, use the Open diagram button when hovering over a diagram in the list on the Home tab.",
   },
+  newFunctionEditTrope: {
+    header: "Trope editing now available",
+    content: "In the new version of OntoGrapher, you can edit tropes (their definitions and synonyms) within the detail panel of the parent term. In the list of tropes, click the info icon that shows when you point the mouse at a trope."
+  }
 };

@@ -5,18 +5,19 @@ import { AppSettings } from "./Variables";
 export const ToastData: { [Key in keyof typeof enToast]: ToastType } = {
   lookingForRelationshipsOrProperties: { repeatable: false },
   diagramsClosedByDefault: { repeatable: false },
+  newFunctionEditTrope: { repeatable: false }
 };
 
 export type ToastType = {
   variant?:
-    | "primary"
-    | "secondary"
-    | "success"
-    | "danger"
-    | "warning"
-    | "info"
-    | "light"
-    | "dark";
+  | "primary"
+  | "secondary"
+  | "success"
+  | "danger"
+  | "warning"
+  | "info"
+  | "light"
+  | "dark";
   dismissDelay?: number;
   action?: Function;
   repeatable?: boolean;
