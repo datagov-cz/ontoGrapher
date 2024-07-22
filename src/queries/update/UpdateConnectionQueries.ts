@@ -106,11 +106,11 @@ function constructDefaultLinkRestrictions(
         ),
         ...(conn.onClass
           ? [
-              qb.po(
-                "owl:onClass",
-                inverse ? qb.i(conn.iri) : qb.i(conn.onClass)
-              ),
-            ]
+            qb.po(
+              "owl:onClass",
+              inverse ? qb.i(conn.iri) : qb.i(conn.onClass)
+            ),
+          ]
           : []),
         qb.po(
           qb.i(conn.restriction),
@@ -142,7 +142,6 @@ function updateDefaultLink(ids: string[]): string {
     const source = WorkspaceLinks[id].source;
     const target = WorkspaceLinks[id].target;
     if (!(source in WorkspaceTerms) || !(target in WorkspaceTerms)) {
-      console.log(WorkspaceElements[source], WorkspaceElements[target]);
       console.error(
         "Unable to find source and/or target of relationship " + id
       );
@@ -189,15 +188,15 @@ function updateDefaultLink(ids: string[]): string {
         ])}
     `.WHERE`
       ${qb.g(contextIRI, [
-        qb.s(qb.i(WorkspaceLinks[linkID].source), "rdfs:subClassOf", "?b"),
-        "filter(isBlank(?b)).",
-        qb.s("?b", "rdf:type", "owl:Restriction"),
-        qb.s("?b", "owl:onProperty", qb.i(WorkspaceLinks[linkID].iri)),
-        qb.s("?b", "?pMatch", qb.i(WorkspaceLinks[linkID].target)),
-        `values ?pMatch {<${Object.keys(RestrictionConfig)
-          .concat([parsePrefix("owl", "onClass")])
-          .join("> <")}>}`,
-      ])}`.build(),
+          qb.s(qb.i(WorkspaceLinks[linkID].source), "rdfs:subClassOf", "?b"),
+          "filter(isBlank(?b)).",
+          qb.s("?b", "rdf:type", "owl:Restriction"),
+          qb.s("?b", "owl:onProperty", qb.i(WorkspaceLinks[linkID].iri)),
+          qb.s("?b", "?pMatch", qb.i(WorkspaceLinks[linkID].target)),
+          `values ?pMatch {<${Object.keys(RestrictionConfig)
+            .concat([parsePrefix("owl", "onClass")])
+            .join("> <")}>}`,
+        ])}`.build(),
         DELETE`${qb.g(contextIRI, [
           qb.s(qb.i(WorkspaceLinks[linkID].target), "rdfs:subClassOf", "?ib"),
           qb.s("?ibo", "?ibop", "?iboo"),
@@ -319,9 +318,9 @@ function updateGeneralizationLink(ids: string[]): string {
     dels.push(
       DELETE`${qb.g(contextIRI, [qb.s(qb.i(iri), "rdfs:subClassOf", "?b")])}`
         .WHERE`${qb.g(contextIRI, [
-        qb.s(qb.i(iri), "rdfs:subClassOf", "?b"),
-        "filter(!isBlank(?b)).",
-      ])}`.build()
+          qb.s(qb.i(iri), "rdfs:subClassOf", "?b"),
+          "filter(!isBlank(?b)).",
+        ])}`.build()
     );
 
     const subClasses = _.compact(

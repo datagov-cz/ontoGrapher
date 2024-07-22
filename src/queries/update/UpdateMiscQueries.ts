@@ -30,7 +30,6 @@ export function updateUserSettings(): string {
   const userGraph = Users[AppSettings.currentUser!].graph;
   const userIRI = AppSettings.currentUser!;
   const userSettings = getUserSettings();
-  console.log(userGraph);
 
   const insert = INSERT.DATA`${qb.g(
     userGraph,
@@ -117,19 +116,19 @@ export function updateDeleteTriples(
     deletes.push(
       DELETE`${["GRAPH ?graph {", qb.s(qb.i(iri), "?p", "?o"), "}"].join(" ")}`
         .WHERE`${[
-        "GRAPH ?graph {",
-        qb.s(qb.i(iri), "?p", "?o"),
-        "} values ?graph {" + contexts.map((c) => `<${c}>`).join(" ") + "}",
-      ].join(" ")}`.build()
+          "GRAPH ?graph {",
+          qb.s(qb.i(iri), "?p", "?o"),
+          "} values ?graph {" + contexts.map((c) => `<${c}>`).join(" ") + "}",
+        ].join(" ")}`.build()
     );
   if (object)
     deletes.push(
       DELETE`${["GRAPH ?graph {", qb.s("?s", "?p", qb.i(iri)), "}"].join(" ")}`
         .WHERE`${[
-        "GRAPH ?graph {",
-        qb.s("?s", "?p", qb.i(iri)),
-        "} values ?graph {" + contexts.map((c) => `<${c}>`).join(" ") + "}",
-      ].join(" ")}`.build()
+          "GRAPH ?graph {",
+          qb.s("?s", "?p", qb.i(iri)),
+          "} values ?graph {" + contexts.map((c) => `<${c}>`).join(" ") + "}",
+        ].join(" ")}`.build()
     );
   return qb.combineQueries(...deletes);
 }

@@ -15,7 +15,6 @@ import {
 } from "../../../../config/Variables";
 import {
   drawGraphElement,
-  getDisplayLabel,
   getSelectedLabels,
 } from "../../../../function/FunctionDraw";
 import { initLanguageObject } from "../../../../function/FunctionEditVars";
@@ -60,7 +59,6 @@ export const TropeOverlay: React.FC<Props> = (props: Props) => {
       getParentOfIntrinsicTropeType(props.id).forEach((id) => {
         const elem = graph.getElements().find((elem) => elem.id === id);
         if (elem) {
-          console.log(getDisplayLabel(props.id, AppSettings.canvasLanguage));
           drawGraphElement(elem, selectedLanguage, AppSettings.representation);
           resizeElem(id);
         }
@@ -148,7 +146,6 @@ export const TropeOverlay: React.FC<Props> = (props: Props) => {
             }}
             id={props.id}
             selectDisplayLabel={(name, language) => {
-              console.log(name, language);
               setSelectedLabel((prev) => ({
                 ...prev,
                 [language]: name,
