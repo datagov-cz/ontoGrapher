@@ -1,3 +1,4 @@
+import isUrl from "is-url";
 import * as _ from "lodash";
 import { Alert } from "react-bootstrap";
 import TableList from "../components/TableList";
@@ -51,7 +52,6 @@ import { updateProjectElement } from "../queries/update/UpdateElementQueries";
 import { updateProjectLinkParallel } from "../queries/update/UpdateLinkQueries";
 import { fetchUserSettings } from "../queries/update/UpdateMiscQueries";
 import { processQuery, processTransaction } from "./TransactionInterface";
-import isUrl from "is-url";
 
 export function retrieveInfoFromURLParameters(): boolean {
   if (!(Environment.language in Languages))
@@ -275,6 +275,29 @@ export async function retrieveContextData(): Promise<boolean> {
     console.warn(
       `Link ID ${id} ( ${WorkspaceLinks[id].source} -- ${WorkspaceLinks[id].iri} -> ${WorkspaceLinks[id].target} ) deactivated due to its statement counterpart(s) missing.`
     );
+    if (
+      WorkspaceLinks[id].iri === parsePrefix("z-sgov-pojem", "je-vlastností") &&
+      WorkspaceElements[WorkspaceLinks[id].source].vocabulary !== undefined &&
+      WorkspaceElements[WorkspaceLinks[id].source].vocabulary! in
+        WorkspaceVocabularies &&
+      WorkspaceVocabularies[
+        WorkspaceElements[WorkspaceLinks[id].source].vocabulary!
+      ].readOnly
+    ) {
+      continue;
+    }
+
+    if (
+      WorkspaceLinks[id].iri === parsePrefix("z-sgov-pojem", "je-vlastností") &&
+      WorkspaceElements[WorkspaceLinks[id].target].vocabulary !== undefined &&
+      WorkspaceElements[WorkspaceLinks[id].target].vocabulary! in
+        WorkspaceVocabularies &&
+      WorkspaceVocabularies[
+        WorkspaceElements[WorkspaceLinks[id].target].vocabulary!
+      ].readOnly
+    ) {
+      continue;
+    }
     WorkspaceLinks[id].active = false;
     // Really poorly thought out hack!
     if (
