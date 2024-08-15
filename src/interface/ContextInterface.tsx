@@ -277,6 +277,7 @@ export async function retrieveContextData(): Promise<boolean> {
     );
     if (
       WorkspaceLinks[id].iri === parsePrefix("z-sgov-pojem", "je-vlastností") &&
+      WorkspaceLinks[id].source in WorkspaceElements &&
       WorkspaceElements[WorkspaceLinks[id].source].vocabulary !== undefined &&
       WorkspaceElements[WorkspaceLinks[id].source].vocabulary! in
         WorkspaceVocabularies &&
@@ -289,6 +290,7 @@ export async function retrieveContextData(): Promise<boolean> {
 
     if (
       WorkspaceLinks[id].iri === parsePrefix("z-sgov-pojem", "má-vlastnost") &&
+      WorkspaceLinks[id].target in WorkspaceElements &&
       WorkspaceElements[WorkspaceLinks[id].target].vocabulary !== undefined &&
       WorkspaceElements[WorkspaceLinks[id].target].vocabulary! in
         WorkspaceVocabularies &&
