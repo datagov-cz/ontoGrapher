@@ -165,7 +165,9 @@ export default class VocabularyPanel extends React.Component<Props, State> {
         results,
         Object.keys(results).filter(
           (iri) =>
-            (iri in WorkspaceTerms && WorkspaceElements[iri].active) ||
+            (iri in WorkspaceTerms &&
+              WorkspaceElements[iri].active &&
+              Object.values(WorkspaceElements[iri].hidden).every((e) => !e)) ||
             !isElementVisible(results[iri].types, AppSettings.representation)
         )
       );
