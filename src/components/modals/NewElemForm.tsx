@@ -98,15 +98,23 @@ export const NewElemForm: React.FC<Props> = (props) => {
     const pkg = Object.keys(WorkspaceVocabularies).find(
       (pkg) => pkg === event.currentTarget.value
     );
-    if (pkg && props.setSelectedVocabulary) props.setSelectedVocabulary(pkg);
-    else
+    if (pkg && props.setSelectedVocabulary) {
+      props.setSelectedVocabulary(pkg);
+      props.setErrorText(
+        checkNames(
+          WorkspaceVocabularies[event.currentTarget.value].glossary,
+          props.termName
+        )
+      );
+    } else {
       console.error(`Vocabulary ${pkg} not found within the vocabulary list.`);
-    props.setErrorText(
-      checkNames(
-        WorkspaceVocabularies[props.selectedVocabulary].glossary,
-        props.termName
-      )
-    );
+      props.setErrorText(
+        checkNames(
+          WorkspaceVocabularies[props.selectedVocabulary].glossary,
+          props.termName
+        )
+      );
+    }
   };
 
   return (
