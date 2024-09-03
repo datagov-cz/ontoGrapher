@@ -52,6 +52,7 @@ export function changeDiagrams(diagram?: string) {
     StoreSettings.update((s) => {
       s.selectedDiagram = diagram!;
     });
+    paper.translate(Diagrams[diagram].origin.x, Diagrams[diagram].origin.y)
   } else {
     console.warn(
       "Attempted change to a diagram ID " + diagram + " that doesn't exist."
