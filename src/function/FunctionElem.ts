@@ -1,3 +1,4 @@
+import isUrl from "is-url";
 import * as joint from "jointjs";
 import _ from "lodash";
 import React from "react";
@@ -5,37 +6,38 @@ import { Representation } from "../config/Enum";
 import { Locale } from "../config/Locale";
 import { RepresentationConfig } from "../config/logic/RepresentationConfig";
 import {
-  WorkspaceElements,
   AppSettings,
   Diagrams,
-  WorkspaceVocabularies,
-  WorkspaceTerms,
+  WorkspaceElements,
   WorkspaceLinks,
+  WorkspaceTerms,
+  WorkspaceVocabularies,
 } from "../config/Variables";
+import { CellColors } from "../config/visual/CellColors";
 import { graph } from "../graph/Graph";
 import { graphElement } from "../graph/GraphElement";
 import { paper } from "../main/DiagramCanvas";
 import {
-  fetchRelationships,
   fetchReadOnlyTerms,
+  fetchRelationships,
   fetchRelationshipsFromSource,
 } from "../queries/get/CacheQueries";
 import { updateCreateDiagram } from "../queries/update/UpdateDiagramQueries";
 import {
-  updateProjectElementDiagram,
   updateProjectElement,
+  updateProjectElementDiagram,
 } from "../queries/update/UpdateElementQueries";
 import {
-  updateProjectLinkVertex,
   updateProjectLink,
+  updateProjectLinkVertex,
 } from "../queries/update/UpdateLinkQueries";
 import { updateDeleteTriples } from "../queries/update/UpdateMiscQueries";
 import { insertNewCacheTerms, insertNewRestrictions } from "./FunctionCache";
 import {
-  createNewElemIRI,
-  addVocabularyElement,
   addClass,
   addToFlexSearch,
+  addVocabularyElement,
+  createNewElemIRI,
   removeFromFlexSearch,
 } from "./FunctionCreateVars";
 import {
@@ -43,13 +45,11 @@ import {
   highlightCells,
   unHighlightCells,
 } from "./FunctionDraw";
-import { parsePrefix, initElements, deleteConcept } from "./FunctionEditVars";
+import { deleteConcept, parsePrefix } from "./FunctionEditVars";
+import { getEquivalents } from "./FunctionEquivalents";
 import { getElementShape } from "./FunctionGetVars";
 import { restoreHiddenElem, setRepresentation } from "./FunctionGraph";
 import { initConnections } from "./FunctionRestriction";
-import { CellColors } from "../config/visual/CellColors";
-import { getEquivalents } from "./FunctionEquivalents";
-import isUrl from "is-url";
 
 export function resizeElem(id: string, highlight: boolean = true) {
   let view = paper.findViewByModel(id);
@@ -317,6 +317,7 @@ export async function putElementsOnCanvas(
     }
     const iris: string[] = data.iri;
     const ids: string[] = data.id.filter((id: string) => !graph.getCell(id));
+    debugger;
     if (iris.length === 0 && ids.length === 0) {
       console.warn(`Expected to receive valid IRI data, got
       ${dataToParse}
@@ -371,7 +372,9 @@ export async function putElementsOnCanvas(
       );
       insertNewCacheTerms(readOnlyTerms);
       insertNewRestrictions(relationships);
-      const newElements = initElements(true);
+      const newElements: string[] = Object.keys(readOnlyTerms);
+      for (const term of newElements)
+        if (!(term in WorkspaceElements)) addClass(term);
       const newConnections = initConnections().add;
       queries.push(updateProjectElement(false, ...newElements));
       queries.push(updateProjectLink(false, ...newConnections));
