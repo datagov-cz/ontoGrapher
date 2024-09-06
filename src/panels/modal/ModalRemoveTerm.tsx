@@ -1,19 +1,19 @@
 import React from "react";
-import { Button, Form, Modal } from "react-bootstrap";
-import { deleteConcept } from "../../function/FunctionEditVars";
+import { Button, Form, Modal, Spinner } from "react-bootstrap";
+import TableList from "../../components/TableList";
+import { Representation } from "../../config/Enum";
+import { Locale } from "../../config/Locale";
 import {
   AppSettings,
   Diagrams,
   WorkspaceVocabularies,
 } from "../../config/Variables";
-import { Locale } from "../../config/Locale";
-import { updateDeleteTriples } from "../../queries/update/UpdateMiscQueries";
 import { getCacheConnections } from "../../function/FunctionCache";
+import { removeFromFlexSearch } from "../../function/FunctionCreateVars";
+import { deleteConcept } from "../../function/FunctionEditVars";
+import { updateDeleteTriples } from "../../queries/update/UpdateMiscQueries";
 import { CacheConnection } from "../../types/CacheConnection";
 import ConnectionCache from "../detail/components/connections/ConnectionCache";
-import TableList from "../../components/TableList";
-import { Representation } from "../../config/Enum";
-import { removeFromFlexSearch } from "../../function/FunctionCreateVars";
 
 interface Props {
   modal: boolean;
@@ -26,13 +26,15 @@ interface Props {
 
 interface State {
   shownLucene: CacheConnection[];
+  buttonDisabled: boolean;
 }
 
-export default class ModalRemoveConcept extends React.Component<Props, State> {
+export default class ModalRemoveTerm extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = {
       shownLucene: [],
+      buttonDisabled: true,
     };
   }
 
@@ -55,14 +57,15 @@ export default class ModalRemoveConcept extends React.Component<Props, State> {
   }
 
   getConnections() {
-    getCacheConnections(this.props.id, Representation.FULL).then(
-      (connections) =>
+    getCacheConnections(this.props.id, Representation.FULL)
+      .then((connections) =>
         this.setState({
           shownLucene: connections.filter(
             (conn) => conn.direction === "target"
           ),
         })
-    );
+      )
+      .finally(() => this.setState({ buttonDisabled: false }));
   }
 
   render() {
@@ -123,8 +126,24 @@ export default class ModalRemoveConcept extends React.Component<Props, State> {
               this.props.update();
             }}
           >
-            <Button type={"submit"} id={"modalRemoveItemConfirm"}>
+            <Button
+              type={"submit"}
+              id={"modalRemoveItemConfirm"}
+              disabled={this.state.buttonDisabled}
+            >
               {Locale[AppSettings.interfaceLanguage].confirm}
+              {this.state.buttonDisabled && (
+                <span>
+                  &nbsp;
+                  <Spinner
+                    as="span"
+                    animation="border"
+                    size="sm"
+                    role="status"
+                    aria-hidden="true"
+                  />
+                </span>
+              )}
             </Button>
           </Form>
           <Button

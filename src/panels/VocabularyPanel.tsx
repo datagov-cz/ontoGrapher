@@ -35,7 +35,7 @@ import { SearchTerm } from "./element/SearchTerm";
 import VocabularyConcept from "./element/VocabularyConcept";
 import VocabularyFolder from "./element/VocabularyFolder";
 import { VocabularySelector } from "./element/VocabularySelector";
-import ModalRemoveConcept from "./modal/ModalRemoveConcept";
+import ModalRemoveTerm from "./modal/ModalRemoveTerm";
 import { callToast } from "../config/ToastData";
 import { Representation } from "../config/Enum";
 
@@ -458,7 +458,7 @@ export default class VocabularyPanel extends React.Component<Props, State> {
           {this.state.loadingLucene && (
             <Spinner animation="border" variant="dark" />
           )}
-          <ModalRemoveConcept
+          <ModalRemoveTerm
             modal={this.state.modalRemoveItem}
             id={this.state.selectedID}
             close={() => {
