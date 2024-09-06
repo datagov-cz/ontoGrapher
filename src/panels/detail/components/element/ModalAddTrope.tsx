@@ -16,6 +16,7 @@ import {
   WorkspaceElements,
   WorkspaceLinks,
   WorkspaceTerms,
+  WorkspaceVocabularies,
 } from "../../../../config/Variables";
 import { CellColors } from "../../../../config/visual/CellColors";
 import { createTerm } from "../../../../function/FunctionCreateElem";
@@ -34,11 +35,13 @@ import { filterEquivalent } from "../../../../function/FunctionEquivalents";
 import {
   getLabelOrBlank,
   getVocabularyFromScheme,
+  getVocabularyLabel,
   isTermReadOnly,
 } from "../../../../function/FunctionGetVars";
 import { saveNewLink } from "../../../../function/FunctionLink";
 import { graph } from "../../../../graph/Graph";
 import { updateProjectElementDiagram } from "../../../../queries/update/UpdateElementQueries";
+import { VocabularyBadge } from "../../../../components/VocabularyBadge";
 
 interface Props {
   modalTropes: boolean;
@@ -233,6 +236,20 @@ export const ModalAddTrope: React.FC<Props> = (props: Props) => {
                         {getLabelOrBlank(
                           WorkspaceTerms[t].labels,
                           props.selectedLanguage
+                        )}
+                        &nbsp;
+                        {WorkspaceElements[t].vocabulary && (
+                          <VocabularyBadge
+                            text={getVocabularyLabel(
+                              WorkspaceElements[t].vocabulary!
+                            )}
+                            cancellable={false}
+                            color={
+                              WorkspaceVocabularies[
+                                WorkspaceElements[t].vocabulary!
+                              ].color
+                            }
+                          />
                         )}
                       </ListGroup.Item>
                     ))}

@@ -5,8 +5,10 @@ import { Button, Form, OverlayTrigger, Tooltip } from "react-bootstrap";
 import { Locale } from "../../../config/Locale";
 import {
   AppSettings,
+  WorkspaceElements,
   WorkspaceLinks,
   WorkspaceTerms,
+  WorkspaceVocabularies,
 } from "../../../config/Variables";
 import {
   getListClassNamesObject,
@@ -15,6 +17,7 @@ import {
 import {
   getIntrinsicTropeTypeIDs,
   getLabelOrBlank,
+  getVocabularyLabel,
 } from "../../../function/FunctionGetVars";
 import { deleteLink } from "../../../function/FunctionLink";
 import { ModalAddTrope } from "./element/ModalAddTrope";
@@ -23,6 +26,7 @@ import { setLabels } from "../../../function/FunctionGraph";
 import { graph } from "../../../graph/Graph";
 import { addToSelection } from "../../../function/FunctionDiagram";
 import InfoIcon from "@mui/icons-material/Info";
+import { VocabularyBadge } from "../../../components/VocabularyBadge";
 
 interface Props {
   performTransaction: (...queries: string[]) => void;
@@ -75,6 +79,18 @@ export const IntrinsicTropeControls: React.FC<Props> = (props: Props) => {
         >
           <span>
             {getLabelOrBlank(WorkspaceTerms[iri].labels, props.projectLanguage)}
+            &nbsp;
+            {WorkspaceElements[iri].vocabulary && (
+              <VocabularyBadge
+                text={getVocabularyLabel(WorkspaceElements[iri].vocabulary!)}
+                cancellable={false}
+                color={
+                  WorkspaceVocabularies[WorkspaceElements[iri].vocabulary!]
+                    .color
+                }
+                small={true}
+              />
+            )}
           </span>
           <span
             className={classNames("controls", {

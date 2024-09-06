@@ -93,11 +93,11 @@ export function centerElementInView(id: string) {
     paper.translate(0, 0);
     paper.translate(
       -elem.position().x * scale +
-        paper.getComputedSize().width / 2 -
-        elem.getBBox().width,
+      paper.getComputedSize().width / 2 -
+      elem.getBBox().width,
       -elem.position().y * scale +
-        paper.getComputedSize().height / 2 -
-        elem.getBBox().height
+      paper.getComputedSize().height / 2 -
+      elem.getBBox().height
     );
     updateDiagramPosition(AppSettings.selectedDiagram);
   }
@@ -416,8 +416,7 @@ export function setRepresentation(
       ) {
         const cell = g.getCell(id);
         if (cell) {
-          WorkspaceElements[id].hidden[diag] = true;
-          cell.remove();
+          storeElement(cell);
           del = true;
         }
       }
@@ -538,9 +537,9 @@ export function setupLink(
   if (restoreConnectionPosition) {
     WorkspaceLinks[link].vertices[AppSettings.selectedDiagram].length > 0
       ? setLinkVertices(
-          lnk,
-          WorkspaceLinks[link].vertices[AppSettings.selectedDiagram]
-        )
+        lnk,
+        WorkspaceLinks[link].vertices[AppSettings.selectedDiagram]
+      )
       : findLinkSelfLoop(lnk);
     return undefined;
   } else {
@@ -578,10 +577,10 @@ export function restoreHiddenElem(
       (representation === Representation.FULL
         ? WorkspaceLinks[link].iri in Links
         : !(WorkspaceLinks[link].iri in Links) ||
-          (WorkspaceLinks[link].iri in Links &&
-            Links[WorkspaceLinks[link].iri].inScheme.startsWith(
-              AppSettings.ontographerContext
-            )))
+        (WorkspaceLinks[link].iri in Links &&
+          Links[WorkspaceLinks[link].iri].inScheme.startsWith(
+            AppSettings.ontographerContext
+          )))
     ) {
       const oldPos = setupLink(link, restoreSimpleConnectionPosition, g);
       if (oldPos)
@@ -620,9 +619,9 @@ export function restoreHiddenElem(
           if (
             WorkspaceElements[relID].position[AppSettings.selectedDiagram] &&
             WorkspaceElements[relID].position[AppSettings.selectedDiagram].x !==
-              0 &&
+            0 &&
             WorkspaceElements[relID].position[AppSettings.selectedDiagram].y !==
-              0 &&
+            0 &&
             restoreFullConnectionPosition
           ) {
             relationship.position(
