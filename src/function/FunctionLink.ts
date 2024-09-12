@@ -199,12 +199,7 @@ export function saveNewLink(
   const queries: string[] = [];
   const type = iri in Links ? Links[iri].type : LinkType.DEFAULT;
   const link = getNewLink(type);
-  setLinkBoundary(link, sid, tid);
   const id = link.id as string;
-  if (sid === tid)
-    queries.push(
-      setSelfLoopConnectionPoints(link, paper.findViewByModel(sid).getBBox())
-    );
   setLinkBoundary(link, sid, tid);
   if (
     representation === Representation.FULL ||
@@ -246,6 +241,10 @@ export function saveNewLink(
   }
   setLabels(link);
   if (isLinkVisible(iri, type, AppSettings.representation)) link.addTo(graph);
+  if (sid === tid)
+    queries.push(
+      setSelfLoopConnectionPoints(link, paper.findViewByModel(sid).getBBox())
+    );
   return queries;
 }
 
