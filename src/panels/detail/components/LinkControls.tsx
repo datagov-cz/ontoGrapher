@@ -51,10 +51,12 @@ export const LinkControls: React.FC<Props> = (props: Props) => {
       const iri = WorkspaceLinks[props.id].iri;
       const queries: string[] = [];
       const link = graph.getLinks().find((link) => link.id === props.id);
-      if (!link)
-        console.error(
+      if (!link) {
+        console.warn(
           "Link " + props.id + " to be edited couldn't be found on the canvas."
         );
+        return;
+      }
       if (AppSettings.representation === Representation.FULL) {
         setLabels(link!);
         queries.push(updateTermConnections(props.id));

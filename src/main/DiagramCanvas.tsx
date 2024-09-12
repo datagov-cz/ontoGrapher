@@ -267,11 +267,10 @@ export default class DiagramCanvas extends React.Component<Props> {
           AppSettings.selectedLinks.includes(linkView.model.id as string) &&
           AppSettings.selectedLinks.length === 1
         )
-          addLinkTools(
-            linkView,
-            this.props.performTransaction,
-            this.props.updateElementPanel
-          );
+          addLinkTools(linkView, this.props.performTransaction, () => {
+            this.props.updateElementPanel();
+            this.props.updateDetailPanel(DetailPanelMode.HIDDEN);
+          });
       },
       /**
        * Mouse leave on cell:
@@ -473,11 +472,10 @@ export default class DiagramCanvas extends React.Component<Props> {
             unHighlightAll();
           }
           highlightCells(CellColors.detail, id);
-          addLinkTools(
-            linkView,
-            this.props.performTransaction,
-            this.props.updateElementPanel
-          );
+          addLinkTools(linkView, this.props.performTransaction, () => {
+            this.props.updateElementPanel();
+            this.props.updateDetailPanel(DetailPanelMode.HIDDEN);
+          });
           this.props.updateDetailPanel(DetailPanelMode.LINK, id);
         }
       },
