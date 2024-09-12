@@ -317,7 +317,6 @@ export async function putElementsOnCanvas(
     }
     const iris: string[] = data.iri;
     const ids: string[] = data.id.filter((id: string) => !graph.getCell(id));
-    debugger;
     if (iris.length === 0 && ids.length === 0) {
       console.warn(`Expected to receive valid IRI data, got
       ${dataToParse}

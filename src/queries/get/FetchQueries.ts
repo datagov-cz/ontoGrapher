@@ -227,11 +227,11 @@ export async function fetchRestrictions(
     graph && "GRAPH <" + graph + "> {",
     vocabulary
       ? [
-          "?term skos:inScheme ?scheme.",
-          "<" +
-            vocabulary +
-            "> <http://onto.fel.cvut.cz/ontologies/slovník/agendový/popis-dat/pojem/má-glosář> ?scheme.",
-        ].join(" ")
+        "?term skos:inScheme ?scheme.",
+        "<" +
+        vocabulary +
+        "> <http://onto.fel.cvut.cz/ontologies/slovník/agendový/popis-dat/pojem/má-glosář> ?scheme.",
+      ].join(" ")
       : "?term skos:inScheme <" + scheme + ">.",
     "?term rdfs:subClassOf ?restriction. ",
     "?restriction a owl:Restriction .",
@@ -244,8 +244,8 @@ export async function fetchRestrictions(
     targets ? "values ?target {<" + targets.join("> <") + ">}" : "",
     "FILTER (!isBlank(?target))",
     "values ?restrictionPred {<" +
-      Object.keys(RestrictionConfig).join("> <") +
-      ">}",
+    Object.keys(RestrictionConfig).join("> <") +
+    ">}",
     "}",
     graph && "}",
   ].join(`
@@ -294,16 +294,17 @@ export async function fetchTerms(
     "PREFIX skos: <http://www.w3.org/2004/02/skos/core#>",
     "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>",
     "PREFIX z-sgov-pojem: <https://slovník.gov.cz/základní/pojem/>",
-    "SELECT ?term ?termLabel ?termAltLabel ?termType ?termDefinition ?topConcept ?subClassOf",
+    "PREFIX dct: <http://purl.org/dc/terms/>",
+    "SELECT ?term ?termLabel ?termAltLabel ?termType ?termDefinition ?termDescription ?termSource ?topConcept ?subClassOf",
     "WHERE {",
     graph && "GRAPH <" + graph + "> {",
     vocabulary
       ? [
-          "?term skos:inScheme ?scheme.",
-          "<" +
-            vocabulary +
-            "> <http://onto.fel.cvut.cz/ontologies/slovník/agendový/popis-dat/pojem/má-glosář> ?scheme.",
-        ].join(" ")
+        "?term skos:inScheme ?scheme.",
+        "<" +
+        vocabulary +
+        "> <http://onto.fel.cvut.cz/ontologies/slovník/agendový/popis-dat/pojem/má-glosář> ?scheme.",
+      ].join(" ")
       : "?term skos:inScheme <" + scheme + ">.",
     "?term a ?termType.",
     terms ? "values ?term {<" + terms.join("> <") + ">}" : "",
@@ -311,6 +312,8 @@ export async function fetchTerms(
     scheme && "?term skos:inScheme ?scheme",
     "OPTIONAL {?term skos:altLabel ?termAltLabel.}",
     "OPTIONAL {?term skos:definition ?termDefinition.}",
+    "OPTIONAL {?term skos:scopeNote ?termDescription.}",
+    "OPTIONAL {?term dct:source ?termSource.}",
     "OPTIONAL {?term rdfs:subClassOf ?subClassOf. ",
     "filter (!isBlank(?subClassOf)) }",
     "OPTIONAL {?topConcept skos:hasTopConcept ?term. }",
@@ -332,6 +335,8 @@ export async function fetchTerms(
             inScheme: scheme ? scheme : row.scheme.value,
             subClassOf: [],
             restrictions: [],
+            descriptions: initLanguageObject(""),
+            source: ""
           };
         }
         if (
@@ -370,6 +375,21 @@ export async function fetchTerms(
           result[row.term.value].definitions[row.termDefinition["xml:lang"]] =
             row.termDefinition.value;
         }
+        if (row.termDescription) {
+          if (
+            !(
+              row.termDescription["xml:lang"] in
+              result[row.term.value].descriptions
+            )
+          )
+            result[row.term.value].descriptions[
+              row.termDescription["xml:lang"]
+            ] = "";
+          result[row.term.value].descriptions[row.termDescription["xml:lang"]] =
+            row.termDescription.value;
+        }
+        if (row.termSource)
+          result[row.term.value].source = row.termSource.value;
         if (row.topConcept)
           result[row.term.value].topConcept = row.topConcept.value;
         if (

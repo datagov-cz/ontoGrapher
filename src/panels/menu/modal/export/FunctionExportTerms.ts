@@ -1,20 +1,19 @@
 import _ from "lodash";
+import { Representation } from "../../../../config/Enum";
 import {
   AppSettings,
   WorkspaceElements,
   WorkspaceLinks,
   WorkspaceTerms,
 } from "../../../../config/Variables";
-import { processQuery } from "../../../../interface/TransactionInterface";
-import { Representation } from "../../../../config/Enum";
 import { parsePrefix } from "../../../../function/FunctionEditVars";
 import {
   isElementHidden,
   isElementVisible,
 } from "../../../../function/FunctionElem";
 import {
-  getIntrinsicTropeTypeIDs,
   getActiveSourceConnections,
+  getIntrinsicTropeTypeIDs,
 } from "../../../../function/FunctionGetVars";
 
 type exportTermObject = { [key: string]: string[] };
@@ -23,31 +22,9 @@ export const exportFunctions: {
   getSuperClassAttributes: (terms: exportTermObject, term: string) => string[];
   constructExportTerms: () => exportTermObject;
 } = {
-  getSources: async (terms) => {
-    const query = [
-      "PREFIX dct: <http://purl.org/dc/terms/>",
-      "select ?term ?source where {",
-      "?term dct:source ?source.",
-      `values ?term {<${_.uniq(
-        Object.keys(terms).concat(_.flatten(Object.values(terms)))
-      ).join("> <")}>}`,
-      "}",
-    ].join(`
-`);
-    return await processQuery(AppSettings.contextEndpoint, query)
-      .then((response) => response.json())
-      .then((data) => {
-        const r: { [key: string]: string } = {};
-        for (const row of data.results.bindings) {
-          r[row.term.value] = row.source.value;
-        }
-        return r;
-      })
-      .catch((e) => {
-        console.error(e);
-        return { error: e };
-      });
-  },
+  getSources: async (terms) =>
+    Object.fromEntries(_.intersection(Object.keys(terms), Object.keys(WorkspaceTerms)).map(term => [term, WorkspaceTerms[term].source]))
+  ,
   getSuperClassAttributes: (terms, term) => {
     const stack = _.clone(WorkspaceTerms[term].subClassOf);
     const attributes: string[] = [];

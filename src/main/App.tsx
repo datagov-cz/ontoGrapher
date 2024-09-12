@@ -161,6 +161,7 @@ export default class App extends React.Component<
       });
       this.handleWorkspaceReady();
       callToast("newFunctionEditTrope");
+      callToast("newFunctionDescriptionAndSources");
     };
     if (Environment.debug && loadDebugData()) finishUp();
     else

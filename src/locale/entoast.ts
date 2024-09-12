@@ -14,5 +14,9 @@ export const enToast: {
   newFunctionEditTrope: {
     header: "Trope editing now available",
     content: "In the new version of OntoGrapher, you can edit tropes (their definitions and synonyms) within the detail panel of the parent term. In the list of tropes, click the info icon that shows when you point the mouse at a trope."
+  },
+  newFunctionDescriptionAndSources: {
+    header: "Description and source editing now available",
+    content: "In the new version of OntoGrapher, you can edit descriptions (skos:scopeNote) and sources (dct:source) within the detail panel of terms and connections."
   }
 };

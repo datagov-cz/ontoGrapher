@@ -41,6 +41,10 @@ export function updateProjectElement(del: boolean, ...iris: string[]): string {
     const definitions = Object.keys(vocabElem.definitions)
       .filter((lang) => vocabElem.definitions[lang])
       .map((lang) => qb.ll(vocabElem.definitions[lang], lang));
+    const descriptions = Object.keys(vocabElem.descriptions)
+      .filter((lang) => vocabElem.descriptions[lang])
+      .map((lang) => qb.ll(vocabElem.descriptions[lang], lang));
+    const source = vocabElem.source;
 
     const ogStatements: string[] = [
       qb.s(qb.i(iri), "rdf:type", "og:element"),
@@ -63,11 +67,18 @@ export function updateProjectElement(del: boolean, ...iris: string[]): string {
         qb.s(qb.i(iri), "skos:prefLabel", qb.a(labels), labels.length > 0),
         qb.s(qb.i(iri), "skos:altLabel", qb.a(altLabels), altLabels.length > 0),
         qb.s(qb.i(iri), "dc:title", qb.a(names), names.length > 0),
+        qb.s(qb.i(iri), "dc:source", qb.ll(source), !!source),
         qb.s(
           qb.i(iri),
           "skos:definition",
           qb.a(definitions),
           definitions.length > 0
+        ),
+        qb.s(
+          qb.i(iri),
+          "skos:scopeNote",
+          qb.a(descriptions),
+          descriptions.length > 0
         ),
         qb.s(qb.i(iri), "skos:inScheme", qb.i(scheme)),
         qb.s(
@@ -95,6 +106,8 @@ export function updateProjectElement(del: boolean, ...iris: string[]): string {
           qb.s(qb.i(iri), "skos:prefLabel", "?labels"),
           qb.s(qb.i(iri), "skos:altLabel", "?alt"),
           qb.s(qb.i(iri), "skos:definition", "?definition"),
+          qb.s(qb.i(iri), "skos:scopeNote", "?description"),
+          qb.s(qb.i(iri), "dc:source", "?source"),
           qb.s(qb.i(iri), "dc:title", "?title"),
         ].map((stmt) =>
           DELETE`${qb.g(graph, [stmt])}`.WHERE`${qb.g(graph, [stmt])}`.build()

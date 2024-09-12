@@ -3,7 +3,7 @@ import { Restriction } from "../datatypes/Restriction";
 import { Representation } from "./Enum";
 import * as joint from "jointjs";
 import { Environment } from "./Environment";
-import { Languages } from "./Languages";
+import { LanguageObject, Languages } from "./Languages";
 
 export type AlternativeLabel = { label: string; language: string };
 
@@ -88,6 +88,8 @@ export var WorkspaceTerms: {
     subClassOf: string[];
     restrictions: Restriction[];
     topConcept: string | undefined;
+    descriptions: LanguageObject;
+    source: string;
   };
 } = {};
 

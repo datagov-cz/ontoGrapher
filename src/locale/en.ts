@@ -77,6 +77,8 @@ export const en = {
   detailPanelPrefLabel: "Label",
   detailPanelAltLabel: "Synonyms",
   detailPanelInScheme: "In vocabulary",
+  detailPanelSource: "Source",
+  detailPanelDescription: "Description",
   detailPanelDefinition: "Definition",
   detailPanelStereotype: "Stereotype",
   setCanvasLanguage: "Displayed vocabulary language",

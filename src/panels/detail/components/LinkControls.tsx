@@ -1,12 +1,9 @@
-import _ from "lodash";
 import React, { useRef, useState } from "react";
 import { CloseButton } from "react-bootstrap";
 import { LanguageSelector } from "../../../components/LanguageSelector";
 import { LinkType, Representation } from "../../../config/Enum";
-import { LanguageObject } from "../../../config/Languages";
 import { Locale } from "../../../config/Locale";
 import {
-  AlternativeLabel,
   AppSettings,
   CardinalityPool,
   WorkspaceElements,
@@ -15,11 +12,7 @@ import {
   WorkspaceVocabularies,
 } from "../../../config/Variables";
 import { Cardinality } from "../../../datatypes/Cardinality";
-import {
-  getDisplayLabel,
-  getSelectedLabels,
-} from "../../../function/FunctionDraw";
-import { initLanguageObject } from "../../../function/FunctionEditVars";
+import { getDisplayLabel } from "../../../function/FunctionDraw";
 import {
   getLabelOrBlank,
   getLinkOrVocabElem,
@@ -32,9 +25,8 @@ import { graph } from "../../../graph/Graph";
 import { updateTermConnections } from "../../../queries/update/UpdateConnectionQueries";
 import { updateProjectElement } from "../../../queries/update/UpdateElementQueries";
 import { updateProjectLink } from "../../../queries/update/UpdateLinkQueries";
-import { IntrinsicTropeControls } from "./IntrinsicTropeControls";
-import { DetailPanelAltLabels } from "./description/DetailPanelAltLabels";
 import { DetailPanelCardinalities } from "./description/DetailPanelCardinalities";
+import { DetailElementDescription } from "./element/DetailElementDescription";
 
 interface Props {
   id: string;
@@ -47,10 +39,6 @@ interface Props {
 export const LinkControls: React.FC<Props> = (props: Props) => {
   const [sourceCardinality, setSourceCardinality] = useState<string>("0");
   const [targetCardinality, setTargetCardinality] = useState<string>("0");
-  const [inputAltLabels, setInputAltLabels] = useState<AlternativeLabel[]>([]);
-  const [selectedLabel, setSelectedLabel] = useState<LanguageObject>(
-    initLanguageObject("")
-  );
   const [readOnly, setReadOnly] = useState<boolean>(false);
   const [selectedLanguage, setSelectedLanguage] = useState<string>(
     AppSettings.canvasLanguage
@@ -116,7 +104,6 @@ export const LinkControls: React.FC<Props> = (props: Props) => {
     prevPropsID.current !== props.id
   ) {
     prevPropsID.current = props.id;
-    const iri = WorkspaceLinks[props.id].iri;
     const sourceCardinality = CardinalityPool.findIndex(
       (card) =>
         card.getString() ===
@@ -132,14 +119,6 @@ export const LinkControls: React.FC<Props> = (props: Props) => {
     );
     setTargetCardinality(
       targetCardinality === -1 ? "0" : targetCardinality.toString(10)
-    );
-    setInputAltLabels(
-      iri in WorkspaceTerms ? WorkspaceTerms[iri].altLabels : []
-    );
-    setSelectedLabel(
-      iri in WorkspaceElements
-        ? getSelectedLabels(iri, AppSettings.canvasLanguage)
-        : initLanguageObject("")
     );
     setReadOnly(isReadOnly(props.id));
   }
@@ -206,62 +185,14 @@ export const LinkControls: React.FC<Props> = (props: Props) => {
         }}
       />
       {AppSettings.representation === Representation.COMPACT &&
-        WorkspaceLinks[props.id].type === LinkType.DEFAULT && (
-          <>
-            <h5>{Locale[AppSettings.interfaceLanguage].detailPanelAltLabel}</h5>
-            <DetailPanelAltLabels
-              altLabels={inputAltLabels}
-              selectedLabel={selectedLabel}
-              language={selectedLanguage}
-              readOnly={readOnly}
-              addAltLabel={(alt: AlternativeLabel) => {
-                const newAL = [...inputAltLabels, alt];
-                setInputAltLabels(newAL);
-                WorkspaceTerms[WorkspaceLinks[props.id].iri].altLabels = newAL;
-                save();
-              }}
-              id={WorkspaceLinks[props.id].iri}
-              selectDisplayLabel={(name, language) => {
-                const newSL = {
-                  ...selectedLabel,
-                  [language]: name,
-                };
-                WorkspaceElements[WorkspaceLinks[props.id].iri].selectedLabel =
-                  newSL;
-                setSelectedLabel(newSL);
-                save();
-              }}
-              deleteAltLabel={(alt: AlternativeLabel) => {
-                if (selectedLabel[selectedLanguage] === alt.label) {
-                  const newSL = {
-                    ...selectedLabel,
-                    [selectedLanguage]:
-                      WorkspaceTerms[WorkspaceLinks[props.id].iri].labels[
-                        selectedLanguage
-                      ],
-                  };
-                  WorkspaceElements[
-                    WorkspaceLinks[props.id].iri
-                  ].selectedLabel = newSL;
-                  setSelectedLabel(newSL);
-                }
-                const newAL = _.without(inputAltLabels, alt);
-                setInputAltLabels(newAL);
-                WorkspaceTerms[WorkspaceLinks[props.id].iri].altLabels = newAL;
-                save();
-              }}
-            />
-            {WorkspaceLinks[props.id].iri in WorkspaceTerms && (
-              <IntrinsicTropeControls
-                performTransaction={props.performTransaction}
-                id={WorkspaceLinks[props.id].iri}
-                readOnly={readOnly}
-                projectLanguage={props.projectLanguage}
-                save={props.save}
-                linkID={props.id}
-              />
-            )}
-          </>
+        WorkspaceLinks[props.id].type === LinkType.DEFAULT &&
+        props.id && (
+          <DetailElementDescription
+            id={WorkspaceLinks[props.id].iri}
+            performTransaction={props.performTransaction}
+            selectedLanguage={selectedLanguage}
+            save={save}
+          />
         )}
     </>
   );

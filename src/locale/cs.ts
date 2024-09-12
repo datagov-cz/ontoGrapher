@@ -84,6 +84,8 @@ export const cs: { [Property in keyof typeof en]: string } = {
   detailPanelPrefLabel: "Jméno",
   detailPanelAltLabel: "Synonyma",
   detailPanelInScheme: "Ve slovníku",
+  detailPanelSource: "Zdroj",
+  detailPanelDescription: "Popis",
   detailPanelDefinition: "Definice",
   detailPanelStereotype: "Stereotyp",
   setCanvasLanguage: "Zobrazovaný jazyk slovníků",

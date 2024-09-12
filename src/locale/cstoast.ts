@@ -20,5 +20,9 @@ export const csToast: {
   newFunctionEditTrope: {
     header: "Nyní dostupné: úprava vlastností",
     content: "V nové verzi OntoGrapheru můžete upravovat vlastnosti (jejich definice a synonyma) pojmů v detailu daného pojmu. Stačí v seznamu vlastností pojmu kliknout na Info ikonku, která se zobrazí při najetí myší na danou vlastnost."
+  },
+  newFunctionDescriptionAndSources: {
+    header: "Nyní dostupné: úprava zdrojů a popisů",
+    content: "V nové verzi OntoGrapheru nyní lze upravovat zdroje (dct:source) a popisy (skos:scopeNote) v detailu pojmů a vybraných vztahů."
   }
 };
