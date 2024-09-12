@@ -267,10 +267,11 @@ export default class DiagramCanvas extends React.Component<Props> {
           AppSettings.selectedLinks.includes(linkView.model.id as string) &&
           AppSettings.selectedLinks.length === 1
         )
-          addLinkTools(linkView, this.props.performTransaction, () => {
-            this.props.updateElementPanel();
-            this.props.updateDetailPanel(DetailPanelMode.HIDDEN);
-          });
+          addLinkTools(
+            linkView,
+            this.props.performTransaction,
+            this.props.updateElementPanel
+          );
       },
       /**
        * Mouse leave on cell:
