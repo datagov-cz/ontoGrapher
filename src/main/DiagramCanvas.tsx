@@ -248,12 +248,10 @@ export default class DiagramCanvas extends React.Component<Props> {
                   ...getElementToolPosition(id),
                   action: (evt: {
                     currentTarget: { getAttribute: (arg0: string) => any };
-                  }) => {
-                    if (graph.getElements().length > 1)
-                      this.createNewLink(
-                        evt.currentTarget.getAttribute("model-id")
-                      );
-                  },
+                  }) =>
+                    this.createNewLink(
+                      evt.currentTarget.getAttribute("model-id")
+                    ),
                 }),
               tool,
             ],
