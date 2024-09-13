@@ -29,10 +29,11 @@ export async function getElementsConfig(
     const query = [
       "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
       "PREFIX skos: <http://www.w3.org/2004/02/skos/core#> ",
-      "select ?elem ?scheme ?name ?vocabulary where {",
+      "select ?elem ?scheme ?name ?vocabulary ?active where {",
       "graph ?graph {",
       "?elem a og:element .",
       "optional {?elem og:name ?name.}",
+      "optional {?elem og:active ?active.}",
       "optional {?elem og:vocabulary ?vocabulary.}",
       "?elem og:scheme ?scheme .",
       "}",
@@ -62,6 +63,9 @@ export async function getElementsConfig(
               sourceLinks: [],
               targetLinks: [],
             };
+          }
+          if (result.active) {
+            elements[iri].active = result.active.value === "true"
           }
           if (
             result.name &&

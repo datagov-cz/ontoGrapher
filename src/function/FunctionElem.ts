@@ -25,6 +25,7 @@ import {
 import { updateCreateDiagram } from "../queries/update/UpdateDiagramQueries";
 import {
   updateProjectElement,
+  updateProjectElementData,
   updateProjectElementDiagram,
 } from "../queries/update/UpdateElementQueries";
 import {
@@ -445,6 +446,7 @@ export function removeElement(elem: string): string[] {
   const writeGraphs = Object.keys(WorkspaceVocabularies)
     .filter((vocab) => !WorkspaceVocabularies[vocab].readOnly)
     .map((vocab) => WorkspaceVocabularies[vocab].graph);
+  WorkspaceElements[elem].active = false;
   return [
     ...deleteConcept(elem),
     updateDeleteTriples(
@@ -454,6 +456,7 @@ export function removeElement(elem: string): string[] {
       false,
       false
     ),
-    updateDeleteTriples(elem, writeGraphs, true, true, true)
+    updateDeleteTriples(elem, writeGraphs, true, true, true),
+    updateProjectElementData(true, elem),
   ]
 }

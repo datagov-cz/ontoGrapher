@@ -146,7 +146,20 @@ export class DetailElementDescription extends React.Component<Props, State> {
   }
 
   componentWillUnmount() {
-    if (!this.state.readOnly) this.save();
+    if (this.props.id in WorkspaceElements && !this.state.readOnly) {
+      if (
+        WorkspaceTerms[this.props.id].altLabels === this.state.inputAltLabels &&
+        WorkspaceTerms[this.props.id].definitions ===
+          this.state.inputDefinitions &&
+        WorkspaceTerms[this.props.id].descriptions ===
+          this.state.inputDescriptions &&
+        WorkspaceTerms[this.props.id].source === this.state.inputSource &&
+        WorkspaceElements[this.props.id].selectedLabel ===
+          this.state.selectedLabel
+      )
+        return;
+      else this.save();
+    }
   }
 
   componentDidUpdate(prevProps: Readonly<Props>, prevState: Readonly<State>) {

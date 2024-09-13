@@ -10,6 +10,77 @@ import {
 import { getVocabularyFromScheme } from "../../function/FunctionGetVars";
 import { qb } from "../QueryBuilder";
 
+export function updateProjectElementData(del: boolean, ...iris: string[]): string {
+  const diagramGraphs = Object.values(Diagrams)
+    .filter((diag) => !diag.toBeDeleted)
+    .map((diag) => diag.graph);
+  const data: { [key: string]: string[] } = {};
+  diagramGraphs.forEach((diag) => (data[diag] = []));
+  const deletes: string[] = [];
+  const inserts: string[] = [];
+  if (iris.length === 0) return "";
+  for (const iri of iris) {
+    checkElem(iri);
+    const vocabElem = WorkspaceTerms[iri];
+    const scheme = vocabElem.inScheme;
+    const vocab = getVocabularyFromScheme(vocabElem.inScheme);
+    const names = Object.entries(WorkspaceElements[iri].selectedLabel)
+      .filter(
+        ([key, value]) =>
+          key in Languages && value && WorkspaceTerms[iri].labels[key] !== value
+      )
+      .map(([key, value]) => qb.ll(value, key));
+
+    const ogStatements: string[] = [
+      qb.s(qb.i(iri), "rdf:type", "og:element"),
+      qb.s(qb.i(iri), "og:scheme", qb.i(scheme)),
+      qb.s(qb.i(iri), "og:vocabulary", qb.i(getVocabularyFromScheme(scheme))),
+      qb.s(qb.i(iri), "og:name", qb.a(names), names.length > 0),
+      qb.s(qb.i(iri), "og:active", qb.ll(WorkspaceElements[iri].active)),
+    ];
+    Object.values(Diagrams)
+      .filter((diag) => !diag.toBeDeleted)
+      .map((diag) => diag.graph)
+      .forEach((graph) => data[graph].push(...ogStatements));
+
+    if (WorkspaceVocabularies[vocab].readOnly) continue;
+    if (!(vocab in data)) data[vocab] = [];
+
+    if (del) {
+      const deleteStatements = [
+        qb.s(qb.i(iri), "og:name", "?name"),
+        qb.s(qb.i(iri), "og:active", "?active"),
+      ];
+      deletes.push(
+        ...diagramGraphs.map((graph) =>
+          DELETE`${qb.g(graph, deleteStatements)}`.WHERE`${qb.g(
+            graph,
+            deleteStatements
+          )}`.build()
+        ),
+      );
+    }
+    AppSettings.changedVocabularies.push(
+      getVocabularyFromScheme(WorkspaceTerms[iri].inScheme)
+    );
+  }
+
+  for (const vocab in data) {
+    if (vocab in WorkspaceVocabularies) {
+      const graph = WorkspaceVocabularies[vocab].graph;
+      if (WorkspaceVocabularies[vocab].readOnly)
+        throw new Error(`Attempted to write to read-only graph ${graph}`);
+      inserts.push(INSERT.DATA`${qb.g(graph, data[vocab])}`.build());
+    }
+  }
+  inserts.push(
+    ...diagramGraphs.map((graph) =>
+      INSERT.DATA`${qb.g(graph, data[graph])}`.build()
+    )
+  );
+  return qb.combineQueries(...deletes, ...inserts);
+}
+
 export function updateProjectElement(del: boolean, ...iris: string[]): string {
   const diagramGraphs = Object.values(Diagrams)
     .filter((diag) => !diag.toBeDeleted)

@@ -1,4 +1,4 @@
-import { LanguageObject } from "./../config/Languages";
+import * as _ from "lodash";
 import { LinkType } from "../config/Enum";
 import { Languages } from "../config/Languages";
 import { Locale } from "../config/Locale";
@@ -11,22 +11,22 @@ import {
   WorkspaceElements,
   WorkspaceLinks,
   WorkspaceTerms,
-  WorkspaceVocabularies,
+  WorkspaceVocabularies
 } from "../config/Variables";
 import { Cardinality } from "../datatypes/Cardinality";
-import { graph } from "../graph/Graph";
-import { updateDeleteTriples } from "../queries/update/UpdateMiscQueries";
+import { LinkConfig } from "../queries/update/UpdateConnectionQueries";
+import { LanguageObject } from "./../config/Languages";
 import { addClass } from "./FunctionCreateVars";
+import { filterEquivalent } from "./FunctionEquivalents";
 import {
   getActiveSourceConnections,
   getActiveTargetConnections,
   getLocalStorageKey,
   getVocabularyFromScheme,
-  loadDefaultCardinality,
+  loadDefaultCardinality
 } from "./FunctionGetVars";
-import * as _ from "lodash";
-import { LinkConfig } from "../queries/update/UpdateConnectionQueries";
-import { filterEquivalent } from "./FunctionEquivalents";
+import { graph } from "../graph/Graph";
+import { updateDeleteTriples } from "../queries/update/UpdateMiscQueries";
 
 export function trimLanguageObjectInput(input: LanguageObject): LanguageObject {
   return _.mapValues(input, (i) => i.trim());
@@ -206,9 +206,8 @@ export function setElementShape(
     elem.attr({
       bodyDiamond: {
         display: "block",
-        points: `${width / 2},${-(height / 2)} ${width * (9 / 8)},${
-          height / 2
-        } ${width / 2},${height * (3 / 2)} ${-(width / 8)},${height / 2}`,
+        points: `${width / 2},${-(height / 2)} ${width * (9 / 8)},${height / 2
+          } ${width / 2},${height * (3 / 2)} ${-(width / 8)},${height / 2}`,
         stroke: "black",
         fill: WorkspaceVocabularies[
           getVocabularyFromScheme(WorkspaceTerms[elem.id].inScheme)
