@@ -1,3 +1,10 @@
+import classNames from "classnames";
+import * as _ from "lodash";
+import React, { useEffect, useState } from "react";
+import { Alert, Form, InputGroup } from "react-bootstrap";
+import Select, { SingleValue } from "react-select";
+import { Environment } from "../../config/Environment";
+import { LanguageObject, Languages } from "../../config/Languages";
 import { Locale } from "../../config/Locale";
 import {
   AppSettings,
@@ -5,22 +12,16 @@ import {
   WorkspaceTerms,
   WorkspaceVocabularies,
 } from "../../config/Variables";
-import { Alert, Form, InputGroup } from "react-bootstrap";
+import { createNewElemIRI } from "../../function/FunctionCreateVars";
+import { getListClassNamesObject } from "../../function/FunctionDraw";
+import { initLanguageObject } from "../../function/FunctionEditVars";
 import {
   getLabelOrBlank,
   getVocabularyFromScheme,
 } from "../../function/FunctionGetVars";
-import { createNewElemIRI } from "../../function/FunctionCreateVars";
-import React, { useEffect, useState } from "react";
-import { initLanguageObject } from "../../function/FunctionEditVars";
-import { LanguageObject, Languages } from "../../config/Languages";
-import { getListClassNamesObject } from "../../function/FunctionDraw";
-import classNames from "classnames";
-import { Flags } from "../LanguageSelector";
-import * as _ from "lodash";
-import { ListLanguageControls } from "../../panels/detail/components/items/ListLanguageControls";
-import { Environment } from "../../config/Environment";
 import { en } from "../../locale/en";
+import { ListLanguageControls } from "../../panels/detail/components/items/ListLanguageControls";
+import { Flags } from "../LanguageSelector";
 
 interface Props {
   termName: LanguageObject;
@@ -91,20 +92,16 @@ export const NewElemForm: React.FC<Props> = (props) => {
   };
 
   const handleChangeSelect = (
-    event: React.ChangeEvent<
-      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
-    >
+    option: SingleValue<{ value: string; label: string }>
   ) => {
+    if (!option) return;
     const pkg = Object.keys(WorkspaceVocabularies).find(
-      (pkg) => pkg === event.currentTarget.value
+      (pkg) => pkg === option.value
     );
     if (pkg && props.setSelectedVocabulary) {
       props.setSelectedVocabulary(pkg);
       props.setErrorText(
-        checkNames(
-          WorkspaceVocabularies[event.currentTarget.value].glossary,
-          props.termName
-        )
+        checkNames(WorkspaceVocabularies[option.value].glossary, props.termName)
       );
     } else {
       console.error(`Vocabulary ${pkg} not found within the vocabulary list.`);
@@ -175,28 +172,32 @@ export const NewElemForm: React.FC<Props> = (props) => {
         <Form.Label>
           {Locale[AppSettings.interfaceLanguage].selectVocabulary}
         </Form.Label>
-        <Form.Control
-          as="select"
-          value={props.selectedVocabulary}
-          onChange={(event) => handleChangeSelect(event)}
-          disabled={
+        <Select
+          isSearchable
+          isDisabled={
             !!!props.setSelectedVocabulary ||
             Object.keys(WorkspaceVocabularies).filter(
               (vocab) => !WorkspaceVocabularies[vocab].readOnly
             ).length <= 1
           }
-        >
-          {Object.keys(WorkspaceVocabularies)
+          options={Object.keys(WorkspaceVocabularies)
             .filter((vocab) => !WorkspaceVocabularies[vocab].readOnly)
-            .map((vocab, i) => (
-              <option key={i} value={vocab}>
-                {getLabelOrBlank(
-                  WorkspaceVocabularies[vocab].labels,
-                  AppSettings.canvasLanguage
-                )}
-              </option>
-            ))}
-        </Form.Control>
+            .map((vocab) => ({
+              value: vocab,
+              label: getLabelOrBlank(
+                WorkspaceVocabularies[vocab].labels,
+                AppSettings.canvasLanguage
+              ),
+            }))}
+          value={{
+            value: props.selectedVocabulary,
+            label: getLabelOrBlank(
+              WorkspaceVocabularies[props.selectedVocabulary].labels,
+              AppSettings.canvasLanguage
+            ),
+          }}
+          onChange={(option) => handleChangeSelect(_.clone(option))}
+        />
       </Form.Group>
       <br />
       {!props.errorText && (
