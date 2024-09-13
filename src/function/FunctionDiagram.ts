@@ -53,6 +53,7 @@ export function changeDiagrams(diagram?: string) {
       s.selectedDiagram = diagram!;
     });
     paper.translate(Diagrams[diagram].origin.x, Diagrams[diagram].origin.y)
+    paper.scale(Diagrams[diagram].scale)
   } else {
     console.warn(
       "Attempted change to a diagram ID " + diagram + " that doesn't exist."
