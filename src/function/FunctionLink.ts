@@ -29,6 +29,7 @@ import {
   getVocabularyFromScheme,
 } from "./FunctionGetVars";
 import { mvp1IRI, mvp2IRI, setLabels, setLinkBoundary } from "./FunctionGraph";
+import { removeElement } from "./FunctionElem";
 
 export function getOtherConnectionElementID(
   linkID: string,
@@ -332,14 +333,10 @@ function deleteConnections(id: string): string[] {
 
 export function deleteLink(id: string): string[] {
   const queries: string[] = [];
-  const compactConn = Object.keys(WorkspaceLinks).find(
-    (link) =>
-      WorkspaceLinks[link].active &&
-      WorkspaceLinks[link].iri === WorkspaceLinks[id].source &&
-      WorkspaceLinks[link].target === WorkspaceLinks[id].target
-  );
-  if (compactConn) {
-    queries.push(...deleteConnections(compactConn));
+  if (!(WorkspaceLinks[id].iri in Links) &&
+    WorkspaceLinks[id].type === LinkType.DEFAULT &&
+    WorkspaceLinks[id].active) {
+    queries.push(...removeElement(WorkspaceLinks[id].iri));
   }
   const deleteLinks = getUnderlyingFullConnections(id as string);
   if (deleteLinks) {

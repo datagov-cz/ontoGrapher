@@ -6,6 +6,7 @@ import { Locale } from "../../config/Locale";
 import {
   AppSettings,
   Links,
+  WorkspaceElements,
   WorkspaceLinks,
   WorkspaceTerms,
 } from "../../config/Variables";
@@ -87,16 +88,16 @@ export default class NewLinkModal extends React.Component<Props, State> {
           .sort();
       } else if (AppSettings.representation === Representation.COMPACT) {
         return Object.keys(WorkspaceTerms)
-          .filter((iri) => {
-            return (
+          .filter(
+            (iri) =>
               !isTermReadOnly(iri) &&
               getActiveSourceConnections(iri).length === 0 &&
               filterEquivalent(
                 WorkspaceTerms[iri].types,
                 parsePrefix("z-sgov-pojem", "typ-vztahu")
-              )
-            );
-          })
+              ) &&
+              WorkspaceElements[iri].active
+          )
           .concat(
             Object.keys(Links).filter(
               (link) =>
@@ -113,7 +114,7 @@ export default class NewLinkModal extends React.Component<Props, State> {
   }
 
   render() {
-    let options = this.getLinks().sort();
+    const options = this.getLinks();
     return (
       <Modal
         centered

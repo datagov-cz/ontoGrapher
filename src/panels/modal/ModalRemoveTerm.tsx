@@ -3,15 +3,9 @@ import { Button, Form, Modal, Spinner } from "react-bootstrap";
 import TableList from "../../components/TableList";
 import { Representation } from "../../config/Enum";
 import { Locale } from "../../config/Locale";
-import {
-  AppSettings,
-  Diagrams,
-  WorkspaceVocabularies,
-} from "../../config/Variables";
+import { AppSettings } from "../../config/Variables";
 import { getCacheConnections } from "../../function/FunctionCache";
-import { removeFromFlexSearch } from "../../function/FunctionCreateVars";
-import { deleteConcept } from "../../function/FunctionEditVars";
-import { updateDeleteTriples } from "../../queries/update/UpdateMiscQueries";
+import { removeElement } from "../../function/FunctionElem";
 import { CacheConnection } from "../../types/CacheConnection";
 import ConnectionCache from "../detail/components/connections/ConnectionCache";
 
@@ -39,21 +33,7 @@ export default class ModalRemoveTerm extends React.Component<Props, State> {
   }
 
   save() {
-    removeFromFlexSearch(this.props.id);
-    const writeGraphs = Object.keys(WorkspaceVocabularies)
-      .filter((vocab) => !WorkspaceVocabularies[vocab].readOnly)
-      .map((vocab) => WorkspaceVocabularies[vocab].graph);
-    this.props.performTransaction(
-      ...deleteConcept(this.props.id),
-      updateDeleteTriples(
-        this.props.id,
-        Object.values(Diagrams).map((diag) => diag.graph),
-        true,
-        false,
-        false
-      ),
-      updateDeleteTriples(this.props.id, writeGraphs, true, true, true)
-    );
+    this.props.performTransaction(...removeElement(this.props.id));
   }
 
   getConnections() {

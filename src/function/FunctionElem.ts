@@ -439,3 +439,21 @@ export function removeReadOnlyElement(elem: string): string[] {
     ),
   ];
 }
+
+export function removeElement(elem: string): string[] {
+  removeFromFlexSearch(elem);
+  const writeGraphs = Object.keys(WorkspaceVocabularies)
+    .filter((vocab) => !WorkspaceVocabularies[vocab].readOnly)
+    .map((vocab) => WorkspaceVocabularies[vocab].graph);
+  return [
+    ...deleteConcept(elem),
+    updateDeleteTriples(
+      elem,
+      Object.values(Diagrams).map((diag) => diag.graph),
+      true,
+      false,
+      false
+    ),
+    updateDeleteTriples(elem, writeGraphs, true, true, true)
+  ]
+}
