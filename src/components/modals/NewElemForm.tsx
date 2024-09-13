@@ -191,10 +191,13 @@ export const NewElemForm: React.FC<Props> = (props) => {
             }))}
           value={{
             value: props.selectedVocabulary,
-            label: getLabelOrBlank(
-              WorkspaceVocabularies[props.selectedVocabulary].labels,
-              AppSettings.canvasLanguage
-            ),
+            label:
+              props.selectedVocabulary in WorkspaceVocabularies
+                ? getLabelOrBlank(
+                    WorkspaceVocabularies[props.selectedVocabulary].labels,
+                    AppSettings.canvasLanguage
+                  )
+                : "",
           }}
           onChange={(option) => handleChangeSelect(_.clone(option))}
         />
