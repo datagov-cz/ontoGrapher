@@ -9,16 +9,14 @@ import {
 import { Cardinality } from "../../datatypes/Cardinality";
 import { addDiagram } from "../../function/FunctionCreateVars";
 import {
-  initLanguageObject,
-  parsePrefix,
+  initLanguageObject
 } from "../../function/FunctionEditVars";
 import { processQuery } from "../../interface/TransactionInterface";
-import { qb } from "../QueryBuilder";
 import { WorkspaceLinks } from "./../../config/Variables";
 
 export async function getElementsConfig(
   contextEndpoint: string = AppSettings.contextEndpoint,
-  contexts: string[] = AppSettings.contextIRIs
+  diagramGraphs: string[] = Object.values(Diagrams).map(d => d.graph)
 ): Promise<boolean> {
   const elements: { [key: string]: Partial<(typeof WorkspaceElements)[0]> } =
     {};
@@ -37,13 +35,7 @@ export async function getElementsConfig(
       "optional {?elem og:vocabulary ?vocabulary.}",
       "?elem og:scheme ?scheme .",
       "}",
-      `?contextIRI ${qb.i(
-        parsePrefix(
-          "d-sgov-pracovní-prostor-pojem",
-          `odkazuje-na-přílohový-kontext`
-        )
-      )} ?graph.`,
-      `values ?contextIRI {<${contexts.join("> <")}>}`,
+      `values ?graph {<${diagramGraphs.join("> <")}>}`,
       "}",
     ].join(`
     `);
@@ -95,13 +87,7 @@ export async function getElementsConfig(
       // Make sure it is really a diagram we are querying
       "?diagram og:representation ?representation .",
       "}",
-      `?contextIRI ${qb.i(
-        parsePrefix(
-          "d-sgov-pracovní-prostor-pojem",
-          `odkazuje-na-přílohový-kontext`
-        )
-      )} ?graph.`,
-      `values ?contextIRI {<${contexts.join("> <")}>}`,
+      `values ?graph {<${diagramGraphs.join("> <")}>}`,
       "}",
     ].join(`
     `);
@@ -258,7 +244,7 @@ export async function getSettings(contextEndpoint: string): Promise<boolean> {
 
 export async function getLinksConfig(
   contextEndpoint: string = AppSettings.contextEndpoint,
-  contexts: string[] = AppSettings.contextIRIs
+  diagramGraphs: string[] = Object.values(Diagrams).map(d => d.graph)
 ): Promise<boolean> {
   const links: { [key: string]: Partial<(typeof WorkspaceLinks)[0]> } = {};
   const linkVertices: { [key: string]: Partial<(typeof WorkspaceLinks)[0]> } =
@@ -279,11 +265,7 @@ export async function getLinksConfig(
       "?link og:targetCardinality1 ?targetCard1 .",
       "?link og:targetCardinality2 ?targetCard2 .",
       "}",
-      `?contextIRI <${parsePrefix(
-        "d-sgov-pracovní-prostor-pojem",
-        "odkazuje-na-přílohový-kontext"
-      )}> ?graph.`,
-      `values ?contextIRI {<${contexts.join("> <")}>}`,
+      `values ?graph {<${diagramGraphs.join("> <")}>}`,
       "}",
     ].join(`
       `);
@@ -345,11 +327,7 @@ export async function getLinksConfig(
       "?diagram og:id ?diagramID.",
       "?diagram og:representation ?representation.",
       "}",
-      `?contextIRI <${parsePrefix(
-        "d-sgov-pracovní-prostor-pojem",
-        "odkazuje-na-přílohový-kontext"
-      )}> ?graph.`,
-      `values ?contextIRI {<${contexts.join("> <")}>}`,
+      `values ?graph {<${diagramGraphs.join("> <")}>}`,
       "}",
     ].join(`
       `);
