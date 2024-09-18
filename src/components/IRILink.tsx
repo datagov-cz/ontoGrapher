@@ -3,8 +3,8 @@ import React from "react";
 interface Props {
   label: string;
   iri: string;
+  display?: boolean;
 }
-
 interface State {
   hover: boolean;
 }
@@ -31,7 +31,11 @@ export default class IRILink extends React.Component<Props, State> {
         <a
           target="_blank"
           rel="noopener noreferrer"
-          style={{ visibility: this.state.hover ? "visible" : "hidden" }}
+          style={
+            this.props.display
+              ? { display: this.state.hover ? "inline" : "none" }
+              : { visibility: this.state.hover ? "visible" : "hidden" }
+          }
           href={this.props.iri}
         >
           ↱

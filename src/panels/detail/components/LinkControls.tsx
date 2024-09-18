@@ -27,6 +27,7 @@ import { updateProjectElement } from "../../../queries/update/UpdateElementQueri
 import { updateProjectLink } from "../../../queries/update/UpdateLinkQueries";
 import { DetailPanelCardinalities } from "./description/DetailPanelCardinalities";
 import { DetailElementDescription } from "./element/DetailElementDescription";
+import IRILink from "../../../components/IRILink";
 
 interface Props {
   id: string;
@@ -146,24 +147,36 @@ export const LinkControls: React.FC<Props> = (props: Props) => {
           </span>
           <span className="title link">
             <i>
-              {getDisplayLabel(
-                WorkspaceLinks[props.id].source,
-                selectedLanguage
-              )}
+              <IRILink
+                label={getDisplayLabel(
+                  WorkspaceLinks[props.id].source,
+                  selectedLanguage
+                )}
+                iri={WorkspaceLinks[props.id].source}
+                display={true}
+              />
             </i>
             &nbsp;
             <b>
-              {getLabelOrBlank(
-                getLinkOrVocabElem(WorkspaceLinks[props.id].iri).labels,
-                selectedLanguage
-              )}
+              <IRILink
+                label={getLabelOrBlank(
+                  getLinkOrVocabElem(WorkspaceLinks[props.id].iri).labels,
+                  selectedLanguage
+                )}
+                iri={WorkspaceLinks[props.id].iri}
+                display={true}
+              />
             </b>
             &nbsp;
             <i>
-              {getDisplayLabel(
-                WorkspaceLinks[props.id].target,
-                selectedLanguage
-              )}
+              <IRILink
+                label={getDisplayLabel(
+                  WorkspaceLinks[props.id].target,
+                  selectedLanguage
+                )}
+                iri={WorkspaceLinks[props.id].target}
+                display={true}
+              />
             </i>
           </span>
         </div>
