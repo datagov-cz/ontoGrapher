@@ -10,6 +10,7 @@ import { Locale } from "../../config/Locale";
 import { StoreSettings } from "../../config/Store";
 import { AppSettings, Diagrams } from "../../config/Variables";
 import { changeDiagrams } from "../../function/FunctionDiagram";
+import { updateDiagramPosition } from "../../queries/update/UpdateDiagramQueries";
 
 interface Props {
   diagram: string;
@@ -26,6 +27,9 @@ export const DiagramTab: React.FC<Props> = (props: Props) => {
       StoreSettings.update((s) => {
         s.mainViewMode = MainViewMode.CANVAS;
       });
+      props.performTransaction(
+        updateDiagramPosition(AppSettings.selectedDiagram)
+      );
       changeDiagrams(props.diagram);
       props.update();
       AppSettings.selectedLinks = [];

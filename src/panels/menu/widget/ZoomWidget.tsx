@@ -1,13 +1,16 @@
+import classNames from "classnames";
 import React from "react";
-import { zoomDiagram } from "../../../function/FunctionDiagram";
-import { paper } from "../../../main/DiagramCanvas";
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
 import { Locale } from "../../../config/Locale";
 import { AppSettings } from "../../../config/Variables";
+import { zoomDiagram } from "../../../function/FunctionDiagram";
+import { paper } from "../../../main/DiagramCanvas";
 import { ReactComponent as ZoomInSVG } from "../../../svg/zoomIn.svg";
 import { ReactComponent as ZoomOutSVG } from "../../../svg/zoomOut.svg";
-import classNames from "classnames";
-export default class ZoomWidget extends React.Component {
+interface Props {
+  update: (diagram: string) => void;
+}
+export default class ZoomWidget extends React.Component<Props> {
   render() {
     return (
       <span
@@ -29,7 +32,8 @@ export default class ZoomWidget extends React.Component {
                 window.innerWidth / 2,
                 window.innerHeight / 2
               );
-              zoomDiagram(origin.x, origin.y, 1);
+              if (zoomDiagram(origin.x, origin.y, 1))
+                this.props.update(AppSettings.selectedDiagram);
             }}
           >
             <ZoomInSVG />
@@ -49,7 +53,8 @@ export default class ZoomWidget extends React.Component {
                 window.innerWidth / 2,
                 window.innerHeight / 2
               );
-              zoomDiagram(origin.x, origin.y, -1);
+              if (zoomDiagram(origin.x, origin.y, -1))
+                this.props.update(AppSettings.selectedDiagram);
             }}
           >
             <ZoomOutSVG />

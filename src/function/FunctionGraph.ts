@@ -28,7 +28,7 @@ import {
 } from "../queries/update/UpdateLinkQueries";
 import { insertNewCacheTerms, insertNewRestrictions } from "./FunctionCache";
 import { addLink } from "./FunctionCreateVars";
-import { clearSelection, updateDiagramPosition } from "./FunctionDiagram";
+import { clearSelection, setDiagramPosition } from "./FunctionDiagram";
 import { drawGraphElement, getDisplayLabel } from "./FunctionDraw";
 import {
   initElements,
@@ -99,7 +99,7 @@ export function centerElementInView(id: string) {
       paper.getComputedSize().height / 2 -
       elem.getBBox().height
     );
-    updateDiagramPosition(AppSettings.selectedDiagram);
+    setDiagramPosition(AppSettings.selectedDiagram);
   }
 }
 

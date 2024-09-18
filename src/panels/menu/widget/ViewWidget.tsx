@@ -1,3 +1,4 @@
+import classNames from "classnames";
 import React from "react";
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
 import { Locale } from "../../../config/Locale";
@@ -5,9 +6,10 @@ import { AppSettings, Diagrams } from "../../../config/Variables";
 import { centerDiagram, zoomDiagram } from "../../../function/FunctionDiagram";
 import { ReactComponent as CenterSVG } from "../../../svg/centerView.svg";
 import { ReactComponent as RestoreZoomSVG } from "../../../svg/restoreZoom.svg";
-import classNames from "classnames";
-
-export default class ViewWidget extends React.Component {
+interface Props {
+  update: (diagram: string) => void;
+}
+export default class ViewWidget extends React.Component<Props> {
   render() {
     return (
       <span
@@ -25,7 +27,8 @@ export default class ViewWidget extends React.Component {
         >
           <button
             onClick={() => {
-              centerDiagram();
+              if (centerDiagram())
+                this.props.update(AppSettings.selectedDiagram);
             }}
           >
             <CenterSVG />
@@ -41,11 +44,14 @@ export default class ViewWidget extends React.Component {
         >
           <button
             onClick={() => {
-              zoomDiagram(
-                Diagrams[AppSettings.selectedDiagram].origin.x,
-                Diagrams[AppSettings.selectedDiagram].origin.y,
-                0
-              );
+              if (
+                zoomDiagram(
+                  Diagrams[AppSettings.selectedDiagram].origin.x,
+                  Diagrams[AppSettings.selectedDiagram].origin.y,
+                  0
+                )
+              )
+                this.props.update(AppSettings.selectedDiagram);
             }}
           >
             <RestoreZoomSVG />

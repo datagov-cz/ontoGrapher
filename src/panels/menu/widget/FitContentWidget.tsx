@@ -1,12 +1,16 @@
+import classNames from "classnames";
 import React from "react";
 import { OverlayTrigger, Tooltip } from "react-bootstrap";
 import { Locale } from "../../../config/Locale";
-import { AppSettings, Diagrams } from "../../../config/Variables";
-import { ReactComponent as FitContentSVG } from "../../../svg/fitContent.svg";
+import { AppSettings } from "../../../config/Variables";
+import { setDiagramPosition } from "../../../function/FunctionDiagram";
 import { paper } from "../../../main/DiagramCanvas";
-import classNames from "classnames";
+import { ReactComponent as FitContentSVG } from "../../../svg/fitContent.svg";
 
-export default class FitContentWidget extends React.Component {
+interface Props {
+  update: (diagram: string) => void;
+}
+export default class FitContentWidget extends React.Component<Props> {
   render() {
     return (
       <span
@@ -43,11 +47,8 @@ export default class FitContentWidget extends React.Component {
                 maxScale: 2,
                 minScale: 0.1,
               });
-              Diagrams[AppSettings.selectedDiagram].origin = {
-                x: paper.translate().tx,
-                y: paper.translate().ty,
-              };
-              Diagrams[AppSettings.selectedDiagram].scale = paper.scale().sx;
+              if (setDiagramPosition(AppSettings.selectedDiagram))
+                this.props.update(AppSettings.selectedDiagram);
             }}
           >
             <FitContentSVG />

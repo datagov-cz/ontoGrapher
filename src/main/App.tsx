@@ -56,7 +56,10 @@ import ValidationPanel from "../panels/ValidationPanel";
 import VocabularyPanel from "../panels/VocabularyPanel";
 import { qb } from "../queries/QueryBuilder";
 import { updateVocabularyAnnotations } from "../queries/update/UpdateChangeQueries";
-import { updateDiagramMetadata } from "../queries/update/UpdateDiagramQueries";
+import {
+  updateDiagramMetadata,
+  updateDiagramPosition,
+} from "../queries/update/UpdateDiagramQueries";
 import { MainView } from "./MainView";
 import { ToastService } from "./ToastService";
 
@@ -87,6 +90,8 @@ export default class App extends React.Component<
   private readonly menuPanel: React.RefObject<MenuPanel>;
   private readonly validationPanel: React.RefObject<ValidationPanel>;
   private readonly diagramPanel: React.RefObject<DiagramPanel>;
+
+  private posScaleTimeout: number = 0;
 
   constructor(props: DiagramAppProps) {
     super(props);
@@ -133,6 +138,7 @@ export default class App extends React.Component<
       this.handleChangeInterfaceLanguage.bind(this);
     this.handleStatus = this.handleStatus.bind(this);
     this.performTransaction = this.performTransaction.bind(this);
+    this.setPositionOrScaleTimeout = this.setPositionOrScaleTimeout.bind(this);
 
     StoreAlerts.subscribe(
       (s) => s.showCriticalAlert,
@@ -185,6 +191,14 @@ export default class App extends React.Component<
     const process4 = await retrieveContextData();
     if (!process4) return false;
     return true;
+  }
+
+  setPositionOrScaleTimeout(diagram: string): void {
+    window.clearTimeout(this.posScaleTimeout);
+    this.posScaleTimeout = window.setTimeout(
+      () => this.performTransaction(updateDiagramPosition(diagram)),
+      1000
+    );
   }
 
   handleChangeInterfaceLanguage(languageCode: string) {
@@ -324,6 +338,7 @@ export default class App extends React.Component<
           handleStatus={this.handleStatus}
           performTransaction={this.performTransaction}
           tooltip={this.state.tooltip}
+          setPositionOrScaleTimeout={this.setPositionOrScaleTimeout}
         />
         <VocabularyPanel
           ref={this.itemPanel}
@@ -388,6 +403,7 @@ export default class App extends React.Component<
             this.detailPanel.current?.forceUpdate();
             this.diagramPanel.current?.forceUpdate();
           }}
+          setPositionOrScaleTimeout={this.setPositionOrScaleTimeout}
         />
         <CreationModals
           elemConfiguration={this.state.newElemConfiguration}
