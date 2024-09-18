@@ -173,20 +173,41 @@ export function updateDeleteDiagram(diagram: string) {
   const deleteVocabularyContext1 = AppSettings.contextIRIs.map((contextIRI) =>
     DELETE`${qb.g(contextIRI, [qb.s(qb.i(diagramGraph), "?p1", "?o1")])}`
       .WHERE`${qb.g(contextIRI, [
-      qb.s(qb.i(diagramGraph), "?p1", "?o1"),
-    ])}`.build()
+        qb.s(qb.i(diagramGraph), "?p1", "?o1"),
+      ])}`.build()
   );
   const deleteVocabularyContext2 = AppSettings.contextIRIs.map((contextIRI) =>
     DELETE`${qb.g(contextIRI, [qb.s("?s1", "?p1", qb.i(diagramGraph))])}`
       .WHERE`${qb.g(contextIRI, [
-      qb.s("?s1", "?p1", qb.i(diagramGraph)),
-    ])}`.build()
+        qb.s("?s1", "?p1", qb.i(diagramGraph)),
+      ])}`.build()
   );
   return qb.combineQueries(
     deleteGraph,
     ...deleteVocabularyContext1,
     ...deleteVocabularyContext2
   );
+}
+
+export function updateDiagramPosition(diagram: string): string {
+  if (!(diagram in Diagrams)) return "";
+  const diagramGraph = Diagrams[diagram].graph;
+  const diagramIRI = Diagrams[diagram].iri;
+  const del = DELETE`${qb.g(diagramGraph, [
+    qb.s(qb.i(diagramIRI), "og:position-x", "?v1"),
+    qb.s(qb.i(diagramIRI), "og:position-y", "?v2"),
+    qb.s(qb.i(diagramIRI), "og:scale", "?v3"),
+  ])}`.WHERE`${qb.g(diagramGraph, [
+    qb.s(qb.i(diagramIRI), "og:position-x", "?v1"),
+    qb.s(qb.i(diagramIRI), "og:position-y", "?v2"),
+    qb.s(qb.i(diagramIRI), "og:scale", "?v3"),
+  ])}`.build();
+  const ins = INSERT.DATA`${qb.g(diagramGraph, [
+    qb.s(qb.i(diagramIRI), "og:position-x", qb.lt(Diagrams[diagram].origin.x)),
+    qb.s(qb.i(diagramIRI), "og:position-y", qb.lt(Diagrams[diagram].origin.y)),
+    qb.s(qb.i(diagramIRI), "og:scale", qb.lt(Diagrams[diagram].scale)),
+  ])}`.build();
+  return qb.combineQueries(del, ins);
 }
 
 export function updateDiagramMetadata(diagram: string): string {

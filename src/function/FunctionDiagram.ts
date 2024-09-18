@@ -69,7 +69,7 @@ export function changeDiagrams(diagram?: string) {
 export function centerDiagram(
   p: joint.dia.Paper = paper,
   g: joint.dia.Graph = graph
-) {
+): boolean {
   p.translate(0, 0);
   let x = 0;
   let y = 0;
@@ -88,7 +88,8 @@ export function centerDiagram(
     -((x / g.getElements().length) * scale) + computedSize.width / 2,
     -((y / g.getElements().length) * scale) + computedSize.height / 2
   );
-  if (g === graph) updateDiagramPosition(AppSettings.selectedDiagram);
+  if (g === graph) return setDiagramPosition(AppSettings.selectedDiagram);
+  else return false;
 }
 
 export function zoomDiagram(
@@ -97,7 +98,7 @@ export function zoomDiagram(
   delta: number,
   p: joint.dia.Paper = paper,
   updatePosition: boolean = true
-) {
+): boolean {
   const oldTranslate = p.translate();
   const oldScale = p.scale().sx;
   const nextScale = delta === 0 ? 1 : _.round(delta * 0.1 + oldScale, 1);
@@ -107,20 +108,28 @@ export function zoomDiagram(
       oldTranslate.ty + y * (oldScale - nextScale)
     );
     p.scale(nextScale, nextScale);
-    if (updatePosition) updateDiagramPosition(AppSettings.selectedDiagram);
+    if (updatePosition) return setDiagramPosition(AppSettings.selectedDiagram);
   }
+  return false;
 }
 
 /**
  * Saves the diagram position and scale information.
  * @param diagram The diagram to be updated
+ * @returns if the information has been updated or not.
  */
-export function updateDiagramPosition(diagram: string) {
-  Diagrams[diagram].origin = {
-    x: paper.translate().tx,
-    y: paper.translate().ty,
-  };
-  Diagrams[diagram].scale = paper.scale().sx;
+export function setDiagramPosition(diagram: string): boolean {
+  if (Diagrams[diagram].origin.x !== paper.translate().tx && Diagrams[diagram].origin.y !== paper.translate().ty) {
+    Diagrams[diagram].origin = {
+      x: paper.translate().tx,
+      y: paper.translate().ty,
+    };
+    // When zooming, the position is calculated again as well (see zoomDiagram function)
+    if (Diagrams[diagram].scale !== paper.scale().sx) {
+      Diagrams[diagram].scale = paper.scale().sx;
+    }
+    return true;
+  } else return false;
 }
 
 /**

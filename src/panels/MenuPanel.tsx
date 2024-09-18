@@ -33,6 +33,7 @@ interface MenuPanelProps {
   performTransaction: (...queries: string[]) => void;
   retry: boolean;
   tooltip: boolean;
+  setPositionOrScaleTimeout: (diagram: string) => void;
 }
 
 interface MenuPanelState {
@@ -113,9 +114,9 @@ export default class MenuPanel extends React.Component<
             <MenuPanelValidate validate={() => this.props.validate()} />
           )}
           <MenuPanelExport />
-          <ZoomWidget />
-          <ViewWidget />
-          <FitContentWidget />
+          <ZoomWidget update={this.props.setPositionOrScaleTimeout} />
+          <ViewWidget update={this.props.setPositionOrScaleTimeout} />
+          <FitContentWidget update={this.props.setPositionOrScaleTimeout} />
           <div
             className={
               "right" + (this.props.freeze ? " nointeract" : " interact")

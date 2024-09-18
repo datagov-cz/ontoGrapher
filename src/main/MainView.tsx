@@ -25,6 +25,7 @@ type Props = {
   ) => void;
   projectLanguage: string;
   update: () => void;
+  setPositionOrScaleTimeout: (diagram: string) => void;
 };
 
 export const MainView: React.FC<Props> = (props: Props) => {
@@ -50,6 +51,7 @@ export const MainView: React.FC<Props> = (props: Props) => {
     <div className={"mainView"} id={"mainView"} style={getStyle()}>
       {mode === MainViewMode.CANVAS && (
         <DiagramCanvas
+          setPositionOrScaleTimeout={props.setPositionOrScaleTimeout}
           projectLanguage={props.projectLanguage}
           updateElementPanel={props.updateElementPanel}
           updateDetailPanel={props.updateDetailPanel}

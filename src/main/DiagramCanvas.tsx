@@ -19,7 +19,7 @@ import { CellColors } from "../config/visual/CellColors";
 import {
   centerDiagram,
   resetDiagramSelection,
-  updateDiagramPosition,
+  setDiagramPosition,
   zoomDiagram,
 } from "../function/FunctionDiagram";
 import {
@@ -57,6 +57,7 @@ interface Props {
     configuration: LinkCreationConfiguration | ElemCreationConfiguration
   ) => void;
   handleStatus: Function;
+  setPositionOrScaleTimeout: (diagram: string) => void;
 }
 
 export var paper: joint.dia.Paper;
@@ -109,7 +110,7 @@ export default class DiagramCanvas extends React.Component<Props> {
     const node = this.canvasRef.current! as HTMLElement;
     const hammer = require("hammerjs");
     const hammerManager = new hammer.Manager(node, { domEvents: true });
-    initTouchEvents(hammerManager);
+    initTouchEvents(hammerManager, this.props.setPositionOrScaleTimeout);
 
     paper = new joint.dia.Paper({
       el: node,
@@ -315,7 +316,8 @@ export default class DiagramCanvas extends React.Component<Props> {
        */
       "blank:mousewheel": (evt, x, y, delta) => {
         evt.preventDefault();
-        zoomDiagram(x, y, delta);
+        if (zoomDiagram(x, y, delta))
+          this.props.setPositionOrScaleTimeout(AppSettings.selectedDiagram);
       },
       /**
        * Pointer move on canvas:
@@ -420,7 +422,8 @@ export default class DiagramCanvas extends React.Component<Props> {
        * Perform selection based on the selection box
        */
       "blank:pointerup": (evt) => {
-        updateDiagramPosition(AppSettings.selectedDiagram);
+        if (setDiagramPosition(AppSettings.selectedDiagram))
+          this.props.setPositionOrScaleTimeout(AppSettings.selectedDiagram);
         this.drag = undefined;
         if (evt.button === 0 || evt.type === "touchend") {
           this.props.updateDetailPanel(DetailPanelMode.HIDDEN);

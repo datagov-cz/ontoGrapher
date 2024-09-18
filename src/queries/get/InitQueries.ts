@@ -149,7 +149,7 @@ export async function getElementsConfig(
 export async function getSettings(contextEndpoint: string): Promise<boolean> {
   const query = [
     "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
-    "select distinct ?open ?vocabContext ?graph ?diagram ?index ?name ?id ?representation ?vocabulary ?description ?collaborator ?creationDate ?modifyDate where {",
+    "select distinct ?open ?vocabContext ?graph ?diagram ?index ?scale ?posX ?posY ?name ?id ?representation ?vocabulary ?description ?collaborator ?creationDate ?modifyDate where {",
     "?vocabContext <https://slovník.gov.cz/datový/pracovní-prostor/pojem/odkazuje-na-přílohový-kontext> ?graph .",
     "graph ?graph {",
     " ?diagram og:index ?index .",
@@ -158,6 +158,10 @@ export async function getSettings(contextEndpoint: string): Promise<boolean> {
     " ?diagram og:representation ?representation .",
     " optional {?diagram og:open ?open.}",
     " optional {?diagram og:description ?description.}",
+    " optional {?diagram og:position-x ?posX.",
+    "           ?diagram og:position-y ?posY.",
+    "           ?diagram og:scale ?scale.",
+    " }",
     " optional {?diagram og:vocabulary ?vocabulary. ",
     "           ?diagram og:collaborator ?collaborator. ",
     "           ?diagram og:creationDate ?creationDate. ",
@@ -203,6 +207,13 @@ export async function getSettings(contextEndpoint: string): Promise<boolean> {
         }
         if (result.open) {
           Diagrams[result.id.value].open = result.open.value === "true";
+        }
+        if (result.posX && result.posY && result.scale) {
+          Diagrams[result.id.value].origin = {
+            x: parseInt(result.posX.value, 10),
+            y: parseInt(result.posY.value, 10)
+          }
+          Diagrams[result.id.value].scale = parseFloat(result.scale.value);
         }
         if (result.description) {
           Diagrams[result.id.value].description = result.description.value;

@@ -1,15 +1,15 @@
-import { updateDiagramPosition, zoomDiagram } from "./FunctionDiagram";
+import { setDiagramPosition, zoomDiagram } from "./FunctionDiagram";
 import { AppSettings } from "../config/Variables";
 import { paper } from "../main/DiagramCanvas";
 
 let drag: { x: any; y: any } | undefined = undefined;
 let pinchZoom: number = 1;
 
-export function initTouchEvents(manager: HammerManager) {
+export function initTouchEvents(manager: HammerManager, update: (diagram: string) => void) {
   manager.add(new Hammer.Pinch({ enable: true, threshold: 0 }));
   manager.add(
     new Hammer.Pan({
-      enable: (recognizer, event) => event && event.pointerType === "touch",
+      enable: (_, event) => event && event.pointerType === "touch",
       threshold: 10,
     })
   );
@@ -31,7 +31,8 @@ export function initTouchEvents(manager: HammerManager) {
   });
 
   manager.on("panend", () => {
-    updateDiagramPosition(AppSettings.selectedDiagram);
+    if (setDiagramPosition(AppSettings.selectedDiagram))
+      update(AppSettings.selectedDiagram);
     drag = undefined;
   });
 
@@ -49,4 +50,6 @@ export function initTouchEvents(manager: HammerManager) {
       pinchZoom -= 0.1;
     }
   });
+
+  manager.on("pinchend", () => update(AppSettings.selectedDiagram))
 }
