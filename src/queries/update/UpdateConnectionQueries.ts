@@ -303,12 +303,8 @@ function updateGeneralizationLink(ids: string[]): string {
   const inserts: string[] = [];
   for (const id of ids) {
     const iri = WorkspaceLinks[id].source;
-    if (!(iri in WorkspaceTerms)) {
-      console.warn(`Cannot check whether link ${id} is read-only or not, skipping it.`);
-      continue;
-    }
     const vocabulary = getVocabularyFromScheme(WorkspaceTerms[iri].inScheme);
-    if (checkReadOnlyVocabulary(vocabulary)) continue;
+    checkReadOnlyVocabulary(vocabulary);
     const contextIRI = WorkspaceVocabularies[vocabulary].graph;
     const subClassOf: string[] = getActiveSourceConnections(
       WorkspaceLinks[id].source
@@ -401,12 +397,11 @@ export function isNumber(str: string) {
   return !isNaN(parseInt(str, 10));
 }
 
-function checkReadOnlyVocabulary(vocabulary: string): boolean {
+function checkReadOnlyVocabulary(vocabulary: string) {
   if (WorkspaceVocabularies[vocabulary].readOnly)
-    console.error(
+    throw new Error(
       `Attempted to write to read-only graph ${WorkspaceVocabularies[vocabulary].graph}`
     );
-  return WorkspaceVocabularies[vocabulary].readOnly
 }
 
 function getNumber(str: string) {
