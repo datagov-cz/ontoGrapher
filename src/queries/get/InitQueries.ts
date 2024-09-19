@@ -252,7 +252,7 @@ export async function getLinksConfig(
   const getLinks = async (): Promise<boolean> => {
     const query = [
       "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",
-      "select distinct ?id ?iri ?sourceID ?targetID ?sourceCard1 ?sourceCard2 ?targetCard1 ?targetCard2 ?type ?link where {",
+      "select distinct ?id ?iri ?sourceID ?targetID ?sourceCard1 ?sourceCard2 ?targetCard1 ?targetCard2 ?type ?link ?active where {",
       "graph ?graph {",
       "?link a og:link .",
       "?link og:id ?id .",
@@ -264,6 +264,7 @@ export async function getLinksConfig(
       "?link og:sourceCardinality2 ?sourceCard2 .",
       "?link og:targetCardinality1 ?targetCard1 .",
       "?link og:targetCardinality2 ?targetCard2 .",
+      "optional {?link og:active ?active.}",
       "}",
       `values ?graph {<${diagramGraphs.join("> <")}>}`,
       "}",
@@ -304,6 +305,8 @@ export async function getLinksConfig(
               sourceCardinality: sourceCard,
               targetCardinality: targetCard,
             };
+            if (result.active)
+              links[result.id.value].active = result.active.value === "true"
           }
         }
         return true;

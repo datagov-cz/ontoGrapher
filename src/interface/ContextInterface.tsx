@@ -275,33 +275,7 @@ export async function retrieveContextData(): Promise<boolean> {
     console.warn(
       `Link ID ${id} ( ${WorkspaceLinks[id].source} -- ${WorkspaceLinks[id].iri} -> ${WorkspaceLinks[id].target} ) deactivated due to its statement counterpart(s) missing.`
     );
-    if (
-      WorkspaceLinks[id].iri === parsePrefix("z-sgov-pojem", "je-vlastností") &&
-      WorkspaceLinks[id].source in WorkspaceElements &&
-      WorkspaceElements[WorkspaceLinks[id].source].vocabulary !== undefined &&
-      WorkspaceElements[WorkspaceLinks[id].source].vocabulary! in
-        WorkspaceVocabularies &&
-      WorkspaceVocabularies[
-        WorkspaceElements[WorkspaceLinks[id].source].vocabulary!
-      ].readOnly
-    ) {
-      continue;
-    }
-
-    if (
-      WorkspaceLinks[id].iri === parsePrefix("z-sgov-pojem", "má-vlastnost") &&
-      WorkspaceLinks[id].target in WorkspaceElements &&
-      WorkspaceElements[WorkspaceLinks[id].target].vocabulary !== undefined &&
-      WorkspaceElements[WorkspaceLinks[id].target].vocabulary! in
-        WorkspaceVocabularies &&
-      WorkspaceVocabularies[
-        WorkspaceElements[WorkspaceLinks[id].target].vocabulary!
-      ].readOnly
-    ) {
-      continue;
-    }
     WorkspaceLinks[id].active = false;
-    // Really poorly thought out hack!
     if (
       WorkspaceLinks[id].iri ===
         parsePrefix("z-sgov-pojem", "má-vztažený-prvek-1") ||
@@ -321,9 +295,9 @@ export async function retrieveContextData(): Promise<boolean> {
     }
   }
   return await processTransaction(
-    AppSettings.contextEndpoint,
-    ...updateProjectLinkParallel(...connections.add).map((t) =>
-      qb.constructQuery(t)
+    qb.constructQuery(
+      AppSettings.contextEndpoint,
+      ...updateProjectLinkParallel(connections)
     )
   );
 }

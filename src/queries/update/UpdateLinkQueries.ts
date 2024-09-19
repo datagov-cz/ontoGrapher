@@ -2,6 +2,7 @@ import { AppSettings, Diagrams, WorkspaceLinks } from "../../config/Variables";
 import { qb } from "../QueryBuilder";
 import { DELETE, INSERT } from "@tpluscode/sparql-builder";
 import { LinkConfig } from "./UpdateConnectionQueries";
+import { deleteLink } from "../../function/FunctionLink";
 
 export function updateProjectLinkVertex(
   id: string,
@@ -166,14 +167,15 @@ export function updateProjectLink(del: boolean, ...ids: string[]): string {
   return qb.combineQueries(...(del ? [deletes, ...insert] : [...insert]));
 }
 
-export function updateProjectLinkParallel(...ids: string[]): string[] {
+export function updateProjectLinkParallel(connections: { del: string[], add: string[] }): string[] {
+  const queries: string[] = [];
   const insertBody: string[] = [];
   const insert: string[] = [];
   const diagrams = Object.values(Diagrams)
     .filter((diag) => !diag.toBeDeleted)
     .map((diagram) => diagram.graph);
-  if (ids.length === 0) return [];
-  for (const id of ids) {
+  if (connections.add.length === 0 && connections.del.length === 0) return [];
+  for (const id of connections.add) {
     checkLink(id);
     const linkIRI = qb.i(WorkspaceLinks[id].linkIRI);
 
@@ -212,7 +214,13 @@ export function updateProjectLinkParallel(...ids: string[]): string[] {
       INSERT.DATA`${qb.g(diagram, insertBody)}`.build()
     )
   );
-  return insert;
+  queries.push(...insert);
+
+  for (const id of connections.del) {
+    queries.push(...deleteLink(id))
+  }
+
+  return queries;
 }
 
 function checkLink(id: string) {

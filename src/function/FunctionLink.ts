@@ -335,7 +335,9 @@ export function deleteLink(id: string): string[] {
   const queries: string[] = [];
   if (!(WorkspaceLinks[id].iri in Links) &&
     WorkspaceLinks[id].type === LinkType.DEFAULT &&
-    WorkspaceLinks[id].active) {
+    WorkspaceLinks[id].active &&
+    WorkspaceLinks[id].iri in WorkspaceTerms &&
+    WorkspaceLinks[id].iri in WorkspaceElements) {
     queries.push(...removeElement(WorkspaceLinks[id].iri));
   }
   const deleteLinks = getUnderlyingFullConnections(id as string);
