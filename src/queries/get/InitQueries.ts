@@ -12,12 +12,15 @@ import {
   initLanguageObject
 } from "../../function/FunctionEditVars";
 import { processQuery } from "../../interface/TransactionInterface";
-import { WorkspaceLinks } from "./../../config/Variables";
+import { WorkspaceLinks } from "../../config/Variables";
 
 export async function getElementsConfig(
   contextEndpoint: string = AppSettings.contextEndpoint,
   diagramGraphs: string[] = Object.values(Diagrams).map(d => d.graph)
 ): Promise<boolean> {
+  if (diagramGraphs.length === 0) {
+    return Promise.resolve(true);
+  }
   const elements: { [key: string]: Partial<(typeof WorkspaceElements)[0]> } =
     {};
   const elementPositions: {
@@ -246,6 +249,9 @@ export async function getLinksConfig(
   contextEndpoint: string = AppSettings.contextEndpoint,
   diagramGraphs: string[] = Object.values(Diagrams).map(d => d.graph)
 ): Promise<boolean> {
+  if (diagramGraphs.length === 0) {
+    return Promise.resolve(true);
+  }
   const links: { [key: string]: Partial<(typeof WorkspaceLinks)[0]> } = {};
   const linkVertices: { [key: string]: Partial<(typeof WorkspaceLinks)[0]> } =
     {};
