@@ -44,6 +44,7 @@ import {
   updateContexts,
 } from "../interface/ContextInterface";
 import { getVocabulariesFromRemoteJSON } from "../interface/JSONInterface";
+import { ModalOFN } from "../interface/ModalOFN";
 import {
   abortTransaction,
   processTransaction,
@@ -62,7 +63,6 @@ import {
 } from "../queries/update/UpdateDiagramQueries";
 import { MainView } from "./MainView";
 import { ToastService } from "./ToastService";
-import { dumpOFNVocabularies } from "../interface/OFNInterface";
 
 interface DiagramAppProps {}
 
@@ -78,6 +78,7 @@ interface DiagramAppState {
   newElemConfiguration: ElemCreationConfiguration;
   newLinkConfiguration: LinkCreationConfiguration;
   showCriticalAlert: boolean;
+  ofnModal: boolean;
 }
 
 require("../scss/style.scss");
@@ -132,6 +133,7 @@ export default class App extends React.Component<
       },
       newLinkConfiguration: { sourceID: "", targetID: "" },
       showCriticalAlert: false,
+      ofnModal: false,
     };
     document.title = Locale[AppSettings.interfaceLanguage].ontoGrapher;
     this.handleChangeLanguage = this.handleChangeLanguage.bind(this);
@@ -159,7 +161,7 @@ export default class App extends React.Component<
   componentDidMount(): void {
     const finishUp = () => {
       hotkeys("ctrl+alt+d", () => dumpDebugData());
-      hotkeys("ctrl+alt+s", () => dumpOFNVocabularies())
+      hotkeys("ctrl+alt+o", () => this.setState({ ofnModal: true }));
       checkForObsoleteDiagrams();
       this.handleChangeLanguage(AppSettings.canvasLanguage);
       setSchemeColors(AppSettings.viewColorPool);
@@ -416,6 +418,11 @@ export default class App extends React.Component<
         />
         <ToastService />
         <CriticalAlertModal show={this.state.showCriticalAlert} />
+        <ModalOFN
+          open={this.state.ofnModal}
+          close={() => this.setState({ ofnModal: false })}
+          selectedLanguage={this.state.projectLanguage}
+        />
       </div>
     );
   }
