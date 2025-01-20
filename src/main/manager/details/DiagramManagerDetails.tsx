@@ -97,27 +97,6 @@ export const DiagramManagerDetails: React.FC<Props> = (props: Props) => {
           <Card body className="diagramDetail">
             <Container>
               <h3>{Diagrams[props.selectedDiagram].name}</h3>
-              <Card>
-                <div
-                  className={classNames("detailCard", {
-                    preview: preview,
-                  })}
-                >
-                  {preview && (
-                    <DiagramPreview diagram={props.selectedDiagram} />
-                  )}
-                  {!preview && (
-                    <Button
-                      className="setPreview"
-                      onClick={() => setPreview(true)}
-                    >
-                      <PreviewIcon />
-                      &nbsp;
-                      {Locale[AppSettings.interfaceLanguage].showPreview}
-                    </Button>
-                  )}
-                </div>
-              </Card>
               <div className="diagramContent">
                 <Row>
                   <Col className="infoRow">
