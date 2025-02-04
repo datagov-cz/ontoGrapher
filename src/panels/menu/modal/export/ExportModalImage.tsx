@@ -32,18 +32,10 @@ interface Props {
 }
 
 enum saveBehaviorEnum {
-  PREVIEW,
   DOWNLOAD,
 }
 
 const saveBehavior: { [key: number]: (source: string) => void } = {
-  [saveBehaviorEnum.PREVIEW]: (source) => {
-    const imageElement = document.getElementById(
-      "imagePreview"
-    ) as HTMLImageElement;
-    imageElement!.src = source;
-    imageElement!.alt = "Diagram " + Diagrams[AppSettings.selectedDiagram].name;
-  },
   [saveBehaviorEnum.DOWNLOAD]: (source) => {
     const linkElement = document.createElement("a");
     linkElement.href = source;
@@ -329,11 +321,6 @@ export const ExportModalImage: React.FC<Props> = (props: Props) => {
           />
         </Form>
         <br />
-        <h5>{Locale[AppSettings.interfaceLanguage].preview}</h5>
-        <img
-          id={"imagePreview"}
-          alt={Diagrams[AppSettings.selectedDiagram].name}
-        />
         {graph.getElements().length === 0 && (
           <Alert variant="danger">
             {
@@ -344,12 +331,6 @@ export const ExportModalImage: React.FC<Props> = (props: Props) => {
         )}
       </Modal.Body>
       <Modal.Footer>
-        <Button
-          disabled={graph.getElements().length === 0}
-          onClick={() => saveDiagram(saveBehaviorEnum.PREVIEW)}
-        >
-          {Locale[AppSettings.interfaceLanguage].previewDiagramImage}
-        </Button>
         <Button
           disabled={graph.getElements().length === 0}
           onClick={() => saveDiagram(saveBehaviorEnum.DOWNLOAD)}
