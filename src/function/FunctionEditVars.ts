@@ -11,7 +11,7 @@ import {
   WorkspaceElements,
   WorkspaceLinks,
   WorkspaceTerms,
-  WorkspaceVocabularies
+  WorkspaceVocabularies,
 } from "../config/Variables";
 import { Cardinality } from "../datatypes/Cardinality";
 import { LinkConfig } from "../queries/update/UpdateConnectionQueries";
@@ -23,7 +23,7 @@ import {
   getActiveTargetConnections,
   getLocalStorageKey,
   getVocabularyFromScheme,
-  loadDefaultCardinality
+  loadDefaultCardinality,
 } from "./FunctionGetVars";
 import { graph } from "../graph/Graph";
 import { updateDeleteTriples } from "../queries/update/UpdateMiscQueries";
@@ -171,7 +171,10 @@ export function setElementShape(
     bodyDiamond: { display: "none" },
     label: { color: "black" },
   });
-  if (filterEquivalent(types, parsePrefix("z-sgov-pojem", "typ-objektu"))) {
+  if (
+    filterEquivalent(types, parsePrefix("z-sgov-pojem", "typ-objektu")) ||
+    filterEquivalent(types, parsePrefix("v-sgov-pojem", "typ-subjektu-práva"))
+  ) {
     elem.attr({
       bodyBox: {
         display: "block",
@@ -206,28 +209,31 @@ export function setElementShape(
     elem.attr({
       bodyDiamond: {
         display: "block",
-        points: `${width / 2},${-(height / 2)} ${width * (9 / 8)},${height / 2
-          } ${width / 2},${height * (3 / 2)} ${-(width / 8)},${height / 2}`,
+        points: `${width / 2},${-(height / 2)} ${width * (9 / 8)},${
+          height / 2
+        } ${width / 2},${height * (3 / 2)} ${-(width / 8)},${height / 2}`,
         stroke: "black",
         fill: WorkspaceVocabularies[
           getVocabularyFromScheme(WorkspaceTerms[elem.id].inScheme)
         ].color,
       },
     });
-  } else if (
-    filterEquivalent(types, parsePrefix("z-sgov-pojem", "typ-události"))
-  ) {
-    elem.attr({
-      bodyTrapezoid: {
-        display: "block",
-        points: `20,0 ${width - 20},0 ${width},${height} 0,${height}`,
-        stroke: "black",
-        fill: WorkspaceVocabularies[
-          getVocabularyFromScheme(WorkspaceTerms[elem.id].inScheme)
-        ].color,
-      },
-    });
-  } else {
+  }
+  // else if (
+  //   filterEquivalent(types, parsePrefix("z-sgov-pojem", "typ-události"))
+  // ) {
+  //   elem.attr({
+  //     bodyTrapezoid: {
+  //       display: "block",
+  //       points: `20,0 ${width - 20},0 ${width},${height} 0,${height}`,
+  //       stroke: "black",
+  //       fill: WorkspaceVocabularies[
+  //         getVocabularyFromScheme(WorkspaceTerms[elem.id].inScheme)
+  //       ].color,
+  //     },
+  //   });
+  // }
+  else {
     elem.attr({
       bodyBox: {
         display: "block",

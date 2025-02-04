@@ -58,19 +58,19 @@ export async function exportTermsText(
           bullet +
           getLabelOrBlank(WorkspaceTerms[link].labels, exportLanguage)
       );
-    const eventOutputs = exportTerms[term]
-      .concat(superClassAttributes)
-      .filter((r) =>
-        WorkspaceTerms[r].types.includes(
-          parsePrefix("z-sgov-pojem", "typ-události")
-        )
-      )
-      .map(
-        (link) =>
-          tab +
-          bullet +
-          getLabelOrBlank(WorkspaceTerms[link].labels, exportLanguage)
-      );
+    // const eventOutputs = exportTerms[term]
+    //   .concat(superClassAttributes)
+    //   .filter((r) =>
+    //     WorkspaceTerms[r].types.includes(
+    //       parsePrefix("v-sgov-pojem", "typ-subjektu-práva")
+    //     )
+    //   )
+    //   .map(
+    //     (link) =>
+    //       tab +
+    //       bullet +
+    //       getLabelOrBlank(WorkspaceTerms[link].labels, exportLanguage)
+    //   );
     const tropeOutputs = exportTerms[term]
       .concat(superClassAttributes)
       .filter((r) =>
@@ -85,7 +85,7 @@ export async function exportTermsText(
           getLabelOrBlank(WorkspaceTerms[link].labels, exportLanguage)
       );
     output += bullet + termLabel + carriageReturn;
-    for (const o of eventOutputs) output += o + carriageReturn;
+    // for (const o of eventOutputs) output += o + carriageReturn;
     for (const o of tropeOutputs) output += o + carriageReturn;
     for (const o of relationshipOutputs) output += o + carriageReturn;
     if (termType === parsePrefix("z-sgov-pojem", "typ-vztahu")) {

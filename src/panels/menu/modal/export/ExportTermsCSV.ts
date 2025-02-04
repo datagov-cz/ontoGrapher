@@ -100,28 +100,28 @@ export async function exportTermsCSV(
         ),
       ])
     );
-    const eventOutputs = _.uniq(
-      exportTerms[term]
-        .concat(superClassAttributes)
-        .filter((r) =>
-          WorkspaceTerms[r].types.includes(
-            parsePrefix("z-sgov-pojem", "typ-události")
-          )
-        )
-    ).map((link) =>
-      compile([
-        termLabel,
-        "",
-        "",
-        getLabelOrBlank(WorkspaceTerms[link].labels, exportLanguage),
-        WorkspaceTerms[link].definitions[exportLanguage],
-        link in sources ? sources[link] : "",
-        getLabelOrBlank(
-          Stereotypes[parsePrefix("z-sgov-pojem", "typ-události")].labels,
-          exportLanguage
-        ),
-      ])
-    );
+    // const eventOutputs = _.uniq(
+    //   exportTerms[term]
+    //     .concat(superClassAttributes)
+    //     .filter((r) =>
+    //       WorkspaceTerms[r].types.includes(
+    //         parsePrefix("v-sgov-pojem", "typ-subjektu-práva")
+    //       )
+    //     )
+    // ).map((link) =>
+    //   compile([
+    //     termLabel,
+    //     "",
+    //     "",
+    //     getLabelOrBlank(WorkspaceTerms[link].labels, exportLanguage),
+    //     WorkspaceTerms[link].definitions[exportLanguage],
+    //     link in sources ? sources[link] : "",
+    //     getLabelOrBlank(
+    //       Stereotypes[parsePrefix("v-sgov-pojem", "typ-subjektu-práva")].labels,
+    //       exportLanguage
+    //     ),
+    //   ])
+    // );
     const tropeOutputs = _.uniq(
       exportTerms[term]
         .concat(superClassAttributes)
@@ -145,7 +145,7 @@ export async function exportTermsCSV(
       ])
     );
     output += termOutput + carriageReturn;
-    for (const o of eventOutputs) output += o + carriageReturn;
+    // for (const o of eventOutputs) output += o + carriageReturn;
     for (const o of tropeOutputs) output += o + carriageReturn;
     for (const o of relationshipOutputs) output += o + carriageReturn;
     if (termType === parsePrefix("z-sgov-pojem", "typ-vztahu")) {

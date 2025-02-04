@@ -14,12 +14,7 @@ import {
   clearSelection,
   removeFromSelection,
 } from "./FunctionDiagram";
-import {
-  getStereotypeList,
-  parsePrefix,
-  setElementShape,
-} from "./FunctionEditVars";
-import { filterEquivalent } from "./FunctionEquivalents";
+import { getStereotypeList, setElementShape } from "./FunctionEditVars";
 import {
   getElementShape,
   getIntrinsicTropeTypeIDs,
@@ -56,12 +51,12 @@ export function getSelectedLabels(
   return WorkspaceElements[id].selectedLabel;
 }
 
-function isElementEventType(id: string) {
-  return filterEquivalent(
-    WorkspaceTerms[id].types,
-    parsePrefix("z-sgov-pojem", "typ-události")
-  );
-}
+// function isElementEventType(id: string) {
+//   return filterEquivalent(
+//     WorkspaceTerms[id].types,
+//     parsePrefix("z-sgov-pojem", "typ-události")
+//   );
+// }
 
 export function drawGraphElement(
   elem: joint.dia.Element,
@@ -88,7 +83,7 @@ export function drawGraphElement(
       );
     }
     elem.prop("attrs/labelAttrs/text", text.join("\n"));
-    if (isElementEventType(elem.id)) elem.prop("attrs/labelAttrs/x", 20);
+    // if (isElementEventType(elem.id)) elem.prop("attrs/labelAttrs/x", 20);
     const width =
       representation === Representation.COMPACT
         ? Math.max(

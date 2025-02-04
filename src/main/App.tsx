@@ -159,7 +159,7 @@ export default class App extends React.Component<
   componentDidMount(): void {
     const finishUp = () => {
       hotkeys("ctrl+alt+d", () => dumpDebugData());
-      hotkeys("ctrl+alt+s", () => dumpOFNVocabularies())
+      hotkeys("ctrl+alt+s", () => dumpOFNVocabularies());
       checkForObsoleteDiagrams();
       this.handleChangeLanguage(AppSettings.canvasLanguage);
       setSchemeColors(AppSettings.viewColorPool);

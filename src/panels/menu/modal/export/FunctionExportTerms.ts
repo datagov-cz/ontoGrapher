@@ -23,8 +23,11 @@ export const exportFunctions: {
   constructExportTerms: () => exportTermObject;
 } = {
   getSources: async (terms) =>
-    Object.fromEntries(_.intersection(Object.keys(terms), Object.keys(WorkspaceTerms)).map(term => [term, WorkspaceTerms[term].source]))
-  ,
+    Object.fromEntries(
+      _.intersection(Object.keys(terms), Object.keys(WorkspaceTerms)).map(
+        (term) => [term, WorkspaceTerms[term].source]
+      )
+    ),
   getSuperClassAttributes: (terms, term) => {
     const stack = _.clone(WorkspaceTerms[term].subClassOf);
     const attributes: string[] = [];
@@ -78,12 +81,12 @@ export const exportFunctions: {
         ) && getIntrinsicTropeTypeIDs(c).length === 0
     );
     // event types, but only those that don't have tropes
-    const simpleEvents = Object.keys(exportTerms).filter(
-      (t) =>
-        WorkspaceTerms[t].types.includes(
-          parsePrefix("z-sgov-pojem", "typ-události")
-        ) && getIntrinsicTropeTypeIDs(t).length === 0
-    );
+    // const simpleEvents = Object.keys(exportTerms).filter(
+    //   (t) =>
+    //     WorkspaceTerms[t].types.includes(
+    //       parsePrefix("v-sgov-pojem", "typ-subjektu-práva")
+    //     ) && getIntrinsicTropeTypeIDs(t).length === 0
+    // );
     // we don't treat code lists any differently for now
     Object.keys(exportTerms).forEach((t) => {
       const activeToConnections = getActiveSourceConnections(t);
@@ -94,24 +97,27 @@ export const exportFunctions: {
           simpleRelationships
         )
       );
-      exportTerms[t].push(
-        ...simpleEvents.filter(
-          (e) =>
-            activeToConnections.find((c) => WorkspaceLinks[c].target === e) ||
-            getActiveSourceConnections(e).find(
-              (c) => WorkspaceLinks[c].target === t
-            )
-        )
-      );
+      // exportTerms[t].push(
+      //   ...simpleEvents.filter(
+      //     (e) =>
+      //       activeToConnections.find((c) => WorkspaceLinks[c].target === e) ||
+      //       getActiveSourceConnections(e).find(
+      //         (c) => WorkspaceLinks[c].target === t
+      //       )
+      //   )
+      // );
     });
     exportTerms = _.fromPairs(
       Object.entries(exportTerms).filter(
         (t) =>
           !simpleRelationships.includes(t[0]) &&
-          !simpleEvents.includes(t[0]) &&
+          // !simpleEvents.includes(t[0]) &&
           (WorkspaceTerms[t[0]].types.includes(
             parsePrefix("z-sgov-pojem", "typ-objektu")
           ) ||
+            WorkspaceTerms[t[0]].types.includes(
+              parsePrefix("v-sgov-pojem", "typ-subjektu-práva")
+            ) ||
             t[1].length > 0)
       )
     );

@@ -118,7 +118,16 @@ export var Stereotypes: {
     subClassOf: string[];
     character: string | undefined;
   };
-} = {};
+} = {
+  "https://slovník.gov.cz/veřejný-sektor/pojem/typ-subjektu-práva": {
+    labels: { cs: "Typ subjektu", en: "Subject type" },
+    definitions: { cs: "Typ subjektu", en: "Subject type" },
+    inScheme: "https://slovník.gov.cz/veřejný-sektor/glosář",
+    types: ["http://www.w3.org/2002/07/owl#Class"],
+    subClassOf: [],
+    character: undefined,
+  },
+};
 
 export var Diagrams: {
   [key: string]: {
