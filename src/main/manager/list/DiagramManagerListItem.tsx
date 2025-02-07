@@ -48,14 +48,16 @@ export const DiagramManagerListItem: React.FC<Props> = (props: Props) => {
           <span className="name">{Diagrams[props.diagram].name}</span>
           &nbsp;
           <span className="vocabularies">
-            {Diagrams[props.diagram].vocabularies?.map((v) => (
-              <VocabularyBadge
-                key={v}
-                text={getVocabularyLabel(v)}
-                color={WorkspaceVocabularies[v].color}
-                cancellable={false}
-              />
-            ))}
+            {Diagrams[props.diagram].vocabularies
+              ?.filter((voc) => voc in WorkspaceVocabularies)
+              .map((v) => (
+                <VocabularyBadge
+                  key={v}
+                  text={getVocabularyLabel(v)}
+                  color={WorkspaceVocabularies[v].color}
+                  cancellable={false}
+                />
+              ))}
           </span>
         </span>
         {(props.selected || hovered) && (

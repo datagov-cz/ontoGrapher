@@ -1,11 +1,11 @@
-import Select, { MultiValue } from "react-select";
+import SearchIcon from "@mui/icons-material/Search";
 import _ from "lodash";
 import React from "react";
-import { InputGroup, Form } from "react-bootstrap";
+import { Form, InputGroup } from "react-bootstrap";
+import Select, { MultiValue } from "react-select";
 import { Locale } from "../../../config/Locale";
 import { AppSettings, WorkspaceVocabularies } from "../../../config/Variables";
 import { getLabelOrBlank } from "../../../function/FunctionGetVars";
-import SearchIcon from "@mui/icons-material/Search";
 
 type VocabularyOptions = MultiValue<{
   label: string;

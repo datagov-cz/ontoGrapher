@@ -1,11 +1,11 @@
+import * as _ from "lodash";
 import { useStoreState } from "pullstate";
 import React, { useEffect, useState } from "react";
 import { Container, Row } from "react-bootstrap";
 import { StoreSettings } from "../config/Store";
+import { Diagrams, WorkspaceVocabularies } from "../config/Variables";
 import { DiagramManagerDetails } from "./manager/details/DiagramManagerDetails";
 import { DiagramManagerList } from "./manager/list/DiagramManagerList";
-import * as _ from "lodash";
-import { Diagrams } from "../config/Variables";
 
 type Props = {
   projectLanguage: string;
@@ -29,7 +29,9 @@ export const DiagramManager: React.FC<Props> = (props: Props) => {
       setAvailableVocabs(
         _.compact(
           _.uniq(
-            Object.keys(Diagrams).flatMap((diag) => Diagrams[diag].vocabularies)
+            Object.keys(Diagrams)
+              .flatMap((diag) => Diagrams[diag].vocabularies)
+              .filter((voc) => voc in WorkspaceVocabularies)
           )
         )
       ),
