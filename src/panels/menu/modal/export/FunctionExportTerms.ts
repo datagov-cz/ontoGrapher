@@ -81,12 +81,12 @@ export const exportFunctions: {
         ) && getIntrinsicTropeTypeIDs(c).length === 0
     );
     // event types, but only those that don't have tropes
-    // const simpleEvents = Object.keys(exportTerms).filter(
-    //   (t) =>
-    //     WorkspaceTerms[t].types.includes(
-    //       parsePrefix("v-sgov-pojem", "typ-subjektu-práva")
-    //     ) && getIntrinsicTropeTypeIDs(t).length === 0
-    // );
+    const simpleEvents = Object.keys(exportTerms).filter(
+      (t) =>
+        WorkspaceTerms[t].types.includes(
+          parsePrefix("v-sgov-pojem", "typ-subjektu-práva")
+        ) && getIntrinsicTropeTypeIDs(t).length === 0
+    );
     // we don't treat code lists any differently for now
     Object.keys(exportTerms).forEach((t) => {
       const activeToConnections = getActiveSourceConnections(t);
@@ -97,21 +97,21 @@ export const exportFunctions: {
           simpleRelationships
         )
       );
-      // exportTerms[t].push(
-      //   ...simpleEvents.filter(
-      //     (e) =>
-      //       activeToConnections.find((c) => WorkspaceLinks[c].target === e) ||
-      //       getActiveSourceConnections(e).find(
-      //         (c) => WorkspaceLinks[c].target === t
-      //       )
-      //   )
-      // );
+      exportTerms[t].push(
+        ...simpleEvents.filter(
+          (e) =>
+            activeToConnections.find((c) => WorkspaceLinks[c].target === e) ||
+            getActiveSourceConnections(e).find(
+              (c) => WorkspaceLinks[c].target === t
+            )
+        )
+      );
     });
     exportTerms = _.fromPairs(
       Object.entries(exportTerms).filter(
         (t) =>
           !simpleRelationships.includes(t[0]) &&
-          // !simpleEvents.includes(t[0]) &&
+          !simpleEvents.includes(t[0]) &&
           (WorkspaceTerms[t[0]].types.includes(
             parsePrefix("z-sgov-pojem", "typ-objektu")
           ) ||

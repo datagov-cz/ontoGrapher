@@ -8,23 +8,20 @@ import {
 } from "../../config/Variables";
 import { Cardinality } from "../../datatypes/Cardinality";
 import { addDiagram } from "../../function/FunctionCreateVars";
-import {
-  initLanguageObject
-} from "../../function/FunctionEditVars";
+import { initLanguageObject } from "../../function/FunctionEditVars";
 import { processQuery } from "../../interface/TransactionInterface";
 import { WorkspaceLinks } from "../../config/Variables";
 
 export async function getElementsConfig(
   contextEndpoint: string = AppSettings.contextEndpoint,
-  diagramGraphs: string[] = Object.values(Diagrams).map(d => d.graph)
+  diagramGraphs: string[] = Object.values(Diagrams).map((d) => d.graph)
 ): Promise<boolean> {
   if (diagramGraphs.length === 0) {
     return Promise.resolve(true);
   }
-  const elements: { [key: string]: Partial<(typeof WorkspaceElements)[0]> } =
-    {};
+  const elements: { [key: string]: Partial<typeof WorkspaceElements[0]> } = {};
   const elementPositions: {
-    [key: string]: Partial<(typeof WorkspaceElements)[0]>;
+    [key: string]: Partial<typeof WorkspaceElements[0]>;
   } = {};
   const getElements = async (): Promise<boolean> => {
     const query = [
@@ -60,7 +57,7 @@ export async function getElementsConfig(
             };
           }
           if (result.active) {
-            elements[iri].active = result.active.value === "true"
+            elements[iri].active = result.active.value === "true";
           }
           if (
             result.name &&
@@ -200,8 +197,8 @@ export async function getSettings(contextEndpoint: string): Promise<boolean> {
         if (result.posX && result.posY && result.scale) {
           Diagrams[result.id.value].origin = {
             x: parseInt(result.posX.value, 10),
-            y: parseInt(result.posY.value, 10)
-          }
+            y: parseInt(result.posY.value, 10),
+          };
           Diagrams[result.id.value].scale = parseFloat(result.scale.value);
         }
         if (result.description) {
@@ -247,14 +244,13 @@ export async function getSettings(contextEndpoint: string): Promise<boolean> {
 
 export async function getLinksConfig(
   contextEndpoint: string = AppSettings.contextEndpoint,
-  diagramGraphs: string[] = Object.values(Diagrams).map(d => d.graph)
+  diagramGraphs: string[] = Object.values(Diagrams).map((d) => d.graph)
 ): Promise<boolean> {
   if (diagramGraphs.length === 0) {
     return Promise.resolve(true);
   }
-  const links: { [key: string]: Partial<(typeof WorkspaceLinks)[0]> } = {};
-  const linkVertices: { [key: string]: Partial<(typeof WorkspaceLinks)[0]> } =
-    {};
+  const links: { [key: string]: Partial<typeof WorkspaceLinks[0]> } = {};
+  const linkVertices: { [key: string]: Partial<typeof WorkspaceLinks[0]> } = {};
   const getLinks = async (): Promise<boolean> => {
     const query = [
       "PREFIX og: <http://onto.fel.cvut.cz/ontologies/application/ontoGrapher/>",

@@ -202,8 +202,11 @@ export class DetailElementDescription extends React.Component<Props, State> {
   }
 
   isObjectType = (types: string[]) =>
-    types.find((t) =>
-      isEquivalent(t, parsePrefix("z-sgov-pojem", "typ-objektu"))
+    types.find(
+      (t) =>
+        isEquivalent(t, parsePrefix("z-sgov-pojem", "typ-objektu")) ||
+        // TODO: add typ-subjektu-práva to equivalents
+        t === parsePrefix("v-sgov-pojem", "typ-subjektu-práva")
     );
 
   save() {

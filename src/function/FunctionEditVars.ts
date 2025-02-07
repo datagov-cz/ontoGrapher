@@ -218,22 +218,20 @@ export function setElementShape(
         ].color,
       },
     });
-  }
-  // else if (
-  //   filterEquivalent(types, parsePrefix("z-sgov-pojem", "typ-události"))
-  // ) {
-  //   elem.attr({
-  //     bodyTrapezoid: {
-  //       display: "block",
-  //       points: `20,0 ${width - 20},0 ${width},${height} 0,${height}`,
-  //       stroke: "black",
-  //       fill: WorkspaceVocabularies[
-  //         getVocabularyFromScheme(WorkspaceTerms[elem.id].inScheme)
-  //       ].color,
-  //     },
-  //   });
-  // }
-  else {
+  } else if (
+    filterEquivalent(types, parsePrefix("z-sgov-pojem", "typ-události"))
+  ) {
+    elem.attr({
+      bodyTrapezoid: {
+        display: "block",
+        points: `20,0 ${width - 20},0 ${width},${height} 0,${height}`,
+        stroke: "black",
+        fill: WorkspaceVocabularies[
+          getVocabularyFromScheme(WorkspaceTerms[elem.id].inScheme)
+        ].color,
+      },
+    });
+  } else {
     elem.attr({
       bodyBox: {
         display: "block",

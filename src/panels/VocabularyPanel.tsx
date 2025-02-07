@@ -267,7 +267,7 @@ export default class VocabularyPanel extends React.Component<Props, State> {
         if (this.state.shownElements[vocabulary][iri].length === 0) continue;
         vocabularyConcepts.push(
           <ConceptDivider
-            key={iri}
+            key={`div-${iri}`}
             iri={iri}
             items={this.state.shownElements[vocabulary][iri]}
             projectLanguage={this.props.projectLanguage}
@@ -277,7 +277,7 @@ export default class VocabularyPanel extends React.Component<Props, State> {
         for (const id of this.state.shownElements[vocabulary][iri]) {
           vocabularyConcepts.push(
             <VocabularyConcept
-              key={id}
+              key={`trm-${id}`}
               id={id}
               projectLanguage={this.props.projectLanguage}
               readOnly={WorkspaceVocabularies[vocabulary].readOnly}

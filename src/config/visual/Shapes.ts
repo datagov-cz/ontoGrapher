@@ -20,5 +20,9 @@ export var Shapes: {
     body: "bodyBox",
     color: "#FFFFFF",
   },
+  "https://slovník.gov.cz/základní/pojem/typ-události": {
+    body: "bodyTrapezoid",
+    color: "#FFFFFF",
+  },
   default: { body: "bodyBox", color: "#FFFFFF" },
 };

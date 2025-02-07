@@ -44,6 +44,7 @@ import {
   updateContexts,
 } from "../interface/ContextInterface";
 import { getVocabulariesFromRemoteJSON } from "../interface/JSONInterface";
+import { dumpOFNVocabularies } from "../interface/OFNInterface";
 import {
   abortTransaction,
   processTransaction,
@@ -62,7 +63,6 @@ import {
 } from "../queries/update/UpdateDiagramQueries";
 import { MainView } from "./MainView";
 import { ToastService } from "./ToastService";
-import { dumpOFNVocabularies } from "../interface/OFNInterface";
 
 interface DiagramAppProps {}
 
