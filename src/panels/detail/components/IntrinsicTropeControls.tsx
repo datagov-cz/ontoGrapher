@@ -15,8 +15,10 @@ import {
   redrawElement,
 } from "../../../function/FunctionDraw";
 import {
+  getElementVocabulary,
   getIntrinsicTropeTypeIDs,
   getLabelOrBlank,
+  getVocabElementByElementID,
   getVocabularyLabel,
 } from "../../../function/FunctionGetVars";
 import { deleteLink } from "../../../function/FunctionLink";
@@ -109,33 +111,35 @@ export const IntrinsicTropeControls: React.FC<Props> = (props: Props) => {
                 <InfoIcon />
               </Button>
             )}
-            <OverlayTrigger
-              placement="left"
-              delay={1000}
-              overlay={
-                <Tooltip>
-                  {Locale[AppSettings.interfaceLanguage].removeTrope}
-                </Tooltip>
-              }
-            >
-              <Button
-                className="plainButton"
-                variant="light"
-                onClick={() => {
-                  for (const l of Object.keys(WorkspaceLinks)) {
-                    if (
-                      (WorkspaceLinks[l].source === iri ||
-                        WorkspaceLinks[l].target === iri) &&
-                      WorkspaceLinks[l].active
-                    )
-                      props.performTransaction(...deleteLink(l));
-                  }
-                  refresh();
-                }}
+            {!WorkspaceVocabularies[getElementVocabulary(iri)].readOnly && (
+              <OverlayTrigger
+                placement="left"
+                delay={1000}
+                overlay={
+                  <Tooltip>
+                    {Locale[AppSettings.interfaceLanguage].removeTrope}
+                  </Tooltip>
+                }
               >
-                <RemoveIcon />
-              </Button>
-            </OverlayTrigger>
+                <Button
+                  className="plainButton"
+                  variant="light"
+                  onClick={() => {
+                    for (const l of Object.keys(WorkspaceLinks)) {
+                      if (
+                        (WorkspaceLinks[l].source === iri ||
+                          WorkspaceLinks[l].target === iri) &&
+                        WorkspaceLinks[l].active
+                      )
+                        props.performTransaction(...deleteLink(l));
+                    }
+                    refresh();
+                  }}
+                >
+                  <RemoveIcon />
+                </Button>
+              </OverlayTrigger>
+            )}
           </span>
         </div>
       ))}
