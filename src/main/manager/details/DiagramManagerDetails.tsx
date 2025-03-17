@@ -1,30 +1,26 @@
+import InfoIcon from "@mui/icons-material/Info";
 import { Avatar } from "@mui/material";
-import Select, { MultiValue } from "react-select";
-import classNames from "classnames";
 import _ from "lodash";
 import React, { useEffect, useState } from "react";
 import {
-  Col,
-  Stack,
   Card,
+  Col,
   Container,
-  Button,
-  Row,
   Form,
   OverlayTrigger,
+  Row,
+  Stack,
   Tooltip,
 } from "react-bootstrap";
+import Select, { MultiValue } from "react-select";
 import { Locale } from "../../../config/Locale";
-import PreviewIcon from "@mui/icons-material/Preview";
-import InfoIcon from "@mui/icons-material/Info";
 import {
-  Diagrams,
   AppSettings,
+  Diagrams,
   Users,
   WorkspaceVocabularies,
 } from "../../../config/Variables";
 import { getLabelOrBlank } from "../../../function/FunctionGetVars";
-import DiagramPreview from "./DiagramPreview";
 import {
   updateDiagram,
   updateDiagramAssignments,
@@ -38,7 +34,7 @@ interface Props {
 }
 
 export const DiagramManagerDetails: React.FC<Props> = (props: Props) => {
-  const [preview, setPreview] = useState<boolean>(false);
+  // const [preview, setPreview] = useState<boolean>(false);
   const [selectedDiagramName, setSelectedDiagramName] = useState<string>("");
   const [selectedDiagramDescription, setSelectedDiagramDescription] =
     useState<string>("");
@@ -68,7 +64,7 @@ export const DiagramManagerDetails: React.FC<Props> = (props: Props) => {
   };
 
   useEffect(() => {
-    setPreview(false);
+    // setPreview(false);
     setSelectedDiagramName(Diagrams[props.selectedDiagram].name);
     setSelectedDiagramDescription(
       Diagrams[props.selectedDiagram].description
@@ -77,15 +73,17 @@ export const DiagramManagerDetails: React.FC<Props> = (props: Props) => {
     );
     setInputVocabs(
       Diagrams[props.selectedDiagram].vocabularies
-        ? Diagrams[props.selectedDiagram].vocabularies.map((v) => {
-            return {
-              label: getLabelOrBlank(
-                WorkspaceVocabularies[v].labels,
-                AppSettings.canvasLanguage
-              ),
-              value: v,
-            };
-          })
+        ? Diagrams[props.selectedDiagram].vocabularies
+            .filter((v) => v in WorkspaceVocabularies)
+            .map((v) => {
+              return {
+                label: getLabelOrBlank(
+                  WorkspaceVocabularies[v].labels,
+                  AppSettings.canvasLanguage
+                ),
+                value: v,
+              };
+            })
         : []
     );
   }, [props.selectedDiagram]);
