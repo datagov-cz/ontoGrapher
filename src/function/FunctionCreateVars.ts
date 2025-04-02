@@ -1,5 +1,6 @@
 import { v4 as uuidv4 } from "uuid";
 import { LinkType, Representation } from "../config/Enum";
+import { Environment } from "../config/Environment";
 import {
   FlexDocumentIDTable,
   FlexDocumentSearch,
@@ -18,12 +19,11 @@ import {
 } from "../config/Variables";
 import { initLanguageObject } from "./FunctionEditVars";
 import {
-  getOntographerLinkIRI,
   getNewDiagramContextIRI,
   getNewDiagramIRI,
+  getOntographerLinkIRI,
   getVocabularyFromScheme,
 } from "./FunctionGetVars";
-import { Environment } from "../config/Environment";
 
 export function createValues(
   values: { [key: string]: string[] },
@@ -126,7 +126,7 @@ export function addVocabularyElement(
     restrictions: [],
     topConcept: scheme,
     source: "",
-    descriptions: initLanguageObject("")
+    descriptions: initLanguageObject(""),
   };
 }
 
@@ -160,7 +160,7 @@ export function addDiagram(
     index =
       Object.keys(Diagrams).length > 0
         ? Object.values(Diagrams).reduce((a, b) => (a.index > b.index ? a : b))
-          .index + 1
+            .index + 1
         : 0;
   Diagrams[diagramID] = {
     name: name,

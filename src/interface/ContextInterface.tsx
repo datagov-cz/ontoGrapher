@@ -273,7 +273,7 @@ export async function retrieveContextData(): Promise<boolean> {
     // This is expected behavior e.g. for imported diagrams,
     // if they have references to links that no longer exist in the data.
     console.warn(
-      `Link ID ${id} ( ${WorkspaceLinks[id].source} -- ${WorkspaceLinks[id].iri} -> ${WorkspaceLinks[id].target} ) deactivated due to its statement counterpart(s) missing.`
+      `del: Link ID ${id} ( ${WorkspaceLinks[id].source} -- ${WorkspaceLinks[id].iri} -> ${WorkspaceLinks[id].target} ) deactivated due to its statement counterpart(s) missing.`
     );
     if (
       WorkspaceLinks[id].iri === parsePrefix("z-sgov-pojem", "je-vlastností") &&
@@ -314,7 +314,7 @@ export async function retrieveContextData(): Promise<boolean> {
       );
       if (relLink) {
         console.warn(
-          `Link ID ${relLink} ( ${WorkspaceLinks[relLink].source} -- ${WorkspaceLinks[relLink].iri} -> ${WorkspaceLinks[relLink].target} ) deactivated due to its statement counterpart(s) missing.`
+          `rel: Link ID ${relLink} ( ${WorkspaceLinks[relLink].source} -- ${WorkspaceLinks[relLink].iri} -> ${WorkspaceLinks[relLink].target} ) deactivated due to its statement counterpart(s) missing.`
         );
         WorkspaceLinks[relLink].active = false;
       }

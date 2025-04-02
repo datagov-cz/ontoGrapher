@@ -52,8 +52,8 @@ export function changeDiagrams(diagram?: string) {
     StoreSettings.update((s) => {
       s.selectedDiagram = diagram!;
     });
-    paper.translate(Diagrams[diagram].origin.x, Diagrams[diagram].origin.y)
-    paper.scale(Diagrams[diagram].scale)
+    paper.translate(Diagrams[diagram].origin.x, Diagrams[diagram].origin.y);
+    paper.scale(Diagrams[diagram].scale);
   } else {
     console.warn(
       "Attempted change to a diagram ID " + diagram + " that doesn't exist."
@@ -119,7 +119,10 @@ export function zoomDiagram(
  * @returns if the information has been updated or not.
  */
 export function setDiagramPosition(diagram: string): boolean {
-  if (Diagrams[diagram].origin.x !== paper.translate().tx && Diagrams[diagram].origin.y !== paper.translate().ty) {
+  if (
+    Diagrams[diagram].origin.x !== paper.translate().tx &&
+    Diagrams[diagram].origin.y !== paper.translate().ty
+  ) {
     Diagrams[diagram].origin = {
       x: paper.translate().tx,
       y: paper.translate().ty,

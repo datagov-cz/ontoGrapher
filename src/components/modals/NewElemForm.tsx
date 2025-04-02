@@ -174,12 +174,12 @@ export const NewElemForm: React.FC<Props> = (props) => {
         </Form.Label>
         <Select
           isSearchable
-          isDisabled={
-            !!!props.setSelectedVocabulary ||
-            Object.keys(WorkspaceVocabularies).filter(
-              (vocab) => !WorkspaceVocabularies[vocab].readOnly
-            ).length <= 1
-          }
+          // isDisabled={
+          //   !!!props.setSelectedVocabulary ||
+          //   Object.keys(WorkspaceVocabularies).filter(
+          //     (vocab) => !WorkspaceVocabularies[vocab].readOnly
+          //   ).length <= 1
+          // }
           options={Object.keys(WorkspaceVocabularies)
             .filter((vocab) => !WorkspaceVocabularies[vocab].readOnly)
             .map((vocab) => ({
