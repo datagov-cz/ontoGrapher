@@ -187,6 +187,7 @@ export const ModalAddTrope: React.FC<Props> = (props: Props) => {
                 }
                 setErrorText={(s) => setError(s)}
                 newElemDescription="modalNewTropeDescription"
+                setSelectedVocabulary={(p) => setVocabulary(p)}
               />
             </Tab>
             <Tab
